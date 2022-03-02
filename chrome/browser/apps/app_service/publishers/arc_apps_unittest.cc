@@ -77,7 +77,9 @@ class ArcAppsPublisherTest : public testing::Test {
 
     app_service_test_.SetUp(&profile_);
     apps::ArcAppsFactory::GetForProfile(profile());
-    app_service_test_.FlushMojoCalls();
+    // Ensure that the PreferredAppsList is fully initialized before running the
+    // test.
+    task_environment_.RunUntilIdle();
   }
 
   void TearDown() override { arc_test_.TearDown(); }

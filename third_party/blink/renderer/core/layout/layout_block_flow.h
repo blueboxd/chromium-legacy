@@ -363,7 +363,10 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   // Implementation detail: At some point in the future there should be no flow
   // threads. Callers that only want to know if this is a fragmentation context
   // root (and don't depend on flow threads) should call this method.
-  bool IsFragmentationContextRoot() const { return MultiColumnFlowThread(); }
+  bool IsFragmentationContextRoot() const final {
+    NOT_DESTROYED();
+    return MultiColumnFlowThread();
+  }
 
   void AddVisualOverflowFromInlineChildren();
 
@@ -558,12 +561,11 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
                                              LayoutBox&);
-  void AbsoluteQuads(Vector<FloatQuad>&,
+  void AbsoluteQuads(Vector<gfx::QuadF>&,
                      MapCoordinatesFlags mode = 0) const override;
-  void LocalQuadsForSelf(Vector<FloatQuad>& quads) const override;
-  void AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
+  void LocalQuadsForSelf(Vector<gfx::QuadF>& quads) const override;
+  void AbsoluteQuadsForSelf(Vector<gfx::QuadF>& quads,
                             MapCoordinatesFlags mode = 0) const override;
-  LayoutObject* HoverAncestor() const final;
 
   LayoutUnit LogicalRightOffsetForLine(
       LayoutUnit logical_top,
@@ -611,7 +613,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   PhysicalOffset AccumulateRelativePositionOffsets() const override;
 
  private:
-  void QuadsForSelfInternal(Vector<FloatQuad>& quads,
+  void QuadsForSelfInternal(Vector<gfx::QuadF>& quads,
                             MapCoordinatesFlags mode,
                             bool map_to_absolute) const;
 
@@ -885,9 +887,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     NOT_DESTROYED();
     return floating_objects_;
   }
-
-  static void UpdateAncestorShouldPaintFloatingObject(
-      const LayoutBox& float_box);
 
   bool ShouldTruncateOverflowingText() const;
 

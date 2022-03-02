@@ -24,6 +24,7 @@
 namespace ash {
 
 class ApplicationDragAndDropHost;
+class AppListReorderUndoContainerView;
 class AppListFolderItem;
 class AppListFolderView;
 class ContentsView;
@@ -31,6 +32,7 @@ class ContinueSectionView;
 class FolderBackgroundView;
 class PageSwitcher;
 class SuggestionChipContainerView;
+class GradientLayerDelegate;
 
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
@@ -141,7 +143,8 @@ class ASH_EXPORT AppsContainerView
                                     SearchModel* search_model) override;
 
   // AppListFolderController:
-  void ShowFolderForItemView(AppListItemView* folder_item_view) override;
+  void ShowFolderForItemView(AppListItemView* folder_item_view,
+                             bool focus_name_input) override;
   void ShowApps(AppListItemView* folder_item_view, bool select_folder) override;
   void ReparentFolderItemTransit(AppListFolderItem* folder_item) override;
   void ReparentDragEnded() override;
@@ -149,15 +152,26 @@ class ASH_EXPORT AppsContainerView
   // PaginationModelObserver:
   void SelectedPageChanged(int old_selected, int new_selected) override;
   void TransitionChanged() override;
+  void TransitionStarted() override;
+  void TransitionEnded() override;
+  void ScrollStarted() override;
+  void ScrollEnded() override;
 
   // PagedAppsGridView::ContainerDelegate:
   bool IsPointWithinPageFlipBuffer(const gfx::Point& point) const override;
   bool IsPointWithinBottomDragBuffer(const gfx::Point& point,
                                      int page_flip_zone_size) const override;
+  void OnCardifiedStateStarted() override;
+  void OnCardifiedStateEnded() override;
 
   // RecentAppsView::Delegate:
   void MoveFocusUpFromRecents() override;
   void MoveFocusDownFromRecents(int column) override;
+
+  // Called when the app list temporary sort order changes. If `new_order` is
+  // null, the temporary sort order is cleared.
+  void OnTemporarySortOrderChanged(
+      const absl::optional<AppListSortOrder>& new_order);
 
   ContinueSectionView* GetContinueSection();
   RecentAppsView* GetRecentApps();
@@ -171,11 +185,12 @@ class ASH_EXPORT AppsContainerView
 
   views::View* scrollable_container_for_test() { return scrollable_container_; }
 
-  views::View* sort_button_container_for_test() {
-    return sort_button_container_;
-  }
   SuggestionChipContainerView* suggestion_chip_container_view_for_test() {
     return suggestion_chip_container_view_;
+  }
+
+  AppListReorderUndoContainerView* reorder_undo_container_for_test() {
+    return reorder_undo_container_;
   }
 
   // Updates recent apps from app list model.
@@ -252,6 +267,22 @@ class ASH_EXPORT AppsContainerView
   // Callback returned by DisableBlur().
   void OnSuggestionChipsBlurDisablerReleased();
 
+  // Updates the bounds of the gradient mask to fit the current bounds of the
+  // `scrollable_container_`.
+  void UpdateGradientMaskBounds();
+
+  // Creates a layer mask for gradient alpha when the feature is enabled. The
+  // gradient appears at the top and bottom of the 'scrollable_container_' to
+  // create a "fade out" effect when dragging the whole page.
+  void MaybeCreateGradientMask();
+
+  // Removes the gradient mask from being set as the mask layer.
+  void MaybeRemoveGradientMask();
+
+  // While true, the gradient mask will not be removed as a mask layer until
+  // cardified state ends.
+  bool keep_gradient_mask_for_cardified_state_ = false;
+
   ContentsView* const contents_view_;
 
   // The app list config used to configure sizing and layout of apps grid items
@@ -268,11 +299,11 @@ class ASH_EXPORT AppsContainerView
   // The views below are owned by views hierarchy.
   SuggestionChipContainerView* suggestion_chip_container_view_ = nullptr;
   ContinueContainer* continue_container_ = nullptr;
+  AppListReorderUndoContainerView* reorder_undo_container_ = nullptr;
   PagedAppsGridView* apps_grid_view_ = nullptr;
   AppListFolderView* app_list_folder_view_ = nullptr;
   PageSwitcher* page_switcher_ = nullptr;
   FolderBackgroundView* folder_background_view_ = nullptr;
-  views::View* sort_button_container_ = nullptr;
 
   ShowState show_state_ = SHOW_NONE;
 
@@ -291,6 +322,8 @@ class ASH_EXPORT AppsContainerView
   // |cached_container_margins_|, provided the method arguments match the cached
   // arguments (otherwise the margins will be recalculated).
   CachedContainerMargins cached_container_margins_;
+
+  std::unique_ptr<GradientLayerDelegate> gradient_layer_delegate_;
 
   base::WeakPtrFactory<AppsContainerView> weak_ptr_factory_{this};
 };

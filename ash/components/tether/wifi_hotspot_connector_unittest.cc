@@ -25,7 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -107,7 +107,8 @@ class WifiHotspotConnectorTest : public testing::Test {
     void CreateConfiguration(base::DictionaryValue* shill_properties,
                              bool shared) override {
       EXPECT_FALSE(shared);
-      last_configuration_ = shill_properties->CreateDeepCopy();
+      last_configuration_ = base::DictionaryValue::From(
+          base::Value::ToUniquePtrValue(shill_properties->Clone()));
 
       // Prevent nested RunLoops when ConfigureServiceWithLastNetworkConfig()
       // calls NetworkStateTestHelper::ConfigureService(); that causes threading
@@ -824,4 +825,4 @@ TEST_F(WifiHotspotConnectorTest,
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

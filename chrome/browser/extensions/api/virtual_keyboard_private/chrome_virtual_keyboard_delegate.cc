@@ -568,9 +568,6 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   // TODO(b/171846787): Remove the 3 flags after they are removed from clients.
   features.Append(GenerateFeatureFlag("fstinputlogic", true));
   features.Append(GenerateFeatureFlag("hmminputlogic", true));
-  features.Append(GenerateFeatureFlag(
-      "imemozcproto",
-      base::FeatureList::IsEnabled(chromeos::features::kImeMozcProto)));
 
   features.Append(GenerateFeatureFlag(
       "borderedkey", base::FeatureList::IsEnabled(
@@ -591,13 +588,6 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features.Append(GenerateFeatureFlag(
       "multilingualtyping",
       base::FeatureList::IsEnabled(chromeos::features::kMultilingualTyping)));
-  features.Append(GenerateFeatureFlag(
-      "multipaste", base::FeatureList::IsEnabled(
-                        chromeos::features::kVirtualKeyboardMultipaste)));
-  features.Append(GenerateFeatureFlag(
-      "multipaste-suggestion",
-      base::FeatureList::IsEnabled(
-          chromeos::features::kVirtualKeyboardMultipasteSuggestion)));
   features.Append(GenerateFeatureFlag(
       "imeoptionsinsettings",
       base::FeatureList::IsEnabled(chromeos::features::kImeOptionsInSettings)));
@@ -666,10 +656,11 @@ ChromeVirtualKeyboardDelegate::RestrictFeatures(
 
   if (config != current_config) {
     ChromeKeyboardControllerClient::Get()->SetKeyboardConfig(config);
-    // This reloads virtual keyboard even if it exists. This ensures virtual
-    // keyboard gets the correct state through
-    // chrome.virtualKeyboardPrivate.getKeyboardConfig.
-    // TODO(oka): Extension should reload on it's own by receiving event
+    // This reloads the virtual keyboard (VK) even if it exists, so it can get
+    // new restrictFeatures via chrome.virtualKeyboardPrivate.getKeyboardConfig.
+    // However, this reload is unnecessary as the API specs do NOT require
+    // restrictFeatures to take effect immediately midway through a VK session.
+    // Keeping this unnecessary reload for now, just to avoid behaviour changes.
     ChromeKeyboardControllerClient::Get()->RebuildKeyboardIfEnabled();
   }
   return update;

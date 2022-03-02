@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/optimization_guide/content/browser/optimization_guide_decider.h"
 #include "components/optimization_guide/core/model_info.h"
+#include "components/optimization_guide/core/model_util.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
@@ -35,7 +36,6 @@
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/optimization_guide/core/optimization_guide_store.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
-#include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/core/optimization_target_model_observer.h"
 #include "components/optimization_guide/core/prediction_model.h"
 #include "components/optimization_guide/core/prediction_model_fetcher_impl.h"
@@ -417,14 +417,21 @@ void PredictionManager::FetchModels() {
   std::vector<proto::ModelInfo> models_info = std::vector<proto::ModelInfo>();
 
   proto::ModelInfo base_model_info;
-  base_model_info.add_supported_model_types(proto::MODEL_TYPE_DECISION_TREE);
   if (features::IsModelDownloadingEnabled()) {
-    // TODO(crbug/1204614): Remove v2.3* and 2.4 when server supports 2.7.
-    base_model_info.add_supported_model_types(proto::MODEL_TYPE_TFLITE_2_3_0);
-    base_model_info.add_supported_model_types(proto::MODEL_TYPE_TFLITE_2_3_0_1);
-    base_model_info.add_supported_model_types(proto::MODEL_TYPE_TFLITE_2_4);
-    base_model_info.add_supported_model_types(proto::MODEL_TYPE_TFLITE_2_7);
-    base_model_info.add_supported_model_types(proto::MODEL_TYPE_TFLITE_2_8);
+    // TODO(crbug/1204614): Tidy these up so only the current version is sent to
+    // the server.
+    base_model_info.add_supported_model_engine_versions(
+        proto::MODEL_ENGINE_VERSION_TFLITE_2_3_0);
+    base_model_info.add_supported_model_engine_versions(
+        proto::MODEL_ENGINE_VERSION_TFLITE_2_3_0_1);
+    base_model_info.add_supported_model_engine_versions(
+        proto::MODEL_ENGINE_VERSION_TFLITE_2_4);
+    base_model_info.add_supported_model_engine_versions(
+        proto::MODEL_ENGINE_VERSION_TFLITE_2_7);
+    base_model_info.add_supported_model_engine_versions(
+        proto::MODEL_ENGINE_VERSION_TFLITE_2_8);
+    base_model_info.add_supported_model_engine_versions(
+        proto::MODEL_ENGINE_VERSION_TFLITE_2_9);
   }
 
   std::string debug_msg;
@@ -543,7 +550,7 @@ void PredictionManager::UpdatePredictionModels(
 
   std::unique_ptr<StoreUpdateData> prediction_model_update_data =
       StoreUpdateData::CreatePredictionModelStoreUpdateData(
-          clock_->Now() + features::StoredModelsInactiveDuration());
+          clock_->Now() + features::StoredModelsValidDuration());
   bool has_models_to_update = false;
   std::string debug_msg;
   for (const auto& model : prediction_models) {
@@ -628,7 +635,7 @@ void PredictionManager::OnModelReady(const proto::PredictionModel& model) {
   // Store the received model in the store.
   std::unique_ptr<StoreUpdateData> prediction_model_update_data =
       StoreUpdateData::CreatePredictionModelStoreUpdateData(
-          clock_->Now() + features::StoredModelsInactiveDuration());
+          clock_->Now() + features::StoredModelsValidDuration());
   prediction_model_update_data->CopyPredictionModelIntoUpdateData(model);
   model_and_features_store_->UpdatePredictionModels(
       std::move(prediction_model_update_data),

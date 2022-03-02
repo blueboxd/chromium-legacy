@@ -27,7 +27,6 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
@@ -41,6 +40,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -172,7 +172,7 @@ bool IsArcAllowedForProfileInternal(const Profile* profile,
     return false;
   }
 
-  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
+  if (!ash::ProfileHelper::IsPrimaryProfile(profile)) {
     VLOG_IF(1, should_report_reason)
         << "Non-primary users are not supported in ARC.";
     return false;
@@ -190,7 +190,7 @@ bool IsArcAllowedForProfileInternal(const Profile* profile,
   // different application install mechanism. ARC is not allowed otherwise
   // (e.g. in public sessions). cf) crbug.com/605545
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!IsArcAllowedForUser(user)) {
     VLOG_IF(1, should_report_reason) << "ARC is not allowed for the user.";
     return false;
@@ -250,7 +250,7 @@ void SharePathIfRequired(ConvertToContentUrlsAndShareCallback callback,
 
 bool IsRealUserProfile(const Profile* profile) {
   // Return false for signin, lock screen and incognito profiles.
-  return profile && chromeos::ProfileHelper::IsRegularProfile(profile) &&
+  return profile && ash::ProfileHelper::IsRegularProfile(profile) &&
          !profile->IsOffTheRecord();
 }
 
@@ -294,7 +294,7 @@ void ClearArcAllowedCheckForTesting() {
 
 bool IsArcBlockedDueToIncompatibleFileSystem(const Profile* profile) {
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
 
   // Return true for public accounts as they only have ext4 and
   // for ARC kiosk as migration to ext4 should always be triggered.
@@ -365,7 +365,7 @@ bool SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
   if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile)) {
     if (enabled && !IsArcPlayStoreEnabledForProfile(profile)) {
       LOG(WARNING) << "Attempt to enable disabled by policy ARC.";
-      if (chromeos::switches::IsTabletFormFactor()) {
+      if (ash::switches::IsTabletFormFactor()) {
         VLOG(1) << "Showing contact admin dialog managed user of tablet form "
                    "factor devices.";
         base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -410,7 +410,7 @@ bool AreArcAllOptInPreferencesIgnorableForProfile(const Profile* profile) {
 
 bool IsActiveDirectoryUserForProfile(const Profile* profile) {
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   return user ? user->IsActiveDirectoryUser() : false;
 }
 

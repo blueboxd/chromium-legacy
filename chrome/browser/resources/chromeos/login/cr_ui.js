@@ -9,6 +9,7 @@
  */
 
 // #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {i18nTemplate} from 'chrome://resources/js/i18n_template_no_process.m.js';
 // #import {$} from 'chrome://resources/js/util.m.js';
 // #import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
@@ -294,25 +295,19 @@ cr.define('cr.ui', function() {
      * Returns true if enrollment was successful. Dismisses the enrollment
      * attribute screen if it's present.
      *
-     *  TODO(crbug.com/1111387) - Remove inline values from
-     *  ENROLLMENT_STEP once fully migrated to JS modules.
-     *
      * @suppress {missingProperties}
      * $('enterprise-enrollment').uiStep
      * TODO(crbug.com/1229130) - Remove this suppression.
      */
     static isEnrollmentSuccessfulForTest() {
       const step = $('enterprise-enrollment').uiStep;
-      // See [ENROLLMENT_STEP.ATTRIBUTE_PROMPT]
-      // from c/b/r/chromeos/login/enterprise_enrollment.js
-      if (step === 'attribute-prompt') {
+      // TODO(crbug.com/1229130) - Improve this check.
+      if (step === OobeTypes.EnrollmentStep.ATTRIBUTE_PROMPT) {
         chrome.send('oauthEnrollAttributes', ['', '']);
         return true;
       }
 
-      // See [ENROLLMENT_STEP.SUCCESS]
-      // from c/b/r/chromeos/login/enterprise_enrollment.js
-      return step === 'success';
+      return step === OobeTypes.EnrollmentStep.SUCCESS;
     }
 
     /**
@@ -366,7 +361,7 @@ cr.define('cr.ui', function() {
     static reloadContent(data) {
       // Reload global local strings, process DOM tree again.
       loadTimeData.overrideValues(data);
-      /* #ignore */ i18nTemplate.process(document, loadTimeData);
+      i18nTemplate.process(document, loadTimeData);
 
       // Update localized content of the screens.
       Oobe.getInstance().updateLocalizedContent_();

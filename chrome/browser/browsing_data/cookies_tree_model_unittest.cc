@@ -290,7 +290,10 @@ class CookiesTreeModelTest : public testing::Test {
       case CookieTreeNode::DetailedInfo::TYPE_SHARED_WORKER:
         return node->GetDetailedInfo().shared_worker_info->worker.spec() + ",";
       case CookieTreeNode::DetailedInfo::TYPE_MEDIA_LICENSE:
-        return node->GetDetailedInfo().media_license_info->origin.spec() + ",";
+        return node->GetDetailedInfo()
+                   .media_license_usage_info->origin.GetURL()
+                   .spec() +
+               ",";
       default:
         return std::string();
     }
@@ -1887,7 +1890,7 @@ TEST_F(CookiesTreeModelTest, CookieDeletionFilterNormalUser) {
   EXPECT_FALSE(callback);
 }
 
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(CookiesTreeModelTest, CookieDeletionFilterChildUser) {
   profile_->SetSupervisedUserId(supervised_users::kChildAccountSUID);
   auto callback =

@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Consenti cookie</translation>
 <translation id="2228071138934252756">Per consentire all'app <ph name="APP_NAME" /> di accedere alla fotocamera, attiva la fotocamera anche nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">Solo una volta</translation>
+<translation id="2253414712144136228">Rimuovi <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">Chiedi conferma quando un sito vuole rilevare i dispositivi Bluetooth nelle vicinanze (opzione consigliata)</translation>
 <translation id="2315043854645842844">La selezione del certificato lato client non è supportata dal sistema operativo.</translation>
 <translation id="2359808026110333948">Continua</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Mostra informazioni</translation>
 <translation id="3123473560110926937">Bloccati su alcuni siti</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> di dati memorizzati</translation>
+<translation id="3203366800380907218">Dal Web</translation>
 <translation id="321187648315454507">Per consentire all'app <ph name="APP_NAME" /> di inviarti notifiche, devi attivare le notifiche anche nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Microfono</translation>
 <translation id="3277252321222022663">Consenti ai siti di accedere ai sensori (opzione consigliata)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">Blocca</translation>
 <translation id="5689516760719285838">Posizione</translation>
 <translation id="5690795753582697420">La fotocamera è disattivata nelle impostazioni di Android</translation>
-<translation id="5710871682236653961">Chiedi prima di consentire ai siti di inviare e ricevere informazioni quando tocchi i dispositivi NFC (opzione consigliata)</translation>
 <translation id="5719847187258001597">Verranno cancellati tutti i dati e i cookie memorizzati dal sito <ph name="ORIGIN" /> o dalla relativa app nella schermata Home.</translation>
 <translation id="5771720122942595109">Autorizzazione <ph name="PERMISSION_1" /> bloccata</translation>
 <translation id="5804241973901381774">Autorizzazioni</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">Consentita per il motore di ricerca corrente</translation>
 <translation id="7053983685419859001">Blocca</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elemento selezionato}one{# selected}other{# elementi selezionati}}</translation>
-<translation id="7070090581017165256">Informazioni su questo sito</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> elementi selezionati. Opzioni disponibili nella parte superiore dello schermo</translation>
 <translation id="7141896414559753902">Impedisci ai siti di mostrare popup e reindirizzamenti (opzione consigliata)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Un sito sta utilizzando il microfono</translation>
 <translation id="7561196759112975576">Sempre</translation>
-<translation id="7572498721684305250">Impedisci ai siti di inviare e ricevere informazioni quando tocchi i dispositivi NFC</translation>
 <translation id="757524316907819857">Impedisci ai siti di riprodurre contenuti protetti</translation>
 <translation id="7649070708921625228">Guida</translation>
 <translation id="7658239707568436148">Annulla</translation>

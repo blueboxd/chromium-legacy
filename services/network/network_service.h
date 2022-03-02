@@ -57,6 +57,7 @@ class FileNetLogObserver;
 class HostResolverManager;
 class HttpAuthHandlerFactory;
 class LoggingNetworkChangeObserver;
+class NetworkChangeNotifier;
 class NetworkQualityEstimator;
 class URLRequestContext;
 }  // namespace net
@@ -86,11 +87,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   NetworkService& operator=(const NetworkService&) = delete;
 
   ~NetworkService() override;
-
-  // Call to inform the NetworkService that OSCrypt::SetConfig() has already
-  // been invoked, so OSCrypt::SetConfig() does not need to be called before
-  // encrypted storage can be used.
-  void set_os_crypt_is_configured();
 
   // Allows late binding if the mojo receiver wasn't specified in the
   // constructor.
@@ -140,8 +136,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void ConfigureStubHostResolver(
       bool insecure_dns_client_enabled,
       net::SecureDnsMode secure_dns_mode,
-      absl::optional<std::vector<mojom::DnsOverHttpsServerPtr>>
-          dns_over_https_servers,
+      const std::vector<net::DnsOverHttpsServerConfig>& dns_over_https_servers,
       bool additional_dns_types_enabled) override;
   void DisableQuic() override;
   void SetUpHttpAuth(
@@ -165,12 +160,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       base::span<const uint8_t> crl_set,
       mojom::NetworkService::UpdateCRLSetCallback callback) override;
   void OnCertDBChanged() override;
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  void SetCryptConfig(mojom::CryptConfigPtr crypt_config) override;
-#endif
-#if defined(OS_WIN) || defined(OS_MAC)
   void SetEncryptionKey(const std::string& encryption_key) override;
-#endif
   void AddAllowedRequestInitiatorForPlugin(
       int32_t process_id,
       const url::Origin& allowed_request_initiator) override;
@@ -178,7 +168,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel
                             memory_pressure_level) override;
   void OnPeerToPeerConnectionsCountChange(uint32_t count) override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state) override;
 #endif
   void SetEnvironment(
@@ -190,18 +180,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
                     ParseHeadersCallback callback) override;
 #if BUILDFLAG(IS_CT_SUPPORTED)
   void ClearSCTAuditingCache() override;
-  void ConfigureSCTAuditing(
-      bool enabled,
-      double sampling_rate,
-      const GURL& reporting_uri,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      mojo::PendingRemote<mojom::URLLoaderFactory> factory) override;
+  void ConfigureSCTAuditing(bool enabled,
+                            double sampling_rate,
+                            const GURL& reporting_uri,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override;
   void UpdateCtLogList(std::vector<mojom::CTLogInfoPtr> log_list,
                        base::Time update_time) override;
   void SetCtEnforcementEnabled(bool enabled) override;
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void DumpWithoutCrashing(base::Time dump_request_time) override;
 #endif
   void BindTestInterface(
@@ -250,11 +239,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   }
 #endif
 
-  const FirstPartySets* first_party_sets() const {
-    return first_party_sets_.get();
-  }
-
-  bool os_crypt_config_set() const { return os_crypt_config_set_; }
+  FirstPartySets* first_party_sets() const { return first_party_sets_.get(); }
 
   void set_host_resolver_factory_for_testing(
       std::unique_ptr<net::HostResolver::Factory> host_resolver_factory) {
@@ -290,6 +275,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
  private:
   class DelayedDohProbeActivator;
+
+  void InitMockNetworkChangeNotifierForTesting();
 
   void DestroyNetworkContexts();
 
@@ -372,8 +359,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   bool quic_disabled_ = false;
 
-  bool os_crypt_config_set_ = false;
-
   std::unique_ptr<CRLSetDistributor> crl_set_distributor_;
 
   // Whether new NetworkContexts will be configured to partition their
@@ -401,6 +386,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // that renderer process (the renderer will proxy requests from PPAPI - such
   // requests should have their initiator origin within the set stored here).
   std::map<int, std::set<url::Origin>> plugin_origins_;
+
+  // This is used only in tests. It avoids leaky SystemDnsConfigChangeNotifiers
+  // leaking stale listeners between tests.
+  std::unique_ptr<net::NetworkChangeNotifier> mock_network_change_notifier_;
 };
 
 }  // namespace network

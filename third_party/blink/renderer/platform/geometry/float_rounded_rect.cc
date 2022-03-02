@@ -30,10 +30,10 @@
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 
 #include <algorithm>
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "ui/gfx/geometry/insets_f.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 namespace blink {
 
@@ -91,55 +91,83 @@ void FloatRoundedRect::Radii::Scale(float factor) {
     bottom_right_ = gfx::SizeF();
 }
 
-void FloatRoundedRect::Radii::Shrink(float top_width,
-                                     float bottom_width,
-                                     float left_width,
-                                     float right_width) {
-  DCHECK_GE(top_width, 0);
-  DCHECK_GE(bottom_width, 0);
-  DCHECK_GE(left_width, 0);
-  DCHECK_GE(right_width, 0);
+void FloatRoundedRect::Radii::Shrink(const gfx::InsetsF& insets) {
+  DCHECK_GE(insets.top(), 0);
+  DCHECK_GE(insets.bottom(), 0);
+  DCHECK_GE(insets.left(), 0);
+  DCHECK_GE(insets.right(), 0);
 
-  top_left_.set_width(std::max<float>(0, top_left_.width() - left_width));
-  top_left_.set_height(std::max<float>(0, top_left_.height() - top_width));
+  top_left_.set_width(std::max<float>(0, top_left_.width() - insets.left()));
+  top_left_.set_height(std::max<float>(0, top_left_.height() - insets.top()));
 
-  top_right_.set_width(std::max<float>(0, top_right_.width() - right_width));
-  top_right_.set_height(std::max<float>(0, top_right_.height() - top_width));
+  top_right_.set_width(std::max<float>(0, top_right_.width() - insets.right()));
+  top_right_.set_height(std::max<float>(0, top_right_.height() - insets.top()));
 
-  bottom_left_.set_width(std::max<float>(0, bottom_left_.width() - left_width));
+  bottom_left_.set_width(
+      std::max<float>(0, bottom_left_.width() - insets.left()));
   bottom_left_.set_height(
-      std::max<float>(0, bottom_left_.height() - bottom_width));
+      std::max<float>(0, bottom_left_.height() - insets.bottom()));
 
   bottom_right_.set_width(
-      std::max<float>(0, bottom_right_.width() - right_width));
+      std::max<float>(0, bottom_right_.width() - insets.right()));
   bottom_right_.set_height(
-      std::max<float>(0, bottom_right_.height() - bottom_width));
+      std::max<float>(0, bottom_right_.height() - insets.bottom()));
 }
 
-void FloatRoundedRect::Radii::Expand(float top_width,
-                                     float bottom_width,
-                                     float left_width,
-                                     float right_width) {
-  DCHECK_GE(top_width, 0);
-  DCHECK_GE(bottom_width, 0);
-  DCHECK_GE(left_width, 0);
-  DCHECK_GE(right_width, 0);
+void FloatRoundedRect::Radii::Expand(const gfx::OutsetsF& outsets) {
+  DCHECK_GE(outsets.top(), 0);
+  DCHECK_GE(outsets.bottom(), 0);
+  DCHECK_GE(outsets.left(), 0);
+  DCHECK_GE(outsets.right(), 0);
   if (top_left_.width() > 0 && top_left_.height() > 0) {
-    top_left_.set_width(top_left_.width() + left_width);
-    top_left_.set_height(top_left_.height() + top_width);
+    top_left_.set_width(top_left_.width() + outsets.left());
+    top_left_.set_height(top_left_.height() + outsets.top());
   }
   if (top_right_.width() > 0 && top_right_.height() > 0) {
-    top_right_.set_width(top_right_.width() + right_width);
-    top_right_.set_height(top_right_.height() + top_width);
+    top_right_.set_width(top_right_.width() + outsets.right());
+    top_right_.set_height(top_right_.height() + outsets.top());
   }
   if (bottom_left_.width() > 0 && bottom_left_.height() > 0) {
-    bottom_left_.set_width(bottom_left_.width() + left_width);
-    bottom_left_.set_height(bottom_left_.height() + bottom_width);
+    bottom_left_.set_width(bottom_left_.width() + outsets.left());
+    bottom_left_.set_height(bottom_left_.height() + outsets.bottom());
   }
   if (bottom_right_.width() > 0 && bottom_right_.height() > 0) {
-    bottom_right_.set_width(bottom_right_.width() + right_width);
-    bottom_right_.set_height(bottom_right_.height() + bottom_width);
+    bottom_right_.set_width(bottom_right_.width() + outsets.right());
+    bottom_right_.set_height(bottom_right_.height() + outsets.bottom());
   }
+}
+
+// From: https://drafts.csswg.org/css-backgrounds-3/#shadow-shape
+// When the border radius is less than the spread distance, the spread distance
+// is first multiplied by the proportion 1 + (r-1)^3, where r is the ratio of
+// the border radius to the spread distance, in calculating the corner radii of
+// the spread shadow shape. For example, if the border radius is 10px and the
+// spread distance is 20px (r = .5), the corner radius of the shadow shape will
+// be 10px + 20px × (1 + (.5 - 1)^3) = 27.5px rather than 30px. This adjustment
+// is applied independently to the radii in each dimension.
+static void ReshapeCorner(gfx::SizeF& corner, float inflation) {
+  if (corner.width() == 0 && corner.height() == 0)
+    return;
+
+  float width_factor = 1;
+  if (corner.width() < inflation)
+    width_factor = 1 + pow(corner.width() / inflation - 1, 3);
+
+  float height_factor = 1;
+  if (corner.height() == corner.width())
+    height_factor = width_factor;
+  else if (corner.height() < inflation)
+    height_factor = 1 + pow(corner.height() / inflation - 1, 3);
+
+  corner.set_width(corner.width() + width_factor * inflation);
+  corner.set_height(corner.height() + height_factor * inflation);
+}
+
+void FloatRoundedRect::Radii::Reshape(float inflation) {
+  ReshapeCorner(top_left_, inflation);
+  ReshapeCorner(top_right_, inflation);
+  ReshapeCorner(bottom_left_, inflation);
+  ReshapeCorner(bottom_right_, inflation);
 }
 
 static inline float CornerRectIntercept(float y,
@@ -209,6 +237,13 @@ bool FloatRoundedRect::XInterceptsAtY(float y,
   return true;
 }
 
+void FloatRoundedRect::InflateAndReshape(float size) {
+  if (size == 0.f)
+    return;
+  rect_.Outset(size);
+  radii_.Reshape(size);
+}
+
 void FloatRoundedRect::InflateWithRadii(int size) {
   gfx::RectF old = rect_;
 
@@ -224,7 +259,7 @@ void FloatRoundedRect::InflateWithRadii(int size) {
   radii_.Scale(factor);
 }
 
-bool FloatRoundedRect::IntersectsQuad(const FloatQuad& quad) const {
+bool FloatRoundedRect::IntersectsQuad(const gfx::QuadF& quad) const {
   if (!quad.IntersectsRect(rect_))
     return false;
 

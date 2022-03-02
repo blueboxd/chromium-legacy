@@ -82,6 +82,7 @@
 <translation id="1605658421715042784">Պատճենել պատկերը</translation>
 <translation id="1608337082864370066">Որոնել պատճենված պատկերը</translation>
 <translation id="1612730193129642006">Ցուցադրել ներդիրի ցանցը</translation>
+<translation id="1620510694547887537">Տեսախցիկ</translation>
 <translation id="1644574205037202324">Պատմություն</translation>
 <translation id="1650222530560417226">Հպեք «Սկսել գրանցումը» կոճակը՝ բոլոր ներդիրների JavaScript վահանակի գրանցումներն ու սխալները հավաքելու և պահելու համար։ Գրանցումները կպահվեն (և կպահվեն միայն հիշողության մեջ), քանի դեռ այս էջը չի փակվել կամ չեք սեղմել «Դադարեցնել գրանցումը» կոճակը։</translation>
 <translation id="1657011748321897393">Չհաջողվեց համօգտագործել, քանի որ դուք միացած չեք ցանցին:</translation>
@@ -141,6 +142,8 @@
 <translation id="2268044343513325586">Թարմացնել</translation>
 <translation id="2271351792809375263">Օգտագործեք Chrome-ում պահված գաղտնաբառերը սարքի այլ հավելվածներում։</translation>
 <translation id="2273327106802955778">Այլ ընտրանքներ</translation>
+<translation id="2286505070150039482">Ընդգծված տեսքտ</translation>
+<translation id="2299218006564889602">Գաղտնաբառերը գաղտնագրվում են ձեր սարքում, այնուհետև պահվում Google Գաղտնաբառերի կառավարիչում։</translation>
 <translation id="2302742851632557585">Փոխել գաղտնաբառը կայքում</translation>
 <translation id="2316709634732130529">Օգտագործել առաջարկված գաղտնաբառը</translation>
 <translation id="2320166752086256636">Թաքցնել ստեղնաշարը</translation>
@@ -245,6 +248,7 @@
 <translation id="3184767182050912705">Ապակողպել՝ օգտագործելով <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /></translation>
 <translation id="3207960819495026254">Էջանշված է</translation>
 <translation id="3224641773458703735">Գաղտնաբառերն արտահանելու համար ձեր սարքում նախ պետք է անցակոդ սահմանեք:</translation>
+<translation id="3227137524299004712">Խոսափող</translation>
 <translation id="3230318355092723906">Երբ համաժամացումն անջատված է, դուք նախկինի պես կարող եք տեսնել ձեր էջանիշները, պատմությունը, գաղտնաբառերն ու մյուս կարգավորումները այս սարքում։ Սակայն ձեր կատարած փոփոխությունները չեն համաժամացվի հաշվի հետ։</translation>
 <translation id="3240426699337459095">Հղումը պատճենվեց</translation>
 <translation id="3244271242291266297">ամիս</translation>
@@ -311,6 +315,7 @@
 <translation id="3803696231112616155">Առաջարկել այս կայքի թագմանությունը</translation>
 <translation id="385051799172605136">Հետ</translation>
 <translation id="3858860766373142691">Անուն</translation>
+<translation id="3861486700625780712">Չհետևել</translation>
 <translation id="3892144330757387737">Պատմությունը կգտնեք այստեղ</translation>
 <translation id="3897092660631435901">Ընտրացանկ</translation>
 <translation id="3913386780052199712">Դուք մուտք եք գործել Chrome-ում</translation>
@@ -331,6 +336,7 @@
 <translation id="4042870976416480368">Գտնել էջում</translation>
 <translation id="4049507953662678203">Համոզվեք, որ կապակցված եք համացանցին և փորձեք նորից:</translation>
 <translation id="408404951701638773">Որոնման տողից այժմ ավելի հեշտ է օգտվել</translation>
+<translation id="4108314971463891922">Հետևել</translation>
 <translation id="411254640334432676">Ներբեռնումը չհաջողվեց:</translation>
 <translation id="4112644173421521737">Որոնել</translation>
 <translation id="4113030288477039509">Կառավարվում է ձեր ադմինիստրատորի կողմից</translation>
@@ -407,6 +413,7 @@
 <translation id="481968316161811770">Cookie ֆայլեր, կայքի տվյալներ</translation>
 <translation id="4824497107140370669">{count,plural, =0{{domain}}=1{{domain} ու ևս 1}one{{domain} ու ևս {count}}other{{domain} ու ևս {count}}}</translation>
 <translation id="4826218269716039351">Կողմնակի քուքիներն արգելափակված են</translation>
+<translation id="4826726074642088322">Կիսվել ընդգծված տեքստով</translation>
 <translation id="48274138579728272">Նշել որպես կարդացված</translation>
 <translation id="4833686396768033263">Վերջին բացված ներդիրները հասանելի չեն</translation>
 <translation id="4833786495304741580">Ավտոմատ ուղարկում է Google-ին օգտագործման վիճակագրությունը և խափանումների մասին հաշվետվությունները:</translation>
@@ -418,12 +425,12 @@
 <translation id="4901778704868714008">Պահել…</translation>
 <translation id="4904877109095351937">Նշել որպես կարդացված</translation>
 <translation id="4908869848243824489">Discover by Google</translation>
-<translation id="4930268273022498155">Առկա տվյալների ջնջում: Տվյալները կարող եք առբերել` անցնելով <ph name="USER_EMAIL1" /> հաշիվ:</translation>
 <translation id="4930714375720679147">Միացնել</translation>
 <translation id="4941089862236492464">Չհաջողվեց կիսվել տարրով։</translation>
 <translation id="4944543191714094452">Գտնել էջում…</translation>
 <translation id="4945756290001680296">Կաղտնաբառերի կարգավորման հասանելիություն</translation>
 <translation id="4979397965658815378">Մուտք գործեք ձեր Google հաշվով՝ ձեր էջանիշները, գաղտնաբառերը, պատմությունը և այլ կարգավորումները ձեր բոլոր սարքերում օգտագործելու համար:</translation>
+<translation id="4986678885919050584">Հեռացնել սարքից</translation>
 <translation id="5005498671520578047">Պատճենել գաղտնաբառը</translation>
 <translation id="5017828934289857214">Հիշեցնել ինձ ավելի ուշ</translation>
 <translation id="5037676449506322593">Select All</translation>
@@ -469,7 +476,6 @@
 <translation id="5489208564673669003">Բոլոր կայքերի քուքիները կարող եք կառավարել <ph name="BEGIN_LINK" />Քուքիների կարգավորումներ<ph name="END_LINK" /> բաժնում։</translation>
 <translation id="5490005495580364134">Արգելափակել բոլոր քուքիները (խորհուրդ չի տրվում)</translation>
 <translation id="5513681519188741830"><ph name="TIME" /> ժ առաջ</translation>
-<translation id="5523579157975978438">Անջատելու համար բացեք <ph name="BEGIN_LINK" />Կարգավորումները<ph name="END_LINK" /> և անցեք «Գաղտնաբառեր»։</translation>
 <translation id="5525269841082836315">Ստեղծել անցաբառ</translation>
 <translation id="5548760955356983418">Handoff-ը թույլ է տալիս ձեզ սկսել որևէ կայքի դիտարկումը այս սարքում, ապա հեշտությամբ շարունակել այն ձեր Mac սարքում: Ներկայումս բաց կայքը կհայտնվի Mac սարքի Միակցիչում:
 
@@ -498,7 +504,9 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="575902488528307720">Որոնել պատկեր</translation>
 <translation id="5781453543752460388">Ավելացնել Լուսանկարներում</translation>
 <translation id="5782227691023083829">Թարգմանվում է...</translation>
+<translation id="5802829331520313983">Կարգավորել…</translation>
 <translation id="5803566855766646066">Հեռացնե՞լ նոր քարտը</translation>
+<translation id="5804241973901381774">Թույլտվություններ</translation>
 <translation id="5812974770859303494">Ավելացնել…</translation>
 <translation id="5816228676161003208">Թույլ է տալիս արագ որոնել ձայնի միջոցով:</translation>
 <translation id="581659025233126501">Միացնել համաժամացումը</translation>
@@ -540,6 +548,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="6066301408025741299">Հպեք՝ չեղարկելու համար:</translation>
 <translation id="60829778314739003">Ընդունել և շարունակել</translation>
 <translation id="6084848228346514841">Ընտրեք ներդիրներ</translation>
+<translation id="6103540626693881831">Գաղտնագրում սարքում</translation>
 <translation id="6108923351542677676">Կարգավորումն ընթացքի մեջ է…</translation>
 <translation id="6119050551270742952">Ընթացիկ կայքէջը ինկոգնիտո ռեժիմում է բացված</translation>
 <translation id="6122191549521593678">Առցանց</translation>
@@ -557,12 +566,12 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="6219688215832490856">Երբեք չթարգմանել</translation>
 <translation id="6223816392543092032">Համաժամացնել էջանիշները, պատմությունը, գաղտնաբառերն ու այլ կարգավորումները ձեր բոլոր սարքերում</translation>
 <translation id="6232329973559504466">Որոնել ինկոգնիտո ռեժիմում</translation>
+<translation id="6232736989810857397">Սա թույլ է տալիս հեշտությամբ ստեղծել օրացույցի միջոցառումներ Google Տեսապակու օգնությամբ։</translation>
 <translation id="6254066287920239840">Հղումները դիտարկիչի փոխարեն բացել հավելվածում:</translation>
 <translation id="6255097610484507482">Փոխել վարկային քարտը</translation>
 <translation id="6284652193729350524">Առաջարկել թարգմանել <ph name="LANGUAGE" /></translation>
 <translation id="6293101329759844770">Անվտանգ դիտարկումը միացնելու համար բացեք <ph name="BEGIN_LINK" />Google-ի ծառայությունները<ph name="END_LINK" /> և սեղմեք «Անվտանգ դիտարկում»։</translation>
 <translation id="6321526113093607004">Ավելացնել «Էջանիշներ» բաժնում</translation>
-<translation id="6324528485781869530">Փոխեք համաժամացման հաշիվը</translation>
 <translation id="6324669097367352121">Մուտքի կարգավորումներ</translation>
 <translation id="6337234675334993532">Գաղտնագրում</translation>
 <translation id="633809752005859102">Առաջացել է լուրջ խնդիր: Մենք կաշխատենք ուղղել այն:</translation>
@@ -601,10 +610,12 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="6497772452874122664">Եթե վստահում եք <ph name="TIME" /> կայքին, կարող եք օգտագործել այլ կայքում պահված գաղտնաբառ։
 
 Փորձեք յուրաքանչյուր կայքի համար օգտագործել եզակի գաղտնաբառ։</translation>
+<translation id="650279896687777322">Իմանալ ավելին…</translation>
 <translation id="651505212789431520">Չեղարկե՞լ համաժամացումը Համաժամացումը կարող եք ցանկացած ժամանակ միացնել կարգավորումներում։</translation>
 <translation id="6524918542306337007">Ինկոգնիտո ռեժիմը հասանելի չէ</translation>
 <translation id="6537746030088321027">example.com</translation>
 <translation id="6561262006871132942">Մեծացնել</translation>
+<translation id="6583087784430677195">Անջատելու համար բացեք <ph name="BEGIN_LINK" />Կարգավորումները<ph name="END_LINK" /> և անցեք «Գաղտնաբառերի ինքնալրացում»։</translation>
 <translation id="6585618849026997638">Էջանշեք կարևոր էջերը, որպեսզի կարողանաք վերադառնալ դրանց</translation>
 <translation id="6603393121510733479">Ձեր կազմակերպությունն անջատել է ինկոգնիտո ռեժիմը։
 <ph name="BEGIN_LINK" />Իմանալ ավելին<ph name="END_LINK" /></translation>
@@ -733,7 +744,6 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="7741325291586284254">Նոր ինկոգնիտո ներդիրի էջ</translation>
 <translation id="7765158879357617694">Տեղափոխել</translation>
 <translation id="7772032839648071052">Հաստատեք անցաբառը</translation>
-<translation id="7778472311864276518">Հեռացնել հաշիվն այս սարքից</translation>
 <translation id="7781011649027948662">Թարգմանե՞լ էջը</translation>
 <translation id="7781069478569868053">Նոր ներդիրի էջ</translation>
 <translation id="7781829728241885113">Երեկ</translation>
@@ -757,6 +767,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="797413074872316787">Բոլոր սարքերում տվյալները համաժամացնելու և անհատականացնելու համար միացրեք համաժամացումը։</translation>
 <translation id="7978018860671536736">3. Հպեք «Գաղտնաբառերի ինքնալրացում»։</translation>
 <translation id="7982789257301363584">Ցանց</translation>
+<translation id="7987685713885608670">Անվտանգության մակարդակը բարձրացնելու համար գաղտնաբառերը գաղտնագրեք ձեր սարքում՝ նախքան Google Գաղտնաբառերի կառավարիչում պահելը։</translation>
 <translation id="7993619969781047893">Որոշ կայքերում գործառույթները կարող են չաշխատել։</translation>
 <translation id="800361585186029508">Մուտքագրված URL-ները բացվում են Google Chrome-ում։</translation>
 <translation id="802154636333426148">Ներբեռնումը ձախողվեց</translation>

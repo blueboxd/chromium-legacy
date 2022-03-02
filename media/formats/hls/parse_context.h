@@ -23,6 +23,7 @@ struct MEDIA_EXPORT SourceString {
   static SourceString Create(base::PassKey<SourceLineIterator>,
                              size_t line,
                              base::StringPiece str);
+  static SourceString CreateForTesting(base::StringPiece str);
   static SourceString CreateForTesting(size_t line,
                                        size_t column,
                                        base::StringPiece str);
@@ -45,8 +46,14 @@ struct MEDIA_EXPORT SourceString {
   // characters.
   base::StringPiece Str() const { return str_; }
 
+  bool Empty() const { return str_.empty(); }
+
   SourceString Substr(size_t pos = 0,
                       size_t count = base::StringPiece::npos) const;
+
+  // Consumes this string up to the given count, which may be longer than this
+  // string.
+  SourceString Consume(size_t count = base::StringPiece::npos);
 
  private:
   SourceString(size_t line, size_t column, base::StringPiece str);

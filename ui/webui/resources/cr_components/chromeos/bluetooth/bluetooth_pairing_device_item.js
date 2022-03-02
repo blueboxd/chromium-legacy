@@ -39,7 +39,7 @@ export class SettingsBluetoothPairingDeviceItemElement extends
   static get properties() {
     return {
       /**
-       * @type {!chromeos.bluetoothConfig.mojom.BluetoothDeviceProperties}
+       * @type {?chromeos.bluetoothConfig.mojom.BluetoothDeviceProperties}
        */
       device: Object,
 
@@ -71,6 +71,16 @@ export class SettingsBluetoothPairingDeviceItemElement extends
         computed: 'computePairingFailed_(deviceItemState)',
       },
     };
+  }
+
+  /** @override */
+  focus() {
+    // Prevent scroll stops iron list from trying to bring this element to view,
+    // if it is the |lastFocused| element and scrolled out of view. This can
+    // happen if this element is tabbed to or selected and then scrolled out of
+    // view.
+    // TODO(b/210743107) Add a test for this.
+    this.$.container.focus({preventScroll: true});
   }
 
   /**
@@ -145,6 +155,10 @@ export class SettingsBluetoothPairingDeviceItemElement extends
    * @private
    */
   getAriaLabel_() {
+    if (!this.device) {
+      return '';
+    }
+
     return this.i18n(
         this.getA11yLabelMessageId_(), this.itemIndex + 1, this.listSize,
         this.getDeviceName_());

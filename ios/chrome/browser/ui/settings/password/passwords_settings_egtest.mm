@@ -46,9 +46,9 @@ using chrome_test_util::NavigationBarCancelButton;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
-using chrome_test_util::TurnSettingsSwitchOn;
 using chrome_test_util::TabGridEditButton;
 using chrome_test_util::TextFieldForCellWithLabelId;
+using chrome_test_util::TurnTableViewSwitchOn;
 
 namespace {
 
@@ -64,11 +64,12 @@ NSString* GetTextFieldForID(int category_id) {
 
 // Returns the GREYElementInteraction* for the item on the password list with
 // the given |matcher|. It scrolls in |direction| if necessary to ensure that
-// the matched item is interactable.
+// the matched item is sufficiently visible, thus interactable.
 GREYElementInteraction* GetInteractionForListItem(id<GREYMatcher> matcher,
                                                   GREYDirection direction) {
   return [[EarlGrey
-      selectElementWithMatcher:grey_allOf(matcher, grey_interactable(), nil)]
+      selectElementWithMatcher:grey_allOf(matcher, grey_sufficientlyVisible(),
+                                          nil)]
          usingSearchAction:grey_scrollInDirection(direction, kScrollAmount)
       onElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)];
 }
@@ -770,7 +771,7 @@ void CopyPasswordDetailWithID(int detail_id) {
   TapEdit();
 
   // Check that the "Save Passwords" switch is disabled.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                           kSavePasswordSwitchTableViewId, YES,
                                           NO)] assertWithMatcher:grey_notNil()];
 
@@ -990,14 +991,14 @@ void CopyPasswordDetailWithID(int detail_id) {
     // Toggle the switch. It is located near the top, so if not interactable,
     // try scrolling up.
     [GetInteractionForListItem(
-        chrome_test_util::SettingsSwitchCell(kSavePasswordSwitchTableViewId,
-                                             expected_state),
-        kGREYDirectionUp) performAction:TurnSettingsSwitchOn(!expected_state)];
+        chrome_test_util::TableViewSwitchCell(kSavePasswordSwitchTableViewId,
+                                              expected_state),
+        kGREYDirectionUp) performAction:TurnTableViewSwitchOn(!expected_state)];
 
     // Check that the switch has been modified.
     [GetInteractionForListItem(
-        chrome_test_util::SettingsSwitchCell(kSavePasswordSwitchTableViewId,
-                                             !expected_state),
+        chrome_test_util::TableViewSwitchCell(kSavePasswordSwitchTableViewId,
+                                              !expected_state),
         kGREYDirectionUp) assertWithMatcher:grey_sufficientlyVisible()];
 
     // Check the stored items. Scroll down if needed.
@@ -1020,10 +1021,10 @@ void CopyPasswordDetailWithID(int detail_id) {
   // preferences.
   constexpr BOOL kExpectedState[] = {YES, NO};
   for (BOOL expected_initial_state : kExpectedState) {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                             kSavePasswordSwitchTableViewId,
                                             expected_initial_state)]
-        performAction:TurnSettingsSwitchOn(!expected_initial_state)];
+        performAction:TurnTableViewSwitchOn(!expected_initial_state)];
     const bool expected_final_state = !expected_initial_state;
     GREYAssertEqual(expected_final_state,
                     [PasswordSettingsAppInterface isCredentialsServiceEnabled],
@@ -1237,9 +1238,12 @@ void CopyPasswordDetailWithID(int detail_id) {
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
 
-  [[EarlGrey
+  [[[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_EXPORT_PASSWORDS)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)]
       performAction:grey_tap()];
 
   [GetInteractionForPasswordsExportConfirmAlert(
@@ -1314,7 +1318,7 @@ void CopyPasswordDetailWithID(int detail_id) {
       performAction:grey_typeText(@"2")];
 
   // Check that the "Save Passwords" switch is hidden.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                           kSavePasswordSwitchTableViewId, YES)]
       assertWithMatcher:grey_nil()];
 
@@ -1691,17 +1695,17 @@ void CopyPasswordDetailWithID(int detail_id) {
     // Toggle the switch. It is located near the top, so if not interactable,
     // try scrolling up.
     [GetInteractionForListItem(
-        chrome_test_util::SettingsSwitchCell(kSavePasswordSwitchTableViewId,
-                                             expectedState),
-        kGREYDirectionUp) performAction:TurnSettingsSwitchOn(!expectedState)];
+        chrome_test_util::TableViewSwitchCell(kSavePasswordSwitchTableViewId,
+                                              expectedState),
+        kGREYDirectionUp) performAction:TurnTableViewSwitchOn(!expectedState)];
 
     // Check that the switch has been modified.
     [GetInteractionForListItem(
-        chrome_test_util::SettingsSwitchCell(kSavePasswordSwitchTableViewId,
-                                             !expectedState),
+        chrome_test_util::TableViewSwitchCell(kSavePasswordSwitchTableViewId,
+                                              !expectedState),
         kGREYDirectionUp) assertWithMatcher:grey_sufficientlyVisible()];
 
-      // Expect the button to be enabled.
+    // Expect the button to be enabled.
     [[EarlGrey selectElementWithMatcher:AddPasswordButton()]
         assertWithMatcher:grey_sufficientlyVisible()];
   }

@@ -212,6 +212,9 @@ ProfileImpl::~ProfileImpl() {
   web_contents_to_delete_.clear();
 
   if (browser_context_) {
+    // Needs to be called before ShutdownStoragePartitions().
+    browser_context_->NotifyWillBeDestroyed();
+
     BrowserContextDependencyManager::GetInstance()
         ->DestroyBrowserContextServices(browser_context_.get());
     browser_context_->ShutdownStoragePartitions();
@@ -297,6 +300,8 @@ void ProfileImpl::ClearBrowsingData(
         remove_mask |= BrowsingDataRemoverDelegate::DATA_TYPE_AD_INTERVENTIONS;
         remove_mask |= content::BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS;
         remove_mask |= content::BrowsingDataRemover::DATA_TYPE_CONVERSIONS;
+        remove_mask |=
+            content::BrowsingDataRemover::DATA_TYPE_AGGREGATION_SERVICE;
         break;
       case BrowsingDataType::CACHE:
         remove_mask |= content::BrowsingDataRemover::DATA_TYPE_CACHE;

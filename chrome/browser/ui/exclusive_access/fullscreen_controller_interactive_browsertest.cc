@@ -40,7 +40,7 @@
 #include "ui/display/test/display_manager_test_api.h"  // nogncheck
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_LINUX) && defined(USE_OZONE)
+#if BUILDFLAG(IS_LINUX) && defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -164,7 +164,7 @@ void FullscreenControllerInteractiveTest::ToggleTabFullscreen_Internal(
 // Tests that while in fullscreen creating a new tab will exit fullscreen.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        TestNewTabExitsFullscreen) {
-#if defined(OS_LINUX) && defined(USE_OZONE)
+#if BUILDFLAG(IS_LINUX) && defined(USE_OZONE)
   // Flaky in Linux interactive_ui_tests_wayland: crbug.com/1200036
   if (ui::OzonePlatform::GetPlatformNameForTest() == "wayland")
     GTEST_SKIP();
@@ -172,13 +172,15 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(
+      AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED));
 
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
   {
     FullscreenNotificationObserver fullscreen_observer(browser());
-    AddTabAtIndex(1, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
+    ASSERT_TRUE(
+        AddTabAtIndex(1, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED));
     fullscreen_observer.Wait();
     ASSERT_FALSE(browser()->window()->IsFullscreen());
   }
@@ -189,7 +191,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        TestTabExitsItselfFromFullscreen) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(
+      AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED));
 
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(false));
@@ -208,7 +211,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(true));
 
   // Enter tab fullscreen.
-  AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(
+      AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED));
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
 
   // Exit browser fullscreen.
@@ -230,7 +234,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(true));
 
   // Enter and then exit tab fullscreen.
-  AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(
+      AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED));
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(false));
 
@@ -313,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // TODO(crbug.com/1230771) Flaky on Linux-ozone and Lacros
-#if (defined(OS_LINUX) && defined(USE_OZONE)) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if (BUILDFLAG(IS_LINUX) && defined(USE_OZONE)) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_TabEntersPresentationModeFromWindowed \
   DISABLED_TabEntersPresentationModeFromWindowed
 #else
@@ -324,7 +329,8 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
                        MAYBE_TabEntersPresentationModeFromWindowed) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(
+      AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED));
 
   {
     EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -484,7 +490,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 }
 
 // Tests mouse lock is exited on page navigation.
-#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && defined(USE_AURA)
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && defined(USE_AURA)
 // https://crbug.com/1191964
 #define MAYBE_TestTabExitsMouseLockOnNavigation \
     DISABLED_TestTabExitsMouseLockOnNavigation
@@ -511,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 }
 
 // Tests mouse lock is exited when navigating back.
-#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && defined(USE_AURA)
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && defined(USE_AURA)
 // https://crbug.com/1192097
 #define MAYBE_TestTabExitsMouseLockOnGoBack \
   DISABLED_TestTabExitsMouseLockOnGoBack
@@ -539,9 +545,9 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_FALSE(IsMouseLocked());
 }
 
-#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
-        defined(USE_AURA) ||                                \
-    defined(OS_WIN) && defined(NDEBUG)
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+        defined(USE_AURA) ||                                  \
+    BUILDFLAG(IS_WIN) && defined(NDEBUG)
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
 // Test is flaky on Windows: https://crbug.com/1124492
 #define MAYBE_TestTabDoesntExitMouseLockOnSubFrameNavigation \
@@ -630,7 +636,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
   EXPECT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/simple.html");
-  AddTabAtIndex(0, url, PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(AddTabAtIndex(0, url, PAGE_TRANSITION_TYPED));
 
   // Validate that going fullscreen for a URL defaults to asking permision.
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreenNoRetries(true));
@@ -676,7 +682,8 @@ class ExperimentalFullscreenControllerInteractiveTest
     // Open a new tab that observes the test screen environment.
     EXPECT_TRUE(embedded_test_server()->Start());
     const GURL url(embedded_test_server()->GetURL("/simple.html"));
-    AddTabAtIndex(1, url, PAGE_TRANSITION_TYPED);
+    EXPECT_TRUE(AddTabAtIndex(1, url, PAGE_TRANSITION_TYPED));
+
     auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
     // Auto-accept Window Placement permission prompts.
@@ -986,7 +993,7 @@ IN_PROC_BROWSER_TEST_F(ExperimentalFullscreenControllerInteractiveTest,
 // TODO(crbug.com/1134731): Disabled on Windows, where RenderWidgetHostViewAura
 // blindly casts display::Screen::GetScreen() to display::win::ScreenWin*.
 // TODO(crbug.com/1183791): Disabled on Mac due to flaky ObserverList crashes.
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #define MAYBE_FullscreenOnScreensChange DISABLED_FullscreenOnScreensChange
 #else
 #define MAYBE_FullscreenOnScreensChange FullscreenOnScreensChange
@@ -1029,7 +1036,7 @@ IN_PROC_BROWSER_TEST_F(ExperimentalFullscreenControllerInteractiveTest,
 
 // TODO(crbug.com/1134731): Disabled on Windows, where RenderWidgetHostViewAura
 // blindly casts display::Screen::GetScreen() to display::win::ScreenWin*.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_FullscreenOnPermissionGrant DISABLED_FullscreenOnPermissionGrant
 #else
 #define MAYBE_FullscreenOnPermissionGrant FullscreenOnPermissionGrant
@@ -1039,7 +1046,7 @@ IN_PROC_BROWSER_TEST_F(ExperimentalFullscreenControllerInteractiveTest,
                        MAYBE_FullscreenOnPermissionGrant) {
   EXPECT_TRUE(embedded_test_server()->Start());
   const GURL url(embedded_test_server()->GetURL("/simple.html"));
-  AddTabAtIndex(1, url, PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(AddTabAtIndex(1, url, PAGE_TRANSITION_TYPED));
   auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
 
   permissions::PermissionRequestManager* permission_request_manager =

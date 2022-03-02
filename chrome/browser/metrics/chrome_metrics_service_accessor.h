@@ -16,6 +16,7 @@
 #include "components/metrics/metrics_service_accessor.h"
 #include "ppapi/buildflags/buildflags.h"
 
+class BreadcrumbsStatus;
 class ChromeMetricsServiceClient;
 class ChromePasswordManagerClient;
 class HttpsFirstModeService;
@@ -33,7 +34,7 @@ class ChromeCameraAppUIDelegate;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace autofill_assistant {
-class ClientAndroid;
+class AssistantFieldTrialUtilChrome;
 }  // namespace autofill_assistant
 
 namespace domain_reliability {
@@ -51,6 +52,7 @@ class FirstRunMasterPrefsVariationsSeedTest;
 }
 
 namespace metrics {
+class ChromeOSPerUserMetricsBrowserTestBase;
 class UkmConsentParamBrowserTest;
 }
 
@@ -112,9 +114,10 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   static void SetMetricsAndCrashReportingForTesting(const bool* value);
 
  private:
-  friend class autofill_assistant::ClientAndroid;
+  friend class autofill_assistant::AssistantFieldTrialUtilChrome;
   friend class ::CrashesDOMHandler;
   friend class ::FlashDOMHandler;
+  friend class BreadcrumbsStatus;
   friend class ChromeBrowserFieldTrials;
   // For ClangPGO.
   friend class ChromeBrowserMainExtraPartsMetrics;
@@ -170,6 +173,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class MetricsReportingStateTest;
   friend class metrics::UkmConsentParamBrowserTest;
   friend class ClonedInstallClientIdResetBrowserTest;
+  friend class metrics::ChromeOSPerUserMetricsBrowserTestBase;
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServicesManagerClientTest,
@@ -179,6 +183,11 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   // that it is active as configuration may prevent it on some devices (i.e.
   // the "MetricsReporting" field trial that controls sampling). To include
   // that, call: metrics_services_manager->IsReportingEnabled().
+  //
+  // For Ash Chrome, if a user is logged in and the device has an owner or is
+  // managed, the current user's consent (if applicable) will be used if metrics
+  // reporting for the device has been enabled.
+  //
   // TODO(gayane): Consolidate metric prefs on all platforms.
   // http://crbug.com/362192,  http://crbug.com/532084
   static bool IsMetricsAndCrashReportingEnabled();

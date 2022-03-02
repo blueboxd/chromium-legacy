@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Laat webkoekies toe</translation>
 <translation id="2228071138934252756">Om <ph name="APP_NAME" /> toegang tot jou kamera te gee, moet jy kamera ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
 <translation id="2241634353105152135">Net een keer</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> Verwyder</translation>
 <translation id="2289270750774289114">Vra wanneer 'n werf Bluetooth-toestelle in die omtrek wil ontdek (aanbeveel)</translation>
 <translation id="2315043854645842844">Bedryfstelsel steun nie die sertifikaat wat die kliënt gekies het nie.</translation>
 <translation id="2359808026110333948">Gaan voort</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Wys inligting</translation>
 <translation id="3123473560110926937">Geblokkeer op sommige werwe</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gestoorde data</translation>
+<translation id="3203366800380907218">Op die web</translation>
 <translation id="321187648315454507">Om <ph name="APP_NAME" /> vir jou kennisgewings te laat stuur, moet jy kennisgewings ook in <ph name="BEGIN_LINK" />Android-instellings<ph name="END_LINK" /> aanskakel.</translation>
 <translation id="3227137524299004712">Mikrofoon</translation>
 <translation id="3277252321222022663">Laat werwe toegang tot sensors toe (aanbeveel)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">Geblokkeer</translation>
 <translation id="5689516760719285838">Ligging</translation>
 <translation id="5690795753582697420">Kamera is afgeskakel in Android-instellings</translation>
-<translation id="5710871682236653961">Vra voordat jy werwe toelaat om inligting te stuur en te ontvang wanneer jy op NFC-toestelle tik (aanbeveel)</translation>
 <translation id="5719847187258001597">Dit sal alle data en webkoekies uitvee wat deur <ph name="ORIGIN" /> of deur sy program op jou tuisskerm geberg is.</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> word geblokkeer</translation>
 <translation id="5804241973901381774">Toestemmings</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">Toegelaat vir huidige soekenjin</translation>
 <translation id="7053983685419859001">Blokkeer</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 gekies}other{# gekies}}</translation>
-<translation id="7070090581017165256">Meer oor hierdie werf</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> gekies. Opsies is naby aan die bokant van die skerm beskikbaar</translation>
 <translation id="7141896414559753902">Verhinder werwe om opspringers en herleidings te wys (aanbeveel)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">'n Werf gebruik tans jou mikrofoon</translation>
 <translation id="7561196759112975576">Altyd</translation>
-<translation id="7572498721684305250">Blokkeer werwe om inligting te stuur en te ontvang wanneer jy op NFC-toestelle tik</translation>
 <translation id="757524316907819857">Blokkeer werwe om beskermde inhoud te speel</translation>
 <translation id="7649070708921625228">Hulp</translation>
 <translation id="7658239707568436148">Kanselleer</translation>

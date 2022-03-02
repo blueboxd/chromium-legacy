@@ -22,7 +22,7 @@ import '../reset_page/reset_profile_banner.js';
 import '../search_page/search_page.js';
 import '../settings_page/settings_section.js';
 import '../settings_page_css.js';
-// <if expr="chromeos or lacros">
+// <if expr="chromeos_ash or chromeos_lacros">
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 // </if>
 
@@ -32,12 +32,14 @@ import '../default_browser_page/default_browser_page.js';
 // </if>
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {beforeNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsIdleLoadElement} from '../controls/settings_idle_load.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {PageVisibility} from '../page_visibility.js';
-// <if expr="chromeos or lacros">
+import {SyncStatus} from '../people_page/sync_browser_proxy.js';
+// <if expr="chromeos_ash or chromeos_lacros">
 import {PrefsMixin, PrefsMixinInterface} from '../prefs/prefs_mixin.js';
 // </if>
 import {routes} from '../route.js';
@@ -45,7 +47,7 @@ import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '..
 import {getSearchManager, SearchResult} from '../search_settings.js';
 import {MainPageMixin, MainPageMixinInterface} from '../settings_page/main_page_mixin.js';
 
-// <if expr="chromeos or lacros">
+// <if expr="chromeos_ash or chromeos_lacros">
 const OS_BANNER_INTERACTION_METRIC_NAME =
     'ChromeOS.Settings.OsBannerInteraction';
 
@@ -66,22 +68,23 @@ const CrosSettingsOsBannerInteraction = {
 // TypeScript.
 type Constructor<T> = new (...args: any[]) => T;
 
-// <if expr="chromeos or lacros">
+// <if expr="chromeos_ash or chromeos_lacros">
 const SettingsBasicPageElementBase =
     PrefsMixin(MainPageMixin(
-        RouteObserverMixin(PolymerElement) as unknown as
+        RouteObserverMixin(WebUIListenerMixin(PolymerElement)) as unknown as
         Constructor<PolymerElement>)) as unknown as {
-      new (): PolymerElement & PrefsMixinInterface &
-      RouteObserverMixinInterface & MainPageMixinInterface
+      new (): PolymerElement & WebUIListenerMixinInterface &
+      PrefsMixinInterface & RouteObserverMixinInterface & MainPageMixinInterface
     };
 // </if>
 // <if expr="not chromeos and not lacros">
-const SettingsBasicPageElementBase = MainPageMixin(
-                                         RouteObserverMixin(PolymerElement) as
-                                         unknown as
-                                         Constructor<PolymerElement>) as {
-  new (): PolymerElement & RouteObserverMixinInterface & MainPageMixinInterface
-};
+const SettingsBasicPageElementBase =
+    MainPageMixin(
+        RouteObserverMixin(WebUIListenerMixin(PolymerElement)) as unknown as
+        Constructor<PolymerElement>) as {
+      new (): PolymerElement & WebUIListenerMixinInterface &
+      RouteObserverMixinInterface & MainPageMixinInterface
+    };
 // </if>
 
 export class SettingsBasicPageElement extends SettingsBasicPageElementBase {
@@ -148,7 +151,26 @@ export class SettingsBasicPageElement extends SettingsBasicPageElementBase {
         },
       },
 
-      // <if expr="chromeos or lacros">
+      /**
+       * True if the basic page should currently display the privacy review
+       * promo.
+       */
+      showPrivacyReviewPromo_: {
+        type: Boolean,
+        computed: 'computeShowPrivacyReviewPromo_(isManaged_, isChildUser_)',
+      },
+
+      isManaged_: {
+        type: Boolean,
+        value: false,
+      },
+
+      isChildUser_: {
+        type: Boolean,
+        value: false,
+      },
+
+      // <if expr="chromeos_ash or chromeos_lacros">
       showOSSettingsBanner_: {
         type: Boolean,
         computed: 'computeShowOSSettingsBanner_(' +
@@ -175,13 +197,16 @@ export class SettingsBasicPageElement extends SettingsBasicPageElementBase {
   private hasExpandedSection_: boolean;
   private showResetProfileBanner_: boolean;
 
-  // <if expr="chromeos or lacros">
+  // <if expr="chromeos_ash or chromeos_lacros">
   private showOSSettingsBanner_: boolean;
   private osBannerShowMetricRecorded_: boolean = false;
   // </if>
 
   private currentRoute_: Route;
   private advancedTogglingInProgress_: boolean;
+
+  private isManaged_: boolean;
+  private isChildUser_: boolean;
 
   ready() {
     super.ready();
@@ -193,6 +218,10 @@ export class SettingsBasicPageElement extends SettingsBasicPageElementBase {
 
   connectedCallback() {
     super.connectedCallback();
+    this.addWebUIListener(
+        'is-managed-changed', this.onIsManagedChanged_.bind(this));
+    this.addWebUIListener(
+        'sync-status-changed', this.onSyncStatusChanged_.bind(this));
 
     this.currentRoute_ = Router.getInstance().getCurrentRoute();
   }
@@ -235,10 +264,29 @@ export class SettingsBasicPageElement extends SettingsBasicPageElementBase {
         .get();
   }
 
-  private showPrivacyReviewPromo_(visibility: boolean|undefined): boolean {
+  private computeShowPrivacyReviewPromo_(): boolean {
     // TODO(crbug/1215630): Only show on the first look at the privacy page.
-    return this.showPage_(visibility) &&
-        loadTimeData.getBoolean('privacyReviewEnabled');
+    return this.pageVisibility.privacy !== false &&
+        loadTimeData.getBoolean('privacyReviewEnabled') && !this.isManaged_ &&
+        !this.isChildUser_;
+  }
+
+  private onIsManagedChanged_(isManaged: boolean) {
+    // If the user became managed, then update the variable to trigger a change
+    // to privacy review promo's visibility. However, if the user was managed
+    // before and is no longer now, then keep the managed state as true, because
+    // the Settings route for privacy review would still be unavailable until
+    // the page is reloaded.
+    this.isManaged_ = this.isManaged_ || isManaged;
+  }
+
+  private onSyncStatusChanged_(syncStatus: SyncStatus) {
+    // If the user signed in to a child user account, then update the variable
+    // to trigger a change to privacy review promo's visibility. However, if the
+    // user was a child user before and is no longer now then keep the childUser
+    // state as true, because the Settings route for privacy review would still
+    // be unavailable until the page is reloaded.
+    this.isChildUser_ = this.isChildUser_ || !!syncStatus.childUser;
   }
 
   /**
@@ -276,7 +324,7 @@ export class SettingsBasicPageElement extends SettingsBasicPageElementBase {
     });
   }
 
-  // <if expr="chromeos or lacros">
+  // <if expr="chromeos_ash or chromeos_lacros">
   private computeShowOSSettingsBanner_(): boolean|undefined {
     // this.prefs is implicitly used by this.getPref() below.
     if (!this.prefs || !this.currentRoute_) {

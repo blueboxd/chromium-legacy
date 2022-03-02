@@ -133,6 +133,7 @@ struct TestContextAndFrame {
       return;
 
     fuchsia::web::CreateContextParams create_params;
+    create_params.set_features(fuchsia::web::ContextFeatureFlags::NETWORK);
     create_params.set_service_directory(std::move(directory));
     if (user_mode_debugging == UserModeDebugging::kEnabled)
       create_params.set_remote_debugging_port(0);
@@ -270,7 +271,7 @@ TEST_F(WebEngineDebugIntegrationTest, DebugAndUserService) {
       port_receiver;
   frame_data.context->GetRemoteDebuggingPort(
       cr_fuchsia::CallbackToFitFunction(port_receiver.GetCallback()));
-  port_receiver.Wait();
+  ASSERT_TRUE(port_receiver.Wait());
 
   ASSERT_TRUE(port_receiver.Get().is_response());
   uint16_t remote_debugging_port = port_receiver.Get().response().port;

@@ -353,8 +353,6 @@ struct BLINK_EXPORT WebNavigationParams {
   bool is_browser_initiated = false;
   // Whether the document should be able to access local file:// resources.
   bool grant_load_local_resources = false;
-  // The previews state which should be used for this navigation.
-  PreviewsState previews_state = PreviewsTypes::kPreviewsUnspecified;
   // The service worker network provider to be used in the new
   // document.
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
@@ -444,6 +442,9 @@ struct BLINK_EXPORT WebNavigationParams {
   // contains URNs mapped to the ad components returned by the winning bid.
   // Null, otherwise.
   absl::optional<WebVector<WebURL>> ad_auction_components;
+
+  // Whether or not this navigation will commit in an anonymous frame.
+  bool anonymous = false;
 };
 
 }  // namespace blink

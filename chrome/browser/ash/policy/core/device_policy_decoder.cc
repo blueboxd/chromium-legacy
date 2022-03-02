@@ -877,6 +877,11 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                     base::Value(container.report_login_logout()), nullptr);
     }
+    if (container.has_report_crd_sessions()) {
+      policies->Set(key::kReportCRDSessions, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    base::Value(container.report_crd_sessions()), nullptr);
+    }
     if (container.has_report_network_telemetry_collection_rate_ms()) {
       DecodeIntegerReportingPolicy(
           policies, key::kReportDeviceNetworkTelemetryCollectionRateMs,
@@ -2070,6 +2075,28 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kDeviceLoginScreenWebUILazyLoading,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                     POLICY_SOURCE_CLOUD, base::Value(container.enabled()),
+                    nullptr);
+    }
+  }
+
+  if (policy.has_keylocker_for_storage_encryption_enabled()) {
+    const em::DeviceKeylockerForStorageEncryptionEnabledProto& container(
+        policy.keylocker_for_storage_encryption_enabled());
+    if (container.has_enabled()) {
+      policies->Set(key::kDeviceKeylockerForStorageEncryptionEnabled,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD, base::Value(container.enabled()),
+                    nullptr);
+    }
+  }
+
+  if (policy.has_device_run_automatic_cleanup_on_login()) {
+    const em::BooleanPolicyProto& container(
+        policy.device_run_automatic_cleanup_on_login());
+    if (container.has_value()) {
+      policies->Set(key::kDeviceRunAutomaticCleanupOnLogin,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD, base::Value(container.value()),
                     nullptr);
     }
   }

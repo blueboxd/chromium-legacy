@@ -112,6 +112,17 @@ class CONTENT_EXPORT WebContentsViewAura
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, StartDragging);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, GetDropCallback_Run);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, GetDropCallback_Cancelled);
+  FRIEND_TEST_ALL_PREFIXES(
+      WebContentsViewAuraTest,
+      RejectDragFromPrivilegedWebContentsToNonPrivilegedWebContents);
+  FRIEND_TEST_ALL_PREFIXES(
+      WebContentsViewAuraTest,
+      AcceptDragFromPrivilegedWebContentsToPrivilegedWebContents);
+  FRIEND_TEST_ALL_PREFIXES(
+      WebContentsViewAuraTest,
+      RejectDragFromNonPrivilegedWebContentsToPrivilegedWebContents);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
+                           StartDragFromPrivilegedWebContents);
 
   class WindowObserver;
 
@@ -231,9 +242,6 @@ class CONTENT_EXPORT WebContentsViewAura
   aura::client::DragUpdateInfo OnDragUpdated(
       const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  ui::mojom::DragOperation OnPerformDrop(
-      const ui::DropTargetEvent& event,
-      std::unique_ptr<ui::OSExchangeData> data) override;
   aura::client::DragDropDelegate::DropCallback GetDropCallback(
       const ui::DropTargetEvent& event) override;
 
@@ -288,7 +296,7 @@ class CONTENT_EXPORT WebContentsViewAura
     drag_dest_delegate_ = delegate;
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Callback for asynchronous retrieval of virtual files.
   void OnGotVirtualFilesAsTempFiles(
       const std::vector<std::pair</*temp path*/ base::FilePath,

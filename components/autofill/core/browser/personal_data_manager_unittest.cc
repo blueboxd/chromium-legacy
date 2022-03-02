@@ -267,8 +267,7 @@ class PersonalDataManagerTestBase {
     WaitForOnPersonalDataChangedRepeatedly();
   }
 
-  bool TurnOnSyncFeature(PersonalDataManager* personal_data)
-      WARN_UNUSED_RESULT {
+  [[nodiscard]] bool TurnOnSyncFeature(PersonalDataManager* personal_data) {
     sync_service_.SetHasSyncConsent(true);
     if (!sync_service_.IsSyncFeatureEnabled())
       return false;
@@ -454,7 +453,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
 // supported.
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if !(defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
     personal_data_->ResetFullServerCard(
         personal_data_->GetCreditCards()[0]->guid());
 #endif
@@ -1302,7 +1301,7 @@ TEST_F(PersonalDataManagerTest, AddCreditCard_Invalid) {
   ASSERT_EQ(card, *personal_data_->GetCreditCards()[0]);
 }
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, AddAndGetCreditCardArtImage) {
   gfx::Image expected_image = gfx::test::CreateImage(32, 20);
   std::unique_ptr<CreditCardArtImage> credit_card_art_image =
@@ -1314,10 +1313,21 @@ TEST_F(PersonalDataManagerTest, AddAndGetCreditCardArtImage) {
 
   personal_data_->OnCardArtImagesFetched(std::move(images));
 
-  gfx::Image* actual_image = personal_data_->GetCreditCardArtImageForUrl(
-      GURL("https://www.example.com"));
+  raw_ptr<gfx::Image> actual_image =
+      personal_data_->GetCreditCardArtImageForUrl(
+          GURL("https://www.example.com"));
   ASSERT_TRUE(actual_image);
   EXPECT_TRUE(gfx::test::AreImagesEqual(expected_image, *actual_image));
+
+  // TODO(crbug.com/1284788): Look into integrating with PersonalDataManagerMock
+  // and checking that PersonalDataManager::FetchImagesForUrls() does not get
+  // triggered when PersonalDataManager::GetCachedCardArtImageForUrl() is
+  // called.
+  raw_ptr<gfx::Image> cached_image =
+      personal_data_->GetCachedCardArtImageForUrl(
+          GURL("https://www.example.com"));
+  ASSERT_TRUE(cached_image);
+  EXPECT_TRUE(gfx::test::AreImagesEqual(expected_image, *cached_image));
 }
 
 TEST_F(PersonalDataManagerMockTest, ProcessVirtualCardMetadataChanges) {
@@ -2274,7 +2284,7 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(u"12345678910", suggestions[0].value);
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest,
        GetProfileSuggestions_PhoneSubstring_ImprovedDisambiguation) {
   base::test::ScopedFeatureList scoped_features;
@@ -2295,7 +2305,7 @@ TEST_F(PersonalDataManagerTest,
   ASSERT_FALSE(suggestions.empty());
   EXPECT_EQ(u"(234) 567-8910", suggestions[0].value);
 }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_HideSubsets) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -2814,7 +2824,7 @@ TEST_F(PersonalDataManagerTest,
   EXPECT_EQ(0U, personal_data_->GetProfiles().size());
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest,
        GetProfileSuggestions_LogProfileSuggestionsMadeWithFormatter) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -2837,9 +2847,9 @@ TEST_F(PersonalDataManagerTest,
   histogram_tester.ExpectUniqueSample(
       "Autofill.ProfileSuggestionsMadeWithFormatter", true, 1);
 }
-#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ForContactForm) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
@@ -2862,9 +2872,9 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ForContactForm) {
               ConstructLabelLine({u"(978) 674-4120", u"hoa.pham@comcast.net"})),
           testing::Field(&Suggestion::icon, ""))));
 }
-#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressForm) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
@@ -2886,9 +2896,9 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressForm) {
                                        u"401 Merrimack St, Lowell, MA 01852"),
                         testing::Field(&Suggestion::icon, ""))));
 }
-#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressPhoneForm) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
@@ -2911,9 +2921,9 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressPhoneForm) {
               ConstructLabelLine({u"(978) 674-4120", u"401 Merrimack St"})),
           testing::Field(&Suggestion::icon, ""))));
 }
-#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressEmailForm) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
@@ -2935,9 +2945,9 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressEmailForm) {
                                                      u"hoa.pham@comcast.net"})),
                   testing::Field(&Suggestion::icon, ""))));
 }
-#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_FormWithOneProfile) {
   AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
@@ -2959,9 +2969,9 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_FormWithOneProfile) {
                                ConstructLabelLine({u"401 Merrimack St"})),
                 testing::Field(&Suggestion::icon, ""))));
 }
-#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest,
        GetProfileSuggestions_AddressContactFormWithProfiles) {
   AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
@@ -3010,9 +3020,9 @@ TEST_F(PersonalDataManagerTest,
                                         u"hp@aol.com"})),
                 testing::Field(&Suggestion::icon, ""))));
 }
-#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowOne) {
   std::map<std::string, std::string> parameters;
   parameters[features::kAutofillUseMobileLabelDisambiguationParameterName] =
@@ -3066,9 +3076,9 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowOne) {
                   AllOf(testing::Field(&Suggestion::label, u"11 Elkins St"),
                         testing::Field(&Suggestion::icon, ""))));
 }
-#endif  // if defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowAll) {
   std::map<std::string, std::string> parameters;
   parameters[features::kAutofillUseMobileLabelDisambiguationParameterName] =
@@ -3131,7 +3141,7 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowAll) {
                                                     u"(617) 268-6862"})),
                                 testing::Field(&Suggestion::icon, ""))));
 }
-#endif  // if defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 TEST_F(PersonalDataManagerTest, IsKnownCard_MatchesMaskedServerCard) {
   // Add a masked server card.
@@ -6244,7 +6254,7 @@ TEST_F(PersonalDataManagerTest, CreateDataForTest) {
 // cards.
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if !(defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 // Test that calling OnSyncServiceInitialized with a null sync service remasks
 // full server cards.
 TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NoSyncService) {
@@ -6293,9 +6303,9 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NotActiveSyncService) {
   // OnSyncServiceInitialized.
   personal_data_->OnSyncShutdown(&sync_service);
 }
-#endif  // !(defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#endif  // !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(PersonalDataManagerTest, ExcludeServerSideCards) {
   SetUpThreeCardTypes();
 
@@ -6309,11 +6319,11 @@ TEST_F(PersonalDataManagerTest, ExcludeServerSideCards) {
   EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
   EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 // Sync Transport mode is only for Win, Mac, and Linux.
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
 TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode) {
   // Set up PersonalDataManager in transport mode.
   ResetPersonalDataManager(USER_MODE_NORMAL,
@@ -6375,8 +6385,8 @@ TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode_NeedOptIn) {
   EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
   EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
 }
-#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
-        // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
+        // BUILDFLAG(IS_CHROMEOS)
 
 // Tests that all the non settings origins of autofill profiles are cleared but
 // that the settings origins are untouched.
@@ -7285,7 +7295,7 @@ TEST_F(PersonalDataManagerTest, ClearUrlsFromBrowsingHistoryInTimeRange) {
 
 // On mobile, no dedicated opt-in is required for WalletSyncTransport - the
 // user is always considered opted-in and thus this test doesn't make sense.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerMigrationTest,
        MigrateUserOptedInWalletSyncTransportIfNeeded) {
   ASSERT_EQ(
@@ -7304,9 +7314,9 @@ TEST_F(PersonalDataManagerMigrationTest,
   EXPECT_TRUE(::autofill::prefs::IsUserOptedInWalletSyncTransport(
       prefs_.get(), sync_service_.GetAccountInfo().account_id));
 }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
   // The method should return false if one of these is not respected:
   //   * The sync_service is not null
@@ -7380,7 +7390,7 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
   personal_data_->OnSyncServiceInitialized(nullptr);
   EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
 }
-#else   // !defined(OS_ANDROID) && !defined(OS_IOS) &&
+#else   // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS) &&
         // !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
   // The method should return false if one of these is not respected:
@@ -7455,7 +7465,7 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
   personal_data_->OnSyncServiceInitialized(nullptr);
   EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
 }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS) &&
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS) &&
         // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST_F(PersonalDataManagerTest, GetSyncSigninState) {
@@ -7545,7 +7555,7 @@ TEST_F(PersonalDataManagerTest, GetSyncSigninState) {
 
 // On mobile, no dedicated opt-in is required for WalletSyncTransport - the
 // user is always considered opted-in and thus this test doesn't make sense.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
   ///////////////////////////////////////////////////////////
   // kSignedInAndWalletSyncTransportEnabled
@@ -7642,7 +7652,7 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
         prefs_.get(), active_info.account_id));
   }
 }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 namespace {
 

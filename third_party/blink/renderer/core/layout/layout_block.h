@@ -221,6 +221,13 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   // itself for the legend is still a child of this object.
   bool IsAnonymousNGFieldsetContentWrapper() const;
 
+  // Return true if this block establishes a fragmentation context root (e.g. a
+  // multicol container).
+  virtual bool IsFragmentationContextRoot() const {
+    NOT_DESTROYED();
+    return false;
+  }
+
   void SetHasMarkupTruncation(bool b) {
     NOT_DESTROYED();
     has_markup_truncation_ = b;
@@ -481,10 +488,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   absl::optional<LayoutUnit> InlineBlockBaselineOverride(
       LineDirectionMode) const;
 
-  bool HitTestOverflowControl(
-      HitTestResult&,
-      const HitTestLocation&,
-      const PhysicalOffset& adjusted_location) const override;
   bool HitTestChildren(HitTestResult&,
                        const HitTestLocation&,
                        const PhysicalOffset& accumulated_offset,
@@ -569,10 +572,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   // Returns true if the positioned movement-only layout succeeded.
   bool TryLayoutDoingPositionedMovementOnly();
-
-  bool IsPointInOverflowControl(HitTestResult&,
-                                const PhysicalOffset&,
-                                const PhysicalOffset& accumulated_offset) const;
 
   void ComputeBlockPreferredLogicalWidths(LayoutUnit& min_logical_width,
                                           LayoutUnit& max_logical_width) const;

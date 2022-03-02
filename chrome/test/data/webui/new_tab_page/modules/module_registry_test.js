@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://test/mojo_webui_test_support.js';
+
 import {ModuleDescriptor, ModuleRegistry, NewTabPageProxy, WindowProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {PageCallbackRouter, PageHandlerRemote, PageRemote} from 'chrome://new-tab-page/new_tab_page.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 
@@ -19,7 +22,7 @@ suite('NewTabPageModulesModuleRegistryTest', () => {
   /** @type {!TestBrowserProxy} */
   let handler;
 
-  /** @type {!newTabPage.mojom.PageRemote} */
+  /** @type {!PageRemote} */
   let callbackRouterRemote;
 
   /** @type {!MetricsTracker} */
@@ -30,9 +33,8 @@ suite('NewTabPageModulesModuleRegistryTest', () => {
     metrics = fakeMetricsPrivate();
     windowProxy = installMock(WindowProxy);
     handler = installMock(
-        newTabPage.mojom.PageHandlerRemote,
-        mock => NewTabPageProxy.setInstance(
-            mock, new newTabPage.mojom.PageCallbackRouter()));
+        PageHandlerRemote,
+        mock => NewTabPageProxy.setInstance(mock, new PageCallbackRouter()));
     callbackRouterRemote = NewTabPageProxy.getInstance()
                                .callbackRouter.$.bindNewPipeAndPassRemote();
   });
@@ -50,9 +52,7 @@ suite('NewTabPageModulesModuleRegistryTest', () => {
     ];
     windowProxy.setResultFor('now', 5.0);
     handler.setResultFor('getModulesOrder', Promise.resolve({
-      // Returning order different from |descriptors| to test order is ignored
-      // by default.
-      moduleIds: ['bar', 'baz', 'foo', 'buz'],
+      moduleIds: [],
     }));
 
     // Act.
@@ -91,12 +91,6 @@ suite('NewTabPageModulesModuleRegistryTest', () => {
   });
 
   suite('reorder', () => {
-    suiteSetup(() => {
-      loadTimeData.overrideValues({
-        modulesDragAndDropEnabled: true,
-      });
-    });
-
     test(
         'instantiates reordered modules without disabled modules', async () => {
           // Arrange.
@@ -175,16 +169,16 @@ suite('NewTabPageModulesModuleRegistryTest', () => {
 
       // Assert.
       assertEquals(5, modules.length);
-      assertEquals('foo', modules[0].descriptor.id);
-      assertDeepEquals(fooModule, modules[0].element);
-      assertEquals('baz', modules[1].descriptor.id);
-      assertDeepEquals(bazModule, modules[1].element);
-      assertEquals('buz', modules[2].descriptor.id);
-      assertDeepEquals(buzModule, modules[2].element);
-      assertEquals('biz', modules[3].descriptor.id);
-      assertDeepEquals(bizModule, modules[3].element);
-      assertEquals('bar', modules[4].descriptor.id);
-      assertDeepEquals(barModule, modules[4].element);
+      assertEquals('biz', modules[0].descriptor.id);
+      assertDeepEquals(bizModule, modules[0].element);
+      assertEquals('bar', modules[1].descriptor.id);
+      assertDeepEquals(barModule, modules[1].element);
+      assertEquals('foo', modules[2].descriptor.id);
+      assertDeepEquals(fooModule, modules[2].element);
+      assertEquals('baz', modules[3].descriptor.id);
+      assertDeepEquals(bazModule, modules[3].element);
+      assertEquals('buz', modules[4].descriptor.id);
+      assertDeepEquals(buzModule, modules[4].element);
     });
   });
 });

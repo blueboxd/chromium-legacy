@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include <sstream>
+#include <tuple>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/ignore_result.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -2212,7 +2212,7 @@ class InjectIsolationRequestingNavigation
 };
 
 // TODO(crbug.com/1110767): flaky on Android builders since 2020-07-28.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_FrameTreeTestBeforeDidCommit DISABLED_FrameTreeTestBeforeDidCommit
 #else
 #define MAYBE_FrameTreeTestBeforeDidCommit FrameTreeTestBeforeDidCommit
@@ -3437,7 +3437,7 @@ class StoragePartitonInterceptor
 
     // Bind the real DomStorage implementation.
     mojo::PendingRemote<blink::mojom::DomStorageClient> unused_client;
-    ignore_result(unused_client.InitWithNewPipeAndPassReceiver());
+    std::ignore = unused_client.InitWithNewPipeAndPassReceiver();
     mojo::ReceiverId receiver_id = storage_partition->BindDomStorage(
         rph->GetID(), std::move(receiver), std::move(unused_client));
 
@@ -3559,11 +3559,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, SessionStorage_WrongOrigin) {
 
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       web_contents()->GetMainFrame()->GetProcess());
-  // Use ignore_result here, since on Android the renderer process is
+  // Use std::ignore here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
   // false on all other platforms.
-  ignore_result(
-      ExecJs(web_contents()->GetMainFrame(), "sessionStorage.length;"));
+  std::ignore =
+      ExecJs(web_contents()->GetMainFrame(), "sessionStorage.length;");
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
@@ -3634,7 +3634,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   EXPECT_EQ(1, EvalJs(web_contents()->GetMainFrame(), "sessionStorage.length"));
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       ChildFrameAt(shell(), 0)->GetProcess());
-  ignore_result(ExecJs(ChildFrameAt(shell(), 0), "sessionStorage.length"));
+  std::ignore = ExecJs(ChildFrameAt(shell(), 0), "sessionStorage.length");
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
   // The subframe has crashed, but the main frame should still be alive and
   // working.
@@ -3706,7 +3706,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, LocalStorage_WrongLocalFrameToken) {
   EXPECT_EQ(1, EvalJs(web_contents()->GetMainFrame(), "localStorage.length"));
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       ChildFrameAt(shell(), 0)->GetProcess());
-  ignore_result(ExecJs(ChildFrameAt(shell(), 0), "localStorage.length"));
+  std::ignore = ExecJs(ChildFrameAt(shell(), 0), "localStorage.length");
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
   // The subframe has crashed, but the main frame should still be alive and
   // working.
@@ -3733,15 +3733,15 @@ IN_PROC_BROWSER_TEST_F(
 
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
-  // Use ignore_result here, since on Android the renderer process is
+  // Use std::ignore here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
   // false on all other platforms.
-  ignore_result(
-      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;"));
+  std::ignore =
+      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;");
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_LocalStorageOriginEnforcement_NonIsolatedAccessingIsolated \
   LocalStorageOriginEnforcement_NonIsolatedAccessingIsolated
 #else
@@ -3774,11 +3774,11 @@ IN_PROC_BROWSER_TEST_F(
 
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
-  // Use ignore_result here, since on Android the renderer process is
+  // Use std::ignore here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
   // false on all other platforms.
-  ignore_result(
-      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;"));
+  std::ignore =
+      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;");
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
@@ -3801,11 +3801,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
 
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());
-  // Use ignore_result here, since on Android the renderer process is
+  // Use std::ignore here, since on Android the renderer process is
   // terminated, but ExecuteScript still returns true. It properly returns
   // false on all other platforms.
-  ignore_result(
-      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;"));
+  std::ignore =
+      ExecJs(shell()->web_contents()->GetMainFrame(), "localStorage.length;");
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
@@ -4185,7 +4185,7 @@ class IsolatedOriginPolicyOverrideTest : public IsolatedOriginFieldTrialTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     command_line->AppendSwitch(switches::kDisableSiteIsolationForPolicy);
 #endif
   }
@@ -4213,7 +4213,7 @@ class IsolatedOriginNoFlagOverrideTest : public IsolatedOriginTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     IsolatedOriginTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableSiteIsolation);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     command_line->AppendSwitch(switches::kDisableSiteIsolationForPolicy);
 #endif
   }
@@ -4747,7 +4747,7 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
   // TODO(alexmos): We use EXPECT_FALSE() on platforms that support citadel
   // enforcements. Currently this is only on Android, but will be extended to
   // desktop, at which time the EXPECT_TRUE() case below can be removed.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(policy->CanAccessDataForOrigin(old_process_id,
                                               url::Origin::Create(bar_url)));
 #else
@@ -4782,7 +4782,7 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
   // Disable the BackForwardCache to ensure the old process is going to be
   // released.
   DisableBackForwardCacheForTesting(web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   GURL isolated_bar_url(
       embedded_test_server()->GetURL("isolated.bar.com", "/title1.html"));

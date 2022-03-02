@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/console_message.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_worker_context.h"
@@ -27,6 +28,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/service_worker_task_queue_factory.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_constants.h"
@@ -220,9 +222,21 @@ void ServiceWorkerTaskQueue::DidInitializeServiceWorkerContext(
     int64_t service_worker_version_id,
     int thread_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  util::InitializeFileSchemeAccessForExtension(render_process_id, extension_id,
+                                               browser_context_);
   ProcessManager::Get(browser_context_)
       ->RegisterServiceWorker({extension_id, render_process_id,
                                service_worker_version_id, thread_id});
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
+  DCHECK(registry);
+  const Extension* extension =
+      registry->enabled_extensions().GetByID(extension_id);
+  DCHECK(extension);
+
+  RendererStartupHelperFactory::GetForBrowserContext(browser_context_)
+      ->ActivateExtensionInProcess(
+          *extension, content::RenderProcessHost::FromID(render_process_id));
 }
 
 void ServiceWorkerTaskQueue::DidStartServiceWorkerContext(
@@ -503,7 +517,6 @@ void ServiceWorkerTaskQueue::DidUnregisterServiceWorker(
 
 base::Version ServiceWorkerTaskQueue::RetrieveRegisteredServiceWorkerVersion(
     const ExtensionId& extension_id) {
-  std::string version_string;
   if (browser_context_->IsOffTheRecord()) {
     auto it = off_the_record_registrations_.find(extension_id);
     return it != off_the_record_registrations_.end() ? it->second
@@ -513,11 +526,15 @@ base::Version ServiceWorkerTaskQueue::RetrieveRegisteredServiceWorkerVersion(
   ExtensionPrefs::Get(browser_context_)
       ->ReadPrefAsDictionary(extension_id, kPrefServiceWorkerRegistrationInfo,
                              &info);
-  if (info != nullptr) {
-    info->GetString(kServiceWorkerVersion, &version_string);
+  if (!info) {
+    return base::Version();
   }
 
-  return base::Version(version_string);
+  if (const std::string* version_string =
+          info->FindStringKey(kServiceWorkerVersion)) {
+    return base::Version(*version_string);
+  }
+  return base::Version();
 }
 
 void ServiceWorkerTaskQueue::SetRegisteredServiceWorkerInfo(

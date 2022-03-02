@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/ignore_result.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -248,10 +247,10 @@ class ContextMenuObserver {
   base::RunLoop run_loop_;
 };
 
-#if defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // Disabled because it fails for mac specific context menu:
-// https://crbug.com/1275253
-// TODO(1276463): Flakily crashes under lacros.
+// TODO(crbug.com/1275253): Flakily crashes under Windows and Mac.
+// TODO(crbug.com/1276463): Flakily crashes under lacros.
 #define MAYBE_LinkGenerationTest DISABLED_LinkGenerationTest
 #else
 #define MAYBE_LinkGenerationTest LinkGenerationTest

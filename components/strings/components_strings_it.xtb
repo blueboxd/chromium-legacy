@@ -111,7 +111,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="1307966114820526988">Funzionalità obsolete</translation>
 <translation id="1308113895091915999">Offerta disponibile</translation>
 <translation id="1312803275555673949">Quali prove ci sono a supporto?</translation>
-<translation id="131405271941274527"><ph name="URL" /> vuole inviare e ricevere informazioni su un dispositivo NFC quando tocchi il tuo telefono</translation>
+<translation id="1314311879718644478">Visualizza contenuti di realtà aumentata</translation>
 <translation id="1314509827145471431">Rilegatura a destra</translation>
 <translation id="1318023360584041678">Salvato nel gruppo di schede</translation>
 <translation id="1319245136674974084">Non chiedere più per questa app</translation>
@@ -208,6 +208,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="1559572115229829303">&lt;p&gt;Impossibile stabilire una connessione privata con il sito <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perché data e ora del dispositivo (<ph name="DATE_AND_TIME" />) non sono corrette.&lt;/p&gt;
 
       &lt;p&gt;Regola data e ora nella sezione &lt;strong&gt;Generali&lt;/strong&gt; dell'app &lt;strong&gt;Impostazioni&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="156703335097561114">Le informazioni di rete, come indirizzi, configurazione di interfaccia e qualità della connessione</translation>
 <translation id="1567040042588613346">Questo criterio funziona come previsto, ma altrove è impostato lo stesso valore, che viene sostituito da questo criterio.</translation>
 <translation id="1569487616857761740">Inserisci data di scadenza</translation>
 <translation id="1581080074034554886">CVC</translation>
@@ -215,6 +216,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="1583429793053364125">Si è verificato un problema durante la visualizzazione della pagina web.</translation>
 <translation id="1586541204584340881">Le estensioni che hai installato</translation>
 <translation id="1588438908519853928">Normale</translation>
+<translation id="1589050138437146318">Vuoi installare ARCore?</translation>
 <translation id="1592005682883173041">Accesso ai dati locali</translation>
 <translation id="1594030484168838125">Scegli</translation>
 <translation id="160851722280695521">Gioca a Dino in Chrome</translation>
@@ -478,6 +480,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="2465655957518002998">Scegli il metodo di consegna</translation>
 <translation id="2465688316154986572">Pinzatura</translation>
 <translation id="2465914000209955735">Gestisci i file che hai scaricato in Chrome</translation>
+<translation id="2466004615675155314">Mostra informazioni dal Web</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica di rete<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">Ordine da 1 a N</translation>
 <translation id="2470767536994572628">Quando modifichi le annotazioni, questo documento torna alla visualizzazione a pagina singola e alla sua rotazione originale</translation>
@@ -524,6 +527,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="2609632851001447353">Varianti</translation>
 <translation id="2610561535971892504">Fai clic per copiare</translation>
 <translation id="2618023639789766142">C10 (Envelope)</translation>
+<translation id="2623663032199728144">Può chiedere di usare informazioni sui tuoi schermi</translation>
 <translation id="2625385379895617796">L'orologio è avanti</translation>
 <translation id="262745152991669301">Può chiedere di connettersi ai dispositivi USB</translation>
 <translation id="2629325967560697240">Per il massimo livello di sicurezza di Chrome, <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />attiva la protezione avanzata<ph name="END_ENHANCED_PROTECTION_LINK" /></translation>
@@ -643,6 +647,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="3037605927509011580">Uffa!</translation>
 <translation id="3041612393474885105">Informazioni certificato</translation>
 <translation id="3044034790304486808">Riprendi la ricerca</translation>
+<translation id="305162504811187366">Cronologia di Chrome Remote Desktop, inclusi timestamp, host e ID sessione client</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">Servizio di applicazione patch</translation>
 <translation id="306573536155379004">Gioco iniziato.</translation>
@@ -680,6 +685,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="3197136577151645743">Può chiedere di sapere quando stai utilizzando attivamente questo dispositivo</translation>
 <translation id="3202497928925179914"><ph name="MANAGE_SYNC_FOCUSED_FRIENDLY_MATCH_TEXT" />, premi Tab e poi Invio per gestire le informazioni da sincronizzare nelle impostazioni di Chrome</translation>
 <translation id="320323717674993345">Annulla pagamento</translation>
+<translation id="3203366800380907218">Dal Web</translation>
 <translation id="3207960819495026254">Aggiunto ai preferiti</translation>
 <translation id="3209034400446768650">La pagina potrebbe addebitare denaro</translation>
 <translation id="3212581601480735796">La tua attività su <ph name="HOSTNAME" /> è monitorata</translation>
@@ -696,6 +702,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="3234666976984236645">Rileva sempre contenuti importanti di questo sito</translation>
 <translation id="3240683217920639535"><ph name="MANAGE_CHROME_THEMES_FOCUSED_FRIENDLY_MATCH_TEXT" />, premi Tab poi Invio per personalizzare l'aspetto del browser</translation>
 <translation id="3240791268468473923">Le credenziali per il pagamento sicuro non corrispondono: riquadro inferiore aperto</translation>
+<translation id="324180406144491771">I link "<ph name="HOST_NAME" />" sono bloccati</translation>
 <translation id="3249845759089040423">Alla moda</translation>
 <translation id="3252266817569339921">Francese</translation>
 <translation id="3257954757204451555">Chi c'è dietro a questa informazione?</translation>
@@ -1170,6 +1177,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4708268264240856090">La connessione è stata interrotta</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Eseguire lo strumento Diagnostica di rete Windows<ph name="END_LINK" /></translation>
+<translation id="4722735765955348426">Password di <ph name="USERNAME" /></translation>
 <translation id="4724144314178270921">Può chiedere di vedere testo e immagini negli appunti</translation>
 <translation id="4726672564094551039">Ricarica criteri</translation>
 <translation id="4728558894243024398">Piattaforma</translation>
@@ -1233,7 +1241,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4877083676943085827">{COUNT,plural, =0{Nessuna}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Ricerca di <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automatica (impostazione predefinita)</translation>
-<translation id="4879725228911483934">Aprire finestre e posizionarle sugli schermi</translation>
 <translation id="4880827082731008257">Cerca nella cronologia</translation>
 <translation id="4881695831933465202">Apri</translation>
 <translation id="4885256590493466218">Paga con <ph name="CARD_DETAIL" /> al momento del pagamento</translation>
@@ -1259,6 +1266,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4968522289500246572">Questa app è stata progettata per dispositivi mobili e il relativo ridimensionamento potrebbe non avvenire correttamente. L'app potrebbe riavviarsi o presentare problemi.</translation>
 <translation id="4969341057194253438">Elimina la registrazione</translation>
 <translation id="4973922308112707173">Perforatura doppia in alto</translation>
+<translation id="4976702386844183910">Ultima visita: <ph name="DATE" /></translation>
 <translation id="4984088539114770594">Usare il microfono?</translation>
 <translation id="4984339528288761049">Prc5 (Envelope)</translation>
 <translation id="4989163558385430922">Mostra tutto</translation>
@@ -1344,6 +1352,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5215116848420601511">Metodi di pagamento e indirizzi che utilizzano Google Pay</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="521659676233207110">Vassoio 13</translation>
+<translation id="5216942107514965959">Ultima visita: oggi</translation>
 <translation id="5222812217790122047">Email obbligatoria</translation>
 <translation id="5230733896359313003">Indirizzo di spedizione</translation>
 <translation id="5230815978613972521">B8</translation>
@@ -1364,7 +1373,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5283044957620376778">B1</translation>
 <translation id="5284295735376057059">Proprietà documento</translation>
 <translation id="528468243742722775">Fine</translation>
-<translation id="5284909709419567258">Indirizzi di rete</translation>
 <translation id="5285570108065881030">Mostra tutte le password salvate</translation>
 <translation id="5287240709317226393">Mostra cookie</translation>
 <translation id="5287456746628258573">Le tue informazioni (ad esempio password o numeri di carte di credito) potrebbero essere a rischio, poiché questo sito utilizza una configurazione di sicurezza obsoleta.</translation>
@@ -1530,6 +1538,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5869522115854928033">Password salvate</translation>
 <translation id="5873013647450402046">La tua banca vuole confermare la tua identità.</translation>
 <translation id="5887400589839399685">Carta salvata</translation>
+<translation id="5887687176710214216">Ultima visita: ieri</translation>
 <translation id="5895138241574237353">Riavvia</translation>
 <translation id="5895187275912066135">Emesso in data</translation>
 <translation id="5901630391730855834">Giallo</translation>
@@ -1618,7 +1627,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6169916984152623906">Ora puoi navigare in privato. Le altre persone che usano questo dispositivo non vedranno le tue attività, ma i download e i preferiti verranno salvati.</translation>
 <translation id="6177128806592000436">La tua connessione a questo sito non è sicura</translation>
 <translation id="6180316780098470077">Intervallo tra tentativi</translation>
-<translation id="619448280891863779">Può chiedere di aprire e posizionare le finestre sugli schermi</translation>
 <translation id="6196640612572343990">Blocca cookie di terze parti</translation>
 <translation id="6203231073485539293">Controlla la connessione a Internet</translation>
 <translation id="6218753634732582820">Rimuovere l'indirizzo da Chromium?</translation>
@@ -1722,6 +1730,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6529602333819889595">&amp;Ripeti eliminazione</translation>
 <translation id="6545864417968258051">Scansione Bluetooth</translation>
 <translation id="6547208576736763147">Perforatura doppia a sinistra</translation>
+<translation id="6554732001434021288">Ultima visita: <ph name="NUM_DAYS" /> giorni fa</translation>
 <translation id="6556866813142980365">Ripeti</translation>
 <translation id="6569060085658103619">È visualizzata la pagina di un'estensione</translation>
 <translation id="6573200754375280815">Perforatura doppia a destra</translation>
@@ -1866,7 +1875,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="706295145388601875">Aggiungi e gestisci indirizzi nelle impostazioni di Chrome</translation>
 <translation id="7064851114919012435">Informazioni di contatto</translation>
 <translation id="7068733155164172741">Inserisci il codice di <ph name="OTP_LENGTH" /> cifre</translation>
-<translation id="7070090581017165256">Informazioni su questo sito</translation>
 <translation id="70705239631109039">La connessione non è completamente sicura</translation>
 <translation id="7075452647191940183">La richiesta è troppo grande</translation>
 <translation id="7079718277001814089">Questo sito contiene malware</translation>
@@ -2114,7 +2122,6 @@ Ulteriori dettagli:
 <translation id="7813600968533626083">Rimuovere il suggerimento per i moduli da Chrome?</translation>
 <translation id="781440967107097262">Condividere gli appunti?</translation>
 <translation id="7815407501681723534"><ph name="SEARCH_RESULTS" /> per "<ph name="SEARCH_STRING" />": <ph name="NUMBER_OF_RESULTS" /></translation>
-<translation id="782125616001965242">Mostra informazioni su questo sito</translation>
 <translation id="782886543891417279">La rete Wi-Fi in uso (<ph name="WIFI_NAME" />) potrebbe richiedere la visita della relativa pagina di accesso.</translation>
 <translation id="7836231406687464395">Postfix (Envelope)</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{Nessuna}=1{1 app (<ph name="EXAMPLE_APP_1" />)}=2{2 app (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# app (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# app (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
@@ -2158,7 +2165,6 @@ Ulteriori dettagli:
 <translation id="7977894662897852582">Edp</translation>
 <translation id="798134797138789862">Può chiedere di usare dati e dispositivi per realtà virtuale</translation>
 <translation id="7984945080620862648">Al momento non puoi visitare il sito web <ph name="SITE" /> perché ha inviato strane credenziali che Chrome non riesce a elaborare. In genere gli errori di rete e gli attacchi sono temporanei, pertanto questa pagina potrebbe funzionare più tardi.</translation>
-<translation id="79859296434321399">Per visualizzare i contenuti di realtà aumentata, installa ARCore</translation>
 <translation id="7986319120639858961"><ph name="CARD_TITLE" /> <ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="799149739215780103">Rilegatura</translation>
 <translation id="7992044431894087211">La condivisione dello schermo con <ph name="APPLICATION_TITLE" /> è stata ripristinata</translation>
@@ -2262,6 +2268,7 @@ Ulteriori dettagli:
 <translation id="830498451218851433">Piegatura a metà</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">App installate e frequenza di utilizzo</translation>
+<translation id="8317207217658302555">Vuoi aggiornare ARCore?</translation>
 <translation id="831997045666694187">Sera</translation>
 <translation id="8321476692217554900">notifiche</translation>
 <translation id="8328484624016508118">Dopo aver chiuso tutte le schede di navigazione in incognito, Chrome cancella:
@@ -2333,7 +2340,6 @@ Ulteriori dettagli:
 <translation id="8554912124839363479">{NUM_PERMISSIONS,plural, =1{Reimposta l'autorizzazione}one{Reimposta l'autorizzazione}other{Reimposta le autorizzazioni}}</translation>
 <translation id="8555010941760982128">Utilizza questo codice al momento del pagamento</translation>
 <translation id="8557066899867184262">Il codice CVC si trova sul lato posteriore della carta.</translation>
-<translation id="8558485628462305855">Per visualizzare i contenuti di realtà aumentata, aggiorna ARCore</translation>
 <translation id="8559762987265718583">Impossibile stabilire una connessione privata con il sito <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perché data e ora del dispositivo (<ph name="DATE_AND_TIME" />) sono sbagliate.</translation>
 <translation id="8564182942834072828">Documenti separati/Copie non fascicolate</translation>
 <translation id="8564985650692024650">Chromium ti consiglia di reimpostare la password di <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, se l'hai utilizzata su altri siti.</translation>
@@ -2352,6 +2358,7 @@ Ulteriori dettagli:
 <translation id="865032292777205197">sensori di movimento</translation>
 <translation id="8663226718884576429">Riepilogo ordine, <ph name="TOTAL_LABEL" />, altri dettagli</translation>
 <translation id="8666678546361132282">Inglese</translation>
+<translation id="8669306706049782872">Usare informazioni sui tuoi schermi per aprire e posizionare finestre</translation>
 <translation id="867224526087042813">Firma</translation>
 <translation id="8676424191133491403">Nessun ritardo</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, risposta, <ph name="ANSWER" /></translation>

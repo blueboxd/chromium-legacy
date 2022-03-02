@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/adapters.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
@@ -188,10 +189,9 @@ void TestingOmniboxView::CheckUpdatePopupNotCalled() {
 absl::optional<SkColor> TestingOmniboxView::GetLatestColorForRange(
     const gfx::Range& range) {
   // Iterate backwards to get the most recently applied color for |range|.
-  for (auto range_color = range_colors_.rbegin();
-       range_color != range_colors_.rend(); range_color++) {
-    if (range == range_color->second)
-      return range_color->first;
+  for (const auto& [color, other_range] : base::Reversed(range_colors_)) {
+    if (range == other_range)
+      return color;
   }
   return absl::nullopt;
 }
@@ -199,11 +199,10 @@ absl::optional<SkColor> TestingOmniboxView::GetLatestColorForRange(
 absl::optional<std::pair<gfx::TextStyle, bool>>
 TestingOmniboxView::GetLatestStyleForRange(const gfx::Range& range) const {
   // Iterate backwards to get the most recently applied style for |range|.
-  for (auto range_style = range_styles_.rbegin();
-       range_style != range_styles_.rend(); range_style++) {
-    if (range == std::get<gfx::Range>(*range_style))
-      return std::make_pair(std::get<gfx::TextStyle>(*range_style),
-                            std::get<bool>(*range_style));
+  for (const auto& [style, value, other_range] :
+       base::Reversed(range_styles_)) {
+    if (range == other_range)
+      return std::make_pair(style, value);
   }
   return absl::nullopt;
 }
@@ -770,7 +769,7 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
 
   // Test input that's a valid URL.
   std::u16string expected_text =
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       u"Pa&ste and Go to https://test.com";
 #else
       u"Pa&ste and go to https://test.com";
@@ -783,7 +782,7 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
 
   // Test input that's URL-like. (crbug.com/980002).
   expected_text =
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       u"Pa&ste and Go to test.com";
 #else
       u"Pa&ste and go to test.com";
@@ -795,7 +794,7 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
 
   // Test input that's search-like.
   expected_text =
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       u"Pa&ste and Search for \x201Cthis is a test sentence\x201D";
 #else
       u"Pa&ste and search for \x201Cthis is a test sentence\x201D";
@@ -995,7 +994,7 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutURL) {
   // Windows clipboard only supports text URLs.
   // Mac clipboard not reporting URL format available for some reason.
   // crbug.com/751031
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   EXPECT_TRUE(clipboard->IsFormatAvailable(ui::ClipboardFormatType::UrlType(),
                                            clipboard_buffer,
                                            /* data_dst = */ nullptr));

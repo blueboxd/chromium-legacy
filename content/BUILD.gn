@@ -104,6 +104,7 @@ grit("content_resources") {
     "//gpu/ipc/common:vulkan_interface_webui_js",
     "//ui/base/mojom:mojom_js",
     "//ui/gfx/geometry/mojom:mojom_js",
+    "//ui/gfx/image/mojom:mojom_js",
     "//ui/gfx/range/mojom:mojom_js",
     "//url/mojom:url_mojom_origin_js",
     "//url/mojom:url_mojom_origin_webui_js",
@@ -121,6 +122,7 @@ grit("dev_ui_content_resources") {
     "//content/browser/attribution_reporting:mojo_bindings_webui_js",
     "//content/browser/prerender:mojo_bindings_webui_js",
     "//content/browser/process_internals:mojo_bindings_webui_js",
+    "//storage/browser/quota:mojo_bindings_webui_js",
   ]
 }
 

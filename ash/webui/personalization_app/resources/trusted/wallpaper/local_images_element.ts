@@ -11,7 +11,6 @@
 
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import 'chrome://resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
 import './styles.js';
 import '../../common/icons.js';
 import '../../common/styles.js';
@@ -91,15 +90,16 @@ export class LocalImages extends WithPersonalizationStore {
 
   connectedCallback() {
     super.connectedCallback();
-    this.watch<LocalImages['images_']>('images_', state => state.local.images);
+    this.watch<LocalImages['images_']>(
+        'images_', state => state.wallpaper.local.images);
     this.watch<LocalImages['imageData_']>(
-        'imageData_', state => state.local.data);
+        'imageData_', state => state.wallpaper.local.data);
     this.watch<LocalImages['imageDataLoading_']>(
-        'imageDataLoading_', state => state.loading.local.data);
+        'imageDataLoading_', state => state.wallpaper.loading.local.data);
     this.watch<LocalImages['currentSelected_']>(
-        'currentSelected_', state => state.currentSelected);
+        'currentSelected_', state => state.wallpaper.currentSelected);
     this.watch<LocalImages['pendingSelected_']>(
-        'pendingSelected_', state => state.pendingSelected);
+        'pendingSelected_', state => state.wallpaper.pendingSelected);
     this.updateFromStore();
     fetchLocalData(this.wallpaperProvider_, this.getStore());
     window.addEventListener('focus', () => {

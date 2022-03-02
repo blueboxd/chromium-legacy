@@ -17,17 +17,12 @@ class Origin;
 
 namespace device {
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Controls whether on Windows, U2F/CTAP2 requests are forwarded to the
 // native WebAuthentication API, where available.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthUseNativeWinApi;
-#endif  // defined(OS_WIN)
-
-// Support a special caBLEv2 mode where the server provides the linking
-// information.
-COMPONENT_EXPORT(DEVICE_FIDO)
-extern const base::Feature kWebAuthCableServerLink;
+#endif  // BUILDFLAG(IS_WIN)
 
 // Enable synced Android devices to be a 2nd-factor security key.
 COMPONENT_EXPORT(DEVICE_FIDO)

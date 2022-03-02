@@ -78,13 +78,13 @@ extern const char kInstallSwitch[];
 // currently encoded as a ASCII string.
 extern const char kTagSwitch[];
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // A debug switch to indicate that --install is running from the `out` directory
 // of the build. When this switch is present, the setup picks up the run time
 // dependencies of the updater from the `out` directory instead of using the
 // metainstaller uncompressed archive.
 extern const char kInstallFromOutDir[];
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
 // Uninstalls the updater.
 extern const char kUninstallSwitch[];
@@ -142,12 +142,13 @@ extern const char kDevOverrideKeyUrl[];
 extern const char kDevOverrideKeyUseCUP[];
 extern const char kDevOverrideKeyInitialDelay[];
 extern const char kDevOverrideKeyServerKeepAliveSeconds[];
+extern const char kDevOverrideKeyCrxVerifierFormat[];
 
 // File name of developer overrides file.
 extern const char kDevOverrideFileName[];
 
 // Timing constants.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // How long to wait for an application installer (such as
 // chrome_installer.exe) to complete.
 constexpr int kWaitForAppInstallerSec = 60;
@@ -155,15 +156,15 @@ constexpr int kWaitForAppInstallerSec = 60;
 // How often the installer progress from registry is sampled. This value may
 // be changed to provide a smoother progress experience (crbug.com/1067475).
 constexpr int kWaitForInstallerProgressSec = 1;
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
 // How long to wait for launchd changes to be reported by launchctl.
 constexpr int kWaitForLaunchctlUpdateSec = 5;
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // The user defaults suite name.
 extern const char kUserDefaultsSuiteName[];
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 // Install Errors.
 //
@@ -199,6 +200,9 @@ constexpr int kErrorFailedToLockPrefsMutex = 1;
 // The server candidate failed to promote itself to active.
 constexpr int kErrorFailedToSwap = 2;
 
+// Client Errors.
+constexpr int kErrorRegistrationFailed = 1;
+
 // Policy Management constants.
 // The maximum value allowed for policy AutoUpdateCheckPeriodMinutes.
 constexpr int kMaxAutoUpdateCheckPeriodMinutes = 43200;
@@ -229,6 +233,9 @@ constexpr int kUninstallPingReasonUserNotAnOwner = 1;
 
 // The file downloaded to a temporary location could not be moved.
 constexpr int kErrorFailedToMoveDownloadedFile = 5;
+
+// A connection was rejected due to insufficient permissions.
+constexpr int kPermissionDeniedError = 403;
 
 constexpr double kInitialDelay = 60;
 constexpr int kServerKeepAliveSeconds = 10;

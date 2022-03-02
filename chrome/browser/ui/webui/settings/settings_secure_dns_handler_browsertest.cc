@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/settings_secure_dns_handler.h"
 
+#include "base/containers/adapters.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -22,7 +23,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/win_util.h"
 #endif
 
@@ -102,7 +103,7 @@ class SecureDnsHandlerTest : public InProcessBrowserTest {
   SecureDnsHandlerTest& operator=(const SecureDnsHandlerTest&) = delete;
 
  protected:
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   SecureDnsHandlerTest()
       // Mark as not enterprise managed to prevent the secure DNS mode from
       // being downgraded to off.
@@ -136,9 +137,8 @@ class SecureDnsHandlerTest : public InProcessBrowserTest {
       std::string* secure_dns_mode,
       std::vector<std::string>* secure_dns_templates,
       int* management_mode) {
-    for (auto it = web_ui_.call_data().rbegin();
-         it != web_ui_.call_data().rend(); ++it) {
-      const content::TestWebUI::CallData* data = it->get();
+    for (const std::unique_ptr<content::TestWebUI::CallData>& data :
+         base::Reversed(web_ui_.call_data())) {
       if (data->function_name() != "cr.webUIListenerCallback" ||
           !data->arg1()->is_string() ||
           data->arg1()->GetString() != "secure-dns-setting-changed") {
@@ -191,7 +191,7 @@ class SecureDnsHandlerTest : public InProcessBrowserTest {
   testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
 
  private:
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::win::ScopedDomainStateForTesting scoped_domain_;
 #endif
 };
@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsPolicyChange) {
 
 // On platforms where enterprise policies do not have default values, test
 // that DoH is disabled when non-DoH policies are set.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, OtherPoliciesSet) {
   policy::PolicyMap policy_map;
   SetPolicyForPolicyKey(&policy_map, policy::key::kIncognitoModeAvailability,
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownListContents) {
   EXPECT_TRUE(resolver_list.GetList()[0].FindKey("value")->GetString().empty());
   for (const auto* entry : entries) {
     EXPECT_TRUE(FindDropdownItem(resolver_list, entry->ui_name,
-                                 entry->dns_over_https_template,
+                                 entry->doh_server_config.server_template(),
                                  entry->privacy_policy));
   }
 }

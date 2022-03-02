@@ -2431,7 +2431,7 @@ void GLES2Implementation::BufferDataHelper(GLenum target,
   if (!ValidateSize("glBufferData", size))
     return;
 
-#if defined(MEMORY_SANITIZER) && !defined(OS_NACL)
+#if defined(MEMORY_SANITIZER) && !BUILDFLAG(IS_NACL)
   // Do not upload uninitialized data. Even if it's not a bug, it can cause a
   // bogus MSan report during a readback later. This is because MSan doesn't
   // understand shared memory and would assume we were reading back the same
@@ -6516,7 +6516,7 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
     case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
       if (capabilities_.major_version >= 3)
         break;
-      FALLTHROUGH;
+      [[fallthrough]];
     default:
       SetGLError(GL_INVALID_ENUM, "glBeginQueryEXT", "unknown query target");
       return;

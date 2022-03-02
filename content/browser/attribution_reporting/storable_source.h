@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "base/types/strong_alias.h"
 #include "content/common/content_export.h"
@@ -60,50 +59,39 @@ class CONTENT_EXPORT StorableSource {
                  SourceType source_type,
                  int64_t priority,
                  AttributionLogic attribution_logic,
-                 absl::optional<Id> impression_id);
+                 absl::optional<uint64_t> fake_trigger_data,
+                 absl::optional<Id> source_id);
   StorableSource(const StorableSource& other);
   StorableSource& operator=(const StorableSource& other);
   StorableSource(StorableSource&& other);
   StorableSource& operator=(StorableSource&& other);
   ~StorableSource();
 
-  uint64_t source_event_id() const WARN_UNUSED_RESULT {
-    return source_event_id_;
+  uint64_t source_event_id() const { return source_event_id_; }
+
+  const url::Origin& impression_origin() const { return impression_origin_; }
+
+  const url::Origin& conversion_origin() const { return conversion_origin_; }
+
+  const url::Origin& reporting_origin() const { return reporting_origin_; }
+
+  base::Time impression_time() const { return impression_time_; }
+
+  base::Time expiry_time() const { return expiry_time_; }
+
+  absl::optional<Id> source_id() const { return source_id_; }
+
+  SourceType source_type() const { return source_type_; }
+
+  int64_t priority() const { return priority_; }
+
+  AttributionLogic attribution_logic() const { return attribution_logic_; }
+
+  absl::optional<uint64_t> fake_trigger_data() const {
+    return fake_trigger_data_;
   }
 
-  const url::Origin& impression_origin() const WARN_UNUSED_RESULT {
-    return impression_origin_;
-  }
-
-  const url::Origin& conversion_origin() const WARN_UNUSED_RESULT {
-    return conversion_origin_;
-  }
-
-  const url::Origin& reporting_origin() const WARN_UNUSED_RESULT {
-    return reporting_origin_;
-  }
-
-  base::Time impression_time() const WARN_UNUSED_RESULT {
-    return impression_time_;
-  }
-
-  base::Time expiry_time() const WARN_UNUSED_RESULT { return expiry_time_; }
-
-  absl::optional<Id> impression_id() const WARN_UNUSED_RESULT {
-    return impression_id_;
-  }
-
-  SourceType source_type() const WARN_UNUSED_RESULT { return source_type_; }
-
-  int64_t priority() const WARN_UNUSED_RESULT { return priority_; }
-
-  AttributionLogic attribution_logic() const WARN_UNUSED_RESULT {
-    return attribution_logic_;
-  }
-
-  const std::vector<int64_t>& dedup_keys() const WARN_UNUSED_RESULT {
-    return dedup_keys_;
-  }
+  const std::vector<int64_t>& dedup_keys() const { return dedup_keys_; }
 
   void SetDedupKeys(std::vector<int64_t> dedup_keys) {
     dedup_keys_ = std::move(dedup_keys);
@@ -113,13 +101,13 @@ class CONTENT_EXPORT StorableSource {
   //
   // TODO(johnidel): Consider storing the SchemefulSite as a separate member so
   // that we avoid unnecessary copies of |conversion_origin_|.
-  net::SchemefulSite ConversionDestination() const WARN_UNUSED_RESULT;
+  net::SchemefulSite ConversionDestination() const;
 
   // Returns the schemeful site of |impression_origin|.
   //
   // TODO(johnidel): Consider storing the SchemefulSite as a separate member so
   // that we avoid unnecessary copies of |impression_origin_|.
-  net::SchemefulSite ImpressionSite() const WARN_UNUSED_RESULT;
+  net::SchemefulSite ImpressionSite() const;
 
  private:
   uint64_t source_event_id_;
@@ -132,8 +120,13 @@ class CONTENT_EXPORT StorableSource {
   int64_t priority_;
   AttributionLogic attribution_logic_;
 
+  // Only set on sources passed into `AttributionStorage::StoreSource()`, not on
+  // sources retrieved from storage, because it is not actually stored in the
+  // underlying DB: it is used immediately to generate fake reports.
+  absl::optional<uint64_t> fake_trigger_data_;
+
   // If null, an ID has not been assigned yet.
-  absl::optional<Id> impression_id_;
+  absl::optional<Id> source_id_;
 
   // Dedup keys associated with the impression. Only set in values returned from
   // `AttributionStorage::GetActiveImpressions()`.

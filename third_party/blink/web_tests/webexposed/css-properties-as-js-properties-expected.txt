@@ -176,6 +176,7 @@ fontFamily
 fontFeatureSettings
 fontKerning
 fontOpticalSizing
+fontPalette
 fontSize
 fontSizeAdjust
 fontStretch
@@ -411,6 +412,10 @@ textDecorationLine
 textDecorationSkipInk
 textDecorationStyle
 textDecorationThickness
+textEmphasis
+textEmphasisColor
+textEmphasisPosition
+textEmphasisStyle
 textIndent
 textJustify
 textOrientation

@@ -7,6 +7,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
+#include "chrome/browser/browser_switcher/ieem_sitelist_parser.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class GURL;
@@ -14,7 +15,6 @@ class GURL;
 namespace browser_switcher {
 
 class BrowserSwitcherPrefs;
-class ParsedXml;
 
 // Return a Rule object for |original_rule|, with the right type depending on
 // |parsing_mode|.
@@ -73,20 +73,21 @@ class BrowserSwitcherSitelist {
   // Set the Internet Explorer Enterprise Mode sitelist to use, in addition to
   // Chrome's sitelist/greylist policies. Consumes the object, and performs no
   // copy.
-  virtual void SetIeemSitelist(ParsedXml&& sitelist) = 0;
+  virtual void SetIeemSitelist(RawRuleSet&& sitelist) = 0;
 
   // Set the XML sitelist file to use, in addition to Chrome's sitelist/greylist
   // policies. This XML file is in the same format as an IEEM sitelist.
   // Consumes the object, and performs no copy.
-  virtual void SetExternalSitelist(ParsedXml&& sitelist) = 0;
+  virtual void SetExternalSitelist(RawRuleSet&& sitelist) = 0;
 
   // Set the XML sitelist file to use, in addition to Chrome's sitelist/greylist
   // policies. This XML file is in the same format as an IEEM sitelist.
   // Consumes the object, and performs no copy.
-  virtual void SetExternalGreylist(ParsedXml&& sitelist) = 0;
+  virtual void SetExternalGreylist(RawRuleSet&& sitelist) = 0;
 
   virtual const RuleSet* GetIeemSitelist() const = 0;
   virtual const RuleSet* GetExternalSitelist() const = 0;
+  virtual const RuleSet* GetExternalGreylist() const = 0;
 };
 
 // Manages the sitelist configured by the administrator for
@@ -103,11 +104,12 @@ class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
 
   // BrowserSwitcherSitelist
   Decision GetDecision(const GURL& url) const override;
-  void SetIeemSitelist(ParsedXml&& sitelist) override;
-  void SetExternalSitelist(ParsedXml&& sitelist) override;
-  void SetExternalGreylist(ParsedXml&& greylist) override;
+  void SetIeemSitelist(RawRuleSet&& rules) override;
+  void SetExternalSitelist(RawRuleSet&& rules) override;
+  void SetExternalGreylist(RawRuleSet&& rules) override;
   const RuleSet* GetIeemSitelist() const override;
   const RuleSet* GetExternalSitelist() const override;
+  const RuleSet* GetExternalGreylist() const override;
 
  private:
   // Returns true if there are any rules configured.
@@ -117,8 +119,7 @@ class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
 
   // Stores the rules from |src| in |dst|, by first calling CanonicalizeRule()
   // on them.
-  void StoreRules(std::vector<std::unique_ptr<Rule>>* dst,
-                  const std::vector<std::string>& src);
+  void StoreRules(RuleSet& dst, const RawRuleSet& src);
 
   // CanonicalizeRule() has different output based on ParsingMode, so we need to
   // re-canonicalize them if the parsing mode changes.
@@ -127,11 +128,12 @@ class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
 
   RuleSet ieem_sitelist_;
   RuleSet external_sitelist_;
+  RuleSet external_greylist_;  // |external_greylist_.sitelist| is always empty.
 
   // Original values used for canonicalization.
-  std::vector<std::string> original_ieem_sitelist_;
-  std::vector<std::string> original_external_sitelist_;
-  std::vector<std::string> original_external_greylist_;
+  RawRuleSet original_ieem_sitelist_;
+  RawRuleSet original_external_sitelist_;
+  RawRuleSet original_external_greylist_;
 
   base::CallbackListSubscription prefs_changed_subscription_;
 

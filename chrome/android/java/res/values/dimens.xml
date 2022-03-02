@@ -16,8 +16,6 @@
     <dimen name="toolbar_swipe_space_between_tabs">30dp</dimen>
     <!-- TabSwitcher - The minimum distance from the edge to commit a toolbar side swap. -->
     <dimen name="toolbar_swipe_commit_distance">90dp</dimen>
-     <!-- TabSwitcher - The size of the close button on each tab. -->
-    <dimen name="tab_switcher_close_button_size">20dp</dimen>
 
     <!-- Tab title -->
     <dimen name="border_texture_title_fade">24dp</dimen>                    <!-- 40px hdpi -->
@@ -105,8 +103,6 @@
 
     <!-- Data Saver -->
     <dimen name="data_usage_chart_height">252dp</dimen>
-    <dimen name="data_reduction_main_menu_icon_width">24dp</dimen>
-    <dimen name="data_saver_menu_footer_min_show_height">240dp</dimen>
 
     <!-- The size of the text for tab titles. -->
     <dimen name="compositor_tab_title_text_size">13sp</dimen>
@@ -123,7 +119,6 @@
     <dimen name="fre_margin">24dp</dimen>
 
     <dimen name="fre_image_bottom_margin">36dp</dimen>
-    <dimen name="fre_image_height">120dp</dimen>
     <dimen name="fre_tos_image_height">110dp</dimen>
     <dimen name="fre_tos_checkbox_padding">12dp</dimen>
     <dimen name="fre_tos_bottom_margin">16dp</dimen>
@@ -134,15 +129,13 @@
     <dimen name="fre_policy_privacy_disclaimer_top_margin">16dp</dimen>
 
     <dimen name="fre_button_vertical_margin">24dp</dimen>
-    <!-- fre_button_bar_height = 68dp = layout_height (48dp) + 2 * layout_marginBottom(10dp) -->
-    <dimen name="fre_button_bar_height">68dp</dimen>
+
 
     <dimen name="fre_button_vertical_margin_small">16dp</dimen>
 
     <!-- Account Signin dimensions -->
     <!-- The Account Signin page appears in the First Run Experience (amongst other places), so uses
     a lot of the fre_* dimensions for consistency. -->
-    <dimen name="signin_image_carousel_width">240dp</dimen>
     <dimen name="signin_chooser_padding">16dp</dimen>
     <dimen name="signin_screen_top_padding">50dp</dimen>
 
@@ -157,6 +150,7 @@
     <!-- Should match toolbar_height_no_shadow -->
     <dimen name="control_container_height">56dp</dimen>
     <dimen name="custom_tabs_control_container_height">56dp</dimen>
+    <dimen name="fullscreen_notification_max_width">320dp</dimen>
 
     <!-- The combined height of the tab strip and toolbar. -->
     <dimen name="tab_strip_and_toolbar_height">56dp</dimen>
@@ -176,7 +170,6 @@
     <dimen name="ntp_logo_height">100dp</dimen>
     <dimen name="ntp_logo_margin_top">26dp</dimen>
     <dimen name="duet_ntp_logo_top_margin">-16dp</dimen>
-    <dimen name="ntp_promo_bottom_margin">16dp</dimen>
     <dimen name="ntp_search_box_height">48dp</dimen>
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
     <dimen name="experimental_explore_sites_radius">8dp</dimen>
@@ -393,6 +386,10 @@
     <dimen name="overflow_menu_managed_by_min_height">44dp</dimen>
     <dimen name="overflow_menu_update_min_height">40sp</dimen>
     <dimen name="overflow_menu_update_padding">12dp</dimen>
+
+    <!-- Settings dimensions -->
+    <dimen name="settings_wide_display_min_padding">16dp</dimen>
+
 
     <!-- Sharing Hub dimensions -->
     <dimen name="sharing_hub_preview_icon_padding">12dp</dimen>

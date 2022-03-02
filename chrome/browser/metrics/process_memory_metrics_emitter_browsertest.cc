@@ -21,10 +21,10 @@
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_observer.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -47,8 +47,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
-#include "extensions/test/background_page_watcher.h"
+#include "extensions/test/extension_background_page_waiter.h"
 #include "extensions/test/test_extension_dir.h"
 #endif
 
@@ -60,7 +59,6 @@ using memory_instrumentation::GlobalMemoryDump;
 using memory_instrumentation::mojom::ProcessType;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-using extensions::BackgroundPageWatcher;
 using extensions::Extension;
 using extensions::ProcessManager;
 using extensions::TestExtensionDir;
@@ -178,7 +176,7 @@ void CheckExperimentalMemoryMetricsForProcessType(
     int count,
     const char* process_type,
     int number_of_processes) {
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
   CheckMemoryMetric(
       std::string("Memory.Experimental.") + process_type + "2.Malloc",
       histogram_tester, count, ValueRestriction::ABOVE_ZERO,
@@ -210,6 +208,11 @@ void CheckExperimentalMemoryMetricsForProcessType(
   CheckMemoryMetric(
       std::string("Memory.Experimental.") + process_type + "2.Malloc.Wasted",
       histogram_tester, count, ValueRestriction::NONE, number_of_processes);
+  // Restriction: every process makes at least a system call.
+  CheckMemoryMetric(std::string("Memory.Experimental.") + process_type +
+                        "2.Tiny.Malloc.SyscallsPerMinute",
+                    histogram_tester, count, ValueRestriction::ABOVE_ZERO,
+                    number_of_processes);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 }
 
@@ -218,7 +221,7 @@ void CheckExperimentalMemoryMetrics(
     int count,
     int number_of_renderer_processes,
     int number_of_extension_processes) {
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
   CheckMemoryMetric("Memory.Experimental.Browser2.Malloc", histogram_tester,
                     count, ValueRestriction::ABOVE_ZERO);
 #endif
@@ -239,13 +242,13 @@ void CheckStableMemoryMetrics(const base::HistogramTester& histogram_tester,
                               int number_of_renderer_processes,
                               int number_of_extension_processes) {
   const int count_for_resident_set =
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       0;
 #else
       count;
 #endif
   const int count_for_private_swap_footprint =
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
       count;
 #else
       0;
@@ -448,11 +451,11 @@ class ProcessMemoryMetricsEmitterTest
   }
 
   void CheckUkmRendererEntry(const ukm::mojom::UkmEntry* entry) {
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
     CheckMemoryMetricWithName(entry, UkmEntry::kMallocName,
                               ValueRestriction::ABOVE_ZERO);
 #endif
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     CheckMemoryMetricWithName(entry, UkmEntry::kResidentName,
                               ValueRestriction::ABOVE_ZERO);
 #endif
@@ -478,11 +481,11 @@ class ProcessMemoryMetricsEmitterTest
   }
 
   void CheckUkmBrowserEntry(const ukm::mojom::UkmEntry* entry) {
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
     CheckMemoryMetricWithName(entry, UkmEntry::kMallocName,
                               ValueRestriction::ABOVE_ZERO);
 #endif
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     CheckMemoryMetricWithName(entry, UkmEntry::kResidentName,
                               ValueRestriction::ABOVE_ZERO);
 #endif
@@ -578,7 +581,7 @@ class ProcessMemoryMetricsEmitterTest
 };
 
 // TODO(crbug.com/732501): Re-enable on Win once not flaky.
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || defined(OS_WIN)
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || BUILDFLAG(IS_WIN)
 #define MAYBE_FetchAndEmitMetrics DISABLED_FetchAndEmitMetrics
 #else
 #define MAYBE_FetchAndEmitMetrics FetchAndEmitMetrics
@@ -613,17 +616,19 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckPageInfoUkmMetrics(url, true);
 }
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 // TODO(crbug.com/732501): Re-enable on Win once not flaky.
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || defined(OS_WIN)
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || BUILDFLAG(IS_WIN)
 #define MAYBE_HasZombieProfile DISABLED_HasZombieProfile
 #else
 #define MAYBE_HasZombieProfile HasZombieProfile
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_HasZombieProfile) {
-  ASSERT_TRUE(
-      base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose));
+  // We observe Profile destruction in this test, so skip it for the handful of
+  // bots that don't destroy Profiles.
+  if (!base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose))
+    GTEST_SKIP();
 
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url = embedded_test_server()->GetURL("foo.com", "/empty.html");
@@ -666,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 // TODO(https://crbug.com/990148): Re-enable on Win and Linux once not flaky.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+    BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_FetchAndEmitMetricsWithExtensions \
   DISABLED_FetchAndEmitMetricsWithExtensions
 #else
@@ -680,8 +685,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   ProcessManager* pm = ProcessManager::Get(profile());
 
   // Verify that the extensions has loaded.
-  BackgroundPageWatcher(pm, extension1).WaitForOpen();
-  BackgroundPageWatcher(pm, extension2).WaitForOpen();
+  extensions::ExtensionBackgroundPageWaiter(profile(), *extension1)
+      .WaitForBackgroundOpen();
+  extensions::ExtensionBackgroundPageWaiter(profile(), *extension2)
+      .WaitForBackgroundOpen();
   EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
   EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
 
@@ -763,77 +770,11 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckAllUkmEntries();
   CheckPageInfoUkmMetrics(url, true);
 }
-
-// TODO(crbug.com/1201588): Fix flakiness on Windows.
-#if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_FetchAndEmitMetricsWithExtensionsAndHostReuse \
-  DISABLED_FetchAndEmitMetricsWithExtensionsAndHostReuse
-#else
-#define MAYBE_FetchAndEmitMetricsWithExtensionsAndHostReuse \
-  FetchAndEmitMetricsWithExtensionsAndHostReuse
-#endif
-IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
-                       MAYBE_FetchAndEmitMetricsWithExtensionsAndHostReuse) {
-  // When strict extension isolation is enabled, there is no process reuse for
-  // extensions, and this becomes the same as FetchAndEmitMetricsWithExtensions.
-  if (base::FeatureList::IsEnabled(
-          extensions_features::kStrictExtensionIsolation)) {
-    return;
-  }
-
-  // Limit the number of renderer processes to force reuse.
-  content::RenderProcessHost::SetMaxRendererProcessCount(1);
-  const Extension* extension1 = CreateExtension("Extension 1");
-  const Extension* extension2 = CreateExtension("Extension 2");
-  ProcessManager* pm = ProcessManager::Get(profile());
-
-  // Verify that the extensions has loaded.
-  BackgroundPageWatcher(pm, extension1).WaitForOpen();
-  BackgroundPageWatcher(pm, extension2).WaitForOpen();
-  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
-  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL url = embedded_test_server()->GetURL("foo.com", "/empty.html");
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-
-  base::HistogramTester histogram_tester;
-  base::RunLoop run_loop;
-
-  // Intentionally let emitter leave scope to check that it correctly keeps
-  // itself alive.
-  {
-    scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter(
-        new ProcessMemoryMetricsEmitterFake(&run_loop,
-                                            test_ukm_recorder_.get()));
-    emitter->FetchAndEmitProcessMemoryMetrics();
-  }
-
-  run_loop.Run();
-
-  constexpr int kNumRenderers = 1;
-  EXPECT_EQ(kNumRenderers, GetNumRenderers(browser()));
-  constexpr int kNumExtensionProcesses = 1;
-
-  CheckAllMemoryMetrics(histogram_tester, 1, kNumRenderers,
-                        kNumExtensionProcesses);
-  CheckAllUkmEntries();
-  // When hosts share a process, no unique URL is identified, therefore no page
-  // info.
-  const auto& entries =
-      test_ukm_recorder_->GetEntriesByName(UkmEntry::kEntryName);
-  for (const auto* entry : entries) {
-    EXPECT_EQ(nullptr,
-              test_ukm_recorder_->GetSourceForSourceId(entry->source_id));
-  }
-}
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 // TODO(crbug.com/989810): Re-enable on Win and Mac once not flaky.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(OS_WIN) || defined(OS_MAC)
+    BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #define MAYBE_FetchDuringTrace DISABLED_FetchDuringTrace
 #else
 #define MAYBE_FetchDuringTrace FetchDuringTrace
@@ -927,9 +868,9 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
 // Test is flaky on chromeos and linux. https://crbug.com/938054.
 // Test is flaky on mac and win: https://crbug.com/948674.
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) ||      \
-    defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MAC) || \
-    defined(OS_WIN)
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) ||            \
+    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_WIN)
 #define MAYBE_ForegroundAndBackgroundPages DISABLED_ForegroundAndBackgroundPages
 #else
 #define MAYBE_ForegroundAndBackgroundPages ForegroundAndBackgroundPages

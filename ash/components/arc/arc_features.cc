@@ -75,6 +75,17 @@ const base::Feature kGuestZram{"ArcGuestZram",
 // Controls the size of the guest zram.
 const base::FeatureParam<int> kGuestZramSize{&kGuestZram, "size", 0};
 
+// Control properties of Logd at boot time. This is only for ARCVM.
+const base::Feature kLogdConfig{"ArcGuestLogdConfig",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls the size in KB of logd. Only a few sizes are supported,
+// see kLogdConfigSize* private constants in arc_vm_client_adapter.cc.
+// The default set here means "do not override the build setting",
+// which is the same behavior as disabling the feature. Doing it so,
+// we don't need to keep this code up-to-date with the build default.
+const base::FeatureParam<int> kLogdConfigSize{&kLogdConfig, "size", 0};
+
 // Controls keyboard shortcut helper integration feature in ARC.
 const base::Feature kKeyboardShortcutHelperIntegrationFeature{
     "ArcKeyboardShortcutHelperIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -143,7 +154,7 @@ const base::Feature kUsbStorageUIFeature{"ArcUsbStorageUI",
 // When enabled, Android tries to use dalvik memory profile tuned based on the
 // device memory size.
 const base::Feature kUseDalvikMemoryProfile{"ArcUseDalvikMemoryProfile",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the system/vendor images are mounted without specifying a
 // block size.
@@ -155,7 +166,15 @@ const base::Feature kUseDefaultBlockSize{"ArcVmUseDefaultBlockSize",
 // to delegate decoding tasks to VideoDecoder implementations, instead of using
 // VDA implementations created by GpuVideoDecodeAcceleratorFactory.
 const base::Feature kVideoDecoder{"ArcVideoDecoder",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Feature to continuously log PSI memory pressure data to Chrome.
+const base::Feature kVmMemoryPSIReports{"ArcVmMemoryPSIReports",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls how frequently memory pressure data is logged
+const base::FeatureParam<int> kVmMemoryPSIReportsPeriod{&kVmMemoryPSIReports,
+                                                        "period", 10};
 
 // Controls whether a custom memory size is used when creating ARCVM. When
 // enabled, ARCVM is sized with the following formula:
@@ -189,7 +208,7 @@ const base::FeatureParam<int> kVmMemorySizeMaxMiB{&kVmMemorySize, "max_mib",
 // ARCVM never has it's kernel page cache drop below the level that LMKD will
 // start killing.
 const base::Feature kVmBalloonPolicy{"ArcVmBalloonPolicy",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The maximum amount of kernel page cache ARCVM can have when ChromeOS is under
 // moderate memory pressure. 0 for no limit.

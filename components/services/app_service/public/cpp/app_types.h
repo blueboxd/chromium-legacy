@@ -7,8 +7,12 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
+#include "base/component_export.h"
+#include "base/time/time.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -54,6 +58,44 @@ enum class Readiness {
   kMaxValue = kUninstalledByMigration,
 };
 
+// How the app was installed.
+// This should be kept in sync with histograms.xml, and InstallReason in
+// enums.xml.
+// Note the enumeration is used in UMA histogram so entries should not be
+// re-ordered or removed. New entries should be added at the bottom.
+enum class InstallReason {
+  kUnknown = 0,
+  kSystem,   // Installed with the system and is considered a part of the OS.
+  kPolicy,   // Installed by policy.
+  kOem,      // Installed by an OEM.
+  kDefault,  // Preinstalled by default, but is not considered a system app.
+  kSync,     // Installed by sync.
+  kUser,     // Installed by user action.
+  kSubApp,   // Installed by the SubApp API call.
+
+  // Add any new values above this one, and update kMaxValue to the highest
+  // enumerator value.
+  kMaxValue = kSubApp,
+};
+
+// Where the app was installed from.
+// This should be kept in sync with histograms.xml, and InstallSource in
+// enums.xml.
+// Note the enumeration is used in UMA histogram so entries should not be
+// re-ordered or removed. New entries should be added at the bottom.
+enum class InstallSource {
+  kUnknown = 0,
+  kSystem,          // Installed as part of Chrome OS.
+  kSync,            // Installed from sync.
+  kPlayStore,       // Installed from Play store.
+  kChromeWebStore,  // Installed from Chrome web store.
+  kBrowser,         // Installed from browser.
+
+  // Add any new values above this one, and update kMaxValue to the highest
+  // enumerator value.
+  kMaxValue = kBrowser,
+};
+
 struct COMPONENT_EXPORT(APP_TYPES) App {
   App(AppType app_type, const std::string& app_id);
 
@@ -78,8 +120,30 @@ struct COMPONENT_EXPORT(APP_TYPES) App {
 
   absl::optional<std::string> description;
   absl::optional<std::string> version;
+  std::vector<std::string> additional_search_terms;
 
   absl::optional<IconKey> icon_key;
+
+  absl::optional<base::Time> last_launch_time;
+  absl::optional<base::Time> install_time;
+
+  // This vector must be treated atomically, if there is a permission
+  // change, the publisher must send through the entire list of permissions.
+  // Should contain no duplicate IDs.
+  // If empty during updates, Subscriber can assume no changes.
+  // There is no guarantee that this is sorted by any criteria.
+  Permissions permissions;
+
+  // Whether the app was installed by sync, policy or as a default app.
+  InstallReason install_reason = InstallReason::kUnknown;
+
+  // Where the app was installed from, e.g. from Play Store, from Chrome Web
+  // Store, etc.
+  InstallSource install_source = InstallSource::kUnknown;
+
+  // An optional ID used for policy to identify the app.
+  // For web apps, it contains the install URL.
+  absl::optional<std::string> policy_id;
 
   // TODO(crbug.com/1253250): Add other App struct fields.
 
@@ -93,8 +157,19 @@ COMPONENT_EXPORT(APP_TYPES)
 AppType ConvertMojomAppTypToAppType(apps::mojom::AppType mojom_app_type);
 
 COMPONENT_EXPORT(APP_TYPES)
+mojom::AppType ConvertAppTypeToMojomAppType(AppType mojom_app_type);
+
+COMPONENT_EXPORT(APP_TYPES)
 Readiness ConvertMojomReadinessToReadiness(
     apps::mojom::Readiness mojom_readiness);
+
+COMPONENT_EXPORT(APP_TYPES)
+InstallReason ConvertMojomInstallReasonToInstallReason(
+    apps::mojom::InstallReason mojom_install_reason);
+
+COMPONENT_EXPORT(APP_TYPES)
+InstallSource ConvertMojomInstallSourceToInstallSource(
+    apps::mojom::InstallSource mojom_install_source);
 
 COMPONENT_EXPORT(APP_TYPES)
 std::unique_ptr<App> ConvertMojomAppToApp(const apps::mojom::AppPtr& mojom_app);

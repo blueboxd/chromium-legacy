@@ -41,6 +41,8 @@ class BrowserState;
 struct FaviconURL;
 class NavigationContextImpl;
 class NavigationManager;
+enum class Permission;
+enum class PermissionState;
 class SessionCertificatePolicyCacheImpl;
 class WebFrame;
 
@@ -115,6 +117,11 @@ class WebStateImpl final : public WebState {
 
   // Called when new FaviconURL candidates are received.
   void OnFaviconUrlUpdated(const std::vector<FaviconURL>& candidates);
+
+  // Notifies web state observers when any of the web state's permission has
+  // changed.
+  void OnStateChangedForPermission(Permission permission)
+      API_AVAILABLE(ios(15.0));
 
   // Returns the NavigationManager for this WebState.
   NavigationManagerImpl& GetNavigationManagerImpl();
@@ -275,6 +282,7 @@ class WebStateImpl final : public WebState {
   void ExecuteJavaScript(const std::u16string& javascript,
                          JavaScriptResultCallback callback) final;
   void ExecuteUserJavaScript(NSString* javaScript) final;
+  NSString* GetStableIdentifier() const final;
   const std::string& GetContentsMimeType() const final;
   bool ContentIsHTML() const final;
   const std::u16string& GetTitle() const final;
@@ -284,6 +292,8 @@ class WebStateImpl final : public WebState {
   bool IsCrashed() const final;
   bool IsEvicted() const final;
   bool IsBeingDestroyed() const final;
+  const FaviconStatus& GetFaviconStatus() const final;
+  void SetFaviconStatus(const FaviconStatus& favicon_status) final;
   const GURL& GetVisibleURL() const final;
   const GURL& GetLastCommittedURL() const final;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const final;
@@ -298,11 +308,16 @@ class WebStateImpl final : public WebState {
   bool CanTakeSnapshot() const final;
   void TakeSnapshot(const gfx::RectF& rect, SnapshotCallback callback) final;
   void CreateFullPagePdf(base::OnceCallback<void(NSData*)> callback) final;
+  void CloseMediaPresentations() final;
   void AddObserver(WebStateObserver* observer) final;
   void RemoveObserver(WebStateObserver* observer) final;
   void CloseWebState() final;
   bool SetSessionStateData(NSData* data) final;
   NSData* SessionStateData() final;
+  PermissionState GetStateForPermission(Permission permission) const final
+      API_AVAILABLE(ios(15.0));
+  void SetStateForPermission(PermissionState state, Permission permission) final
+      API_AVAILABLE(ios(15.0));
 
  protected:
   // WebState:

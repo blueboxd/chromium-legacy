@@ -133,6 +133,9 @@
     "META": {"sizes": {"includes": [50]}},
     "includes": [1380],
   },
+  "chrome/browser/resources/chromeos/app_icon/app_icon_resources.grd": {
+    "structures": [1390],
+  },
   "chrome/browser/resources/chromeos/login/oobe_conditional_resources.grd": {
     "META": {"sizes": {"includes": [150], "structures": [300]}},
     "includes": [1400],
@@ -418,6 +421,10 @@
     "META": {"align": 100},
     "messages": [2900],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/ash/ambient/resources/lottie_resources.grd": {
+    "META": {"sizes": {"includes": [100],}},
+    "includes": [2910],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/camera_app_ui/ash_camera_app_resources.grd": {
     "META": {"sizes": {"includes": [300],}},
     "includes": [2920],
@@ -487,11 +494,11 @@
     "includes": [3140],
     "structures": [3160],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/sample_system_web_app_ui/ash_sample_system_web_app_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/sample_system_web_app_ui/resources/trusted/ash_sample_system_web_app_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
     "includes": [3180],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/sample_system_web_app_ui/ash_sample_system_web_app_untrusted_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/sample_system_web_app_ui/resources/untrusted/ash_sample_system_web_app_untrusted_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
     "includes": [3200],
   },
@@ -499,7 +506,8 @@
     "includes": [3220],
     "structures": [3240],
   },
-  "ash/webui/telemetry_extension_ui/resources/telemetry_extension_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/ash/webui/system_extensions_internals_ui/ash_system_extensions_internals_resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
     "includes": [3260],
   },
   "chromeos/resources/chromeos_resources.grd": {
@@ -521,7 +529,7 @@
     "includes": [3320],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/personalization_app/resources/ash_personalization_app_resources.grd": {
-    "META": {"sizes": {"includes": [50],}},
+    "META": {"sizes": {"includes": [120],}},
     "includes": [3340],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/demo_mode_app_ui/ash_demo_mode_app_resources.grd": {
@@ -831,8 +839,11 @@
     "includes": [4560],
     "structures": [4580],
   },
-  "third_party/blink/public/strings/blink_strings.grd": {
+  "third_party/blink/public/strings/blink_accessibility_strings.grd": {
     "messages": [4600],
+  },
+  "third_party/blink/public/strings/blink_strings.grd": {
+    "messages": [4610],
   },
   "third_party/libaddressinput/chromium/address_input_strings.grd": {
     "messages": [4620],

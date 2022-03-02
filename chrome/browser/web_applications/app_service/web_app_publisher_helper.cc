@@ -10,6 +10,7 @@
 #include "base/containers/extend.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
@@ -49,7 +50,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
@@ -61,10 +62,10 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/full_restore_save_handler.h"
@@ -220,7 +221,7 @@ WebAppPublisherHelper::Delegate::Delegate() = default;
 
 WebAppPublisherHelper::Delegate::~Delegate() = default;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 WebAppPublisherHelper::BadgeManagerDelegate::BadgeManagerDelegate(
     const base::WeakPtr<WebAppPublisherHelper>& publisher_helper)
     : badging::BadgeManagerDelegate(publisher_helper->profile(),
@@ -321,13 +322,9 @@ void WebAppPublisherHelper::SetWebAppShowInFields(apps::mojom::AppPtr& app,
     app->show_in_management = chromeos_data.show_in_management
                                   ? apps::mojom::OptionalBool::kTrue
                                   : apps::mojom::OptionalBool::kFalse;
-
-    app->handles_intents = app->show_in_launcher;
-    if (web_app::IsSystemAppIdWithFileHandlers(web_app->app_id())) {
-      // TODO(crbug.com/1240906): add handles_intents to chromeos_data() so that
-      // SWAs can stipulate it themselves rather than needing this check.
-      app->handles_intents = apps::mojom::OptionalBool::kTrue;
-    }
+    app->handles_intents = chromeos_data.handles_file_open_intents
+                               ? apps::mojom::OptionalBool::kTrue
+                               : app->show_in_launcher;
     return;
   }
 
@@ -383,6 +380,48 @@ void WebAppPublisherHelper::PopulateWebAppPermissions(
   }
 }
 
+apps::Permissions WebAppPublisherHelper::CreatePermissions(
+    const WebApp* web_app) {
+  apps::Permissions permissions;
+
+  const GURL url = web_app->start_url();
+  auto* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  DCHECK(host_content_settings_map);
+
+  for (ContentSettingsType type : kSupportedPermissionTypes) {
+    ContentSetting setting =
+        host_content_settings_map->GetContentSetting(url, url, type);
+
+    // Map ContentSettingsType to an apps::mojom::TriState value
+    apps::TriState setting_val;
+    switch (setting) {
+      case CONTENT_SETTING_ALLOW:
+        setting_val = apps::TriState::kAllow;
+        break;
+      case CONTENT_SETTING_ASK:
+        setting_val = apps::TriState::kAsk;
+        break;
+      case CONTENT_SETTING_BLOCK:
+        setting_val = apps::TriState::kBlock;
+        break;
+      default:
+        setting_val = apps::TriState::kAsk;
+    }
+
+    content_settings::SettingInfo setting_info;
+    host_content_settings_map->GetWebsiteSetting(url, url, type, &setting_info);
+
+    permissions.push_back(std::make_unique<apps::Permission>(
+        apps::ConvertMojomPermissionTypeToPermissionType(
+            GetPermissionType(type)),
+        std::make_unique<apps::PermissionValue>(setting_val),
+        /*is_managed=*/setting_info.source ==
+            content_settings::SETTING_SOURCE_POLICY));
+  }
+  return permissions;
+}
+
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 std::unique_ptr<apps::App> WebAppPublisherHelper::CreateWebApp(
     const WebApp* web_app) {
@@ -391,7 +430,7 @@ std::unique_ptr<apps::App> WebAppPublisherHelper::CreateWebApp(
           ? (web_app->is_uninstalling() ? apps::Readiness::kUninstalledByUser
                                         : apps::Readiness::kReady)
           : apps::Readiness::kDisabledByUser;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   DCHECK(web_app->chromeos_data().has_value());
   if (web_app->chromeos_data()->is_disabled)
     readiness = apps::Readiness::kDisabledByPolicy;
@@ -399,15 +438,42 @@ std::unique_ptr<apps::App> WebAppPublisherHelper::CreateWebApp(
 
   std::unique_ptr<apps::App> app = apps::AppPublisher::MakeApp(
       apps::ConvertMojomAppTypToAppType(app_type()), web_app->app_id(),
-      readiness, web_app->name());
+      readiness, web_app->name(),
+      apps::ConvertMojomInstallReasonToInstallReason(
+          GetHighestPriorityInstallReason(web_app)),
+      apps::ConvertMojomInstallSourceToInstallSource(
+          GetInstallSource(profile()->GetPrefs(), web_app->app_id())));
 
   app->description = web_app->description();
+  app->additional_search_terms = web_app->additional_search_terms();
 
   // Web App's publisher_id the start url.
   app->publisher_id = web_app->start_url().spec();
 
   app->icon_key =
       std::move(*icon_key_factory_.CreateIconKey(GetIconEffects(web_app)));
+
+  app->last_launch_time = web_app->last_launch_time();
+  app->install_time = web_app->install_time();
+
+  // For system web apps (only), the install source is |kSystem|.
+  DCHECK_EQ(web_app->IsSystemApp(),
+            app->install_reason == apps::InstallReason::kSystem);
+
+  GURL install_url;
+  if (registrar().HasExternalAppWithInstallSource(
+          web_app->app_id(), ExternalInstallSource::kExternalPolicy)) {
+    std::map<AppId, GURL> installed_apps =
+        registrar().GetExternallyInstalledApps(
+            ExternalInstallSource::kExternalPolicy);
+    auto it = installed_apps.find(web_app->app_id());
+    if (it != installed_apps.end()) {
+      install_url = it->second;
+    }
+  }
+  app->policy_id = install_url.spec();
+  app->permissions = CreatePermissions(web_app);
+
   return app;
 }
 #endif
@@ -421,7 +487,7 @@ apps::mojom::AppPtr WebAppPublisherHelper::ConvertWebApp(
                  ? apps::mojom::Readiness::kUninstalledByUser
                  : apps::mojom::Readiness::kReady)
           : apps::mojom::Readiness::kDisabledByUser;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   DCHECK(web_app->chromeos_data().has_value());
   if (web_app->chromeos_data()->is_disabled)
     readiness = apps::mojom::Readiness::kDisabledByPolicy;
@@ -483,7 +549,7 @@ apps::mojom::AppPtr WebAppPublisherHelper::ConvertWebApp(
   app->paused = paused ? apps::mojom::OptionalBool::kTrue
                        : apps::mojom::OptionalBool::kFalse;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   if (readiness != apps::mojom::Readiness::kReady) {
     UpdateAppDisabledMode(app);
   }
@@ -558,7 +624,8 @@ void WebAppPublisherHelper::UninstallWebApp(
                              },
                              base::Unretained(profile())),
                          origin, kClearCookies, kClearStorage, kClearCache,
-                         kAvoidClosingConnections, base::DoNothing());
+                         kAvoidClosingConnections,
+                         net::CookiePartitionKey::Todo(), base::DoNothing());
 }
 
 apps::mojom::IconKeyPtr WebAppPublisherHelper::MakeIconKey(
@@ -613,9 +680,9 @@ bool WebAppPublisherHelper::IsPaused(const std::string& app_id) {
 }
 
 void WebAppPublisherHelper::LoadIcon(const std::string& app_id,
-                                     const apps::IconKey& icon_key,
                                      apps::IconType icon_type,
                                      int32_t size_hint_in_dip,
+                                     apps::IconEffects icon_effects,
                                      LoadIconCallback callback) {
   DCHECK(provider_);
   if (IsShuttingDown()) {
@@ -623,8 +690,7 @@ void WebAppPublisherHelper::LoadIcon(const std::string& app_id,
   }
 
   LoadIconFromWebApp(profile_, icon_type, size_hint_in_dip, app_id,
-                     static_cast<IconEffects>(icon_key.icon_effects),
-                     std::move(callback));
+                     icon_effects, std::move(callback));
 }
 
 content::WebContents* WebAppPublisherHelper::Launch(
@@ -1049,7 +1115,7 @@ void WebAppPublisherHelper::OnWebAppWillBeUninstalled(const AppId& app_id) {
 
   paused_apps_.MaybeRemoveApp(app_id);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   app_notifications_.RemoveNotificationsForApp(app_id);
 
   auto result = media_requests_.RemoveRequests(app_id);
@@ -1092,7 +1158,7 @@ void WebAppPublisherHelper::OnWebAppUserDisplayModeChanged(
   PublishWindowModeUpdate(app_id, user_display_mode);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 // If is_disabled is set, the app backed by |app_id| is published with readiness
 // kDisabledByPolicy, otherwise it's published with readiness kReady.
 void WebAppPublisherHelper::OnWebAppDisabledStateChanged(const AppId& app_id,
@@ -1139,7 +1205,7 @@ void WebAppPublisherHelper::OnWebAppsDisabledModeChanged() {
 }
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 void WebAppPublisherHelper::OnNotificationDisplayed(
     const message_center::Notification& notification,
     const NotificationCommon::Metadata* const metadata) {
@@ -1187,7 +1253,7 @@ void WebAppPublisherHelper::OnRequestUpdate(
   }
 
   absl::optional<AppId> app_id =
-      FindInstalledAppWithUrlInScope(profile(), web_contents->GetURL(),
+      FindInstalledAppWithUrlInScope(profile(), web_contents->GetVisibleURL(),
                                      /*window_only=*/false);
   if (!app_id.has_value()) {
     return;
@@ -1266,7 +1332,7 @@ void WebAppPublisherHelper::Init(bool observe_media_requests) {
   content_settings_observation_.Observe(
       HostContentSettingsMapFactory::GetForProfile(profile_));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   notification_display_service_.Observe(
       NotificationDisplayServiceFactory::GetForProfile(profile()));
 
@@ -1281,7 +1347,7 @@ void WebAppPublisherHelper::Init(bool observe_media_requests) {
 
   web_app_launch_manager_ = std::make_unique<WebAppLaunchManager>(profile_);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   if (observe_media_requests) {
     media_dispatcher_.Observe(MediaCaptureDevicesDispatcher::GetInstance());
   }
@@ -1297,7 +1363,7 @@ IconEffects WebAppPublisherHelper::GetIconEffects(const WebApp* web_app) {
     icon_effects |= IconEffects::kBlocked;
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   icon_effects |= web_app->is_generated_icon() ? IconEffects::kCrOsStandardMask
                                                : IconEffects::kCrOsStandardIcon;
 #endif
@@ -1367,7 +1433,7 @@ void WebAppPublisherHelper::LaunchAppWithIntentImpl(
   std::move(callback).Run(LaunchAppWithParams(std::move(params)));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 void WebAppPublisherHelper::UpdateAppDisabledMode(apps::mojom::AppPtr& app) {
   if (provider_->policy_manager().IsDisabledAppsModeHidden()) {
     app->show_in_launcher = apps::mojom::OptionalBool::kFalse;
@@ -1471,22 +1537,13 @@ void WebAppPublisherHelper::LaunchAppWithFilesCheckingUserPermission(
   DCHECK(
       provider_->os_integration_manager().IsFileHandlingAPIAvailable(app_id));
 
-  // TODO(estade): move the system app check into
-  // WebAppRegistrar::GetFileHandlerApprovalState().
-  const WebApp* web_app = provider_->registrar().GetAppById(app_id);
-  DCHECK(web_app);
-  if (web_app->IsSystemApp()) {
-    std::move(callback).Run(LaunchAppWithParams(std::move(params)));
-    return;
-  }
-
   std::vector<base::FilePath> file_paths = params.launch_files;
   auto launch_callback =
       base::BindOnce(&WebAppPublisherHelper::OnFileHandlerDialogCompleted,
                      weak_ptr_factory_.GetWeakPtr(), app_id, std::move(params),
                      std::move(callback));
 
-  switch (web_app->file_handler_approval_state()) {
+  switch (provider_->registrar().GetAppFileHandlerApprovalState(app_id)) {
     case ApiApprovalState::kRequiresPrompt:
       chrome::ShowWebAppFileLaunchDialog(file_paths, profile(), app_id,
                                          std::move(launch_callback));

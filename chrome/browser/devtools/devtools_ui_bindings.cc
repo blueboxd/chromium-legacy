@@ -372,11 +372,12 @@ GURL SanitizeFrontendURL(const GURL& url,
   std::string fragment;
   if (allow_query_and_fragment) {
     for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
-      std::string value = SanitizeFrontendQueryParam(it.GetKey(),
-          it.GetValue());
+      const std::string key = std::string(it.GetKey());
+      std::string value =
+          SanitizeFrontendQueryParam(key, std::string(it.GetValue()));
       if (!value.empty()) {
         query_parts.push_back(
-            base::StringPrintf("%s=%s", it.GetKey().c_str(), value.c_str()));
+            base::StringPrintf("%s=%s", key.c_str(), value.c_str()));
       }
     }
     if (url.has_ref() && url.ref_piece().find('\'') == base::StringPiece::npos)
@@ -550,10 +551,8 @@ class DevToolsUIBindings::FrontendWebContentsObserver
       base::TerminationStatus status) override;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DocumentOnLoadCompletedInMainFrame(
-      content::RenderFrameHost* render_frame_host) override;
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
+  void DocumentOnLoadCompletedInPrimaryMainFrame() override;
+  void PrimaryPageChanged(content::Page& page) override;
 
   DevToolsUIBindings* devtools_bindings_;
 };
@@ -597,13 +596,13 @@ void DevToolsUIBindings::FrontendWebContentsObserver::
   switch (status) {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
 #endif
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
     case base::TERMINATION_STATUS_LAUNCH_FAILED:
     case base::TERMINATION_STATUS_OOM:
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
 #endif
       if (devtools_bindings_->agent_host_.get())
@@ -611,7 +610,7 @@ void DevToolsUIBindings::FrontendWebContentsObserver::
       break;
     case base::TERMINATION_STATUS_NORMAL_TERMINATION:
     case base::TERMINATION_STATUS_STILL_RUNNING:
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     case base::TERMINATION_STATUS_OOM_PROTECTED:
 #endif
     case base::TERMINATION_STATUS_MAX_ENUM:
@@ -627,16 +626,13 @@ void DevToolsUIBindings::FrontendWebContentsObserver::ReadyToCommitNavigation(
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
-    DocumentOnLoadCompletedInMainFrame(
-        content::RenderFrameHost* render_frame_host) {
-  devtools_bindings_->DocumentOnLoadCompletedInMainFrame();
+    DocumentOnLoadCompletedInPrimaryMainFrame() {
+  devtools_bindings_->DocumentOnLoadCompletedInPrimaryMainFrame();
 }
 
-void DevToolsUIBindings::FrontendWebContentsObserver::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInPrimaryMainFrame() &&
-      navigation_handle->HasCommitted())
-    devtools_bindings_->DidNavigateMainFrame();
+void DevToolsUIBindings::FrontendWebContentsObserver::PrimaryPageChanged(
+    content::Page&) {
+  devtools_bindings_->PrimaryPageChanged();
 }
 
 // DevToolsUIBindings ---------------------------------------------------------
@@ -650,6 +646,10 @@ DevToolsUIBindings* DevToolsUIBindings::ForWebContents(
       return binding;
   }
   return nullptr;
+}
+
+std::string DevToolsUIBindings::GetTypeForMetrics() {
+  return "DevTools";
 }
 
 DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
@@ -897,14 +897,14 @@ void DevToolsUIBindings::LoadNetworkResource(DispatchCallback callback,
     // committed URL of that frame, and use the loader associated with that
     // frame to allow nested frames with different schemes to load files.
     if (allow_web_ui_scheme && target_tab &&
-        target_tab->GetURL().scheme() == gurl.scheme()) {
+        target_tab->GetLastCommittedURL().scheme() == gurl.scheme()) {
       std::vector<std::string> allowed_webui_hosts;
       content::RenderFrameHost* frame_host = web_contents()->GetMainFrame();
 
       mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_remote =
-          content::CreateWebUIURLLoaderFactory(frame_host,
-                                               target_tab->GetURL().scheme(),
-                                               std::move(allowed_webui_hosts));
+          content::CreateWebUIURLLoaderFactory(
+              frame_host, target_tab->GetLastCommittedURL().scheme(),
+              std::move(allowed_webui_hosts));
       url_loader_factory = network::SharedURLLoaderFactory::Create(
           std::make_unique<network::WrapperPendingSharedURLLoaderFactory>(
               std::move(pending_remote)));
@@ -940,7 +940,8 @@ void DevToolsUIBindings::OpenInNewTab(const std::string& url) {
 }
 
 void DevToolsUIBindings::ShowItemInFolder(const std::string& file_system_path) {
-  CHECK(IsValidFrontendURL(web_contents_->GetURL()) && frontend_host_);
+  CHECK(IsValidFrontendURL(web_contents_->GetLastCommittedURL()) &&
+        frontend_host_);
   file_helper_->ShowItemInFolder(file_system_path);
 }
 
@@ -962,7 +963,8 @@ void DevToolsUIBindings::AppendToFile(const std::string& url,
 }
 
 void DevToolsUIBindings::RequestFileSystems() {
-  CHECK(IsValidFrontendURL(web_contents_->GetURL()) && frontend_host_);
+  CHECK(IsValidFrontendURL(web_contents_->GetLastCommittedURL()) &&
+        frontend_host_);
   base::ListValue file_systems_value;
   for (auto const& file_system : file_helper_->GetFileSystems())
     file_systems_value.Append(CreateFileSystemValue(file_system));
@@ -971,20 +973,23 @@ void DevToolsUIBindings::RequestFileSystems() {
 }
 
 void DevToolsUIBindings::AddFileSystem(const std::string& type) {
-  CHECK(IsValidFrontendURL(web_contents_->GetURL()) && frontend_host_);
+  CHECK(IsValidFrontendURL(web_contents_->GetLastCommittedURL()) &&
+        frontend_host_);
   file_helper_->AddFileSystem(
       type, base::BindRepeating(&DevToolsUIBindings::ShowDevToolsInfoBar,
                                 weak_factory_.GetWeakPtr()));
 }
 
 void DevToolsUIBindings::RemoveFileSystem(const std::string& file_system_path) {
-  CHECK(IsValidFrontendURL(web_contents_->GetURL()) && frontend_host_);
+  CHECK(IsValidFrontendURL(web_contents_->GetLastCommittedURL()) &&
+        frontend_host_);
   file_helper_->RemoveFileSystem(file_system_path);
 }
 
 void DevToolsUIBindings::UpgradeDraggedFileSystemPermissions(
     const std::string& file_system_url) {
-  CHECK(IsValidFrontendURL(web_contents_->GetURL()) && frontend_host_);
+  CHECK(IsValidFrontendURL(web_contents_->GetLastCommittedURL()) &&
+        frontend_host_);
   file_helper_->UpgradeDraggedFileSystemPermissions(
       file_system_url,
       base::BindRepeating(&DevToolsUIBindings::ShowDevToolsInfoBar,
@@ -996,7 +1001,8 @@ void DevToolsUIBindings::IndexPath(
     const std::string& file_system_path,
     const std::string& excluded_folders_message) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CHECK(IsValidFrontendURL(web_contents_->GetURL()) && frontend_host_);
+  CHECK(IsValidFrontendURL(web_contents_->GetLastCommittedURL()) &&
+        frontend_host_);
   if (!file_helper_->IsFileSystemAdded(file_system_path)) {
     IndexingDone(index_request_id, file_system_path);
     return;
@@ -1041,7 +1047,8 @@ void DevToolsUIBindings::SearchInPath(int search_request_id,
                                       const std::string& file_system_path,
                                       const std::string& query) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CHECK(IsValidFrontendURL(web_contents_->GetURL()) && frontend_host_);
+  CHECK(IsValidFrontendURL(web_contents_->GetLastCommittedURL()) &&
+        frontend_host_);
   if (!file_helper_->IsFileSystemAdded(file_system_path)) {
     SearchCompleted(search_request_id,
                     file_system_path,
@@ -1222,6 +1229,12 @@ void DevToolsUIBindings::RegisterPreference(const std::string& name,
 void DevToolsUIBindings::GetPreferences(DispatchCallback callback) {
   base::Value settings = settings_.Get();
   std::move(callback).Run(&settings);
+}
+
+void DevToolsUIBindings::GetPreference(DispatchCallback callback,
+                                       const std::string& name) {
+  base::Value pref = settings_.Get(name).value_or(base::Value());
+  std::move(callback).Run(&pref);
 }
 
 void DevToolsUIBindings::SetPreference(const std::string& name,
@@ -1502,6 +1515,7 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
     return;
 
   base::ListValue results;
+  bool have_user_installed_devtools_extensions = false;
   for (const scoped_refptr<const extensions::Extension>& extension :
        registry->enabled_extensions()) {
     if (extensions::chrome_manifest_urls::GetDevToolsPage(extension.get())
@@ -1530,6 +1544,18 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
         extension->permissions_data()->HasAPIPermission(
             extensions::mojom::APIPermissionID::kExperimental));
     results.Append(std::move(extension_info));
+
+    if (!(extensions::Manifest::IsPolicyLocation(extension->location()) ||
+          extensions::Manifest::IsComponentLocation(extension->location()))) {
+      have_user_installed_devtools_extensions = true;
+    }
+  }
+
+  if (have_user_installed_devtools_extensions) {
+    bool is_developer_mode =
+        profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+    base::UmaHistogramBoolean("Extensions.DevTools.UserIsInDeveloperMode",
+                              is_developer_mode);
   }
 
   CallClientMethod("DevToolsAPI", "addExtensions", std::move(results));
@@ -1684,11 +1710,11 @@ void DevToolsUIBindings::ReadyToCommitNavigation(
   content::DevToolsFrontendHost::SetupExtensionsAPI(frame, script);
 }
 
-void DevToolsUIBindings::DocumentOnLoadCompletedInMainFrame() {
+void DevToolsUIBindings::DocumentOnLoadCompletedInPrimaryMainFrame() {
   FrontendLoaded();
 }
 
-void DevToolsUIBindings::DidNavigateMainFrame() {
+void DevToolsUIBindings::PrimaryPageChanged() {
   frontend_loaded_ = false;
 }
 

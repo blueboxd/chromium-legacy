@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_report_uploader.h"
@@ -41,7 +42,7 @@
 #include "extensions/browser/quota_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/test/test_reg_util_win.h"
 #endif
 
@@ -203,7 +204,7 @@ class IncidentReportingServiceTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // Redirect HKCU so that the platform state store used by the test doesn't
     // collide with existing Chrome installs or other tests running in parallel.
     ASSERT_NO_FATAL_FAILURE(
@@ -212,6 +213,7 @@ class IncidentReportingServiceTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
     // Disable profile metrics reporting, otherwise the calls to
     // FastForwardUntilNoTasksRemain() never return.
+    profile_manager_.profile_manager()->DisableProfileMetricsForTesting();
     profile_manager_.profile_attributes_storage()
         ->DisableProfileMetricsForTesting();
   }
@@ -581,7 +583,7 @@ class IncidentReportingServiceTest : public testing::Test {
       receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   registry_util::RegistryOverrideManager registry_override_manager_;
 #endif
 
@@ -1334,12 +1336,12 @@ TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
   // Let all tasks run.
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 
-  const base::DictionaryValue* new_state =
+  const base::Value* new_state =
       profile->GetPrefs()->GetDictionary(prefs::kSafeBrowsingIncidentsSent);
   // The legacy value must be gone.
-  ASSERT_FALSE(new_state->HasKey(blocklist_load_type));
+  ASSERT_FALSE(new_state->FindKey(blocklist_load_type));
   // But other data must be untouched.
-  ASSERT_TRUE(new_state->HasKey(preference_type));
+  ASSERT_TRUE(new_state->FindKey(preference_type));
 }
 
 // Tests that an identical incident added after an incident is pruned and

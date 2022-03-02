@@ -25,6 +25,7 @@
 #include "base/test/test_future.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/support_tool/data_collector.h"
+#include "components/feedback/pii_types.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -52,14 +53,19 @@ class TestDataCollector : public DataCollector {
   const PIIMap& GetDetectedPII() override { return pii_map_; }
 
   void CollectDataAndDetectPII(
-      DataCollectorDoneCallback on_data_collected_callback) override {
+      DataCollectorDoneCallback on_data_collected_callback,
+      scoped_refptr<base::SequencedTaskRunner> task_runner_for_redaction_tool,
+      scoped_refptr<feedback::RedactionToolContainer> redaction_tool_container)
+      override {
     // Add fake PII for testing and return error to the callback if required.
     PrepareDataCollectionOutput(std::move(on_data_collected_callback));
   }
 
   void ExportCollectedDataWithPII(
-      std::set<PIIType> pii_types_to_keep,
+      std::set<feedback::PIIType> pii_types_to_keep,
       base::FilePath target_directory,
+      scoped_refptr<base::SequencedTaskRunner> task_runner_for_redaction_tool,
+      scoped_refptr<feedback::RedactionToolContainer> redaction_tool_container,
       DataCollectorDoneCallback on_exported_callback) override {
     on_exported_callback = base::BindPostTask(
         base::ThreadTaskRunnerHandle::Get(), std::move(on_exported_callback));
@@ -76,10 +82,10 @@ class TestDataCollector : public DataCollector {
   // `callback`. Adds errors when running `callback` if this.error_ is true.
   void PrepareDataCollectionOutput(DataCollectorDoneCallback callback) {
     if (error_) {
-      std::move(callback).Run(SupportToolError::kTestDataCollectorError);
+      std::move(callback).Run(SupportToolError(
+          SupportToolErrorCode::kDataCollectorError, /*error_message=*/""));
     } else {
-      pii_map_.insert(std::pair<PIIType, std::string>(
-          PIIType::kUIHierarchyWindowTitles, name_));
+      pii_map_[feedback::PIIType::kUIHierarchyWindowTitles].insert(name_);
       std::move(callback).Run(absl::nullopt);
     }
   }
@@ -89,7 +95,8 @@ class TestDataCollector : public DataCollector {
   void WriteFileForTesting(base::FilePath target_directory,
                            DataCollectorDoneCallback callback) {
     if (error_) {
-      std::move(callback).Run(SupportToolError::kTestDataCollectorError);
+      std::move(callback).Run(SupportToolError(
+          SupportToolErrorCode::kDataCollectorError, /*error_message=*/""));
     } else {
       base::FilePath target_file = target_directory.AppendASCII(name_);
       base::WriteFile(target_file, kTestDataToWriteOnFile);
@@ -208,7 +215,8 @@ TEST_F(SupportToolHandlerTest, ExportSupportDataTest) {
   base::FilePath target_path = GetPathForOutput().Append(
       FILE_PATH_LITERAL("support-tool-export-success"));
   base::test::TestFuture<std::set<SupportToolError>> test_future;
-  std::set<PIIType> pii_types{PIIType::kUIHierarchyWindowTitles};
+  std::set<feedback::PIIType> pii_types{
+      feedback::PIIType::kUIHierarchyWindowTitles};
   handler->ExportCollectedData(pii_types, target_path,
                                test_future.GetCallback());
   std::set<SupportToolError> errors = test_future.Get();
@@ -250,12 +258,14 @@ TEST_F(SupportToolHandlerTest, ErrorMessageOnCollectData) {
   EXPECT_FALSE(detected_pii.empty());
   // Check if the error message returned contains the expected result.
   EXPECT_FALSE(errors.empty());
-  // SupportToolError::kTestDataCollectorError should be present in the errors
+  // SupportToolErrorCode::kDataCollectorError should be present in the errors
   // returned.
   size_t expected_size = 1;
   EXPECT_EQ(errors.size(), expected_size);
-  EXPECT_NE(errors.find(SupportToolError::kTestDataCollectorError),
-            errors.end());
+  EXPECT_NE(
+      errors.find(SupportToolError(SupportToolErrorCode::kDataCollectorError,
+                                   /*error_message=*/"")),
+      errors.end());
 }
 
 TEST_F(SupportToolHandlerTest, ErrorMessageOnExportSupportData) {
@@ -275,19 +285,22 @@ TEST_F(SupportToolHandlerTest, ErrorMessageOnExportSupportData) {
 
   // Export collected data into the target temporary directory.
   base::test::TestFuture<std::set<SupportToolError>> test_future;
-  std::set<PIIType> pii_types{PIIType::kUIHierarchyWindowTitles};
+  std::set<feedback::PIIType> pii_types{
+      feedback::PIIType::kUIHierarchyWindowTitles};
   handler->ExportCollectedData(pii_types, target_path,
                                test_future.GetCallback());
 
   // Check the error message.
   std::set<SupportToolError> errors = test_future.Get();
   EXPECT_FALSE(errors.empty());
-  // SupportToolError::kTestDataCollectorError should be present in the errors
+  // SupportToolErrorCode::kDataCollectorError should be present in the errors
   // returned.
   size_t expected_size = 1;
   EXPECT_EQ(errors.size(), expected_size);
-  EXPECT_NE(errors.find(SupportToolError::kTestDataCollectorError),
-            errors.end());
+  EXPECT_NE(
+      errors.find(SupportToolError(SupportToolErrorCode::kDataCollectorError,
+                                   /*error_message=*/"")),
+      errors.end());
 
   // SupportToolHandler will archive the data into a .zip archive.
   target_path = target_path.AddExtension(FILE_PATH_LITERAL(".zip"));

@@ -239,6 +239,16 @@ SearchResultView::SearchResultView(
 
 SearchResultView::~SearchResultView() = default;
 
+void SearchResultView::OnResultChanging(SearchResult* new_result) {
+  if (result_changed_)
+    return;
+  if (!new_result || !result()) {
+    result_changed_ = new_result;
+    return;
+  }
+  result_changed_ = new_result->id() != result()->id();
+}
+
 void SearchResultView::OnResultChanged() {
   OnMetadataChanged();
   // Update tile, separator, and details text visibility.
@@ -313,6 +323,12 @@ void SearchResultView::UpdateTitleText() {
   }
 }
 
+bool SearchResultView::GetAndResetResultChanged() {
+  bool result_changed = result_changed_;
+  result_changed_ = false;
+  return result_changed;
+}
+
 void SearchResultView::UpdateDetailsText() {
   if (!result() || result()->details().empty()) {
     details_label_->SetText(std::u16string());
@@ -328,7 +344,6 @@ void SearchResultView::UpdateDetailsText() {
         break;
       case SearchResultViewType::kClassic:
       case SearchResultViewType::kAnswerCard:
-
         separator_label_->SetVisible(false);
     }
   }
@@ -350,6 +365,8 @@ void SearchResultView::UpdateRating() {
 void SearchResultView::StyleLabel(views::Label* label,
                                   bool is_title_label,
                                   const SearchResult::Tags& tags) {
+  // Reset font weight styling for label.
+  label->ApplyBaselineTextStyle();
   // Apply font weight styles.
   bool is_url = false;
   for (const auto& tag : tags) {
@@ -391,9 +408,20 @@ void SearchResultView::OnQueryRemovalAccepted(bool accepted) {
     SetSelected(false, absl::nullopt);
   }
 
-  RecordZeroStateSearchResultRemovalHistogram(
-      accepted ? ZeroStateSearchResutRemovalConfirmation::kRemovalConfirmed
-               : ZeroStateSearchResutRemovalConfirmation::kRemovalCanceled);
+  // Record different dialog action metric depending on productivity launcher
+  // state - productivity launcher does not show zero-state search results, so
+  // zero-state specific metric is not suitable. On the other hand, removal
+  // action outside of zero-state search UI is only allowed if the productivity
+  // launcher feature is on.
+  if (features::IsProductivityLauncherEnabled()) {
+    RecordSearchResultRemovalDialogDecision(
+        accepted ? SearchResultRemovalConfirmation::kRemovalConfirmed
+                 : SearchResultRemovalConfirmation::kRemovalCanceled);
+  } else {
+    RecordZeroStateSearchResultRemovalHistogram(
+        accepted ? SearchResultRemovalConfirmation::kRemovalConfirmed
+                 : SearchResultRemovalConfirmation::kRemovalCanceled);
+  }
 }
 
 const char* SearchResultView::GetClassName() const {
@@ -669,36 +697,44 @@ void SearchResultView::OnSearchResultActionActivated(size_t index) {
 
   DCHECK_LT(index, result()->actions().size());
 
-  if (result()->is_omnibox_search()) {
-    SearchResultActionType button_action = result()->actions()[index].type;
+  SearchResultActionType button_action = result()->actions()[index].type;
 
-    switch (button_action) {
-      case SearchResultActionType::kRemove: {
+  switch (button_action) {
+    case SearchResultActionType::kRemove: {
+      // Zero state suggestions are only available when productivity launcher
+      // is not enabled, so don't record zero-state metric when the feature is
+      // turned on.
+      if (!features::IsProductivityLauncherEnabled()) {
         RecordZeroStateSearchResultUserActionHistogram(
             ZeroStateSearchResultUserActionType::kRemoveResult);
-        std::unique_ptr<views::WidgetDelegate> dialog;
-        if (features::IsProductivityLauncherEnabled()) {
-          dialog = std::make_unique<RemoveQueryConfirmationDialog>(
-              result()->title(),
-              base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
-                             weak_ptr_factory_.GetWeakPtr()));
-        } else {
-          dialog = std::make_unique<LegacyRemoveQueryConfirmationDialog>(
-              result()->title(),
-              base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
-                             weak_ptr_factory_.GetWeakPtr()));
-        }
-        dialog_controller_->Show(std::move(dialog));
-        break;
       }
-      case SearchResultActionType::kAppend:
+      std::unique_ptr<views::WidgetDelegate> dialog;
+      if (features::IsProductivityLauncherEnabled()) {
+        dialog = std::make_unique<RemoveQueryConfirmationDialog>(
+            result()->title(),
+            base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
+                           weak_ptr_factory_.GetWeakPtr()));
+      } else {
+        dialog = std::make_unique<LegacyRemoveQueryConfirmationDialog>(
+            result()->title(),
+            base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
+                           weak_ptr_factory_.GetWeakPtr()));
+      }
+      dialog_controller_->Show(std::move(dialog));
+      break;
+    }
+    case SearchResultActionType::kAppend:
+      // Zero state suggestions are only available when productivity launcher
+      // is not enabled, so don't record zero-state metric when the feature is
+      // turned on.
+      if (!features::IsProductivityLauncherEnabled()) {
         RecordZeroStateSearchResultUserActionHistogram(
             ZeroStateSearchResultUserActionType::kAppendResult);
-        list_view_->SearchResultActionActivated(this, button_action);
-        break;
-      case SearchResultActionType::kSearchResultActionTypeMax:
-        NOTREACHED();
-    }
+      }
+      list_view_->SearchResultActionActivated(this, button_action);
+      break;
+    case SearchResultActionType::kSearchResultActionTypeMax:
+      NOTREACHED();
   }
 }
 

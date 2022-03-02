@@ -57,9 +57,7 @@ void AddFakeComponents(const RenderWidgetHostLatencyTracker& tracker,
   base::TimeTicks now = base::TimeTicks::Now();
   latency->AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT, now);
-  latency->AddLatencyNumberWithTimestamp(
-      ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT, now);
-  AddFakeComponentsWithTimeStamp(tracker, latency, base::TimeTicks::Now());
+  AddFakeComponentsWithTimeStamp(tracker, latency, now);
 }
 
 void AddRenderingScheduledComponent(ui::LatencyInfo* latency,
@@ -221,7 +219,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestValidEventTiming) {
 }
 
 // Flaky on Android. https://crbug.com/970841
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_TestWheelToFirstScrollHistograms \
   DISABLED_TestWheelToFirstScrollHistograms
 #else
@@ -333,7 +331,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
 }
 
 // Flaky on Android. https://crbug.com/970841
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_TestWheelToScrollHistograms DISABLED_TestWheelToScrollHistograms
 #else
 #define MAYBE_TestWheelToScrollHistograms TestWheelToScrollHistograms
@@ -444,7 +442,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_TestWheelToScrollHistograms) {
 }
 
 // Flaky on Android. https://crbug.com/970841
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_TestInertialToScrollHistograms \
   DISABLED_TestInertialToScrollHistograms
 #else
@@ -505,7 +503,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
 }
 
 // Flaky on Android. https://crbug.com/970841
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_TestTouchToFirstScrollHistograms \
   DISABLED_TestTouchToFirstScrollHistograms
 #else
@@ -549,8 +547,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
       base::TimeTicks now = base::TimeTicks::Now();
       touch_latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT, now);
-      touch_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT, now);
       AddFakeComponentsWithTimeStamp(*tracker(), &touch_latency, now);
       AddRenderingScheduledComponent(&touch_latency, rendering_on_main, now);
       tracker()->OnInputEvent(touch, &touch_latency);
@@ -626,7 +622,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
 }
 
 // Flaky on Android. https://crbug.com/970841
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_TestTouchToScrollHistograms DISABLED_TestTouchToScrollHistograms
 #else
 #define MAYBE_TestTouchToScrollHistograms TestTouchToScrollHistograms
@@ -668,8 +664,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_TestTouchToScrollHistograms) {
       base::TimeTicks now = base::TimeTicks::Now();
       touch_latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT, now);
-      touch_latency.AddLatencyNumberWithTimestamp(
-          ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT, now);
       AddFakeComponentsWithTimeStamp(*tracker(), &touch_latency, now);
       AddRenderingScheduledComponent(&touch_latency, rendering_on_main, now);
       tracker()->OnInputEvent(touch, &touch_latency);
@@ -743,7 +737,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_TestTouchToScrollHistograms) {
 }
 
 // Flaky on Android. https://crbug.com/970841
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_ScrollbarEndToEndHistograms DISABLED_ScrollbarEndToEndHistograms
 #else
 #define MAYBE_ScrollbarEndToEndHistograms ScrollbarEndToEndHistograms
@@ -941,9 +935,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
       ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT, nullptr));
   EXPECT_FALSE(scroll_latency.FindLatency(
       ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT, nullptr));
-  EXPECT_TRUE(scroll_latency.FindLatency(
-      ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT, nullptr));
-  EXPECT_EQ(4U, scroll_latency.latency_components().size());
+  EXPECT_EQ(3U, scroll_latency.latency_components().size());
 
   // Subsequent GestureScrollUpdates should be provided with
   // INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT.
@@ -959,9 +951,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
       ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT, nullptr));
   EXPECT_TRUE(scroll_latency.FindLatency(
       ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT, nullptr));
-  EXPECT_TRUE(scroll_latency.FindLatency(
-      ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT, nullptr));
-  EXPECT_EQ(4U, scroll_latency.latency_components().size());
+  EXPECT_EQ(3U, scroll_latency.latency_components().size());
 }
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, KeyEndToEndLatency) {

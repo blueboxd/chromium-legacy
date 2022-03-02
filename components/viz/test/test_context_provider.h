@@ -95,14 +95,14 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   void PresentSwapChain(const gpu::SyncToken& sync_token,
                         const gpu::Mailbox& mailbox) override;
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
   void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
                                       zx::channel token,
                                       gfx::BufferFormat format,
                                       gfx::BufferUsage usage,
                                       bool register_with_image_pipe) override;
   void ReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id) override;
-#endif  // defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_FUCHSIA)
 
   gpu::SyncToken GenVerifiedSyncToken() override;
   gpu::SyncToken GenUnverifiedSyncToken() override;
@@ -213,7 +213,7 @@ class TestContextProvider
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<ContextCacheController> cache_controller_;
   std::unique_ptr<TestSharedImageInterface> shared_image_interface_;
-  const bool support_locking_ ALLOW_UNUSED_TYPE;
+  [[maybe_unused]] const bool support_locking_;
   bool bound_ = false;
 
   gpu::GpuFeatureInfo gpu_feature_info_;

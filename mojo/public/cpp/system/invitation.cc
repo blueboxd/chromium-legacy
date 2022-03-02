@@ -4,7 +4,8 @@
 
 #include "mojo/public/cpp/system/invitation.h"
 
-#include "base/ignore_result.h"
+#include <tuple>
+
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "mojo/public/c/system/invitation.h"
@@ -20,7 +21,7 @@ static constexpr base::StringPiece kIsolatedPipeName = {"\0\0\0\0", 4};
 void ProcessHandleToMojoProcessHandle(base::ProcessHandle target_process,
                                       MojoPlatformProcessHandle* handle) {
   handle->struct_size = sizeof(*handle);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   handle->value =
       static_cast<uint64_t>(reinterpret_cast<uintptr_t>(target_process));
 #else
@@ -98,7 +99,7 @@ void SendInvitation(ScopedInvitationHandle invitation,
       error_handler_context, &options);
   // If successful, the invitation handle is already closed for us.
   if (result == MOJO_RESULT_OK)
-    ignore_result(invitation.release());
+    std::ignore = invitation.release();
 }
 
 }  // namespace

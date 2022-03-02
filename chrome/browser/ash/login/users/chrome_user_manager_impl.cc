@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <set>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -21,11 +22,11 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
-#include "base/ignore_result.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -59,9 +60,6 @@
 #include "chrome/browser/ash/policy/external_data/handlers/printers_external_data_handler.h"
 #include "chrome/browser/ash/policy/external_data/handlers/user_avatar_image_external_data_handler.h"
 #include "chrome/browser/ash/policy/external_data/handlers/wallpaper_image_external_data_handler.h"
-#include "chrome/browser/ash/policy/networking/device_network_configuration_updater.h"
-#include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
-#include "chrome/browser/ash/policy/networking/user_network_configuration_updater.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/session_length_limiter.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
@@ -75,6 +73,8 @@
 #include "chrome/browser/chromeos/extensions/permissions_updater_delegate_chromeos.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/policy/networking/policy_cert_service_factory.h"
+#include "chrome/browser/policy/networking/user_network_configuration_updater_ash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -84,6 +84,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/components/onc/certificate_scope.h"
 #include "chromeos/cryptohome/userdataauth_util.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
@@ -92,7 +93,6 @@
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/onc/certificate_scope.h"
 #include "chromeos/network/proxy/proxy_config_service_impl.h"
 #include "components/account_id/account_id.h"
 #include "components/crash/core/common/crash_key.h"
@@ -162,7 +162,7 @@ void OnRemoveUserComplete(const AccountId& account_id,
 // Runs on SequencedWorkerPool thread. Passes resolved locale to UI thread.
 void ResolveLocale(const std::string& raw_locale,
                    std::string* resolved_locale) {
-  ignore_result(l10n_util::CheckAndResolveLocale(raw_locale, resolved_locale));
+  std::ignore = l10n_util::CheckAndResolveLocale(raw_locale, resolved_locale);
 }
 
 bool GetUserLockAttributes(const user_manager::User* user,
@@ -253,7 +253,7 @@ bool IsProxyUsed(const PrefService* local_state_prefs) {
 
 bool PolicyHasWebTrustedAuthorityCertificate(
     policy::DeviceLocalAccountPolicyBroker* broker) {
-  return policy::UserNetworkConfigurationUpdater::
+  return policy::UserNetworkConfigurationUpdaterAsh::
       PolicyHasWebTrustedAuthorityCertificate(
           broker->core()->store()->policy_map());
 }
@@ -283,7 +283,7 @@ void CheckProfileForSanity() {
   // Confirm that we hadn't loaded the new profile previously.
   base::FilePath user_profile_dir =
       g_browser_process->profile_manager()->user_data_dir().Append(
-          chromeos::ProfileHelper::Get()->GetActiveUserProfileDir());
+          ProfileHelper::Get()->GetActiveUserProfileDir());
   CHECK(
       !g_browser_process->profile_manager()->GetProfileByPath(user_profile_dir))
       << "The user profile was loaded before we mounted the cryptohome.";
@@ -718,7 +718,8 @@ bool ChromeUserManagerImpl::IsEnterpriseManaged() const {
 void ChromeUserManagerImpl::LoadDeviceLocalAccounts(
     std::set<AccountId>* device_local_accounts_set) {
   const base::ListValue* prefs_device_local_accounts =
-      GetLocalState()->GetList(kDeviceLocalAccountsWithSavedData);
+      &base::Value::AsListValue(
+          *GetLocalState()->GetList(kDeviceLocalAccountsWithSavedData));
   std::vector<AccountId> device_local_accounts;
   ParseUserList(*prefs_device_local_accounts, std::set<AccountId>(),
                 &device_local_accounts, device_local_accounts_set);
@@ -1073,20 +1074,21 @@ bool ChromeUserManagerImpl::UpdateAndCleanUpDeviceLocalAccounts(
   user_manager::User* const active_user = GetActiveUser();
   const bool is_device_local_account_session =
       active_user && active_user->IsDeviceLocalAccount();
-  for (auto it = device_local_accounts.rbegin();
-       it != device_local_accounts.rend(); ++it) {
+  for (const policy::DeviceLocalAccount& account :
+       base::Reversed(device_local_accounts)) {
     if (is_device_local_account_session &&
-        AccountId::FromUserEmail(it->user_id) == active_user->GetAccountId()) {
+        AccountId::FromUserEmail(account.user_id) ==
+            active_user->GetAccountId()) {
       users_.insert(users_.begin(), active_user);
     } else {
       users_.insert(users_.begin(),
                     CreateUserFromDeviceLocalAccount(
-                        AccountId::FromUserEmail(it->user_id), it->type)
+                        AccountId::FromUserEmail(account.user_id), account.type)
                         .release());
     }
-    if (it->type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION ||
-        it->type == policy::DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION) {
-      UpdatePublicAccountDisplayName(it->user_id);
+    if (account.type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION ||
+        account.type == policy::DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION) {
+      UpdatePublicAccountDisplayName(account.user_id);
     }
   }
 
@@ -1181,12 +1183,11 @@ void ChromeUserManagerImpl::OnProfileAdded(Profile* profile) {
     if (user->HasGaiaAccount())
       GetUserImageManager(user->GetAccountId())->UserProfileCreated();
 
-    // Allow managed guest session user to lock if
-    // `kLoginExtensionApiLaunchExtensionId` is set.
+    // Managed Guest Sessions can be lockable if launched via the chrome.login
+    // extension API.
     if (user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT &&
-        !profile->GetPrefs()
-             ->GetString(::prefs::kLoginExtensionApiLaunchExtensionId)
-             .empty()) {
+        profile->GetPrefs()->GetBoolean(
+            ::prefs::kLoginExtensionApiCanLockManagedGuestSession)) {
       user->set_can_lock(true);
     }
   }
@@ -1302,7 +1303,7 @@ void ChromeUserManagerImpl::SetUserAffiliation(
 }
 
 bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
-  const base::ListValue& reporting_users =
+  const base::Value& reporting_users =
       *(GetLocalState()->GetList(::prefs::kReportingUsers));
   base::Value user_id_value(FullyCanonicalize(user_id));
   // TODO(crbug.com/1187106): Use base::Contains once |reporting_users| is not a
@@ -1367,7 +1368,7 @@ const AccountId& ChromeUserManagerImpl::GetGuestAccountId() const {
 
 bool ChromeUserManagerImpl::IsFirstExecAfterBoot() const {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kFirstExecAfterBoot);
+      switches::kFirstExecAfterBoot);
 }
 
 void ChromeUserManagerImpl::AsyncRemoveCryptohome(
@@ -1407,7 +1408,7 @@ bool ChromeUserManagerImpl::IsDeprecatedSupervisedAccountId(
 bool ChromeUserManagerImpl::HasBrowserRestarted() const {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return base::SysInfo::IsRunningOnChromeOS() &&
-         command_line->HasSwitch(chromeos::switches::kLoginUser);
+         command_line->HasSwitch(switches::kLoginUser);
 }
 
 const gfx::ImageSkia& ChromeUserManagerImpl::GetResourceImagekiaNamed(

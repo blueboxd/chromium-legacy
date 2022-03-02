@@ -32,7 +32,7 @@
         android:scaleType="centerInside"
         android:visibility="invisible"
         android:layout_marginEnd="@dimen/feed_header_icon_margin"
-        app:tint="?attr/default_icon_color_disabled"
+        app:tint="@color/default_icon_color_disabled"
         tools:ignore="contentDescription" />
 
     <com.google.android.material.tabs.TabLayout
@@ -71,7 +71,7 @@
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:paddingHorizontal="@dimen/ntp_header_lateral_paddings_v2"
-      android:background="@color/default_bg_color_elev_1"
+      android:background="@drawable/new_tab_page_multi_feed_header_background"
       android:visibility="gone" />
 
 </org.chromium.chrome.browser.feed.sections.SectionHeaderView>

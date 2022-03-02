@@ -32,19 +32,15 @@ This project is automatically built and uploaded twice a day (00:00 and 12:00 JS
 And note, uploaded **without any tests**, thus there is no guarantee for launching or proper operation.
 It's recommended to find and use a stable build for daily use. (The same is true for the original Chrome Canary/Chromium)
 
-### latest
+For getting/updating the latest canary/stable builds, [an updater](https://github.com/blueboxd/chromium-updater) is available (experimental).
+
+### canary (Chrome canary channel)
 
 See [Releases](../../releases) for recent builds.
 
-You can automatically download the latest build with commands like:  
-
-```bash
-curl -s https://api.github.com/repos/blueboxd/chromium-legacy/releases/latest|grep 'browser_download_url'|grep xz|awk -F '"' '{print $4}'|xargs curl -L|tar xvf -
-```  
-
 Or, you can [use a downloader](https://github.com/blueboxd/chromium-legacy/discussions/25) by [@Wowfunhappy](https://github.com/Wowfunhappy).
 
-### Chrome stable channel
+### stable (Chrome stable channel)
 
 See [releases/tag/stable](../../releases/tag/stable) for current stable channel release.
 

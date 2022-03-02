@@ -22,6 +22,7 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -135,11 +136,11 @@ public class InterceptNavigationDelegateTest {
 
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
         Assert.assertFalse(mNavParamHistory.get(1).hasUserGesture);
-        Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
     }
 
     @Test
     @SmallTest
+    @DisabledTest(message = "http://crbug.com/1283240")
     public void testNavigationFromUserGesture() throws TimeoutException {
         sActivityTestRule.loadUrl(mTestServer.getURL(NAVIGATION_FROM_USER_GESTURE_PAGE));
         Assert.assertEquals(1, mNavParamHistory.size());
@@ -147,12 +148,11 @@ public class InterceptNavigationDelegateTest {
         DOMUtils.clickNode(mActivity.getActivityTab().getWebContents(), "first");
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
         Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
-        // TODO(mustaq): Not clear why cary-over is different here vs the next test.
-        Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
     }
 
     @Test
     @SmallTest
+    @DisabledTest(message = "http://crbug.com/1283240")
     public void testNavigationFromXHRCallback() throws TimeoutException {
         sActivityTestRule.loadUrl(mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_PAGE));
         Assert.assertEquals(1, mNavParamHistory.size());
@@ -161,11 +161,11 @@ public class InterceptNavigationDelegateTest {
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
 
         Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
-        Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
     }
 
     @Test
     @SmallTest
+    @DisabledTest(message = "http://crbug.com/1283240")
     public void testNavigationFromXHRCallbackAndShortTimeout() throws TimeoutException {
         sActivityTestRule.loadUrl(
                 mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_AND_SHORT_TIMEOUT_PAGE));
@@ -175,11 +175,11 @@ public class InterceptNavigationDelegateTest {
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
 
         Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
-        Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
     }
 
     @Test
     @SmallTest
+    @DisabledTest(message = "http://crbug.com/1283240")
     public void testNavigationFromXHRCallbackAndLongTimeout() throws TimeoutException {
         sActivityTestRule.loadUrl(
                 mTestServer.getURL(NAVIGATION_FROM_XHR_CALLBACK_AND_LONG_TIMEOUT_PAGE));
@@ -188,11 +188,11 @@ public class InterceptNavigationDelegateTest {
         DOMUtils.clickNode(mActivity.getActivityTab().getWebContents(), "first");
         waitTillExpectedCallsComplete(2, LONG_MAX_TIME_TO_WAIT_IN_MS);
         Assert.assertFalse(mNavParamHistory.get(1).hasUserGesture);
-        Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
     }
 
     @Test
     @SmallTest
+    @DisabledTest(message = "http://crbug.com/1283240")
     public void testNavigationFromImageOnLoad() throws TimeoutException {
         sActivityTestRule.loadUrl(mTestServer.getURL(NAVIGATION_FROM_IMAGE_ONLOAD_PAGE));
         Assert.assertEquals(1, mNavParamHistory.size());
@@ -201,7 +201,6 @@ public class InterceptNavigationDelegateTest {
         waitTillExpectedCallsComplete(2, DEFAULT_MAX_TIME_TO_WAIT_IN_MS);
 
         Assert.assertTrue(mNavParamHistory.get(1).hasUserGesture);
-        Assert.assertFalse(mNavParamHistory.get(1).hasUserGestureCarryover);
     }
 
     @Test

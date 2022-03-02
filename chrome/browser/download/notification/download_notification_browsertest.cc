@@ -1187,14 +1187,14 @@ class MultiProfileDownloadNotificationTest
     DownloadNotificationTestBase::SetUpCommandLine(command_line);
 
     // Logs in to a dummy profile.
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
+    command_line->AppendSwitchASCII(ash::switches::kLoginUser,
                                     kTestAccounts[DUMMY_ACCOUNT_INDEX].email);
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+    command_line->AppendSwitchASCII(ash::switches::kLoginProfile,
                                     kTestAccounts[DUMMY_ACCOUNT_INDEX].hash);
     // Don't require policy for our sessions - this is required because
     // this test creates a secondary profile synchronously, so we need to
     // let the policy code know not to expect cached policy.
-    command_line->AppendSwitchASCII(chromeos::switches::kProfileRequiresPolicy,
+    command_line->AppendSwitchASCII(ash::switches::kProfileRequiresPolicy,
                                     "false");
   }
 
@@ -1220,7 +1220,7 @@ class MultiProfileDownloadNotificationTest
   }
 
   Profile* GetProfileByIndex(int index) {
-    return chromeos::ProfileHelper::GetProfileByUserIdHashForTest(
+    return ash::ProfileHelper::GetProfileByUserIdHashForTest(
         kTestAccounts[index].hash);
   }
 
@@ -1235,7 +1235,7 @@ class MultiProfileDownloadNotificationTest
         AccountId::FromUserEmailGaiaId(info.email, info.gaia_id),
         base::UTF8ToUTF16(info.display_name));
     Profile* profile =
-        chromeos::ProfileHelper::GetProfileByUserIdHashForTest(info.hash);
+        ash::ProfileHelper::GetProfileByUserIdHashForTest(info.hash);
 
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);

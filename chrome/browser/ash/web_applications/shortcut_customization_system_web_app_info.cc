@@ -10,15 +10,15 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/webui/shortcut_customization_ui/url_constants.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 
 // TODO(jimmyxgong): Update to correct icon and app sizes.
-std::unique_ptr<WebApplicationInfo>
+std::unique_ptr<WebAppInstallInfo>
 CreateWebAppInfoForShortcutCustomizationSystemWebApp() {
-  auto info = std::make_unique<WebApplicationInfo>();
+  auto info = std::make_unique<WebAppInstallInfo>();
   info->start_url = GURL(ash::kChromeUIShortcutCustomizationAppURL);
   info->scope = GURL(ash::kChromeUIShortcutCustomizationAppURL);
   info->title =
@@ -48,7 +48,7 @@ ShortcutCustomizationSystemAppDelegate::ShortcutCustomizationSystemAppDelegate(
           GURL(ash::kChromeUIShortcutCustomizationAppURL),
           profile) {}
 
-std::unique_ptr<WebApplicationInfo>
+std::unique_ptr<WebAppInstallInfo>
 ShortcutCustomizationSystemAppDelegate::GetWebAppInfo() const {
   return CreateWebAppInfoForShortcutCustomizationSystemWebApp();
 }

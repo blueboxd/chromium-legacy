@@ -46,6 +46,7 @@
 #include "chrome/browser/background_sync/background_sync_controller_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
+#include "chrome/browser/breadcrumbs/breadcrumbs_status.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -82,6 +83,7 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 #include "chrome/browser/privacy/privacy_metrics_service_factory.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/pref_service_builder_utils.h"
@@ -127,7 +129,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
 #include "components/breadcrumbs/core/crash_reporter_breadcrumb_observer.h"
-#include "components/breadcrumbs/core/features.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -207,7 +208,7 @@
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_builder.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/profile_key_startup_accessor.h"
 #else
 #include "chrome/browser/first_run/first_run.h"
@@ -259,7 +260,7 @@
 #include "components/signin/public/base/signin_switches.h"
 #endif
 
-#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #endif
 
@@ -387,7 +388,7 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kProfileName, std::string());
 
   registry->RegisterStringPref(prefs::kSupervisedUserId, std::string());
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   uint32_t home_page_flags = PrefRegistry::NO_REGISTRATION_FLAGS;
 #else
   uint32_t home_page_flags = user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;
@@ -403,10 +404,10 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kPrintPreviewDisabled, false);
   registry->RegisterStringPref(
       prefs::kPrintPreviewDefaultDestinationSelectionRules, std::string());
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   registry->RegisterBooleanPref(prefs::kPrintPdfAsImageAvailability, false);
 #endif
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_PRINTING)
   registry->RegisterIntegerPref(prefs::kPrintPostScriptMode, 0);
   registry->RegisterIntegerPref(prefs::kPrintRasterizationMode, 0);
 #endif
@@ -417,9 +418,9 @@ void ProfileImpl::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kForceEphemeralProfiles, false);
   registry->RegisterBooleanPref(prefs::kEnableMediaRouter, true);
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(prefs::kShowCastIconInToolbar, false);
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
   registry->RegisterTimePref(prefs::kProfileCreationTime, base::Time());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -443,12 +444,11 @@ ProfileImpl::ProfileImpl(
                         << "profile files to the root directory!";
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  const bool is_regular_profile =
-      chromeos::ProfileHelper::IsRegularProfile(this);
+  const bool is_regular_profile = ash::ProfileHelper::IsRegularProfile(this);
 
   if (is_regular_profile) {
     const user_manager::User* user =
-        chromeos::ProfileHelper::Get()->GetUserByProfile(this);
+        ash::ProfileHelper::Get()->GetUserByProfile(this);
     // A |User| instance should always exist for a profile which is not the
     // initial, the sign-in or the lock screen app profile.
     CHECK(user);
@@ -480,7 +480,7 @@ ProfileImpl::ProfileImpl(
   // The ProfileImpl can be created both synchronously and asynchronously.
   bool async_prefs = create_mode == CREATE_MODE_ASYNCHRONOUS;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   auto* startup_data = g_browser_process->startup_data();
   DCHECK(startup_data && startup_data->GetProfileKey());
   TakePrefsFromStartupData();
@@ -492,7 +492,7 @@ ProfileImpl::ProfileImpl(
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On Android StartupData creates proto database provider for the profile
   // before profile is created, so move ownership to storage partition.
   GetDefaultStoragePartition()->SetProtoDatabaseProvider(
@@ -534,7 +534,7 @@ ProfileImpl::ProfileImpl(
     // Prefs were loaded synchronously so we can continue directly.
     OnPrefsLoaded(create_mode, true);
   }
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   if (IsGuestSession()) {
     PrefService* local_state = g_browser_process->local_state();
     DCHECK(local_state);
@@ -542,10 +542,10 @@ ProfileImpl::ProfileImpl(
         "Profile.Guest.ForcedByPolicy",
         local_state->GetBoolean(prefs::kBrowserGuestModeEnforced));
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void ProfileImpl::TakePrefsFromStartupData() {
   auto* startup_data = g_browser_process->startup_data();
 
@@ -620,7 +620,7 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
 
   bool is_signin_profile = false;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  is_signin_profile = chromeos::ProfileHelper::IsSigninProfile(this);
+  is_signin_profile = ash::ProfileHelper::IsSigninProfile(this);
 #endif
   ::RegisterProfilePrefs(is_signin_profile,
                          g_browser_process->GetApplicationLocale(),
@@ -652,7 +652,7 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
   // immediately. We need to cache the LacrosLaunchSwitch now, as the value is
   // needed later, while the profile is not fully initialized.
   if (force_immediate_policy_load &&
-      chromeos::ProfileHelper::IsPrimaryProfile(this)) {
+      ash::ProfileHelper::IsPrimaryProfile(this)) {
     auto& map = profile_policy_connector_->policy_service()->GetPolicies(
         policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
     crosapi::browser_util::CacheLacrosLaunchSwitch(map);
@@ -771,7 +771,7 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
 
   PushMessagingServiceImpl::InitializeForProfile(this);
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   signin_ui_util::InitializePrefsForProfile(this);
 #endif
 
@@ -782,7 +782,7 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
   content::URLDataSource::Add(this,
                               std::make_unique<PrefsInternalsSource>(this));
 
-#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (IsNewProfile()) {
     // The installed Windows language packs aren't determined until
     // the spellcheck service is initialized. Make sure the primary
@@ -821,10 +821,14 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
   // The Privacy Metrics service should start alongside each profile session.
   PrivacyMetricsServiceFactory::GetForProfile(this);
 
+  // The Privacy Sandbox service must be created with the profile to ensure that
+  // preference reconciliation occurs.
+  PrivacySandboxServiceFactory::GetForProfile(this);
+
   AnnouncementNotificationServiceFactory::GetForProfile(this)
       ->MaybeShowNotification();
 
-  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
+  if (BreadcrumbsStatus::IsEnabled()) {
     breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service =
         BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(this);
     breadcrumbs::CrashReporterBreadcrumbObserver::GetInstance()
@@ -860,7 +864,7 @@ ProfileImpl::~ProfileImpl() {
   StopCreateSessionServiceTimer();
 #endif
 
-  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
+  if (BreadcrumbsStatus::IsEnabled()) {
     breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service =
         BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(this);
     breadcrumb_service->StopPersisting();
@@ -1047,8 +1051,8 @@ bool ProfileImpl::IsChild() const {
 
 bool ProfileImpl::AllowsBrowserWindows() const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::ProfileHelper::IsSigninProfile(this) ||
-      chromeos::ProfileHelper::IsLockScreenAppProfile(this)) {
+  if (ash::ProfileHelper::IsSigninProfile(this) ||
+      ash::ProfileHelper::IsLockScreenAppProfile(this)) {
     return false;
   }
 #endif
@@ -1127,7 +1131,7 @@ void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
     // or we are in tests. In both cases the first loaded locale is correct.
     OnLocaleReady(create_mode);
   } else {
-    if (chromeos::ProfileHelper::IsPrimaryProfile(this)) {
+    if (ash::ProfileHelper::IsPrimaryProfile(this)) {
       auto& map = profile_policy_connector_->policy_service()->GetPolicies(
           policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
       crosapi::browser_util::CacheLacrosLaunchSwitch(map);
@@ -1149,7 +1153,7 @@ bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {
 }
 
 bool ProfileImpl::ShouldRestoreOldSessionCookies() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   SessionStartupPref startup_pref(SessionStartupPref::GetDefaultStartupType());
   return startup_pref.ShouldRestoreLastSession();
 #else
@@ -1272,7 +1276,7 @@ content::PushMessagingService* ProfileImpl::GetPushMessagingService() {
 
 content::StorageNotificationService*
 ProfileImpl::GetStorageNotificationService() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return nullptr;
 #else
   return StorageNotificationServiceFactory::GetForBrowserContext(this);
@@ -1455,7 +1459,7 @@ void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
     local_state->SetString(language::prefs::kApplicationLocale, new_locale);
 
   if (user_manager::UserManager::Get()->GetOwnerAccountId() ==
-      chromeos::ProfileHelper::Get()->GetUserByProfile(this)->GetAccountId())
+      ash::ProfileHelper::Get()->GetUserByProfile(this)->GetAccountId())
     local_state->SetString(prefs::kOwnerLocale, new_locale);
 }
 
@@ -1468,13 +1472,13 @@ void ProfileImpl::OnLogin() {
 void ProfileImpl::InitChromeOSPreferences() {
   chromeos_preferences_ = std::make_unique<ash::Preferences>();
   chromeos_preferences_->Init(
-      this, chromeos::ProfileHelper::Get()->GetUserByProfile(this));
+      this, ash::ProfileHelper::Get()->GetUserByProfile(this));
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 bool ProfileImpl::IsNewProfile() const {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // The profile is new if the preference files has just been created, except on
   // first run, because the installer may create a preference file. See
   // https://crbug.com/728402

@@ -17,8 +17,16 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/device_service.h"
+#include "extensions/buildflags/buildflags.h"
 #include "services/device/public/cpp/hid/hid_blocklist.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
+#include "base/strings/string_piece.h"
+#include "extensions/common/constants.h"
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 namespace {
 
@@ -215,6 +223,56 @@ void HidChooserContext::GrantDevicePermission(
   }
 }
 
+void HidChooserContext::RevokeDevicePermission(
+    const url::Origin& origin,
+    const device::mojom::HidDeviceInfo& device) {
+  DCHECK(base::Contains(devices_, device.guid));
+  if (CanStorePersistentEntry(device)) {
+    RevokePersistentDevicePermission(origin, device);
+  } else {
+    RevokeEphemeralDevicePermission(origin, device);
+  }
+}
+
+void HidChooserContext::RevokePersistentDevicePermission(
+    const url::Origin& origin,
+    const device::mojom::HidDeviceInfo& device) {
+  std::vector<std::unique_ptr<Object>> object_list = GetGrantedObjects(origin);
+  for (const auto& object : object_list) {
+    const base::Value& device_value = object->value;
+    DCHECK(IsValidObject(device_value));
+
+    const auto* serial_number = device_value.FindStringKey(kHidSerialNumberKey);
+    if (device.vendor_id == *device_value.FindIntKey(kHidVendorIdKey) &&
+        device.product_id == *device_value.FindIntKey(kHidProductIdKey) &&
+        serial_number && device.serial_number == *serial_number) {
+      RevokeObjectPermission(origin, device_value);
+    }
+  }
+}
+
+void HidChooserContext::RevokeEphemeralDevicePermission(
+    const url::Origin& origin,
+    const device::mojom::HidDeviceInfo& device) {
+  auto it = ephemeral_devices_.find(origin);
+  if (it != ephemeral_devices_.end()) {
+    std::set<std::string>& devices = it->second;
+    for (auto guid = devices.begin(); guid != devices.end();) {
+      DCHECK(base::Contains(devices_, *guid));
+
+      if (devices_[*guid]->physical_device_id != device.physical_device_id) {
+        ++guid;
+        continue;
+      }
+
+      guid = devices.erase(guid);
+      if (devices.empty())
+        ephemeral_devices_.erase(it);
+      NotifyPermissionRevoked(origin);
+    }
+  }
+}
+
 bool HidChooserContext::HasDevicePermission(
     const url::Origin& origin,
     const device::mojom::HidDeviceInfo& device) {
@@ -244,6 +302,23 @@ bool HidChooserContext::HasDevicePermission(
     if (serial_number && device.serial_number == *serial_number)
       return true;
   }
+  return false;
+}
+
+bool HidChooserContext::IsFidoAllowedForOrigin(const url::Origin& origin) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  static constexpr auto kPrivilegedExtensionIds =
+      base::MakeFixedFlatSet<base::StringPiece>({
+          "ckcendljdlmgnhghiaomidhiiclmapok",  // gnubbyd-v3 dev
+          "lfboplenmmjcmpbkeemecobbadnmpfhi",  // gnubbyd-v3 prod
+      });
+
+  if (origin.scheme() == extensions::kExtensionScheme &&
+      base::Contains(kPrivilegedExtensionIds, origin.host())) {
+    return true;
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
   return false;
 }
 

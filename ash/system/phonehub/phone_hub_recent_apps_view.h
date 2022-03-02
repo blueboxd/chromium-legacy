@@ -15,13 +15,18 @@ namespace ash {
 
 // A view in Phone Hub bubble that allows user to relaunch a streamed app from
 // the recent apps list.
-class ASH_EXPORT PhoneHubRecentAppsView : public views::View {
+class ASH_EXPORT PhoneHubRecentAppsView
+    : public views::View,
+      public phonehub::RecentAppsInteractionHandler::Observer {
  public:
   explicit PhoneHubRecentAppsView(
       phonehub::RecentAppsInteractionHandler* recent_apps_interaction_handler);
   ~PhoneHubRecentAppsView() override;
   PhoneHubRecentAppsView(PhoneHubRecentAppsView&) = delete;
   PhoneHubRecentAppsView operator=(PhoneHubRecentAppsView&) = delete;
+
+  // phonehub::RecentAppsInteractionHandler::Observer:
+  void OnRecentAppsUiStateUpdated() override;
 
   // views::View:
   const char* GetClassName() const override;
@@ -32,6 +37,8 @@ class ASH_EXPORT PhoneHubRecentAppsView : public views::View {
                            SingleRecentAppButtonsView);
   FRIEND_TEST_ALL_PREFIXES(RecentAppButtonsViewTest,
                            MultipleRecentAppButtonsView);
+
+  class PlaceholderView;
 
   class RecentAppButtonsView : public views::View {
    public:
@@ -56,6 +63,7 @@ class ASH_EXPORT PhoneHubRecentAppsView : public views::View {
   std::vector<std::unique_ptr<views::View>> recent_app_button_list_;
   phonehub::RecentAppsInteractionHandler* recent_apps_interaction_handler_ =
       nullptr;
+  PlaceholderView* placeholder_view_ = nullptr;
 };
 
 }  // namespace ash

@@ -87,21 +87,20 @@ ClearBrowsingDataHandler::ClearBrowsingDataHandler(content::WebUI* webui,
       sync_service_(SyncServiceFactory::GetForProfile(profile_)),
       show_history_deletion_dialog_(false) {}
 
-ClearBrowsingDataHandler::~ClearBrowsingDataHandler() {
-}
+ClearBrowsingDataHandler::~ClearBrowsingDataHandler() = default;
 
 void ClearBrowsingDataHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getInstalledApps",
       base::BindRepeating(
           &ClearBrowsingDataHandler::GetRecentlyLaunchedInstalledApps,
           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "clearBrowsingData",
       base::BindRepeating(&ClearBrowsingDataHandler::HandleClearBrowsingData,
                           base::Unretained(this)));
 
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "initializeClearBrowsingData",
       base::BindRepeating(&ClearBrowsingDataHandler::HandleInitialize,
                           base::Unretained(this)));
@@ -160,12 +159,11 @@ void ClearBrowsingDataHandler::HandleClearBrowsingDataForTest() {
   list_args.Append(std::move(data_types));
   list_args.Append(1);
   list_args.Append(std::move(installed_apps));
-  HandleClearBrowsingData(&base::Value::AsListValue(list_args));
+  HandleClearBrowsingData(list_args.GetList());
 }
 
 void ClearBrowsingDataHandler::GetRecentlyLaunchedInstalledApps(
-    const base::ListValue* args) {
-  const auto& list = args->GetList();
+    base::Value::ConstListView list) {
   CHECK_EQ(2U, list.size());
   std::string webui_callback_id = list[0].GetString();
   int period_selected = list[1].GetInt();
@@ -184,24 +182,24 @@ void ClearBrowsingDataHandler::OnGotInstalledApps(
     const std::string& webui_callback_id,
     const std::vector<site_engagement::ImportantSitesUtil::ImportantDomainInfo>&
         installed_apps) {
-  base::ListValue installed_apps_list;
+  std::vector<base::Value> installed_apps_list;
   for (const auto& info : installed_apps) {
-    auto entry = std::make_unique<base::DictionaryValue>();
+    base::Value entry(base::Value::Type::DICTIONARY);
     // Used to get favicon in ClearBrowsingDataDialog and display URL next to
     // app name in the dialog.
-    entry->SetString(kRegisterableDomainField, info.registerable_domain);
+    entry.SetStringKey(kRegisterableDomainField, info.registerable_domain);
     // The |reason_bitfield| is only passed to Javascript to be logged
     // from |HandleClearBrowsingData|.
-    entry->SetInteger(kReasonBitfieldField, info.reason_bitfield);
+    entry.SetIntKey(kReasonBitfieldField, info.reason_bitfield);
     // Initially all sites are selected for deletion.
-    entry->SetBoolean(kIsCheckedField, true);
+    entry.SetBoolKey(kIsCheckedField, true);
     // User friendly name for the installed app.
     DCHECK(info.app_name);
-    entry->SetString(kAppName, info.app_name.value());
-    installed_apps_list.Append(std::move(entry));
+    entry.SetStringKey(kAppName, info.app_name.value());
+    installed_apps_list.push_back(std::move(entry));
   }
   ResolveJavascriptCallback(base::Value(webui_callback_id),
-                            installed_apps_list);
+                            base::Value(std::move(installed_apps_list)));
 }
 
 std::unique_ptr<content::BrowsingDataFilterBuilder>
@@ -242,8 +240,7 @@ ClearBrowsingDataHandler::ProcessInstalledApps(
 }
 
 void ClearBrowsingDataHandler::HandleClearBrowsingData(
-    const base::ListValue* args) {
-  base::Value::ConstListView args_list = args->GetList();
+    base::Value::ConstListView args_list) {
   CHECK_EQ(4U, args_list.size());
   std::string webui_callback_id = args_list[0].GetString();
 
@@ -415,9 +412,10 @@ void ClearBrowsingDataHandler::OnClearingTaskFinished(
   ResolveJavascriptCallback(base::Value(webui_callback_id), std::move(result));
 }
 
-void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
+void ClearBrowsingDataHandler::HandleInitialize(
+    base::Value::ConstListView args) {
   AllowJavascript();
-  const base::Value& callback_id = args->GetList()[0];
+  const base::Value& callback_id = args[0];
 
   // Needed because WebUI doesn't handle renderer crashes. See crbug.com/610450.
   weak_ptr_factory_.InvalidateWeakPtrs();

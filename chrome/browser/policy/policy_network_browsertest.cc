@@ -340,7 +340,7 @@ class QuicAllowedPolicyDynamicTest : public QuicTestBase {
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     command_line->AppendSwitch(
-        chromeos::switches::kIgnoreUserProfileMappingForTests);
+        ash::switches::kIgnoreUserProfileMappingForTests);
 #endif
     // Ensure that QUIC is enabled by default on browser startup.
     command_line->AppendSwitch(switches::kEnableQuic);
@@ -546,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest,
 // Then QuicAllowed=false policy is dynamically set for both profiles.
 //
 // Disabled due to flakiness on windows: https://crbug.com/947931.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_QuicAllowedFalseAfterTwoProfilesCreated \
   DISABLED_QuicAllowedFalseAfterTwoProfilesCreated
 #else

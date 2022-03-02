@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
@@ -932,6 +933,7 @@ TEST_P(CanvasRenderingContext2DTest,
 static void TestDrawSingleHighBitDepthPNGOnCanvas(
     String filepath,
     CanvasRenderingContext2D* context,
+    PredefinedColorSpace context_color_space,
     Document& document,
     ImageDataSettings* color_setting,
     ScriptState* script_state) {
@@ -970,7 +972,7 @@ static void TestDrawSingleHighBitDepthPNGOnCanvas(
       resource_content->GetImage()->PaintImageForCurrentFrame().GetSwSkImage();
   ASSERT_EQ(kRGBA_F16_SkColorType, decoded_image->colorType());
   sk_sp<SkImage> color_converted_image = decoded_image->makeColorSpace(
-      context->ColorParamsForTest().GetSkColorSpace());
+      PredefinedColorSpaceToSkColorSpace(context_color_space));
   float expected_pixels[16];
   SkImageInfo expected_info_no_color_space = SkImageInfo::Make(
       2, 2, kRGBA_F32_SkColorType, kUnpremul_SkAlphaType, nullptr);
@@ -982,15 +984,15 @@ static void TestDrawSingleHighBitDepthPNGOnCanvas(
 }
 
 static void TestDrawHighBitDepthPNGsOnWideGamutCanvas(
-    String canvas_color_space,
+    PredefinedColorSpace color_space,
     Document& document,
     Persistent<HTMLCanvasElement> canvas,
     ScriptState* script_state) {
   // Prepare the wide gamut context with the given color space.
   CanvasContextCreationAttributesCore attributes;
   attributes.alpha = true;
-  attributes.color_space = canvas_color_space;
-  attributes.pixel_format = "float16";
+  attributes.color_space = color_space;
+  attributes.pixel_format = CanvasPixelFormat::kF16;
   CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(
       canvas->GetCanvasRenderingContext("2d", attributes));
 
@@ -1004,8 +1006,9 @@ static void TestDrawHighBitDepthPNGsOnWideGamutCanvas(
   path.Append(test::CoreTestDataPath());
   path.Append("/png-16bit/");
   ImageDataSettings* color_setting = ImageDataSettings::Create();
-  color_setting->setStorageFormat(kFloat32ArrayStorageFormatName);
-  color_setting->setColorSpace(canvas_color_space);
+  color_setting->setStorageFormat(
+      ImageDataStorageFormatName(ImageDataStorageFormat::kFloat32));
+  color_setting->setColorSpace(PredefinedColorSpaceName(color_space));
   for (auto interlace : interlace_status) {
     for (auto color_profile : color_profiles) {
       for (auto alpha : alpha_status) {
@@ -1017,8 +1020,8 @@ static void TestDrawHighBitDepthPNGsOnWideGamutCanvas(
         full_path.Append(alpha);
         full_path.Append(".png");
         TestDrawSingleHighBitDepthPNGOnCanvas(full_path.ToString(), context,
-                                              document, color_setting,
-                                              script_state);
+                                              color_space, document,
+                                              color_setting, script_state);
       }
     }
   }
@@ -1026,21 +1029,21 @@ static void TestDrawHighBitDepthPNGsOnWideGamutCanvas(
 
 TEST_P(CanvasRenderingContext2DTest, DrawHighBitDepthPngOnP3Canvas) {
   TestDrawHighBitDepthPNGsOnWideGamutCanvas(
-      "display-p3", GetDocument(),
+      PredefinedColorSpace::kP3, GetDocument(),
       Persistent<HTMLCanvasElement>(CanvasElement()), GetScriptState());
 }
 
 TEST_P(CanvasRenderingContext2DTest, DrawHighBitDepthPngOnRec2020Canvas) {
   TestDrawHighBitDepthPNGsOnWideGamutCanvas(
-      "rec2020", GetDocument(), Persistent<HTMLCanvasElement>(CanvasElement()),
-      GetScriptState());
+      PredefinedColorSpace::kRec2020, GetDocument(),
+      Persistent<HTMLCanvasElement>(CanvasElement()), GetScriptState());
 }
 
 // The color settings of the surface of the canvas always remaines loyal to the
 // first created context 2D. Therefore, we have to test different canvas color
 // space settings for CanvasRenderingContext2D::putImageData() in different
 // tests.
-enum class CanvasColorSpaceSettings : uint8_t {
+enum class PredefinedColorSpaceSettings : uint8_t {
   CANVAS_SRGB = 0,
   CANVAS_REC2020 = 1,
   CANVAS_P3 = 2,
@@ -1052,30 +1055,27 @@ enum class CanvasColorSpaceSettings : uint8_t {
 // color managed mode.
 void TestPutImageDataOnCanvasWithColorSpaceSettings(
     HTMLCanvasElement& canvas_element,
-    CanvasColorSpaceSettings canvas_colorspace_setting) {
+    PredefinedColorSpaceSettings canvas_colorspace_setting) {
   unsigned num_image_data_color_spaces = 3;
-  CanvasColorSpace image_data_color_spaces[] = {
-      CanvasColorSpace::kSRGB,
-      CanvasColorSpace::kRec2020,
-      CanvasColorSpace::kP3,
+  PredefinedColorSpace image_data_color_spaces[] = {
+      PredefinedColorSpace::kSRGB,
+      PredefinedColorSpace::kRec2020,
+      PredefinedColorSpace::kP3,
   };
 
   unsigned num_image_data_storage_formats = 3;
   ImageDataStorageFormat image_data_storage_formats[] = {
-      kUint8ClampedArrayStorageFormat, kUint16ArrayStorageFormat,
-      kFloat32ArrayStorageFormat,
+      ImageDataStorageFormat::kUint8,
+      ImageDataStorageFormat::kUint16,
+      ImageDataStorageFormat::kFloat32,
   };
 
-  CanvasColorSpace canvas_color_spaces[] = {
-      CanvasColorSpace::kSRGB,
-      CanvasColorSpace::kSRGB,
-      CanvasColorSpace::kRec2020,
-      CanvasColorSpace::kP3,
+  PredefinedColorSpace predefined_color_spaces[] = {
+      PredefinedColorSpace::kSRGB,
+      PredefinedColorSpace::kSRGB,
+      PredefinedColorSpace::kRec2020,
+      PredefinedColorSpace::kP3,
   };
-
-  String canvas_color_space_names[] = {
-      kSRGBCanvasColorSpaceName, kSRGBCanvasColorSpaceName,
-      kRec2020CanvasColorSpaceName, kP3CanvasColorSpaceName};
 
   CanvasPixelFormat canvas_pixel_formats[] = {
       CanvasPixelFormat::kUint8,
@@ -1083,11 +1083,6 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
       CanvasPixelFormat::kF16,
       CanvasPixelFormat::kF16,
   };
-
-  String canvas_pixel_format_names[] = {
-      kUint8CanvasPixelFormatName, kF16CanvasPixelFormatName,
-      kF16CanvasPixelFormatName, kF16CanvasPixelFormatName,
-      kF16CanvasPixelFormatName};
 
   // Source pixels in RGBA32
   uint8_t u8_pixels[] = {255, 0,   0,   255,  // Red
@@ -1130,13 +1125,13 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
     for (unsigned j = 0; j < num_image_data_storage_formats; j++) {
       NotShared<DOMArrayBufferView> data_array;
       switch (image_data_storage_formats[j]) {
-        case kUint8ClampedArrayStorageFormat:
+        case ImageDataStorageFormat::kUint8:
           data_array = data_u8;
           break;
-        case kUint16ArrayStorageFormat:
+        case ImageDataStorageFormat::kUint16:
           data_array = data_u16;
           break;
-        case kFloat32ArrayStorageFormat:
+        case ImageDataStorageFormat::kFloat32:
           data_array = data_f32;
           break;
         default:
@@ -1149,15 +1144,15 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
       unsigned k = static_cast<unsigned>(canvas_colorspace_setting);
       ImageDataSettings* canvas_color_setting = ImageDataSettings::Create();
       canvas_color_setting->setColorSpace(
-          ImageData::CanvasColorSpaceName(canvas_color_spaces[k]));
+          PredefinedColorSpaceName(predefined_color_spaces[k]));
       switch (canvas_pixel_formats[k]) {
         case CanvasPixelFormat::kUint8:
           canvas_color_setting->setStorageFormat(
-              kUint8ClampedArrayStorageFormatName);
+              ImageDataStorageFormatName(ImageDataStorageFormat::kUint8));
           break;
         case CanvasPixelFormat::kF16:
           canvas_color_setting->setStorageFormat(
-              kFloat32ArrayStorageFormatName);
+              ImageDataStorageFormatName(ImageDataStorageFormat::kFloat32));
           break;
         default:
           NOTREACHED();
@@ -1170,15 +1165,15 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
               ConvertPixelsToColorSpaceAndPixelFormatForTest(
                   data_array->BaseAddress(), data_length,
                   image_data_color_spaces[i], image_data_storage_formats[j],
-                  canvas_color_spaces[k], canvas_pixel_formats[k],
+                  predefined_color_spaces[k], canvas_pixel_formats[k],
                   pixels_converted_manually, kPixelFormat_ffff));
 
       // Create a canvas and call putImageData and getImageData to make sure
       // the conversion is done correctly.
       CanvasContextCreationAttributesCore attributes;
       attributes.alpha = true;
-      attributes.color_space = canvas_color_space_names[k];
-      attributes.pixel_format = canvas_pixel_format_names[k];
+      attributes.color_space = predefined_color_spaces[k];
+      attributes.pixel_format = canvas_pixel_formats[k];
       CanvasRenderingContext2D* context =
           static_cast<CanvasRenderingContext2D*>(
               canvas_element.GetCanvasRenderingContext("2d", attributes));
@@ -1206,17 +1201,17 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
 // Test disabled due to crbug.com/780925
 TEST_P(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnSRGBCanvas) {
   TestPutImageDataOnCanvasWithColorSpaceSettings(
-      CanvasElement(), CanvasColorSpaceSettings::CANVAS_SRGB);
+      CanvasElement(), PredefinedColorSpaceSettings::CANVAS_SRGB);
 }
 
 TEST_P(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnRec2020Canvas) {
   TestPutImageDataOnCanvasWithColorSpaceSettings(
-      CanvasElement(), CanvasColorSpaceSettings::CANVAS_REC2020);
+      CanvasElement(), PredefinedColorSpaceSettings::CANVAS_REC2020);
 }
 
 TEST_P(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnP3Canvas) {
   TestPutImageDataOnCanvasWithColorSpaceSettings(
-      CanvasElement(), CanvasColorSpaceSettings::CANVAS_P3);
+      CanvasElement(), PredefinedColorSpaceSettings::CANVAS_P3);
 }
 
 TEST_P(CanvasRenderingContext2DTest,
@@ -1442,9 +1437,10 @@ TEST_P(CanvasRenderingContext2DTestAccelerated,
   CanvasElement().GetCanvas2DLayerBridge()->NewImageSnapshot();
   EXPECT_TRUE(!!CanvasElement().ResourceProvider());
   EXPECT_TRUE(CanvasElement().ResourceProvider()->IsAccelerated());
-  EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
-  PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();
-  EXPECT_TRUE(layer);
+  auto* box = CanvasElement().GetLayoutBoxModelObject();
+  EXPECT_TRUE(box);
+  PaintLayer* painting_layer = box->PaintingLayer();
+  EXPECT_TRUE(painting_layer);
   UpdateAllLifecyclePhasesForTest();
 
   // Hide element to trigger hibernation (if enabled).
@@ -1452,15 +1448,9 @@ TEST_P(CanvasRenderingContext2DTestAccelerated,
       mojom::blink::PageVisibilityState::kHidden,
       /*is_initial_state=*/false);
   blink::test::RunPendingTasks();  // Run hibernation task.
-  // If enabled, hibernation should cause compositing update.
-  EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
-            layer->GetLayoutObject().NeedsPaintPropertyUpdate());
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED, layer->SelfNeedsRepaint());
-  } else {
-    EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
-              layer->NeedsCompositingInputsUpdate());
-  }
+  // If enabled, hibernation should cause repaint of the painting layer.
+  EXPECT_FALSE(box->NeedsPaintPropertyUpdate());
+  EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED, painting_layer->SelfNeedsRepaint());
   EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
             !CanvasElement().ResourceProvider());
 
@@ -1468,20 +1458,13 @@ TEST_P(CanvasRenderingContext2DTestAccelerated,
   // DCHECK. Update all other lifecycle phases.
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kTest);
-  EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
 
-  // Wake up again, which should request a compositing update synchronously.
+  // Wake up again, which should request repaint of the painting layer.
   GetDocument().GetPage()->SetVisibilityState(
       mojom::blink::PageVisibilityState::kVisible,
       /*is_initial_state=*/false);
-  EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
-            layer->GetLayoutObject().NeedsPaintPropertyUpdate());
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED, layer->SelfNeedsRepaint());
-  } else {
-    EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED,
-              layer->NeedsCompositingInputsUpdate());
-  }
+  EXPECT_FALSE(box->NeedsPaintPropertyUpdate());
+  EXPECT_EQ(!!CANVAS2D_HIBERNATION_ENABLED, painting_layer->SelfNeedsRepaint());
 }
 
 TEST_P(CanvasRenderingContext2DTestAccelerated,
@@ -1499,10 +1482,11 @@ TEST_P(CanvasRenderingContext2DTestAccelerated,
   EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
 
   EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
-  PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();
-  EXPECT_TRUE(layer);
+  auto* box = CanvasElement().GetLayoutBoxModelObject();
+  EXPECT_TRUE(box);
+  PaintLayer* painting_layer = box->PaintingLayer();
+  EXPECT_TRUE(painting_layer);
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
 
   // The resource provider gets lazily created. Force it to be dropped.
   canvas_element_->ReplaceResourceProvider(nullptr);
@@ -1513,8 +1497,9 @@ TEST_P(CanvasRenderingContext2DTestAccelerated,
       /*is_initial_state=*/false);
   blink::test::RunPendingTasks();  // Run hibernation task.
 
-  // Never hibernate a canvas with no resource provider
-  EXPECT_FALSE(layer->NeedsCompositingInputsUpdate());
+  // Never hibernate a canvas with no resource provider.
+  EXPECT_FALSE(box->NeedsPaintPropertyUpdate());
+  EXPECT_FALSE(painting_layer->SelfNeedsRepaint());
 }
 
 TEST_P(CanvasRenderingContext2DTestAccelerated, LowLatencyIsNotSingleBuffered) {

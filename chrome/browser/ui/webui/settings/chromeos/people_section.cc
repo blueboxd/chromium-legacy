@@ -14,6 +14,8 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/account_manager/account_apps_availability.h"
+#include "chrome/browser/ash/account_manager/account_apps_availability_factory.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
@@ -158,34 +160,6 @@ const std::vector<SearchConcept>& GetCategorizedSyncSearchConcepts() {
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetSyncOnSearchConcepts() {
-  DCHECK(chromeos::features::IsSyncConsentOptionalEnabled());
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_SYNC_TURN_OFF,
-       mojom::kSyncSubpagePath,
-       mojom::SearchResultIcon::kSync,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kSplitSyncOnOff},
-       {IDS_OS_SETTINGS_TAG_SYNC_TURN_OFF_ALT1, SearchConcept::kAltTagEnd}},
-  });
-  return *tags;
-}
-
-const std::vector<SearchConcept>& GetSyncOffSearchConcepts() {
-  DCHECK(chromeos::features::IsSyncConsentOptionalEnabled());
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_SYNC_TURN_ON,
-       mojom::kSyncSubpagePath,
-       mojom::SearchResultIcon::kSync,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kSplitSyncOnOff},
-       {IDS_OS_SETTINGS_TAG_SYNC_TURN_ON_ALT1, SearchConcept::kAltTagEnd}},
-  });
-  return *tags;
-}
-
 const std::vector<SearchConcept>& GetParentalSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_PARENTAL_CONTROLS,
@@ -207,8 +181,6 @@ void AddAccountManagerPageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_FIRST_MESSAGE},
       {"accountManagerChildSecondMessage",
        IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_SECOND_MESSAGE},
-      {"accountManagerPrimaryAccountTooltip",
-       IDS_SETTINGS_ACCOUNT_MANAGER_PRIMARY_ACCOUNT_TOOLTIP},
       {"accountManagerEducationAccountLabel",
        IDS_SETTINGS_ACCOUNT_MANAGER_EDUCATION_ACCOUNT},
       {"removeAccountLabel", IDS_SETTINGS_ACCOUNT_MANAGER_REMOVE_ACCOUNT_LABEL},
@@ -230,10 +202,6 @@ void AddAccountManagerPageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_ACCOUNT_MANAGER_REAUTHENTICATION_TOOLTIP},
       {"accountManagerMoreActionsTooltip",
        IDS_SETTINGS_ACCOUNT_MANAGER_MORE_ACTIONS_TOOLTIP},
-      {"accountManagerManagedLabel",
-       IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_STATUS_MANAGED_ACCOUNT},
-      {"accountManagerUnmanagedLabel",
-       IDS_SETTINGS_ACCOUNT_MANAGER_MANAGEMENT_STATUS_UNMANAGED_ACCOUNT},
       {"accountListDescription", IDS_SETTINGS_ACCOUNT_MANAGER_LIST_DESCRIPTION},
       {"addAccountLabel", IDS_SETTINGS_ACCOUNT_MANAGER_ADD_ACCOUNT_LABEL_V2},
       {"accountListHeader", IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER_V2},
@@ -276,6 +244,9 @@ void AddAccountManagerPageStrings(content::WebUIDataSource* html_source,
                                  ui::GetChromeOSDeviceName()));
   html_source->AddBoolean("lacrosEnabled",
                           crosapi::browser_util::IsLacrosEnabled());
+  html_source->AddBoolean(
+      "arcAccountRestrictionsEnabled",
+      ash::AccountAppsAvailability::IsArcAccountRestrictionsEnabled());
 }
 
 void AddLockScreenPageStrings(content::WebUIDataSource* html_source,
@@ -492,10 +463,6 @@ void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "syncSettingsCategorizationEnabled",
       chromeos::features::IsSyncSettingsCategorizationEnabled());
-  html_source->AddBoolean("syncConsentOptionalEnabled",
-                          chromeos::features::IsSyncConsentOptionalEnabled());
-  html_source->AddBoolean("useBrowserSyncConsent",
-                          chromeos::features::ShouldUseBrowserSyncConsent());
   html_source->AddString(
       "browserSettingsSyncSetupUrl",
       base::StrCat({chrome::kChromeUISettingsURL, chrome::kSyncSetupSubPage}));
@@ -545,27 +512,6 @@ void AddParentalControlStrings(content::WebUIDataSource* html_source,
 
   bool is_child = user_manager::UserManager::Get()->IsLoggedInAsChildUser();
   html_source->AddBoolean("isChild", is_child);
-
-  std::u16string tooltip;
-  if (is_child) {
-    std::string custodian = supervised_user_service->GetCustodianName();
-    std::string second_custodian =
-        supervised_user_service->GetSecondCustodianName();
-
-    std::u16string child_managed_tooltip;
-    if (second_custodian.empty()) {
-      child_managed_tooltip = l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_MANAGED_BY_ONE_PARENT_TOOLTIP,
-          base::UTF8ToUTF16(custodian));
-    } else {
-      child_managed_tooltip = l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_MANAGED_BY_TWO_PARENTS_TOOLTIP,
-          base::UTF8ToUTF16(custodian), base::UTF8ToUTF16(second_custodian));
-    }
-    tooltip = child_managed_tooltip;
-  }
-  html_source->AddString("accountManagerPrimaryAccountChildManagedTooltip",
-                         tooltip);
 }
 
 bool IsSameAccount(const ::account_manager::AccountKey& account_key,
@@ -582,15 +528,14 @@ bool IsSameAccount(const ::account_manager::AccountKey& account_key,
 
 }  // namespace
 
-PeopleSection::PeopleSection(
-    Profile* profile,
-    SearchTagRegistry* search_tag_registry,
-    syncer::SyncService* sync_service,
-    SupervisedUserService* supervised_user_service,
-    signin::IdentityManager* identity_manager,
-    PrefService* pref_service)
+// TODO(https://crbug.com/1274802): Remove sync_service param.
+PeopleSection::PeopleSection(Profile* profile,
+                             SearchTagRegistry* search_tag_registry,
+                             syncer::SyncService* sync_service,
+                             SupervisedUserService* supervised_user_service,
+                             signin::IdentityManager* identity_manager,
+                             PrefService* pref_service)
     : OsSettingsSection(profile, search_tag_registry),
-      sync_service_(sync_service),
       supervised_user_service_(supervised_user_service),
       identity_manager_(identity_manager),
       pref_service_(pref_service) {
@@ -613,22 +558,15 @@ PeopleSection::PeopleSection(
         ::GetAccountManagerFacade(profile->GetPath().value());
     DCHECK(account_manager_facade_);
     account_manager_facade_observation_.Observe(account_manager_facade_);
+    account_apps_availability_ =
+        ash::AccountAppsAvailabilityFactory::GetForProfile(profile);
     FetchAccounts();
   }
 
-  if (sync_service_) {
-    if (chromeos::features::IsSyncConsentOptionalEnabled()) {
-      DCHECK(chromeos::features::IsSyncSettingsCategorizationEnabled());
-      updater.AddSearchTags(GetCategorizedSyncSearchConcepts());
-
-      // Sync search tags are added/removed dynamically.
-      sync_service_->AddObserver(this);
-      OnStateChanged(sync_service_);
-    } else if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
-      updater.AddSearchTags(GetCategorizedSyncSearchConcepts());
-    } else {
-      updater.AddSearchTags(GetNonCategorizedSyncSearchConcepts());
-    }
+  if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
+    updater.AddSearchTags(GetCategorizedSyncSearchConcepts());
+  } else {
+    updater.AddSearchTags(GetNonCategorizedSyncSearchConcepts());
   }
 
   // Parental control search tags are added if necessary and do not update
@@ -637,10 +575,7 @@ PeopleSection::PeopleSection(
     updater.AddSearchTags(GetParentalSearchConcepts());
 }
 
-PeopleSection::~PeopleSection() {
-  if (chromeos::features::IsSyncConsentOptionalEnabled() && sync_service_)
-    sync_service_->RemoveObserver(this);
-}
+PeopleSection::~PeopleSection() = default;
 
 void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
@@ -676,20 +611,11 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       user->IsActiveDirectoryUser() ||
           profile()->GetProfilePolicyConnector()->IsManaged());
 
-  if (chromeos::features::ShouldUseBrowserSyncConsent()) {
-    static constexpr webui::LocalizedString kTurnOffStrings[] = {
-        {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
-        {"syncDisconnectTitle",
-         IDS_SETTINGS_TURN_OFF_SYNC_AND_SIGN_OUT_DIALOG_TITLE},
-    };
-    html_source->AddLocalizedStrings(kTurnOffStrings);
-  } else {
-    static constexpr webui::LocalizedString kSignOutStrings[] = {
-        {"syncDisconnect", IDS_SETTINGS_PEOPLE_SIGN_OUT},
-        {"syncDisconnectTitle", IDS_SETTINGS_SYNC_DISCONNECT_TITLE},
-    };
-    html_source->AddLocalizedStrings(kSignOutStrings);
-  }
+  static constexpr webui::LocalizedString kSignOutStrings[] = {
+      {"syncDisconnect", IDS_SETTINGS_PEOPLE_SIGN_OUT},
+      {"syncDisconnectTitle", IDS_SETTINGS_SYNC_DISCONNECT_TITLE},
+  };
+  html_source->AddLocalizedStrings(kSignOutStrings);
 
   std::string sync_dashboard_url =
       google_util::AppendGoogleLocaleParam(
@@ -742,7 +668,8 @@ void PeopleSection::AddHandlers(content::WebUI* web_ui) {
   if (account_manager_facade_) {
     web_ui->AddMessageHandler(
         std::make_unique<chromeos::settings::AccountManagerUIHandler>(
-            account_manager_, account_manager_facade_, identity_manager_));
+            account_manager_, account_manager_facade_, identity_manager_,
+            account_apps_availability_));
   }
 
   if (chromeos::features::IsSyncSettingsCategorizationEnabled())
@@ -876,22 +803,6 @@ void PeopleSection::UpdateAccountManagerSearchTags(
     // If a non-device account exists, add the "Remove Account" search tag.
     updater.AddSearchTags(GetRemoveAccountSearchConcepts());
     return;
-  }
-}
-
-void PeopleSection::OnStateChanged(syncer::SyncService* sync_service) {
-  DCHECK(chromeos::features::IsSyncConsentOptionalEnabled());
-  DCHECK_EQ(sync_service, sync_service_);
-
-  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
-
-  if (sync_service_->IsEngineInitialized() &&
-      sync_service_->GetUserSettings()->IsOsSyncFeatureEnabled()) {
-    updater.AddSearchTags(GetSyncOnSearchConcepts());
-    updater.RemoveSearchTags(GetSyncOffSearchConcepts());
-  } else {
-    updater.RemoveSearchTags(GetSyncOnSearchConcepts());
-    updater.AddSearchTags(GetSyncOffSearchConcepts());
   }
 }
 

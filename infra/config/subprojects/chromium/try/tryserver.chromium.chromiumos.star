@@ -4,7 +4,6 @@
 """Definitions of builders in the tryserver.chromium.chromiumos builder group."""
 
 load("//lib/branches.star", "branches")
-load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "goma", "os")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
@@ -13,8 +12,6 @@ load("//project.star", "settings")
 try_.defaults.set(
     builder_group = "tryserver.chromium.chromiumos",
     cores = 8,
-    orchestrator_cores = 2,
-    compilator_cores = 32,
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
@@ -44,20 +41,14 @@ try_.builder(
     ),
 )
 
-try_.orchestrator_builder(
+try_.orchestrator_pair_builders(
     name = "chromeos-amd64-generic-rel",
-    compilator = "chromeos-amd64-generic-rel-compilator",
-    branch_selector = branches.CROS_LTS_MILESTONE,
-    mirrors = ["ci/chromeos-amd64-generic-rel"],
-    main_list_view = "try",
-    tryjob = try_.job(),
-)
-
-try_.compilator_builder(
-    name = "chromeos-amd64-generic-rel-compilator",
     branch_selector = branches.CROS_LTS_MILESTONE,
     main_list_view = "try",
-    cores = 16,
+    orchestrator_cores = 2,
+    orchestrator_tryjob = try_.job(),
+    compilator_cores = 16,
+    compilator_name = "chromeos-amd64-generic-rel-compilator",
 )
 
 try_.builder(
@@ -122,21 +113,17 @@ try_.builder(
     name = "linux-chromeos-inverse-fieldtrials-fyi-rel",
 )
 
-try_.orchestrator_builder(
+try_.orchestrator_pair_builders(
     name = "linux-chromeos-rel",
-    compilator = "linux-chromeos-rel-compilator",
     branch_selector = branches.CROS_LTS_MILESTONE,
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    tryjob = try_.job(),
-)
-
-try_.compilator_builder(
-    name = "linux-chromeos-rel-compilator",
-    branch_selector = branches.CROS_LTS_MILESTONE,
-    main_list_view = "try",
-    goma_jobs = goma.jobs.J300,
+    orchestrator_cores = 2,
+    orchestrator_tryjob = try_.job(),
+    compilator_cores = 32,
+    compilator_goma_jobs = goma.jobs.J300,
+    compilator_name = "linux-chromeos-rel-compilator",
 )
 
 try_.builder(
@@ -215,12 +202,6 @@ try_.builder(
 
 try_.builder(
     name = "chromeos-amd64-generic-rel-rts",
-    mirrors = ["ci/chromeos-amd64-generic-rel"],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.ALWAYS,
-        ),
-    ),
     builderless = False,
     os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )

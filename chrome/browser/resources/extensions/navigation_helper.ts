@@ -13,7 +13,7 @@ export enum Page {
   LIST = 'items-list',
   DETAILS = 'details-view',
   ACTIVITY_LOG = 'activity-log',
-  EXTENSION_SITE_ACCESS = 'extension-site-access',
+  SITE_PERMISSIONS = 'site-permissions',
   SHORTCUTS = 'keyboard-shortcuts',
   ERRORS = 'error-page',
 }
@@ -92,10 +92,6 @@ export class NavigationHelper {
     if (id) {
       return {page: Page.ACTIVITY_LOG, extensionId: id};
     }
-    id = search.get('siteAccess');
-    if (id) {
-      return {page: Page.EXTENSION_SITE_ACCESS, extensionId: id};
-    }
     id = search.get('options');
     if (id) {
       return {page: Page.DETAILS, extensionId: id, subpage: Dialog.OPTIONS};
@@ -107,6 +103,9 @@ export class NavigationHelper {
 
     if (this.currentPath_ === '/shortcuts') {
       return {page: Page.SHORTCUTS};
+    }
+    if (this.currentPath_ === '/sitePermissions') {
+      return {page: Page.SITE_PERMISSIONS};
     }
 
     return {page: Page.LIST};
@@ -187,8 +186,8 @@ export class NavigationHelper {
           path = '/?id=' + entry.extensionId;
         }
         break;
-      case Page.EXTENSION_SITE_ACCESS:
-        path = '/?siteAccess=' + entry.extensionId;
+      case Page.SITE_PERMISSIONS:
+        path = '/sitePermissions';
         break;
       case Page.SHORTCUTS:
         path = '/shortcuts';

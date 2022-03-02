@@ -86,7 +86,7 @@ gfx::FontList GetHeaderTextFontList() {
 }
 
 gfx::Insets CalculateTopPadding(int font_list_height) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On Windows, the fonts can have slightly different metrics reported,
   // depending on where the code runs. In Chrome, DirectWrite is on, which means
   // font metrics are reported from Skia, which rounds from float using ceil.
@@ -412,7 +412,7 @@ void NotificationView::CreateOrUpdateInlineSettingsViews(
           IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS;
       break;
     case NotifierType::CROSTINI_APPLICATION:
-      FALLTHROUGH;
+      [[fallthrough]];
     // PhoneHub notifications do not have inline settings.
     case NotifierType::PHONE_HUB:
       NOTREACHED();
@@ -528,6 +528,7 @@ void NotificationView::ToggleInlineSettings(const ui::Event& event) {
   dont_block_button_->SetChecked(true);
 
   NotificationViewBase::ToggleInlineSettings(event);
+  PreferredSizeChanged();
 
   if (inline_settings_row()->GetVisible())
     AddBackgroundAnimation(event);

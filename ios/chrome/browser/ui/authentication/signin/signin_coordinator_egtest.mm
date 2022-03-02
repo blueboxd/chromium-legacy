@@ -66,6 +66,12 @@ typedef NS_ENUM(NSInteger, OpenSigninMethod) {
 
 namespace {
 
+// Label used to find the 'Learn more' link.
+NSString* const kLearnMoreLabel = @"Learn More";
+
+// Text displayed in the chrome://management page.
+char const kManagedText[] = "Your browser is managed by your administrator.";
+
 NSString* const kPassphrase = @"hello";
 
 // Closes the sign-in import data dialog and choose either to combine the data
@@ -466,7 +472,15 @@ void ExpectSyncConsentHistogram(
 
 // Verifies that the user is signed in when selecting "Yes I'm In", after the
 // advanced settings were swiped to dismiss.
-- (void)testSwipeDownInAdvancedSettings {
+// TODO(crbug.com/1277545): Flaky on iOS simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testSwipeDownInAdvancedSettings \
+  DISABLED_testSwipeDownInAdvancedSettings
+#else
+#define MAYBE_testSwipeDownInAdvancedSettings \
+  testSwipeDownInAdvancedSettings
+#endif
+- (void)MAYBE_testSwipeDownInAdvancedSettings {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [self openSigninFromView:OpenSigninMethodFromSettings tapSettingsLink:YES];
@@ -913,7 +927,15 @@ void ExpectSyncConsentHistogram(
 
 // Tests that Sync is on when introducing passphrase from settings, after
 // logging in.
-- (void)testSyncOnWhenPassphraseIntroducedAfterSignIn {
+// TODO(crbug.com/1277545): Flaky on iOS simulator.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testSyncOnWhenPassphraseIntroducedAfterSignIn \
+  DISABLED_testSyncOnWhenPassphraseIntroducedAfterSignIn
+#else
+#define MAYBE_testSyncOnWhenPassphraseIntroducedAfterSignIn \
+  testSyncOnWhenPassphraseIntroducedAfterSignIn
+#endif
+- (void)MAYBE_testSyncOnWhenPassphraseIntroducedAfterSignIn {
   [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
@@ -987,7 +1009,7 @@ void ExpectSyncConsentHistogram(
 
 // Tests that when the syncTypesListDisabled policy is enabled, the signin promo
 // description is updated and when opening the sign-in screen a policy warning
-// is displayed.
+// is displayed with a link that opens the policy management page.
 - (void)testSynTypesDisabledPolicy {
   // Set policy.
   std::vector<base::Value> values;
@@ -1021,6 +1043,50 @@ void ExpectSyncConsentHistogram(
       selectElementWithMatcher:grey_allOf(grey_text(policyText),
                                           grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_notNil()];
+
+  // Check that the "learn more link" works.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityLabel(kLearnMoreLabel),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitLink),
+                                   nil)] performAction:grey_tap()];
+
+  // Check that the policy management page was opened.
+  [ChromeEarlGrey waitForWebStateContainingText:kManagedText];
+}
+
+// Tests that the sign-in promo disappear when sync is disabled and reappears
+// when sync is enabled again.
+// Related to crbug.com/1287465.
+- (void)testTurnOffSyncDisablePolicy {
+  // Disable sync by policy.
+  policy_test_utils::SetPolicy(true, policy::key::kSyncDisabled);
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                                IDS_IOS_SYNC_SYNC_DISABLED_CONTINUE)),
+                            grey_userInteractionEnabled(), nil)]
+      performAction:grey_tap()];
+  // Open other device tab.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridOtherDevicesPanelButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // Check that the sign-in promo is not visible.
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
+  // Add an identity to generate a SSO identity update notification.
+  FakeChromeIdentity* fakeIdentity1 = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity1];
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // Enable sync.
+  policy_test_utils::SetPolicy(false, policy::key::kSyncDisabled);
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // Check that the sign-in promo is visible.
+  [SigninEarlGreyUI
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeSigninWithAccount
+                           closeButton:NO];
 }
 
 @end

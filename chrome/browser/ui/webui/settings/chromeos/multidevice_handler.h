@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_MULTIDEVICE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_MULTIDEVICE_HANDLER_H_
 
+#include "ash/components/phonehub/camera_roll_manager.h"
 #include "ash/components/phonehub/notification_access_manager.h"
 #include "ash/components/phonehub/notification_access_setup_operation.h"
 #include "ash/webui/eche_app_ui/apps_access_manager.h"
@@ -35,7 +36,9 @@ class MultideviceHandler
       public android_sms::AndroidSmsAppManager::Observer,
       public phonehub::NotificationAccessManager::Observer,
       public phonehub::NotificationAccessSetupOperation::Delegate,
-      public ash::eche_app::AppsAccessManager::Observer {
+      public ash::eche_app::AppsAccessManager::Observer,
+      public ash::eche_app::AppsAccessSetupOperation::Delegate,
+      public ash::phonehub::CameraRollManager::Observer {
  public:
   MultideviceHandler(
       PrefService* prefs,
@@ -44,7 +47,8 @@ class MultideviceHandler
       multidevice_setup::AndroidSmsPairingStateTracker*
           android_sms_pairing_state_tracker,
       android_sms::AndroidSmsAppManager* android_sms_app_manager,
-      ash::eche_app::AppsAccessManager* apps_access_manager);
+      ash::eche_app::AppsAccessManager* apps_access_manager,
+      ash::phonehub::CameraRollManager* camera_roll_manager);
 
   MultideviceHandler(const MultideviceHandler&) = delete;
   MultideviceHandler& operator=(const MultideviceHandler&) = delete;
@@ -72,6 +76,10 @@ class MultideviceHandler
   void OnStatusChange(
       phonehub::NotificationAccessSetupOperation::Status new_status) override;
 
+  // ash::eche_app::AppsAccessSetupOperation::Delegate:
+  void OnAppsStatusChange(
+      ash::eche_app::AppsAccessSetupOperation::Status new_status) override;
+
   // phonehub::NotificationAccessManager::Observer:
   void OnNotificationAccessChanged() override;
 
@@ -83,6 +91,9 @@ class MultideviceHandler
 
   // ash::eche_app::AppsAccessManager::Observer:
   void OnAppsAccessChanged() override;
+
+  // ash::phonehub::CameraRollManager::Observer:
+  void OnCameraRollViewUiStateUpdated() override;
 
   // Called when the Nearby Share enabled pref changes.
   void OnNearbySharingEnabledChanged();
@@ -103,6 +114,8 @@ class MultideviceHandler
   void HandleGetAndroidSmsInfo(const base::ListValue* args);
   void HandleAttemptNotificationSetup(const base::ListValue* args);
   void HandleCancelNotificationSetup(const base::ListValue* args);
+  void HandleAttemptAppsSetup(const base::ListValue* args);
+  void HandleCancelAppsSetup(const base::ListValue* args);
 
   void OnSetFeatureStateEnabledResult(const std::string& js_callback_id,
                                       bool success);
@@ -145,6 +158,10 @@ class MultideviceHandler
   android_sms::AndroidSmsAppManager* android_sms_app_manager_;
 
   ash::eche_app::AppsAccessManager* apps_access_manager_;
+  std::unique_ptr<ash::eche_app::AppsAccessSetupOperation>
+      apps_access_operation_;
+
+  ash::phonehub::CameraRollManager* camera_roll_manager_;
 
   base::ScopedObservation<multidevice_setup::MultiDeviceSetupClient,
                           multidevice_setup::MultiDeviceSetupClient::Observer>
@@ -162,6 +179,9 @@ class MultideviceHandler
   base::ScopedObservation<ash::eche_app::AppsAccessManager,
                           ash::eche_app::AppsAccessManager::Observer>
       apps_access_manager_observation_{this};
+  base::ScopedObservation<ash::phonehub::CameraRollManager,
+                          ash::phonehub::CameraRollManager::Observer>
+      camera_roll_manager_observation_{this};
 
   // Used to cancel callbacks when JavaScript becomes disallowed.
   base::WeakPtrFactory<MultideviceHandler> callback_weak_ptr_factory_{this};

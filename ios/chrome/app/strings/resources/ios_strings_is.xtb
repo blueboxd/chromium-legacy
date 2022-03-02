@@ -82,6 +82,7 @@ Leitarvélin þín er <ph name="DSE_NAME" />. Skoðaðu leiðbeiningar hennar um
 <translation id="1605658421715042784">Afrita mynd</translation>
 <translation id="1608337082864370066">Leita að afritaðri mynd</translation>
 <translation id="1612730193129642006">Sýna flipanet</translation>
+<translation id="1620510694547887537">Myndavél</translation>
 <translation id="1644574205037202324">Ferill</translation>
 <translation id="1650222530560417226">Ýttu á hnappinn „Hefja skráningu annála“ til að safna annálum JavaScript-stjórnborðs og villum úr öllum flipum. Annálum verður safnað (og þeir aðeins geymdir í minni) þar til þessari síðu er lokað eða ýtt er á „Stöðva skráningu annála“.</translation>
 <translation id="1657011748321897393">Mistókst að deila vegna þess að þú ert ekki með tengingu við netið.</translation>
@@ -141,6 +142,8 @@ Leitarvélin þín er <ph name="DSE_NAME" />. Skoðaðu leiðbeiningar hennar um
 <translation id="2268044343513325586">Þrengja</translation>
 <translation id="2271351792809375263">Notaðu aðgangsorðin sem þú vistaðir í Chrome í öðrum forritum tækisins</translation>
 <translation id="2273327106802955778">Valmynd fyrir meira</translation>
+<translation id="2286505070150039482">Áherslumerktur texti</translation>
+<translation id="2299218006564889602">Aðgangsorðin þín eru dulkóðuð í tækinu áður en þau eru vistuð í aðgangsorðastjórnun Google.</translation>
 <translation id="2302742851632557585">Breyta aðgangsorði á vefsvæði</translation>
 <translation id="2316709634732130529">Nota tillögu að aðgangsorði</translation>
 <translation id="2320166752086256636">Fela lyklaborð</translation>
@@ -245,6 +248,7 @@ Skoðaðu leiðbeiningar leitarvélarinnar um að eyða leitarferlinum ef það 
 <translation id="3184767182050912705">Taka úr lás með „<ph name="BIOMETRIC_AUTHENITCATION_TYPE" />“</translation>
 <translation id="3207960819495026254">Í bókamerkjum</translation>
 <translation id="3224641773458703735">Til að flytja út aðgangsorð þarftu fyrst að stilla aðgangskóða í tækinu þínu.</translation>
+<translation id="3227137524299004712">Hljóðnemi</translation>
 <translation id="3230318355092723906">Þegar slökkt er á samstillingu geturðu samt séð öll bókamerki, feril, aðgangsorð og aðrar stillingar í þessu tæki. Breytingar verða ekki samstilltar við reikninginn þinn.</translation>
 <translation id="3240426699337459095">Tengill afritaður</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -311,6 +315,7 @@ Fylgdu leiðbeiningunum hér að neðan:</translation>
 <translation id="3803696231112616155">Bjóðast til að þýða þetta vefsvæði</translation>
 <translation id="385051799172605136">Til baka</translation>
 <translation id="3858860766373142691">Heiti</translation>
+<translation id="3861486700625780712">Hætta að fylgjast með</translation>
 <translation id="3892144330757387737">Þú finnur ferilinn þinn hér</translation>
 <translation id="3897092660631435901">Valmynd</translation>
 <translation id="3913386780052199712">Skráð(ur) inn á Chrome</translation>
@@ -331,6 +336,7 @@ Fylgdu leiðbeiningunum hér að neðan:</translation>
 <translation id="4042870976416480368">Finna á síðu</translation>
 <translation id="4049507953662678203">Gakktu úr skugga um að þú sért tengd(ur) netinu og reyndu svo aftur.</translation>
 <translation id="408404951701638773">Nú er auðveldara að nálgast leitarstikuna</translation>
+<translation id="4108314971463891922">Fylgja</translation>
 <translation id="411254640334432676">Niðurhal mistókst.</translation>
 <translation id="4112644173421521737">Leita</translation>
 <translation id="4113030288477039509">Stjórnað af kerfisstjóra</translation>
@@ -407,6 +413,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="481968316161811770">Fótspor, gögn vefsvæða</translation>
 <translation id="4824497107140370669">{count,plural, =0{{domain}}=1{{domain} og 1 í viðbót}one{{domain} og {count} í viðbót}other{{domain} og {count} í viðbót}}</translation>
 <translation id="4826218269716039351">Loka á þriðju aðila</translation>
+<translation id="4826726074642088322">Deila áherslumerkingu</translation>
 <translation id="48274138579728272">Merkja sem lesið</translation>
 <translation id="4833686396768033263">Nýlegir flipar eru ekki í boði</translation>
 <translation id="4833786495304741580">Sendir sjálfkrafa talnagögn um notkun og tilkynningar um hrun til Google.</translation>
@@ -418,12 +425,12 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="4901778704868714008">Vista...</translation>
 <translation id="4904877109095351937">Merkja sem lesið</translation>
 <translation id="4908869848243824489">Tillögur frá Google</translation>
-<translation id="4930268273022498155">Eyða fyrirliggjandi gögnum. Þú getur sótt þau með því að skipta aftur yfir í <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Kveikja</translation>
 <translation id="4941089862236492464">Því miður kom upp vandamál við að deila atriðinu.</translation>
 <translation id="4944543191714094452">Finna á síðu…</translation>
 <translation id="4945756290001680296">Opna stillingar fyrir aðgangsorð</translation>
 <translation id="4979397965658815378">Skráðu þig inn með Google reikningnum þínum til að fá bókamerkin þín, ferilinn, aðgangsorð og aðrar stillingar í öll tækin þín</translation>
+<translation id="4986678885919050584">Fjarlægja úr þessu tæki</translation>
 <translation id="5005498671520578047">Afrita aðgangsorð</translation>
 <translation id="5017828934289857214">Minna mig á seinna</translation>
 <translation id="5037676449506322593">Velja allt</translation>
@@ -469,7 +476,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5489208564673669003">Fyrir upplýsingar um stjórnun fótspora fyrir öll vefsvæði, sjá <ph name="BEGIN_LINK" />Fótsporastillingar<ph name="END_LINK" />.</translation>
 <translation id="5490005495580364134">Loka á öll fótspor (ekki mælt með)</translation>
 <translation id="5513681519188741830">Fyrir <ph name="TIME" /> klst.</translation>
-<translation id="5523579157975978438">Opnaðu <ph name="BEGIN_LINK" />Stillingar<ph name="END_LINK" /> og síðan „Aðgangsorð“ til að slökkva.</translation>
 <translation id="5525269841082836315">Búa til aðgangsorð</translation>
 <translation id="5548760955356983418">Handoff gerir þér kleift að byrja að skoða vefsvæði í þessu tæki og halda því síðan áfram á einfaldan hátt í Mac-tölvunni. Vefsvæðið sem er opið birtist í kvínni í Mac-tölvunni.
 
@@ -498,7 +504,9 @@ Einnig þarf að vera kveikt á Handoff í hlutanum General í Settings og tæki
 <translation id="575902488528307720">Leita að mynd</translation>
 <translation id="5781453543752460388">Bæta við Myndir</translation>
 <translation id="5782227691023083829">Þýðir...</translation>
+<translation id="5802829331520313983">Setja upp…</translation>
 <translation id="5803566855766646066">Ertu viss um að þú viljir fleygja þessu nýja korti?</translation>
+<translation id="5804241973901381774">Heimildir</translation>
 <translation id="5812974770859303494">Bæta við...</translation>
 <translation id="5816228676161003208">Með þessu móti geturðu notað röddina til að leita hraðar.</translation>
 <translation id="581659025233126501">Kveikja á samstillingu</translation>
@@ -540,6 +548,7 @@ Einnig þarf að vera kveikt á Handoff í hlutanum General í Settings og tæki
 <translation id="6066301408025741299">Ýttu til að hætta við.</translation>
 <translation id="60829778314739003">Samþykkja og halda áfram</translation>
 <translation id="6084848228346514841">Velja flipa</translation>
+<translation id="6103540626693881831">Dulkóðun í tækinu</translation>
 <translation id="6108923351542677676">Uppsetning fer fram…</translation>
 <translation id="6119050551270742952">Opin vefsíða er í huliðsstillingu</translation>
 <translation id="6122191549521593678">Á netinu</translation>
@@ -557,12 +566,12 @@ Einnig þarf að vera kveikt á Handoff í hlutanum General í Settings og tæki
 <translation id="6219688215832490856">Þýða aldrei</translation>
 <translation id="6223816392543092032">Fáðu bókamerkin, ferilinn, aðgangsorðin og aðrar stillingar í öll tækin þín.</translation>
 <translation id="6232329973559504466">Leit í huliðsstillingu</translation>
+<translation id="6232736989810857397">Þetta gerir þér kleift að nota Google linsu til að búa til dagatalsviðburði á einfaldan hátt.</translation>
 <translation id="6254066287920239840">Opna tengla í forritinu í stað vafrans.</translation>
 <translation id="6255097610484507482">Breyta kreditkorti</translation>
 <translation id="6284652193729350524">Bjóðast til að þýða <ph name="LANGUAGE" /></translation>
 <translation id="6293101329759844770">Til að kveikja á öruggri vefskoðun skaltu opna <ph name="BEGIN_LINK" />Google þjónustur<ph name="END_LINK" /> og ýta á „Örugg vefskoðun“.</translation>
 <translation id="6321526113093607004">Bæta við bókamerki</translation>
-<translation id="6324528485781869530">Skipta um samstillingarreikning</translation>
 <translation id="6324669097367352121">Innskráningarstillingar</translation>
 <translation id="6337234675334993532">Dulkóðun</translation>
 <translation id="633809752005859102">Eitthvað fór mikið úrskeiðis. Við vinnum í þessu.</translation>
@@ -601,10 +610,12 @@ Vefsvæði geta ekki notað fótsporin þín til að sjá vafranotkun þína á 
 <translation id="6497772452874122664">Ef þú treystir <ph name="TIME" /> geturðu notað vistað aðgangsorð af öðru vefsvæði.
 
 Reyndu að nota einkvæmt aðgangsorð á hverju vefsvæði.</translation>
+<translation id="650279896687777322">Nánar...</translation>
 <translation id="651505212789431520">Hætta við samstillingu? Hægt er að kveikja á samstillingu hvenær sem er í stillingunum.</translation>
 <translation id="6524918542306337007">Huliðsstilling er ekki tiltæk</translation>
 <translation id="6537746030088321027">example.com</translation>
 <translation id="6561262006871132942">Auka aðdrátt</translation>
+<translation id="6583087784430677195">Opnaðu <ph name="BEGIN_LINK" />Stillingar<ph name="END_LINK" /> og síðan „Sjálfvirk útfylling aðgangsorða“ til að slökkva.</translation>
 <translation id="6585618849026997638">Þú getur komist aftur á mikilvæga síðu á einfaldan hátt með því að setja inn bókamerki</translation>
 <translation id="6603393121510733479">Fyrirtækið þitt slökkti á óskráðri vefnotkun.
 <ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /></translation>
@@ -733,7 +744,6 @@ Reyndu að nota einkvæmt aðgangsorð á hverju vefsvæði.</translation>
 <translation id="7741325291586284254">Síða með nýjum huliðsflipa</translation>
 <translation id="7765158879357617694">Færa</translation>
 <translation id="7772032839648071052">Staðfestu aðgangsorðið</translation>
-<translation id="7778472311864276518">Fjarlægja reikning úr þessu tæki</translation>
 <translation id="7781011649027948662">Þýða síðu?</translation>
 <translation id="7781069478569868053">Síða nýrra flipa</translation>
 <translation id="7781829728241885113">Í gær</translation>
@@ -757,6 +767,7 @@ Vefsvæði geta notað fótspor til að sjá vafranotkun þína á mismunandi ve
 <translation id="797413074872316787">Kveiktu á samstillingu til að hafa allt samstillt og sérsniðið í tækjunum þínum.</translation>
 <translation id="7978018860671536736">3. Ýttu á „Sjálfvirk útfylling aðgangsorða“</translation>
 <translation id="7982789257301363584">Net</translation>
+<translation id="7987685713885608670">Dulkóðaðu aðgangsorðin þín í tækinu áður en þau eru vistuð í aðgangsorðastjórnun Google til að auka öryggið.</translation>
 <translation id="7993619969781047893">Ekki er víst að allir eiginleikar á öllum vefsvæðum virki</translation>
 <translation id="800361585186029508">Opnar innslegnar vefslóðir í Google Chrome.</translation>
 <translation id="802154636333426148">Niðurhal mistókst</translation>

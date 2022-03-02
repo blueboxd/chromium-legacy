@@ -92,7 +92,7 @@ void CreateConfigurationPolicyProvider(
   *active_directory_policy_manager_out = nullptr;
 
   // Don't initialize cloud policy for the signin and the lock screen profile.
-  if (!chromeos::ProfileHelper::IsRegularProfile(profile)) {
+  if (!ash::ProfileHelper::IsRegularProfile(profile)) {
     return;
   }
 
@@ -101,7 +101,7 @@ void CreateConfigurationPolicyProvider(
   // happens right after sign-in. The just-signed-in User is the active user
   // during that time.
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   CHECK(user);
 
   // User policy exists for enterprise accounts:
@@ -160,9 +160,8 @@ void CreateConfigurationPolicyProvider(
   const bool policy_check_required =
       (requires_policy_user_property == ProfileRequiresPolicy::kUnknown) &&
       !is_stub_user && !is_active_directory &&
-      !command_line->HasSwitch(chromeos::switches::kProfileRequiresPolicy) &&
-      !command_line->HasSwitch(
-          chromeos::switches::kAllowFailedPolicyFetchForTest);
+      !command_line->HasSwitch(ash::switches::kProfileRequiresPolicy) &&
+      !command_line->HasSwitch(ash::switches::kAllowFailedPolicyFetchForTest);
 
   // |force_immediate_load| is true during Chrome restart, or during
   // initialization of stub user profiles when running tests. If we ever get
@@ -183,13 +182,12 @@ void CreateConfigurationPolicyProvider(
   // command-line flag (required for ephemeral users who are not persisted
   // in the known_user database).
   const bool policy_required =
-      !command_line->HasSwitch(
-          chromeos::switches::kAllowFailedPolicyFetchForTest) &&
+      !command_line->HasSwitch(ash::switches::kAllowFailedPolicyFetchForTest) &&
       (is_active_directory ||
        (requires_policy_user_property ==
         ProfileRequiresPolicy::kPolicyRequired) ||
        (command_line->GetSwitchValueASCII(
-            chromeos::switches::kProfileRequiresPolicy) == "true"));
+            ash::switches::kProfileRequiresPolicy) == "true"));
 
   // We should never have |policy_required| and |policy_check_required| both
   // set, since the |policy_required| implies that we already know that

@@ -29,6 +29,7 @@ component("dbus") {
     ":plugin_vm_service_proto",
     ":vm_applications_apps_proto",
     ":vm_disk_management_proto",
+    ":vm_launch_proto",
     ":vm_permission_service_proto",
     ":vm_sk_forwarding_proto",
     "//base",
@@ -125,6 +126,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos/dbus/audio",
     "//chromeos/dbus/authpolicy",
+    "//chromeos/dbus/authpolicy:authpolicy_proto",
     "//chromeos/dbus/biod:test_support",
     "//chromeos/dbus/cec_service:unit_tests",
     "//chromeos/dbus/cros_disks:unit_tests",
@@ -228,6 +230,12 @@ proto_library("vm_disk_management_proto") {
   sources = [ "//third_party/cros_system_api/dbus/vm_disk_management/disk_management.proto" ]
 
   proto_out_dir = "chromeos/dbus/vm_disk_management"
+}
+
+proto_library("vm_launch_proto") {
+  sources = [ "//third_party/cros_system_api/dbus/vm_launch/launch.proto" ]
+
+  proto_out_dir = "chromeos/dbus/vm_launch"
 }
 
 proto_library("vm_sk_forwarding_proto") {

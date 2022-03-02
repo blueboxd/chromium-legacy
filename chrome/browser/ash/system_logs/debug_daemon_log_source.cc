@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -185,8 +184,7 @@ void DebugDaemonLogSource::GetLoggedInUsersLogFiles() {
       continue;
 
     profile_dirs.emplace_back(
-        chromeos::ProfileHelper::GetProfilePathByUserIdHash(
-            user->username_hash()));
+        ash::ProfileHelper::GetProfilePathByUserIdHash(user->username_hash()));
   }
 
   auto response = std::make_unique<SystemLogsResponse>();

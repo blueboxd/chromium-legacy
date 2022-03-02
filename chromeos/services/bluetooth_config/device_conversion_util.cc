@@ -6,8 +6,13 @@
 
 #include <bitset>
 
+#include "base/strings/utf_string_conversions.h"
+#include "chromeos/services/bluetooth_config/fast_pair_delegate.h"
+#include "chromeos/services/bluetooth_config/public/cpp/device_image_info.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/string_util_icu.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace bluetooth_config {
@@ -26,12 +31,12 @@ mojom::DeviceType ComputeDeviceType(const device::BluetoothDevice* device) {
       return mojom::DeviceType::kComputer;
 
     case device::BluetoothDeviceType::PHONE:
-      FALLTHROUGH;
+      [[fallthrough]];
     case device::BluetoothDeviceType::MODEM:
       return mojom::DeviceType::kPhone;
 
     case device::BluetoothDeviceType::AUDIO:
-      FALLTHROUGH;
+      [[fallthrough]];
     case device::BluetoothDeviceType::CAR_AUDIO:
       return mojom::DeviceType::kHeadset;
 
@@ -39,14 +44,14 @@ mojom::DeviceType ComputeDeviceType(const device::BluetoothDevice* device) {
       return mojom::DeviceType::kVideoCamera;
 
     case device::BluetoothDeviceType::PERIPHERAL:
-      FALLTHROUGH;
+      [[fallthrough]];
     case device::BluetoothDeviceType::JOYSTICK:
-      FALLTHROUGH;
+      [[fallthrough]];
     case device::BluetoothDeviceType::GAMEPAD:
       return mojom::DeviceType::kGameController;
 
     case device::BluetoothDeviceType::KEYBOARD:
-      FALLTHROUGH;
+      [[fallthrough]];
     case device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO:
       return mojom::DeviceType::kKeyboard;
 
@@ -89,6 +94,10 @@ mojom::BatteryPropertiesPtr ComputeBatteryInfoForBatteryType(
 
 mojom::DeviceBatteryInfoPtr ComputeBatteryInfo(
     const device::BluetoothDevice* device) {
+  // Only provide battery information for devices that are connected.
+  if (!device->IsConnected())
+    return nullptr;
+
   mojom::BatteryPropertiesPtr default_battery =
       ComputeBatteryInfoForBatteryType(
           device, device::BluetoothDevice::BatteryType::kDefault);
@@ -135,19 +144,74 @@ mojom::DeviceConnectionState ComputeConnectionState(
   return mojom::DeviceConnectionState::kNotConnected;
 }
 
+std::u16string ComputeDeviceName(const device::BluetoothDevice* device) {
+  absl::optional<std::string> name = device->GetName();
+  if (name && device::HasGraphicCharacter(name.value()))
+    return device->GetNameForDisplay();
+
+  return base::UTF8ToUTF16(device->GetAddress());
+}
+
+mojom::DeviceImageInfoPtr ComputeImageInfo(
+    const device::BluetoothDevice* device,
+    FastPairDelegate* fast_pair_delegate) {
+  absl::optional<DeviceImageInfo> images =
+      fast_pair_delegate->GetDeviceImageInfo(device->GetIdentifier());
+  if (!images) {
+    return nullptr;
+  }
+
+  mojom::DeviceImageInfoPtr device_image_info = mojom::DeviceImageInfo::New();
+  if (!images->default_image().empty()) {
+    GURL default_image_url = GURL(images->default_image());
+    DCHECK(default_image_url.is_valid() &&
+           default_image_url.SchemeIs(url::kDataScheme));
+    device_image_info->default_image_url = default_image_url;
+  }
+
+  // Only add true_wireless_images if all fields are non-null.
+  if (images->left_bud_image().empty() || images->right_bud_image().empty() ||
+      images->case_image().empty()) {
+    return device_image_info;
+  }
+
+  mojom::TrueWirelessImageInfoPtr true_wireless_images =
+      mojom::TrueWirelessImageInfo::New();
+  GURL left_bud_image_url = GURL(images->left_bud_image());
+  DCHECK(left_bud_image_url.is_valid() &&
+         left_bud_image_url.SchemeIs(url::kDataScheme));
+  true_wireless_images->left_bud_image_url = GURL(images->left_bud_image());
+
+  GURL right_bud_image_url = GURL(images->right_bud_image());
+  DCHECK(right_bud_image_url.is_valid() &&
+         right_bud_image_url.SchemeIs(url::kDataScheme));
+  true_wireless_images->right_bud_image_url = GURL(images->right_bud_image());
+
+  GURL case_image_url = GURL(images->case_image());
+  DCHECK(case_image_url.is_valid() &&
+         case_image_url.SchemeIs(url::kDataScheme));
+  true_wireless_images->case_image_url = GURL(images->case_image());
+
+  device_image_info->true_wireless_images = std::move(true_wireless_images);
+  return device_image_info;
+}
+
 }  // namespace
 
 mojom::BluetoothDevicePropertiesPtr GenerateBluetoothDeviceMojoProperties(
-    const device::BluetoothDevice* device) {
+    const device::BluetoothDevice* device,
+    FastPairDelegate* fast_pair_delegate) {
   auto properties = mojom::BluetoothDeviceProperties::New();
   properties->id = device->GetIdentifier();
   properties->address = device->GetAddress();
-  properties->public_name = device->GetNameForDisplay();
+  properties->public_name = ComputeDeviceName(device);
   properties->device_type = ComputeDeviceType(device);
   properties->audio_capability = ComputeAudioOutputCapability(device);
   properties->battery_info = ComputeBatteryInfo(device);
   properties->connection_state = ComputeConnectionState(device);
   properties->is_blocked_by_policy = device->IsBlockedByPolicy();
+  if (fast_pair_delegate)
+    properties->image_info = ComputeImageInfo(device, fast_pair_delegate);
   return properties;
 }
 

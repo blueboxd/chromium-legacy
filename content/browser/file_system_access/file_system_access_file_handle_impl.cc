@@ -39,7 +39,7 @@
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_file_handle.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_transfer_token.mojom.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
@@ -86,32 +86,32 @@ void CreateBlobOnIOThread(
   BlobImpl::Create(std::move(blob_handle), std::move(blob_receiver));
 }
 
-std::pair<base::File, base::FileErrorOr<int>> GetFileLengthOnBlockingThread(
+std::pair<base::File, base::FileErrorOr<int64_t>> GetFileLengthOnBlockingThread(
     base::File file) {
   int64_t file_length = file.GetLength();
   if (file_length < 0)
     return {std::move(file), base::File::GetLastFileError()};
-  return {std::move(file), file_length};
+  return {std::move(file), std::move(file_length)};
 }
 
 bool HasWritePermission(const base::FilePath& path) {
   if (!base::PathExists(path))
     return true;
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
   int mode;
   if (!base::GetPosixFilePermissions(path, &mode))
     return true;
 
   if (!(mode & base::FILE_PERMISSION_WRITE_BY_USER))
     return false;
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   DWORD attrs = ::GetFileAttributes(path.value().c_str());
   if (attrs == INVALID_FILE_ATTRIBUTES)
     return true;
   if (attrs & FILE_ATTRIBUTE_READONLY)
     return false;
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_POSIX)
 
   return true;
 }
@@ -352,11 +352,12 @@ void FileSystemAccessFileHandleImpl::DoGetLengthAfterOpenFile(
 void FileSystemAccessFileHandleImpl::DidOpenFileAndGetLength(
     OpenAccessHandleCallback callback,
     scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock,
-    std::pair<base::File, base::FileErrorOr<int>> file_and_length) {
+    std::pair<base::File, base::FileErrorOr<int64_t>> file_and_length) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::File file = std::move(file_and_length.first);
-  base::FileErrorOr<int> length_or_error = std::move(file_and_length.second);
+  base::FileErrorOr<int64_t> length_or_error =
+      std::move(file_and_length.second);
 
   if (length_or_error.is_error()) {
     std::move(callback).Run(

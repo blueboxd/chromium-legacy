@@ -66,7 +66,7 @@ FingerprintAuthFactorModel::GetAuthFactorState() const {
     case FingerprintState::AVAILABLE_WITH_TOUCH_SENSOR_WARNING:
       return AuthFactorState::kErrorTemporary;
     case FingerprintState::DISABLED_FROM_ATTEMPTS:
-      FALLTHROUGH;
+      [[fallthrough]];
     case FingerprintState::DISABLED_FROM_TIMEOUT:
       return AuthFactorState::kErrorPermanent;
   }
@@ -87,14 +87,12 @@ int FingerprintAuthFactorModel::GetLabelId() const {
 
   switch (state_) {
     case FingerprintState::UNAVAILABLE:
-      FALLTHROUGH;
+      [[fallthrough]];
     case FingerprintState::AVAILABLE_DEFAULT:
       return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_AVAILABLE;
     case FingerprintState::AVAILABLE_WITH_TOUCH_SENSOR_WARNING:
       return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_TOUCH_SENSOR;
     case FingerprintState::DISABLED_FROM_ATTEMPTS:
-      // TODO(crbug.com/1233614): Update this string: "Too many attempts" ->
-      // "Too many fingerprint attempts".
       return IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_ATTEMPTS;
     case FingerprintState::DISABLED_FROM_TIMEOUT:
       return can_use_pin_ ? IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED
@@ -126,12 +124,12 @@ void FingerprintAuthFactorModel::UpdateIcon(AuthIconView* icon) {
 
   switch (state_) {
     case FingerprintState::AVAILABLE_DEFAULT:
-      FALLTHROUGH;
+      [[fallthrough]];
     case FingerprintState::AVAILABLE_WITH_TOUCH_SENSOR_WARNING:
       icon->SetIcon(kLockScreenFingerprintIcon);
       break;
     case FingerprintState::UNAVAILABLE:
-      FALLTHROUGH;
+      [[fallthrough]];
     case FingerprintState::DISABLED_FROM_TIMEOUT:
       icon->SetIcon(kLockScreenFingerprintDisabledIcon,
                     AuthIconView::Color::kDisabled);

@@ -22,6 +22,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "content/browser/interest_group/auction_process_manager.h"
+#include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/debuggable_auction_worklet.h"
 #include "content/browser/interest_group/debuggable_auction_worklet_tracker.h"
 #include "content/browser/interest_group/interest_group_manager.h"
@@ -167,6 +168,8 @@ std::string MakeBidScript(const std::string& bid,
         throw new Error("wrong browserSignals.renderUrl");
       if (browserSignals.bid !== bid)
         throw new Error("wrong browserSignals.bid");
+      if (browserSignals.seller != 'https://adstuff.publisher1.com')
+         throw new Error("wrong seller");
 
       sendReportTo("https://buyer-reporting.example.com");
     }
@@ -296,11 +299,8 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
  public:
   explicit MockBidderWorklet(
       mojo::PendingReceiver<auction_worklet::mojom::BidderWorklet>
-          pending_receiver,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          pending_url_loader_factory)
-      : url_loader_factory_(std::move(pending_url_loader_factory)),
-        receiver_(this, std::move(pending_receiver)) {
+          pending_receiver)
+      : receiver_(this, std::move(pending_receiver)) {
     receiver_.set_disconnect_handler(base::BindOnce(
         &MockBidderWorklet::OnPipeClosed, base::Unretained(this)));
   }
@@ -308,30 +308,52 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
   MockBidderWorklet(const MockBidderWorklet&) = delete;
   const MockBidderWorklet& operator=(const MockBidderWorklet&) = delete;
 
-  ~MockBidderWorklet() override = default;
+  ~MockBidderWorklet() override {
+    // `send_pending_signals_requests_called_` should always be called if any
+    // bids are generated, except in the unlikely event that the Mojo pipe is
+    // closed before a posted task is executed (this cannot be simulated by
+    // closing a pipe in tests, due to vagaries of timing of the two messages).
+    if (generate_bid_called_)
+      EXPECT_TRUE(send_pending_signals_requests_called_);
+  }
 
   // auction_worklet::mojom::BidderWorklet implementation:
 
-  void GenerateBid(const absl::optional<std::string>& auction_signals_json,
-                   const absl::optional<std::string>& per_buyer_signals_json,
-                   const url::Origin& top_window_origin,
-                   const url::Origin& seller_origin,
-                   base::Time auction_start_time,
-                   GenerateBidCallback generate_bid_callback) override {
+  void GenerateBid(
+      auction_worklet::mojom::BidderWorkletNonSharedParamsPtr
+          bidder_worklet_non_shared_params,
+      const absl::optional<std::string>& auction_signals_json,
+      const absl::optional<std::string>& per_buyer_signals_json,
+      const url::Origin& seller_origin,
+      auction_worklet::mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
+      base::Time auction_start_time,
+      GenerateBidCallback generate_bid_callback) override {
+    generate_bid_called_ = true;
     // While the real BidderWorklet implementation supports multiple pending
     // callbacks, this class does not.
     DCHECK(!generate_bid_callback_);
+
+    // Single auctions should invoke all GenerateBid() calls on a worklet
+    // before invoking SendPendingSignalsRequests().
+    EXPECT_FALSE(send_pending_signals_requests_called_);
+
     generate_bid_callback_ = std::move(generate_bid_callback);
     if (generate_bid_run_loop_)
       generate_bid_run_loop_->Quit();
   }
 
-  void ReportWin(const absl::optional<std::string>& auction_signals_json,
+  void SendPendingSignalsRequests() override {
+    // This allows multiple calls.
+    send_pending_signals_requests_called_ = true;
+  }
+
+  void ReportWin(const std::string& interest_group_name,
+                 const absl::optional<std::string>& auction_signals_json,
                  const absl::optional<std::string>& per_buyer_signals_json,
-                 const url::Origin& top_window_origin,
                  const std::string& seller_signals_json,
                  const GURL& browser_signal_render_url,
                  double browser_signal_bid,
+                 const url::Origin& browser_signal_seller_origin,
                  ReportWinCallback report_win_callback) override {
     // While the real BidderWorklet implementation supports multiple pending
     // callbacks, this class does not.
@@ -377,18 +399,6 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
              /*errors=*/std::vector<std::string>());
   }
 
-  // Returns the GenerateBidCallback for a worklet. Needed for cases when the
-  // BidderWorklet is destroyed (to close its pipe) before the
-  // AuctionWorkletService is destroyed, since Mojo DCHECKs if a callback is
-  // destroyed when the pipe its over is still live.
-  //
-  // TODO(mmenke): To better simulate real crashes, give worklets their own
-  // AuctionWorkletService pipes, and remove this method.
-  GenerateBidCallback TakeLoadCallback() {
-    WaitForGenerateBid();
-    return std::move(generate_bid_callback_);
-  }
-
   void WaitForReportWin() {
     DCHECK(!generate_bid_callback_);
     DCHECK(!report_win_run_loop_);
@@ -405,10 +415,6 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
     DCHECK(report_win_callback_);
     std::move(report_win_callback_)
         .Run(report_url, std::vector<std::string>() /* errors */);
-  }
-
-  mojo::Remote<network::mojom::URLLoaderFactory>& url_loader_factory() {
-    return url_loader_factory_;
   }
 
   // Flush the receiver pipe and return whether or not its closed.
@@ -428,7 +434,8 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
   std::unique_ptr<base::RunLoop> report_win_run_loop_;
   ReportWinCallback report_win_callback_;
 
-  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
+  bool generate_bid_called_ = false;
+  bool send_pending_signals_requests_called_ = false;
 
   // Receiver is last so that destroying `this` while there's a pending callback
   // over the pipe will not DCHECK.
@@ -441,48 +448,61 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
  public:
   // Subset of parameters passed to SellerWorklet's ScoreAd method.
   struct ScoreAdParams {
+    ScoreAdCallback callback;
     double bid;
     url::Origin interest_group_owner;
   };
 
   explicit MockSellerWorklet(
       mojo::PendingReceiver<auction_worklet::mojom::SellerWorklet>
-          pending_receiver,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          pending_url_loader_factory,
-      auction_worklet::mojom::AuctionWorkletService::LoadSellerWorkletCallback
-          load_worklet_callback)
-      : load_worklet_callback_(std::move(load_worklet_callback)),
-        url_loader_factory_(std::move(pending_url_loader_factory)),
-        receiver_(this, std::move(pending_receiver)) {}
+          pending_receiver)
+      : receiver_(this, std::move(pending_receiver)) {}
 
   MockSellerWorklet(const MockSellerWorklet&) = delete;
   const MockSellerWorklet& operator=(const MockSellerWorklet&) = delete;
 
-  ~MockSellerWorklet() override = default;
+  ~MockSellerWorklet() override {
+    EXPECT_EQ(expect_send_pending_signals_requests_called_,
+              send_pending_signals_requests_called_);
+
+    // Every received ScoreAd() call should have been waited for.
+    EXPECT_TRUE(score_ad_params_.empty());
+  }
 
   // auction_worklet::mojom::SellerWorklet implementation:
 
   void ScoreAd(const std::string& ad_metadata_json,
                double bid,
-               blink::mojom::AuctionAdConfigPtr auction_config,
-               const url::Origin& browser_signal_top_window_origin,
+               blink::mojom::AuctionAdConfigNonSharedParamsPtr
+                   auction_ad_config_non_shared_params,
                const url::Origin& browser_signal_interest_group_owner,
                const GURL& browser_signal_render_url,
                const std::vector<GURL>& browser_signal_ad_components,
                uint32_t browser_signal_bidding_duration_msecs,
                ScoreAdCallback score_ad_callback) override {
-    score_ad_callback_ = std::move(score_ad_callback);
-    score_ad_params_ = std::make_unique<ScoreAdParams>();
-    score_ad_params_->bid = bid;
-    score_ad_params_->interest_group_owner =
-        browser_signal_interest_group_owner;
+    // SendPendingSignalsRequests() should only be called once all ads are
+    // scored.
+    EXPECT_FALSE(send_pending_signals_requests_called_);
+
+    ScoreAdParams score_ad_params;
+    score_ad_params.callback = std::move(score_ad_callback);
+    score_ad_params.bid = bid;
+    score_ad_params.interest_group_owner = browser_signal_interest_group_owner;
+    score_ad_params_.emplace_front(std::move(score_ad_params));
     if (score_ad_run_loop_)
       score_ad_run_loop_->Quit();
   }
 
-  void ReportResult(blink::mojom::AuctionAdConfigPtr auction_config,
-                    const url::Origin& browser_signal_top_window_origin,
+  void SendPendingSignalsRequests() override {
+    // SendPendingSignalsRequests() should only be called once by a single
+    // AuctionRunner.
+    EXPECT_FALSE(send_pending_signals_requests_called_);
+
+    send_pending_signals_requests_called_ = true;
+  }
+
+  void ReportResult(blink::mojom::AuctionAdConfigNonSharedParamsPtr
+                        auction_ad_config_non_shared_params,
                     const url::Origin& browser_signal_interest_group_owner,
                     const GURL& browser_signal_render_url,
                     double browser_signal_bid,
@@ -499,38 +519,24 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
         << "ConnectDevToolsAgent should not be called on MockSellerWorklet";
   }
 
-  // Informs the consumer that the seller worklet has successfully loaded.
-  void CompleteLoading() {
-    DCHECK(load_worklet_callback_);
-    std::move(load_worklet_callback_)
-        .Run(true /* success */, std::vector<std::string>() /* errors */);
-  }
-
-  // Waits until ScoreAd() has been invoked, if it hasn't been already.
-  std::unique_ptr<ScoreAdParams> WaitForScoreAd() {
+  // Waits until ScoreAd() has been invoked, if it hasn't been already. It's up
+  // to the caller to invoke the returned ScoreAdParams::callback to continue
+  // the auction.
+  ScoreAdParams WaitForScoreAd() {
     DCHECK(!score_ad_run_loop_);
-    DCHECK(!load_worklet_callback_);
-    if (!score_ad_params_) {
+    if (score_ad_params_.empty()) {
       score_ad_run_loop_ = std::make_unique<base::RunLoop>();
       score_ad_run_loop_->Run();
       score_ad_run_loop_.reset();
-      DCHECK(score_ad_params_);
+      DCHECK(!score_ad_params_.empty());
     }
-    return std::move(score_ad_params_);
-  }
-
-  // Invokes the ScoreAdCallback for the most recent ScoreAd() call with the
-  // provided score. WaitForScoreAd() must have been invoked first.
-  void InvokeScoreAdCallback(double score) {
-    DCHECK(score_ad_callback_);
-    DCHECK(!score_ad_params_);
-    std::move(score_ad_callback_)
-        .Run(score, std::vector<std::string>() /* errors */);
+    ScoreAdParams out = std::move(score_ad_params_.front());
+    score_ad_params_.pop_front();
+    return out;
   }
 
   void WaitForReportResult() {
     DCHECK(!report_result_run_loop_);
-    DCHECK(!load_worklet_callback_);
     if (!report_result_callback_) {
       report_result_run_loop_ = std::make_unique<base::RunLoop>();
       report_result_run_loop_->Run();
@@ -549,24 +555,24 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
              std::vector<std::string>() /* errors */);
   }
 
-  mojo::Remote<network::mojom::URLLoaderFactory>& url_loader_factory() {
-    return url_loader_factory_;
-  }
-
   void Flush() { receiver_.FlushForTesting(); }
 
- private:
-  auction_worklet::mojom::AuctionWorkletService::LoadSellerWorkletCallback
-      load_worklet_callback_;
+  // `expect_send_pending_signals_requests_called_` needs to be set to false in
+  // the case a SellerWorklet is destroyed before it receives a request to score
+  // the final bid.
+  void set_expect_send_pending_signals_requests_called(bool value) {
+    expect_send_pending_signals_requests_called_ = value;
+  }
 
+ private:
   std::unique_ptr<base::RunLoop> score_ad_run_loop_;
-  std::unique_ptr<ScoreAdParams> score_ad_params_;
-  ScoreAdCallback score_ad_callback_;
+  std::list<ScoreAdParams> score_ad_params_;
 
   std::unique_ptr<base::RunLoop> report_result_run_loop_;
   ReportResultCallback report_result_callback_;
 
-  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
+  bool expect_send_pending_signals_requests_called_ = true;
+  bool send_pending_signals_requests_called_ = false;
 
   // Receiver is last so that destroying `this` while there's a pending callback
   // over the pipe will not DCHECK.
@@ -616,23 +622,23 @@ class MockAuctionProcessManager
   void LoadBidderWorklet(
       mojo::PendingReceiver<auction_worklet::mojom::BidderWorklet>
           bidder_worklet_receiver,
-      bool should_pause_on_start,
+      bool pause_for_debugger_on_start,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_url_loader_factory,
-      auction_worklet::mojom::BiddingInterestGroupPtr bidding_interest_group)
-      override {
+      const GURL& script_source_url,
+      const absl::optional<GURL>& bidding_wasm_helper_url,
+      const absl::optional<GURL>& trusted_bidding_signals_url,
+      const url::Origin& top_window_origin) override {
     // Make sure this request came over the right pipe.
+    url::Origin owner = url::Origin::Create(script_source_url);
     EXPECT_EQ(receiver_display_name_map_[receiver_set_.current_receiver()],
               ComputeDisplayName(AuctionProcessManager::WorkletType::kBidder,
-                                 bidding_interest_group->group.owner));
+                                 url::Origin::Create(script_source_url)));
 
-    InterestGroupId interest_group_id(bidding_interest_group->group.owner,
-                                      bidding_interest_group->group.name);
-    EXPECT_EQ(0u, bidder_worklets_.count(interest_group_id));
+    EXPECT_EQ(0u, bidder_worklets_.count(script_source_url));
     bidder_worklets_.emplace(std::make_pair(
-        interest_group_id, std::make_unique<MockBidderWorklet>(
-                               std::move(bidder_worklet_receiver),
-                               std::move(pending_url_loader_factory))));
+        script_source_url, std::make_unique<MockBidderWorklet>(
+                               std::move(bidder_worklet_receiver))));
     // Whenever a worklet is created, one of the RunLoops should be waiting for
     // worklet creation.
     if (wait_for_bidder_reload_run_loop_) {
@@ -651,7 +657,8 @@ class MockAuctionProcessManager
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_url_loader_factory,
       const GURL& script_source_url,
-      LoadSellerWorkletCallback load_seller_worklet_callback) override {
+      const absl::optional<GURL>& trusted_scoring_signals_url,
+      const url::Origin& top_window_origin) override {
     DCHECK(!seller_worklet_);
 
     // Make sure this request came over the right pipe.
@@ -659,10 +666,8 @@ class MockAuctionProcessManager
               ComputeDisplayName(AuctionProcessManager::WorkletType::kSeller,
                                  url::Origin::Create(script_source_url)));
 
-    seller_worklet_ = std::make_unique<MockSellerWorklet>(
-        std::move(seller_worklet_receiver),
-        std::move(pending_url_loader_factory),
-        std::move(load_seller_worklet_callback));
+    seller_worklet_ =
+        std::make_unique<MockSellerWorklet>(std::move(seller_worklet_receiver));
 
     ASSERT_TRUE(waiting_on_seller_);
     waiting_on_seller_ = false;
@@ -689,14 +694,11 @@ class MockAuctionProcessManager
     EXPECT_EQ(1u, bidder_worklets_.size());
   }
 
-  // Returns the MockBidderWorklet created for the specified interest group
-  // origin and name, if there is one.
+  // Returns the MockBidderWorklet created for the specified script URL, if
+  // there is one.
   std::unique_ptr<MockBidderWorklet> TakeBidderWorklet(
-      const url::Origin& interest_group_owner_origin,
-      const std::string& interest_group_name) {
-    InterestGroupId interest_group_id(interest_group_owner_origin,
-                                      interest_group_name);
-    auto it = bidder_worklets_.find(interest_group_id);
+      const GURL& script_source_url) {
+    auto it = bidder_worklets_.find(script_source_url);
     if (it == bidder_worklets_.end())
       return nullptr;
     std::unique_ptr<MockBidderWorklet> out = std::move(it->second);
@@ -711,11 +713,6 @@ class MockAuctionProcessManager
 
   void Flush() { receiver_set_.FlushForTesting(); }
 
-  // Close all the AuctionWorkletService pipes. Needs to be called before
-  // uninvoked worklet callbacks can be destroyed, which is useful after
-  // simulating a worklet crash.
-  void ClosePipes() { receiver_set_.Clear(); }
-
  private:
   void MaybeQuitWaitForWorkletsRunLoop() {
     DCHECK(wait_for_worklets_run_loop_);
@@ -723,11 +720,8 @@ class MockAuctionProcessManager
       wait_for_worklets_run_loop_->Quit();
   }
 
-  // An interest group is uniquely identified by its owner's origin and name.
-  using InterestGroupId = std::pair<url::Origin, std::string>;
-
-  std::map<InterestGroupId, std::unique_ptr<MockBidderWorklet>>
-      bidder_worklets_;
+  // Map of script URLs to bidder worklets.
+  std::map<GURL, std::unique_ptr<MockBidderWorklet>> bidder_worklets_;
 
   std::unique_ptr<MockSellerWorklet> seller_worklet_;
 
@@ -749,14 +743,14 @@ class MockAuctionProcessManager
       receiver_set_;
 };
 
-class SameThreadAuctionProcessManager : public AuctionProcessManager {
+class SameProcessAuctionProcessManager : public AuctionProcessManager {
  public:
-  SameThreadAuctionProcessManager() = default;
-  SameThreadAuctionProcessManager(const SameThreadAuctionProcessManager&) =
+  SameProcessAuctionProcessManager() = default;
+  SameProcessAuctionProcessManager(const SameProcessAuctionProcessManager&) =
       delete;
-  SameThreadAuctionProcessManager& operator=(
-      const SameThreadAuctionProcessManager&) = delete;
-  ~SameThreadAuctionProcessManager() override = default;
+  SameProcessAuctionProcessManager& operator=(
+      const SameProcessAuctionProcessManager&) = delete;
+  ~SameProcessAuctionProcessManager() override = default;
 
   // Resume all worklets paused waiting for debugger on startup.
   void ResumeAllPaused() {
@@ -789,7 +783,7 @@ class SameThreadAuctionProcessManager : public AuctionProcessManager {
 };
 
 class AuctionRunnerTest : public testing::Test,
-                          public AuctionRunner::Delegate,
+                          public AuctionWorkletManager::Delegate,
                           public DebuggableAuctionWorkletTracker::Observer {
  protected:
   // Output of the RunAuctionCallback passed to AuctionRunner::CreateAndStart().
@@ -867,47 +861,52 @@ class AuctionRunnerTest : public testing::Test,
     auction_config->seller = url::Origin::Create(seller_decision_logic_url);
     auction_config->decision_logic_url = seller_decision_logic_url;
     auction_config->trusted_scoring_signals_url = trusted_scoring_signals_url_;
+    auction_config->auction_ad_config_non_shared_params =
+        blink::mojom::AuctionAdConfigNonSharedParams::New();
     // This is ignored by AuctionRunner, in favor of its `filtered_buyers`
     // parameter.
-    auction_config->interest_group_buyers =
+    auction_config->auction_ad_config_non_shared_params->interest_group_buyers =
         blink::mojom::InterestGroupBuyers::NewAllBuyers(
             blink::mojom::AllBuyers::New());
-    auction_config->auction_signals = auction_signals_json;
-    auction_config->seller_signals = R"({"isSellerSignals": true})";
+    auction_config->auction_ad_config_non_shared_params->auction_signals =
+        auction_signals_json;
+    auction_config->auction_ad_config_non_shared_params->seller_signals =
+        R"({"isSellerSignals": true})";
 
     base::flat_map<url::Origin, std::string> per_buyer_signals;
     per_buyer_signals[kBidder1] = R"({"signalsFor": ")" + kBidder1Name + "\"}";
     per_buyer_signals[kBidder2] = R"({"signalsFor": ")" + kBidder2Name + "\"}";
-    auction_config->per_buyer_signals = std::move(per_buyer_signals);
+    auction_config->auction_ad_config_non_shared_params->per_buyer_signals =
+        std::move(per_buyer_signals);
 
     interest_group_manager_ = std::make_unique<InterestGroupManager>(
         base::FilePath(), true /* in_memory */,
         /* url_loader_factory */ nullptr);
-    if (auction_process_manager_) {
-      interest_group_manager_->set_auction_process_manager_for_testing(
-          std::move(auction_process_manager_));
-    } else {
-      interest_group_manager_->set_auction_process_manager_for_testing(
-          std::make_unique<SameThreadAuctionProcessManager>());
+    if (!auction_process_manager_) {
+      auction_process_manager_ =
+          std::make_unique<SameProcessAuctionProcessManager>();
     }
+    auction_worklet_manager_ = std::make_unique<AuctionWorkletManager>(
+        auction_process_manager_.get(), browser_signals->top_frame_origin,
+        frame_origin_, this);
+    interest_group_manager_->set_auction_process_manager_for_testing(
+        std::move(auction_process_manager_));
 
     histogram_tester_ = std::make_unique<base::HistogramTester>();
 
     // Add previous wins and bids to the interest group manager.
     for (auto& bidder : bidders) {
-      for (int i = 0; i < bidder.bidding_group->signals->join_count; i++) {
+      for (int i = 0; i < bidder.bidding_browser_signals->join_count; i++) {
         interest_group_manager_->JoinInterestGroup(
-            bidder.bidding_group->group,
-            bidder.bidding_group->group.owner.GetURL());
+            bidder.interest_group, bidder.interest_group.owner.GetURL());
       }
-      for (int i = 0; i < bidder.bidding_group->signals->bid_count; i++) {
+      for (int i = 0; i < bidder.bidding_browser_signals->bid_count; i++) {
         interest_group_manager_->RecordInterestGroupBid(
-            bidder.bidding_group->group.owner,
-            bidder.bidding_group->group.name);
+            bidder.interest_group.owner, bidder.interest_group.name);
       }
-      for (const auto& prev_win : bidder.bidding_group->signals->prev_wins) {
+      for (const auto& prev_win : bidder.bidding_browser_signals->prev_wins) {
         interest_group_manager_->RecordInterestGroupWin(
-            bidder.bidding_group->group.owner, bidder.bidding_group->group.name,
+            bidder.interest_group.owner, bidder.interest_group.name,
             prev_win->ad_json);
         // Add some time between interest group wins, so that they'll be added
         // to the database in the order they appear. Their times will *not*
@@ -918,8 +917,8 @@ class AuctionRunnerTest : public testing::Test,
 
     auction_run_loop_ = std::make_unique<base::RunLoop>();
     auction_runner_ = AuctionRunner::CreateAndStart(
-        this, interest_group_manager_.get(), std::move(auction_config),
-        std::vector<url::Origin>{kBidder1, kBidder2},
+        auction_worklet_manager_.get(), this, interest_group_manager_.get(),
+        std::move(auction_config), std::vector<url::Origin>{kBidder1, kBidder2},
         std::move(browser_signals), frame_origin_,
         base::BindOnce(&AuctionRunnerTest::OnAuctionComplete,
                        base::Unretained(this)));
@@ -966,11 +965,11 @@ class AuctionRunnerTest : public testing::Test,
   void OnBidder1GroupsRetrieved(
       std::vector<StorageInterestGroup> storage_interest_groups) {
     for (auto& bidder : storage_interest_groups) {
-      if (bidder.bidding_group->group.owner == kBidder1 &&
-          bidder.bidding_group->group.name == kBidder1Name) {
-        result_.bidder1_bid_count = bidder.bidding_group->signals->bid_count;
+      if (bidder.interest_group.owner == kBidder1 &&
+          bidder.interest_group.name == kBidder1Name) {
+        result_.bidder1_bid_count = bidder.bidding_browser_signals->bid_count;
         result_.bidder1_prev_wins =
-            std::move(bidder.bidding_group->signals->prev_wins);
+            std::move(bidder.bidding_browser_signals->prev_wins);
         SortPrevWins(result_.bidder1_prev_wins);
         break;
       }
@@ -983,11 +982,11 @@ class AuctionRunnerTest : public testing::Test,
   void OnBidder2GroupsRetrieved(
       std::vector<StorageInterestGroup> storage_interest_groups) {
     for (auto& bidder : storage_interest_groups) {
-      if (bidder.bidding_group->group.owner == kBidder2 &&
-          bidder.bidding_group->group.name == kBidder2Name) {
-        result_.bidder2_bid_count = bidder.bidding_group->signals->bid_count;
+      if (bidder.interest_group.owner == kBidder2 &&
+          bidder.interest_group.name == kBidder2Name) {
+        result_.bidder2_bid_count = bidder.bidding_browser_signals->bid_count;
         result_.bidder2_prev_wins =
-            std::move(bidder.bidding_group->signals->prev_wins);
+            std::move(bidder.bidding_browser_signals->prev_wins);
         SortPrevWins(result_.bidder2_prev_wins);
         break;
       }
@@ -996,7 +995,7 @@ class AuctionRunnerTest : public testing::Test,
     auction_run_loop_->Quit();
   }
 
-  auction_worklet::mojom::BiddingInterestGroupPtr MakeInterestGroup(
+  StorageInterestGroup MakeInterestGroup(
       url::Origin owner,
       std::string name,
       absl::optional<GURL> bidding_url,
@@ -1033,15 +1032,18 @@ class AuctionRunnerTest : public testing::Test,
     previous_wins.push_back(auction_worklet::mojom::PreviousWin::New(
         base::Time::Now(), R"({"winner": -2})"));
 
-    return auction_worklet::mojom::BiddingInterestGroup::New(
-        blink::InterestGroup(
-            base::Time::Max(), std::move(owner), std::move(name),
-            std::move(bidding_url),
-            /* update_url = */ GURL(), std::move(trusted_bidding_signals_url),
-            std::move(trusted_bidding_signals_keys), absl::nullopt,
-            std::move(ads), std::move(ad_components)),
+    StorageInterestGroup storage_group;
+    storage_group.interest_group = blink::InterestGroup(
+        base::Time::Max(), std::move(owner), std::move(name),
+        std::move(bidding_url),
+        /* bidding_wasm_helper_url = */ absl::nullopt,
+        /* update_url = */ GURL(), std::move(trusted_bidding_signals_url),
+        std::move(trusted_bidding_signals_keys), absl::nullopt, std::move(ads),
+        std::move(ad_components));
+    storage_group.bidding_browser_signals =
         auction_worklet::mojom::BiddingBrowserSignals::New(
-            3, 5, std::move(previous_wins)));
+            3, 5, std::move(previous_wins));
+    return storage_group;
   }
 
   void StartStandardAuction() {
@@ -1078,7 +1080,7 @@ class AuctionRunnerTest : public testing::Test,
     mock_auction_process_manager_->WaitForWorklets(2 /* num_bidders */);
   }
 
-  // AuctionRunner::Delegate implementation:
+  // AuctionWorkletManager::Delegate implementation:
   network::mojom::URLLoaderFactory* GetFrameURLLoaderFactory() override {
     return &url_loader_factory_;
   }
@@ -1169,11 +1171,13 @@ class AuctionRunnerTest : public testing::Test,
 
   network::TestURLLoaderFactory url_loader_factory_;
 
+  std::unique_ptr<AuctionWorkletManager> auction_worklet_manager_;
+
   // This is used (and consumed) when starting an auction, if non-null. Allows
   // either using a MockAuctionProcessManager instead of a
-  // SameThreadAuctionProcessManager, or using a SameThreadAuctionProcessManager
+  // SameProcessAuctionProcessManager, or using a SameProcessAuctionProcessManager
   // that has already vended processes. If nullptr, a new
-  // SameThreadAuctionProcessManager() is created when an auction is started.
+  // SameProcessAuctionProcessManager() is created when an auction is started.
   std::unique_ptr<AuctionProcessManager> auction_process_manager_;
 
   // Set by UseMockWorkletService(). Non-owning reference to the
@@ -1512,10 +1516,10 @@ TEST_F(AuctionRunnerTest, BasicDebug) {
 TEST_F(AuctionRunnerTest, PauseBidder) {
   pause_worklet_url_ = kBidder2Url;
 
-  // Save a pointer to SameThreadAuctionProcessManager since we'll need its help
+  // Save a pointer to SameProcessAuctionProcessManager since we'll need its help
   // to resume things.
-  auto process_manager = std::make_unique<SameThreadAuctionProcessManager>();
-  SameThreadAuctionProcessManager* process_manager_impl = process_manager.get();
+  auto process_manager = std::make_unique<SameProcessAuctionProcessManager>();
+  SameProcessAuctionProcessManager* process_manager_impl = process_manager.get();
   auction_process_manager_ = std::move(process_manager);
 
   // Have a 404 for script 2 until ready to resume.
@@ -1565,10 +1569,10 @@ TEST_F(AuctionRunnerTest, PauseBidder) {
 TEST_F(AuctionRunnerTest, PauseSeller) {
   pause_worklet_url_ = kSellerUrl;
 
-  // Save a pointer to SameThreadAuctionProcessManager since we'll need its help
+  // Save a pointer to SameProcessAuctionProcessManager since we'll need its help
   // to resume things.
-  auto process_manager = std::make_unique<SameThreadAuctionProcessManager>();
-  SameThreadAuctionProcessManager* process_manager_impl = process_manager.get();
+  auto process_manager = std::make_unique<SameProcessAuctionProcessManager>();
+  SameProcessAuctionProcessManager* process_manager_impl = process_manager.get();
   auction_process_manager_ = std::move(process_manager);
 
   // Have a 404 for seller until ready to resume.
@@ -2191,21 +2195,18 @@ function scoreAd(adMetadata, bid, auctionConfig, trustedScoringSignals,
 }
                                          )") + kReportResultScript);
 
-  // Only accept first bidder's bid.
+  // Only accept first bidder's bid. Requests will always be batched non-racily,
+  // since a mock time is in use.
   auction_worklet::AddJsonResponse(
       &url_loader_factory_,
       GURL(trusted_scoring_signals_url_->spec() +
            "?hostname=publisher1.com"
-           "&renderUrls=https%3A%2F%2Fad1.com%2F"
-           "&adComponentRenderUrls=https%3A%2F%2Fad1.com-component1.com%2F"),
-      R"({"renderUrls":{"https://ad1.com/":"accept"}})");
-  auction_worklet::AddJsonResponse(
-      &url_loader_factory_,
-      GURL(trusted_scoring_signals_url_->spec() +
-           "?hostname=publisher1.com"
-           "&renderUrls=https%3A%2F%2Fad2.com%2F"
-           "&adComponentRenderUrls=https%3A%2F%2Fad2.com-component1.com%2F"),
-      R"({"renderUrls":{"https://ad2.com/":"reject"}})");
+           "&renderUrls=https%3A%2F%2Fad1.com%2F,https%3A%2F%2Fad2.com%2F"
+           "&adComponentRenderUrls=https%3A%2F%2Fad1.com-component1.com%2F,"
+           "https%3A%2F%2Fad2.com-component1.com%2F"),
+      R"(
+{"renderUrls":{"https://ad1.com/":"accept", "https://ad2.com/":"reject"}}
+      )");
 
   RunStandardAuction();
   EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_url);
@@ -2250,21 +2251,21 @@ TEST_F(AuctionRunnerTest, ProcessManagerDelaysAuction) {
   // Create AuctionProcessManager in advance of starting the auction so can
   // create seller worklets before the auction starts.
   auction_process_manager_ =
-      std::make_unique<SameThreadAuctionProcessManager>();
+      std::make_unique<SameProcessAuctionProcessManager>();
 
   AuctionProcessManager* auction_process_manager =
       auction_process_manager_.get();
 
-  // Make kMaxActiveSellerWorklets seller worklet requests for kSellerUrl's
-  // origin.
+  // Make kMaxSellerProcesses seller worklet requests for other origins.
   std::list<std::unique_ptr<AuctionProcessManager::ProcessHandle>> sellers;
-  for (size_t i = 0; i < AuctionProcessManager::kMaxActiveSellerWorklets; ++i) {
+  for (size_t i = 0; i < AuctionProcessManager::kMaxSellerProcesses; ++i) {
     sellers.push_back(std::make_unique<AuctionProcessManager::ProcessHandle>());
+    url::Origin origin =
+        url::Origin::Create(GURL(base::StringPrintf("https://%zu.test", i)));
     EXPECT_TRUE(auction_process_manager->RequestWorkletService(
-        AuctionProcessManager::WorkletType::kSeller,
-        url::Origin::Create(kSellerUrl), &*sellers.back(), base::BindOnce([]() {
-          ADD_FAILURE() << "This should not be called";
-        })));
+        AuctionProcessManager::WorkletType::kSeller, origin, &*sellers.back(),
+        base::BindOnce(
+            []() { ADD_FAILURE() << "This should not be called"; })));
   }
 
   StartStandardAuction();
@@ -2275,7 +2276,7 @@ TEST_F(AuctionRunnerTest, ProcessManagerDelaysAuction) {
   EXPECT_EQ(0u, auction_process_manager->GetPendingBidderRequestsForTesting());
   EXPECT_FALSE(auction_complete_);
 
-  // Make kMaxBidderProcesses bidder worklet requests different bidder origins.
+  // Make kMaxBidderProcesses bidder worklet requests for different origins.
   // Do this after starting the auction, so the auction will incorrectly
   // complete once a seller worklet slot is freed if the auction already
   // requested bidder worklet processes.
@@ -2322,90 +2323,189 @@ TEST_F(AuctionRunnerTest, ProcessManagerDelaysAuction) {
                   2 /* expected_interest_groups */, 2 /* expected_owners */);
 }
 
-TEST_F(AuctionRunnerTest, AllBiddersCrashBeforeBidding) {
-  for (bool seller_worklet_loads_first : {false, true}) {
-    observer_log_.clear();
-    SCOPED_TRACE(seller_worklet_loads_first);
+// Test a seller worklet load failure while waiting on bidder worklet processes
+// to be allocated. Most of the tests for global seller worklet failures at a
+// particular phase use seller crashes instead of load errors (see SellerCrash
+// test), but this case is simplest to test with a seller load error.
+TEST_F(AuctionRunnerTest, SellerLoadErrorWhileWaitingForBidders) {
+  // Create AuctionProcessManager in advance of starting the auction so can
+  // create worklets before the auction starts.
+  auction_process_manager_ =
+      std::make_unique<SameProcessAuctionProcessManager>();
 
-    StartStandardAuctionWithMockService();
-    auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
-    ASSERT_TRUE(seller_worklet);
-    auto bidder1_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-        kBidder1, kBidder1Name);
-    ASSERT_TRUE(bidder1_worklet);
-    auto bidder2_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-        kBidder2, kBidder2Name);
-    ASSERT_TRUE(bidder2_worklet);
-
-    if (seller_worklet_loads_first) {
-      seller_worklet->CompleteLoading();
-      mock_auction_process_manager_->Flush();
-    }
-    EXPECT_FALSE(auction_complete_);
-
-    EXPECT_THAT(observer_log_,
-                testing::UnorderedElementsAre(
-                    "Create https://adstuff.publisher1.com/auction.js",
-                    "Create https://adplatform.com/offers.js",
-                    "Create https://anotheradthing.com/bids.js"));
-
-    EXPECT_THAT(LiveDebuggables(),
-                testing::UnorderedElementsAre(
-                    "https://adplatform.com/offers.js",
-                    "https://anotheradthing.com/bids.js",
-                    "https://adstuff.publisher1.com/auction.js"));
-
-    // Have to keep the callbacks around, since the AuctionWorkletService is
-    // still live. Closing it here causes more issues than its worth (seller
-    // worklet can't complete loading if it hasn't already). In production,
-    // there would be multiple service processes in this case, with different
-    // pipes.
-    auto bidder1_callback = bidder1_worklet->TakeLoadCallback();
-    auto bidder2_callback = bidder2_worklet->TakeLoadCallback();
-    bidder1_worklet.reset();
-    bidder2_worklet.reset();
-
-    base::RunLoop().RunUntilIdle();
-
-    EXPECT_THAT(observer_log_,
-                testing::UnorderedElementsAre(
-                    "Create https://adstuff.publisher1.com/auction.js",
-                    "Create https://adplatform.com/offers.js",
-                    "Create https://anotheradthing.com/bids.js",
-                    "Destroy https://adplatform.com/offers.js",
-                    "Destroy https://anotheradthing.com/bids.js",
-                    "Destroy https://adstuff.publisher1.com/auction.js"));
-
-    EXPECT_THAT(LiveDebuggables(), testing::ElementsAre());
-
-    // The auction isn't failed until the seller worklet has completed loading.
-    if (!seller_worklet_loads_first)
-      seller_worklet->CompleteLoading();
-
-    auction_run_loop_->Run();
-
-    EXPECT_FALSE(result_.ad_url);
-    EXPECT_FALSE(result_.ad_component_urls);
-    EXPECT_FALSE(result_.seller_report_url);
-    EXPECT_FALSE(result_.bidder_report_url);
-    EXPECT_EQ(5, result_.bidder1_bid_count);
-    EXPECT_EQ(3u, result_.bidder1_prev_wins.size());
-    EXPECT_EQ(5, result_.bidder2_bid_count);
-    EXPECT_EQ(3u, result_.bidder2_prev_wins.size());
-    EXPECT_THAT(
-        result_.errors,
-        testing::UnorderedElementsAre(
-            base::StringPrintf("%s crashed while trying to run generateBid().",
-                               kBidder1Url.spec().c_str()),
-            base::StringPrintf("%s crashed while trying to run generateBid().",
-                               kBidder2Url.spec().c_str())));
-
-    // Need to close the AuctionWorkletService pipes so callbacks can be
-    // destroyed without DCHECKing.
-    mock_auction_process_manager_->ClosePipes();
-    CheckHistograms(AuctionRunner::AuctionResult::kNoBids,
-                    2 /* expected_interest_groups */, 2 /* expected_owners */);
+  // Make kMaxBidderProcesses bidder worklet requests for different origins.
+  std::list<std::unique_ptr<AuctionProcessManager::ProcessHandle>>
+      other_bidders;
+  for (size_t i = 0; i < AuctionProcessManager::kMaxBidderProcesses; ++i) {
+    other_bidders.push_back(
+        std::make_unique<AuctionProcessManager::ProcessHandle>());
+    url::Origin origin = url::Origin::Create(
+        GURL(base::StringPrintf("https://blocking.bidder.%zu.test", i)));
+    EXPECT_TRUE(auction_process_manager_->RequestWorkletService(
+        AuctionProcessManager::WorkletType::kBidder, origin,
+        &*other_bidders.back(), base::BindOnce([]() {
+          ADD_FAILURE() << "This should not be called";
+        })));
   }
+
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
+                                         MakeAuctionScript());
+
+  url_loader_factory_.AddResponse(kSellerUrl.spec(), "", net::HTTP_NOT_FOUND);
+
+  RunStandardAuction();
+
+  EXPECT_FALSE(result_.ad_url);
+  EXPECT_EQ(5, result_.bidder1_bid_count);
+  EXPECT_EQ(3u, result_.bidder1_prev_wins.size());
+  EXPECT_EQ(5, result_.bidder2_bid_count);
+  ASSERT_EQ(3u, result_.bidder2_prev_wins.size());
+  EXPECT_THAT(result_.errors,
+              testing::ElementsAre(
+                  "Failed to load https://adstuff.publisher1.com/auction.js "
+                  "HTTP status = 404 Not Found."));
+  CheckHistograms(AuctionRunner::AuctionResult::kSellerWorkletLoadFailed,
+                  2 /* expected_interest_groups */, 2 /* expected_owners */);
+}
+
+// Test the case where two interest groups use the same BidderWorklet, with a
+// trusted bidding signals URL. The requests should be batched. This test
+// basically makes sure that SendPendingSignalsRequests() is only invoked on the
+// BidderWorklet after both GenerateBid() calls have been invoked.
+TEST_F(AuctionRunnerTest, ReusedBidderWorkletBatchesSignalsRequests) {
+  // Bidding script used by both interest groups. Since the default bid script
+  // checks the interest group name, and this test uses two interest groups with
+  // the same bidder script, have to use a different script for this test.
+  //
+  // This script uses trusted bidding signals and the interest group name to
+  // select a winner, to make sure the trusted bidding signals makes it to the
+  // bidder.
+  const char kBidderScript[] = R"(
+    function generateBid(interestGroup, auctionSignals, perBuyerSignals,
+                         trustedBiddingSignals, browserSignals) {
+      return {
+        ad: 0,
+        bid: trustedBiddingSignals[interestGroup.name],
+        render: interestGroup.ads[0].renderUrl
+      };
+    }
+
+    // Prevent an error about this method not existing.
+    function reportWin() {}
+  )";
+
+  // Need to use a different seller script as well, due to the validation logic
+  // in the default one being dependent on the details of the default bidder
+  // script.
+  const char kSellerScript[] = R"(
+    function scoreAd(adMetadata, bid, auctionConfig, trustedScoringSignals,
+                     browserSignals) {
+      return 2 * bid;
+    }
+
+    // Prevent an error about this method not existing.
+    function reportResult() {}
+  )";
+
+  // Two interest groups with all of the same URLs. They vary only in name,
+  // render URL, and bidding signals key.
+  std::vector<StorageInterestGroup> bidders;
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder1, /*name=*/"0", kBidder1Url, kBidder1TrustedSignalsUrl,
+      /*trusted_bidding_signals_keys=*/{"0"}, GURL("https://ad1.com")));
+  bidders.emplace_back(MakeInterestGroup(
+      kBidder1, /*name=*/"1", kBidder1Url, kBidder1TrustedSignalsUrl,
+      /*trusted_bidding_signals_keys=*/{"1"}, GURL("https://ad2.com")));
+
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kBidder1Url,
+                                         kBidderScript);
+
+  // Trusted signals response for the single expected request. Interest group
+  // "0" bids 2, interest group "1" bids 1.
+  auction_worklet::AddJsonResponse(&url_loader_factory_,
+                                   GURL(kBidder1TrustedSignalsUrl.spec() +
+                                        "?hostname=publisher1.com&keys=0,1"),
+                                   R"({"0":2, "1": 1})");
+
+  auction_worklet::AddJavascriptResponse(&url_loader_factory_, kSellerUrl,
+                                         kSellerScript);
+
+  StartAuction(kSellerUrl, std::move(bidders),
+               /*auction_signals_json=*/"null",
+               auction_worklet::mojom::BrowserSignals::New(
+                   url::Origin::Create(GURL("https://publisher1.com")),
+                   url::Origin::Create(kSellerUrl)));
+  auction_run_loop_->Run();
+  EXPECT_TRUE(auction_complete_);
+
+  EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_url);
+  EXPECT_FALSE(result_.ad_component_urls);
+  EXPECT_FALSE(result_.bidder_report_url);
+  EXPECT_FALSE(result_.seller_report_url);
+  EXPECT_THAT(result_.errors, testing::ElementsAre());
+}
+
+TEST_F(AuctionRunnerTest, AllBiddersCrashBeforeBidding) {
+  StartStandardAuctionWithMockService();
+  auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
+  ASSERT_TRUE(seller_worklet);
+  auto bidder1_worklet =
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
+  ASSERT_TRUE(bidder1_worklet);
+  auto bidder2_worklet =
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
+  ASSERT_TRUE(bidder2_worklet);
+
+  EXPECT_FALSE(auction_complete_);
+
+  EXPECT_THAT(observer_log_,
+              testing::UnorderedElementsAre(
+                  "Create https://adstuff.publisher1.com/auction.js",
+                  "Create https://adplatform.com/offers.js",
+                  "Create https://anotheradthing.com/bids.js"));
+
+  EXPECT_THAT(LiveDebuggables(),
+              testing::UnorderedElementsAre(
+                  "https://adplatform.com/offers.js",
+                  "https://anotheradthing.com/bids.js",
+                  "https://adstuff.publisher1.com/auction.js"));
+
+  bidder1_worklet.reset();
+  bidder2_worklet.reset();
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_THAT(observer_log_,
+              testing::UnorderedElementsAre(
+                  "Create https://adstuff.publisher1.com/auction.js",
+                  "Create https://adplatform.com/offers.js",
+                  "Create https://anotheradthing.com/bids.js",
+                  "Destroy https://adplatform.com/offers.js",
+                  "Destroy https://anotheradthing.com/bids.js",
+                  "Destroy https://adstuff.publisher1.com/auction.js"));
+
+  EXPECT_THAT(LiveDebuggables(), testing::ElementsAre());
+
+  auction_run_loop_->Run();
+
+  EXPECT_FALSE(result_.ad_url);
+  EXPECT_FALSE(result_.ad_component_urls);
+  EXPECT_FALSE(result_.seller_report_url);
+  EXPECT_FALSE(result_.bidder_report_url);
+  EXPECT_EQ(5, result_.bidder1_bid_count);
+  EXPECT_EQ(3u, result_.bidder1_prev_wins.size());
+  EXPECT_EQ(5, result_.bidder2_bid_count);
+  EXPECT_EQ(3u, result_.bidder2_prev_wins.size());
+  EXPECT_THAT(
+      result_.errors,
+      testing::UnorderedElementsAre(
+          base::StringPrintf("%s crashed while trying to run generateBid().",
+                             kBidder1Url.spec().c_str()),
+          base::StringPrintf("%s crashed while trying to run generateBid().",
+                             kBidder2Url.spec().c_str())));
+
+  CheckHistograms(AuctionRunner::AuctionResult::kNoBids,
+                  2 /* expected_interest_groups */, 2 /* expected_owners */);
 }
 
 // Test the case a single bidder worklet crashes before bidding. The auction
@@ -2413,104 +2513,92 @@ TEST_F(AuctionRunnerTest, AllBiddersCrashBeforeBidding) {
 TEST_F(AuctionRunnerTest, BidderCrashBeforeBidding) {
   for (bool other_bidder_finishes_first : {false, true}) {
     SCOPED_TRACE(other_bidder_finishes_first);
-    for (bool seller_worklet_loads_first : {false, true}) {
-      SCOPED_TRACE(seller_worklet_loads_first);
-      observer_log_.clear();
-      StartStandardAuctionWithMockService();
-      auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
-      ASSERT_TRUE(seller_worklet);
-      auto bidder1_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-          kBidder1, kBidder1Name);
-      ASSERT_TRUE(bidder1_worklet);
-      auto bidder2_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-          kBidder2, kBidder2Name);
-      ASSERT_TRUE(bidder2_worklet);
 
-      ASSERT_FALSE(auction_complete_);
-      if (seller_worklet_loads_first)
-        seller_worklet->CompleteLoading();
-      if (other_bidder_finishes_first) {
-        bidder2_worklet->InvokeGenerateBidCallback(7 /* bid */,
-                                                   GURL("https://ad2.com/"));
-        // The bidder pipe should be closed after it bids.
-        EXPECT_TRUE(bidder2_worklet->PipeIsClosed());
-        bidder2_worklet.reset();
-      }
-      mock_auction_process_manager_->Flush();
+    observer_log_.clear();
+    StartStandardAuctionWithMockService();
+    auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
+    ASSERT_TRUE(seller_worklet);
+    auto bidder1_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
+    ASSERT_TRUE(bidder1_worklet);
+    auto bidder2_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
+    ASSERT_TRUE(bidder2_worklet);
 
-      ASSERT_FALSE(auction_complete_);
-
-      // Close Bidder1's pipe, keeping its callback alive to avoid a DCHECK.
-      auto bidder1_callback = bidder1_worklet->TakeLoadCallback();
-      bidder1_worklet.reset();
-      // Can't flush the closed pipe without reaching into AuctionRunner, so use
-      // RunUntilIdle() instead.
-      base::RunLoop().RunUntilIdle();
-
-      if (!seller_worklet_loads_first)
-        seller_worklet->CompleteLoading();
-      if (!other_bidder_finishes_first) {
-        bidder2_worklet->InvokeGenerateBidCallback(7 /* bid */,
-                                                   GURL("https://ad2.com/"));
-        // The bidder pipe should be closed after it bids.
-        EXPECT_TRUE(bidder2_worklet->PipeIsClosed());
-        bidder2_worklet.reset();
-      }
-      mock_auction_process_manager_->Flush();
-
-      EXPECT_THAT(observer_log_,
-                  testing::UnorderedElementsAre(
-                      "Create https://adstuff.publisher1.com/auction.js",
-                      "Create https://adplatform.com/offers.js",
-                      "Create https://anotheradthing.com/bids.js",
-                      "Destroy https://adplatform.com/offers.js",
-                      "Destroy https://anotheradthing.com/bids.js"));
-
-      EXPECT_THAT(
-          LiveDebuggables(),
-          testing::ElementsAre("https://adstuff.publisher1.com/auction.js"));
-
-      // The auction should be scored without waiting on the crashed kBidder1.
-      auto score_ad_params = seller_worklet->WaitForScoreAd();
-      EXPECT_EQ(kBidder2, score_ad_params->interest_group_owner);
-      EXPECT_EQ(7, score_ad_params->bid);
-      seller_worklet->InvokeScoreAdCallback(11);
-
-      // Finish the auction.
-      seller_worklet->WaitForReportResult();
-      seller_worklet->InvokeReportResultCallback();
-
-      // Worklet 2 should be reloaded and ReportWin() invoked.
-      mock_auction_process_manager_->WaitForWinningBidderReload();
-      bidder2_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-          kBidder2, kBidder2Name);
-      bidder2_worklet->WaitForReportWin();
-      bidder2_worklet->InvokeReportWinCallback();
-
-      // Bidder2 won, Bidder1 crashed.
-      auction_run_loop_->Run();
-      EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_url);
-      EXPECT_FALSE(result_.ad_component_urls);
-      EXPECT_FALSE(result_.seller_report_url);
-      EXPECT_FALSE(result_.bidder_report_url);
-      EXPECT_EQ(5, result_.bidder1_bid_count);
-      EXPECT_EQ(3u, result_.bidder1_prev_wins.size());
-      EXPECT_EQ(6, result_.bidder2_bid_count);
-      ASSERT_EQ(4u, result_.bidder2_prev_wins.size());
-      EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
-                result_.bidder2_prev_wins[3]->ad_json);
-      EXPECT_THAT(result_.errors,
-                  testing::ElementsAre(base::StringPrintf(
-                      "%s crashed while trying to run generateBid().",
-                      kBidder1Url.spec().c_str())));
-      CheckHistograms(AuctionRunner::AuctionResult::kSuccess,
-                      2 /* expected_interest_groups */,
-                      2 /* expected_owners */);
-
-      // Need to close the AuctionWorkletService pipes so callbacks can be
-      // destroyed without DCHECKing.
-      mock_auction_process_manager_->ClosePipes();
+    ASSERT_FALSE(auction_complete_);
+    if (other_bidder_finishes_first) {
+      bidder2_worklet->InvokeGenerateBidCallback(7 /* bid */,
+                                                 GURL("https://ad2.com/"));
+      // The bidder pipe should be closed after it bids.
+      EXPECT_TRUE(bidder2_worklet->PipeIsClosed());
+      bidder2_worklet.reset();
     }
+    mock_auction_process_manager_->Flush();
+
+    ASSERT_FALSE(auction_complete_);
+
+    // Close Bidder1's pipe.
+    bidder1_worklet.reset();
+    // Can't flush the closed pipe without reaching into AuctionRunner, so use
+    // RunUntilIdle() instead.
+    task_environment_.RunUntilIdle();
+
+    if (!other_bidder_finishes_first) {
+      bidder2_worklet->InvokeGenerateBidCallback(7 /* bid */,
+                                                 GURL("https://ad2.com/"));
+      // The bidder pipe should be closed after it bids.
+      EXPECT_TRUE(bidder2_worklet->PipeIsClosed());
+      bidder2_worklet.reset();
+    }
+    mock_auction_process_manager_->Flush();
+
+    EXPECT_THAT(observer_log_,
+                testing::UnorderedElementsAre(
+                    "Create https://adstuff.publisher1.com/auction.js",
+                    "Create https://adplatform.com/offers.js",
+                    "Create https://anotheradthing.com/bids.js",
+                    "Destroy https://adplatform.com/offers.js",
+                    "Destroy https://anotheradthing.com/bids.js"));
+
+    EXPECT_THAT(
+        LiveDebuggables(),
+        testing::ElementsAre("https://adstuff.publisher1.com/auction.js"));
+
+    // The auction should be scored without waiting on the crashed kBidder1.
+    auto score_ad_params = seller_worklet->WaitForScoreAd();
+    EXPECT_EQ(kBidder2, score_ad_params.interest_group_owner);
+    EXPECT_EQ(7, score_ad_params.bid);
+    std::move(score_ad_params.callback).Run(/*score=*/11, /*errors=*/{});
+
+    // Finish the auction.
+    seller_worklet->WaitForReportResult();
+    seller_worklet->InvokeReportResultCallback();
+
+    // Worklet 2 should be reloaded and ReportWin() invoked.
+    mock_auction_process_manager_->WaitForWinningBidderReload();
+    bidder2_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
+    bidder2_worklet->WaitForReportWin();
+    bidder2_worklet->InvokeReportWinCallback();
+
+    // Bidder2 won, Bidder1 crashed.
+    auction_run_loop_->Run();
+    EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_url);
+    EXPECT_FALSE(result_.ad_component_urls);
+    EXPECT_FALSE(result_.seller_report_url);
+    EXPECT_FALSE(result_.bidder_report_url);
+    EXPECT_EQ(5, result_.bidder1_bid_count);
+    EXPECT_EQ(3u, result_.bidder1_prev_wins.size());
+    EXPECT_EQ(6, result_.bidder2_bid_count);
+    ASSERT_EQ(4u, result_.bidder2_prev_wins.size());
+    EXPECT_EQ(R"({"render_url":"https://ad2.com/"})",
+              result_.bidder2_prev_wins[3]->ad_json);
+    EXPECT_THAT(result_.errors,
+                testing::ElementsAre(base::StringPrintf(
+                    "%s crashed while trying to run generateBid().",
+                    kBidder1Url.spec().c_str())));
+    CheckHistograms(AuctionRunner::AuctionResult::kSuccess,
+                    2 /* expected_interest_groups */, 2 /* expected_owners */);
   }
 }
 
@@ -2522,13 +2610,12 @@ TEST_F(AuctionRunnerTest, WinningBidderCrashWhileReporting) {
   auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
   ASSERT_TRUE(seller_worklet);
   auto bidder1_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder1, kBidder1Name);
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
   ASSERT_TRUE(bidder1_worklet);
   auto bidder2_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder2, kBidder2Name);
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
   ASSERT_TRUE(bidder2_worklet);
 
-  seller_worklet->CompleteLoading();
   bidder1_worklet->InvokeGenerateBidCallback(7 /* bid */,
                                              GURL("https://ad1.com/"));
   // The bidder pipe should be closed after it bids.
@@ -2542,22 +2629,22 @@ TEST_F(AuctionRunnerTest, WinningBidderCrashWhileReporting) {
 
   // Score Bidder1's bid.
   auto score_ad_params = seller_worklet->WaitForScoreAd();
-  EXPECT_EQ(kBidder1, score_ad_params->interest_group_owner);
-  EXPECT_EQ(7, score_ad_params->bid);
-  seller_worklet->InvokeScoreAdCallback(11 /* score */);
+  EXPECT_EQ(kBidder1, score_ad_params.interest_group_owner);
+  EXPECT_EQ(7, score_ad_params.bid);
+  std::move(score_ad_params.callback).Run(/*score=*/11, /*errors=*/{});
 
   // Score Bidder2's bid.
   score_ad_params = seller_worklet->WaitForScoreAd();
-  EXPECT_EQ(kBidder2, score_ad_params->interest_group_owner);
-  EXPECT_EQ(5, score_ad_params->bid);
-  seller_worklet->InvokeScoreAdCallback(10 /* score */);
+  EXPECT_EQ(kBidder2, score_ad_params.interest_group_owner);
+  EXPECT_EQ(5, score_ad_params.bid);
+  std::move(score_ad_params.callback).Run(/*score=*/10, /*errors=*/{});
 
   // Bidder1 crashes while running ReportWin.
   seller_worklet->WaitForReportResult();
   seller_worklet->InvokeReportResultCallback();
   mock_auction_process_manager_->WaitForWinningBidderReload();
   bidder1_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder1, kBidder1Name);
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
   bidder1_worklet->WaitForReportWin();
   bidder1_worklet.reset();
   auction_run_loop_->Run();
@@ -2578,74 +2665,65 @@ TEST_F(AuctionRunnerTest, WinningBidderCrashWhileReporting) {
                   2 /* expected_interest_groups */, 2 /* expected_owners */);
 }
 
-// If the seller crashes at any point in the auction, the auction fails.
+// If the seller crashes at several points in the auction, the auction fails.
+// Seller load failures look the same to auctions, so this test also covers
+// load failures in the same places. Note that a seller worklet load error while
+// waiting for bidder worklet processes is covered in another test, and looks
+// exactly like a crash at the same point to the AuctionRunner.
 TEST_F(AuctionRunnerTest, SellerCrash) {
   enum class CrashPhase {
     kLoad,
-    kLoadAfterBiddersLoaded,
     kScoreBid,
     kReportResult,
   };
   for (CrashPhase crash_phase :
-       {CrashPhase::kLoad, CrashPhase::kLoadAfterBiddersLoaded,
-        CrashPhase::kScoreBid, CrashPhase::kReportResult}) {
+       {CrashPhase::kLoad, CrashPhase::kScoreBid, CrashPhase::kReportResult}) {
     SCOPED_TRACE(static_cast<int>(crash_phase));
 
     StartStandardAuctionWithMockService();
 
     auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
     ASSERT_TRUE(seller_worklet);
-    auto bidder1_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-        kBidder1, kBidder1Name);
+    auto bidder1_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
     ASSERT_TRUE(bidder1_worklet);
-    auto bidder2_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-        kBidder2, kBidder2Name);
+    auto bidder2_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
     ASSERT_TRUE(bidder2_worklet);
 
     // While loop to allow breaking when the crash stage is reached.
     while (true) {
       if (crash_phase == CrashPhase::kLoad) {
-        // Need to close the AuctionWorkletService pipes so callbacks can be
-        // destroyed without DCHECKing.
-        mock_auction_process_manager_->ClosePipes();
+        seller_worklet->set_expect_send_pending_signals_requests_called(false);
         seller_worklet.reset();
         break;
       }
 
+      // Generate both bids, wait for seller to receive them..
       bidder1_worklet->InvokeGenerateBidCallback(5 /* bid */,
                                                  GURL("https://ad1.com/"));
       bidder2_worklet->InvokeGenerateBidCallback(7 /* bid */,
                                                  GURL("https://ad2.com/"));
-      // Wait for bids to be received.
-      base::RunLoop().RunUntilIdle();
-
-      if (crash_phase == CrashPhase::kLoadAfterBiddersLoaded) {
-        // Need to close the AuctionWorkletService pipes so callbacks can be
-        // destroyed without DCHECKing.
-        mock_auction_process_manager_->ClosePipes();
-        seller_worklet.reset();
-        break;
-      }
-
-      seller_worklet->CompleteLoading();
-
-      // Wait for Bidder1's bid.
       auto score_ad_params = seller_worklet->WaitForScoreAd();
+      auto score_ad_params2 = seller_worklet->WaitForScoreAd();
+
+      // Wait for SendPendingSignalsRequests() invocation.
+      task_environment_.RunUntilIdle();
+
       if (crash_phase == CrashPhase::kScoreBid) {
         seller_worklet.reset();
         break;
       }
       // Score Bidder1's bid.
       bidder1_worklet.reset();
-      EXPECT_EQ(kBidder1, score_ad_params->interest_group_owner);
-      EXPECT_EQ(5, score_ad_params->bid);
-      seller_worklet->InvokeScoreAdCallback(10 /* score */);
+      EXPECT_EQ(kBidder1, score_ad_params.interest_group_owner);
+      EXPECT_EQ(5, score_ad_params.bid);
+      std::move(score_ad_params.callback).Run(/*score=*/10, /*errors=*/{});
 
       // Score Bidder2's bid.
-      score_ad_params = seller_worklet->WaitForScoreAd();
-      EXPECT_EQ(kBidder2, score_ad_params->interest_group_owner);
-      EXPECT_EQ(7, score_ad_params->bid);
-      seller_worklet->InvokeScoreAdCallback(11 /* score */);
+      EXPECT_EQ(kBidder2, score_ad_params2.interest_group_owner);
+      EXPECT_EQ(7, score_ad_params2.bid);
+      std::move(score_ad_params2.callback).Run(/*score=*/11, /*errors=*/{});
 
       seller_worklet->WaitForReportResult();
       DCHECK_EQ(CrashPhase::kReportResult, crash_phase);
@@ -2710,11 +2788,10 @@ TEST_F(AuctionRunnerTest, NullAdComponents) {
 
     auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
     ASSERT_TRUE(seller_worklet);
-    auto bidder_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-        kBidder1, kBidder1Name);
+    auto bidder_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
     ASSERT_TRUE(bidder_worklet);
 
-    seller_worklet->CompleteLoading();
     bidder_worklet->InvokeGenerateBidCallback(
         /*bid=*/1, kRenderUrl, test_case.bid_ad_component_urls,
         base::TimeDelta());
@@ -2722,16 +2799,16 @@ TEST_F(AuctionRunnerTest, NullAdComponents) {
     if (test_case.expect_successful_bid) {
       // Since the bid was valid, it should be scored.
       auto score_ad_params = seller_worklet->WaitForScoreAd();
-      EXPECT_EQ(kBidder1, score_ad_params->interest_group_owner);
-      EXPECT_EQ(1, score_ad_params->bid);
-      seller_worklet->InvokeScoreAdCallback(/*score=*/11);
+      EXPECT_EQ(kBidder1, score_ad_params.interest_group_owner);
+      EXPECT_EQ(1, score_ad_params.bid);
+      std::move(score_ad_params.callback).Run(/*score=*/11, /*errors=*/{});
 
       // Finish the auction.
       seller_worklet->WaitForReportResult();
       seller_worklet->InvokeReportResultCallback();
       mock_auction_process_manager_->WaitForWinningBidderReload();
-      bidder_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-          kBidder1, kBidder1Name);
+      bidder_worklet =
+          mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
       bidder_worklet->WaitForReportWin();
       bidder_worklet->InvokeReportWinCallback();
       auction_run_loop_->Run();
@@ -2798,27 +2875,26 @@ TEST_F(AuctionRunnerTest, AdComponentsLimit) {
 
     auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
     ASSERT_TRUE(seller_worklet);
-    auto bidder_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-        kBidder1, kBidder1Name);
+    auto bidder_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
     ASSERT_TRUE(bidder_worklet);
 
-    seller_worklet->CompleteLoading();
     bidder_worklet->InvokeGenerateBidCallback(
         /*bid=*/1, kRenderUrl, ad_component_urls, base::TimeDelta());
 
     if (num_components <= blink::kMaxAdAuctionAdComponents) {
       // Since the bid was valid, it should be scored.
       auto score_ad_params = seller_worklet->WaitForScoreAd();
-      EXPECT_EQ(kBidder1, score_ad_params->interest_group_owner);
-      EXPECT_EQ(1, score_ad_params->bid);
-      seller_worklet->InvokeScoreAdCallback(/*score=*/11);
+      EXPECT_EQ(kBidder1, score_ad_params.interest_group_owner);
+      EXPECT_EQ(1, score_ad_params.bid);
+      std::move(score_ad_params.callback).Run(/*score=*/11, /*errors=*/{});
 
       // Finish the auction.
       seller_worklet->WaitForReportResult();
       seller_worklet->InvokeReportResultCallback();
       mock_auction_process_manager_->WaitForWinningBidderReload();
-      bidder_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-          kBidder1, kBidder1Name);
+      bidder_worklet =
+          mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
       bidder_worklet->WaitForReportWin();
       bidder_worklet->InvokeReportWinCallback();
       auction_run_loop_->Run();
@@ -2973,14 +3049,13 @@ TEST_F(AuctionRunnerTest, BadBid) {
 
     auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
     ASSERT_TRUE(seller_worklet);
-    auto bidder1_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-        kBidder1, kBidder1Name);
+    auto bidder1_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
     ASSERT_TRUE(bidder1_worklet);
-    auto bidder2_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-        kBidder2, kBidder2Name);
+    auto bidder2_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
     ASSERT_TRUE(bidder2_worklet);
 
-    seller_worklet->CompleteLoading();
     bidder1_worklet->InvokeGenerateBidCallback(
         test_case.bid, test_case.render_url, test_case.ad_component_urls,
         test_case.duration);
@@ -3017,22 +3092,21 @@ TEST_F(AuctionRunnerTest, BadSellerReportUrl) {
   auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
   ASSERT_TRUE(seller_worklet);
   auto bidder1_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder1, kBidder1Name);
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
   ASSERT_TRUE(bidder1_worklet);
   auto bidder2_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder2, kBidder2Name);
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
   ASSERT_TRUE(bidder2_worklet);
 
-  seller_worklet->CompleteLoading();
   // Only Bidder1 bids, to keep things simple.
   bidder1_worklet->InvokeGenerateBidCallback(5 /* bid */,
                                              GURL("https://ad1.com/"));
   bidder2_worklet->InvokeGenerateBidCallback(/*bid=*/absl::nullopt);
 
   auto score_ad_params = seller_worklet->WaitForScoreAd();
-  EXPECT_EQ(kBidder1, score_ad_params->interest_group_owner);
-  EXPECT_EQ(5, score_ad_params->bid);
-  seller_worklet->InvokeScoreAdCallback(10 /* score */);
+  EXPECT_EQ(kBidder1, score_ad_params.interest_group_owner);
+  EXPECT_EQ(5, score_ad_params.bid);
+  std::move(score_ad_params.callback).Run(/*score=*/10, /*errors=*/{});
 
   // Bidder1 never gets to report anything, since the seller providing a bad
   // report URL aborts the auction.
@@ -3065,29 +3139,28 @@ TEST_F(AuctionRunnerTest, BadBidderReportUrl) {
   auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
   ASSERT_TRUE(seller_worklet);
   auto bidder1_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder1, kBidder1Name);
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
   ASSERT_TRUE(bidder1_worklet);
   auto bidder2_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder2, kBidder2Name);
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
   ASSERT_TRUE(bidder2_worklet);
 
-  seller_worklet->CompleteLoading();
   // Only Bidder1 bids, to keep things simple.
   bidder1_worklet->InvokeGenerateBidCallback(5 /* bid */,
                                              GURL("https://ad1.com/"));
   bidder2_worklet->InvokeGenerateBidCallback(/*bid=*/absl::nullopt);
 
   auto score_ad_params = seller_worklet->WaitForScoreAd();
-  EXPECT_EQ(kBidder1, score_ad_params->interest_group_owner);
-  EXPECT_EQ(5, score_ad_params->bid);
-  seller_worklet->InvokeScoreAdCallback(10 /* score */);
+  EXPECT_EQ(kBidder1, score_ad_params.interest_group_owner);
+  EXPECT_EQ(5, score_ad_params.bid);
+  std::move(score_ad_params.callback).Run(/*score=*/10, /*errors=*/{});
 
   seller_worklet->WaitForReportResult();
   seller_worklet->InvokeReportResultCallback(
       GURL("https://valid.url.that.is.thrown.out.test/"));
   mock_auction_process_manager_->WaitForWinningBidderReload();
   bidder1_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder1, kBidder1Name);
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
   bidder1_worklet->WaitForReportWin();
   bidder1_worklet->InvokeReportWinCallback(GURL("http://not.https.test/"));
   auction_run_loop_->Run();
@@ -3108,95 +3181,6 @@ TEST_F(AuctionRunnerTest, BadBidderReportUrl) {
                   2 /* expected_interest_groups */, 2 /* expected_owners */);
 }
 
-// Make sure that requesting unexpected URLs is blocked.
-TEST_F(AuctionRunnerTest, UrlRequestProtection) {
-  StartStandardAuctionWithMockService();
-
-  auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
-  ASSERT_TRUE(seller_worklet);
-  auto bidder1_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder1, kBidder1Name);
-  ASSERT_TRUE(bidder1_worklet);
-  auto bidder2_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder2, kBidder2Name);
-  ASSERT_TRUE(bidder2_worklet);
-
-  // It should be possible to request the seller URL from the seller's
-  // URLLoaderFactory.
-  network::ResourceRequest request;
-  request.url = kSellerUrl;
-  request.headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                            "application/javascript");
-  mojo::PendingRemote<network::mojom::URLLoader> receiver;
-  mojo::PendingReceiver<network::mojom::URLLoaderClient> client;
-  seller_worklet->url_loader_factory()->CreateLoaderAndStart(
-      receiver.InitWithNewPipeAndPassReceiver(), 0 /* request_id_ */,
-      0 /* options */, request, client.InitWithNewPipeAndPassRemote(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  seller_worklet->url_loader_factory().FlushForTesting();
-  EXPECT_TRUE(seller_worklet->url_loader_factory().is_connected());
-  ASSERT_EQ(1u, url_loader_factory_.pending_requests()->size());
-  EXPECT_EQ(kSellerUrl,
-            (*url_loader_factory_.pending_requests())[0].request.url);
-  receiver.reset();
-  client.reset();
-
-  // A bidder's URLLoaderFactory should reject the seller URL, closing the Mojo
-  // pipe.
-  bidder1_worklet->url_loader_factory()->CreateLoaderAndStart(
-      receiver.InitWithNewPipeAndPassReceiver(), 0 /* request_id_ */,
-      0 /* options */, request, client.InitWithNewPipeAndPassRemote(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  bidder1_worklet->url_loader_factory().FlushForTesting();
-  EXPECT_FALSE(bidder1_worklet->url_loader_factory().is_connected());
-  EXPECT_EQ(1u, url_loader_factory_.pending_requests()->size());
-  EXPECT_EQ("Unexpected request", TakeBadMessage());
-  receiver.reset();
-  client.reset();
-
-  // A bidder's URLLoaderFactory should allow the bidder's URL to be requested.
-  request.url = kBidder2Url;
-  bidder2_worklet->url_loader_factory()->CreateLoaderAndStart(
-      receiver.InitWithNewPipeAndPassReceiver(), 0 /* request_id_ */,
-      0 /* options */, request, client.InitWithNewPipeAndPassRemote(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  bidder2_worklet->url_loader_factory().FlushForTesting();
-  EXPECT_TRUE(bidder2_worklet->url_loader_factory().is_connected());
-  ASSERT_EQ(2u, url_loader_factory_.pending_requests()->size());
-  EXPECT_EQ(kBidder2Url,
-            (*url_loader_factory_.pending_requests())[1].request.url);
-  receiver.reset();
-  client.reset();
-
-  // The seller's URLLoaderFactory should reject a bidder worklet's URL, closing
-  // the Mojo pipe.
-  seller_worklet->url_loader_factory()->CreateLoaderAndStart(
-      receiver.InitWithNewPipeAndPassReceiver(), 0 /* request_id_ */,
-      0 /* options */, request, client.InitWithNewPipeAndPassRemote(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  seller_worklet->url_loader_factory().FlushForTesting();
-  EXPECT_FALSE(seller_worklet->url_loader_factory().is_connected());
-  EXPECT_EQ(2u, url_loader_factory_.pending_requests()->size());
-  EXPECT_EQ("Unexpected request", TakeBadMessage());
-  receiver.reset();
-  client.reset();
-
-  // A bidder's URLLoaderFactory should also reject the URL from another bidder.
-  request.url = kBidder1Url;
-  bidder2_worklet->url_loader_factory()->CreateLoaderAndStart(
-      receiver.InitWithNewPipeAndPassReceiver(), 0 /* request_id_ */,
-      0 /* options */, request, client.InitWithNewPipeAndPassRemote(),
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-  bidder2_worklet->url_loader_factory().FlushForTesting();
-  EXPECT_FALSE(bidder2_worklet->url_loader_factory().is_connected());
-  ASSERT_EQ(2u, url_loader_factory_.pending_requests()->size());
-  EXPECT_EQ("Unexpected request", TakeBadMessage());
-
-  // Need to close the AuctionWorkletService pipes so callbacks can be destroyed
-  // without DCHECKing.
-  mock_auction_process_manager_->ClosePipes();
-}
-
 // Check that BidderWorklets that don't make a bid are destroyed immediately.
 TEST_F(AuctionRunnerTest, DestroyBidderWorkletWithoutBid) {
   StartStandardAuctionWithMockService();
@@ -3204,13 +3188,11 @@ TEST_F(AuctionRunnerTest, DestroyBidderWorkletWithoutBid) {
   auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
   ASSERT_TRUE(seller_worklet);
   auto bidder1_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder1, kBidder1Name);
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
   ASSERT_TRUE(bidder1_worklet);
   auto bidder2_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder2, kBidder2Name);
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
   ASSERT_TRUE(bidder2_worklet);
-
-  seller_worklet->CompleteLoading();
 
   bidder1_worklet->InvokeGenerateBidCallback(/*bid=*/absl::nullopt);
   // Need to flush the service pipe to make sure the AuctionRunner has received
@@ -3223,16 +3205,16 @@ TEST_F(AuctionRunnerTest, DestroyBidderWorkletWithoutBid) {
   bidder2_worklet->InvokeGenerateBidCallback(7 /* bid */,
                                              GURL("https://ad2.com/"));
   auto score_ad_params = seller_worklet->WaitForScoreAd();
-  EXPECT_EQ(kBidder2, score_ad_params->interest_group_owner);
-  EXPECT_EQ(7, score_ad_params->bid);
-  seller_worklet->InvokeScoreAdCallback(11 /* score */);
+  EXPECT_EQ(kBidder2, score_ad_params.interest_group_owner);
+  EXPECT_EQ(7, score_ad_params.bid);
+  std::move(score_ad_params.callback).Run(/*score=*/11, /*errors=*/{});
 
   // Finish the auction.
   seller_worklet->WaitForReportResult();
   seller_worklet->InvokeReportResultCallback();
   mock_auction_process_manager_->WaitForWinningBidderReload();
   bidder2_worklet =
-      mock_auction_process_manager_->TakeBidderWorklet(kBidder2, kBidder2Name);
+      mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
   bidder2_worklet->WaitForReportWin();
   bidder2_worklet->InvokeReportWinCallback();
   auction_run_loop_->Run();
@@ -3265,30 +3247,28 @@ TEST_F(AuctionRunnerTest, Tie) {
 
     auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
     ASSERT_TRUE(seller_worklet);
-    auto bidder1_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-        kBidder1, kBidder1Name);
+    auto bidder1_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
     ASSERT_TRUE(bidder1_worklet);
-    auto bidder2_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-        kBidder2, kBidder2Name);
+    auto bidder2_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
     ASSERT_TRUE(bidder2_worklet);
-
-    seller_worklet->CompleteLoading();
 
     // Bidder1 returns a bid, which is then scored.
     bidder1_worklet->InvokeGenerateBidCallback(5 /* bid */,
                                                GURL("https://ad1.com/"));
     auto score_ad_params = seller_worklet->WaitForScoreAd();
-    EXPECT_EQ(kBidder1, score_ad_params->interest_group_owner);
-    EXPECT_EQ(5, score_ad_params->bid);
-    seller_worklet->InvokeScoreAdCallback(10 /* score */);
+    EXPECT_EQ(kBidder1, score_ad_params.interest_group_owner);
+    EXPECT_EQ(5, score_ad_params.bid);
+    std::move(score_ad_params.callback).Run(/*score=*/10, /*errors=*/{});
 
     // Bidder2 returns a bid, which is then scored.
     bidder2_worklet->InvokeGenerateBidCallback(5 /* bid */,
                                                GURL("https://ad2.com/"));
     score_ad_params = seller_worklet->WaitForScoreAd();
-    EXPECT_EQ(kBidder2, score_ad_params->interest_group_owner);
-    EXPECT_EQ(5, score_ad_params->bid);
-    seller_worklet->InvokeScoreAdCallback(10 /* score */);
+    EXPECT_EQ(kBidder2, score_ad_params.interest_group_owner);
+    EXPECT_EQ(5, score_ad_params.bid);
+    std::move(score_ad_params.callback).Run(/*score=*/10, /*errors=*/{});
     // Need to flush the service pipe to make sure the AuctionRunner has
     // received the score.
     seller_worklet->Flush();
@@ -3300,10 +3280,10 @@ TEST_F(AuctionRunnerTest, Tie) {
     // InterestGroups - only the InterestGroup that was picked as the winner
     // will be non-null.
     mock_auction_process_manager_->WaitForWinningBidderReload();
-    bidder1_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-        kBidder1, kBidder1Name);
-    bidder2_worklet = mock_auction_process_manager_->TakeBidderWorklet(
-        kBidder2, kBidder2Name);
+    bidder1_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
+    bidder2_worklet =
+        mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
 
     if (bidder1_worklet) {
       seen_bidder1_win = true;
@@ -3340,6 +3320,108 @@ TEST_F(AuctionRunnerTest, Tie) {
     EXPECT_THAT(result_.errors, testing::ElementsAre());
     CheckHistograms(AuctionRunner::AuctionResult::kSuccess,
                     2 /* expected_interest_groups */, 2 /* expected_owners */);
+  }
+}
+
+// Test worklets completing in an order different from the one in which they're
+// invoked.
+TEST_F(AuctionRunnerTest, WorkletOrder) {
+  // Events that can ordered differently for each loop iteration. All events
+  // must happen, and a bid must be generated before it is scored.
+  enum class Event {
+    kBid1Generated,
+    kBid2Generated,
+    kBid1Scored,
+    kBid2Scored,
+  };
+
+  // All possible orderings. This test assumes the order bidders are loaded in
+  // is deterministic, which currently is the case (though that may change down
+  // the line).
+  const Event kTestCases[][4] = {
+      {Event::kBid1Generated, Event::kBid1Scored, Event::kBid2Generated,
+       Event::kBid2Scored},
+      {Event::kBid1Generated, Event::kBid2Generated, Event::kBid1Scored,
+       Event::kBid2Scored},
+      {Event::kBid1Generated, Event::kBid2Generated, Event::kBid2Scored,
+       Event::kBid1Scored},
+      {Event::kBid2Generated, Event::kBid2Scored, Event::kBid1Generated,
+       Event::kBid1Scored},
+      {Event::kBid2Generated, Event::kBid1Generated, Event::kBid2Scored,
+       Event::kBid1Scored},
+      {Event::kBid2Generated, Event::kBid1Generated, Event::kBid1Scored,
+       Event::kBid2Scored},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    for (bool bidder1_wins : {false, true}) {
+      StartStandardAuctionWithMockService();
+
+      auto seller_worklet = mock_auction_process_manager_->TakeSellerWorklet();
+      ASSERT_TRUE(seller_worklet);
+      auto bidder1_worklet =
+          mock_auction_process_manager_->TakeBidderWorklet(kBidder1Url);
+      ASSERT_TRUE(bidder1_worklet);
+      auto bidder2_worklet =
+          mock_auction_process_manager_->TakeBidderWorklet(kBidder2Url);
+      ASSERT_TRUE(bidder2_worklet);
+
+      MockSellerWorklet::ScoreAdParams score_ad_params1;
+      MockSellerWorklet::ScoreAdParams score_ad_params2;
+
+      for (Event event : test_case) {
+        switch (event) {
+          case Event::kBid1Generated:
+            bidder1_worklet->InvokeGenerateBidCallback(
+                /*bid=*/9, GURL("https://ad1.com/"));
+            score_ad_params1 = seller_worklet->WaitForScoreAd();
+            EXPECT_EQ(kBidder1, score_ad_params1.interest_group_owner);
+            EXPECT_EQ(9, score_ad_params1.bid);
+            break;
+          case Event::kBid2Generated:
+            bidder2_worklet->InvokeGenerateBidCallback(
+                /*bid=*/10, GURL("https://ad2.com/"));
+            score_ad_params2 = seller_worklet->WaitForScoreAd();
+            EXPECT_EQ(kBidder2, score_ad_params2.interest_group_owner);
+            EXPECT_EQ(10, score_ad_params2.bid);
+            break;
+          case Event::kBid1Scored:
+            std::move(score_ad_params1.callback)
+                .Run(/*score=*/bidder1_wins ? 11 : 9, /*errors=*/{});
+            // Wait for the AuctionRunner to receive the score.
+            task_environment_.RunUntilIdle();
+            break;
+          case Event::kBid2Scored:
+            std::move(score_ad_params2.callback)
+                .Run(/*score=*/10, /*errors=*/{});
+            // Wait for the AuctionRunner to receive the score.
+            task_environment_.RunUntilIdle();
+            break;
+        }
+      }
+
+      // Finish the auction.
+      seller_worklet->WaitForReportResult();
+      seller_worklet->InvokeReportResultCallback();
+
+      mock_auction_process_manager_->WaitForWinningBidderReload();
+      auto winning_worklet = mock_auction_process_manager_->TakeBidderWorklet(
+          bidder1_wins ? kBidder1Url : kBidder2Url);
+      winning_worklet->WaitForReportWin();
+      winning_worklet->InvokeReportWinCallback();
+      auction_run_loop_->Run();
+      EXPECT_THAT(result_.errors, testing::ElementsAre());
+
+      if (bidder1_wins) {
+        EXPECT_EQ(GURL("https://ad1.com/"), result_.ad_url);
+        EXPECT_EQ(4u, result_.bidder1_prev_wins.size());
+        ASSERT_EQ(3u, result_.bidder2_prev_wins.size());
+      } else {
+        EXPECT_EQ(GURL("https://ad2.com/"), result_.ad_url);
+        EXPECT_EQ(3u, result_.bidder1_prev_wins.size());
+        ASSERT_EQ(4u, result_.bidder2_prev_wins.size());
+      }
+    }
   }
 }
 

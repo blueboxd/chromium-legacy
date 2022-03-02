@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -70,6 +71,7 @@ struct AppState {
   AppState(AppId app_id,
            const std::string app_name,
            const GURL app_scope,
+           const apps::mojom::WindowMode& window_mode,
            const blink::mojom::DisplayMode& effective_display_mode,
            const blink::mojom::DisplayMode& user_display_mode,
            bool is_installed_locally,
@@ -81,6 +83,7 @@ struct AppState {
   AppId id;
   std::string name;
   GURL scope;
+  apps::mojom::WindowMode window_mode;
   blink::mojom::DisplayMode effective_display_mode;
   blink::mojom::DisplayMode user_display_mode;
   bool is_installed_locally;
@@ -140,6 +143,8 @@ class WebAppIntegrationTestDriver : AppRegistrarObserver {
   // https://docs.google.com/spreadsheets/d/1d3iAOAnojp4_WrPky9exz1-mjkeulOJVUav5QYG99MQ/edit#gid=2008870403
 
   // State change actions:
+  void ChangeAppSettingsWindowMode(const std::string& site_mode,
+                                   apps::mojom::WindowMode window_mode);
   void CloseCustomToolbar();
   void ClosePwa();
   void InstallCreateShortcutTabbed(const std::string& site_mode);
@@ -158,6 +163,7 @@ class WebAppIntegrationTestDriver : AppRegistrarObserver {
   void NavigateNotfoundUrl();
   void NavigateTabbedBrowserToSite(const GURL& url);
   void ManifestUpdateDisplayMinimal(const std::string& site_mode);
+  void ManifestUpdateScopeSiteAFooTo(const std::string& scope_mode);
   void SetOpenInTab(const std::string& site_mode);
   void SetOpenInWindow(const std::string& site_mode);
   void SwitchProfileClients(const std::string& client_mode);
@@ -176,6 +182,8 @@ class WebAppIntegrationTestDriver : AppRegistrarObserver {
   void CheckAppNotInList(const std::string& site_mode);
   void CheckAppShortcutExists(const std::string& site_mode);
   void CheckAppShortcutNotExists(const std::string& site_mode);
+  void CheckAppWindowMode(const std::string& site_mode,
+                          apps::mojom::WindowMode window_mode);
   void CheckInstallable();
   void CheckInstallIconShown();
   void CheckInstallIconNotShown();
@@ -213,8 +221,6 @@ class WebAppIntegrationTestDriver : AppRegistrarObserver {
 
   std::unique_ptr<StateSnapshot> ConstructStateSnapshot();
 
-  GURL GetAppURLForManifest(const std::string& site_mode,
-                            DisplayMode display_mode);
   content::WebContents* GetCurrentTab(Browser* browser);
   GURL GetInScopeURL(const std::string& site_mode);
   GURL GetScopeForSiteMode(const std::string& site_mode);
@@ -256,8 +262,6 @@ class WebAppIntegrationTestDriver : AppRegistrarObserver {
   WebAppProvider* provider() { return WebAppProvider::GetForTest(profile()); }
   PageActionIconView* pwa_install_view();
   PageActionIconView* intent_picker_view();
-
-  ScopedOsHooksSuppress os_hooks_suppress_;
 
   // Variables used to facilitate waiting for manifest updates, as there isn't
   // a formal 'action' that a user can take to wait for this, as it happens

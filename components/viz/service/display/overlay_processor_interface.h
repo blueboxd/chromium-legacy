@@ -17,14 +17,15 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/gpu_task_scheduler_helper.h"
+#include "ui/gfx/ca_layer_result.h"
 #include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/overlay_priority_hint.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "components/viz/service/display/dc_layer_overlay.h"
 #endif
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 #include "components/viz/service/display/ca_layer_overlay.h"
 #endif
 
@@ -44,21 +45,15 @@ class RendererSettings;
 // for overlay processing that each platform needs to implement.
 class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
  public:
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   using PlatformOverlayCandidate = CALayerOverlay;
-#elif defined(OS_WIN)
-  using PlatformOverlayCandidate = DCLayerOverlay;
-#else
-  // Default.
-  using PlatformOverlayCandidate = OverlayCandidate;
-#endif
-
-#if defined(OS_APPLE)
   using CandidateList = CALayerOverlayList;
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
+  using PlatformOverlayCandidate = DCLayerOverlay;
   using CandidateList = DCLayerOverlayList;
 #else
   // Default.
+  using PlatformOverlayCandidate = OverlayCandidate;
   using CandidateList = OverlayCandidateList;
 #endif
 
@@ -201,6 +196,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
 
   // If true, video capture is enabled for this frame.
   virtual void SetIsVideoCaptureEnabled(bool enabled) {}
+
+  virtual gfx::CALayerResult GetCALayerErrorCode() const;
 
  protected:
   OverlayProcessorInterface() = default;

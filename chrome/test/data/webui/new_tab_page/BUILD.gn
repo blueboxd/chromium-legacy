@@ -11,6 +11,33 @@ js_type_check("closure_compile") {
                     "browser_resolver_prefix_replacements=\"chrome://test/=./\"",
                     "js_module_root=../../chrome/test/data/webui/",
                     "js_module_root=./gen/chrome/test/data/webui/",
+                    "js_module_root=" +
+                        rebase_path("//chrome/browser/resources/new_tab_page/",
+                                    root_build_dir),
+                    "js_module_root=" + rebase_path(
+                            "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/new_tab_page/foo",
+                            root_build_dir),
+                    "js_module_root=" + rebase_path(
+                            "$root_gen_dir/mojom-webui/chrome/browser/cart",
+                            root_build_dir),
+                    "js_module_root=" + rebase_path(
+                            "$root_gen_dir/mojom-webui/chrome/browser/new_tab_page/modules/photos",
+                            root_build_dir),
+                    "js_module_root=" + rebase_path(
+                            "$root_gen_dir/mojom-webui/chrome/browser/new_tab_page/modules/drive",
+                            root_build_dir),
+                    "js_module_root=" + rebase_path(
+                            "$root_gen_dir/mojom-webui/chrome/browser/new_tab_page/modules/task_module",
+                            root_build_dir),
+                    "js_module_root=" + rebase_path(
+                            "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/realbox",
+                            root_build_dir),
+                    "js_module_root=" + rebase_path(
+                            "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/new_tab_page/",
+                            root_build_dir),
+                    "hide_warnings_for=" + rebase_path(
+                            "$root_gen_dir/mojom-webui/ui/webui/resources/cr_components/most_visited",
+                            root_build_dir),
                   ]
   deps = [
     ":metrics_utils_test",
@@ -30,7 +57,7 @@ js_type_check("closure_compile") {
   ]
   if (!is_official_build) {
     deps += [
-      "modules/dummy:module_test",
+      "modules/dummy_v2:module_test",
       "modules/photos:module_test",
     ]
   }

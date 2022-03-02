@@ -37,7 +37,7 @@ struct MEDIA_EXPORT AudioProcessingSettings {
   // effect on what effects are enabled, but for legacy reasons, it forces APM
   // to be created and used.
   bool force_apm_creation =
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       false;
 #else
       true;
@@ -55,6 +55,30 @@ struct MEDIA_EXPORT AudioProcessingSettings {
                b.multi_channel_capture_processing &&
            stereo_mirroring == b.stereo_mirroring &&
            force_apm_creation == b.force_apm_creation;
+  }
+
+  bool NeedWebrtcAudioProcessing() const {
+    // TODO(https://crbug.com/1269364): Legacy iOS-specific behavior;
+    // reconsider.
+#if BUILDFLAG(IS_IOS)
+    if (stereo_mirroring)
+      return true;
+#else
+    if (echo_cancellation || automatic_gain_control) {
+      return true;
+    }
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
+    if (force_apm_creation)
+      return true;
+#endif
+
+    return noise_suppression || high_pass_filter || transient_noise_suppression;
+  }
+
+  bool NeedAudioModification() const {
+    return NeedWebrtcAudioProcessing() || stereo_mirroring;
   }
 
   // Stringifies the settings for human-readable logging.

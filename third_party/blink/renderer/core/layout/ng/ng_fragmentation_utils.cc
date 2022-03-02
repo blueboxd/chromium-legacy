@@ -36,7 +36,7 @@ inline int FragmentainerBreakPrecedence(EBreakBetween break_value) {
   switch (break_value) {
     default:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case EBreakBetween::kAuto:
       return 0;
     case EBreakBetween::kAvoidColumn:
@@ -240,6 +240,9 @@ void SetupSpaceBuilderForFragmentation(const NGConstraintSpace& parent_space,
   DCHECK(!requires_content_before_breaking ||
          !parent_space.IsInitialColumnBalancingPass());
   builder->SetRequiresContentBeforeBreaking(requires_content_before_breaking);
+
+  if (parent_space.IsInsideBalancedColumns())
+    builder->SetIsInsideBalancedColumns();
 
   if (parent_space.IsInColumnBfc() && !is_new_fc)
     builder->SetIsInColumnBfc();

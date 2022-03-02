@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
+#include "components/enterprise/browser/reporting/report_request.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "ios/chrome/browser/policy/reporting/reporting_delegate_factory_ios.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
@@ -42,9 +43,9 @@ constexpr base::TimeDelta kDefaultUploadInterval = base::Hours(24);
 }  // namespace
 
 ACTION_P(ScheduleGeneratorCallback, request_number) {
-  ReportGenerator::ReportRequests requests;
+  ReportRequestQueue requests;
   for (int i = 0; i < request_number; i++)
-    requests.push(std::make_unique<ReportGenerator::ReportRequest>());
+    requests.push(std::make_unique<ReportRequest>(ReportType::kFull));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(arg0), std::move(requests)));
 }
@@ -61,7 +62,7 @@ class MockReportGenerator : public ReportGenerator {
   }
   MOCK_METHOD2(OnGenerate,
                void(ReportType report_type, ReportCallback& callback));
-  MOCK_METHOD0(GenerateBasic, ReportRequests());
+  MOCK_METHOD0(GenerateBasic, ReportRequestQueue());
 };
 
 class MockReportUploader : public ReportUploader {
@@ -71,7 +72,8 @@ class MockReportUploader : public ReportUploader {
   MockReportUploader& operator=(const MockReportUploader&) = delete;
   ~MockReportUploader() override = default;
 
-  MOCK_METHOD2(SetRequestAndUpload, void(ReportRequests, ReportCallback));
+  MOCK_METHOD3(SetRequestAndUpload,
+               void(ReportType, ReportRequestQueue, ReportCallback));
 };
 
 class ReportSchedulerIOSTest : public PlatformTest {
@@ -134,10 +136,10 @@ class ReportSchedulerIOSTest : public PlatformTest {
     }
   }
 
-  ReportGenerator::ReportRequests CreateRequests(int number) {
-    ReportGenerator::ReportRequests requests;
+  ReportRequestQueue CreateRequests(int number) {
+    ReportRequestQueue requests;
     for (int i = 0; i < number; i++)
-      requests.push(std::make_unique<ReportGenerator::ReportRequest>());
+      requests.push(std::make_unique<ReportRequest>(ReportType::kFull));
     return requests;
   }
 
@@ -192,8 +194,8 @@ TEST_F(ReportSchedulerIOSTest, UploadReportSucceeded) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
@@ -213,8 +215,8 @@ TEST_F(ReportSchedulerIOSTest, UploadReportTransientError) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kTransientError));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kTransientError));
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
@@ -234,8 +236,8 @@ TEST_F(ReportSchedulerIOSTest, UploadReportPersistentError) {
   EXPECT_CALL_SetupRegistrationWithSetDMToken();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kPersistentError));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kPersistentError));
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
@@ -260,7 +262,7 @@ TEST_F(ReportSchedulerIOSTest, NoReportGenerate) {
   EXPECT_CALL_SetupRegistrationWithSetDMToken();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(0)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _)).Times(0);
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _, _)).Times(0);
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
@@ -288,8 +290,8 @@ TEST_F(ReportSchedulerIOSTest, TimerDelayWithLastUploadTimestamp) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
@@ -308,8 +310,8 @@ TEST_F(ReportSchedulerIOSTest, TimerDelayWithoutLastUploadTimestamp) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
@@ -345,8 +347,8 @@ TEST_F(ReportSchedulerIOSTest, ReportingIsDisabledWhileNewReportIsPosted) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());

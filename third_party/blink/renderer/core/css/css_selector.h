@@ -287,11 +287,22 @@ class CORE_EXPORT CSSSelector {
     kPseudoSpellingError,
     kPseudoGrammarError,
     kPseudoHas,
+
     // TODO(blee@igalia.com) Need to clarify the :scope dependency in relative
     // selector definition.
     // - spec : https://www.w3.org/TR/selectors-4/#relative
     // - csswg issue : https://github.com/w3c/csswg-drafts/issues/6399
     kPseudoRelativeLeftmost,
+
+    // The following selectors are used to target pseudo elements created for
+    // DocumentTransition.
+    // See
+    // https://github.com/WICG/shared-element-transitions/blob/main/explainer.md
+    // for details.
+    kPseudoTransition,
+    kPseudoTransitionContainer,
+    kPseudoTransitionOldContent,
+    kPseudoTransitionNewContent,
   };
 
   enum class AttributeMatchType {
@@ -343,6 +354,11 @@ class CORE_EXPORT CSSSelector {
   const Vector<AtomicString>* PartNames() const {
     return has_rare_data_ ? data_.rare_data_->part_names_.get() : nullptr;
   }
+  bool ContainsPseudoInsideHasPseudoClass() const {
+    return has_rare_data_ ? data_.rare_data_->bits_
+                                .contains_pseudo_inside_has_pseudo_class_
+                          : false;
+  }
 
 #ifndef NDEBUG
   void Show() const;
@@ -355,6 +371,7 @@ class CORE_EXPORT CSSSelector {
   void SetArgument(const AtomicString&);
   void SetSelectorList(std::unique_ptr<CSSSelectorList>);
   void SetPartNames(std::unique_ptr<Vector<AtomicString>>);
+  void SetContainsPseudoInsideHasPseudoClass();
 
   void SetNth(int a, int b);
   bool MatchNth(unsigned count) const;
@@ -468,6 +485,9 @@ class CORE_EXPORT CSSSelector {
       } nth_;
       AttributeMatchType
           attribute_match_;  // used for attribute selector (with value)
+
+      // Used for :has() with pseudos in its argument. e.g. :has(:hover)
+      bool contains_pseudo_inside_has_pseudo_class_;
     } bits_;
     QualifiedName attribute_;  // used for attribute selector
     AtomicString argument_;    // Used for :contains, :lang, :nth-*

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -27,7 +28,7 @@ MediaStreamDevicePolicy GetDevicePolicy(const Profile* profile,
 
   const PrefService* prefs = profile->GetPrefs();
 
-  const base::ListValue* list = prefs->GetList(allowed_urls_pref_name);
+  const base::Value* list = prefs->GetList(allowed_urls_pref_name);
   for (const base::Value& i : list->GetList()) {
     const std::string* value = i.GetIfString();
     if (value) {

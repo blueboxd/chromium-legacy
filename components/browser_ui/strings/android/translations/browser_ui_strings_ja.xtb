@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Cookie を許可</translation>
 <translation id="2228071138934252756"><ph name="APP_NAME" /> にカメラへのアクセスを許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でもカメラをオンにしてください。</translation>
 <translation id="2241634353105152135">一回限り</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" />　を削除</translation>
 <translation id="2289270750774289114">サイトから近くにある Bluetooth デバイスの検出を求められたときに確認する（推奨）</translation>
 <translation id="2315043854645842844">オペレーティング システムでサポートされていないため、クライアントサイドで証明書を選択することはできません。</translation>
 <translation id="2359808026110333948">続行</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">情報を表示</translation>
 <translation id="3123473560110926937">一部のサイトでブロックされています</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> の保存データ</translation>
+<translation id="3203366800380907218">ウェブから</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> に通知の送信を許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でも通知をオンにしてください。</translation>
 <translation id="3227137524299004712">マイク</translation>
 <translation id="3277252321222022663">サイトによるセンサーへのアクセスを許可する（推奨）</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">ブロック中</translation>
 <translation id="5689516760719285838">位置情報</translation>
 <translation id="5690795753582697420">Android の設定でカメラがオフになっています</translation>
-<translation id="5710871682236653961">NFC デバイスをタップしたとき、情報の送受信をサイトに許可するかどうかを確認する（推奨）</translation>
 <translation id="5719847187258001597"><ph name="ORIGIN" /> またはホーム画面の同アプリにより保存されたすべてのデータおよび Cookie が削除されます。</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" />をブロック</translation>
 <translation id="5804241973901381774">権限</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">現在の検索エンジンに対して許可</translation>
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 件を選択済み}other{# 件を選択済み}}</translation>
-<translation id="7070090581017165256">このサイトについて</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> 件選択されています。オプションは画面上部にあります</translation>
 <translation id="7141896414559753902">サイトでのポップアップ表示とリダイレクトをブロックする（推奨）</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">サイトでマイクが使用されています</translation>
 <translation id="7561196759112975576">常に使用</translation>
-<translation id="7572498721684305250">NFC デバイスをタップしたとき、サイトによる情報の送受信をブロックする</translation>
 <translation id="757524316907819857">サイトでの保護されたコンテンツの再生をブロックする</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7658239707568436148">キャンセル</translation>

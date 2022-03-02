@@ -22,9 +22,9 @@ extern const char kAlreadyActiveSession[];
 extern const char kLoginScreenIsNotActive[];
 extern const char kAnotherLoginAttemptInProgress[];
 extern const char kNoManagedGuestSessionAccounts[];
-extern const char kNoPermissionToLock[];
+extern const char kNoLockableManagedGuestSession[];
 extern const char kSessionIsNotActive[];
-extern const char kNoPermissionToUnlock[];
+extern const char kNoUnlockableManagedGuestSession[];
 extern const char kSessionIsNotLocked[];
 extern const char kAnotherUnlockAttemptInProgress[];
 extern const char kAuthenticationFailed[];
@@ -35,7 +35,7 @@ extern const char kSharedSessionAlreadyLaunched[];
 extern const char kScryptFailure[];
 extern const char kCleanupInProgress[];
 extern const char kUnlockFailure[];
-extern const char kNoPermissionToUseApi[];
+extern const char kDeviceRestrictedManagedGuestSessionNotEnabled[];
 
 }  // namespace login_api_errors
 

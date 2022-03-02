@@ -20,6 +20,7 @@ import("//chrome/process_version_rc_template.gni")
 import("//components/exo/buildflags.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
+import("//components/optimization_guide/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//ppapi/buildflags/buildflags.gni")
@@ -93,8 +94,6 @@ if (is_win) {
 # on Chrome and the main DLLs it uses, it will transitively assert that those
 # targets also have no deps on disallowed things.
 group("assert_no_deps") {
-  # TODO(issuetracker.google.com/199337060): remove testonly
-  testonly = enable_weston_test
   deps = []
 
   if (is_android) {
@@ -114,8 +113,6 @@ group("assert_no_deps") {
 }
 if (!is_android && !is_mac) {
   group("chrome") {
-    # TODO(issuetracker.google.com/199337060): remove testonly
-    testonly = enable_weston_test
     public_deps = [ ":chrome_initial" ]
     data_deps = [ ":chrome_initial" ]
 
@@ -156,9 +153,12 @@ if (!is_android && !is_mac) {
     data_deps = []
 
     if (is_chromeos_ash) {
-      # TODO(issuetracker.google.com/199337060): remove testonly
-      testonly = enable_weston_test
       data_deps += [ "//sandbox/linux:chrome_sandbox" ]
+      deps += [ "//components/exo/wayland:weston_test_stub" ]
+    }
+
+    if (also_build_lacros_chrome_for_architecture != "") {
+      data_deps += [ "//chrome:chrome(//build/toolchain/cros:lacros_clang)" ]
     }
 
     if (is_win) {
@@ -910,8 +910,7 @@ if (is_win) {
       if (use_v8_context_snapshot) {
         sources += [ "$root_out_dir/$v8_context_snapshot_filename" ]
         public_deps += [ "//tools/v8_context_snapshot" ]
-      }
-      if (!use_v8_context_snapshot || include_both_v8_snapshots) {
+      } else {
         sources += [ "$root_out_dir/snapshot_blob.bin" ]
       }
     }
@@ -1040,6 +1039,20 @@ if (is_win) {
     }
   }
 
+  if (build_with_internal_optimization_guide) {
+    # Add the optimization guide .dylib in the MODULE_DIR of Chromium.app
+    bundle_data("optimization_guide_library") {
+      sources = [
+        "$root_out_dir/og_intermediates/liboptimization_guide_internal.dylib",
+      ]
+      outputs = [ "{{bundle_contents_dir}}/Libraries/{{source_file_part}}" ]
+      public_deps = [ "//components/optimization_guide/core:optimization_guide_internal_library_copy" ]
+    }
+  } else {
+    group("optimization_guide_library") {
+    }
+  }
+
   tweak_info_plist("chrome_framework_plist") {
     info_plist = "app/framework-Info.plist"
     args = [
@@ -1106,8 +1119,6 @@ if (is_win) {
     ]
 
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
-    configs -= [ "//build/config/compiler:thinlto_optimize_default" ]
-    configs += [ "//build/config/compiler:thinlto_optimize_max" ]
   }
 
   mac_framework_bundle("chrome_framework") {
@@ -1123,8 +1134,8 @@ if (is_win) {
     if (is_chrome_branded) {
       framework_contents += [ "Default Apps" ]
       if (enable_keystone_registration_framework) {
-        framework_contents +=
-            [ "Frameworks" ]  # For KeystoneRegistration.framework.
+        # For KeystoneRegistration.framework.
+        framework_contents += [ "Frameworks" ]
       }
     }
 
@@ -1133,6 +1144,8 @@ if (is_win) {
     }
 
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
+    configs -= [ "//build/config/compiler:thinlto_optimize_default" ]
+    configs += [ "//build/config/compiler:thinlto_optimize_max" ]
 
     info_plist_target = ":chrome_framework_plist"
     extra_substitutions = [
@@ -1148,6 +1161,7 @@ if (is_win) {
       ":chrome_framework_plugins",
       ":chrome_framework_resources",
       ":keystone_registration_framework",
+      ":optimization_guide_library",
       ":swiftshader_library",
       ":widevine_cdm_library",
       "//chrome/browser/resources/media/mei_preload:component_bundle",
@@ -1251,6 +1265,10 @@ if (is_win) {
       "$root_out_dir/libvk_swiftshader.dylib",
       _framework_binary_path,
     ]
+    if (build_with_internal_optimization_guide) {
+      _chrome_symbols_sources +=
+          [ "$root_out_dir/liboptimization_guide_internal.dylib" ]
+    }
 
     foreach(helper_params, chrome_mac_helpers) {
       _chrome_symbols_sources += [ "$root_out_dir/${chrome_helper_name}${helper_params[2]}.app/Contents/MacOS/${chrome_helper_name}${helper_params[2]}" ]
@@ -1285,6 +1303,9 @@ if (is_win) {
         "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
         "//third_party/swiftshader/src/Vulkan:swiftshader_libvulkan",
       ]
+      if (build_with_internal_optimization_guide) {
+        deps += [ "//components/optimization_guide/internal:optimization_guide_internal" ]
+      }
 
       foreach(helper_params, chrome_mac_helpers) {
         deps += [ ":chrome_helper_app_${helper_params[0]}" ]
@@ -1308,6 +1329,9 @@ if (is_win) {
         "$root_out_dir/libswiftshader_libGLESv2.dylib.dSYM",
         "$root_out_dir/libvk_swiftshader.dylib.dSYM",
       ]
+      if (build_with_internal_optimization_guide) {
+        _dsyms += [ "$root_out_dir/liboptimization_guide_internal.dylib.dSYM" ]
+      }
 
       deps = [
         ":chrome_app",
@@ -1319,6 +1343,9 @@ if (is_win) {
         "//third_party/swiftshader/src/OpenGL/libGLESv2:swiftshader_libGLESv2",
         "//third_party/swiftshader/src/Vulkan:swiftshader_libvulkan",
       ]
+      if (build_with_internal_optimization_guide) {
+        deps += [ "//components/optimization_guide/internal:optimization_guide_internal" ]
+      }
 
       foreach(helper_params, chrome_mac_helpers) {
         _dsyms +=
@@ -1364,9 +1391,6 @@ group("browser_dependencies") {
 
   if (enable_basic_printing) {
     public_deps += [ "//printing" ]
-    if (enable_print_preview && !is_chromeos) {
-      public_deps += [ "//chrome/service" ]
-    }
   }
 
   if (enable_gwp_asan) {
@@ -1389,7 +1413,6 @@ group("browser_dependencies") {
   }
 
   if (is_chromeos_ash) {
-    testonly = enable_weston_test
     public_deps += [
       "//ash/constants",
       "//chrome/browser/chromeos",
@@ -1696,6 +1719,10 @@ if (is_android) {
       ]
     }
 
+    if (is_android) {
+      deps += [ "//components/crash/android:crash_android" ]
+    }
+
     if (is_chromeos_ash) {
       public_deps += [ "//ui/lottie" ]
     }
@@ -1736,6 +1763,9 @@ if (is_linux || is_chromeos) {
       }
       if (!is_chromeos) {
         deps += [ ":angle_libvulkan_symbols" ]
+      }
+      if (build_with_internal_optimization_guide) {
+        deps += [ ":optimization_guide_symbols" ]
       }
     }
     extract_symbols("chrome_symbols") {
@@ -1837,6 +1867,19 @@ if (is_linux || is_chromeos) {
         }
 
         deps = [ "//third_party/vulkan-deps/vulkan-loader/src:libvulkan" ]
+      }
+    }
+    if (build_with_internal_optimization_guide) {
+      extract_symbols("optimization_guide_symbols") {
+        binary = "$root_out_dir/liboptimization_guide_internal.so"
+        if (current_cpu == "x86") {
+          # GYP used "ia32" so keep that naming for back-compat.
+          symbol_file = "$root_out_dir/optimization_guide.breakpad.ia32"
+        } else {
+          symbol_file = "$root_out_dir/optimization_guide.breakpad.$current_cpu"
+        }
+
+        deps = [ "//components/optimization_guide/internal:optimization_guide_internal" ]
       }
     }
   }

@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">ಕುಕೀಗಳನ್ನು ಅನುಮತಿಸಿ</translation>
 <translation id="2228071138934252756"><ph name="APP_NAME" /> ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಪ್ರವೇಶಿಸುವುದಕ್ಕೆ ಅನುಮತಿಸಲು, <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಕ್ಯಾಮರಾವನ್ನು ಸಹ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="2241634353105152135">ಕೇವಲ ಒಂದು ಬಾರಿ</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> ಅನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="2289270750774289114">ಸೈಟ್ ಯಾವಾಗ ಸಮೀಪದ ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳನ್ನು ಅನ್ವೇಷಿಸಲು ಬಯಸುತ್ತದೆಯೋ ಆಗ ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="2315043854645842844">ಕ್ಲೈಂಟ್‌ನ ಪ್ರಮಾಣಪತ್ರ ಆಯ್ಕೆಯನ್ನು ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಂನಿಂದ ಬೆಂಬಲಿಸಲಾಗಿಲ್ಲ.</translation>
 <translation id="2359808026110333948">ಮುಂದುವರೆಸಿ</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">ಮಾಹಿತಿಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="3123473560110926937">ಕೆಲವು ಸೈಟ್‌ಗಳಲ್ಲಿ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> ಸಂಗ್ರಹಿಸಿದ ಡೇಟಾ</translation>
+<translation id="3203366800380907218">ವೆಬ್‌ನಿಂದ</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> ನಿಮಗೆ ಅಧಿಸೂಚನೆಗಳನ್ನು ಕಳುಹಿಸುವುದಕ್ಕೆ ಅನುಮತಿಸಲು, <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಅಧಿಸೂಚನೆಗಳನ್ನು ಸಹ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="3227137524299004712">ಮೈಕ್ರೋಫೋನ್</translation>
 <translation id="3277252321222022663">ಸೆನ್ಸರ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿ ನೀಡಿ (ಶಿಫಾರಸು ಮಾಡಿರುವುದು)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="5689516760719285838">ಸ್ಥಳ</translation>
 <translation id="5690795753582697420">Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಕ್ಯಾಮರಾವನ್ನು ಆಫ್ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="5710871682236653961">ನೀವು NFC ಸಾಧನಗಳನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿದಾಗ ಮಾಹಿತಿಯನ್ನು ಕಳುಹಿಸಲು ಮತ್ತು ಸ್ವೀಕರಿಸಲು ವೆಬ್‌ಸೈಟ್‌ಗಳನ್ನು ಅನುಮತಿಸುವ ಮೊದಲು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="5719847187258001597"><ph name="ORIGIN" /> ಅಥವಾ ನಿಮ್ಮ ಹೋಮ್ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿರುವ ಅದರ ಆ್ಯಪ್ ಮೂಲಕ ಸಂಗ್ರಹಣೆ ಮಾಡಲಾಗಿರುವ ಎಲ್ಲಾ ಡೇಟಾ ಮತ್ತು ಕುಕೀಗಳನ್ನು ಇದು ತೆರವುಗೊಳಿಸುತ್ತದೆ.</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="5804241973901381774">ಅನುಮತಿಗಳು</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">ಪ್ರಸ್ತುತ ಹುಡುಕಾಟ ಇಂಜಿನ್‌ಗೆ ಅನುಮತಿಸಲಾಗಿದೆ</translation>
 <translation id="7053983685419859001">ನಿರ್ಬಂಧಿಸು</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ}one{# ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ}other{# ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ}}</translation>
-<translation id="7070090581017165256">ಈ ಸೈಟ್ ಕುರಿತು</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ಅನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ. ಪರದೆಯ ಮೇಲ್ಭಾಗದಲ್ಲಿ ಲಭ್ಯವಿರುವ ಆಯ್ಕೆಗಳು</translation>
 <translation id="7141896414559753902">ಪಾಪ್-ಅಪ್‍ಗಳು ಮತ್ತು ಮರುನಿರ್ದೇಶನಗಳನ್ನು ತೋರಿಸದಂತೆ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">ಒಂದು ಸೈಟ್ ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಅನ್ನು ಬಳಸುತ್ತಿದೆ</translation>
 <translation id="7561196759112975576">ಯಾವಾಗಲೂ</translation>
-<translation id="7572498721684305250">ನೀವು NFC ಸಾಧನಗಳನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿದಾಗ, ವೆಬ್‌ಸೈಟ್‌ಗಳು ಮಾಹಿತಿ ಕಳುಹಿಸುವುದನ್ನು ಮತ್ತು ಸ್ವೀಕರಿಸುವುದನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="757524316907819857">ಸಂರಕ್ಷಿತ ವಿಷಯವನ್ನು ಪ್ಲೇ ಮಾಡದಂತೆ ಸೈಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="7649070708921625228">ಸಹಾಯ</translation>
 <translation id="7658239707568436148">ರದ್ದುಮಾಡಿ</translation>

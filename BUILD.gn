@@ -468,6 +468,7 @@ group("gn_all") {
   if (is_chromeos_ash) {
     deps += [
       "//ash:ash_unittests",
+      "//ash/components:ash_components_unittests",
       "//ash/components/proximity_auth:proximity_auth_unittests",
       "//ash/keyboard/ui:keyboard_unittests",
       "//ash/webui:ash_webui_unittests",
@@ -581,9 +582,6 @@ group("gn_all") {
 
     if (enable_extensions) {
       deps += [ "//extensions/shell:app_shell" ]
-      if ((is_linux || is_chromeos_lacros) && is_official_build) {
-        deps += [ "//extensions/shell:app_shell_linux_symbols" ]
-      }
     }
 
     if (enable_nacl) {
@@ -1203,7 +1201,7 @@ if (!is_ios) {
   } else {
     _common_web_test_args += [ "--release" ]
     if (dcheck_always_on) {
-      _common_web_test_args += [ "--time-out-ms=12000" ]
+      _common_web_test_args += [ "--timeout-ms=12000" ]
     }
   }
 
@@ -1270,7 +1268,6 @@ if (!is_ios) {
       "//third_party/blink/web_tests/editing/",
       "//third_party/blink/web_tests/external/",
       "//third_party/blink/web_tests/fast/",
-      "//third_party/blink/web_tests/fenced_frame/",
       "//third_party/blink/web_tests/fonts/",
       "//third_party/blink/web_tests/fragmentation/",
       "//third_party/blink/web_tests/fullscreen/",
@@ -1391,8 +1388,6 @@ if (!is_ios) {
   }
 
   script_test("webgpu_blink_web_tests") {
-    run_under_python2 = true
-
     # This target differs from :blink_web_tests in that it uses the same
     # test harness and a few additional flags but, more importantly, only runs
     # the web_tests/wpt_internal/webgpu tests, so it doesn't have a data
@@ -1407,7 +1402,7 @@ if (!is_ios) {
                          root_build_dir) + ")" ] + _common_web_test_args -
            [ _common_web_test_args[0] ]
     if (is_asan) {
-      args += [ "--time-out-ms=30000" ]
+      args += [ "--timeout-ms=30000" ]
     }
     args += [
       "--webgpu-cts-expectations",

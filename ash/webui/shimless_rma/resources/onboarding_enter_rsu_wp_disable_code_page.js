@@ -47,6 +47,12 @@ export class OnboardingEnterRsuWpDisableCodePage extends
 
   static get properties() {
     return {
+      /**
+       * Set by shimless_rma.js.
+       * @type {boolean}
+       */
+      allButtonsDisabled: Boolean,
+
       /** @protected */
       canvasSize_: {
         type: Number,
@@ -69,6 +75,7 @@ export class OnboardingEnterRsuWpDisableCodePage extends
       rsuCode_: {
         type: String,
         value: '',
+        observer: 'onRsuCodeChanged_',
       },
 
       /** @protected */
@@ -82,6 +89,26 @@ export class OnboardingEnterRsuWpDisableCodePage extends
         type: String,
         value: '',
         computed: 'computeRsuChallengeLinkText_(rsuHwid_, rsuChallenge_)',
+      },
+
+      /** @protected */
+      rsuCodeValidationRegex_: {
+        type: String,
+        value: '.{1,8}',
+        readOnly: true,
+      },
+
+      /** @protected {boolean} */
+      rsuCodeInvalid_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
+
+      /** @protected */
+      rsuCodeLengthLabel_: {
+        type: String,
+        computed: 'computeRsuCodeLengthLabel_(rsuCode_)',
       },
     };
   }
@@ -139,10 +166,8 @@ export class OnboardingEnterRsuWpDisableCodePage extends
   }
 
   /**
-   * @private
    * @return {boolean}
-   * TODO(gavindodd): Add basic validation for the format of RSU code.
-   * Can this use cr-input autovalidate?
+   * @private
    */
   rsuCodeIsPlausible_() {
     return !!this.rsuCode_ && this.rsuCode_.length == 8;
@@ -183,9 +208,13 @@ export class OnboardingEnterRsuWpDisableCodePage extends
         this.i18nAdvanced('rsuCodeInstructionsText', {attrs: ['id']});
     const linkElement = this.shadowRoot.querySelector('#rsuCodeDialogLink');
     linkElement.setAttribute('href', '#');
-    linkElement.addEventListener(
-        'click',
-        () => this.shadowRoot.querySelector('#rsuChallengeDialog').showModal());
+    linkElement.addEventListener('click', () => {
+      if (this.allButtonsDisabled) {
+        return;
+      }
+
+      this.shadowRoot.querySelector('#rsuChallengeDialog').showModal();
+    });
   }
 
   /**
@@ -201,6 +230,14 @@ export class OnboardingEnterRsuWpDisableCodePage extends
   /** @private */
   closeDialog_() {
     this.shadowRoot.querySelector('#rsuChallengeDialog').close();
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeRsuCodeLengthLabel_() {
+    return this.rsuCode_.length + '/8';
   }
 }
 

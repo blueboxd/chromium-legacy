@@ -33,8 +33,6 @@ class ArcIntentHelperObserver {
   // package whose filters were changed.
   virtual void OnIntentFiltersUpdated(
       const absl::optional<std::string>& package_name) {}
-  // Called when the preferred apps changed in ARC.
-  virtual void OnPreferredAppsChanged() {}
 
   // Called when the supported links setting ("Open Supported Links" under
   // "Open by default" in ARC Settings) is changed for one or more packages.
@@ -47,8 +45,8 @@ class ArcIntentHelperObserver {
 
   virtual void OnIconInvalidated(const std::string& package_name) {}
 
-  // Called when ArcIntentHelperBridge is destroyed.
-  virtual void OnArcIntentHelperBridgeDestruction() {}
+  // Called when ArcIntentHelperBridge is shut down.
+  virtual void OnArcIntentHelperBridgeShutdown() {}
 };
 
 }  // namespace arc

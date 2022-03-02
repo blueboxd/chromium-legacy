@@ -29,51 +29,7 @@ enum class StatusCode : StatusCodeType {
   // General errors: 0x00
   kAborted = 0x0001,
   kInvalidArgument = 0x0002,
-  kKeyFrameRequired = 0x0003,
-
-  // Decoder Errors: 0x01
-  kDecoderInitializeNeverCompleted = 0x0101,
-  kDecoderFailedDecode = 0x0102,
-  kDecoderUnsupportedProfile = 0x0103,
-  kDecoderUnsupportedCodec = 0x0104,
-  kDecoderUnsupportedConfig = 0x0105,
-  kEncryptedContentUnsupported = 0x0106,
-  kClearContentUnsupported = 0x0107,
-  kDecoderMissingCdmForEncryptedContent = 0x0108,
-  kDecoderInitializationFailed = 0x0109,  // Prefer this one.
-  kDecoderFailedInitialization = kDecoderInitializationFailed,  // Do not use.
-  kDecoderCantChangeCodec = 0x010A,
-  kDecoderCreationFailed = 0x010B,                  // Prefer this one.
-  kDecoderFailedCreation = kDecoderCreationFailed,  // Do not use.
-  kInitializationUnspecifiedFailure = 0x010C,
-  kDecoderVideoFrameConstructionFailed = 0x010D,
-  kMakeContextCurrentFailed = 0x010E,
-  // This is a temporary error for use only by existing code during the
-  // DecodeStatus => Status conversion.
-  kDecodeErrorDoNotUse = 0x010F,
-
-  // Windows Errors: 0x02
-  kWindowsWrappedHresult = 0x0201,
-  kWindowsApiNotAvailible = 0x0202,
-  kWindowsD3D11Error = 0x0203,
-
-  // MojoDecoder Errors: 0x04
-  kMojoDecoderNoWrappedDecoder = 0x0401,
-  kMojoDecoderStoppedBeforeInitDone = 0x0402,
-  kMojoDecoderUnsupported = 0x0403,
-  kMojoDecoderNoConnection = 0x0404,
-  kMojoDecoderDeletedWithoutInitialization = 0x0405,
-
-  // Encoder Error: 0x06
-  kEncoderInitializeNeverCompleted = 0x0601,
-  kEncoderInitializeTwice = 0x0602,
-  kEncoderFailedEncode = 0x0603,
-  kEncoderUnsupportedProfile = 0x0604,
-  kEncoderUnsupportedCodec = 0x0605,
-  kEncoderUnsupportedConfig = 0x0606,
-  kEncoderInitializationError = 0x0607,
-  kEncoderFailedFlush = 0x0608,
-  kEncoderMojoConnectionError = 0x0609,
+  kWrappedError = 0x0004,
 
   // Format Errors: 0x08
   kH264ParsingError = 0x0801,
@@ -112,6 +68,8 @@ enum class StatusCode : StatusCodeType {
   // recreate the Renderer instead of fail the playback. See
   // https://crbug.com/1208618
   kPipelineErrorHardwareContextReset = 0x0917,
+  // The remote media component was disconnected unexpectedly, e.g. crash.
+  kPipelineErrorDisconnected = 0x0918,
 
   // Frame operation errors: 0x0A
   kUnsupportedFrameFormatError = 0x0A01,
@@ -122,19 +80,6 @@ enum class StatusCode : StatusCodeType {
   // This is a temporary error for use while the demuxer doesn't return a
   // proper status.
   kDecoderStreamDemuxerError = 0x0B02,
-
-  // DecodeStatus temporary codes.  These names were chosen to match the
-  // DecodeStatus enum, so that un-converted code can DecodeStatus::OK/etc.
-  // Note that OK must result in Status::is_ok(), since converted code will
-  // check for it.  These will be removed when the conversion is complete.
-  //
-  // DO NOT ADD NEW USES OF OK/ABORTED/DECODE_ERROR.
-  OK = kOk,  // Everything went as planned.
-  // Read aborted due to Reset() during pending read.
-  ABORTED = kAborted,  // Read aborted due to Reset() during pending read.
-  // Decoder returned decode error. Note: Prefixed by DECODE_
-  // since ERROR is a reserved name (special macro) on Windows.
-  DECODE_ERROR = kDecodeErrorDoNotUse,
 
   // Special codes
   kGenericErrorPleaseRemove = 0x7999,

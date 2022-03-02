@@ -58,6 +58,13 @@ void AddIconToIconsMap(const GURL& icon_url,
   icons_map->emplace(icon_url, std::move(bitmaps));
 }
 
+void AddEmptyIconToIconsMap(const GURL& icon_url, IconsMap* icons_map) {
+  std::vector<SkBitmap> bitmaps;
+  bitmaps.emplace_back(SkBitmap{});
+
+  icons_map->emplace(icon_url, std::move(bitmaps));
+}
+
 bool AreColorsEqual(SkColor expected_color,
                     SkColor actual_color,
                     int threshold) {
@@ -211,8 +218,8 @@ apps::IconInfo CreateIconInfo(const GURL& icon_base_url,
   return apps_icon_info;
 }
 
-void AddIconsToWebApplicationInfo(
-    WebApplicationInfo* web_application_info,
+void AddIconsToWebAppInstallInfo(
+    WebAppInstallInfo* web_application_info,
     const GURL& icons_base_url,
     const std::vector<GeneratedIconsInfo>& icons_info) {
   for (const GeneratedIconsInfo& info : icons_info) {

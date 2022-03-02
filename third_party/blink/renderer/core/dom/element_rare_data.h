@@ -42,7 +42,7 @@
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/region_capture_crop_id.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -59,8 +59,13 @@ class ElementRareData final : public NodeRareData {
   explicit ElementRareData(NodeRenderingData*);
   ~ElementRareData();
 
-  void SetPseudoElement(PseudoId, PseudoElement*);
-  PseudoElement* GetPseudoElement(PseudoId) const;
+  void SetPseudoElement(
+      PseudoId,
+      PseudoElement*,
+      const AtomicString& document_transition_tag = g_null_atom);
+  PseudoElement* GetPseudoElement(
+      PseudoId,
+      const AtomicString& document_transition_tag = g_null_atom) const;
   PseudoElementData::PseudoElementVector GetPseudoElements() const;
 
   void SetTabIndexExplicitly() {
@@ -317,21 +322,26 @@ inline void ElementRareData::ClearPseudoElements() {
   }
 }
 
-inline void ElementRareData::SetPseudoElement(PseudoId pseudo_id,
-                                              PseudoElement* element) {
+inline void ElementRareData::SetPseudoElement(
+    PseudoId pseudo_id,
+    PseudoElement* element,
+    const AtomicString& document_transition_tag) {
   if (!pseudo_element_data_) {
     if (!element)
       return;
     pseudo_element_data_ = MakeGarbageCollected<PseudoElementData>();
   }
-  pseudo_element_data_->SetPseudoElement(pseudo_id, element);
+  pseudo_element_data_->SetPseudoElement(pseudo_id, element,
+                                         document_transition_tag);
 }
 
 inline PseudoElement* ElementRareData::GetPseudoElement(
-    PseudoId pseudo_id) const {
+    PseudoId pseudo_id,
+    const AtomicString& document_transition_tag) const {
   if (!pseudo_element_data_)
     return nullptr;
-  return pseudo_element_data_->GetPseudoElement(pseudo_id);
+  return pseudo_element_data_->GetPseudoElement(pseudo_id,
+                                                document_transition_tag);
 }
 
 inline PseudoElementData::PseudoElementVector

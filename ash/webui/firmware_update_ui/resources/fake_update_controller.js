@@ -6,25 +6,23 @@ import {FakeObservables} from 'chrome://resources/ash/common/fake_observables.js
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 
-import {fakeFirmwareUpdates, fakeInstallationProgress} from './fake_data.js';
-import {InstallationProgress, UpdateControllerInterface, UpdateProgressObserver, UpdateProviderInterface} from './firmware_update_types.js';
-import {getUpdateProvider} from './mojo_interface_provider.js';
+import {fakeFirmwareUpdates, fakeInstallationProgress, fakeInstallationProgressFailure} from './fake_data.js';
+import {FakeUpdateProviderInterface, FirmwareUpdate, InstallationProgress, InstallControllerInterface, UpdateProgressObserver, UpdateProviderInterface, UpdateState} from './firmware_update_types.js';
+import {getUpdateProvider, setUseFakeProviders} from './mojo_interface_provider.js';
 
 // Method names.
-export const ON_PROGRESS_CHANGED = 'UpdateProgressObserver_onProgressChanged';
+export const ON_PROGRESS_CHANGED = 'UpdateProgressObserver_onStatusChanged';
 
 /**
  * @fileoverview
  * Implements a fake version of the UpdateController mojo interface.
  */
 
-/** @implements {UpdateControllerInterface} */
+/** @implements {InstallControllerInterface} */
 export class FakeUpdateController {
   constructor() {
+    setUseFakeProviders(true);
     this.observables_ = new FakeObservables();
-
-    /** @private {UpdateProviderInterface} */
-    this.fakeUpdateProvider_ = getUpdateProvider();
 
     /** @private {!Set<string>} */
     this.completedFirmwareUpdates_ = new Set();
@@ -48,19 +46,17 @@ export class FakeUpdateController {
   }
 
   /*
-   * Implements UpdateControllerInterface.startUpdate.
-   * @param {string} deviceId
+   * Implements InstallControllerInterface.addObserver.
    * @param {!UpdateProgressObserver} remote
-   * @return {!Promise}
    */
-  startUpdate(deviceId, remote) {
-    this.deviceId_ = deviceId;
+  addObserver(remote) {
     this.isUpdateInProgress_ = true;
     this.updateCompletedPromise_ = new PromiseResolver();
-    this.startUpdatePromise_ = this.observeWithArg_(
-        ON_PROGRESS_CHANGED, deviceId, (installationProgress) => {
-          remote.onProgressChanged(installationProgress);
-          if (installationProgress.percentage === 100) {
+    this.startUpdatePromise_ =
+        this.observeWithArg_(ON_PROGRESS_CHANGED, this.deviceId_, (update) => {
+          remote.onStatusChanged(update);
+          if (update.state === UpdateState.kSuccess ||
+              update.state === UpdateState.kFailed) {
             this.isUpdateInProgress_ = false;
             this.completedFirmwareUpdates_.add(this.deviceId_);
             this.updateDeviceList_();
@@ -69,7 +65,16 @@ export class FakeUpdateController {
             this.updateCompletedPromise_.resolve();
           }
         });
-    this.startUpdatePromise_.then(() => this.triggerProgressChangedObserver());
+  }
+
+  beginUpdate() {
+    assert(this.startUpdatePromise_);
+    this.triggerProgressChangedObserver();
+  }
+
+  /** @param {string} deviceId */
+  setDeviceIdForUpdateInProgress(deviceId) {
+    this.deviceId_ = deviceId;
   }
 
   /**
@@ -102,7 +107,13 @@ export class FakeUpdateController {
     this.observables_.registerObservableWithArg(ON_PROGRESS_CHANGED);
     // Set up fake installation progress data for each fake firmware update.
     fakeFirmwareUpdates.flat().forEach(({deviceId}) => {
-      this.setFakeInstallationProgress(deviceId, fakeInstallationProgress);
+      // Use the third fake firmware update to mock a failed installalation.
+      if (deviceId === '3') {
+        this.setFakeInstallationProgress(
+            deviceId, fakeInstallationProgressFailure);
+      } else {
+        this.setFakeInstallationProgress(deviceId, fakeInstallationProgress);
+      }
     });
   }
 
@@ -160,9 +171,11 @@ export class FakeUpdateController {
   updateDeviceList_() {
     const updatedFakeFirmwareUpdates = fakeFirmwareUpdates.flat().filter(
         u => !this.completedFirmwareUpdates_.has(u.deviceId));
-    this.fakeUpdateProvider_.setFakeFirmwareUpdates(
-        [updatedFakeFirmwareUpdates]);
-    this.fakeUpdateProvider_.triggerDeviceAddedObserver();
+
+    /** @type {UpdateProviderInterface|FakeUpdateProviderInterface} */
+    const provider = getUpdateProvider();
+    provider.setFakeFirmwareUpdates([updatedFakeFirmwareUpdates]);
+    provider.triggerDeviceAddedObserver();
   }
 
   /**

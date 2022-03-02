@@ -14,8 +14,6 @@
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/prefs/pref_member.h"
@@ -80,12 +78,12 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
       base::BindRepeating(&DataReductionProxySettings::OnProxyEnabledPrefChange,
                           base::Unretained(this)));
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (IsDataSaverEnabledByUser(is_off_the_record_profile_, prefs_)) {
     data_reduction_proxy_service_->compression_stats()
         ->SetDataUsageReportingEnabled(true);
   }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 void DataReductionProxySettings::SetCallbackToRegisterSyntheticFieldTrial(
@@ -104,7 +102,7 @@ bool DataReductionProxySettings::IsDataSaverEnabledByUser(
   if (ShouldForceEnableDataReductionProxy())
     return true;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return prefs && prefs->GetBoolean(prefs::kDataSaverEnabled);
 #else
   return false;
@@ -152,10 +150,10 @@ void DataReductionProxySettings::SetDataReductionProxyEnabled(bool enabled) {
       enabled) {
     GetOriginalProfilePrefs()->SetBoolean(prefs::kDataSaverEnabled, enabled);
     OnProxyEnabledPrefChange();
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     data_reduction_proxy_service_->compression_stats()
         ->SetDataUsageReportingEnabled(enabled);
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   }
 }
 

@@ -49,7 +49,9 @@ class DlpRulesManager : public KeyedService {
     kArc,       // ARC++ as a Guest OS.
     kCrostini,  // Crostini as a Guest OS.
     kPluginVm,  // Plugin VM (Parallels/Windows) as a Guest OS.
-    kMaxValue = kPluginVm
+    kUsb,       // Removable disk.
+    kDrive,     // Google drive for file storage.
+    kMaxValue = kDrive
   };
 
   // The enforcement level of the restriction set by DataLeakPreventionRulesList
@@ -137,12 +139,6 @@ class DlpRulesManager : public KeyedService {
   // Returns the admin-configured limit for the minimal size of data in the
   // clipboard to be checked against DLP rules.
   virtual size_t GetClipboardCheckSizeLimitInBytes() const = 0;
-
-  // Returns a list of files inodes disallowed to be transferred to
-  // |destination|.
-  virtual std::vector<uint64_t> GetDisallowedFileTransfers(
-      const std::vector<FileMetadata>& transferred_files,
-      const GURL& destination) const = 0;
 };
 
 }  // namespace policy

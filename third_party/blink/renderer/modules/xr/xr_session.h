@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SESSION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SESSION_H_
 
+#include <memory>
+
 #include "base/containers/span.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -19,8 +21,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_array.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
-#include "third_party/blink/renderer/platform/geometry/double_size.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
@@ -230,13 +231,15 @@ class XRSession final
   // which gives 1:1 pixel ratio at the center of the user's view.
   double NativeFramebufferScale() const;
 
+  double RecommendedFramebufferScale() const;
+
   // Describes the recommended dimensions of layer framebuffers. Should be a
   // value that provides a good balance between quality and performance.
-  DoubleSize DefaultFramebufferSize() const;
+  gfx::SizeF RecommendedFramebufferSize() const;
 
   // Reports the size of the output canvas, if one is available. If not
   // reports (0, 0);
-  DoubleSize OutputCanvasSize() const;
+  gfx::Size OutputCanvasSize() const;
   void DetachOutputCanvas(HTMLCanvasElement* output_canvas);
 
   void SetDOMOverlayElement(Element* element);
@@ -600,7 +603,7 @@ class XRSession final
   int output_height_ = 1;
 
   bool uses_input_eventing_ = false;
-  float default_framebuffer_scale_ = 1.0;
+  float recommended_framebuffer_scale_ = 1.0;
 
   // Corresponds to mojo XRSession.supportsViewportScaling
   bool supports_viewport_scaling_ = false;

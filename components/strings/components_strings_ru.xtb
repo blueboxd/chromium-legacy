@@ -111,7 +111,7 @@
 <translation id="1307966114820526988">Устаревшие функции</translation>
 <translation id="1308113895091915999">Есть предложение</translation>
 <translation id="1312803275555673949">Чем это подтверждается?</translation>
-<translation id="131405271941274527">Сайт <ph name="URL" /> запрашивает разрешение на обмен информацией через NFC.</translation>
+<translation id="1314311879718644478">Смотрите контент в режиме дополненной реальности.</translation>
 <translation id="1314509827145471431">Скрепление справа</translation>
 <translation id="1318023360584041678">Сохранено в группе вкладок</translation>
 <translation id="1319245136674974084">Больше не спрашивать для этого приложения</translation>
@@ -215,6 +215,7 @@
 <translation id="1583429793053364125">При загрузке этой страницы возникли неполадки.</translation>
 <translation id="1586541204584340881">Установленные расширения.</translation>
 <translation id="1588438908519853928">Обычный</translation>
+<translation id="1589050138437146318">Установить ARCore?</translation>
 <translation id="1592005682883173041">Доступ к данным на устройстве</translation>
 <translation id="1594030484168838125">Выбрать</translation>
 <translation id="160851722280695521">Играть в Chrome Dino</translation>
@@ -474,6 +475,7 @@
 <translation id="2465655957518002998">Выбрать способ доставки</translation>
 <translation id="2465688316154986572">Скоба</translation>
 <translation id="2465914000209955735">Управлять скачанными файлами в Chrome</translation>
+<translation id="2466004615675155314">Показывать информацию из интернета</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Выполните диагностику сети<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">В порядке от 1 до N</translation>
 <translation id="2470767536994572628">При редактировании заметок документ вернется в одностраничный режим и исходную ориентацию.</translation>
@@ -520,6 +522,7 @@
 <translation id="2609632851001447353">Варианты</translation>
 <translation id="2610561535971892504">Нажмите, чтобы скопировать</translation>
 <translation id="2618023639789766142">C10 (конверт)</translation>
+<translation id="2623663032199728144">Разрешено запрашивать сведения о ваших экранах</translation>
 <translation id="2625385379895617796">Часы спешат</translation>
 <translation id="262745152991669301">Разрешено отправлять запрос на подключение к USB-устройствам</translation>
 <translation id="2629325967560697240">Чтобы браузер Chrome стал максимально безопасным, <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />включите режим "Улучшенная защита"<ph name="END_ENHANCED_PROTECTION_LINK" />.</translation>
@@ -639,6 +642,7 @@
 <translation id="3037605927509011580">Опаньки...</translation>
 <translation id="3041612393474885105">Данные сертификата</translation>
 <translation id="3044034790304486808">Продолжить поиск в истории</translation>
+<translation id="305162504811187366">историю Удаленного рабочего стола Chrome, в том числе временные метки, хосты и идентификаторы сеансов клиентов.</translation>
 <translation id="3060227939791841287">C9 (конверт)</translation>
 <translation id="3061707000357573562">Исправление сервиса</translation>
 <translation id="306573536155379004">Игра началась.</translation>
@@ -678,6 +682,7 @@
 <translation id="3197136577151645743">Разрешено запрашивать информацию об использовании устройства</translation>
 <translation id="3202497928925179914"><ph name="MANAGE_SYNC_FOCUSED_FRIENDLY_MATCH_TEXT" />. Нажмите Tab, а затем – Ввод, чтобы открыть настройки Chrome и указать, какая информация должна синхронизироваться.</translation>
 <translation id="320323717674993345">Отменить оплату</translation>
+<translation id="3203366800380907218">Из интернета</translation>
 <translation id="3207960819495026254">Добавлено в закладки.</translation>
 <translation id="3209034400446768650">На этой странице может взиматься плата</translation>
 <translation id="3212581601480735796">Ваши действия на сайте <ph name="HOSTNAME" /> отслеживаются</translation>
@@ -1163,6 +1168,7 @@
 <translation id="4708268264240856090">Соединение прервано</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Выполните диагностику сети в Windows<ph name="END_LINK" /></translation>
+<translation id="4722735765955348426">Пароль аккаунта пользователя <ph name="USERNAME" /></translation>
 <translation id="4724144314178270921">Разрешено отправлять запрос на доступ к тексту и изображениям, скопированным в буфер обмена</translation>
 <translation id="4726672564094551039">Повторно загрузить правила</translation>
 <translation id="4728558894243024398">Платформа</translation>
@@ -1226,7 +1232,6 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{Нет}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" /> и <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}many{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Поиск по запросу "<ph name="TEXT" />"</translation>
 <translation id="4879491255372875719">Автоматически (по умолчанию)</translation>
-<translation id="4879725228911483934">Открытие и размещение окон на экранах.</translation>
 <translation id="4880827082731008257">Искать в истории</translation>
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4885256590493466218">Оплатите с помощью <ph name="CARD_DETAIL" /></translation>
@@ -1252,6 +1257,7 @@
 <translation id="4968522289500246572">Это приложение предназначено для мобильных устройств. После изменения размера оно может работать некорректно или перезапуститься.</translation>
 <translation id="4969341057194253438">Удалить запись</translation>
 <translation id="4973922308112707173">Два отверстия сверху</translation>
+<translation id="4976702386844183910">Последнее посещение: <ph name="DATE" /></translation>
 <translation id="4984088539114770594">Использовать микрофон?</translation>
 <translation id="4984339528288761049">Prc5 (конверт)</translation>
 <translation id="4989163558385430922">Показать все</translation>
@@ -1337,6 +1343,7 @@
 <translation id="5215116848420601511">Способы оплаты и адреса из Google Pay</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="521659676233207110">Лоток 13</translation>
+<translation id="5216942107514965959">Последнее посещение: сегодня</translation>
 <translation id="5222812217790122047">Введите адрес электронной почты</translation>
 <translation id="5230733896359313003">Адрес доставки</translation>
 <translation id="5230815978613972521">B8</translation>
@@ -1357,7 +1364,6 @@
 <translation id="5283044957620376778">B1</translation>
 <translation id="5284295735376057059">Свойства документа</translation>
 <translation id="528468243742722775">Завершить</translation>
-<translation id="5284909709419567258">сетевые адреса;</translation>
 <translation id="5285570108065881030">Показать все сохраненные пароли</translation>
 <translation id="5287240709317226393">Показать файлы сookie</translation>
 <translation id="5287456746628258573">Настройки безопасности этого сайта устарели. Злоумышленники могут получить доступ к вашим данным (например, паролям и номерам банковских карт) при их отправке на этот сайт.</translation>
@@ -1523,6 +1529,7 @@
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
 <translation id="5873013647450402046">Банку нужно убедиться, что это действительно вы.</translation>
 <translation id="5887400589839399685">Карта сохранена</translation>
+<translation id="5887687176710214216">Последнее посещение: вчера</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
 <translation id="5895187275912066135">Дата выдачи</translation>
 <translation id="5901630391730855834">Желтый</translation>
@@ -1612,7 +1619,6 @@
 <translation id="6169916984152623906">Ваши действия в режиме инкогнито будут недоступны другим пользователям этого устройства. Однако закладки и скачанные файлы сохранятся.</translation>
 <translation id="6177128806592000436">Подключение к сайту не защищено</translation>
 <translation id="6180316780098470077">Интервал повтора</translation>
-<translation id="619448280891863779">Разрешено отправлять запрос на открытие и размещение окон на экранах</translation>
 <translation id="6196640612572343990">Блокировать сторонние файлы cookie</translation>
 <translation id="6203231073485539293">Проверьте подключение к Интернету</translation>
 <translation id="6218753634732582820">Удалить адрес из Chromium?</translation>
@@ -1716,6 +1722,7 @@
 <translation id="6529602333819889595">&amp;Повторить удаление</translation>
 <translation id="6545864417968258051">Поиск Bluetooth-устройств</translation>
 <translation id="6547208576736763147">Два отверстия слева</translation>
+<translation id="6554732001434021288">Последнее посещение: <ph name="NUM_DAYS" /> дн. назад</translation>
 <translation id="6556866813142980365">Повторить</translation>
 <translation id="6569060085658103619">Вы просматриваете страницу расширения</translation>
 <translation id="6573200754375280815">Два отверстия справа</translation>
@@ -1860,7 +1867,6 @@
 <translation id="706295145388601875">Добавить и изменить адреса в настройках Chrome</translation>
 <translation id="7064851114919012435">Контактные данные</translation>
 <translation id="7068733155164172741">Введите <ph name="OTP_LENGTH" />-значный код</translation>
-<translation id="7070090581017165256">О сайте</translation>
 <translation id="70705239631109039">Подключение к сайту небезопасно</translation>
 <translation id="7075452647191940183">Запрос слишком велик.</translation>
 <translation id="7079718277001814089">Этот сайт содержит вредоносное ПО</translation>
@@ -2108,7 +2114,6 @@
 <translation id="7813600968533626083">Удалить подсказку из Chrome?</translation>
 <translation id="781440967107097262">Предоставить доступ к буферу обмена?</translation>
 <translation id="7815407501681723534"><ph name="SEARCH_RESULTS" /> по запросу "<ph name="SEARCH_STRING" />" (<ph name="NUMBER_OF_RESULTS" />)</translation>
-<translation id="782125616001965242">Показать информацию об этом сайте</translation>
 <translation id="782886543891417279">Возможно, вам нужно перейти на страницу входа сети Wi-Fi (<ph name="WIFI_NAME" />).</translation>
 <translation id="7836231406687464395">Postfix (конверт)</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{Нет}=1{1 приложение (<ph name="EXAMPLE_APP_1" />)}=2{2 приложения (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# приложение (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}few{# приложения (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}many{# приложений (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}other{# приложения (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}}</translation>
@@ -2152,7 +2157,6 @@
 <translation id="7977894662897852582">Edp</translation>
 <translation id="798134797138789862">Разрешено отправлять запрос на использование устройств и данных виртуальной реальности</translation>
 <translation id="7984945080620862648">Перейти на сайт <ph name="SITE" /> невозможно, так как его идентификационные данные зашифрованы, и Chrome не может их обработать. Это могло произойти из-за ошибки сети или атаки на сайт. Скорее всего, он заработает через некоторое время.</translation>
-<translation id="79859296434321399">Чтобы просматривать контент в режиме дополненной реальности, установите приложение ARCore.</translation>
 <translation id="7986319120639858961"><ph name="CARD_TITLE" /> <ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="799149739215780103">Скрепление</translation>
 <translation id="7992044431894087211">Демонстрация экрана для приложения <ph name="APPLICATION_TITLE" /> возобновлена.</translation>
@@ -2256,6 +2260,7 @@
 <translation id="830498451218851433">Фальцовка книжкой</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">установленные приложения и частоту их использования.</translation>
+<translation id="8317207217658302555">Обновить ARCore?</translation>
 <translation id="831997045666694187">До вечера</translation>
 <translation id="8321476692217554900">Уведомления</translation>
 <translation id="8328484624016508118">После закрытия всех вкладок инкогнито Chrome удаляет:<ph name="BEGIN_LIST" />
@@ -2325,7 +2330,6 @@
 <translation id="8554912124839363479">{NUM_PERMISSIONS,plural, =1{Сбросить разрешение}one{Сбросить все разрешения}few{Сбросить все разрешения}many{Сбросить все разрешения}other{Сбросить все разрешения}}</translation>
 <translation id="8555010941760982128">Укажите этот код при оформлении заказа</translation>
 <translation id="8557066899867184262">CVC-код указан на обратной стороне карты.</translation>
-<translation id="8558485628462305855">Чтобы просматривать контент в режиме дополненной реальности, обновите приложение ARCore.</translation>
 <translation id="8559762987265718583">Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="8564182942834072828">Несколько документов/без разбора по копиям</translation>
 <translation id="8564985650692024650">Chromium рекомендует сбросить пароль, используемый в подразделении <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, если вы указывали его на других сайтах.</translation>
@@ -2344,6 +2348,7 @@
 <translation id="865032292777205197">Датчики движения</translation>
 <translation id="8663226718884576429">Информация о заказе, <ph name="TOTAL_LABEL" />, дополнительные сведения</translation>
 <translation id="8666678546361132282">Английский</translation>
+<translation id="8669306706049782872">Использование сведений о вашем экране, чтобы открывать и размещать окна</translation>
 <translation id="867224526087042813">Подпись</translation>
 <translation id="8676424191133491403">Без задержки</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, ответ, <ph name="ANSWER" /></translation>

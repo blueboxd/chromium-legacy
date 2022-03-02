@@ -16,6 +16,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "crypto/crypto_buildflags.h"
 #include "crypto/sha2.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
@@ -47,17 +49,17 @@
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "url/url_canon.h"
 
-#if defined(OS_FUCHSIA) || defined(USE_NSS_CERTS) || defined(OS_MAC)
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(USE_NSS_CERTS) || BUILDFLAG(IS_MAC)
 #include "net/cert/cert_verify_proc_builtin.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "net/cert/cert_verify_proc_android.h"
-#elif defined(OS_IOS)
+#elif BUILDFLAG(IS_IOS)
 #include "net/cert/cert_verify_proc_ios.h"
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
 #include "net/cert/cert_verify_proc_mac.h"
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #include "net/cert/cert_verify_proc_win.h"
 #endif
@@ -289,7 +291,7 @@ void RecordTrustAnchorHistogram(const HashValueVector& spki_hashes,
 }
 
 bool AreSHA1IntermediatesAllowed() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // TODO(rsleevi): Remove this once https://crbug.com/588789 is resolved
   // for Windows 7/2008 users.
   // Note: This must be kept in sync with cert_verify_proc_unittest.cc
@@ -331,7 +333,7 @@ void MapAlgorithmToBool(DigestAlgorithm hash, CertVerifyResult* verify_result) {
 //   * Sets |verify_result->has_sha1| to true if the certificate uses SHA1.
 //
 // Returns false if the signature algorithm was unknown or mismatched.
-WARN_UNUSED_RESULT bool InspectSignatureAlgorithmForCert(
+[[nodiscard]] bool InspectSignatureAlgorithmForCert(
     const CRYPTO_BUFFER* cert,
     CertVerifyResult* verify_result) {
   base::StringPiece cert_algorithm_sequence;
@@ -396,7 +398,7 @@ WARN_UNUSED_RESULT bool InspectSignatureAlgorithmForCert(
 // algorithm, they may end up reporting algorithm B, which was not used to
 // verify the certificate. This function enforces that the two signatures match
 // in order to prevent such confusion.
-WARN_UNUSED_RESULT bool InspectSignatureAlgorithmsInChain(
+[[nodiscard]] bool InspectSignatureAlgorithmsInChain(
     CertVerifyResult* verify_result) {
   const std::vector<bssl::UniquePtr<CRYPTO_BUFFER>>& intermediates =
       verify_result->verified_cert->intermediate_buffers();
@@ -468,17 +470,17 @@ base::Value CertVerifyParams(X509Certificate* cert,
 
 }  // namespace
 
-#if !(defined(OS_FUCHSIA) || defined(OS_LINUX) || defined(OS_CHROMEOS))
+#if !(BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
 // static
 scoped_refptr<CertVerifyProc> CertVerifyProc::CreateSystemVerifyProc(
     scoped_refptr<CertNetFetcher> cert_net_fetcher) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return new CertVerifyProcAndroid(std::move(cert_net_fetcher));
-#elif defined(OS_IOS)
+#elif BUILDFLAG(IS_IOS)
   return new CertVerifyProcIOS();
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   return new CertVerifyProcMac();
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   return new CertVerifyProcWin();
 #else
 #error Unsupported platform
@@ -486,7 +488,7 @@ scoped_refptr<CertVerifyProc> CertVerifyProc::CreateSystemVerifyProc(
 }
 #endif
 
-#if defined(OS_FUCHSIA) || defined(USE_NSS_CERTS) || defined(OS_MAC)
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(USE_NSS_CERTS) || BUILDFLAG(IS_MAC)
 // static
 scoped_refptr<CertVerifyProc> CertVerifyProc::CreateBuiltinVerifyProc(
     scoped_refptr<CertNetFetcher> cert_net_fetcher) {
@@ -860,9 +862,9 @@ bool CertVerifyProc::HasNameConstraintsViolation(
       // Not a real certificate - just for testing.
       // net/data/ssl/certificates/name_constraint_*.pem
       {
-          {{0x46, 0xef, 0xf4, 0xf1, 0x1b, 0xb6, 0xef, 0x96, 0x65, 0x7f, 0x8d,
-            0xac, 0x6c, 0x8e, 0xa5, 0xaa, 0x2d, 0x8e, 0x52, 0xe9, 0xf7, 0xaf,
-            0x86, 0x20, 0xae, 0xb2, 0xbf, 0xbc, 0x9d, 0xfe, 0x63, 0x39}},
+          {{0xa2, 0x2a, 0x88, 0x82, 0xba, 0x0c, 0xae, 0x9d, 0xf2, 0xc4, 0x5b,
+            0x15, 0xa6, 0x1e, 0xfd, 0xfd, 0x19, 0x6b, 0xb1, 0x09, 0x19, 0xfd,
+            0xac, 0x77, 0x9b, 0xd6, 0x08, 0x66, 0xda, 0xa8, 0xd2, 0x88}},
           kDomainsTest,
       },
   };

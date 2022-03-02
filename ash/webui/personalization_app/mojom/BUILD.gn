@@ -10,7 +10,7 @@ assert(is_chromeos_ash)
 mojom("mojom") {
   sources = [ "personalization_app.mojom" ]
 
-  webui_module_path = "/ash/web/personalization_app"
+  webui_module_path = "/ash/webui/personalization_app"
 
   public_deps = [
     "//mojo/public/mojom/base",
@@ -39,6 +39,15 @@ mojom("mojom") {
         {
           mojom = "ash.personalization_app.mojom.OnlineImageType"
           cpp = "backdrop::Image::ImageType"
+        },
+        {
+          mojom = "ash.personalization_app.mojom.UserInfo"
+          cpp = "ash::personalization_app::UserDisplayInfo"
+          move_only = true
+        },
+        {
+          mojom = "ash.personalization_app.mojom.DefaultUserImage"
+          cpp = "ash::default_user_image::DefaultUserImage"
         },
       ]
       traits_headers = [ "personalization_app_mojom_traits.h" ]

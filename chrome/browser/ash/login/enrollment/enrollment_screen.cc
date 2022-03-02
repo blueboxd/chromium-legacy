@@ -99,6 +99,8 @@ constexpr int kMaxInstallAttributesStateCheckRetries = 60;
 }  // namespace
 
 // static
+// The return value of this function is recorded as histogram. If you change
+// it, make sure to change all relevant histogram suffixes accordingly.
 std::string EnrollmentScreen::GetResultString(Result result) {
   switch (result) {
     case Result::COMPLETED:
@@ -111,6 +113,8 @@ std::string EnrollmentScreen::GetResultString(Result result) {
       return "TpmError";
     case Result::TPM_DBUS_ERROR:
       return "TpmDbusError";
+    case Result::BACK_TO_AUTO_ENROLLMENT_CHECK:
+      return "BackToAutoEnrollmentCheck";
   }
 }
 
@@ -269,6 +273,20 @@ void EnrollmentScreen::UpdateFlowType() {
 }
 
 void EnrollmentScreen::ShowImpl() {
+  // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
+  // in the logs.
+  LOG(WARNING) << "Show enrollment screen";
+  if (view_)
+    view_->SetEnrollmentController(this);
+  // Block enrollment on liveboot (OS isn't installed yet and this is trial
+  // flow).
+  if (switches::IsOsInstallAllowed()) {
+    if (view_)
+      view_->ShowEnrollmentDuringTrialNotAllowedError();
+    return;
+  }
+  // If TPM can be dynamically configured: show spinner and try taking
+  // ownership.
   if (!tpm_checked_ && switches::IsTpmDynamic()) {
     if (view_)
       view_->ShowEnrollmentTPMCheckingScreen();
@@ -276,20 +294,8 @@ void EnrollmentScreen::ShowImpl() {
     return;
   }
 
-  // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
-  // in the logs.
-  LOG(WARNING) << "Show enrollment screen";
-  if (view_)
-    view_->SetEnrollmentController(this);
   UMA(policy::kMetricEnrollmentTriggered);
   UpdateFlowType();
-  if (switches::IsOsInstallAllowed()) {
-    if (view_) {
-      view_->SetIsBrandedBuild(context()->is_branded_build);
-      view_->ShowEnrollmentCloudReadyNotAllowedError();
-    }
-    return;
-  }
   switch (current_auth_) {
     case AUTH_OAUTH:
       ShowInteractiveScreen();
@@ -478,8 +484,10 @@ void EnrollmentScreen::OnCancel() {
   // The callback passed to ClearAuth is called either immediately or gets
   // wrapped in a callback bound to a weak pointer from `weak_factory_` - in
   // either case, passing exit_callback_ directly should be safe.
-  ClearAuth(base::BindRepeating(
-      exit_callback_, config_.is_forced() ? Result::BACK : Result::COMPLETED));
+  ClearAuth(base::BindRepeating(exit_callback_,
+                                config_.is_forced()
+                                    ? Result::BACK_TO_AUTO_ENROLLMENT_CHECK
+                                    : Result::BACK));
 }
 
 void EnrollmentScreen::OnConfirmationClosed() {

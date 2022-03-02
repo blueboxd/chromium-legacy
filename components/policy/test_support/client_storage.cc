@@ -5,6 +5,8 @@
 #include "components/policy/test_support/client_storage.h"
 
 #include "base/check.h"
+#include "base/containers/contains.h"
+#include "crypto/sha2.h"
 
 namespace policy {
 
@@ -57,8 +59,38 @@ const ClientStorage::ClientInfo* ClientStorage::GetClientOrNull(
   return it == clients_.end() ? nullptr : &it->second;
 }
 
+const ClientStorage::ClientInfo* ClientStorage::LookupByStateKey(
+    const std::string& state_key) const {
+  for (auto const& [device_id, client_info] : clients_) {
+    if (base::Contains(client_info.state_keys, state_key))
+      return &client_info;
+  }
+  return nullptr;
+}
+
 size_t ClientStorage::GetNumberOfRegisteredClients() const {
   return clients_.size();
+}
+
+std::vector<std::string> ClientStorage::GetMatchingStateKeyHashes(
+    uint64_t modulus,
+    uint64_t remainder) const {
+  std::vector<std::string> hashes;
+  for (const auto& [device_id, client_info] : clients_) {
+    for (const std::string& key : client_info.state_keys) {
+      std::string hash = crypto::SHA256HashString(key);
+      uint64_t hash_remainder = 0;
+      // Simulate long division in base 256, which allows us to interpret
+      // individual chars in our hash as digits. We only care about the
+      // remainder and hence do not compute the quotient in each iteration. This
+      // assumes big-endian byte order.
+      for (uint64_t digit : hash)
+        hash_remainder = (hash_remainder * 256 + digit) % modulus;
+      if (hash_remainder == remainder)
+        hashes.push_back(hash);
+    }
+  }
+  return hashes;
 }
 
 }  // namespace policy

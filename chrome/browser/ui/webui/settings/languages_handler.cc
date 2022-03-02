@@ -68,7 +68,7 @@ void LanguagesHandler::HandleSetProspectiveUILanguage(
   AllowJavascript();
   CHECK_EQ(1U, args->GetList().size());
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   PrefService* prefs = g_browser_process->local_state();
   const std::string& language_code = args->GetList()[0].GetString();
   prefs->SetString(language::prefs::kApplicationLocale, language_code);
@@ -76,7 +76,7 @@ void LanguagesHandler::HandleSetProspectiveUILanguage(
   // Secondary users and public session users cannot change the locale.
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile_);
   const std::string& language_code = args->GetList()[0].GetString();
   if (user &&
       user->GetAccountId() == user_manager->GetPrimaryUser()->GetAccountId() &&

@@ -12,19 +12,7 @@ namespace ash {
 
 // For the UI that iterates through a slideshow of images and displays them at
 // full-screen resolution.
-class ASH_EXPORT AmbientSlideshowPhotoConfig : public AmbientPhotoConfig {
- public:
-  AmbientSlideshowPhotoConfig();
-  AmbientSlideshowPhotoConfig(const AmbientSlideshowPhotoConfig&) = delete;
-  AmbientSlideshowPhotoConfig& operator=(const AmbientSlideshowPhotoConfig&) =
-      delete;
-  ~AmbientSlideshowPhotoConfig() override;
-
-  // AmbientPhotoConfig implementation:
-  int GetNumAssets() const override;
-  int GetNumSetsOfAssetsToBuffer() const override;
-  int GetNumAssetsInTopic(const PhotoWithDetails& decoded_topic) const override;
-};
+ASH_EXPORT AmbientPhotoConfig CreateAmbientSlideshowPhotoConfig();
 
 }  // namespace ash
 

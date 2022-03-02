@@ -25,7 +25,6 @@
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
 #include "chrome/browser/ash/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -87,7 +86,7 @@ AccessibilityPrivateOpenSettingsSubpageFunction::Run() {
   // TODO(chrome-a11y-core): we can't open a settings page when you're on the
   // signin profile, but maybe we should notify the user and explain why?
   Profile* profile = AccessibilityManager::Get()->profile();
-  if (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
+  if (!ash::ProfileHelper::IsSigninProfile(profile) &&
       chromeos::settings::IsOSSettingsSubPage(params->subpage)) {
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
         profile, params->subpage);
@@ -253,9 +252,30 @@ AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction::Run() {
     EXTENSION_FUNCTION_VALIDATE(args().size() >= 1);
     EXTENSION_FUNCTION_VALIDATE(args()[0].is_bool());
     bool enabled = args()[0].GetBool();
-    bridge->SetNativeChromeVoxArcSupport(enabled);
+    bridge->SetNativeChromeVoxArcSupport(
+        enabled,
+        base::BindOnce(
+            &AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction::
+                OnResponse,
+            this));
+    return did_respond() ? AlreadyResponded() : RespondLater();
   }
-  return RespondNow(NoArguments());
+  return RespondNow(ArgumentList(
+      extensions::api::accessibility_private::
+          SetNativeChromeVoxArcSupportForCurrentApp::Results::Create(
+              extensions::api::accessibility_private::
+                  SetNativeChromeVoxResponse::
+                      SET_NATIVE_CHROME_VOX_RESPONSE_FAILURE)));
+}
+
+void AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction::
+    OnResponse(
+        extensions::api::accessibility_private::SetNativeChromeVoxResponse
+            response) {
+  Respond(ArgumentList(
+      extensions::api::accessibility_private::
+          SetNativeChromeVoxArcSupportForCurrentApp::Results::Create(
+              response)));
 }
 
 ExtensionFunction::ResponseAction
@@ -744,4 +764,50 @@ AccessibilityPrivateGetLocalizedDomKeyStringForKeyCodeFunction::Run() {
   }
 
   return RespondNow(OneArgument(base::Value(std::string())));
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateUpdateDictationBubbleFunction::Run() {
+  if (!::features::IsExperimentalAccessibilityDictationCommandsEnabled())
+    return RespondNow(Error("Dictation commands feature is disabled."));
+
+  std::unique_ptr<accessibility_private::UpdateDictationBubble::Params> params(
+      accessibility_private::UpdateDictationBubble::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  accessibility_private::DictationBubbleProperties& properties =
+      params->properties;
+
+  // Extract the icon type.
+  ash::DictationBubbleIconType icon = ash::DictationBubbleIconType::kHidden;
+  switch (properties.icon) {
+    case accessibility_private::DictationBubbleIconType::
+        DICTATION_BUBBLE_ICON_TYPE_HIDDEN:
+      icon = ash::DictationBubbleIconType::kHidden;
+      break;
+    case accessibility_private::DictationBubbleIconType::
+        DICTATION_BUBBLE_ICON_TYPE_STANDBY:
+      icon = ash::DictationBubbleIconType::kStandby;
+      break;
+    case accessibility_private::DictationBubbleIconType::
+        DICTATION_BUBBLE_ICON_TYPE_MACROSUCCESS:
+      icon = ash::DictationBubbleIconType::kMacroSuccess;
+      break;
+    case accessibility_private::DictationBubbleIconType::
+        DICTATION_BUBBLE_ICON_TYPE_MACROFAIL:
+      icon = ash::DictationBubbleIconType::kMacroFail;
+      break;
+    case accessibility_private::DictationBubbleIconType::
+        DICTATION_BUBBLE_ICON_TYPE_NONE:
+      NOTREACHED();
+      break;
+  }
+
+  // Extract text.
+  absl::optional<std::u16string> text;
+  if (properties.text)
+    text = base::UTF8ToUTF16(*properties.text);
+
+  ash::AccessibilityController::Get()->UpdateDictationBubble(properties.visible,
+                                                             icon, text);
+  return RespondNow(NoArguments());
 }

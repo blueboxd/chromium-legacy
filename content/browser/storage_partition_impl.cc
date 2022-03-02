@@ -23,6 +23,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
@@ -122,11 +123,11 @@
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "content/public/browser/android/java_interfaces.h"
 #include "net/android/http_auth_negotiate_android.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/plugin_private_storage_helper.h"
@@ -172,7 +173,7 @@ void RunInProcessStorageService(
                                                     /*io_task_runner=*/nullptr);
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 void BindStorageServiceFilesystemImpl(
     const base::FilePath& directory_path,
     mojo::PendingReceiver<storage::mojom::Directory> receiver) {
@@ -186,7 +187,7 @@ mojo::Remote<storage::mojom::StorageService>& GetStorageServiceRemote() {
   mojo::Remote<storage::mojom::StorageService>& remote =
       GetStorageServiceRemoteStorage();
   if (!remote) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     const base::FilePath sandboxed_data_dir =
         GetContentClient()
             ->browser()
@@ -219,7 +220,7 @@ mojo::Remote<storage::mojom::StorageService>& GetStorageServiceRemote() {
                          directory.InitWithNewPipeAndPassReceiver()));
       remote->SetDataDirectory(sandboxed_data_dir, std::move(directory));
     } else
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
     {
       GetIOThreadTaskRunner({})->PostTask(
           FROM_HERE, base::BindOnce(&RunInProcessStorageService,
@@ -721,7 +722,7 @@ class SSLErrorDelegate : public SSLErrorHandler::Delegate {
   base::WeakPtrFactory<SSLErrorDelegate> weak_factory_{this};
 };
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void FinishGenerateNegotiateAuthToken(
     std::unique_ptr<net::android::HttpAuthNegotiateAndroid> auth_negotiate,
     std::unique_ptr<std::string> auth_token,
@@ -965,6 +966,7 @@ class StoragePartitionImpl::DataDeletionHelper {
       network::mojom::CookieManager* cookie_manager,
       InterestGroupManager* interest_group_manager,
       AttributionManagerImpl* attribution_manager,
+      AggregationServiceImpl* aggregation_service,
       bool perform_storage_cleanup,
       const base::Time begin,
       const base::Time end);
@@ -993,7 +995,8 @@ class StoragePartitionImpl::DataDeletionHelper {
     kShaderCache = 6,
     kPluginPrivate = 7,
     kConversions = 8,
-    kMaxValue = kConversions,
+    kAggregationService = 9,
+    kMaxValue = kAggregationService,
   };
 
   base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
@@ -1466,11 +1469,6 @@ storage::FileSystemContext* StoragePartitionImpl::GetFileSystemContext() {
   return filesystem_context_.get();
 }
 
-FontAccessContext* StoragePartitionImpl::GetFontAccessContext() {
-  DCHECK(initialized_);
-  return font_access_manager_.get();
-}
-
 storage::DatabaseTracker* StoragePartitionImpl::GetDatabaseTracker() {
   DCHECK(initialized_);
   return database_tracker_.get();
@@ -1936,9 +1934,8 @@ void StoragePartitionImpl::OnDataUseUpdate(
   // It can pass empty GlobalRenderFrameHostId() when the context type is
   // `kNavigationRequestContext`.
   GetContentClient()->browser()->OnNetworkServiceDataUseUpdate(
-      context.render_frame_host_id().child_id,
-      context.render_frame_host_id().frame_routing_id,
-      network_traffic_annotation_id_hash, recv_bytes, sent_bytes);
+      context.render_frame_host_id(), network_traffic_annotation_id_hash,
+      recv_bytes, sent_bytes);
 }
 
 void StoragePartitionImpl::Clone(
@@ -2022,21 +2019,24 @@ void StoragePartitionImpl::OnCanSendDomainReliabilityUpload(
       blink::mojom::PermissionStatus::GRANTED);
 }
 
-void StoragePartitionImpl::OnClearSiteData(const GURL& url,
-                                           const std::string& header_value,
-                                           int load_flags,
-                                           OnClearSiteDataCallback callback) {
+void StoragePartitionImpl::OnClearSiteData(
+    const GURL& url,
+    const std::string& header_value,
+    int load_flags,
+    const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
+    OnClearSiteDataCallback callback) {
   DCHECK(initialized_);
   auto browser_context_getter = base::BindRepeating(
       GetBrowserContextFromStoragePartition, weak_factory_.GetWeakPtr());
   auto web_contents_getter = base::BindRepeating(
       GetWebContents, url_loader_network_observers_.current_context());
-  ClearSiteDataHandler::HandleHeader(browser_context_getter,
-                                     web_contents_getter, url, header_value,
-                                     load_flags, std::move(callback));
+
+  ClearSiteDataHandler::HandleHeader(
+      browser_context_getter, web_contents_getter, url, header_value,
+      load_flags, cookie_partition_key, std::move(callback));
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void StoragePartitionImpl::OnGenerateHttpNegotiateAuthToken(
     const std::string& server_auth_token,
     bool can_delegate,
@@ -2065,7 +2065,7 @@ void StoragePartitionImpl::OnGenerateHttpNegotiateAuthToken(
 }
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 void StoragePartitionImpl::OnTrustAnchorUsed() {
   GetContentClient()->browser()->OnTrustAnchorUsed(browser_context_);
 }
@@ -2146,7 +2146,7 @@ void StoragePartitionImpl::ClearDataImpl(
       quota_manager_.get(), special_storage_policy_.get(),
       filesystem_context_.get(), GetCookieManagerForBrowserProcess(),
       interest_group_manager_.get(), attribution_manager_.get(),
-      perform_storage_cleanup, begin, end);
+      aggregation_service_.get(), perform_storage_cleanup, begin, end);
 }
 
 void StoragePartitionImpl::DeletionHelperDone(base::OnceClosure callback) {
@@ -2347,6 +2347,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     network::mojom::CookieManager* cookie_manager,
     InterestGroupManager* interest_group_manager,
     AttributionManagerImpl* attribution_manager,
+    AggregationServiceImpl* aggregation_service,
     bool perform_storage_cleanup,
     const base::Time begin,
     const base::Time end) {
@@ -2453,8 +2454,22 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
                                            storage_policy_ref);
   if (attribution_manager && (remove_mask_ & REMOVE_DATA_MASK_CONVERSIONS)) {
     attribution_manager->ClearData(
-        begin, end, std::move(filter),
+        begin, end, filter,
         CreateTaskCompletionClosure(TracingDataType::kConversions));
+  }
+
+  if (aggregation_service &&
+      (remove_mask_ & REMOVE_DATA_MASK_AGGREGATION_SERVICE)) {
+    // Currently the aggregation service only stores public keys and we don't
+    // have information on the page/context that uses the public key origin,
+    // therefore we don't check origins and instead just delete all rows in the
+    // given time range.
+    // TODO(crbug.com/1284971): Consider fine-grained deletion of public keys.
+    // TODO(crbug.com/1286173): Consider adding aggregation service origins to
+    // `CookiesTreeModel`.
+    aggregation_service->ClearData(
+        begin, end,
+        CreateTaskCompletionClosure(TracingDataType::kAggregationService));
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -2700,6 +2715,12 @@ void StoragePartitionImpl::OverrideSharedStorageWorkletHostManagerForTesting(
       std::move(shared_storage_worklet_host_manager);
 }
 
+void StoragePartitionImpl::OverrideAggregationServiceForTesting(
+    std::unique_ptr<AggregationServiceImpl> aggregation_service) {
+  DCHECK(initialized_);
+  aggregation_service_ = std::move(aggregation_service);
+}
+
 void StoragePartitionImpl::GetQuotaSettings(
     storage::OptionalQuotaSettingsCallback callback) {
   if (g_test_quota_settings) {
@@ -2893,10 +2914,10 @@ void StoragePartitionImpl::
   if (local_trust_token_fulfiller_)
     return;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   GetGlobalJavaInterfaces()->GetInterface(
       local_trust_token_fulfiller_.BindNewPipeAndPassReceiver());
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   if (local_trust_token_fulfiller_) {
     local_trust_token_fulfiller_.set_disconnect_handler(base::BindOnce(

@@ -253,8 +253,8 @@ class WebNavigationApiTestWithContextType
       const WebNavigationApiTestWithContextType&) = delete;
 
  protected:
-  bool RunTest(const char* name,
-               bool allow_in_incognito = false) WARN_UNUSED_RESULT {
+  [[nodiscard]] bool RunTest(const char* name,
+                             bool allow_in_incognito = false) {
     return RunExtensionTest(name, {},
                             {.allow_in_incognito = allow_in_incognito});
   }
@@ -291,7 +291,7 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, FormSubmission) {
 
 // TODO(https://crbug.com/1250311):
 // WebNavigationApiTestWithContextType.Download test is flaky.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_Download DISABLED_Download
 #else
 #define MAYBE_Download Download
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiBackForwardCacheTest, ForwardBack) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/backForwardCache")) << message_;
 }
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
 // https://crbug.com/1223028
 #define MAYBE_IFrame DISABLED_IFrame
 #else
@@ -629,7 +629,7 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Crash) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
 // https://crbug.com/1223055
 #define MAYBE_Xslt DISABLED_Xslt
 #else
@@ -660,7 +660,9 @@ class WebNavigationApiFencedFrameTest
 
 IN_PROC_BROWSER_TEST_P(WebNavigationApiFencedFrameTest, Load) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("webnavigation/fencedFrames")) << message_;
+  ASSERT_TRUE(RunExtensionTest("webnavigation/fencedFrames",
+                               {.custom_arg = !GetParam() ? "MPArch" : ""}))
+      << message_;
 }
 
 INSTANTIATE_TEST_SUITE_P(WebNavigationApiFencedFrameTest,

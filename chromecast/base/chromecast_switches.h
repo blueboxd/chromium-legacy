@@ -105,7 +105,10 @@ extern const char kSysInfoFilePath[];
 // Extension switches.
 extern const char kExtensionsDir[];
 
+// Switches for Cast browser decoupling.
 extern const char kDeferFeatureList[];
+extern const char kUseCastBrowserPrefConfig[];
+extern const char kInProcessBroker[];
 
 }  // namespace switches
 

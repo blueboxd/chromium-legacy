@@ -14,10 +14,10 @@
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
@@ -71,7 +71,7 @@ class ExternallyManagedAppInstallTask {
   const ExternalInstallOptions& install_options() { return install_options_; }
 
  private:
-  // Install directly from a fully specified WebApplicationInfo struct. Used
+  // Install directly from a fully specified WebAppInstallInfo struct. Used
   // by system apps.
   void InstallFromInfo(ResultCallback result_callback);
 
@@ -82,7 +82,21 @@ class ExternallyManagedAppInstallTask {
                    ResultCallback result_callback,
                    WebAppUrlLoader::Result load_url_result);
 
-  void InstallPlaceholder(ResultCallback result_callback);
+  // result_callback could be called synchronously or asynchronously.
+  void InstallPlaceholder(content::WebContents* web_contents,
+                          ResultCallback result_callback);
+
+  void OnCustomIconFetched(ResultCallback callback,
+                           int id,
+                           int http_status_code,
+                           const GURL& image_url,
+                           const std::vector<SkBitmap>& bitmaps,
+                           const std::vector<gfx::Size>& sizes);
+
+  void FinalizePlaceholderInstall(
+      ResultCallback callback,
+      absl::optional<std::reference_wrapper<const std::vector<SkBitmap>>>
+          bitmaps);
 
   void UninstallPlaceholderApp(content::WebContents* web_contents,
                                ResultCallback result_callback);

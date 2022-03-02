@@ -361,7 +361,8 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
 
     const std::string& pattern_str = pattern->GetString();
     if (filters_map.find(pattern_str) == filters_map.end())
-      filters_map[pattern_str].SetKey("filters", base::ListValue());
+      filters_map[pattern_str].SetKey("filters",
+                                      base::Value(base::Value::Type::LIST));
 
     // Don't pass removed values from `pattern_filter`, because base::Values
     // read with JSONReader use a shared string buffer. Instead, Clone() here.
@@ -370,7 +371,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
 
   for (const auto& it : filters_map) {
     const std::string& pattern_str = it.first;
-    const base::DictionaryValue& setting = it.second;
+    const base::Value& setting = it.second;
 
     ContentSettingsPattern pattern =
         ContentSettingsPattern::FromString(pattern_str);
@@ -438,7 +439,7 @@ bool PolicyProvider::SetWebsiteSetting(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
-    std::unique_ptr<base::Value>&& value,
+    base::Value&& value,
     const ContentSettingConstraints& constraints) {
   return false;
 }

@@ -72,10 +72,6 @@
 #include "net/reporting/reporting_report.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-#if BUILDFLAG(IS_CT_SUPPORTED)
-#include "services/network/sct_auditing/sct_auditing_handler.h"
-#endif  // BUILDFLAG(IS_CT_SUPPORTED)
-
 namespace base {
 class UnguessableToken;
 }  // namespace base
@@ -115,6 +111,7 @@ class PendingTrustTokenStore;
 class ProxyLookupRequest;
 class ResourceScheduler;
 class ResourceSchedulerClient;
+class SCTAuditingHandler;
 class SessionCleanupCookieStore;
 class SQLiteTrustTokenPersister;
 class WebSocketFactory;
@@ -185,7 +182,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return params_ && params_->allow_any_cors_exempt_header_for_browser;
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   base::android::ApplicationStatusListener* app_status_listener() const {
     return app_status_listener_.get();
   }
@@ -277,7 +274,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                             mojom::NetworkConditionsPtr conditions) override;
   void SetAcceptLanguage(const std::string& new_accept_language) override;
   void SetEnableReferrers(bool enable_referrers) override;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   void UpdateAdditionalCertificates(
       mojom::AdditionalCertificatesPtr additional_certificates) override;
 #endif
@@ -303,7 +300,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnCTLogListUpdated(
       const std::vector<network::mojom::CTLogInfoPtr>& log_list,
       base::Time update_time);
-  SCTAuditingHandler* sct_auditing_handler() { return &sct_auditing_handler_; }
+  SCTAuditingHandler* sct_auditing_handler() {
+    return sct_auditing_handler_.get();
+  }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
   void CreateUDPSocket(
       mojo::PendingReceiver<mojom::UDPSocket> receiver,
@@ -622,7 +621,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   void OnVerifyCertForSignedExchangeComplete(int cert_verify_id, int result);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   void TrustAnchorUsed();
 #endif
 
@@ -670,7 +669,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // If non-null, called when the mojo pipe for the NetworkContext is closed.
   OnConnectionCloseCallback on_connection_close_callback_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   std::unique_ptr<base::android::ApplicationStatusListener>
       app_status_listener_;
 #endif
@@ -693,9 +692,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   mojo::UniqueReceiverSet<mojom::HasTrustTokensAnswerer>
       has_trust_tokens_answerers_;
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
   std::unique_ptr<WebSocketFactory> websocket_factory_;
-#endif  // !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
 
   // These must be below the URLRequestContext, so they're destroyed before it
   // is.
@@ -751,10 +750,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   raw_ptr<certificate_transparency::ChromeCTPolicyEnforcer>
       ct_policy_enforcer_ = nullptr;
 
-  SCTAuditingHandler sct_auditing_handler_;
+  std::unique_ptr<SCTAuditingHandler> sct_auditing_handler_;
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   CertVerifierWithTrustAnchors* cert_verifier_with_trust_anchors_ = nullptr;
 #endif
 

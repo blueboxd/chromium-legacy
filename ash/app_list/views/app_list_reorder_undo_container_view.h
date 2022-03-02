@@ -13,14 +13,14 @@ class LabelButton;
 
 namespace ash {
 
-class SystemToastStyle;
+class AppListToastView;
 enum class AppListSortOrder;
 
 // A view accommodating a toast view that reverts the app list temporary
 // sorting order when the toast dismiss button is clicked.
 class AppListReorderUndoContainerView : public views::View {
  public:
-  AppListReorderUndoContainerView();
+  explicit AppListReorderUndoContainerView(bool tablet_mode);
   AppListReorderUndoContainerView(const AppListReorderUndoContainerView&) =
       delete;
   AppListReorderUndoContainerView& operator=(
@@ -42,10 +42,13 @@ class AppListReorderUndoContainerView : public views::View {
   void OnReorderUndoButtonClicked();
 
   // Calculates the toast text based on the temporary sorting order.
-  std::u16string CalculateToastTextFromOrder(AppListSortOrder order) const
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] std::u16string CalculateToastTextFromOrder(
+      AppListSortOrder order) const;
 
-  SystemToastStyle* toast_view_ = nullptr;
+  // Whether the toast container is part of the tablet mode app list UI.
+  const bool tablet_mode_;
+
+  AppListToastView* toast_view_ = nullptr;
 };
 
 }  // namespace ash

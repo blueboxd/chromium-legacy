@@ -57,6 +57,8 @@ const char kIsNearbyShareDisallowedByPolicy[] =
 const char kIsPhoneHubAppsAccessGranted[] = "isPhoneHubAppsAccessGranted";
 const char kIsPhoneHubPermissionsDialogSupported[] =
     "isPhoneHubPermissionsDialogSupported";
+const char kIsCameraRollFilePermissionGranted[] =
+    "isCameraRollFilePermissionGranted";
 
 constexpr char kAndroidSmsInfoOriginKey[] = "origin";
 constexpr char kAndroidSmsInfoEnabledKey[] = "enabled";
@@ -78,13 +80,15 @@ MultideviceHandler::MultideviceHandler(
     multidevice_setup::AndroidSmsPairingStateTracker*
         android_sms_pairing_state_tracker,
     android_sms::AndroidSmsAppManager* android_sms_app_manager,
-    ash::eche_app::AppsAccessManager* apps_access_manager)
+    ash::eche_app::AppsAccessManager* apps_access_manager,
+    ash::phonehub::CameraRollManager* camera_roll_manager)
     : prefs_(prefs),
       multidevice_setup_client_(multidevice_setup_client),
       notification_access_manager_(notification_access_manager),
       android_sms_pairing_state_tracker_(android_sms_pairing_state_tracker),
       android_sms_app_manager_(android_sms_app_manager),
-      apps_access_manager_(apps_access_manager) {
+      apps_access_manager_(apps_access_manager),
+      camera_roll_manager_(camera_roll_manager) {
   CHECK((multidevice_setup_client_ != nullptr) ==
         multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(prefs_));
   pref_change_registrar_.Init(prefs_);
@@ -141,6 +145,14 @@ void MultideviceHandler::RegisterMessages() {
       "cancelNotificationSetup",
       base::BindRepeating(&MultideviceHandler::HandleCancelNotificationSetup,
                           base::Unretained(this)));
+  web_ui()->RegisterDeprecatedMessageCallback(
+      "attemptAppsSetup",
+      base::BindRepeating(&MultideviceHandler::HandleAttemptAppsSetup,
+                          base::Unretained(this)));
+  web_ui()->RegisterDeprecatedMessageCallback(
+      "cancelAppsSetup",
+      base::BindRepeating(&MultideviceHandler::HandleCancelAppsSetup,
+                          base::Unretained(this)));
 }
 
 void MultideviceHandler::OnJavascriptAllowed() {
@@ -161,6 +173,9 @@ void MultideviceHandler::OnJavascriptAllowed() {
 
   if (apps_access_manager_)
     apps_access_manager_observation_.Observe(apps_access_manager_);
+
+  if (camera_roll_manager_)
+    camera_roll_manager_observation_.Observe(camera_roll_manager_);
 
   pref_change_registrar_.Add(
       proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
@@ -213,6 +228,13 @@ void MultideviceHandler::OnJavascriptDisallowed() {
     DCHECK(apps_access_manager_observation_.IsObservingSource(
         apps_access_manager_));
     apps_access_manager_observation_.Reset();
+    apps_access_operation_.reset();
+  }
+
+  if (camera_roll_manager_) {
+    DCHECK(camera_roll_manager_observation_.IsObservingSource(
+        camera_roll_manager_));
+    camera_roll_manager_observation_.Reset();
   }
 
   // Ensure that pending callbacks do not complete and cause JS to be evaluated.
@@ -251,6 +273,10 @@ void MultideviceHandler::OnInstalledAppUrlChanged() {
 }
 
 void MultideviceHandler::OnAppsAccessChanged() {
+  UpdatePageContent();
+}
+
+void MultideviceHandler::OnCameraRollViewUiStateUpdated() {
   UpdatePageContent();
 }
 
@@ -321,6 +347,12 @@ void MultideviceHandler::HandleSetFeatureEnabledState(
   if (enabled && feature == multidevice_setup::mojom::Feature::kPhoneHub) {
     phonehub::util::LogFeatureOptInEntryPoint(
         phonehub::util::OptInEntryPoint::kSettings);
+  }
+
+  if (enabled &&
+      feature == multidevice_setup::mojom::Feature::kPhoneHubCameraRoll) {
+    phonehub::util::LogCameraRollFeatureOptInEntryPoint(
+        phonehub::util::CameraRollOptInEntryPoint::kSettings);
   }
 }
 
@@ -443,6 +475,34 @@ void MultideviceHandler::HandleCancelNotificationSetup(
   notification_access_operation_.reset();
 }
 
+void MultideviceHandler::HandleAttemptAppsSetup(const base::ListValue* args) {
+  DCHECK(features::IsEcheSWAEnabled());
+  DCHECK(features::IsEchePhoneHubPermissionsOnboarding());
+  DCHECK(!apps_access_operation_);
+
+  ash::eche_app::AppsAccessManager::AccessStatus apps_access_status =
+      apps_access_manager_->GetAccessStatus();
+
+  if (apps_access_status !=
+      ash::eche_app::AppsAccessManager::AccessStatus::kAvailableButNotGranted) {
+    PA_LOG(WARNING) << "Cannot request apps access setup flow; current "
+                    << "status: " << apps_access_status;
+    return;
+  }
+
+  apps_access_operation_ =
+      apps_access_manager_->AttemptAppsAccessSetup(/*delegate=*/this);
+  DCHECK(apps_access_operation_);
+}
+
+void MultideviceHandler::HandleCancelAppsSetup(const base::ListValue* args) {
+  DCHECK(features::IsEcheSWAEnabled());
+  DCHECK(features::IsEchePhoneHubPermissionsOnboarding());
+  DCHECK(apps_access_operation_);
+
+  apps_access_operation_.reset();
+}
+
 void MultideviceHandler::OnStatusChange(
     phonehub::NotificationAccessSetupOperation::Status new_status) {
   FireWebUIListener("settings.onNotificationAccessSetupStatusChanged",
@@ -450,6 +510,15 @@ void MultideviceHandler::OnStatusChange(
 
   if (phonehub::NotificationAccessSetupOperation::IsFinalStatus(new_status))
     notification_access_operation_.reset();
+}
+
+void MultideviceHandler::OnAppsStatusChange(
+    ash::eche_app::AppsAccessSetupOperation::Status new_status) {
+  FireWebUIListener("settings.onAppsAccessSetupStatusChanged",
+                    base::Value(static_cast<int32_t>(new_status)));
+
+  if (ash::eche_app::AppsAccessSetupOperation::IsFinalStatus(new_status))
+    apps_access_operation_.reset();
 }
 
 void MultideviceHandler::OnSetFeatureStateEnabledResult(
@@ -545,6 +614,16 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
 
   page_content_dictionary->SetBoolean(kIsPhoneHubAppsAccessGranted,
                                       is_apps_access_granted);
+
+  bool is_camera_roll_file_permission_granted = false;
+  if (camera_roll_manager_) {
+    is_camera_roll_file_permission_granted =
+        camera_roll_manager_->ui_state() !=
+        ash::phonehub::CameraRollManager::CameraRollUiState::
+            NO_STORAGE_PERMISSION;
+  }
+  page_content_dictionary->SetBoolean(kIsCameraRollFilePermissionGranted,
+                                      is_camera_roll_file_permission_granted);
 
   bool is_nearby_share_disallowed_by_policy =
       NearbySharingServiceFactory::IsNearbyShareSupportedForBrowserContext(

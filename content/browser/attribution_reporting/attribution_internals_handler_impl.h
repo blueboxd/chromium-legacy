@@ -9,6 +9,7 @@
 #include "base/scoped_observation.h"
 #include "content/browser/attribution_reporting/attribution_internals.mojom.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
+#include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -49,9 +50,9 @@ class AttributionInternalsHandlerImpl
       override;
   void GetReports(
       mojom::AttributionInternalsHandler::GetReportsCallback callback) override;
-  void SendPendingReports(
-      mojom::AttributionInternalsHandler::SendPendingReportsCallback callback)
-      override;
+  void SendReports(const std::vector<AttributionReport::Id>& ids,
+                   mojom::AttributionInternalsHandler::SendReportsCallback
+                       callback) override;
   void ClearStorage(mojom::AttributionInternalsHandler::ClearStorageCallback
                         callback) override;
   void AddObserver(
@@ -68,7 +69,8 @@ class AttributionInternalsHandlerImpl
   void OnReportsChanged() override;
   void OnSourceDeactivated(
       const AttributionStorage::DeactivatedSource& deactivated_source) override;
-  void OnReportSent(const SentReport& info) override;
+  void OnReportSent(const AttributionReport& report,
+                    const SendResult& info) override;
   void OnReportDropped(
       const AttributionStorage::CreateReportResult& result) override;
 

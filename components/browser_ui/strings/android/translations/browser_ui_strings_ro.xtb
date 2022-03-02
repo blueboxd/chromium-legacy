@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Permite cookie-urile</translation>
 <translation id="2228071138934252756">Pentru a permite aplicației <ph name="APP_NAME" /> să acceseze camera, activează camera și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">Numai o singură dată</translation>
+<translation id="2253414712144136228">Elimină <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">Întreabă-mă când un site dorește să descopere dispozitive Bluetooth din apropiere (recomandat)</translation>
 <translation id="2315043854645842844">Selectarea certificatelor pe partea de client nu este acceptată de sistemul de operare.</translation>
 <translation id="2359808026110333948">Continuă</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Afișează informațiile</translation>
 <translation id="3123473560110926937">Blocate pe anumite site-uri</translation>
 <translation id="3198916472715691905">Date stocate: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3203366800380907218">De pe web</translation>
 <translation id="321187648315454507">Pentru a permite aplicației <ph name="APP_NAME" /> să îți trimită notificări, activează notificările și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Microfon</translation>
 <translation id="3277252321222022663">Permite accesul site-urilor la senzori (recomandat)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">Blocat</translation>
 <translation id="5689516760719285838">Locație</translation>
 <translation id="5690795753582697420">Camera foto este dezactivată în setările Android</translation>
-<translation id="5710871682236653961">Întreabă înainte de a permite site-urilor să trimită și să primească informații când se ating dispozitive NFC (recomandat)</translation>
 <translation id="5719847187258001597">Astfel, se vor șterge toate datele și cookie-urile stocate de <ph name="ORIGIN" /> sau de aplicația asociată de pe ecranul de pornire.</translation>
 <translation id="5771720122942595109">S-a blocat <ph name="PERMISSION_1" /></translation>
 <translation id="5804241973901381774">Permisiuni</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">Se permite pentru motorul de căutare actual</translation>
 <translation id="7053983685419859001">Blochează</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selectat}few{# selectate}other{# selectate}}</translation>
-<translation id="7070090581017165256">Despre acest site</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> selectate.  Opțiunile sunt disponibile în partea de sus a ecranului</translation>
 <translation id="7141896414559753902">Împiedică site-urile să afișeze ferestre pop-up și redirecționări (recomandat)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Un site folosește microfonul</translation>
 <translation id="7561196759112975576">Întotdeauna</translation>
-<translation id="7572498721684305250">Blochează trimiterea și primirea informațiilor de la site-uri când se ating dispozitive NFC</translation>
 <translation id="757524316907819857">Împiedică site-urile să redea conținutul protejat</translation>
 <translation id="7649070708921625228">Ajutor</translation>
 <translation id="7658239707568436148">Anulează</translation>

@@ -12,7 +12,7 @@
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_web_ui_controller_factory.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -23,22 +23,24 @@ class UnittestingSystemAppDelegate : public SystemWebAppDelegate {
   UnittestingSystemAppDelegate(SystemAppType type,
                                const std::string& name,
                                const GURL& url,
-                               WebApplicationInfoFactory info_factory);
+                               WebAppInstallInfoFactory info_factory);
   UnittestingSystemAppDelegate(const UnittestingSystemAppDelegate&) = delete;
   UnittestingSystemAppDelegate& operator=(const UnittestingSystemAppDelegate&) =
       delete;
   ~UnittestingSystemAppDelegate() override;
 
-  std::unique_ptr<WebApplicationInfo> GetWebAppInfo() const override;
+  std::unique_ptr<WebAppInstallInfo> GetWebAppInfo() const override;
 
   std::vector<AppId> GetAppIdsToUninstallAndReplace() const override;
   gfx::Size GetMinimumWindowSize() const override;
   bool ShouldReuseExistingWindow() const override;
   bool ShouldShowNewWindowMenuOption() const override;
-  bool ShouldIncludeLaunchDirectory() const override;
+  base::FilePath GetLaunchDirectory(
+      const apps::AppLaunchParams& params) const override;
   std::vector<int> GetAdditionalSearchTerms() const override;
   bool ShouldShowInLauncher() const override;
   bool ShouldShowInSearch() const override;
+  bool ShouldHandleFileOpenIntents() const override;
   bool ShouldCaptureNavigations() const override;
   bool ShouldAllowResize() const override;
   bool ShouldAllowMaximize() const override;
@@ -59,6 +61,7 @@ class UnittestingSystemAppDelegate : public SystemWebAppDelegate {
   void SetAdditionalSearchTerms(const std::vector<int>&);
   void SetShouldShowInLauncher(bool);
   void SetShouldShowInSearch(bool);
+  void SetShouldHandleFileOpenIntents(bool);
   void SetShouldCaptureNavigations(bool);
   void SetShouldAllowResize(bool);
   void SetShouldAllowMaximize(bool);
@@ -70,7 +73,7 @@ class UnittestingSystemAppDelegate : public SystemWebAppDelegate {
   void SetUrlInSystemAppScope(const GURL& url);
 
  private:
-  WebApplicationInfoFactory info_factory_;
+  WebAppInstallInfoFactory info_factory_;
 
   std::vector<AppId> uninstall_and_replace_;
   gfx::Size minimum_window_size_;
@@ -80,6 +83,7 @@ class UnittestingSystemAppDelegate : public SystemWebAppDelegate {
   std::vector<int> additional_search_terms_;
   bool show_in_launcher_ = true;
   bool show_in_search_ = true;
+  bool handles_file_open_intents_ = false;
   bool capture_navigations_ = false;
   bool is_resizeable_ = true;
   bool is_maximizable_ = true;
@@ -126,6 +130,9 @@ class TestSystemWebAppInstallation {
 
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppNotShownInSearch();
+
+  static std::unique_ptr<TestSystemWebAppInstallation>
+  SetUpAppThatHandlesFileOpenIntents();
 
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppWithAdditionalSearchTerms();

@@ -65,11 +65,13 @@ class COMPONENT_EXPORT(VULKAN) VulkanDeviceQueue {
   // have its own instance of VulkanFenceHelper and VmaAllocator. Also note that
   // this CompositorGpuThread does not own the |vk_device| and |vk_queue| and
   // hence will not destroy them.
-  bool InitializeForCompositorGpuThread(VkPhysicalDevice vk_physical_device,
-                                        VkDevice vk_device,
-                                        VkQueue vk_queue,
-                                        uint32_t vk_queue_index,
-                                        gfx::ExtensionSet enabled_extensions);
+  bool InitializeForCompositorGpuThread(
+      VkPhysicalDevice vk_physical_device,
+      VkDevice vk_device,
+      VkQueue vk_queue,
+      uint32_t vk_queue_index,
+      gfx::ExtensionSet enabled_extensions,
+      const VkPhysicalDeviceFeatures2& vk_physical_device_features2);
 
   const gfx::ExtensionSet& enabled_extensions() const {
     return enabled_extensions_;
@@ -153,11 +155,11 @@ class COMPONENT_EXPORT(VULKAN) VulkanDeviceQueue {
 
   bool allow_protected_memory_ = false;
 
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(OS_LINUX)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX)
   VkPhysicalDeviceSamplerYcbcrConversionFeatures
       sampler_ycbcr_conversion_features_{
           VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES};
-#endif  // defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(OS_LINUX)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX)
 
   VkPhysicalDeviceProtectedMemoryFeatures protected_memory_features_{
       VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES};

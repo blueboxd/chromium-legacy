@@ -32,7 +32,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/permissions_policy/permissions_policy_parser.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
@@ -180,6 +180,9 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
  protected:
   bool is_swapping_frames() const { return is_swapping_frames_; }
+
+  // Checks that the number of frames on the page are within the current limit.
+  bool IsCurrentlyWithinFrameLimit() const;
 
  private:
   // Intentionally private to prevent redundant checks when the type is

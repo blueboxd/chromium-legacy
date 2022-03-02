@@ -40,20 +40,6 @@ struct CONTENT_EXPORT AXTextEdit {
 // Returns true if the given object is an NSRange instance.
 bool IsNSRange(id value);
 
-// Uses a system API to verify that the given object is an AXTextMarker object.
-bool IsAXTextMarker(id text_marker);
-
-// Uses a system API to verify that the given object is an AXTextMarkerRange
-// object.
-bool IsAXTextMarkerRange(id marker_range);
-
-// Returns the AXNodePosition representing the given AXTextMarker.
-CONTENT_EXPORT BrowserAccessibility::AXPosition AXTextMarkerToAXPosition(
-    id text_marker);
-
-// Returns the AXRange representing the given AXTextMarkerRange.
-BrowserAccessibility::AXRange AXTextMarkerRangeToAXRange(id marker_range);
-
 // Returns an AXTextMarker representing the given position in the tree.
 id AXTextMarkerFrom(const BrowserAccessibilityCocoa* anchor,
                     int offset,
@@ -142,7 +128,6 @@ id AXTextMarkerRangeFrom(id anchor_text_marker, id focus_text_marker);
 @property(nonatomic, readonly) id disclosedByRow;
 @property(nonatomic, readonly) NSNumber* disclosureLevel;
 @property(nonatomic, readonly) id disclosedRows;
-@property(nonatomic, readonly) NSString* dropEffects;
 // Returns the object at the root of the current edit field, if any.
 @property(nonatomic, readonly) id editableAncestor;
 @property(nonatomic, readonly) NSNumber* enabled;

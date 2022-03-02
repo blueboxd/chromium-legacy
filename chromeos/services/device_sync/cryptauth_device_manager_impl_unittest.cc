@@ -184,7 +184,7 @@ void ExpectSyncedDevicesAndPrefAreEqual(
     const PrefService& pref_service) {
   ExpectSyncedDevicesAreEqual(expected_devices, devices);
 
-  const base::ListValue* synced_devices_pref =
+  const base::Value* synced_devices_pref =
       pref_service.GetList(prefs::kCryptAuthDeviceSyncUnlockKeys);
   ASSERT_EQ(expected_devices.size(), synced_devices_pref->GetList().size());
   for (size_t i = 0; i < synced_devices_pref->GetList().size(); ++i) {
@@ -365,7 +365,7 @@ void ExpectSyncedDevicesAndPrefAreEqual(
             it.second.GetInt())) {
           case multidevice::SoftwareFeatureState::kEnabled:
             enabled_software_features.push_back(software_feature);
-            FALLTHROUGH;
+            [[fallthrough]];
           case multidevice::SoftwareFeatureState::kSupported:
             supported_software_features.push_back(software_feature);
             break;
@@ -529,8 +529,7 @@ class DeviceSyncCryptAuthDeviceManagerImplTest
         prefs::kCryptAuthDeviceSyncReason,
         std::make_unique<base::Value>(cryptauth::INVOCATION_REASON_UNKNOWN));
 
-    std::unique_ptr<base::DictionaryValue> device_dictionary(
-        new base::DictionaryValue());
+    base::Value device_dictionary(base::Value::Type::DICTIONARY);
 
     std::string public_key_b64, device_name_b64, bluetooth_address_b64;
     base::Base64UrlEncode(kStoredPublicKey,
@@ -543,12 +542,14 @@ class DeviceSyncCryptAuthDeviceManagerImplTest
                           base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                           &bluetooth_address_b64);
 
-    device_dictionary->SetString("public_key", public_key_b64);
-    device_dictionary->SetString("device_name", device_name_b64);
-    device_dictionary->SetString("bluetooth_address", bluetooth_address_b64);
-    device_dictionary->SetBoolean("unlockable", kStoredUnlockable);
-    device_dictionary->SetKey("beacon_seeds", base::ListValue());
-    device_dictionary->SetKey("software_features", base::DictionaryValue());
+    device_dictionary.SetStringKey("public_key", public_key_b64);
+    device_dictionary.SetStringKey("device_name", device_name_b64);
+    device_dictionary.SetStringKey("bluetooth_address", bluetooth_address_b64);
+    device_dictionary.SetBoolKey("unlockable", kStoredUnlockable);
+    device_dictionary.SetKey("beacon_seeds",
+                             base::Value(base::Value::Type::LIST));
+    device_dictionary.SetKey("software_features",
+                             base::Value(base::Value::Type::DICTIONARY));
 
     {
       ListPrefUpdate update(&pref_service_,
@@ -728,15 +729,16 @@ TEST_F(
   update_clear.Get()->ClearList();
 
   // Simulate a deprecated device being persisted to prefs.
-  auto device_dictionary = std::make_unique<base::DictionaryValue>();
+  base::Value device_dictionary(base::Value::Type::DICTIONARY);
   std::string public_key_b64;
   base::Base64UrlEncode(kStoredPublicKey,
                         base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                         &public_key_b64);
-  device_dictionary->SetString("public_key", public_key_b64);
-  device_dictionary->SetBoolean("unlock_key", true);
-  device_dictionary->SetBoolean("mobile_hotspot_supported", true);
-  device_dictionary->SetKey("software_features", base::DictionaryValue());
+  device_dictionary.SetStringKey("public_key", public_key_b64);
+  device_dictionary.SetBoolKey("unlock_key", true);
+  device_dictionary.SetBoolKey("mobile_hotspot_supported", true);
+  device_dictionary.SetKey("software_features",
+                           base::Value(base::Value::Type::DICTIONARY));
 
   ListPrefUpdate update(&pref_service_, prefs::kCryptAuthDeviceSyncUnlockKeys);
   update.Get()->Append(std::move(device_dictionary));

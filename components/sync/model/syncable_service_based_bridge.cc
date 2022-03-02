@@ -487,11 +487,10 @@ absl::optional<ModelError> SyncableServiceBasedBridge::StartSyncableService() {
   // this function is reached only if sync is starting already.
   SyncDataList initial_sync_data;
   initial_sync_data.reserve(in_memory_store_.size());
-  for (const std::pair<const std::string, sync_pb::EntitySpecifics>& record :
-       in_memory_store_) {
+  for (const auto& [storage_key, specifics] : in_memory_store_) {
     // Note that client tag hash is used as storage key too.
     initial_sync_data.push_back(SyncData::CreateRemoteData(
-        std::move(record.second), ClientTagHash::FromHashed(record.first)));
+        std::move(specifics), ClientTagHash::FromHashed(storage_key)));
   }
 
   auto error_callback =
@@ -528,7 +527,7 @@ SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
       case EntityChange::ACTION_DELETE: {
         const std::string& storage_key = change->storage_key();
         DCHECK_NE(0U, in_memory_store_.count(storage_key));
-        DVLOG(1) << ModelTypeToString(type_)
+        DVLOG(1) << ModelTypeToDebugString(type_)
                  << ": Processing deletion with storage key: " << storage_key;
         output_sync_change_list.emplace_back(
             FROM_HERE, SyncChange::ACTION_DELETE,
@@ -550,11 +549,11 @@ SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
             change->data(),
             /*storage_key=*/change->data().client_tag_hash.value(),
             batch->GetMetadataChangeList());
-        FALLTHROUGH;
+        [[fallthrough]];
 
       case EntityChange::ACTION_UPDATE: {
         const std::string& storage_key = change->data().client_tag_hash.value();
-        DVLOG(1) << ModelTypeToString(type_)
+        DVLOG(1) << ModelTypeToDebugString(type_)
                  << ": Processing add/update with key: " << storage_key;
 
         output_sync_change_list.emplace_back(

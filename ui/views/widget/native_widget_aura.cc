@@ -710,7 +710,7 @@ bool NativeWidgetAura::IsMinimized() const {
 
 void NativeWidgetAura::Restore() {
   if (window_)
-    window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+    wm::Restore(window_);
 }
 
 void NativeWidgetAura::SetFullscreen(bool fullscreen,
@@ -1110,14 +1110,6 @@ aura::client::DragUpdateInfo NativeWidgetAura::OnDragUpdated(
 void NativeWidgetAura::OnDragExited() {
   DCHECK(drop_helper_.get() != nullptr);
   drop_helper_->OnDragExit();
-}
-
-ui::mojom::DragOperation NativeWidgetAura::OnPerformDrop(
-    const ui::DropTargetEvent& event,
-    std::unique_ptr<ui::OSExchangeData> data) {
-  DCHECK(drop_helper_.get() != nullptr);
-  return drop_helper_->OnDrop(event.data(), event.location(),
-                              last_drop_operation_);
 }
 
 aura::client::DragDropDelegate::DropCallback NativeWidgetAura::GetDropCallback(

@@ -64,6 +64,7 @@
 #include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/screen_time/screen_time_buildflags.h"
+#import "ios/chrome/browser/sessions/session_features.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
@@ -80,7 +81,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/public/provider/chrome/browser/app_utils/app_utils_api.h"
 #include "ios/web/common/features.h"
 #include "ios/web/common/user_agent.h"
 #include "ios/web/common/web_view_creation_util.h"
@@ -457,9 +458,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSaveCardDismissOnNavigation)},
-    {"url-blocklist-ios", flag_descriptions::kURLBlocklistIOSName,
-     flag_descriptions::kURLBlocklistIOSDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kURLBlocklistIOS)},
     {"new-content-suggestions-feed", flag_descriptions::kDiscoverFeedInNtpName,
      flag_descriptions::kDiscoverFeedInNtpDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kDiscoverFeedInNtp,
@@ -542,6 +540,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSSharedHighlightingColorChangeDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kIOSSharedHighlightingColorChange)},
+    {"ios-shared-highlighting-v2",
+     flag_descriptions::kIOSSharedHighlightingV2Name,
+     flag_descriptions::kIOSSharedHighlightingV2Description, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(shared_highlighting::kIOSSharedHighlightingV2)},
     {"ios-persist-crash-restore-infobar",
      flag_descriptions::kIOSPersistCrashRestoreName,
      flag_descriptions::kIOSPersistCrashRestoreDescription, flags_ui::kOsIos,
@@ -604,9 +606,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          kInterestFeedV2ClickAndViewActionsConditionalUploadDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(feed::kInterestFeedV2ClicksAndViewsConditionalUpload)},
-    {"tabs-bulkactions-ios", flag_descriptions::kTabsBulkActionsName,
-     flag_descriptions::kTabsBulkActionsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kTabsBulkActions)},
     {"tabs-search-ios", flag_descriptions::kTabsSearchName,
      flag_descriptions::kTabsSearchDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kTabsSearch)},
@@ -670,15 +669,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultWebViewContextMenuName,
      flag_descriptions::kDefaultWebViewContextMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kDefaultWebViewContextMenu)},
-    {"send-tab-to-self-when-signed-in",
-     flag_descriptions::kSendTabToSelfWhenSignedInName,
-     flag_descriptions::kSendTabToSelfWhenSignedInDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfWhenSignedIn)},
-    {"send-tab-to-self-manage-devices-link",
-     flag_descriptions::kSendTabToSelfManageDevicesLinkName,
-     flag_descriptions::kSendTabToSelfManageDevicesLinkDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfManageDevicesLink)},
     {"new-overflow-menu", flag_descriptions::kNewOverflowMenuName,
      flag_descriptions::kNewOverflowMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewOverflowMenu)},
@@ -725,9 +715,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDiscoverFeedShorterCacheName,
      flag_descriptions::kEnableDiscoverFeedShorterCacheDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableDiscoverFeedShorterCache)},
-    {"shared-highlighting-v2", flag_descriptions::kIOSSharedHighlightingV2Name,
-     flag_descriptions::kIOSSharedHighlightingV2Description, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(shared_highlighting::kSharedHighlightingV2)},
     {"shared-highlighting-amp",
      flag_descriptions::kIOSSharedHighlightingAmpName,
      flag_descriptions::kIOSSharedHighlightingAmpDescription, flags_ui::kOsIos,
@@ -774,6 +761,33 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kIOSEnablePasswordManagerBrandingUpdate)},
+    {"default-mode-ua", flag_descriptions::kAddSettingForDefaultPageModeName,
+     flag_descriptions::kAddSettingForDefaultPageModeDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kAddSettingForDefaultPageMode)},
+    {"ios-media-permissions-control",
+     flag_descriptions::kMediaPermissionsControlName,
+     flag_descriptions::kMediaPermissionsControlDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kMediaPermissionsControl)},
+    {"enable-save-session-tabs-in-separate-files",
+     flag_descriptions::kSaveSessionTabsToSeparateFilesName,
+     flag_descriptions::kSaveSessionTabsToSeparateFilesDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(sessions::kSaveSessionTabsToSeparateFiles)},
+    {"use-sf-symbols-samples", flag_descriptions::kUseSFSymbolsSamplesName,
+     flag_descriptions::kUseSFSymbolsSamplesDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kUseSFSymbolsSamples)},
+    {"use-new-popup-menu", flag_descriptions::kUseUIKitPopupMenuName,
+     flag_descriptions::kUseUIKitPopupMenuDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kUseUIKitPopupMenu)},
+    {"enable-unicorn-account-support",
+     flag_descriptions::kEnableUnicornAccountSupportName,
+     flag_descriptions::kEnableUnicornAccountSupportDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(signin::kEnableUnicornAccountSupport)},
+    {"single-cell-content-suggestions",
+     flag_descriptions::kSingleCellContentSuggestionsName,
+     flag_descriptions::kSingleCellContentSuggestionsDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kSingleCellContentSuggestions)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -904,6 +918,17 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
     }];
   }
 
+  // If the New Tab Page URL is set (not empty) add the value to the list of
+  // test policies.
+  NSString* ntp_location = [defaults stringForKey:@"NTPLocation"];
+  if ([ntp_location length] > 0) {
+    NSString* ntp_location_key =
+        base::SysUTF8ToNSString(policy::key::kNewTabPageLocation);
+    [testing_policies
+        addEntriesFromDictionary:@{ntp_location_key : ntp_location}];
+    [allowed_experimental_policies addObject:ntp_location_key];
+  }
+
   // If any experimental policy was allowed, set the EnableExperimentalPolicies
   // policy.
   if ([allowed_experimental_policies count] > 0) {
@@ -1020,8 +1045,7 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisableThirdPartyKeyboardWorkaround);
   }
 
-  ios::GetChromeBrowserProvider().AppendSwitchesFromExperimentalSettings(
-      defaults, command_line);
+  ios::provider::AppendSwitchesFromExperimentalSettings(defaults, command_line);
 }
 
 void MonitorExperimentalSettingsChanges() {

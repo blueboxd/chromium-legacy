@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_block.h"
+#include "base/no_destructor.h"
 #include "cc/paint/paint_shader.h"
 #import "skia/ext/skia_utils_mac.h"
 #include "ui/base/ui_base_features.h"
@@ -197,6 +198,7 @@ NativeThemeAura::PreferredContrast NativeThemeMac::CalculatePreferredContrast()
 }
 
 void NativeThemeMac::Paint(cc::PaintCanvas* canvas,
+                           const ColorProvider* color_provider,
                            Part part,
                            State state,
                            const gfx::Rect& rect,
@@ -226,8 +228,8 @@ void NativeThemeMac::Paint(cc::PaintCanvas* canvas,
                                      rect, color_scheme_updated, true);
       break;
     default:
-      NativeThemeBase::Paint(canvas, part, state, rect, extra, color_scheme,
-                             accent_color);
+      NativeThemeBase::Paint(canvas, color_provider, part, state, rect, extra,
+                             color_scheme, accent_color);
       break;
   }
 }

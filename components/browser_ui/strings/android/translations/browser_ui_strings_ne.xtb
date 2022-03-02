@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">कुकीहरूलाई अनुमति दिनुहोस्</translation>
 <translation id="2228071138934252756"><ph name="APP_NAME" /> लाई आफ्नो क्यामेरा प्रयोग गर्न दिन <ph name="BEGIN_LINK" />Android का सेटिङ<ph name="END_LINK" />मा गई क्यामेरा पनि अन गर्नुहोस्।</translation>
 <translation id="2241634353105152135">एकपटक मात्र</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> हटाउनुहोस्</translation>
 <translation id="2289270750774289114">कुनै साइटले छेउछाउका ब्लुटुथ यन्त्रहरू पत्ता लगाउन खोज्दा सोध्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="2315043854645842844">अपरेटिङ सिस्टमले क्लाइन्ट साइड प्रमाणपत्रको चयनलाई समर्थन गर्दैन।</translation>
 <translation id="2359808026110333948">जारी राख्नुहोस्</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">जानकारी देखाउनुहोस्</translation>
 <translation id="3123473560110926937">केही साइटका हकमा रोक लगाइएको छ</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> भण्डारण डेटा</translation>
+<translation id="3203366800380907218">वेबबाट प्राप्त</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> लाई तपाईंलाई सूचनाहरू पठाउन दिन <ph name="BEGIN_LINK" />Android का सेटिङ<ph name="END_LINK" />मा गई सूचनाहरू पनि अन गर्नुहोस्।</translation>
 <translation id="3227137524299004712">माइक्रोफोन</translation>
 <translation id="3277252321222022663">साइटहरूलाई सेन्सरहरूमाथि पहुँच राख्ने अनुमति दिनुहोस् (सिफारिस गरिएको)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">ब्लक गरिएको छ</translation>
 <translation id="5689516760719285838">स्थान</translation>
 <translation id="5690795753582697420">Android का सेटिङमा क्यामेरा बन्द गरिएको छ</translation>
-<translation id="5710871682236653961">तपाईंले NFC यन्त्रहरूमा ट्याप गर्दा साइटहरूलाई जानकारी पठाउने र प्राप्त गर्ने अनुमति दिनुअघि सोध्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="5719847187258001597">यस कार्यले <ph name="ORIGIN" /> ले वा यसको एपले तपाईंको होम स्क्रिनमा भण्डारण गरेका सबै डेटा र कुकीहरू मेटाउने छ।</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> ब्लक गरिएको छ</translation>
 <translation id="5804241973901381774">अनुमतिहरू</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">हालको खोज इन्जिनका लागि अनुमति दिइएको</translation>
 <translation id="7053983685419859001">रोक्नुहोस्</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{१ चयन गरियो}other{# चयन गरिए}}</translation>
-<translation id="7070090581017165256">यो साइटका बारेमा जानकारी</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> चयन गरिए।  विकल्पहरू स्क्रिनको शीर्षभागको नजिकै उपलब्ध छन्</translation>
 <translation id="7141896414559753902">साइटहरूलाई पपअपहरू देखाउन र रिडिरेक्ट गर्नबाट रोक्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> के.बि.</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">कुनै साइटले तपाईंको माइक्रोफोन प्रयोग गर्दै छ</translation>
 <translation id="7561196759112975576">सधैं</translation>
-<translation id="7572498721684305250">तपाईंले NFC यन्त्रहरूमा ट्याप गर्दा साइटहरूलाई जानकारी पठाउन र प्राप्त गर्न रोक लगाउनुहोस्</translation>
 <translation id="757524316907819857">साइटहरूलाई संरक्षित सामग्री प्ले गर्न रोक लगाउनुहोस्</translation>
 <translation id="7649070708921625228">मद्दत</translation>
 <translation id="7658239707568436148">रद्द गर्नुहोस्</translation>

@@ -5,13 +5,14 @@
 #import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 
 #include <Carbon/Carbon.h>  // for <HIToolbox/Events.h>
+
 #include <limits>
+#include <tuple>
 #include <utility>
 
 #include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
-#include "base/ignore_result.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
@@ -621,7 +622,7 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)setHostDisconnected {
   // Set the host to be an abandoned message pipe, and set the hostHelper
   // to forward messages to that host.
-  ignore_result(_dummyHost.BindNewPipeAndPassReceiver());
+  std::ignore = _dummyHost.BindNewPipeAndPassReceiver();
   _dummyHostHelper = std::make_unique<DummyHostHelper>();
   _host = _dummyHost.get();
   _hostHelper = _dummyHostHelper.get();
@@ -1779,8 +1780,8 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   bool success = false;
   if (actualRange)
     gfxActualRange = gfx::Range(*actualRange);
-  _host->SyncGetFirstRectForRange(gfx::Range(theRange), gfxRect, gfxActualRange,
-                                  &gfxRect, &gfxActualRange, &success);
+  _host->SyncGetFirstRectForRange(gfx::Range(theRange), &gfxRect,
+                                  &gfxActualRange, &success);
   if (!success) {
     // The call to cancelComposition comes from https://crrev.com/350261.
     [self cancelComposition];
@@ -1922,6 +1923,17 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   _markedText = base::SysNSStringToUTF16(im_text);
   _hasMarkedText = (length > 0);
 
+  // Update markedRange assuming blink sets composition text as is.
+  // We need this because the IME checks markedRange before IPC to blink.
+  // If markedRange is not updated, IME won't update the popup window position.
+  if (length > 0) {
+    if (replacementRange.location != NSNotFound)
+      _markedRange.location = replacementRange.location;
+    _markedRange.length = [string length];
+  } else {
+    _markedRange = NSMakeRange(NSNotFound, 0);
+  }
+
   _ime_text_spans.clear();
   if (isAttributedString) {
     ExtractUnderlines(string, &_ime_text_spans);
@@ -1947,6 +1959,9 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
                              gfx::Range(replacementRange), newSelRange.location,
                              NSMaxRange(newSelRange));
   }
+
+  [[self inputContext] invalidateCharacterCoordinates];
+  [self setNeedsDisplay:YES];
 }
 
 - (void)doCommandBySelector:(SEL)selector {

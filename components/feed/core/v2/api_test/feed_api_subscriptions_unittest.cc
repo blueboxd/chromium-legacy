@@ -23,6 +23,10 @@ namespace test {
 namespace {
 using testing::PrintToString;
 
+AccountInfo TestAccountInfo() {
+  return {"examplegaia", "example@foo.com"};
+}
+
 FeedNetwork::RawResponse MakeFailedResponse() {
   FeedNetwork::RawResponse network_response;
   network_response.response_info.status_code = 400;
@@ -137,6 +141,7 @@ TEST_F(FeedApiSubscriptionsTest, FollowWebFeedSuccess) {
   auto sent_request = network_.GetApiRequestSent<FollowWebFeedDiscoverApi>();
   ASSERT_THAT(sent_request->page_rss_uris(),
               testing::ElementsAre("http://rss1/", "http://rss2/"));
+  EXPECT_EQ(sent_request->canonical_uri(), "");
   EXPECT_EQ("token", sent_request->consistency_token().token());
   EXPECT_EQ(
       "WebFeedMetadata{ id=id_cats title=Title cats "
@@ -155,6 +160,19 @@ TEST_F(FeedApiSubscriptionsTest, FollowWebFeedSuccess) {
       "ContentSuggestions.Feed.WebFeed.FollowCount.AfterFollow", 1, 1);
   histograms.ExpectUniqueSample(
       "ContentSuggestions.Feed.WebFeed.NewFollow.IsRecommended", 0, 1);
+}
+
+TEST_F(FeedApiSubscriptionsTest, FollowWebFeedSendsCanonicalUrl) {
+  network_.InjectResponse(SuccessfulFollowResponse("cats"));
+  CallbackReceiver<WebFeedSubscriptions::FollowWebFeedResult> callback;
+  WebFeedPageInformation page_info =
+      MakeWebFeedPageInformation("http://cats.com");
+  page_info.SetCanonicalUrl(GURL("http://felis-catus.com"));
+  subscriptions().FollowWebFeed(page_info, callback.Bind());
+  callback.RunUntilCalled();
+
+  auto sent_request = network_.GetApiRequestSent<FollowWebFeedDiscoverApi>();
+  EXPECT_EQ("http://felis-catus.com/", sent_request->canonical_uri());
 }
 
 TEST_F(FeedApiSubscriptionsTest, FollowRecommendedWebFeedById) {
@@ -719,7 +737,7 @@ TEST_F(FeedApiSubscriptionsTest, RecommendedWebFeedsAreClearedOnSignOut) {
   }
 
   // Sign out, and verify recommended web feeds are cleared.
-  signed_in_gaia_ = "";
+  account_info_ = {};
   stream_->OnSignedOut();
   WaitForIdleTaskQueue();
   ASSERT_EQ(1, network_.GetListRecommendedWebFeedsRequestCount());
@@ -739,12 +757,12 @@ TEST_F(FeedApiSubscriptionsTest,
   ASSERT_EQ(1, network_.GetListRecommendedWebFeedsRequestCount());
 
   // Sign out, this clears recommended Web Feeds.
-  signed_in_gaia_ = "";
+  account_info_ = {};
   stream_->OnSignedOut();
   WaitForIdleTaskQueue();
 
   // Sign in, and verify web feeds are fetched and stored.
-  signed_in_gaia_ = "examplegaia";
+  account_info_ = TestAccountInfo();
   stream_->OnSignedIn();
   WaitForIdleTaskQueue();
 
@@ -861,7 +879,7 @@ TEST_F(FeedApiSubscriptionsTest, SubscribedWebFeedsAreClearedOnSignOut) {
   }
 
   // Sign out, and verify recommended web feeds are cleared.
-  signed_in_gaia_ = "";
+  account_info_ = {};
   stream_->OnSignedOut();
   WaitForIdleTaskQueue();
   ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
@@ -881,14 +899,14 @@ TEST_F(FeedApiSubscriptionsTest,
   ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
 
   // Sign out, and verify no web feeds are fetched.
-  signed_in_gaia_ = "";
+  account_info_ = {};
   stream_->OnSignedOut();
   WaitForIdleTaskQueue();
   ASSERT_EQ(1, network_.GetListFollowedWebFeedsRequestCount());
   EXPECT_EQ("{}", PrintToString(CheckAllSubscriptions()));
 
   // Sign in, and verify web feeds are fetched and stored.
-  signed_in_gaia_ = "examplegaia";
+  account_info_ = TestAccountInfo();
   stream_->OnSignedIn();
   WaitForIdleTaskQueue();
 

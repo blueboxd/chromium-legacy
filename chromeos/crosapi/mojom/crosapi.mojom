@@ -50,6 +50,7 @@ import "chromeos/crosapi/mojom/structured_metrics_service.mojom";
 import "chromeos/crosapi/mojom/system_display.mojom";
 import "chromeos/crosapi/mojom/task_manager.mojom";
 import "chromeos/crosapi/mojom/test_controller.mojom";
+import "chromeos/crosapi/mojom/timezone.mojom";
 import "chromeos/crosapi/mojom/tts.mojom";
 import "chromeos/crosapi/mojom/url_handler.mojom";
 import "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom";
@@ -92,8 +93,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 61
-// Next method id: 65
+// Next version: 62
+// Next method id: 66
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -399,6 +400,11 @@ interface Crosapi {
   [MinVersion=9] BindTestController@14(
       pending_receiver<TestController> receiver);
 
+  // Binds the TimeZoneService which notifies system timezone change.
+  // Added in M99.
+  [MinVersion=61] BindTimeZoneService@65(
+      pending_receiver<TimeZoneService> receiver);
+
   // Binds the Tts service which process speech synthesis requests.
   [MinVersion=54] BindTts@58(pending_receiver<Tts> receiver);
 
@@ -473,32 +479,38 @@ enum MetricsReportingManaged {
   kManaged = 2,
 };
 
-// Default directories on the system.
+// Default directories on the system. We send the full path for each value for
+// future compatibility, to avoid assumptions about where on disk the directory
+// is located.
 [Stable]
 struct DefaultPaths {
   // The default (non-configurable) directory for documents. For example,
-  // /home/chronos/u-<hash>/MyFiles. We send the full path for future
-  // compatibility, to avoid assumptions about where on disk the directory is
-  // located.
+  // /home/chronos/u-<hash>/MyFiles.
   mojo_base.mojom.FilePath documents@0;
 
   // The default (non-configurable) directory for downloads. For example,
-  // /home/chronos/u-<hash>/MyFiles/Downloads.  We send the full path for future
-  // compatibility, to avoid assumptions about where on disk the directory is
-  // located.
+  // /home/chronos/u-<hash>/MyFiles/Downloads.
   mojo_base.mojom.FilePath downloads@1;
 
   // The (non-configurable) path of the mount point for drive in ChromeOS. For
-  // example, /media/fuse/drivefs-<hash>. We send the full path for future
-  // compatibility, to avoid assumptions about where on disk the directory is
-  // located.
+  // example, /media/fuse/drivefs-<hash>.
   [MinVersion=23] mojo_base.mojom.FilePath? drivefs@2;
 
   // The (non-configurable) path of the software user NSS database. For
-  // example, /home/chronos/u-<hash>/.pki/nssdb. We send the full path for
-  // future compatibility, to avoid assumptions about where on disk the
-  // directory is located.
+  // example, /home/chronos/u-<hash>/.pki/nssdb.
   [MinVersion=30] mojo_base.mojom.FilePath? user_nss_database@3;
+
+  // The (non-configurable) path at which removable media is mounted. For
+  // example, /media/removable.
+  [MinVersion=31] mojo_base.mojom.FilePath? removable_media@4;
+
+  // The (non-configurable) path at which ARC's storage is located (shown as
+  // "Play Files" in Files app). For example, /run/arc/sdcard/write/emulated/0.
+  [MinVersion=31] mojo_base.mojom.FilePath? android_files@5;
+
+  // The (non-configurable) path at which Crostini's home directory is
+  // mounted. For example, /media/fuse/crostini_<hash>_termina_penguin.
+  [MinVersion=31] mojo_base.mojom.FilePath? linux_files@6;
 };
 
 // The device specific data needed in Lacros.
@@ -695,17 +707,10 @@ struct BrowserInitParams {
   [MinVersion=12]
   IdleInfo? idle_info@12;
 
-  // Launches an incognito window.
-  // Added in M91.
-  // TODO(https://crbug.com/1194304): Remove in M93.
   [MinVersion=13]
-  bool is_incognito_deprecated@13;
-
-  // Restores tabs from the last session.
-  // Added in M91.
-  // TODO(https://crbug.com/1194304): Remove in M93.
+  bool REMOVED_13@13;
   [MinVersion=14]
-  bool restore_last_session_deprecated@14;
+  bool REMOVED_14@14;
 
   // Defines which windows or tabs to restore on launch.
   [MinVersion=15]
@@ -856,8 +861,8 @@ struct BrowserInitParams {
 // has accidentally become a kitchen sink for different features. This was not
 // intentional.
 //
-// Next MinVersion: 15.
-// Next ID: 13
+// Next MinVersion: 62.
+// Next ID: 14
 //
 [Stable, Uuid="4e04dc16-b34c-40fd-9e3f-3c55c2c6cf91",
  RenamedFrom="crosapi.mojom.LacrosChromeService"]
@@ -868,8 +873,13 @@ interface BrowserService {
 
   // Opens a new window in the browser with, currently, the last used profile.
   // The callback is called on the command execution.
-  // This is designed to be equivalent of CTRL+N (or CTRL+SHIFT+N) behavior.
-  NewWindow@1([MinVersion=10] bool incognito) => ();
+  // If `should_trigger_session_restore` is true, a new window opening should be
+  // treated like the start of a new session (with potential session restore,
+  // startup URLs, etc). Otherwise, don't restore the session and instead open a
+  // new window with the default blank tab.
+  NewWindow@1(
+    [MinVersion=10] bool incognito,
+    [MinVersion=61] bool should_trigger_session_restore) => ();
 
   // Opens a new fullscreen window in the browser with, currently, the last
   // used profile. The only tab will be navigated to the given `url` once the
@@ -914,6 +924,13 @@ interface BrowserService {
   // Added in M91.
   [MinVersion=10]
   RestoreTab@8() => ();
+
+  // Signals Lacros that a multi-finger horizontal swipe has occurred in Ash.
+  // The browser usually responds by switching tabs
+  //
+  // |x_offset| is in DIP coordinates.
+  [MinVersion=15]
+  HandleTabScrubbing@13(float x_offset);
 
   // Returns the browser's feedback data used for generating feedback report in
   // a dictionary object, each entry representing a log entry in the feedback

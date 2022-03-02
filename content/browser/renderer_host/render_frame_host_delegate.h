@@ -48,11 +48,11 @@
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/window_open_disposition.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/gfx/native_widget_types.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #include "services/device/public/mojom/nfc.mojom.h"
 #endif
@@ -293,7 +293,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Gets the GeolocationContext associated with this delegate.
   virtual device::mojom::GeolocationContext* GetGeolocationContext();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Gets an NFC implementation within the context of this delegate.
   virtual void GetNFC(RenderFrameHost* render_frame_host,
                       mojo::PendingReceiver<device::mojom::NFC> receiver);
@@ -321,14 +321,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       RenderFrameHostImpl* rfh,
       bool is_fullscreen,
       blink::mojom::FullscreenOptionsPtr options);
-
-#if defined(OS_ANDROID)
-  // Updates information to determine whether a user gesture should carryover to
-  // future navigations. This is needed so navigations within a certain
-  // timeframe of a request initiated by a gesture will be treated as if they
-  // were initiated by a gesture too, otherwise the navigation may be blocked.
-  virtual void UpdateUserGestureCarryoverInfo() {}
-#endif
 
   // Let the delegate decide whether postMessage should be delivered to
   // |target_rfh| from a source frame in the given SiteInstance.  This defaults
@@ -442,7 +434,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Opens a new view-source tab for the last committed document in |frame|.
   virtual void ViewSource(RenderFrameHostImpl* frame) {}
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   virtual base::android::ScopedJavaLocalRef<jobject>
   GetJavaRenderFrameHostDelegate();
 #endif
@@ -602,7 +594,8 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Called when the renderer sends a response via DomAutomationController.
   // For example, `window.domAutomationController.send(foo())` sends the result
   // of foo() here.
-  virtual void DomOperationResponse(const std::string& json_string) {}
+  virtual void DomOperationResponse(RenderFrameHost* render_frame_host,
+                                    const std::string& json_string) {}
 
   virtual void OnCookiesAccessed(RenderFrameHostImpl* render_frame_host,
                                  const CookieAccessDetails& details) {}

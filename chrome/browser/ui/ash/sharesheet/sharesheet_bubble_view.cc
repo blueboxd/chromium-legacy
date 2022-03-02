@@ -106,6 +106,22 @@ bool IsKeyboardCodeArrow(ui::KeyboardCode key_code) {
          key_code == ui::VKEY_RIGHT || key_code == ui::VKEY_LEFT;
 }
 
+void RecordFormFactorMetric() {
+  auto form_factor =
+      ash::TabletMode::Get()->InTabletMode()
+          ? ::sharesheet::SharesheetMetrics::FormFactor::kTablet
+          : ::sharesheet::SharesheetMetrics::FormFactor::kClamshell;
+  ::sharesheet::SharesheetMetrics::RecordSharesheetFormFactor(form_factor);
+}
+
+void RecordMimeTypeMetric(const apps::mojom::IntentPtr& intent) {
+  auto mime_types_to_record =
+      ::sharesheet::SharesheetMetrics::GetMimeTypesFromIntentForMetrics(intent);
+  for (auto& mime_type : mime_types_to_record) {
+    ::sharesheet::SharesheetMetrics::RecordSharesheetMimeType(mime_type);
+  }
+}
+
 }  // namespace
 
 namespace ash {
@@ -246,9 +262,10 @@ void SharesheetBubbleView::ShowBubble(
   main_view_->RequestFocus();
   main_view_->GetViewAccessibility().OverrideName(
       l10n_util::GetStringUTF16(IDS_SHARESHEET_TITLE_LABEL));
-  views::BubbleDialogDelegateView::CreateBubble(this);
+  views::BubbleDialogDelegateView::CreateBubble(base::WrapUnique(this));
   GetWidget()->GetRootView()->Layout();
   RecordFormFactorMetric();
+  RecordMimeTypeMetric(intent_);
   ShowWidgetWithAnimateFadeIn();
 
   UpdateAnchorPosition();
@@ -747,14 +764,6 @@ void SharesheetBubbleView::CloseWidgetWithReason(
   }
   // Bubble is deleted here.
   delegator_->OnBubbleClosed(active_target_);
-}
-
-void SharesheetBubbleView::RecordFormFactorMetric() {
-  auto form_factor =
-      TabletMode::Get()->InTabletMode()
-          ? ::sharesheet::SharesheetMetrics::FormFactor::kTablet
-          : ::sharesheet::SharesheetMetrics::FormFactor::kClamshell;
-  ::sharesheet::SharesheetMetrics::RecordSharesheetFormFactor(form_factor);
 }
 
 BEGIN_METADATA(SharesheetBubbleView, views::BubbleDialogDelegateView)

@@ -4,27 +4,35 @@
 
 #import "ios/web/download/download_native_task_bridge.h"
 
+#import "base/check.h"
+#include "ios/web/download/download_result.h"
+#include "net/base/net_errors.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @implementation DownloadNativeTaskBridge {
   void (^_startDownloadBlock)(NSURL*);
-  id<DownloadNativeTaskBridgeReadyDelegate> _readyDelegate;
+  id<DownloadNativeTaskBridgeDelegate> _delegate;
   void (^_progressionHandler)();
-  void (^_completionHandler)(int error_code);
+  web::DownloadCompletionHandler _completionHandler;
+  BOOL _observingDownloadProgress;
 }
 
 - (instancetype)initWithDownload:(WKDownload*)download
-           downloadReadyDelegate:
-               (id<DownloadNativeTaskBridgeReadyDelegate>)readyDelegate
+                        delegate:(id<DownloadNativeTaskBridgeDelegate>)delegate
     API_AVAILABLE(ios(15)) {
   if ((self = [super init])) {
     _download = download;
-    _readyDelegate = readyDelegate;
+    _delegate = delegate;
     _download.delegate = self;
   }
   return self;
+}
+
+- (void)dealloc {
+  [self stopObservingDownloadProgress];
 }
 
 - (void)cancel {
@@ -54,20 +62,19 @@
     });
   }
 
+  [self stopObservingDownloadProgress];
+
   [_download cancel:^(NSData* data){/* do nothing */}];
   _download = nil;
 }
 
 - (void)startDownload:(NSURL*)url
     progressionHandler:(void (^)())progressionHandler
-     completionHandler:(void (^)(int error_code))completionHandler {
+     completionHandler:(web::DownloadCompletionHandler)completionHandler {
   _progressionHandler = progressionHandler;
   _completionHandler = completionHandler;
 
-  [_download.progress addObserver:self
-                       forKeyPath:@"fractionCompleted"
-                          options:NSKeyValueObservingOptionNew
-                          context:nil];
+  [self startObservingDownloadProgress];
 
   _urlForDownload = [url copy];
 
@@ -92,19 +99,27 @@
   _suggestedFilename = suggestedFilename;
   _startDownloadBlock = completionHandler;
 
-  [_readyDelegate onDownloadNativeTaskBridgeReadyForDownload:self];
+  [_delegate onDownloadNativeTaskBridgeReadyForDownload:self];
 }
 
 - (void)download:(WKDownload*)download
     didFailWithError:(NSError*)error
           resumeData:(NSData*)resumeData API_AVAILABLE(ios(15)) {
-  if (_completionHandler)
-    (_completionHandler)(error.code);
+  if (_completionHandler) {
+    web::DownloadResult download_result(net::ERR_FAILED, resumeData != nil);
+    (_completionHandler)(download_result);
+  }
+
+  [self stopObservingDownloadProgress];
 }
 
 - (void)downloadDidFinish:(WKDownload*)download API_AVAILABLE(ios(15)) {
-  if (_completionHandler)
-    (_completionHandler)(0);
+  if (_completionHandler) {
+    web::DownloadResult download_result(net::OK);
+    (_completionHandler)(download_result);
+  }
+
+  [self stopObservingDownloadProgress];
 }
 
 #pragma mark - KVO
@@ -115,6 +130,27 @@
                        context:(void*)context API_AVAILABLE(ios(15)) {
   if (_progressionHandler)
     _progressionHandler();
+}
+
+#pragma mark - Private methods
+
+- (void)startObservingDownloadProgress {
+  DCHECK(!_observingDownloadProgress);
+
+  _observingDownloadProgress = YES;
+  [_download.progress addObserver:self
+                       forKeyPath:@"fractionCompleted"
+                          options:NSKeyValueObservingOptionNew
+                          context:nil];
+}
+
+- (void)stopObservingDownloadProgress {
+  if (_observingDownloadProgress) {
+    _observingDownloadProgress = NO;
+    [_download.progress removeObserver:self
+                            forKeyPath:@"fractionCompleted"
+                               context:nil];
+  }
 }
 
 @end

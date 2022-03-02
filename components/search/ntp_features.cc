@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 
@@ -84,6 +85,11 @@ const base::Feature kNtpShoppingTasksModule{"NtpShoppingTasksModule",
 // If enabled, chrome cart module will be shown.
 const base::Feature kNtpChromeCartModule{"NtpChromeCartModule",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+#if !defined(OFFICIAL_BUILD)
+// If enabled, dummy modules will be shown.
+const base::Feature kNtpDummyModules{"NtpDummyModules",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // If enabled, redesigned modules will be shown.
 const base::Feature kNtpModulesRedesigned{"NtpModulesRedesigned",
@@ -112,6 +118,7 @@ const base::Feature kNtpModulesDragAndDrop{"NtpModulesDragAndDrop",
 
 const char kNtpModulesLoadTimeoutMillisecondsParam[] =
     "NtpModulesLoadTimeoutMillisecondsParam";
+const char kNtpModulesOrderParam[] = "NtpModulesOrderParam";
 const char kNtpShoppingTasksModuleDataParam[] =
     "NtpShoppingTasksModuleDataParam";
 const char kNtpRecipeTasksModuleDataParam[] = "NtpRecipeTasksModuleDataParam";
@@ -150,6 +157,13 @@ base::TimeDelta GetModulesLoadTimeout() {
     return base::Seconds(3);
   }
   return base::Milliseconds(param_value_as_int);
+}
+
+std::vector<std::string> GetModulesOrder() {
+  return base::SplitString(
+      base::GetFieldTrialParamValueByFeature(kModules, kNtpModulesOrderParam),
+      ",:;", base::WhitespaceHandling::TRIM_WHITESPACE,
+      base::SplitResult::SPLIT_WANT_NONEMPTY);
 }
 
 }  // namespace ntp_features

@@ -381,14 +381,14 @@ void InProcessBrowserTest::SetUp() {
   // (--login-user), or the guest session (--bwsi). This is essentially
   // the same as in `ChromeBrowserMainPartsAsh::PreEarlyInitialization`
   // but it will be done on device and only for tests.
-  if (!command_line->HasSwitch(chromeos::switches::kLoginManager) &&
-      !command_line->HasSwitch(chromeos::switches::kLoginUser) &&
-      !command_line->HasSwitch(chromeos::switches::kGuestSession)) {
+  if (!command_line->HasSwitch(ash::switches::kLoginManager) &&
+      !command_line->HasSwitch(ash::switches::kLoginUser) &&
+      !command_line->HasSwitch(ash::switches::kGuestSession)) {
     command_line->AppendSwitchASCII(
-        chromeos::switches::kLoginUser,
+        ash::switches::kLoginUser,
         cryptohome::Identification(user_manager::StubAccountId()).id());
-    if (!command_line->HasSwitch(chromeos::switches::kLoginProfile)) {
-      command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+    if (!command_line->HasSwitch(ash::switches::kLoginProfile)) {
+      command_line->AppendSwitchASCII(ash::switches::kLoginProfile,
                                       chrome::kTestUserProfileDir);
     }
   }
@@ -551,7 +551,7 @@ void InProcessBrowserTest::RunUntilBrowserProcessQuits() {
 // TODO(alexmos): This function should expose success of the underlying
 // navigation to tests, which should make sure navigations succeed when
 // appropriate. See https://crbug.com/425335
-void InProcessBrowserTest::AddTabAtIndexToBrowser(
+bool InProcessBrowserTest::AddTabAtIndexToBrowser(
     Browser* browser,
     int index,
     const GURL& url,
@@ -562,18 +562,13 @@ void InProcessBrowserTest::AddTabAtIndexToBrowser(
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
 
-  if (check_navigation_success) {
-    content::WaitForLoadStop(params.navigated_or_inserted_contents);
-  } else {
-    content::WaitForLoadStopWithoutSuccessCheck(
-        params.navigated_or_inserted_contents);
-  }
+  return content::WaitForLoadStop(params.navigated_or_inserted_contents);
 }
 
-void InProcessBrowserTest::AddTabAtIndex(int index,
+bool InProcessBrowserTest::AddTabAtIndex(int index,
                                          const GURL& url,
                                          ui::PageTransition transition) {
-  AddTabAtIndexToBrowser(browser(), index, url, transition, true);
+  return AddTabAtIndexToBrowser(browser(), index, url, transition, true);
 }
 
 bool InProcessBrowserTest::SetUpUserDataDirectory() {

@@ -20,6 +20,8 @@
 #include "ash/quick_pair/message_stream/message_stream_lookup_impl.h"
 #include "ash/quick_pair/pairing/pairer_broker_impl.h"
 #include "ash/quick_pair/pairing/retroactive_pairing_detector_impl.h"
+#include "ash/quick_pair/repository/fast_pair/device_id_map.h"
+#include "ash/quick_pair/repository/fast_pair/device_image_store.h"
 #include "ash/quick_pair/repository/fast_pair/pending_write_store.h"
 #include "ash/quick_pair/repository/fast_pair/saved_device_registry.h"
 #include "ash/quick_pair/repository/fast_pair_repository_impl.h"
@@ -84,7 +86,8 @@ Mediator::Mediator(
       fast_pair_bluetooth_config_delegate_(
           std::make_unique<FastPairBluetoothConfigDelegate>()) {
   metrics_logger_ = std::make_unique<QuickPairMetricsLogger>(
-      scanner_broker_.get(), pairer_broker_.get(), ui_broker_.get());
+      scanner_broker_.get(), pairer_broker_.get(), ui_broker_.get(),
+      retroactive_pairing_detector_.get());
   battery_update_message_handler_ =
       std::make_unique<BatteryUpdateMessageHandler>(
           message_stream_lookup_.get());
@@ -114,8 +117,8 @@ void Mediator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 // static
 void Mediator::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
-  // TODO(dclasson): register future local state prefs here.
-  return;
+  DeviceIdMap::RegisterLocalStatePrefs(registry);
+  DeviceImageStore::RegisterLocalStatePrefs(registry);
 }
 
 chromeos::bluetooth_config::FastPairDelegate* Mediator::GetFastPairDelegate() {
@@ -128,7 +131,9 @@ void Mediator::OnFastPairEnabledChanged(bool is_enabled) {
 
 void Mediator::OnDeviceFound(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": " << device;
+  // On discovery, download and decode device images.
   ui_broker_->ShowDiscovery(device);
+  fast_pair_repository_->FetchDeviceImages(device);
 }
 
 void Mediator::OnDeviceLost(scoped_refptr<Device> device) {
@@ -153,7 +158,8 @@ void Mediator::SetFastPairState(bool is_enabled) {
 
 void Mediator::OnDevicePaired(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": Device=" << device;
-  ui_broker_->RemoveNotifications(std::move(device));
+  ui_broker_->RemoveNotifications(device);
+  fast_pair_repository_->PersistDeviceImages(device);
 }
 
 void Mediator::OnPairFailure(scoped_refptr<Device> device,
@@ -188,6 +194,7 @@ void Mediator::OnDiscoveryAction(scoped_refptr<Device> device,
     } break;
     case DiscoveryAction::kDismissedByUser:
     case DiscoveryAction::kDismissed:
+    case DiscoveryAction::kLearnMore:
       break;
   }
 }

@@ -13,7 +13,6 @@
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -234,7 +233,8 @@ TestingProfile::TestingProfile(
     TestingFactories testing_factories,
     const std::string& profile_name,
     absl::optional<bool> override_policy_connector_is_managed,
-    absl::optional<OTRProfileID> otr_profile_id)
+    absl::optional<OTRProfileID> otr_profile_id,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : prefs_(std::move(prefs)),
       original_profile_(parent),
       guest_session_(guest_session),
@@ -254,7 +254,8 @@ TestingProfile::TestingProfile(
       override_policy_connector_is_managed_(
           override_policy_connector_is_managed),
       otr_profile_id_(otr_profile_id),
-      policy_service_(std::move(policy_service)) {
+      policy_service_(std::move(policy_service)),
+      url_loader_factory_(url_loader_factory) {
   if (parent)
     parent->SetOffTheRecordProfile(std::unique_ptr<Profile>(this));
 
@@ -751,6 +752,7 @@ void TestingProfile::CreatePrefServiceForSupervisedUser() {
   testing_prefs_ = new sync_preferences::TestingPrefServiceSyncable(
       /*managed_prefs=*/new TestingPrefStore, supervised_user_pref_store_,
       /*extension_prefs=*/new TestingPrefStore,
+      /*standalone_browser_prefs=*/new TestingPrefStore,
       /*user_prefs=*/new TestingPrefStore,
       /*recommended_prefs=*/new TestingPrefStore,
       new user_prefs::PrefRegistrySyncable, new PrefNotifierImpl);
@@ -809,7 +811,7 @@ DownloadManagerDelegate* TestingProfile::GetDownloadManagerDelegate() {
 
 scoped_refptr<network::SharedURLLoaderFactory>
 TestingProfile::GetURLLoaderFactory() {
-  return nullptr;
+  return url_loader_factory_;
 }
 
 content::ResourceContext* TestingProfile::GetResourceContext() {
@@ -1054,6 +1056,11 @@ void TestingProfile::Builder::SetProfileName(const std::string& profile_name) {
   profile_name_ = profile_name;
 }
 
+void TestingProfile::Builder::SetSharedURLLoaderFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  url_loader_factory_ = url_loader_factory;
+}
+
 void TestingProfile::Builder::OverridePolicyConnectorIsManagedForTesting(
     bool is_managed) {
   override_policy_connector_is_managed_ = is_managed;
@@ -1087,7 +1094,8 @@ std::unique_ptr<TestingProfile> TestingProfile::Builder::Build() {
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
       supervised_user_id_, std::move(user_cloud_policy_manager_),
       std::move(policy_service_), std::move(testing_factories_), profile_name_,
-      override_policy_connector_is_managed_, absl::optional<OTRProfileID>());
+      override_policy_connector_is_managed_, absl::optional<OTRProfileID>(),
+      url_loader_factory_);
 }
 
 TestingProfile* TestingProfile::Builder::BuildOffTheRecord(
@@ -1111,7 +1119,7 @@ TestingProfile* TestingProfile::Builder::BuildOffTheRecord(
       supervised_user_id_, std::move(user_cloud_policy_manager_),
       std::move(policy_service_), std::move(testing_factories_), profile_name_,
       override_policy_connector_is_managed_,
-      absl::optional<OTRProfileID>(otr_profile_id));
+      absl::optional<OTRProfileID>(otr_profile_id), url_loader_factory_);
 }
 
 TestingProfile* TestingProfile::Builder::BuildIncognito(

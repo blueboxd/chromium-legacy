@@ -5,11 +5,13 @@
 #include "ash/login/ui/login_auth_factors_view.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/auth_factor_model.h"
 #include "ash/login/ui/auth_icon_view.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
@@ -128,16 +130,18 @@ class LoginAuthFactorsViewUnittest : public AshTestBase {
     AshTestBase::SetUp();
 
     // We proxy |view_| inside of |container_| so we can control layout.
-    // TODO(crbug.com/1233614): Add layout tests to check positioning/ordering
-    // of icons.
+    // TODO(crbug.com/1233614): Add layout tests to check
+    // positioning/ordering of icons.
     container_ = std::make_unique<views::View>();
     container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical));
 
-    view_ = container_->AddChildView(
-        std::make_unique<LoginAuthFactorsView>(base::BindRepeating(
+    view_ = container_->AddChildView(std::make_unique<LoginAuthFactorsView>(
+        base::BindRepeating(
             &LoginAuthFactorsViewUnittest::set_click_to_enter_called,
-            base::Unretained(this), true)));
+            base::Unretained(this), true),
+        base::BindRepeating(&LoginAuthFactorsViewUnittest::set_click_required,
+                            base::Unretained(this))));
   }
 
   void TearDown() override {
@@ -169,11 +173,16 @@ class LoginAuthFactorsViewUnittest : public AshTestBase {
     click_to_enter_called_ = called;
   }
 
+  void set_click_required(bool click_required) {
+    click_required_ = click_required;
+  }
+
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<views::View> container_;
   LoginAuthFactorsView* view_ = nullptr;  // Owned by container.
   std::vector<FakeAuthFactorModel*> auth_factors_;
   bool click_to_enter_called_ = false;
+  bool click_required_ = false;
 };
 
 TEST_F(LoginAuthFactorsViewUnittest, NotVisibleIfNoAuthFactors) {
@@ -295,6 +304,8 @@ TEST_F(LoginAuthFactorsViewUnittest, ClickRequired) {
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 
   AddAuthFactors({AuthFactorType::kFingerprint, AuthFactorType::kSmartLock});
+  ASSERT_FALSE(click_required_);
+
   LoginAuthFactorsView::TestApi test_api(view_);
   auth_factors_[0]->state_ = AuthFactorState::kReady;
   auth_factors_[1]->state_ = AuthFactorState::kClickRequired;
@@ -308,6 +319,12 @@ TEST_F(LoginAuthFactorsViewUnittest, ClickRequired) {
   EXPECT_FALSE(test_api.auth_factor_icon_row()->GetVisible());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTH_FACTOR_LABEL_CLICK_TO_ENTER),
             test_api.label()->GetText());
+  EXPECT_TRUE(click_required_);
+
+  auth_factors_[1]->state_ = AuthFactorState::kReady;
+  test_api.UpdateState();
+
+  EXPECT_FALSE(click_required_);
 }
 
 TEST_F(LoginAuthFactorsViewUnittest, ClickingArrowButton) {
@@ -336,7 +353,10 @@ TEST_F(LoginAuthFactorsViewUnittest, ClickingArrowButton) {
   EXPECT_FALSE(test_api.arrow_nudge_animation()->GetVisible());
 }
 
-TEST_F(LoginAuthFactorsViewUnittest, Authenticated) {
+TEST_F(LoginAuthFactorsViewUnittest, Authenticated_LockScreen) {
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+  Shell::Get()->login_screen_controller()->ShowLockScreen();
   AddAuthFactors({AuthFactorType::kFingerprint, AuthFactorType::kSmartLock});
   LoginAuthFactorsView::TestApi test_api(view_);
   auth_factors_[0]->state_ = AuthFactorState::kAuthenticated;
@@ -350,6 +370,26 @@ TEST_F(LoginAuthFactorsViewUnittest, Authenticated) {
   EXPECT_FALSE(test_api.arrow_nudge_animation()->GetVisible());
   EXPECT_FALSE(test_api.auth_factor_icon_row()->GetVisible());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTH_FACTOR_LABEL_UNLOCKED),
+            test_api.label()->GetText());
+}
+
+TEST_F(LoginAuthFactorsViewUnittest, Authenticated_LoginScreen) {
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
+  Shell::Get()->login_screen_controller()->ShowLoginScreen();
+  AddAuthFactors({AuthFactorType::kFingerprint, AuthFactorType::kSmartLock});
+  LoginAuthFactorsView::TestApi test_api(view_);
+  auth_factors_[0]->state_ = AuthFactorState::kAuthenticated;
+  auth_factors_[1]->state_ = AuthFactorState::kClickRequired;
+  test_api.UpdateState();
+
+  // Check that only the arrow button is shown and that the label has been
+  // updated.
+  EXPECT_TRUE(test_api.checkmark_icon()->GetVisible());
+  EXPECT_FALSE(test_api.arrow_button()->GetVisible());
+  EXPECT_FALSE(test_api.arrow_nudge_animation()->GetVisible());
+  EXPECT_FALSE(test_api.auth_factor_icon_row()->GetVisible());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_AUTH_FACTOR_LABEL_SIGNED_IN),
             test_api.label()->GetText());
 }
 

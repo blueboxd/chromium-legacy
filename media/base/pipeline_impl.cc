@@ -35,9 +35,9 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "media/base/win/mf_feature_checks.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 static const double kDefaultPlaybackRate = 0.0;
 static const float kDefaultVolume = 1.0f;
@@ -82,7 +82,7 @@ class PipelineImpl::RendererWrapper final : public DemuxerHost,
   void SetVolume(float volume);
   void SetLatencyHint(absl::optional<base::TimeDelta> latency_hint);
   void SetPreservesPitch(bool preserves_pitch);
-  void SetAutoplayInitiated(bool autoplay_initiated);
+  void SetWasPlayedWithUserActivation(bool was_played_with_user_activation);
   base::TimeDelta GetMediaTime() const;
   Ranges<base::TimeDelta> GetBufferedTimeRanges() const;
   bool DidLoadingProgress();
@@ -209,7 +209,7 @@ class PipelineImpl::RendererWrapper final : public DemuxerHost,
   // By default, apply pitch adjustments.
   bool preserves_pitch_ = true;
 
-  bool autoplay_initiated_ = false;
+  bool was_played_with_user_activation_ = false;
 
   // Lock used to serialize |shared_state_|.
   // TODO(crbug.com/893739): Add GUARDED_BY annotations.
@@ -510,16 +510,15 @@ void PipelineImpl::RendererWrapper::SetPreservesPitch(bool preserves_pitch) {
     shared_state_.renderer->SetPreservesPitch(preserves_pitch_);
 }
 
-void PipelineImpl::RendererWrapper::SetAutoplayInitiated(
-    bool autoplay_initiated) {
+void PipelineImpl::RendererWrapper::SetWasPlayedWithUserActivation(
+    bool was_played_with_user_activation) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  if (autoplay_initiated_ == autoplay_initiated)
-    return;
-
-  autoplay_initiated_ = autoplay_initiated;
-  if (shared_state_.renderer)
-    shared_state_.renderer->SetAutoplayInitiated(autoplay_initiated_);
+  was_played_with_user_activation_ = was_played_with_user_activation;
+  if (shared_state_.renderer) {
+    shared_state_.renderer->SetWasPlayedWithUserActivation(
+        was_played_with_user_activation_);
+  }
 }
 
 base::TimeDelta PipelineImpl::RendererWrapper::GetMediaTime() const {
@@ -590,7 +589,7 @@ void PipelineImpl::RendererWrapper::CreateRendererInternal(
 
   absl::optional<RendererType> renderer_type;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (cdm_context_) {
     if (cdm_context_->RequiresMediaFoundationRenderer()) {
       renderer_type = RendererType::kMediaFoundation;
@@ -602,7 +601,7 @@ void PipelineImpl::RendererWrapper::CreateRendererInternal(
       renderer_type = RendererType::kDefault;
     }
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   // TODO(xhwang): During Resume(), the |default_renderer_| might already match
   // the |renderer_type|, in which case we shouldn't need to create a new one.
@@ -1101,6 +1100,9 @@ void PipelineImpl::RendererWrapper::InitializeRenderer(
   // power by avoiding initialization of audio output until necessary.
   shared_state_.renderer->SetVolume(volume_);
 
+  shared_state_.renderer->SetWasPlayedWithUserActivation(
+      was_played_with_user_activation_);
+
   shared_state_.renderer->Initialize(demuxer_, this, std::move(done_cb));
 }
 
@@ -1426,13 +1428,15 @@ void PipelineImpl::SetPreservesPitch(bool preserves_pitch) {
                                 preserves_pitch));
 }
 
-void PipelineImpl::SetAutoplayInitiated(bool autoplay_initiated) {
+void PipelineImpl::SetWasPlayedWithUserActivation(
+    bool was_played_with_user_activation) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   media_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&RendererWrapper::SetAutoplayInitiated,
-                                base::Unretained(renderer_wrapper_.get()),
-                                autoplay_initiated));
+      FROM_HERE,
+      base::BindOnce(&RendererWrapper::SetWasPlayedWithUserActivation,
+                     base::Unretained(renderer_wrapper_.get()),
+                     was_played_with_user_activation));
 }
 
 base::TimeDelta PipelineImpl::GetMediaTime() const {

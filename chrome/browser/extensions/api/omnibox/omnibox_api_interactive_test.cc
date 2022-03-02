@@ -306,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
 }
 
 // The test is flaky on Win10. crbug.com/1045731.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_PopupStaysClosed DISABLED_PopupStaysClosed
 #else
 #define MAYBE_PopupStaysClosed PopupStaysClosed
@@ -357,8 +357,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_PopupStaysClosed) {
 }
 
 // Tests deleting a deletable omnibox extension suggestion result.
-// Flaky on Windows. https://crbug.com/801316
-#if defined(OS_WIN)
+// Flaky on Windows and Linux TSan. https://crbug.com/1287949
+#if BUILDFLAG(IS_WIN) || (defined(OS_LINUX) && defined(THREAD_SANITIZER))
 #define MAYBE_DeleteOmniboxSuggestionResult \
   DISABLED_DeleteOmniboxSuggestionResult
 #else
@@ -414,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_DeleteOmniboxSuggestionResult) {
 // This test portion is excluded from Mac because the Mac key combination
 // FN+SHIFT+DEL used to delete an omnibox suggestion cannot be reproduced.
 // This is because the FN key is not supported in interactive_test_util.h.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   ExtensionTestMessageListener delete_suggestion_listener(
       "onDeleteSuggestion: des1", false);
 
@@ -439,12 +439,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_DeleteOmniboxSuggestionResult) {
 // Tests typing something but not staying in keyword mode.
 IN_PROC_BROWSER_TEST_F(OmniboxApiTest, ExtensionSuggestionsOnlyInKeywordMode) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
-
-  // This test covers the behavior of entering keyword mode by space, then
-  // exiting by pressing backspace.  AcceptKeywordBySpace is disabled when
-  // keyword search button is enabled, so for that case do not run this test.
-  if (OmniboxFieldTrial::IsKeywordSearchButtonEnabled())
-    return;
 
   // The results depend on the TemplateURLService being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.

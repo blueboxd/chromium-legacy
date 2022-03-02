@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/adapters.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -93,10 +94,10 @@ bool ParseFromValue(base::Value* value, WebRect* rect) {
 
 std::unique_ptr<base::DictionaryValue> CreateValueFrom(const WebRect& rect) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("left", rect.X());
-  dict->SetInteger("top", rect.Y());
-  dict->SetInteger("width", rect.Width());
-  dict->SetInteger("height", rect.Height());
+  dict->SetIntKey("left", rect.X());
+  dict->SetIntKey("top", rect.Y());
+  dict->SetIntKey("width", rect.Width());
+  dict->SetIntKey("height", rect.Height());
   return dict;
 }
 
@@ -353,8 +354,8 @@ std::unique_ptr<base::DictionaryValue> CreateShadowRoot(
 
 std::unique_ptr<base::DictionaryValue> CreateValueFrom(const WebPoint& point) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("x", point.x);
-  dict->SetInteger("y", point.y);
+  dict->SetIntKey("x", point.x);
+  dict->SetIntKey("y", point.y);
   return dict;
 }
 
@@ -901,13 +902,12 @@ Status ScrollElementRegionIntoView(
   // If the element is in a frame, go up the frame chain (from the innermost
   // frame up to the top-level window) and scroll each frame relative to its
   // parent frame, so that the region becomes visible in the parent frame.
-  for (auto rit = session->frames.rbegin(); rit != session->frames.rend();
-       ++rit) {
+  for (const FrameInfo& frame : base::Reversed(session->frames)) {
     base::ListValue args;
-    args.Append(rit->chromedriver_frame_id.c_str());
+    args.Append(frame.chromedriver_frame_id.c_str());
     std::unique_ptr<base::Value> result;
-    status = web_view->CallFunction(
-        rit->parent_frame_id, kFindSubFrameScript, args, &result);
+    status = web_view->CallFunction(frame.parent_frame_id, kFindSubFrameScript,
+                                    args, &result);
     if (status.IsError())
       return status;
     if (!result->is_dict())
@@ -921,17 +921,16 @@ Status ScrollElementRegionIntoView(
     // Modify |region_offset| by the frame's border.
     int border_left = -1;
     int border_top = -1;
-    status = GetElementBorder(
-        rit->parent_frame_id, web_view, frame_element_id,
-        &border_left, &border_top);
+    status = GetElementBorder(frame.parent_frame_id, web_view, frame_element_id,
+                              &border_left, &border_top);
     if (status.IsError())
       return status;
     region_offset.Offset(border_left, border_top);
 
     status = ScrollElementRegionIntoViewHelper(
-        rit->parent_frame_id, web_view, frame_element_id,
-        WebRect(region_offset, region_size),
-        center, frame_element_id, &region_offset);
+        frame.parent_frame_id, web_view, frame_element_id,
+        WebRect(region_offset, region_size), center, frame_element_id,
+        &region_offset);
     if (status.IsError())
       return status;
   }
@@ -950,12 +949,11 @@ Status GetElementLocationInViewCenter(Session* session,
   if (status.IsError())
     return status;
 
-  for (auto rit = session->frames.rbegin(); rit != session->frames.rend();
-       ++rit) {
+  for (const FrameInfo& frame : base::Reversed(session->frames)) {
     base::ListValue args;
-    args.Append(rit->chromedriver_frame_id.c_str());
+    args.Append(frame.chromedriver_frame_id.c_str());
     std::unique_ptr<base::Value> result;
-    status = web_view->CallFunction(rit->parent_frame_id, kFindSubFrameScript,
+    status = web_view->CallFunction(frame.parent_frame_id, kFindSubFrameScript,
                                     args, &result);
     if (status.IsError())
       return status;
@@ -970,15 +968,16 @@ Status GetElementLocationInViewCenter(Session* session,
     // Modify |center_location| by the frame's border.
     int border_left = -1;
     int border_top = -1;
-    status = GetElementBorder(rit->parent_frame_id, web_view, frame_element_id,
+    status = GetElementBorder(frame.parent_frame_id, web_view, frame_element_id,
                               &border_left, &border_top);
     if (status.IsError())
       return status;
     center_location.Offset(border_left, border_top);
 
     WebPoint frame_offset;
-    status = GetElementLocationInViewCenterHelper(
-        rit->parent_frame_id, web_view, frame_element_id, false, &frame_offset);
+    status = GetElementLocationInViewCenterHelper(frame.parent_frame_id,
+                                                  web_view, frame_element_id,
+                                                  false, &frame_offset);
     if (status.IsError())
       return status;
     center_location.Offset(frame_offset.x, frame_offset.y);
@@ -1004,8 +1003,8 @@ Status GetAXNodeByElementId(Session* session,
     return status;
 
   base::DictionaryValue body;
-  body.SetInteger("nodeId", node_id);
-  body.SetBoolean("fetchRelatives", false);
+  body.SetIntKey("nodeId", node_id);
+  body.SetBoolKey("fetchRelatives", false);
 
   std::unique_ptr<base::Value> result;
 

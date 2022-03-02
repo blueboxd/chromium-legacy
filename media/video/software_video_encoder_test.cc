@@ -39,6 +39,14 @@
 #include "media/video/vpx_video_encoder.h"
 #endif
 
+#if BUILDFLAG(ENABLE_LIBAOM)
+#include "media/video/av1_video_encoder.h"
+#endif
+
+#if BUILDFLAG(ENABLE_DAV1D_DECODER)
+#include "media/filters/dav1d_video_decoder.h"
+#endif
+
 namespace media {
 
 struct SwVideoTestParams {
@@ -85,10 +93,14 @@ class SoftwareVideoEncoderTest
 #if BUILDFLAG(ENABLE_LIBVPX)
       decoder_ = std::make_unique<VpxVideoDecoder>();
 #endif
+    } else if (codec_ == VideoCodec::kAV1) {
+#if BUILDFLAG(ENABLE_DAV1D_DECODER)
+      decoder_ = std::make_unique<Dav1dVideoDecoder>(&media_log_);
+#endif
     }
 
     EXPECT_NE(decoder_, nullptr);
-    decoder_->Initialize(config, false, nullptr, ValidatingStatusCB(),
+    decoder_->Initialize(config, false, nullptr, DecoderStatusCB(),
                          std::move(output_cb), base::NullCallback());
     RunUntilIdle();
   }
@@ -151,6 +163,12 @@ class SoftwareVideoEncoderTest
 
   std::unique_ptr<VideoEncoder> CreateEncoder(VideoCodec codec) {
     switch (codec) {
+      case media::VideoCodec::kAV1:
+#if BUILDFLAG(ENABLE_LIBAOM)
+        return std::make_unique<media::Av1VideoEncoder>();
+#else
+        return nullptr;
+#endif
       case media::VideoCodec::kVP8:
       case media::VideoCodec::kVP9:
 #if BUILDFLAG(ENABLE_LIBVPX)
@@ -169,7 +187,8 @@ class SoftwareVideoEncoderTest
     }
   }
 
-  VideoEncoder::StatusCB ValidatingStatusCB(base::Location loc = FROM_HERE) {
+  VideoEncoder::EncoderStatusCB ValidatingStatusCB(
+      base::Location loc = FROM_HERE) {
     struct CallEnforcer {
       bool called = false;
       std::string location;
@@ -180,10 +199,30 @@ class SoftwareVideoEncoderTest
     auto enforcer = std::make_unique<CallEnforcer>();
     enforcer->location = loc.ToString();
     return base::BindLambdaForTesting(
-        [enforcer{std::move(enforcer)}](Status s) {
+        [enforcer{std::move(enforcer)}](EncoderStatus s) {
           EXPECT_TRUE(s.is_ok())
               << " Callback created: " << enforcer->location
-              << " Code: " << s.code() << " Error: " << s.message();
+              << " Code: " << std::hex << static_cast<StatusCodeType>(s.code())
+              << " Error: " << s.message();
+          enforcer->called = true;
+        });
+  }
+
+  VideoDecoder::DecodeCB DecoderStatusCB(base::Location loc = FROM_HERE) {
+    struct CallEnforcer {
+      bool called = false;
+      std::string location;
+      ~CallEnforcer() {
+        EXPECT_TRUE(called) << "Callback created: " << location;
+      }
+    };
+    auto enforcer = std::make_unique<CallEnforcer>();
+    enforcer->location = loc.ToString();
+    return base::BindLambdaForTesting(
+        [enforcer{std::move(enforcer)}](DecoderStatus s) {
+          EXPECT_TRUE(s.is_ok()) << " Callback created: " << enforcer->location
+                                 << " Code: " << static_cast<int>(s.code())
+                                 << " Error: " << s.message();
           enforcer->called = true;
         });
   }
@@ -192,13 +231,14 @@ class SoftwareVideoEncoderTest
       scoped_refptr<DecoderBuffer> buffer,
       const base::Location& location = base::Location::Current()) {
     base::RunLoop run_loop;
-    decoder_->Decode(
-        std::move(buffer), base::BindLambdaForTesting([&](Status status) {
-          EXPECT_TRUE(status.is_ok())
-              << " Callback created: " << location.ToString()
-              << " Code: " << status.code() << " Error: " << status.message();
-          run_loop.Quit();
-        }));
+    decoder_->Decode(std::move(buffer),
+                     base::BindLambdaForTesting([&](DecoderStatus status) {
+                       EXPECT_TRUE(status.is_ok())
+                           << " Callback created: " << location.ToString()
+                           << " Code: " << static_cast<int>(status.code())
+                           << " Error: " << status.message();
+                       run_loop.Quit();
+                     }));
     run_loop.Run(location);
   }
 
@@ -385,7 +425,7 @@ TEST_P(SoftwareVideoEncoderTest, EncodeAndDecode) {
             DecoderBuffer::FromArray(std::move(output.data), output.size);
         buffer->set_timestamp(output.timestamp);
         buffer->set_is_key_frame(output.key_frame);
-        decoder_->Decode(std::move(buffer), ValidatingStatusCB());
+        decoder_->Decode(std::move(buffer), DecoderStatusCB());
       });
 
   VideoDecoder::OutputCB decoder_output_cb =
@@ -843,6 +883,30 @@ INSTANTIATE_TEST_SUITE_P(VpxTemporalSvc,
                          ::testing::ValuesIn(kVpxSVCParams),
                          PrintTestParams);
 #endif  // ENABLE_LIBVPX
+
+#if BUILDFLAG(ENABLE_LIBAOM)
+SwVideoTestParams kAv1Params[] = {
+    {VideoCodec::kAV1, AV1PROFILE_PROFILE_MAIN, PIXEL_FORMAT_I420},
+    {VideoCodec::kAV1, AV1PROFILE_PROFILE_MAIN, PIXEL_FORMAT_XRGB}};
+
+INSTANTIATE_TEST_SUITE_P(Av1Generic,
+                         SoftwareVideoEncoderTest,
+                         ::testing::ValuesIn(kAv1Params),
+                         PrintTestParams);
+
+SwVideoTestParams kAv1SVCParams[] = {
+    {VideoCodec::kAV1, AV1PROFILE_PROFILE_MAIN, PIXEL_FORMAT_I420,
+     absl::nullopt},
+    {VideoCodec::kAV1, AV1PROFILE_PROFILE_MAIN, PIXEL_FORMAT_I420,
+     SVCScalabilityMode::kL1T2},
+    {VideoCodec::kAV1, AV1PROFILE_PROFILE_MAIN, PIXEL_FORMAT_I420,
+     SVCScalabilityMode::kL1T3}};
+
+INSTANTIATE_TEST_SUITE_P(Av1TemporalSvc,
+                         SVCVideoEncoderTest,
+                         ::testing::ValuesIn(kAv1SVCParams),
+                         PrintTestParams);
+#endif  // ENABLE_LIBAOM
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(H264VideoEncoderTest);
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SVCVideoEncoderTest);

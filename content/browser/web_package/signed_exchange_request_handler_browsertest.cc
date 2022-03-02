@@ -326,8 +326,7 @@ class SignedExchangeRequestHandlerBrowserTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
-                       DISABLED_Simple) {
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
   InstallMockCert();
   InstallMockCertChainInterceptor();
 
@@ -405,8 +404,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
-                       DISABLED_VariantMatch) {
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, VariantMatch) {
   SetAcceptLangs("en-US,fr");
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
@@ -1635,7 +1633,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeExpectCTReportBrowserTest,
     // ERR_NAME_NOT_RESOLVED.
     NavigationHandleObserver observer(shell()->web_contents(), sxg_url());
     EXPECT_FALSE(NavigateToURL(shell(), sxg_url()));
-    EXPECT_EQ(sxg_validity_url(), shell()->web_contents()->GetURL());
+    EXPECT_EQ(sxg_validity_url(),
+              shell()->web_contents()->GetLastCommittedURL());
     EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, observer.net_error_code());
   }
 
@@ -1812,7 +1811,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeReportingBrowserTest,
     // ERR_NAME_NOT_RESOLVED.
     NavigationHandleObserver observer(shell()->web_contents(), sxg_url());
     EXPECT_FALSE(NavigateToURL(shell(), sxg_url()));
-    EXPECT_EQ(sxg_validity_url(), shell()->web_contents()->GetURL());
+    EXPECT_EQ(sxg_validity_url(),
+              shell()->web_contents()->GetLastCommittedURL());
     EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, observer.net_error_code());
   }
 

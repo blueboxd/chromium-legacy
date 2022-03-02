@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewFocusTest, BrowsersRememberFocus) {
 
   // The rest of this test does not make sense on Linux because the behavior
   // of Activate() is not well defined and can vary by window manager.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Open a new browser window.
   Browser* browser2 =
       Browser::Create(Browser::CreateParams(browser()->profile(), true));
@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewFocusTest, TabChangesAvoidSpuriousFocus) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
   // Create another tab.
-  AddTabAtIndex(1, url, ui::PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(AddTabAtIndex(1, url, ui::PAGE_TRANSITION_TYPED));
 
   // Begin recording focus changes.
   gfx::NativeWindow window = browser()->window()->GetNativeWindow();

@@ -259,16 +259,16 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
       DictionaryBuilder()
           .Set("name", kName)
           .Set("version", kVersion)
-          .Set("manifest_version", 2)
+          .Set("manifest_version", 3)
           .Set("description", "an extension")
-          .Set("permissions", ListBuilder()
-                                  .Append("file://*/*")
-                                  .Append("tabs")
-                                  .Append("*://*.google.com/*")
-                                  .Append("*://*.example.com/*")
-                                  .Append("*://*.foo.bar/*")
-                                  .Append("*://*.chromium.org/*")
-                                  .Build())
+          .Set("host_permissions", ListBuilder()
+                                       .Append("file://*/*")
+                                       .Append("*://*.google.com/*")
+                                       .Append("*://*.example.com/*")
+                                       .Append("*://*.foo.bar/*")
+                                       .Append("*://*.chromium.org/*")
+                                       .Build())
+          .Set("permissions", ListBuilder().Append("tabs").Build())
           .Build();
   std::unique_ptr<base::DictionaryValue> manifest_copy(manifest->DeepCopy());
   scoped_refptr<const Extension> extension =
@@ -814,13 +814,11 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionActionCommands) {
   struct {
     const char* name;
     const char* command_key;
-    ExtensionBuilder::ActionType action_type;
+    ActionInfo::Type action_type;
   } test_cases[] = {
-      {"browser action", "_execute_browser_action",
-       ExtensionBuilder::ActionType::BROWSER_ACTION},
-      {"page action", "_execute_page_action",
-       ExtensionBuilder::ActionType::PAGE_ACTION},
-      {"action", "_execute_action", ExtensionBuilder::ActionType::ACTION},
+      {"browser action", "_execute_browser_action", ActionInfo::TYPE_BROWSER},
+      {"page action", "_execute_page_action", ActionInfo::TYPE_PAGE},
+      {"action", "_execute_action", ActionInfo::TYPE_ACTION},
   };
 
   for (const auto& test_case : test_cases) {

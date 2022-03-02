@@ -219,7 +219,7 @@ void BlinkAXTreeSource::SetAccessibilityMode(ui::AXMode new_mode) {
 
 bool BlinkAXTreeSource::ShouldLoadInlineTextBoxes(
     const blink::WebAXObject& obj) const {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // If inline text boxes are enabled globally, no need to explicitly load them.
   if (accessibility_mode_.has_mode(ui::AXMode::kInlineTextBoxes))
     return false;
@@ -716,6 +716,14 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject& src,
         ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme);
     return;
   }
+
+  // Skip images that do not have an image_src url (e.g. SVGs), or are in
+  // documents that do not have a document_url.
+  // TODO(accessibility): Remove this check when support for SVGs is added.
+  if (!g_ignore_protocol_checks_for_testing &&
+      (src.Url().GetString().Utf8().empty() ||
+       document().Url().GetString().Utf8().empty()))
+    return;
 
   if (!image_annotator_) {
     if (!first_unlabeled_image_id_.has_value() ||

@@ -10,7 +10,7 @@
 #include "third_party/blink/public/mojom/interest_group/ad_auction_service.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -80,6 +80,15 @@ class MODULES_EXPORT NavigatorAuction final
                                             uint16_t num_ad_components,
                                             ExceptionState& exception_state);
 
+  ScriptPromise deprecatedURNToURL(ScriptState* script_state,
+                                   const String& uuid_url_string,
+                                   ExceptionState& exception_state);
+
+  static ScriptPromise deprecatedURNToURL(ScriptState* script_state,
+                                          Navigator& navigator,
+                                          const String& uuid_url_string,
+                                          ExceptionState& exception_state);
+
   ScriptPromise createAdRequest(ScriptState*,
                                 const AdRequestConfig*,
                                 ExceptionState&);
@@ -111,6 +120,9 @@ class MODULES_EXPORT NavigatorAuction final
                           const absl::optional<KURL>& creative_url);
   // Completion callback for Mojo call made by runAdAuction().
   void AuctionComplete(ScriptPromiseResolver*, const absl::optional<KURL>&);
+  // Completion callback for Mojo call made by deprecatedURNToURL().
+  void GetURLFromURNComplete(ScriptPromiseResolver*,
+                             const absl::optional<KURL>&);
 
   HeapMojoRemote<mojom::blink::AdAuctionService> ad_auction_service_;
 };

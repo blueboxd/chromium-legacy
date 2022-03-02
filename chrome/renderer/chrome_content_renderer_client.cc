@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -55,9 +56,6 @@
 #include "chrome/renderer/plugins/non_loadable_plugin_placeholder.h"
 #include "chrome/renderer/plugins/pdf_plugin_placeholder.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
-#include "chrome/renderer/subresource_redirect/login_robots_decider_agent.h"
-#include "chrome/renderer/subresource_redirect/public_image_hints_decider_agent.h"
-#include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "chrome/renderer/sync_encryption_keys_extension.h"
 #include "chrome/renderer/url_loader_throttle_provider_impl.h"
 #include "chrome/renderer/v8_unwinder.h"
@@ -99,7 +97,6 @@
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/common_features.h"
-#include "components/subresource_redirect/common/subresource_redirect_features.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/translate/content/renderer/per_frame_translate_agent.h"
 #include "components/translate/core/common/translate_util.h"
@@ -164,7 +161,7 @@
 #include "url/origin.h"
 #include "v8/include/v8-isolate.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/renderer/sandbox_status_extension_android.h"
 #else
 #include "chrome/renderer/cart/commerce_hint_agent.h"
@@ -174,8 +171,9 @@
 #include "components/search/ntp_features.h"  // nogncheck
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
+#include "chrome/renderer/render_frame_font_family_accessor.h"
 #endif
 
 #if BUILDFLAG(ENABLE_FEED_V2)
@@ -328,17 +326,17 @@ std::unique_ptr<base::Unwinder> CreateV8Unwinder(v8::Isolate* isolate) {
 // made available in other clients of content/ that do not have a Web Share
 // Mojo implementation (e.g. WebView).
 void MaybeEnableWebShare() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (base::win::GetVersion() < base::win::Version::WIN10) {
     // Web Share API is not functional for non-UWP apps prior to Windows 10.
     return;
   }
 #endif
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   if (base::FeatureList::IsEnabled(features::kWebShare))
 #endif
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN) || defined(OS_MAC) || \
-    defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_ANDROID)
     blink::WebRuntimeFeatures::EnableWebShare(true);
 #endif
 }
@@ -349,8 +347,8 @@ bool IsTerminalSystemWebAppNaClPage(GURL url) {
   url::Replacements<char> replacements;
   replacements.ClearQuery();
   replacements.ClearRef();
-  return url.ReplaceComponents(replacements) ==
-         "chrome-untrusted://terminal/html/nassh.html";
+  url = url.ReplaceComponents(replacements);
+  return url == "chrome-untrusted://terminal/html/terminal_ssh.html";
 }
 #endif
 
@@ -358,7 +356,7 @@ bool IsTerminalSystemWebAppNaClPage(GURL url) {
 
 ChromeContentRendererClient::ChromeContentRendererClient()
     :
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       remote_module_watcher_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
 #endif
       main_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread()) {
@@ -400,7 +398,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
         "Extension Renderer");
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   mojo::PendingRemote<mojom::ModuleEventSink> module_event_sink;
   thread->BindHostReceiver(module_event_sink.InitWithNewPipeAndPassReceiver());
   remote_module_watcher_ = RemoteModuleWatcher::Create(
@@ -474,7 +472,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   // TODO(nyquist): Add test to ensure this happens when the flag is set.
   WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(dom_distiller_scheme);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   WebSecurityPolicy::RegisterURLSchemeAsAllowedForReferrer(
       WebString::FromUTF8(content::kAndroidAppScheme));
 #endif
@@ -576,18 +574,18 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new paint_preview::PaintPreviewRecorderImpl(render_frame);
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   SandboxStatusExtension::Create(render_frame);
 #endif
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   SyncEncryptionKeysExtension::Create(render_frame);
 #endif
 
   if (render_frame->IsMainFrame())
     new webapps::WebPageMetadataAgent(render_frame);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   const bool search_result_extractor_enabled =
       base::FeatureList::IsEnabled(features::kContinuousSearch);
 #else
@@ -645,7 +643,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
                     password_generation_agent, autofill_assistant_agent,
                     associated_interfaces);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   new autofill_assistant::AutofillAssistantAgent(render_frame,
                                                  associated_interfaces);
 #endif
@@ -680,30 +678,26 @@ void ChromeContentRendererClient::RenderFrameCreated(
     subresource_filter_agent->Initialize();
   }
 
-  if (subresource_redirect::ShouldEnablePublicImageHintsBasedCompression()) {
-    new subresource_redirect::PublicImageHintsDeciderAgent(
-        associated_interfaces, render_frame);
-  } else if (subresource_redirect::ShouldEnableRobotsRulesFetching()) {
-    new subresource_redirect::LoginRobotsDeciderAgent(associated_interfaces,
-                                                      render_frame);
-  }
   if (translate::IsSubFrameTranslationEnabled()) {
     new translate::PerFrameTranslateAgent(
         render_frame, ISOLATED_WORLD_ID_TRANSLATE, associated_interfaces);
   }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantProcess) &&
       render_frame->IsMainFrame()) {
     new SearchBox(render_frame);
   }
 
+  // We should create CommerceHintAgent only for a primary main frame. A fenced
+  // frame is the main frame as well, so we should check if |render_frame|
+  // is the primary main frame.
   if (base::FeatureList::IsEnabled(ntp_features::kNtpChromeCartModule) &&
-      render_frame->IsMainFrame()) {
+      render_frame->IsMainFrame() && !render_frame->IsInFencedFrameTree()) {
     new cart::CommerceHintAgent(render_frame);
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_frame, spellcheck_.get(), this);
@@ -724,6 +718,13 @@ void ChromeContentRendererClient::RenderFrameCreated(
     associated_interfaces->AddInterface(
         base::BindRepeating(&pdf::PdfFindInPageFactory::BindReceiver,
                             render_frame->GetRoutingID()));
+  }
+#endif
+
+#if BUILDFLAG(IS_WIN)
+  if (render_frame->IsMainFrame()) {
+    associated_interfaces->AddInterface(base::BindRepeating(
+        &RenderFrameFontFamilyAccessor::Bind, render_frame));
   }
 #endif
 }
@@ -845,6 +846,7 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
   return true;
 }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
 WebPlugin* ChromeContentRendererClient::CreatePluginReplacement(
     content::RenderFrame* render_frame,
     const base::FilePath& plugin_path) {
@@ -852,6 +854,7 @@ WebPlugin* ChromeContentRendererClient::CreatePluginReplacement(
       render_frame, plugin_path);
   return placeholder->plugin();
 }
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 bool ChromeContentRendererClient::DeferMediaLoad(
     content::RenderFrame* render_frame,
@@ -1369,7 +1372,7 @@ void ChromeContentRendererClient::WillSendRequest(
   if (!url.ProtocolIs(chrome::kChromeSearchScheme))
     return;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   SearchBox* search_box =
       SearchBox::Get(content::RenderFrame::FromWebFrame(frame->LocalRoot()));
   if (search_box) {
@@ -1378,7 +1381,7 @@ void ChromeContentRendererClient::WillSendRequest(
     if (gurl.host_piece() == chrome::kChromeUIFaviconHost)
       search_box->GenerateImageURLFromTransientURL(url, new_url);
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 bool ChromeContentRendererClient::IsPrefetchOnly(
@@ -1505,7 +1508,7 @@ ChromeContentRendererClient::CreateWorkerContentSettingsClient(
   return std::make_unique<WorkerContentSettingsClient>(render_frame);
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 std::unique_ptr<media::SpeechRecognitionClient>
 ChromeContentRendererClient::CreateSpeechRecognitionClient(
     content::RenderFrame* render_frame,

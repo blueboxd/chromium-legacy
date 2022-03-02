@@ -7,6 +7,8 @@
 #include "base/callback.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/webid/id_token_request_callback_data.h"
@@ -31,6 +33,8 @@ using SignInMode = content::IdentityRequestAccount::SignInMode;
 namespace content {
 
 namespace {
+static constexpr base::TimeDelta kIdTokenRequestDelay = base::Seconds(3);
+
 std::string FormatRequestParams(const std::string& client_id,
                                 const std::string& nonce) {
   std::string query;
@@ -45,6 +49,36 @@ std::string FormatRequestParams(const std::string& client_id,
   }
   return query;
 }
+
+std::string FormatRequestParamsWithoutScope(const std::string& client_id,
+                                            const std::string& nonce,
+                                            const std::string& account_id,
+                                            bool is_sign_in) {
+  std::string query;
+  if (!client_id.empty())
+    query += "client_id=" + client_id;
+
+  if (!nonce.empty()) {
+    if (!query.empty())
+      query += "&";
+    query += "nonce=" + nonce;
+  }
+
+  if (!account_id.empty()) {
+    if (!query.empty())
+      query += "&";
+    query += "account_id=" + account_id;
+  }
+  // For returning users who are signing in instead of signing up, we do not
+  // show the privacy policy and terms of service on the consent sheet. This
+  // field indicates in the request that whether the user has granted consent
+  // after seeing the sheet with privacy policy and terms of service.
+  std::string consent_acquired = is_sign_in ? "false" : "true";
+  if (!query.empty())
+    query += "&consent_acquired=" + consent_acquired;
+  return query;
+}
+
 }  // namespace
 
 FederatedAuthRequestImpl::FederatedAuthRequestImpl(RenderFrameHost* host,
@@ -110,6 +144,15 @@ void FederatedAuthRequestImpl::RequestIdToken(
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+void FederatedAuthRequestImpl::CancelTokenRequest() {
+  if (!auth_request_callback_)
+    return;
+
+  // Dialog will be hidden by the destructor for request_dialog_controller_,
+  // triggered by CompleteRequest.
+  CompleteRequest(RequestIdTokenStatus::kErrorCanceled, "");
+}
+
 void FederatedAuthRequestImpl::Revoke(
     const GURL& provider,
     const std::string& client_id,
@@ -167,7 +210,7 @@ void FederatedAuthRequestImpl::Logout(
   }
 
   if (base::ranges::any_of(logout_requests, [](auto& request) {
-        return !request->endpoint.is_valid();
+        return !request->url.is_valid();
       })) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::FARI_LOGOUT_BAD_ENDPOINT);
@@ -208,17 +251,23 @@ void FederatedAuthRequestImpl::OnWellKnownFetched(
     IdpNetworkRequestManager::FetchStatus status,
     IdpNetworkRequestManager::Endpoints endpoints) {
   switch (status) {
-    case IdpNetworkRequestManager::FetchStatus::kWebIdNotSupported: {
-      CompleteRequest(RequestIdTokenStatus::kErrorFedCmNotSupportedByProvider,
+    case IdpNetworkRequestManager::FetchStatus::kHttpNotFoundError: {
+      CompleteRequest(RequestIdTokenStatus::kErrorFetchingWellKnownHttpNotFound,
                       "");
       return;
     }
-    case IdpNetworkRequestManager::FetchStatus::kFetchError: {
-      CompleteRequest(RequestIdTokenStatus::kErrorFetchingWellKnown, "");
+    case IdpNetworkRequestManager::FetchStatus::kNoResponseError: {
+      CompleteRequest(RequestIdTokenStatus::kErrorFetchingWellKnownNoResponse,
+                      "");
       return;
     }
     case IdpNetworkRequestManager::FetchStatus::kInvalidResponseError: {
-      CompleteRequest(RequestIdTokenStatus::kErrorInvalidWellKnown, "");
+      CompleteRequest(
+          RequestIdTokenStatus::kErrorFetchingWellKnownInvalidResponse, "");
+      return;
+    }
+    case IdpNetworkRequestManager::FetchStatus::kInvalidRequestError: {
+      NOTREACHED();
       return;
     }
     case IdpNetworkRequestManager::FetchStatus::kSuccess: {
@@ -237,7 +286,8 @@ void FederatedAuthRequestImpl::OnWellKnownFetched(
       // For Mediated mode we require accounts, token and client ID endpoints.
       if (endpoints_.token.is_empty() || endpoints_.accounts.is_empty() ||
           endpoints_.client_id_metadata.is_empty()) {
-        CompleteRequest(RequestIdTokenStatus::kErrorInvalidWellKnown, "");
+        CompleteRequest(
+            RequestIdTokenStatus::kErrorFetchingWellKnownInvalidResponse, "");
         return;
       }
       // TODO(kenrb): This has to be same-origin with the provider.
@@ -245,7 +295,8 @@ void FederatedAuthRequestImpl::OnWellKnownFetched(
       if (!IdpUrlIsValid(endpoints_.token) ||
           !IdpUrlIsValid(endpoints_.accounts) ||
           !IdpUrlIsValid(endpoints_.client_id_metadata)) {
-        CompleteRequest(RequestIdTokenStatus::kError, "");
+        CompleteRequest(
+            RequestIdTokenStatus::kErrorFetchingWellKnownInvalidResponse, "");
         return;
       }
       network_manager_->FetchClientIdMetadata(
@@ -258,13 +309,15 @@ void FederatedAuthRequestImpl::OnWellKnownFetched(
     case RequestMode::kPermission: {
       // For Permission mode we require both accounts and token endpoints.
       if (endpoints_.idp.is_empty()) {
-        CompleteRequest(RequestIdTokenStatus::kErrorInvalidWellKnown, "");
+        CompleteRequest(
+            RequestIdTokenStatus::kErrorFetchingWellKnownInvalidResponse, "");
         return;
       }
       // TODO(kenrb): This has to be same-origin with the provider.
       // https://crbug.com/1141125
       if (!IdpUrlIsValid(endpoints_.idp)) {
-        CompleteRequest(RequestIdTokenStatus::kError, "");
+        CompleteRequest(
+            RequestIdTokenStatus::kErrorFetchingWellKnownInvalidResponse, "");
         return;
       }
 
@@ -335,11 +388,15 @@ void FederatedAuthRequestImpl::CompleteRevokeRequest(RevokeStatus status) {
 void FederatedAuthRequestImpl::OnClientIdMetadataResponseReceived(
     IdpNetworkRequestManager::FetchStatus status,
     IdpNetworkRequestManager::ClientIdMetadata data) {
-  // TODO(cbiesinger): check status argument to make sure fetching/parsing
-  // succeeded?
+  // TODO(cbiesinger): we currently do not send referer to IDP when fetching the
+  // client metadata so we cannot get any response. Making client metadata
+  // optional until the fix is in place. https://crbug.com/1284781.
   client_id_metadata_ = data;
   network_manager_->SendAccountsRequest(
-      endpoints_.accounts,
+      endpoints_.accounts, request_dialog_controller_->GetBrandIconIdealSize(),
+      request_dialog_controller_->GetBrandIconMinimumSize(),
+      base::BindOnce(&FederatedAuthRequestImpl::DownloadBitmap,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&FederatedAuthRequestImpl::OnAccountsResponseReceived,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -480,20 +537,38 @@ void FederatedAuthRequestImpl::OnTokenProvisionApproved(
   CompleteRequest(RequestIdTokenStatus::kSuccess, id_token_);
 }
 
+void FederatedAuthRequestImpl::DownloadBitmap(
+    const GURL& icon_url,
+    int ideal_icon_size,
+    WebContents::ImageDownloadCallback callback) {
+  WebContents::FromRenderFrameHost(render_frame_host_)
+      ->DownloadImage(icon_url, /*is_favicon*/ false,
+                      gfx::Size(ideal_icon_size, ideal_icon_size),
+                      0 /* max_bitmap_size */, false /* bypass_cache */,
+                      std::move(callback));
+}
+
 void FederatedAuthRequestImpl::OnAccountsResponseReceived(
-    IdpNetworkRequestManager::AccountsResponse status,
+    IdpNetworkRequestManager::FetchStatus status,
     IdpNetworkRequestManager::AccountList accounts,
-    content::IdentityProviderMetadata idp_metadata) {
+    IdentityProviderMetadata idp_metadata) {
   switch (status) {
-    case IdpNetworkRequestManager::AccountsResponse::kNetError: {
-      CompleteRequest(RequestIdTokenStatus::kError, "");
+    case IdpNetworkRequestManager::FetchStatus::kHttpNotFoundError: {
+      CompleteRequest(RequestIdTokenStatus::kErrorFetchingAccountsHttpNotFound,
+                      "");
       return;
     }
-    case IdpNetworkRequestManager::AccountsResponse::kInvalidResponseError: {
-      CompleteRequest(RequestIdTokenStatus::kErrorInvalidAccountsResponse, "");
+    case IdpNetworkRequestManager::FetchStatus::kNoResponseError: {
+      CompleteRequest(RequestIdTokenStatus::kErrorFetchingAccountsNoResponse,
+                      "");
       return;
     }
-    case IdpNetworkRequestManager::AccountsResponse::kSuccess: {
+    case IdpNetworkRequestManager::FetchStatus::kInvalidResponseError: {
+      CompleteRequest(
+          RequestIdTokenStatus::kErrorFetchingAccountsInvalidResponse, "");
+      return;
+    }
+    case IdpNetworkRequestManager::FetchStatus::kSuccess: {
       WebContents* rp_web_contents =
           WebContents::FromRenderFrameHost(render_frame_host_);
       DCHECK(!idp_web_contents_);
@@ -505,7 +580,7 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
         // this account before.
         if (GetSharingPermissionContext() &&
             GetSharingPermissionContext()->HasSharingPermissionForAccount(
-                url::Origin::Create(provider_), origin_, account.sub)) {
+                url::Origin::Create(provider_), origin_, account.account_id)) {
           login_state = LoginState::kSignIn;
         }
         account.login_state = login_state;
@@ -522,10 +597,9 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
       bool is_auto_sign_in = prefer_auto_sign_in_ && accounts.size() == 1 &&
                              accounts[0].login_state == LoginState::kSignIn &&
                              !screen_reader_is_on;
-      ClientIdData data{endpoints_.client_id_metadata.Resolve(
-                            client_id_metadata_.terms_of_service_url),
-                        endpoints_.client_id_metadata.Resolve(
-                            client_id_metadata_.privacy_policy_url)};
+      // TODO(cbiesinger): Check that the URLs are valid.
+      ClientIdData data{GURL(client_id_metadata_.terms_of_service_url),
+                        GURL(client_id_metadata_.privacy_policy_url)};
       request_dialog_controller_->ShowAccountsDialog(
           rp_web_contents, idp_web_contents_.get(), provider_, accounts,
           idp_metadata, data,
@@ -534,11 +608,14 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
                          weak_ptr_factory_.GetWeakPtr()));
       return;
     }
+    case IdpNetworkRequestManager::FetchStatus::kInvalidRequestError: {
+      NOTREACHED();
+    }
   }
 }
 
-void FederatedAuthRequestImpl::OnAccountSelected(
-    const std::string& account_id) {
+void FederatedAuthRequestImpl::OnAccountSelected(const std::string& account_id,
+                                                 bool is_sign_in) {
   // This could happen if user didn't select any accounts.
   if (account_id.empty()) {
     CompleteRequest(RequestIdTokenStatus::kError, "");
@@ -553,29 +630,61 @@ void FederatedAuthRequestImpl::OnAccountSelected(
   }
 
   account_id_ = account_id;
+  id_token_request_time_ = base::TimeTicks::Now();
   network_manager_->SendTokenRequest(
-      endpoints_.token, account_id_, FormatRequestParams(client_id_, nonce_),
+      endpoints_.token, account_id_,
+      FormatRequestParamsWithoutScope(client_id_, nonce_, account_id,
+                                      is_sign_in),
       base::BindOnce(&FederatedAuthRequestImpl::OnTokenResponseReceived,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FederatedAuthRequestImpl::OnTokenResponseReceived(
-    IdpNetworkRequestManager::TokenResponse status,
+    IdpNetworkRequestManager::FetchStatus status,
+    const std::string& id_token) {
+  // When fetching id tokens we show a "Verify" sheet to users in case fetching
+  // takes a long time due to latency etc.. In case that the fetching process is
+  // fast, we still want to show the "Verify" sheet for at least
+  // |kIdTokenRequestDelay| seconds for better UX.
+  base::TimeTicks response_receive_time = base::TimeTicks::Now();
+  base::TimeDelta fetch_time = response_receive_time - id_token_request_time_;
+  if (fetch_time >= kIdTokenRequestDelay) {
+    CompleteIdTokenRequest(status, id_token);
+    return;
+  }
+
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&FederatedAuthRequestImpl::CompleteIdTokenRequest,
+                     weak_ptr_factory_.GetWeakPtr(), status, id_token),
+      kIdTokenRequestDelay - fetch_time);
+}
+
+void FederatedAuthRequestImpl::CompleteIdTokenRequest(
+    IdpNetworkRequestManager::FetchStatus status,
     const std::string& id_token) {
   switch (status) {
-    case IdpNetworkRequestManager::TokenResponse::kNetError: {
-      CompleteRequest(RequestIdTokenStatus::kError, "");
+    case IdpNetworkRequestManager::FetchStatus::kHttpNotFoundError: {
+      CompleteRequest(RequestIdTokenStatus::kErrorFetchingIdTokenHttpNotFound,
+                      "");
       return;
     }
-    case IdpNetworkRequestManager::TokenResponse::kInvalidRequestError: {
-      CompleteRequest(RequestIdTokenStatus::kErrorInvalidTokenResponse, "");
+    case IdpNetworkRequestManager::FetchStatus::kNoResponseError: {
+      CompleteRequest(RequestIdTokenStatus::kErrorFetchingIdTokenNoResponse,
+                      "");
       return;
     }
-    case IdpNetworkRequestManager::TokenResponse::kInvalidResponseError: {
-      CompleteRequest(RequestIdTokenStatus::kErrorInvalidTokenResponse, "");
+    case IdpNetworkRequestManager::FetchStatus::kInvalidRequestError: {
+      CompleteRequest(RequestIdTokenStatus::kErrorFetchingIdTokenInvalidRequest,
+                      "");
       return;
     }
-    case IdpNetworkRequestManager::TokenResponse::kSuccess: {
+    case IdpNetworkRequestManager::FetchStatus::kInvalidResponseError: {
+      CompleteRequest(
+          RequestIdTokenStatus::kErrorFetchingIdTokenInvalidResponse, "");
+      return;
+    }
+    case IdpNetworkRequestManager::FetchStatus::kSuccess: {
       if (GetSharingPermissionContext()) {
         DCHECK_EQ(mode_, RequestMode::kMediated);
         // Grant sharing permission specific to *this account*.
@@ -609,9 +718,9 @@ void FederatedAuthRequestImpl::OnTokenResponseReceived(
 
 void FederatedAuthRequestImpl::DispatchOneLogout() {
   auto logout_request = std::move(logout_requests_.front());
-  DCHECK(logout_request->endpoint.is_valid());
+  DCHECK(logout_request->url.is_valid());
   std::string account_id = logout_request->account_id;
-  auto endpoint_origin = url::Origin::Create(logout_request->endpoint);
+  auto logout_origin = url::Origin::Create(logout_request->url);
   logout_requests_.pop();
 
   if (!GetActiveSessionPermissionContext()) {
@@ -620,13 +729,13 @@ void FederatedAuthRequestImpl::DispatchOneLogout() {
   }
 
   if (GetActiveSessionPermissionContext()->HasActiveSession(
-          endpoint_origin, origin_, account_id)) {
+          logout_origin, origin_, account_id)) {
     network_manager_->SendLogout(
-        logout_request->endpoint,
+        logout_request->url,
         base::BindOnce(&FederatedAuthRequestImpl::OnLogoutCompleted,
                        weak_ptr_factory_.GetWeakPtr()));
     GetActiveSessionPermissionContext()->RevokeActiveSession(
-        endpoint_origin, origin_, account_id);
+        logout_origin, origin_, account_id);
   } else {
     if (logout_requests_.empty()) {
       CompleteLogoutRequest(LogoutStatus::kSuccess);

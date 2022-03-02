@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
+#include "base/memory/values_equivalent.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
@@ -117,24 +118,15 @@ TEST_F(ComputedStyleTest, LayoutContainmentStackingContext) {
   EXPECT_FALSE(style->IsStackingContextWithoutContainment());
 }
 
-TEST_F(ComputedStyleTest, FirstPublicPseudoStyle) {
-  static_assert(kFirstPublicPseudoId == kPseudoIdFirstLine,
-                "Make sure we are testing the first public pseudo id");
-
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-  style->SetHasPseudoElementStyle(kPseudoIdFirstLine);
-  EXPECT_TRUE(style->HasPseudoElementStyle(kPseudoIdFirstLine));
-  EXPECT_TRUE(style->HasAnyPseudoElementStyles());
-}
-
-TEST_F(ComputedStyleTest, LastPublicPseudoElementStyle) {
-  static_assert(kFirstInternalPseudoId - 1 == kPseudoIdGrammarError,
-                "Make sure we are testing the last public pseudo id");
-
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-  style->SetHasPseudoElementStyle(kPseudoIdGrammarError);
-  EXPECT_TRUE(style->HasPseudoElementStyle(kPseudoIdGrammarError));
-  EXPECT_TRUE(style->HasAnyPseudoElementStyles());
+TEST_F(ComputedStyleTest, TrackedPseudoStyle) {
+  for (uint8_t pseudo_id_int = kFirstPublicPseudoId;
+       pseudo_id_int <= kLastTrackedPublicPseudoId; pseudo_id_int++) {
+    PseudoId pseudo_id = static_cast<PseudoId>(pseudo_id_int);
+    scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+    style->SetHasPseudoElementStyle(pseudo_id);
+    EXPECT_TRUE(style->HasPseudoElementStyle(pseudo_id));
+    EXPECT_TRUE(style->HasAnyPseudoElementStyles());
+  }
 }
 
 TEST_F(ComputedStyleTest,
@@ -325,7 +317,7 @@ TEST_F(ComputedStyleTest, CursorList) {
   auto* other_image_value =
       MakeGarbageCollected<StyleGeneratedImage>(*gradient);
 
-  EXPECT_TRUE(DataEquivalent(image_value, other_image_value));
+  EXPECT_TRUE(base::ValuesEquivalent(image_value, other_image_value));
 
   style->AddCursor(image_value, false);
   other->AddCursor(other_image_value, false);
@@ -1299,6 +1291,8 @@ TEST_F(ComputedStyleTest, ShouldApplyAnyContainment) {
 #if DCHECK_IS_ON()
 
 TEST_F(ComputedStyleTest, DebugDiffFields) {
+  using DebugField = ComputedStyleBase::DebugField;
+
   scoped_refptr<ComputedStyle> style1 = CreateComputedStyle();
   scoped_refptr<ComputedStyle> style2 = CreateComputedStyle();
 
@@ -1309,7 +1303,9 @@ TEST_F(ComputedStyleTest, DebugDiffFields) {
   EXPECT_EQ(0u, style2->DebugDiffFields(*style2).size());
 
   EXPECT_EQ(1u, style1->DebugDiffFields(*style2).size());
-  EXPECT_EQ("width_", style1->DebugDiffFields(*style2)[0]);
+  EXPECT_EQ(DebugField::width_, style1->DebugDiffFields(*style2)[0]);
+  EXPECT_EQ("width_",
+            ComputedStyleBase::DebugFieldToString(DebugField::width_));
 }
 
 #endif  // #if DCHECK_IS_ON()

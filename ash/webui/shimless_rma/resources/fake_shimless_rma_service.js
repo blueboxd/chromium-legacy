@@ -566,12 +566,30 @@ export class FakeShimlessRmaService {
   }
 
   /**
+   * @return {!Promise<!{dramPartNumber: string}>}
+   */
+  getOriginalDramPartNumber() {
+    return this.methods_.resolveMethod('getOriginalDramPartNumber');
+  }
+
+  /**
+   * @param {string} dramPartNumber
+   */
+  setGetOriginalDramPartNumberResult(dramPartNumber) {
+    this.methods_.setResult(
+        'getOriginalDramPartNumber', {dramPartNumber: dramPartNumber});
+  }
+
+  /**
    * @param {string} serialNumber
    * @param {number} regionIndex
    * @param {number} skuIndex
+   * @param {number} whiteLabelIndex
+   * @param {string} dramPartNumber
    * @return {!Promise<!StateResult>}
    */
-  setDeviceInformation(serialNumber, regionIndex, skuIndex) {
+  setDeviceInformation(
+      serialNumber, regionIndex, skuIndex, whiteLabelIndex, dramPartNumber) {
     // TODO(gavindodd): Validate range of region and sku.
     return this.getNextStateForMethod_(
         'setDeviceInformation', State.kUpdateDeviceInformation);
@@ -645,6 +663,14 @@ export class FakeShimlessRmaService {
   /**
    * @return {!Promise<!StateResult>}
    */
+  retryProvisioning() {
+    return this.getNextStateForMethod_(
+        'retryProvisioning', State.kProvisionDevice);
+  }
+
+  /**
+   * @return {!Promise<!StateResult>}
+   */
   provisioningComplete() {
     return this.getNextStateForMethod_(
         'provisioningComplete', State.kProvisionDevice);
@@ -655,6 +681,13 @@ export class FakeShimlessRmaService {
    */
   finalizationComplete() {
     return this.getNextStateForMethod_('finalizationComplete', State.kFinalize);
+  }
+
+  /**
+   * @return {!Promise<!StateResult>}
+   */
+  retryFinalization() {
+    return this.getNextStateForMethod_('retryFinalization', State.kFinalize);
   }
 
   /**
@@ -1208,6 +1241,7 @@ export class FakeShimlessRmaService {
     this.methods_.register('getOriginalRegion');
     this.methods_.register('getOriginalSku');
     this.methods_.register('getOriginalWhiteLabel');
+    this.methods_.register('getOriginalDramPartNumber');
     this.methods_.register('setDeviceInformation');
 
     this.methods_.register('getCalibrationComponentList');
@@ -1217,8 +1251,10 @@ export class FakeShimlessRmaService {
     this.methods_.register('continueCalibration');
     this.methods_.register('calibrationComplete');
 
+    this.methods_.register('retryProvisioning');
     this.methods_.register('provisioningComplete');
 
+    this.methods_.register('retryFinalization');
     this.methods_.register('finalizationComplete');
 
     this.methods_.register('writeProtectManuallyEnabled');

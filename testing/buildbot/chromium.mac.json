@@ -256,28 +256,6 @@
       },
       {
         "args": [
-          "--test-launcher-print-timestamps"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.11"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 10
-        },
-        "test": "browser_tests",
-        "test_id_prefix": "ninja://chrome/test:browser_tests/"
-      },
-      {
-        "args": [
           "--gtest_filter=-*UsingRealWebcam*"
         ],
         "merge": {
@@ -9569,6 +9547,7 @@
               "os": "Mac-11|Mac-10.16"
             }
           ],
+          "quickrun_shards": 6,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
         },
@@ -10505,6 +10484,34 @@
       },
       {
         "args": [
+          "--extra-browser-args=--enable-crashpad"
+        ],
+        "ci_only": true,
+        "isolate_name": "telemetry_perf_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "telemetry_perf_unittests",
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-11|Mac-10.16"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 12
+        },
+        "test_id_prefix": "ninja://chrome/test:telemetry_perf_unittests/"
+      },
+      {
+        "args": [
           "--jobs=1",
           "--extra-browser-args=--disable-gpu"
         ],
@@ -10941,7 +10948,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 6
+          "shards": 7
         },
         "test": "content_browsertests",
         "test_id_prefix": "ninja://content/test:content_browsertests/"
@@ -12246,6 +12253,11 @@
         },
         "test_id_prefix": "ninja://ui/views:views_perftests/"
       }
+    ]
+  },
+  "ios-catalyst": {
+    "additional_compile_targets": [
+      "form_activity_tab_helper_fuzzer"
     ]
   },
   "ios-device": {

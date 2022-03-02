@@ -99,15 +99,16 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       bool first_auth_attempt,
       LoginAuthRequiredCallback auth_required_callback) override;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   bool PreSpawnChild(sandbox::TargetPolicy* policy,
                      sandbox::mojom::Sandbox sandbox_type,
                      ChildSpawnFlags flags) override;
 #endif
   std::string GetAcceptLangs(BrowserContext* context) override;
-  bool IsInterestGroupAPIAllowed(content::BrowserContext* browser_context,
+  bool IsInterestGroupAPIAllowed(content::RenderFrameHost* render_frame_host,
+                                 InterestGroupApiOperation operation,
                                  const url::Origin& top_frame_origin,
-                                 const GURL& api_url) override;
+                                 const url::Origin& api_origin) override;
   void GetHyphenationDictionary(
       base::OnceCallback<void(const base::FilePath&)>) override;
 

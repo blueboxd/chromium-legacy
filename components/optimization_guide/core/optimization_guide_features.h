@@ -34,6 +34,7 @@ extern const base::Feature kPushNotifications;
 extern const base::Feature kOptimizationGuideMetadataValidation;
 extern const base::Feature kPageTopicsBatchAnnotations;
 extern const base::Feature kPageVisibilityBatchAnnotations;
+extern const base::Feature kUseLocalPageEntitiesMetadataProvider;
 
 // The grace period duration for how long to give outstanding page text dump
 // requests to respond after DidFinishLoad.
@@ -133,7 +134,7 @@ base::TimeDelta StoredHostModelFeaturesFreshnessDuration();
 
 // The maximum duration for which models can remain in the
 // OptimizationGuideStore without being loaded.
-base::TimeDelta StoredModelsInactiveDuration();
+base::TimeDelta StoredModelsValidDuration();
 
 // The amount of time URL-keyed hints within the hint cache will be
 // allowed to be used and not be purged.
@@ -248,6 +249,9 @@ bool PageTopicsBatchAnnotationsEnabled();
 
 // Returns if Page Visibility Batch Annotations are enabled.
 bool PageVisibilityBatchAnnotationsEnabled();
+
+// Whether to use the leveldb-based page entities metadata provider.
+bool UseLocalPageEntitiesMetadataProvider();
 
 }  // namespace features
 }  // namespace optimization_guide

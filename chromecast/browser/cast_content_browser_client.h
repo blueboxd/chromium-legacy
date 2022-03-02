@@ -146,13 +146,13 @@ class CastContentBrowserClient
   bool OverridesAudioManager() override;
   media::MediaCapsImpl* media_caps();
 
-#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
   // Create a BluetoothAdapter for WebBluetooth support.
   // TODO(slan): This further couples the browser to the Cast service. Remove
   // this once the dedicated Bluetooth service has been implemented.
   // (b/76155468)
   virtual scoped_refptr<device::BluetoothAdapterCast> CreateBluetoothAdapter();
-#endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
 
   // chromecast::metrics::CastMetricsServiceDelegate implementation:
   void SetMetricsClientId(const std::string& client_id) override;
@@ -250,6 +250,7 @@ class CastContentBrowserClient
   void RegisterNonNetworkSubresourceURLLoaderFactories(
       int render_process_id,
       int render_frame_id,
+      const absl::optional<url::Origin>& request_initiator_origin,
       NonNetworkURLLoaderFactoryMap* factories) override;
   void OnNetworkServiceCreated(
       network::mojom::NetworkService* network_service) override;
@@ -264,6 +265,9 @@ class CastContentBrowserClient
   bool DoesSiteRequireDedicatedProcess(content::BrowserContext* browser_context,
                                        const GURL& effective_site_url) override;
   bool IsWebUIAllowedToMakeNetworkRequests(const url::Origin& origin) override;
+  bool ShouldAllowInsecurePrivateNetworkRequests(
+      content::BrowserContext* browser_context,
+      const url::Origin& origin) override;
   // New Mojo bindings should be added to
   // cast_content_browser_client_receiver_bindings.cc, so that they go through
   // security review.
@@ -302,6 +306,10 @@ class CastContentBrowserClient
                                bool* mixer_audio_enabled,
                                content::RenderFrameHost* render_frame_host);
 
+  // Returns whether buffering should be used for the CMA Pipeline created for
+  // this runtime instance. May be called from any thread.
+  virtual bool IsBufferingEnabled();
+
  private:
   // Create device cert/key
   virtual scoped_refptr<net::X509Certificate> DeviceCert();
@@ -323,11 +331,11 @@ class CastContentBrowserClient
                               scoped_refptr<net::SSLPrivateKey>)>
           continue_callback);
 
-#if !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_FUCHSIA)
   // Returns the crash signal FD corresponding to the current process type.
   int GetCrashSignalFD(const base::CommandLine& command_line);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Creates a CrashHandlerHost instance for the given process type.
   breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
       const std::string& process_type);
@@ -338,8 +346,8 @@ class CastContentBrowserClient
   // Notify renderers of memory pressure (Android renderers register directly
   // with OS for this).
   std::unique_ptr<MemoryPressureControllerImpl> memory_pressure_controller_;
-#endif  // !defined(OS_ANDROID)
-#endif  // !defined(OS_FUCHSIA)
+#endif  // !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_FUCHSIA)
 
   // CMA thread used by AudioManager, MojoRenderer, and MediaPipelineBackend.
   std::unique_ptr<base::Thread> media_thread_;

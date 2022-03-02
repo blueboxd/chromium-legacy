@@ -756,9 +756,10 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
     return v8::MaybeLocal<v8::Value>();
   }
 
-  DCHECK(!frame || BindingSecurity::ShouldAllowAccessToFrame(
-                       ToLocalDOMWindow(function->CreationContext()), frame,
-                       BindingSecurity::ErrorReportOption::kDoNotReport));
+  DCHECK(!frame ||
+         BindingSecurity::ShouldAllowAccessToFrame(
+             ToLocalDOMWindow(function->GetCreationContextChecked()), frame,
+             BindingSecurity::ErrorReportOption::kDoNotReport));
   v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
   v8::MicrotasksScope microtasks_scope(isolate, microtask_queue,
                                        v8::MicrotasksScope::kRunMicrotasks);
@@ -781,20 +782,13 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
   return result;
 }
 
-class ModuleEvaluationRejectionCallback final : public ScriptFunction {
+class ModuleEvaluationRejectionCallback final
+    : public ScriptFunction::Callable {
  public:
-  explicit ModuleEvaluationRejectionCallback(ScriptState* script_state)
-      : ScriptFunction(script_state) {}
+  ModuleEvaluationRejectionCallback() = default;
 
-  static v8::Local<v8::Function> CreateFunction(ScriptState* script_state) {
-    ModuleEvaluationRejectionCallback* self =
-        MakeGarbageCollected<ModuleEvaluationRejectionCallback>(script_state);
-    return self->BindToV8Function();
-  }
-
- private:
-  ScriptValue Call(ScriptValue value) override {
-    ModuleRecord::ReportException(GetScriptState(), value.V8Value());
+  ScriptValue Call(ScriptState* script_state, ScriptValue value) override {
+    ModuleRecord::ReportException(script_state, value.V8Value());
     return ScriptValue();
   }
 };
@@ -904,7 +898,10 @@ ScriptEvaluationResult V8ScriptRunner::EvaluateModule(
     // evaluationPromise with reason, report the exception given by reason
     // for script.</spec>
     v8::Local<v8::Function> callback_failure =
-        ModuleEvaluationRejectionCallback::CreateFunction(script_state);
+        MakeGarbageCollected<ScriptFunction>(
+            script_state,
+            MakeGarbageCollected<ModuleEvaluationRejectionCallback>())
+            ->V8Function();
     // Add a rejection handler to report back errors once the result
     // promise is rejected.
     result.GetPromise(script_state)

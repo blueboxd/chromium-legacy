@@ -1080,6 +1080,8 @@ void ShelfLayoutManager::OnAppListVisibilityWillChange(bool shown,
 
 void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
                                                     int64_t display_id) {
+  DVLOG(1) << __PRETTY_FUNCTION__ << " shown " << shown << " display "
+           << display_id;
   // Shell may be under destruction.
   if (!shelf_widget_ || !shelf_widget_->GetNativeWindow())
     return;
@@ -1192,6 +1194,19 @@ void ShelfLayoutManager::OnDeskSwitchAnimationFinished() {
 
 float ShelfLayoutManager::GetOpacity() const {
   return target_opacity_;
+}
+
+void ShelfLayoutManager::LockAutoHideState(bool lock_auto_hide_state) {
+  if (is_auto_hide_state_locked_ == lock_auto_hide_state)
+    return;
+  is_auto_hide_state_locked_ = lock_auto_hide_state;
+  // If unlocking, recompute the current state, but do it after the current
+  // event is processed.
+  if (!is_auto_hide_state_locked_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ShelfLayoutManager::UpdateAutoHideState,
+                                  weak_factory_.GetWeakPtr()));
+  }
 }
 
 void ShelfLayoutManager::OnShelfConfigUpdated() {
@@ -1416,7 +1431,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
                    ? HotseatState::kExtended
                    : HotseatState::kHidden;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case kDragCancelInProgress: {
       // If the drag being completed is not a Hotseat drag, don't change the
       // state.
@@ -2307,7 +2322,12 @@ bool ShelfLayoutManager::StartAppListDrag(
     float scroll_y_hint) {
   // In tablet mode, home launcher gestures are handled by
   // `swipe_home_to_overview_controller_`.
-  if (Shell::Get()->IsInTabletMode() && event_in_screen.IsGestureEvent())
+  const bool is_tablet_mode = Shell::Get()->IsInTabletMode();
+  if (is_tablet_mode && event_in_screen.IsGestureEvent())
+    return false;
+
+  // Clamshell ProductivityLauncher does not support app list drags.
+  if (!is_tablet_mode && features::IsProductivityLauncherEnabled())
     return false;
 
   // Fullscreen app list can only be dragged from bottom alignment shelf.
@@ -2492,6 +2512,9 @@ void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
 
 void ShelfLayoutManager::CompleteAppListDrag(
     const ui::LocatedEvent& event_in_screen) {
+  // ProductivityLauncher does not support app list dragging.
+  DCHECK(!features::IsProductivityLauncherEnabled());
+
   // Change the shelf alignment to vertical during drag will reset
   // |drag_status_| to |kDragNone|.
   if (drag_status_ == kDragNone)

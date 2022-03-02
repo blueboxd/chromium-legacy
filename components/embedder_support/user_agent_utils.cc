@@ -27,20 +27,21 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace embedder_support {
 
 namespace {
 
 constexpr char kVersion100[] = "100";
+constexpr char kVersion99[] = "99";
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 
 // The registry key where the UniversalApiContract version value can be read
 // from.
@@ -121,7 +122,7 @@ const std::string& GetUniversalApiContractVersion() {
   return *universal_api_contract_version;
 }
 
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 const std::string& GetM100VersionNumber() {
   static const base::NoDestructor<std::string> m100_version_number([] {
@@ -136,6 +137,31 @@ const std::string& GetM100VersionNumber() {
     return version_str;
   }());
   return *m100_version_number;
+}
+
+const std::string& GetMajorInMinorVersionNumber() {
+  static const base::NoDestructor<std::string> version_number([] {
+    base::Version version(version_info::GetVersionNumber());
+    std::string version_str;
+    const std::vector<uint32_t>& components = version.components();
+    for (size_t i = 0; i < components.size(); ++i) {
+      if (i > 0) {
+        version_str.append(".");
+      }
+      if (i == 0) {
+        // Hardcode major version to 99
+        version_str.append(kVersion99);
+      } else if (i == 1) {
+        // Force major into minor version
+        version_str.append(base::NumberToString(components[0]));
+      } else {
+        // build and patch stay the same
+        version_str.append(base::NumberToString(components[i]));
+      }
+    }
+    return version_str;
+  }());
+  return *version_number;
 }
 
 const std::string& GetM100InMinorVersionNumber() {
@@ -247,7 +273,17 @@ blink::UserAgentBrandList GetBrandFullVersionList(
   return GetUserAgentBrandFullVersionList(enable_updated_grease_by_policy);
 }
 
+}  // namespace
+
 std::string GetProduct(const bool allow_version_override) {
+  // FF Priority 1: force major version to 99 and minor version to major version
+  // number.
+  if (allow_version_override &&
+      base::FeatureList::IsEnabled(
+          blink::features::kForceMajorVersionInMinorPositionInUserAgent))
+    return "Chrome/" + GetMajorInMinorVersionNumber();
+
+  // FF Priority 2: Force major version to 100, leave the rest the same.
   if (allow_version_override &&
       base::FeatureList::IsEnabled(
           blink::features::kForceMajorVersion100InUserAgent))
@@ -257,13 +293,13 @@ std::string GetProduct(const bool allow_version_override) {
           blink::features::kForceMinorVersion100InUserAgent))
     return "Chrome/" + GetM100InMinorVersionNumber();
 
+  // FF Priority 3: Force minor version to 100, leave the rest the same.
+  if (allow_version_override &&
+      base::FeatureList::IsEnabled(
+          blink::features::kForceMinorVersion100InUserAgent))
+    return "Chrome/" + GetM100InMinorVersionNumber();
+
   return version_info::GetProductNameAndVersionForUserAgent();
-}
-
-}  // namespace
-
-std::string GetProduct() {
-  return GetProduct(/*allow_version_override=*/false);
 }
 
 std::string GetUserAgent() {
@@ -293,7 +329,7 @@ std::string GetReducedUserAgent() {
 
 std::string GetFullUserAgent() {
   std::string product = GetProduct(/*allow_version_override=*/true);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseMobileUserAgent))
     product += " Mobile";
@@ -407,22 +443,27 @@ blink::UserAgentBrandVersion GetGreasedUserAgentBrandVersion(
          greasey_chars[(seed + 1) % greasey_chars.size()], "A",
          greasey_chars[(seed + 2) % greasey_chars.size()], "Brand"});
     greasey_version = greased_versions[seed % greased_versions.size()];
+
+    return GetProcessedGreasedBrandVersion(
+        maybe_greasey_brand.value_or(greasey_brand),
+        maybe_greasey_version.value_or(greasey_version), output_version_type);
   } else {
     const std::vector<std::string> greasey_chars = {" ", " ", ";"};
     greasey_brand = base::StrCat({greasey_chars[permuted_order[0]], "Not",
                                   greasey_chars[permuted_order[1]], "A",
                                   greasey_chars[permuted_order[2]], "Brand"});
     greasey_version = "99";
-  }
 
-  return GetProcessedGreasedBrandVersion(
-      maybe_greasey_brand.value_or(greasey_brand),
-      maybe_greasey_version.value_or(greasey_version), output_version_type);
+    // The old algorithm is held constant; it does not respond to experiment
+    // overrides.
+    return GetProcessedGreasedBrandVersion(greasey_brand, greasey_version,
+                                           output_version_type);
+  }
 }
 // TODO(crbug.com/1103047): This can be removed/re-refactored once we use
 // "macOS" by default
 std::string GetPlatformForUAMetadata() {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   return "macOS";
 #else
   return version_info::GetOSType();
@@ -454,12 +495,12 @@ blink::UserAgentMetadata GetUserAgentMetadata(PrefService* pref_service) {
   metadata.architecture = content::GetLowEntropyCpuArchitecture();
   metadata.model = content::BuildModelInfo();
   metadata.mobile = false;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   metadata.mobile = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseMobileUserAgent);
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   metadata.platform_version = GetUniversalApiContractVersion();
 #else
   int32_t major, minor, bugfix = 0;
@@ -477,7 +518,7 @@ blink::UserAgentMetadata GetUserAgentMetadata(PrefService* pref_service) {
   return metadata;
 }  // namespace embedder_support
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void SetDesktopUserAgentOverride(content::WebContents* web_contents,
                                  const blink::UserAgentMetadata& metadata,
                                  bool override_in_new_tabs) {
@@ -499,12 +540,12 @@ void SetDesktopUserAgentOverride(content::WebContents* web_contents,
 
   web_contents->SetUserAgentOverride(spoofed_ua, override_in_new_tabs);
 }
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 int GetHighestKnownUniversalApiContractVersionForTesting() {
   return kHighestKnownUniversalApiContractVersion;
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace embedder_support

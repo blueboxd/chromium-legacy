@@ -4,6 +4,7 @@
 
 #include "components/sync/base/pref_names.h"
 
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
 namespace syncer {
@@ -22,10 +23,6 @@ const char kSyncKeepEverythingSynced[] = "sync.keep_everything_synced";
 // Boolean pref that records whether OS sync preferences were migrated due to
 // SyncSettingsCategorization rollout.
 const char kOsSyncPrefsMigrated[] = "sync.os_sync_prefs_migrated";
-
-// Boolean indicating that the user has enabled the Chrome OS system-setting
-// sync feature.
-const char kOsSyncFeatureEnabled[] = "sync.os_sync_feature_enabled";
 
 // Boolean specifying whether to automatically sync all Chrome OS specific data
 // types (including future ones). This includes types like printers, OS-only
@@ -81,13 +78,13 @@ const char kEnableLocalSyncBackend[] = "sync.enable_local_sync_backend";
 // flag is present.
 const char kLocalSyncBackendDir[] = "sync.local_sync_backend_dir";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Stores whether sync should no longer respect the state of master toggle for
 // this user.
 // TODO(crbug.com/1107904): Clean pref when the decoupling logic is removed.
 const char kSyncDecoupledFromAndroidMasterSync[] =
     "sync.decoupled_from_master_sync";
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace prefs
 

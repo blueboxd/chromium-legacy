@@ -40,7 +40,9 @@ this.OSFeedbackBrowserTest = class extends PolymerTest {
 // You must register all suites in unified test here as well for consistency,
 // although technically is not necessary.
 const debug_suites_list = [
-  'ConfirmationPageTest',
+  'confirmationPageTest',
+  'fakeMojoProviderTest',
+  'searchPageTest',
 ];
 
 TEST_F('OSFeedbackBrowserTest', 'All', function() {

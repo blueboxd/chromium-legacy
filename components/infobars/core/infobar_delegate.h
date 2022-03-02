@@ -20,7 +20,7 @@ namespace blocked_content {
 class PopupBlockedInfoBarDelegate;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 namespace offline_pages {
 class OfflinePageInfoBarDelegate;
 }
@@ -132,7 +132,7 @@ class InfoBarDelegate {
     DANGEROUS_DOWNLOAD_INFOBAR_DELEGATE_ANDROID = 61,
     // Removed: DESKTOP_SEARCH_REDIRECTION_INFOBAR_DELEGATE = 62,
     UPDATE_PASSWORD_INFOBAR_DELEGATE_MOBILE = 63,
-    DATA_REDUCTION_PROMO_INFOBAR_DELEGATE_ANDROID = 64,
+    // Removed: DATA_REDUCTION_PROMO_INFOBAR_DELEGATE_ANDROID = 64,
     AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_DELEGATE_ANDROID = 65,
     ADS_BLOCKED_INFOBAR_DELEGATE_ANDROID = 66,
     INSTANT_APPS_INFOBAR_DELEGATE_ANDROID = 67,
@@ -151,7 +151,7 @@ class InfoBarDelegate {
     INSTALLABLE_AMBIENT_BADGE_INFOBAR_DELEGATE = 80,
     // Removed: PAGE_LOAD_CAPPING_INFOBAR_DELEGATE = 81,
     DOWNLOAD_PROGRESS_INFOBAR_ANDROID = 82,
-    AR_CORE_UPGRADE_ANDROID = 83,
+    // Removed: AR_CORE_UPGRADE_ANDROID = 83,
     BLOATED_RENDERER_INFOBAR_DELEGATE = 84,
     // Removed: SUPERVISED_USERS_DEPRECATED_INFOBAR_DELEGATE = 85,
     NEAR_OOM_REDUCTION_INFOBAR_ANDROID = 86,
@@ -275,7 +275,7 @@ class InfoBarDelegate {
   AsPopupBlockedInfoBarDelegate();
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
   virtual translate::TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   virtual offline_pages::OfflinePageInfoBarDelegate*
   AsOfflinePageInfoBarDelegate();
 #endif

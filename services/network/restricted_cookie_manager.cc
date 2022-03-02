@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"  // for FALLTHROUGH;
+#include "base/compiler_specific.h"  // for [[fallthrough]];
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -25,8 +25,11 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_partition_key.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/first_party_set_metadata.h"
+#include "net/cookies/site_for_cookies.h"
 #include "services/network/cookie_settings.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -38,13 +41,20 @@ namespace network {
 
 namespace {
 
+// TODO(cfredric): the `force_ignore_top_frame_party` param being false prevents
+// `document.cookie` access for same-party scripts embedded in an extension
+// frame. It would be better if we allowed that similarly to how we allow
+// SameParty cookies for requests in same-party contexts embedded in top-level
+// extension frames.
+const bool kForceIgnoreTopFrameParty = false;
+
 net::CookieOptions MakeOptionsForSet(
     mojom::RestrictedCookieManagerRole role,
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     const net::IsolationInfo& isolation_info,
     const CookieSettings& cookie_settings,
-    const net::CookieAccessDelegate* cookie_access_delegate) {
+    const net::FirstPartySetMetadata& first_party_set_metadata) {
   net::CookieOptions options;
   bool force_ignore_site_for_cookies =
       cookie_settings.ShouldIgnoreSameSiteRestrictions(url, site_for_cookies);
@@ -60,32 +70,18 @@ net::CookieOptions MakeOptionsForSet(
         net::cookie_util::ComputeSameSiteContextForSubresource(
             url, site_for_cookies, force_ignore_site_for_cookies));
   }
-  net::SchemefulSite request_site(url);
-  // TODO(cfredric): the `force_ignore_top_frame_party` param below prevents
-  // `document.cookie` access for same-party scripts embedded in an extension
-  // frame. It would be better if we allowed that similarly to how we allow
-  // SameParty cookies for requests in same-party contexts embedded in top-level
-  // extension frames.
-  bool force_ignore_top_frame_party = false;
-  options.set_same_party_context(net::cookie_util::ComputeSamePartyContext(
-      request_site, isolation_info, cookie_access_delegate,
-      force_ignore_top_frame_party));
+  options.set_same_party_context(first_party_set_metadata.context());
   if (isolation_info.party_context().has_value()) {
     // Count the top-frame site since it's not in the party_context.
     options.set_full_party_context_size(isolation_info.party_context()->size() +
                                         1);
   }
-  bool is_in_nontrivial_first_party_set =
-      cookie_access_delegate &&
-      cookie_access_delegate->IsInNontrivialFirstPartySet(request_site);
   options.set_is_in_nontrivial_first_party_set(
-      is_in_nontrivial_first_party_set);
+      first_party_set_metadata.owner().has_value());
 
   UMA_HISTOGRAM_ENUMERATION(
       "Cookie.FirstPartySetsContextType.JS.Write",
-      net::cookie_util::ComputeFirstPartySetsContextType(
-          request_site, isolation_info, cookie_access_delegate,
-          force_ignore_top_frame_party));
+      first_party_set_metadata.first_party_sets_context_type());
 
   return options;
 }
@@ -96,7 +92,7 @@ net::CookieOptions MakeOptionsForGet(
     const net::SiteForCookies& site_for_cookies,
     const net::IsolationInfo& isolation_info,
     const CookieSettings& cookie_settings,
-    const net::CookieAccessDelegate* cookie_access_delegate) {
+    const net::FirstPartySetMetadata& first_party_set_metadata) {
   // TODO(https://crbug.com/925311): Wire initiator here.
   net::CookieOptions options;
   bool force_ignore_site_for_cookies =
@@ -114,29 +110,30 @@ net::CookieOptions MakeOptionsForGet(
         net::cookie_util::ComputeSameSiteContextForSubresource(
             url, site_for_cookies, force_ignore_site_for_cookies));
   }
-  net::SchemefulSite request_site(url);
-  bool force_ignore_top_frame_party = false;
-  options.set_same_party_context(net::cookie_util::ComputeSamePartyContext(
-      request_site, isolation_info, cookie_access_delegate,
-      force_ignore_top_frame_party));
+  options.set_same_party_context(first_party_set_metadata.context());
   if (isolation_info.party_context().has_value()) {
     // Count the top-frame site since it's not in the party_context.
     options.set_full_party_context_size(isolation_info.party_context()->size() +
                                         1);
   }
-  bool is_in_nontrivial_first_party_set =
-      cookie_access_delegate &&
-      cookie_access_delegate->IsInNontrivialFirstPartySet(request_site);
   options.set_is_in_nontrivial_first_party_set(
-      is_in_nontrivial_first_party_set);
+      first_party_set_metadata.owner().has_value());
 
   UMA_HISTOGRAM_ENUMERATION(
       "Cookie.FirstPartySetsContextType.JS.Read",
-      net::cookie_util::ComputeFirstPartySetsContextType(
-          request_site, isolation_info, cookie_access_delegate,
-          force_ignore_top_frame_party));
+      first_party_set_metadata.first_party_sets_context_type());
 
   return options;
+}
+
+// Computes the cookie partition key that corresponds to the given
+// `cookie_store` and `isolation_info`.
+absl::optional<net::CookiePartitionKey> ComputeCookiePartitionKey(
+    const net::CookieStore* cookie_store,
+    const net::IsolationInfo& isolation_info) {
+  return net::CookieAccessDelegate::CreateCookiePartitionKey(
+      cookie_store->cookie_access_delegate(),
+      isolation_info.network_isolation_key());
 }
 
 }  // namespace
@@ -221,14 +218,16 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
            const url::Origin& top_frame_origin,
            const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
            net::CookieOptions options,
-           mojo::PendingRemote<mojom::CookieChangeListener> mojo_listener)
+           mojo::PendingRemote<mojom::CookieChangeListener> mojo_listener,
+           const bool first_party_sets_enabled)
       : cookie_store_(cookie_store),
         restricted_cookie_manager_(restricted_cookie_manager),
         url_(url),
         site_for_cookies_(site_for_cookies),
         top_frame_origin_(top_frame_origin),
         options_(options),
-        mojo_listener_(std::move(mojo_listener)) {
+        mojo_listener_(std::move(mojo_listener)),
+        first_party_sets_enabled_(first_party_sets_enabled) {
     // TODO(pwnall): add a constructor w/options to net::CookieChangeDispatcher.
     cookie_store_subscription_ =
         cookie_store->GetChangeDispatcher().AddCallbackForUrl(
@@ -265,7 +264,8 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
     // CookieChangeDispatcher doesn't check for inclusion against `options_`, so
     // we need to double-check that.
     net::CookieSamePartyStatus same_party_status =
-        net::cookie_util::GetSamePartyStatus(change.cookie, options_);
+        net::cookie_util::GetSamePartyStatus(change.cookie, options_,
+                                             first_party_sets_enabled_);
 
     if (!change.cookie
              .IncludeForRequestURL(
@@ -314,6 +314,8 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
 
   mojo::Remote<mojom::CookieChangeListener> mojo_listener_;
 
+  const bool first_party_sets_enabled_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
@@ -323,17 +325,22 @@ RestrictedCookieManager::RestrictedCookieManager(
     const CookieSettings& cookie_settings,
     const url::Origin& origin,
     const net::IsolationInfo& isolation_info,
-    mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer)
+    mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer,
+    const bool first_party_sets_enabled)
     : role_(role),
       cookie_store_(cookie_store),
       cookie_settings_(cookie_settings),
       origin_(origin),
       isolation_info_(isolation_info),
-      cookie_observer_(std::move(cookie_observer)) {
+      cookie_observer_(std::move(cookie_observer)),
+      first_party_sets_enabled_(first_party_sets_enabled) {
   DCHECK(cookie_store);
   CHECK(origin_ == isolation_info_.frame_origin().value() ||
         role_ != mojom::RestrictedCookieManagerRole::SCRIPT);
-  ComputeCookiePartitionKey();
+  cookie_partition_key_ =
+      ComputeCookiePartitionKey(cookie_store, isolation_info);
+  cookie_partition_key_collection_ =
+      net::CookiePartitionKeyCollection::FromOptional(cookie_partition_key_);
 }
 
 RestrictedCookieManager::~RestrictedCookieManager() {
@@ -348,12 +355,17 @@ RestrictedCookieManager::~RestrictedCookieManager() {
   }
 }
 
-void RestrictedCookieManager::ComputeCookiePartitionKey() {
-  cookie_partition_key_ = net::CookieAccessDelegate::CreateCookiePartitionKey(
-      cookie_store_->cookie_access_delegate(),
-      isolation_info_.network_isolation_key());
+void RestrictedCookieManager::OverrideIsolationInfoForTesting(
+    const net::IsolationInfo& new_isolation_info) {
+  isolation_info_ = new_isolation_info;
+  cookie_partition_key_ =
+      ComputeCookiePartitionKey(cookie_store_, isolation_info_);
   cookie_partition_key_collection_ =
       net::CookiePartitionKeyCollection::FromOptional(cookie_partition_key_);
+}
+
+bool RestrictedCookieManager::IsPartitionedCookiesEnabled() const {
+  return cookie_partition_key_.has_value();
 }
 
 void RestrictedCookieManager::GetAllForUrl(
@@ -371,11 +383,27 @@ void RestrictedCookieManager::GetAllForUrl(
 
   // TODO(morlovich): Try to validate site_for_cookies as well.
 
-  net::CookieOptions net_options = MakeOptionsForGet(
-      role_, url, site_for_cookies, isolation_info_, cookie_settings(),
-      cookie_store_->cookie_access_delegate());
+  net::cookie_util::ComputeFirstPartySetMetadataMaybeAsync(
+      /*request_site=*/net::SchemefulSite(url), isolation_info_,
+      cookie_store_->cookie_access_delegate(), kForceIgnoreTopFrameParty,
+      base::BindOnce(
+          &RestrictedCookieManager::OnGotFirstPartySetMetadataForGetAllForUrl,
+          weak_ptr_factory_.GetWeakPtr(), url, site_for_cookies,
+          top_frame_origin, std::move(options), std::move(callback)));
+}
+
+void RestrictedCookieManager::OnGotFirstPartySetMetadataForGetAllForUrl(
+    const GURL& url,
+    const net::SiteForCookies& site_for_cookies,
+    const url::Origin& top_frame_origin,
+    mojom::CookieManagerGetOptionsPtr options,
+    GetAllForUrlCallback callback,
+    net::FirstPartySetMetadata first_party_set_metadata) const {
+  net::CookieOptions net_options =
+      MakeOptionsForGet(role_, url, site_for_cookies, isolation_info_,
+                        cookie_settings(), first_party_set_metadata);
   // TODO(https://crbug.com/977040): remove set_return_excluded_cookies() once
-  //                                 removing deprecation warnings.
+  // removing deprecation warnings.
   net_options.set_return_excluded_cookies();
 
   cookie_store_->GetCookieListWithOptionsAsync(
@@ -479,6 +507,15 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     return;
   }
 
+  if (IsPartitionedCookiesEnabled()) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "Net.RestrictedCookieManager.PartitionedCookiesInScript",
+        base::ranges::count_if(result,
+                               [](const net::CookieWithAccessResult& c) {
+                                 return c.cookie.IsPartitioned();
+                               }));
+  }
+
   std::move(callback).Run(std::move(result));
 }
 
@@ -542,6 +579,13 @@ void RestrictedCookieManager::SetCanonicalCookie(
   // equal to RestrictedCookieManager's partition key.
   absl::optional<net::CookiePartitionKey> cookie_partition_key =
       cookie.PartitionKey();
+
+  // If the `cookie_partition_key_` has a nonce then force all cookie writes to
+  // be in the nonce based partition even if the cookie was not set with the
+  // Partitioned attribute.
+  if (net::CookiePartitionKey::HasNonce(cookie_partition_key_)) {
+    cookie_partition_key = cookie_partition_key_;
+  }
   if (cookie_partition_key) {
     // RestrictedCookieManager having a null partition key strictly implies the
     // feature is disabled. If that is the case, we treat the cookie as
@@ -550,8 +594,8 @@ void RestrictedCookieManager::SetCanonicalCookie(
       cookie_partition_key = absl::nullopt;
     } else {
       bool cookie_partition_key_ok =
-          cookie.PartitionKey()->from_script() ||
-          cookie.PartitionKey().value() == cookie_partition_key_.value();
+          cookie_partition_key->from_script() ||
+          cookie_partition_key.value() == cookie_partition_key_.value();
       UMA_HISTOGRAM_BOOLEAN("Net.RestrictedCookieManager.CookiePartitionKeyOK",
                             cookie_partition_key_ok);
       if (!cookie_partition_key_ok) {
@@ -560,17 +604,23 @@ void RestrictedCookieManager::SetCanonicalCookie(
         std::move(callback).Run(false);
         return;
       }
-      if (cookie.PartitionKey()->from_script()) {
+      if (cookie_partition_key->from_script()) {
         cookie_partition_key = cookie_partition_key_;
       }
     }
   }
 
-  auto sanitized_cookie = net::CanonicalCookie::FromStorage(
-      cookie.Name(), cookie.Value(), cookie.Domain(), cookie.Path(), now,
-      cookie.ExpiryDate(), now, cookie.IsSecure(), cookie.IsHttpOnly(),
-      cookie.SameSite(), cookie.Priority(), cookie.IsSameParty(),
-      cookie_partition_key, source_scheme, origin_.port());
+  if (IsPartitionedCookiesEnabled()) {
+    UMA_HISTOGRAM_BOOLEAN("Net.RestrictedCookieManager.SetPartitionedCookie",
+                          cookie_partition_key.has_value());
+  }
+
+  std::unique_ptr<net::CanonicalCookie> sanitized_cookie =
+      net::CanonicalCookie::FromStorage(
+          cookie.Name(), cookie.Value(), cookie.Domain(), cookie.Path(), now,
+          cookie.ExpiryDate(), now, cookie.IsSecure(), cookie.IsHttpOnly(),
+          cookie.SameSite(), cookie.Priority(), cookie.IsSameParty(),
+          cookie_partition_key, source_scheme, origin_.port());
   DCHECK(sanitized_cookie);
   // FromStorage() uses a less strict version of IsCanonical(), we need to check
   // the stricter version as well here.
@@ -578,11 +628,27 @@ void RestrictedCookieManager::SetCanonicalCookie(
     std::move(callback).Run(false);
     return;
   }
-  net::CanonicalCookie cookie_copy = *sanitized_cookie;
 
-  net::CookieOptions options = MakeOptionsForSet(
-      role_, url, site_for_cookies, isolation_info_, cookie_settings(),
-      cookie_store_->cookie_access_delegate());
+  net::cookie_util::ComputeFirstPartySetMetadataMaybeAsync(
+      /*request_site=*/net::SchemefulSite(url), isolation_info_,
+      cookie_store_->cookie_access_delegate(), kForceIgnoreTopFrameParty,
+      base::BindOnce(&RestrictedCookieManager::OnGotFirstPartySetMetadataForSet,
+                     weak_ptr_factory_.GetWeakPtr(), url, site_for_cookies,
+                     std::move(sanitized_cookie), origin_url,
+                     std::move(callback)));
+}
+
+void RestrictedCookieManager::OnGotFirstPartySetMetadataForSet(
+    const GURL& url,
+    const net::SiteForCookies& site_for_cookies,
+    std::unique_ptr<net::CanonicalCookie> sanitized_cookie,
+    const GURL& origin_url,
+    SetCanonicalCookieCallback callback,
+    net::FirstPartySetMetadata first_party_set_metadata) const {
+  net::CanonicalCookie cookie_copy = *sanitized_cookie;
+  net::CookieOptions options =
+      MakeOptionsForSet(role_, url, site_for_cookies, isolation_info_,
+                        cookie_settings(), first_party_set_metadata);
 
   cookie_store_->SetCanonicalCookieAsync(
       std::move(sanitized_cookie), origin_url, options,
@@ -628,12 +694,30 @@ void RestrictedCookieManager::AddChangeListener(
     return;
   }
 
-  net::CookieOptions net_options = MakeOptionsForGet(
-      role_, url, site_for_cookies, isolation_info_, cookie_settings(),
-      cookie_store_->cookie_access_delegate());
+  net::cookie_util::ComputeFirstPartySetMetadataMaybeAsync(
+      /*request_site=*/net::SchemefulSite(url), isolation_info_,
+      cookie_store_->cookie_access_delegate(), kForceIgnoreTopFrameParty,
+      base::BindOnce(&RestrictedCookieManager::
+                         OnGotFirstPartySetMetadataForAddChangeListener,
+                     weak_ptr_factory_.GetWeakPtr(), url, site_for_cookies,
+                     top_frame_origin, std::move(mojo_listener),
+                     std::move(callback)));
+}
+
+void RestrictedCookieManager::OnGotFirstPartySetMetadataForAddChangeListener(
+    const GURL& url,
+    const net::SiteForCookies& site_for_cookies,
+    const url::Origin& top_frame_origin,
+    mojo::PendingRemote<mojom::CookieChangeListener> mojo_listener,
+    AddChangeListenerCallback callback,
+    net::FirstPartySetMetadata first_party_set_metadata) {
+  net::CookieOptions net_options =
+      MakeOptionsForGet(role_, url, site_for_cookies, isolation_info_,
+                        cookie_settings(), first_party_set_metadata);
   auto listener = std::make_unique<Listener>(
       cookie_store_, this, url, site_for_cookies, top_frame_origin,
-      cookie_partition_key_, net_options, std::move(mojo_listener));
+      cookie_partition_key_, net_options, std::move(mojo_listener),
+      first_party_sets_enabled_);
 
   listener->mojo_listener().set_disconnect_handler(
       base::BindOnce(&RestrictedCookieManager::RemoveChangeListener,
@@ -761,7 +845,7 @@ bool RestrictedCookieManager::ValidateAccessToCookiesAt(
     return false;
   }
 
-  if (origin_.IsSameOriginWith(url::Origin::Create(url)))
+  if (origin_.IsSameOriginWith(url))
     return true;
 
   mojo::ReportBadMessage("Incorrect url origin");

@@ -907,7 +907,6 @@ cr.define('cr.ui.login.debug', function() {
       states: [{
         id: 'minor-mode',
         data: {
-          syncConsentOptionalEnabled: false,
           isMinorMode: true,
         },
       }]
@@ -920,7 +919,10 @@ cr.define('cr.ui.login.debug', function() {
       // additionalTosUrl.
       states: [
         {
-          id: 'regular',
+          id: 'regular-owner',
+          trigger: (screen) => {
+            screen.setIsDeviceOwner(true);
+          },
           data: {
             isArcEnabled: true,
             isDemo: false,
@@ -932,7 +934,40 @@ cr.define('cr.ui.login.debug', function() {
           },
         },
         {
+          id: 'regular',
+          trigger: (screen) => {
+            screen.setIsDeviceOwner(false);
+          },
+          data: {
+            isArcEnabled: true,
+            isDemo: false,
+            isChildAccount: false,
+            isEnterpriseManagedAccount: false,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
+          id: 'child-owner',
+          trigger: (screen) => {
+            screen.setIsDeviceOwner(true);
+          },
+          data: {
+            isArcEnabled: true,
+            isDemo: false,
+            isChildAccount: true,
+            isEnterpriseManagedAccount: false,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
           id: 'child',
+          trigger: (screen) => {
+            screen.setIsDeviceOwner(false);
+          },
           data: {
             isArcEnabled: true,
             isDemo: false,
@@ -956,7 +991,25 @@ cr.define('cr.ui.login.debug', function() {
           },
         },
         {
+          id: 'arc-disabled-owner',
+          trigger: (screen) => {
+            screen.setIsDeviceOwner(true);
+          },
+          data: {
+            isArcEnabled: false,
+            isDemo: false,
+            isChildAccount: false,
+            isEnterpriseManagedAccount: false,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
           id: 'arc-disabled',
+          trigger: (screen) => {
+            screen.setIsDeviceOwner(false);
+          },
           data: {
             isArcEnabled: false,
             isDemo: false,
@@ -972,6 +1025,7 @@ cr.define('cr.ui.login.debug', function() {
           trigger: (screen) => {
             screen.setBackupMode(true, true);
             screen.setLocationMode(false, true);
+            screen.setIsDeviceOwner(false);
           },
           data: {
             isArcEnabled: true,
@@ -987,6 +1041,7 @@ cr.define('cr.ui.login.debug', function() {
           id: 'error',
           trigger: (screen) => {
             screen.setUIStep('error');
+            screen.setIsDeviceOwner(true);
           },
           data: {
             isArcEnabled: true,
@@ -1206,6 +1261,7 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'marketing-opt-in',
       kind: ScreenKind.NORMAL,
+      handledSteps: 'overview',
       states: [
         {
           id: 'WithOptionToSubscribe',
@@ -1215,6 +1271,7 @@ cr.define('cr.ui.login.debug', function() {
             legalFooterVisibility: false,
           },
           trigger: (screen) => {
+            screen.setUIStep('overview');
             screen.updateA11ySettingsButtonVisibility(false);
           },
         },
@@ -1226,6 +1283,7 @@ cr.define('cr.ui.login.debug', function() {
             legalFooterVisibility: false,
           },
           trigger: (screen) => {
+            screen.setUIStep('overview');
             screen.updateA11ySettingsButtonVisibility(false);
           },
         },
@@ -1237,17 +1295,19 @@ cr.define('cr.ui.login.debug', function() {
             legalFooterVisibility: true,
           },
           trigger: (screen) => {
+            screen.setUIStep('overview');
             screen.updateA11ySettingsButtonVisibility(false);
           },
         },
         {
-          id: 'WithAceessibilityButton',
+          id: 'WithAccessibilityButton',
           data: {
             optInVisibility: true,
             optInDefaultState: true,
             legalFooterVisibility: true,
           },
           trigger: (screen) => {
+            screen.setUIStep('overview');
             screen.updateA11ySettingsButtonVisibility(true);
           },
         },

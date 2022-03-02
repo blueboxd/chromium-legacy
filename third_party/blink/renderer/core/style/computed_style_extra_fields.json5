@@ -150,10 +150,19 @@
       custom_compare: true,
     },
     {
-      name: "AncestorsAffectedByHas",
-      field_template: "primitive",
+      name: "AffectedByPseudoInHas",
+      field_template: "monotonic_flag",
       default_value: "false",
-      type_name: "bool",
+      custom_copy: true,
+      custom_compare: true,
+    },
+    {
+      name: "DynamicRestyleFlagsForHas",
+      field_template: "primitive",
+      field_group: "*",
+      field_size: 5,
+      default_value: "0",
+      type_name: "unsigned",
       inherited: true,
     },
     // A non-inherited property references a variable or @apply is used
@@ -595,10 +604,10 @@
     {
       name: "PageSize",
       field_template: "external",
-      type_name: "FloatSize",
+      type_name: "gfx::SizeF",
       field_group: "*",
-      default_value: "FloatSize()",
-      include_paths: ["third_party/blink/renderer/platform/geometry/float_size.h"],
+      default_value: "gfx::SizeF()",
+      include_paths: ["ui/gfx/geometry/size_f.h"],
     },
     {
       name: "OutlineStyleIsAuto",

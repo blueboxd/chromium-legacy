@@ -24,12 +24,10 @@ import org.chromium.base.jank_tracker.JankScenario;
 import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
-import org.chromium.chrome.browser.omnibox.styles.OmniboxTheme;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionsMetrics.RefineActionUsage;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor.BookmarkState;
@@ -42,6 +40,7 @@ import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
+import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.components.metrics.OmniboxEventProtos.OmniboxEventProto.PageClassification;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteResult;
@@ -94,7 +93,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
     private boolean mNativeInitialized;
     private AutocompleteController mAutocomplete;
     private long mUrlFocusTime;
-    private boolean mEnableAdaptiveSuggestionsCount;
     private boolean mShouldCacheSuggestions;
 
     @IntDef({SuggestionVisibilityState.DISALLOWED, SuggestionVisibilityState.PENDING_ALLOW,
@@ -248,11 +246,11 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
 
     /**
      * Specifies the visual state to be used by the suggestions.
-     * @param omniboxTheme The {@link @OmniboxTheme}.
+     * @param brandedColorScheme The {@link @BrandedColorScheme}.
      */
-    void updateVisualsForState(@OmniboxTheme int omniboxTheme) {
-        mDropdownViewInfoListManager.setOmniboxTheme(omniboxTheme);
-        mListPropertyModel.set(SuggestionListProperties.OMNIBOX_THEME, omniboxTheme);
+    void updateVisualsForState(@BrandedColorScheme int brandedColorScheme) {
+        mDropdownViewInfoListManager.setBrandedColorScheme(brandedColorScheme);
+        mListPropertyModel.set(SuggestionListProperties.COLOR_SCHEME, brandedColorScheme);
     }
 
     /**
@@ -277,11 +275,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
      */
     void onNativeInitialized() {
         mNativeInitialized = true;
-
-        mEnableAdaptiveSuggestionsCount =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT);
         mDropdownViewInfoListBuilder.onNativeInitialized();
-
         runPendingAutocompleteRequests();
     }
 
@@ -509,6 +503,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                         .with(ModalDialogProperties.CONTROLLER, dialogController)
                         .with(ModalDialogProperties.TITLE, suggestion.getDisplayText())
+                        .with(ModalDialogProperties.TITLE_MAX_LINES, 1)
                         .with(ModalDialogProperties.MESSAGE, resources.getString(dialogMessageId))
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources, R.string.ok)
                         .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
@@ -891,8 +886,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
 
     @Override
     public void onSuggestionDropdownScroll() {
-        if (mEnableAdaptiveSuggestionsCount
-                && mDropdownViewInfoListBuilder.hasFullyConcealedElements()) {
+        if (mDropdownViewInfoListBuilder.hasFullyConcealedElements()) {
             mDelegate.setKeyboardVisibility(false, false);
         }
     }
@@ -929,9 +923,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
 
     @Override
     public void onSuggestionDropdownOverscrolledToTop() {
-        if (mEnableAdaptiveSuggestionsCount) {
-            mDelegate.setKeyboardVisibility(true, false);
-        }
+        mDelegate.setKeyboardVisibility(true, false);
     }
 
     /**

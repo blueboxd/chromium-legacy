@@ -280,13 +280,6 @@ class AX_EXPORT AXNode final {
   // now owns all of the passed children.
   void SwapChildren(std::vector<AXNode*>* children);
 
-  // This is called when the AXTree no longer includes this node in the
-  // tree. Reference counting is used on some platforms because the
-  // operating system may hold onto a reference to an AXNode
-  // object even after we're through with it, so this may decrement the
-  // reference count and clear out the object's data.
-  void Destroy();
-
   // Returns true if this node is equal to or a descendant of |ancestor|.
   bool IsDescendantOf(const AXNode* ancestor) const;
   bool IsDescendantOfCrossingTreeBoundary(const AXNode* ancestor) const;
@@ -390,6 +383,9 @@ class AX_EXPORT AXNode final {
 
   const base::StringPairs& GetHtmlAttributes() const {
     return data().html_attributes;
+  }
+  bool HasHtmlAttribute(const char* attribute) const {
+    return data().HasHtmlAttribute(attribute);
   }
   bool GetHtmlAttribute(const char* attribute, std::string* value) const {
     return data().GetHtmlAttribute(attribute, value);
@@ -698,7 +694,7 @@ class AX_EXPORT AXNode final {
   // Returns false if the |data_| is uninitialized or has been taken. Returns
   // true otherwise.
   bool IsDataValid() const;
-  
+
  private:
   AXTableInfo* GetAncestorTableInfo() const;
   void IdVectorToNodeVector(const std::vector<AXNodeID>& ids,
@@ -826,10 +822,10 @@ AXNode::ChildIteratorBase<NodeType,
   // increment the iterator past the end, we remain at the past-the-end iterator
   // condition.
   if (child_ && parent_) {
-    if (child_ == (parent_->*LastChild)())
+    if (child_ == (parent_.get()->*LastChild)())
       child_ = nullptr;
     else
-      child_ = (child_->*NextSibling)();
+      child_ = (child_.get()->*NextSibling)();
   }
 
   return *this;
@@ -854,12 +850,12 @@ AXNode::ChildIteratorBase<NodeType,
     // If the iterator is past the end, |child_=nullptr|, decrement the iterator
     // gives us the last iterator element.
     if (!child_)
-      child_ = (parent_->*LastChild)();
+      child_ = (parent_.get()->*LastChild)();
     // Decrement the iterator gives us the previous element, except when the
     // iterator is at the beginning; in which case, decrementing the iterator
     // remains at the beginning.
-    else if (child_ != (parent_->*FirstChild)())
-      child_ = (child_->*PreviousSibling)();
+    else if (child_ != (parent_.get()->*FirstChild)())
+      child_ = (child_.get()->*PreviousSibling)();
   }
 
   return *this;

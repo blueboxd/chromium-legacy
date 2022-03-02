@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
@@ -436,7 +437,7 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
       ContentSettingsType::MIXEDSCRIPT,
       ContentSettingsType::NOTIFICATIONS,
       ContentSettingsType::POPUPS,
-#if defined(IS_CHROMEOS_ASH) || defined(OS_WIN)
+#if defined(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
       ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
 #endif
       ContentSettingsType::SENSORS,
@@ -672,10 +673,9 @@ void GetExceptionsForContentType(
   // the highest (see operator< in ContentSettingsPattern), so traverse it in
   // reverse to show the patterns with the highest precedence (the more specific
   // ones) on the top.
-  for (auto i = all_patterns_settings.rbegin();
-       i != all_patterns_settings.rend(); ++i) {
-    const ContentSettingsPattern& primary_pattern = i->first.first;
-    const OnePatternSettings& one_settings = i->second;
+  for (const auto& [primary_pattern_and_source, one_settings] :
+       base::Reversed(all_patterns_settings)) {
+    const auto& [primary_pattern, source] = primary_pattern_and_source;
     const std::string display_name =
         GetDisplayNameForPattern(primary_pattern, extension_registry);
 
@@ -686,7 +686,6 @@ void GetExceptionsForContentType(
     if (parent == one_settings.end())
       parent = one_settings.find(ContentSettingsPattern::Wildcard());
 
-    const std::string& source = i->first.second;
     auto& this_provider_exceptions = all_provider_exceptions
         [HostContentSettingsMap::GetProviderTypeFromSource(source)];
 
@@ -757,7 +756,7 @@ ContentSetting GetContentSettingForOrigin(
   // content settings, not just the permissions, plus all the possible sources,
   // and the calls to HostContentSettingsMap should be removed.
   content_settings::SettingInfo info;
-  std::unique_ptr<base::Value> value =
+  const base::Value value =
       map->GetWebsiteSetting(origin, origin, content_type, &info);
 
   // Retrieve the content setting.
@@ -769,10 +768,8 @@ ContentSetting GetContentSettingForOrigin(
         PermissionManagerFactory::GetForProfile(profile)->GetPermissionStatus(
             content_type, origin, origin);
   } else {
-    DCHECK(value.get());
-    DCHECK_EQ(base::Value::Type::INTEGER, value->type());
-    result.content_setting =
-        content_settings::ValueToContentSetting(value.get());
+    DCHECK_EQ(base::Value::Type::INTEGER, value.type());
+    result.content_setting = content_settings::ValueToContentSetting(value);
   }
 
   // Retrieve the source of the content setting.
@@ -813,7 +810,7 @@ void GetPolicyAllowedUrls(
 
   Profile* profile = Profile::FromWebUI(web_ui);
   PrefService* prefs = profile->GetPrefs();
-  const base::ListValue* policy_urls =
+  const base::Value* policy_urls =
       prefs->GetList(type == ContentSettingsType::MEDIASTREAM_MIC
                          ? prefs::kAudioCaptureAllowedUrls
                          : prefs::kVideoCaptureAllowedUrls);

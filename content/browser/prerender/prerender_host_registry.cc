@@ -9,7 +9,6 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/system/sys_info.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/common/trace_event_common.h"
@@ -36,7 +35,7 @@ bool DeviceHasEnoughMemoryForPrerender() {
   // Use the same default threshold as the back/forward cache. See comments in
   // DeviceHasEnoughMemoryForBackForwardCache().
   static constexpr int kDefaultMemoryThresholdMb =
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       1700;
 #else
       0;
@@ -91,9 +90,9 @@ int PrerenderHostRegistry::CreateAndStartHost(
 
     // Don't prerender when the trigger is in the background.
     if (web_contents.GetVisibility() == Visibility::HIDDEN) {
-      base::UmaHistogramEnumeration(
-          "Prerender.Experimental.PrerenderHostFinalStatus",
-          PrerenderHost::FinalStatus::kTriggerBackgrounded);
+      RecordPrerenderHostFinalStatus(
+          PrerenderHost::FinalStatus::kTriggerBackgrounded,
+          attributes.trigger_type, attributes.embedder_histogram_suffix);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -101,9 +100,9 @@ int PrerenderHostRegistry::CreateAndStartHost(
     // TODO(https://crbug.com/1176120): Fallback to NoStatePrefetch
     // since the memory requirements are different.
     if (!DeviceHasEnoughMemoryForPrerender()) {
-      base::UmaHistogramEnumeration(
-          "Prerender.Experimental.PrerenderHostFinalStatus",
-          PrerenderHost::FinalStatus::kLowEndDevice);
+      RecordPrerenderHostFinalStatus(PrerenderHost::FinalStatus::kLowEndDevice,
+                                     attributes.trigger_type,
+                                     attributes.embedder_histogram_suffix);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -113,10 +112,10 @@ int PrerenderHostRegistry::CreateAndStartHost(
     // skip the same-origin check.
     if (!attributes.IsBrowserInitiated() &&
         !attributes.initiator_origin.value().IsSameOriginWith(
-            url::Origin::Create(attributes.prerendering_url))) {
-      base::UmaHistogramEnumeration(
-          "Prerender.Experimental.PrerenderHostFinalStatus",
-          PrerenderHost::FinalStatus::kCrossOriginNavigation);
+            attributes.prerendering_url)) {
+      RecordPrerenderHostFinalStatus(
+          PrerenderHost::FinalStatus::kCrossOriginNavigation,
+          attributes.trigger_type, attributes.embedder_histogram_suffix);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -130,9 +129,9 @@ int PrerenderHostRegistry::CreateAndStartHost(
     // one if the score of the new candidate is higher than the started one's.
     if (prerender_host_by_frame_tree_node_id_.size() ==
         kMaxNumOfRunningPrerenders) {
-      base::UmaHistogramEnumeration(
-          "Prerender.Experimental.PrerenderHostFinalStatus",
-          PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded);
+      RecordPrerenderHostFinalStatus(
+          PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded,
+          attributes.trigger_type, attributes.embedder_histogram_suffix);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 

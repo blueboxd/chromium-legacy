@@ -139,6 +139,7 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
   void WasHidden();
   void SetKeepRenderProcessAlive(bool keep_alive);
   BrowserState* GetBrowserState() const;
+  NSString* GetStableIdentifier() const;
   void OpenURL(const WebState::OpenURLParams& params);
   void Stop();
   CRWSessionStorage* BuildSessionStorage();
@@ -156,6 +157,8 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
   bool IsVisible() const;
   bool IsCrashed() const;
   bool IsEvicted() const;
+  const FaviconStatus& GetFaviconStatus() const;
+  void SetFaviconStatus(const FaviconStatus& favicon_status);
   const GURL& GetVisibleURL() const;
   const GURL& GetLastCommittedURL() const;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const;
@@ -167,9 +170,16 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
   bool CanTakeSnapshot() const;
   void TakeSnapshot(const gfx::RectF& rect, SnapshotCallback callback);
   void CreateFullPagePdf(base::OnceCallback<void(NSData*)> callback);
+  void CloseMediaPresentations();
   void CloseWebState();
   bool SetSessionStateData(NSData* data);
   NSData* SessionStateData() const;
+  PermissionState GetStateForPermission(Permission permission) const
+      API_AVAILABLE(ios(15.0));
+  void SetStateForPermission(PermissionState state, Permission permission)
+      API_AVAILABLE(ios(15.0));
+  void OnStateChangedForPermission(Permission permission)
+      API_AVAILABLE(ios(15.0));
 
   // NavigationManagerDelegate:
   void ClearDialogs() final;
@@ -267,6 +277,10 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
 
   // The User-Agent type.
   UserAgentType user_agent_type_ = UserAgentType::AUTOMATIC;
+
+  // The stable identifier. Set during `Init()` call. Never nil after this
+  // method has been called. Stable across application restarts.
+  __strong NSString* stable_identifier_ = nil;
 
   // The fake CRWWebViewNavigationProxy used for testing. Nil in production.
   __strong id<CRWWebViewNavigationProxy> web_view_for_testing_;

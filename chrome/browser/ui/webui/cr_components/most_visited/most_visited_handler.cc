@@ -34,8 +34,7 @@ ntp_tiles::NTPTileImpression MakeNTPTileImpression(
       /*visual_type=*/
       ntp_tiles::TileVisualType::ICON_REAL /* unused on desktop */,
       /*icon_type=*/favicon_base::IconType::kInvalid /* unused on desktop */,
-      /*url_for_rappor=*/
-      tile.url /* used on desktop for logging */);
+      /*url_for_rappor=*/GURL() /* unused */);
 }
 
 }  // namespace
@@ -52,7 +51,7 @@ MostVisitedHandler::MostVisitedHandler(
       most_visited_sites_(
           ChromeMostVisitedSitesFactory::NewForProfile(profile)),
       web_contents_(web_contents),
-      logger_(profile, ntp_url),
+      logger_(profile, ntp_url, ntp_navigation_start_time),
       ntp_navigation_start_time_(ntp_navigation_start_time),
       page_handler_(this, std::move(pending_page_handler)),
       page_(std::move(pending_page)) {

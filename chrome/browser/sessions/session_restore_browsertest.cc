@@ -9,6 +9,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -29,11 +30,11 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/resource_coordinator/session_restore_policy.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/scoped_disable_client_side_decorations_for_test.h"
@@ -113,7 +114,7 @@
 #include "components/app_restore/features.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -688,7 +689,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
 }
 
 // Flaky on Linux. https://crbug.com/537592.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_WindowWithOneTab DISABLED_WindowWithOneTab
 #else
 #define MAYBE_WindowWithOneTab WindowWithOneTab
@@ -759,7 +760,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, IncognitotoNonIncognito) {
   ASSERT_TRUE(new_browser);
   EXPECT_EQ(url, new_browser->tab_strip_model()->GetWebContentsAt(0)->GetURL());
 }
-#endif  // !OS_CHROMEOS
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
@@ -780,7 +781,7 @@ void VerifyNavigationEntries(content::NavigationController& controller,
 }  // namespace
 
 // Flaky on Lacros and Wayland. https://crbug.com/1283339
-#if BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
 #define MAYBE_RestoreForeignTab DISABLED_RestoreForeignTab
 #else
 #define MAYBE_RestoreForeignTab RestoreForeignTab
@@ -1631,7 +1632,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ActiveIndexUpdatedAtInsert) {
   ASSERT_EQ(new_browser->tab_strip_model()->active_index(), 1);
 }
 
-#if !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS) && \
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS) && \
     !BUILDFLAG(IS_CHROMEOS_ASH)
 // This test doesn't apply to Mac or Lacros; see GetCommandLineForRelaunch
 // for details. It was disabled for a long time so might never have worked on
@@ -1665,7 +1666,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-#endif  // !!defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS) &&
+#endif  // !!BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS) &&
         // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Creates two windows, closes one, restores, make sure only one window open.
@@ -1872,7 +1873,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
 // Regression test for crbug.com/240156. When restoring tabs with a navigation,
 // the navigation should take active tab focus.
 // Flaky on Mac. http://crbug.com/656211.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_RestoreWithNavigateSelectedTab \
   DISABLED_RestoreWithNavigateSelectedTab
 #else
@@ -2101,7 +2102,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabWithDownloadDoesNotGetRestored) {
 }
 
 // Test is flaky on Linux and Windows: https://crbug.com/1181867
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_LINUX) && !defined(OS_WIN)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_WIN)
 namespace {
 
 class MultiBrowserObserver : public BrowserListObserver {
@@ -2232,7 +2233,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreAllBrowsers) {
 
 // PRE_CorrectLoadingOrder is flaky on ChromeOS MSAN and Mac.
 // See http://crbug.com/493167.
-#if (BUILDFLAG(IS_CHROMEOS_ASH) && defined(MEMORY_SANITIZER)) || defined(OS_MAC)
+#if (BUILDFLAG(IS_CHROMEOS_ASH) && defined(MEMORY_SANITIZER)) || \
+    BUILDFLAG(IS_MAC)
 #define MAYBE_PRE_CorrectLoadingOrder DISABLED_PRE_CorrectLoadingOrder
 #define MAYBE_CorrectLoadingOrder DISABLED_CorrectLoadingOrder
 #else
@@ -2927,13 +2929,13 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreWithIncompleteFileTest, LogsReadError) {
 
   // Ensure there is a restore event
   auto events = GetSessionServiceEvents(browser()->profile());
-  for (auto iter = events.rbegin(); iter != events.rend(); ++iter) {
+  for (const SessionServiceEvent& event : base::Reversed(events)) {
     // For normal shutdown (as this test triggers) kRestore should always occur
     // after kExit. This iterates in reverse, so that kRestore should occur
     // first.
-    ASSERT_NE(SessionServiceEventLogType::kExit, iter->type);
-    if (iter->type == SessionServiceEventLogType::kRestore) {
-      EXPECT_EQ(1, iter->data.restore.encountered_error_reading);
+    ASSERT_NE(SessionServiceEventLogType::kExit, event.type);
+    if (event.type == SessionServiceEventLogType::kRestore) {
+      EXPECT_EQ(1, event.data.restore.encountered_error_reading);
       break;
     }
   }
@@ -3224,7 +3226,7 @@ class AppSessionRestoreTest : public SessionRestoreTest {
   }
 
   web_app::AppId InstallPWA(Profile* profile, const GURL& start_url) {
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
@@ -3234,7 +3236,7 @@ class AppSessionRestoreTest : public SessionRestoreTest {
 };
 
 // This is disabled on mac pending http://crbug.com/1194201
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_BasicAppSessionRestore DISABLED_BasicAppSessionRestore
 #else
 #define MAYBE_BasicAppSessionRestore BasicAppSessionRestore
@@ -3315,7 +3317,7 @@ IN_PROC_BROWSER_TEST_F(AppSessionRestoreTest, MAYBE_BasicAppSessionRestore) {
 }
 
 // This is disabled on mac pending http://crbug.com/1194201
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_IsolatedFromBrowserRestore DISABLED_IsolatedFromBrowserRestore
 #else
 #define MAYBE_IsolatedFromBrowserRestore IsolatedFromBrowserRestore
@@ -3392,7 +3394,7 @@ IN_PROC_BROWSER_TEST_F(AppSessionRestoreTest,
 // To keep the coverage from the rest of the test, we disable the failing check
 // on linux for window-maximization.
 // TODO(https://crbug.com/1255462): fails under lacros.
-#if defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_RestoreAppMinimized DISABLED_RestoreAppMinimized
 #else
 #define MAYBE_RestoreAppMinimized RestoreAppMinimized
@@ -3439,7 +3441,7 @@ IN_PROC_BROWSER_TEST_F(AppSessionRestoreTest, MAYBE_RestoreAppMinimized) {
   for (Browser* browser : *(BrowserList::GetInstance())) {
     if (browser->type() == Browser::Type::TYPE_APP) {
       EXPECT_TRUE(web_app::AppBrowserController::IsForWebApp(browser, app_id));
-#if !defined(OS_LINUX)
+#if !BUILDFLAG(IS_LINUX)
       EXPECT_TRUE(browser->window()->IsMinimized());
 #endif
       EXPECT_EQ(browser->tab_strip_model()->GetWebContentsAt(0)->GetURL(),
@@ -3462,7 +3464,7 @@ IN_PROC_BROWSER_TEST_F(AppSessionRestoreTest, MAYBE_RestoreAppMinimized) {
 // In order to keep the coverage from the rest of the test, the checks that
 // fail on linux are explicitly disabled.
 // Flaky on Lacros https://crbug.com/1256498
-#if defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_RestoreMaximizedApp DISABLED_RestoreMaximizedApp
 #else
 #define MAYBE_RestoreMaximizedApp RestoreMaximizedApp
@@ -3510,7 +3512,7 @@ IN_PROC_BROWSER_TEST_F(AppSessionRestoreTest, MAYBE_RestoreMaximizedApp) {
   for (Browser* browser : *(BrowserList::GetInstance())) {
     if (browser->type() == Browser::Type::TYPE_APP) {
       EXPECT_TRUE(web_app::AppBrowserController::IsForWebApp(browser, app_id));
-#if !defined(OS_LINUX)
+#if !BUILDFLAG(IS_LINUX)
       EXPECT_TRUE(browser->window()->IsMaximized());
 #endif
       EXPECT_EQ(browser->tab_strip_model()->GetWebContentsAt(0)->GetURL(),
@@ -3531,7 +3533,7 @@ IN_PROC_BROWSER_TEST_F(AppSessionRestoreTest, MAYBE_RestoreMaximizedApp) {
   profile_keep_alive.reset();
 }
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 // This test does not make sense on mac, since when apps are opened,
 // the browser must open. This test opens an app when nothing is open,
 // then closes it. Then opens a browser to ensure the user's previous browser
@@ -3597,7 +3599,7 @@ IN_PROC_BROWSER_TEST_F(AppSessionRestoreTest,
   keep_alive.reset();
   profile_keep_alive.reset();
 }
-#endif  //  #if !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
 
 // This tests if an app being the last remaining window does not interfere
 // with the last browser window being restored later.

@@ -30,7 +30,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -921,7 +921,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 
   // Open a new tab in the browser.
-  AddTabAtIndex(1, test_page_url, ui::PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(AddTabAtIndex(1, test_page_url, ui::PAGE_TRANSITION_TYPED));
   ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
@@ -958,7 +958,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 
   // Open a new tab in the browser and starts Picture-in-Picture.
-  AddTabAtIndex(1, test_page_url, ui::PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(AddTabAtIndex(1, test_page_url, ui::PAGE_TRANSITION_TYPED));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
@@ -1338,7 +1338,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_EQ(2u, CollectAllRenderFrameHosts(active_web_contents).size());
 
   // Open a new tab in the browser.
-  AddTabAtIndex(1, GURL("about:blank"), ui::PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(AddTabAtIndex(1, GURL("about:blank"), ui::PAGE_TRANSITION_TYPED));
   ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
@@ -2042,7 +2042,7 @@ class WebAppPictureInPictureWindowControllerBrowserTest
   }
 
   Browser* InstallAndLaunchPWA(const GURL& start_url) {
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.DeprecatedGetOriginAsURL();
     web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;

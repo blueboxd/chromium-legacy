@@ -5,12 +5,13 @@
 #include "media/mojo/services/interface_factory_impl.h"
 
 #include <memory>
+
 #include "base/bind.h"
 #include "base/guid.h"
-
 #include "base/logging.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
 #include "media/mojo/services/mojo_decryptor_service.h"
 #include "media/mojo/services/mojo_media_client.h"
@@ -19,12 +20,16 @@
 #include "media/mojo/services/mojo_audio_decoder_service.h"
 #endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 
+#if BUILDFLAG(ENABLE_MOJO_AUDIO_ENCODER)
+#include "media/mojo/services/mojo_audio_encoder_service.h"
+#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_ENCODER)
+
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 #include "media/mojo/services/mojo_video_decoder_service.h"
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER) || BUILDFLAG(ENABLE_CAST_RENDERER) || \
-    defined(OS_WIN)
+    BUILDFLAG(IS_WIN)
 #include "base/callback_helpers.h"
 #include "media/base/renderer.h"
 #include "media/mojo/services/mojo_renderer_service.h"
@@ -85,6 +90,23 @@ void InterfaceFactoryImpl::CreateVideoDecoder(
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 }
 
+void InterfaceFactoryImpl::CreateAudioEncoder(
+    mojo::PendingReceiver<mojom::AudioEncoder> receiver) {
+#if BUILDFLAG(ENABLE_MOJO_AUDIO_ENCODER)
+  auto runner = base::ThreadTaskRunnerHandle::Get();
+
+  auto underlying_encoder = mojo_media_client_->CreateAudioEncoder(runner);
+  if (!underlying_encoder) {
+    DLOG(ERROR) << "AudioEncoder creation failed.";
+    return;
+  }
+
+  audio_encoder_receivers_.Add(
+      std::make_unique<MojoAudioEncoderService>(std::move(underlying_encoder)),
+      std::move(receiver));
+#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_ENCODER)
+}
+
 void InterfaceFactoryImpl::CreateDefaultRenderer(
     const std::string& audio_device_id,
     mojo::PendingReceiver<mojom::Renderer> receiver) {
@@ -119,7 +141,7 @@ void InterfaceFactoryImpl::CreateCastRenderer(
 }
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void InterfaceFactoryImpl::CreateMediaPlayerRenderer(
     mojo::PendingRemote<mojom::MediaPlayerRendererClientExtension>
         client_extension_ptr,
@@ -136,9 +158,9 @@ void InterfaceFactoryImpl::CreateFlingingRenderer(
     mojo::PendingReceiver<mojom::Renderer> receiver) {
   NOTREACHED();
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void InterfaceFactoryImpl::CreateMediaFoundationRenderer(
     mojo::PendingRemote<mojom::MediaLog> media_log_remote,
     mojo::PendingReceiver<media::mojom::Renderer> receiver,
@@ -204,6 +226,11 @@ bool InterfaceFactoryImpl::IsEmpty() {
     return false;
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 
+#if BUILDFLAG(ENABLE_MOJO_AUDIO_ENCODER)
+  if (!audio_encoder_receivers_.empty())
+    return false;
+#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_ENCODER)
+
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
   if (!renderer_receivers_.empty())
     return false;
@@ -235,6 +262,10 @@ void InterfaceFactoryImpl::SetReceiverDisconnectHandler() {
   video_decoder_receivers_.set_disconnect_handler(disconnect_cb);
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 
+#if BUILDFLAG(ENABLE_MOJO_AUDIO_ENCODER)
+  audio_encoder_receivers_.set_disconnect_handler(disconnect_cb);
+#endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_ENCODER)
+
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
   renderer_receivers_.set_disconnect_handler(disconnect_cb);
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
@@ -253,7 +284,7 @@ void InterfaceFactoryImpl::OnReceiverDisconnect() {
 }
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER) || BUILDFLAG(ENABLE_CAST_RENDERER) || \
-    defined(OS_WIN)
+    BUILDFLAG(IS_WIN)
 void InterfaceFactoryImpl::AddRenderer(
     std::unique_ptr<media::Renderer> renderer,
     mojo::PendingReceiver<mojom::Renderer> receiver) {

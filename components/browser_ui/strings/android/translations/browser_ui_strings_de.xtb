@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Cookies zulassen</translation>
 <translation id="2228071138934252756">Um <ph name="APP_NAME" /> Zugriff auf Ihre Kamera zu gewähren, muss die Kameraberechtigung auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktiviert werden.</translation>
 <translation id="2241634353105152135">Nur einmal</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> entfernen</translation>
 <translation id="2289270750774289114">Nachfragen, wenn eine Website nach Bluetooth-Geräten in der Nähe suchen möchte (empfohlen)</translation>
 <translation id="2315043854645842844">Die clientseitige Zertifikatauswahl wird vom Betriebssystem nicht unterstützt.</translation>
 <translation id="2359808026110333948">Weiter</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Informationen anzeigen</translation>
 <translation id="3123473560110926937">Auf einigen Websites blockiert</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gespeicherte Daten</translation>
+<translation id="3203366800380907218">Aus dem Web</translation>
 <translation id="321187648315454507">Damit <ph name="APP_NAME" /> Ihnen Benachrichtigungen senden kann, müssen Sie die Berechtigung für Benachrichtigungen auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3277252321222022663">Websites den Zugriff auf Sensoren erlauben (empfohlen)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">Blockiert</translation>
 <translation id="5689516760719285838">Standort</translation>
 <translation id="5690795753582697420">Die Kamera wurde in den Android-Einstellungen deaktiviert</translation>
-<translation id="5710871682236653961">Fragen, bevor Websites erlaubt wird, Informationen zu senden und zu empfangen, wenn das Smartphone an NFC-Geräte gehalten wird (empfohlen)</translation>
 <translation id="5719847187258001597">Dadurch werden alle von <ph name="ORIGIN" /> oder der zugehörigen App auf dem Startbildschirm gespeicherten Daten und Cookies gelöscht.</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> blockiert</translation>
 <translation id="5804241973901381774">Berechtigungen</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">Für die aktuelle Suchmaschine zugelassen</translation>
 <translation id="7053983685419859001">Blockieren</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ausgewählt}other{# ausgewählt}}</translation>
-<translation id="7070090581017165256">Über diese Website</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ausgewählt. Optionen sind oben auf dem Bildschirm verfügbar</translation>
 <translation id="7141896414559753902">Anzeige von Pop-ups und Weiterleitungen für Websites blockieren (empfohlen)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Eine Website verwendet Ihr Mikrofon</translation>
 <translation id="7561196759112975576">Immer</translation>
-<translation id="7572498721684305250">Websites daran hindern, Informationen zu senden und zu empfangen, wenn das Smartphone an NFC-Geräte gehalten wird</translation>
 <translation id="757524316907819857">Wiedergabe von geschützten Inhalten für Websites blockieren</translation>
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7658239707568436148">Abbrechen</translation>

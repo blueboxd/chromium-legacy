@@ -53,8 +53,8 @@ const char kStartupUrl1[] = "http://start1.com";
 const char kStartupUrl2[] = "http://start2.com";
 const char kStartupUrl3[] = "http://start3.com";
 
-bool ListValueContainsUrl(const base::ListValue* list, const GURL& url) {
-  if (!list)
+bool ListValueContainsUrl(const base::Value* list, const GURL& url) {
+  if (!list || !list->is_list())
     return false;
 
   for (const base::Value& i : list->GetList()) {
@@ -85,14 +85,14 @@ class SettingsResetPromptModelTest
     init_params.pref_file.clear();
     InitializeExtensionService(init_params);
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
     // In production code, the settings reset prompt profile preferences are
     // registered on Windows only. We explicitly register the prefs on
     // non-Windows systems so that we can continue testing the model on more
     // than just Windows.
     SettingsResetPromptPrefsManager::RegisterProfilePrefs(
         testing_pref_service()->registry());
-#endif  // !defined(OS_WIN)
+#endif  // !BUILDFLAG(IS_WIN)
 
     profile_->CreateWebDataService();
     TemplateURLServiceFactory::GetInstance()->SetTestingFactory(

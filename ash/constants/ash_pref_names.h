@@ -35,8 +35,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAudioVolumePercent[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAudioDevicesState[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEduCoexistenceId[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kEduCoexistenceSecondaryAccountsInvalidationVersion[];
-COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEduCoexistenceToSVersion[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEduCoexistenceToSAcceptedVersion[];
@@ -195,7 +193,7 @@ extern const char kAllowMGSToStoreDisplayProperties[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFullscreenAlertEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kFullscreenNotificationUrlExemptList[];
+extern const char kKeepFullscreenWithoutNotificationUrlAllowList[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kGestureEducationNotificationShown[];
@@ -216,6 +214,8 @@ extern const char kManagedGuestSessionPrivacyWarningsEnabled[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSnoopingProtectionEnabled[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kSnoopingProtectionNotificationSuppressionEnabled[];
 
 // Lock screen notification settings.
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -402,20 +402,26 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kProjectorCreationFlowEnabled[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kChromadToCloudMigrationEnabled[];
-
-COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kProjectorCreationFlowLanguage[];
-
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFilesAppFolderShortcuts[];
-
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFilesAppUIPrefsMigrated[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kProjectorGalleryOnboardingShowCount[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kProjectorViewerOnboardingShowCount[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kProjectorAllowByPolicy[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kChromadToCloudMigrationEnabled[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFilesAppFolderShortcuts[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFilesAppUIPrefsMigrated[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kLoginScreenWebUILazyLoading[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kLoginScreenWebUILazyLoading[];

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
@@ -13,6 +14,7 @@
 #include "base/no_destructor.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/os_crypt/os_crypt.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
@@ -120,14 +122,6 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
             observer_));
   }
 
-  void OnBootstrapTokenUpdated(const std::string& bootstrap_token) override {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &SyncEncryptionHandler::Observer::OnBootstrapTokenUpdated,
-            observer_, bootstrap_token));
-  }
-
   void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                bool encrypt_everything) override {
     task_runner_->PostTask(
@@ -181,6 +175,55 @@ bool CheckNigoriAgainstPendingKeys(const Nigori& nigori,
   bool decrypt_result = nigori.Decrypt(pending_keys.blob(), &plaintext);
   DVLOG_IF(1, !decrypt_result) << "Passphrase failed to decrypt pending keys.";
   return decrypt_result;
+}
+
+// Reads Nigori from bootstrap token. Returns nullptr if bootstrap token empty
+// or corrupted.
+std::unique_ptr<Nigori> ReadNigoriFromBootstrapToken(
+    const std::string& bootstrap_token) {
+  if (bootstrap_token.empty()) {
+    return nullptr;
+  }
+
+  std::string decoded_key;
+  if (!base::Base64Decode(bootstrap_token, &decoded_key)) {
+    return nullptr;
+  }
+
+  std::string decrypted_key;
+  if (!OSCrypt::DecryptString(decoded_key, &decrypted_key)) {
+    return nullptr;
+  }
+
+  sync_pb::NigoriKey key;
+  if (!key.ParseFromString(decrypted_key)) {
+    return nullptr;
+  }
+
+  return Nigori::CreateByImport(key.deprecated_user_key(), key.encryption_key(),
+                                key.mac_key());
+}
+
+// Serializes |nigori| as bootstrap token. Returns empty string in case of
+// crypto/serialization failures.
+std::string SerializeNigoriAsBootstrapToken(const Nigori& nigori) {
+  sync_pb::NigoriKey proto;
+  nigori.ExportKeys(proto.mutable_deprecated_user_key(),
+                    proto.mutable_encryption_key(), proto.mutable_mac_key());
+
+  const std::string serialized_key = proto.SerializeAsString();
+  if (serialized_key.empty()) {
+    return std::string();
+  }
+
+  std::string encrypted_key;
+  if (!OSCrypt::EncryptString(serialized_key, &encrypted_key)) {
+    return std::string();
+  }
+
+  std::string encoded_key;
+  base::Base64Encode(encrypted_key, &encoded_key);
+  return encoded_key;
 }
 
 }  // namespace
@@ -316,29 +359,16 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
       state_.passphrase_key_derivation_params, passphrase);
   DCHECK(nigori);
 
-  // Check the passphrase that was provided against our local cache of the
-  // cryptographer's pending keys (which we cached during a previous
-  // OnPassphraseRequired() event). If this was unsuccessful, the UI layer can
-  // immediately call OnPassphraseRequired() again without showing the user a
-  // spinner.
-  if (!CheckNigoriAgainstPendingKeys(*nigori, state_.cached_pending_keys)) {
-    return false;
+  std::string bootstrap_token = SerializeNigoriAsBootstrapToken(*nigori);
+  if (SetDecryptionNigoriKey(std::move(nigori))) {
+    // Update the bootstrap token immediately, even if engine has new pending
+    // keys, which aren't decryptable with |nigori|, this is harmless as
+    // bootstrap token is ignored if it doesn't contain the right key.
+    delegate_->SetEncryptionBootstrapToken(bootstrap_token);
+    return true;
   }
 
-  state_.engine->SetExplicitPassphraseDecryptionKey(std::move(nigori));
-
-  // Since we were able to decrypt the cached pending keys with the passphrase
-  // provided, we immediately alert the UI layer that the passphrase was
-  // accepted. This will avoid the situation where a user enters a passphrase,
-  // clicks OK, immediately reopens the advanced settings dialog, and gets an
-  // unnecessary prompt for a passphrase.
-  // Note: It is not guaranteed that the passphrase will be accepted by the
-  // syncer thread, since we could receive a new nigori node while the task is
-  // pending. This scenario is a valid race, and
-  // SetExplicitPassphraseDecryptionKey() can trigger a new
-  // OnPassphraseRequired() if it needs to.
-  OnPassphraseAccepted();
-  return true;
+  return false;
 }
 
 bool SyncServiceCrypto::IsTrustedVaultKeyRequiredStateKnown() const {
@@ -381,6 +411,11 @@ void SyncServiceCrypto::SetSyncEngine(const CoreAccountInfo& account_info,
   if (state_.required_user_action ==
       RequiredUserAction::kFetchingTrustedVaultKeys) {
     FetchTrustedVaultKeys(/*is_second_fetch_attempt=*/false);
+  }
+
+  // Attempt decryption with bootstrap token if necessary.
+  if (state_.required_user_action == RequiredUserAction::kPassphraseRequired) {
+    MaybeSetDecryptionKeyFromBootstrapToken();
   }
 }
 
@@ -440,6 +475,10 @@ void SyncServiceCrypto::OnPassphraseRequired(
   // Reconfigure without the encrypted types (excluded implicitly via the
   // failed datatypes handler).
   delegate_->ReconfigureDataTypesDueToCrypto();
+
+  // Attempt decryption with bootstrap token, so the user doesn't need to enter
+  // the passphrase if successful.
+  MaybeSetDecryptionKeyFromBootstrapToken();
 }
 
 void SyncServiceCrypto::OnPassphraseAccepted() {
@@ -506,20 +545,13 @@ void SyncServiceCrypto::OnTrustedVaultKeyAccepted() {
   delegate_->ReconfigureDataTypesDueToCrypto();
 }
 
-void SyncServiceCrypto::OnBootstrapTokenUpdated(
-    const std::string& bootstrap_token) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(state_.engine);
-  delegate_->EncryptionBootstrapTokenChanged(bootstrap_token);
-}
-
 void SyncServiceCrypto::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                                 bool encrypt_everything) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_.encrypted_types = encrypted_types;
   state_.encrypt_everything = encrypt_everything;
   DVLOG(1) << "Encrypted types changed to "
-           << ModelTypeSetToString(state_.encrypted_types)
+           << ModelTypeSetToDebugString(state_.encrypted_types)
            << " (encrypt everything is set to "
            << (state_.encrypt_everything ? "true" : "false") << ")";
   DCHECK(state_.encrypted_types.HasAll(AlwaysEncryptedUserTypes()));
@@ -776,6 +808,51 @@ void SyncServiceCrypto::GetIsRecoverabilityDegradedCompleted(
         "Sync.TrustedVaultRecoverabilityDegradedOnStartup",
         is_recoverability_degraded);
   }
+}
+
+bool SyncServiceCrypto::SetDecryptionNigoriKey(std::unique_ptr<Nigori> nigori) {
+  DCHECK(nigori);
+  // This should only be called when we have cached pending keys.
+  DCHECK(state_.cached_pending_keys.has_blob());
+
+  // Check the passphrase that was provided against our local cache of the
+  // cryptographer's pending keys (which we cached during a previous
+  // OnPassphraseRequired() event). If this was unsuccessful, the UI layer can
+  // immediately call OnPassphraseRequired() again without showing the user a
+  // spinner.
+  if (!CheckNigoriAgainstPendingKeys(*nigori, state_.cached_pending_keys)) {
+    return false;
+  }
+
+  state_.engine->SetExplicitPassphraseDecryptionKey(std::move(nigori));
+
+  // Since we were able to decrypt the cached pending keys with the passphrase
+  // provided, we immediately alert the UI layer that the passphrase was
+  // accepted. This will avoid the situation where a user enters a passphrase,
+  // clicks OK, immediately reopens the advanced settings dialog, and gets an
+  // unnecessary prompt for a passphrase.
+  // Note: It is not guaranteed that the passphrase will be accepted by the
+  // syncer thread, since we could receive a new nigori node while the task is
+  // pending. This scenario is a valid race, and
+  // SetExplicitPassphraseDecryptionKey() can trigger a new
+  // OnPassphraseRequired() if it needs to.
+  OnPassphraseAccepted();
+  return true;
+}
+
+void SyncServiceCrypto::MaybeSetDecryptionKeyFromBootstrapToken() {
+  if (!state_.engine) {
+    // Engine initialization isn't complete yet, attempt decryption upon
+    // initialization.
+    return;
+  }
+  std::unique_ptr<Nigori> nigori =
+      ReadNigoriFromBootstrapToken(delegate_->GetEncryptionBootstrapToken());
+  if (!nigori) {
+    return;
+  }
+
+  SetDecryptionNigoriKey(std::move(nigori));
 }
 
 }  // namespace syncer

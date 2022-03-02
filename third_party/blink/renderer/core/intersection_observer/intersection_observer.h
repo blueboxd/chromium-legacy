@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/forward.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -196,6 +196,10 @@ class CORE_EXPORT IntersectionObserver final
   // Enable/disable throttling of visibility checking, so we don't have to add
   // sleep() calls to tests to wait for notifications to show up.
   static void SetThrottleDelayEnabledForTesting(bool);
+
+  const HeapLinkedHashSet<WeakMember<IntersectionObservation>>& Observations() {
+    return observations_;
+  }
 
  private:
   bool NeedsDelivery() const { return !active_observations_.IsEmpty(); }

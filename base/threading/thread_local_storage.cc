@@ -8,10 +8,14 @@
 
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
+
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_X86_64)
+#include <pthread.h>
+#include <type_traits>
+#endif
 
 using base::internal::PlatformThreadLocalStorage;
 
@@ -197,8 +201,42 @@ TlsVectorState GetTlsVectorStateAndValue(void* tls_value,
 // Returns the tls vector and state using the tls key.
 TlsVectorState GetTlsVectorStateAndValue(PlatformThreadLocalStorage::TLSKey key,
                                          TlsVectorEntry** entry = nullptr) {
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_X86_64)
+  // On macOS, pthread_getspecific() is in libSystem, so a call to it has to go
+  // through PLT. However, and contrary to some other platforms, *all* TLS keys
+  // are in a static array in the thread structure. So they are *always* at a
+  // fixed offset from the segment register holding the thread structure
+  // address.
+  //
+  // We could use _pthread_getspecific_direct(), but it is not
+  // exported. However, on all macOS versions we support, the TLS array is at
+  // %gs. This is used in V8 and PartitionAlloc, and can also be seen by looking
+  // at pthread_getspecific() disassembly:
+  //
+  // libsystem_pthread.dylib`pthread_getspecific:
+  // libsystem_pthread.dylib[0x7ff800316099] <+0>: movq   %gs:(,%rdi,8), %rax
+  // libsystem_pthread.dylib[0x7ff8003160a2] <+9>: retq
+  //
+  // This function is essentially inlining the content of pthread_getspecific()
+  // here.
+  //
+  // Note that this likely ends up being even faster than thread_local for
+  // typical Chromium builds where the code is in a dynamic library. For the
+  // static executable case, this is likely equivalent.
+  static_assert(
+      std::is_same<PlatformThreadLocalStorage::TLSKey, pthread_key_t>::value,
+      "The special-case below assumes that the platform TLS implementation is "
+      "pthread.");
+
+  intptr_t platform_tls_value;
+  asm("movq %%gs:(,%1,8), %0;" : "=r"(platform_tls_value) : "r"(key));
+
+  return GetTlsVectorStateAndValue(reinterpret_cast<void*>(platform_tls_value),
+                                   entry);
+#else
   return GetTlsVectorStateAndValue(PlatformThreadLocalStorage::GetTLSValue(key),
                                    entry);
+#endif
 }
 
 // This function is called to initialize our entire Chromium TLS system.
@@ -330,7 +368,7 @@ namespace base {
 
 namespace internal {
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void PlatformThreadLocalStorage::OnThreadExit() {
   PlatformThreadLocalStorage::TLSKey key =
       g_native_tls_key.load(std::memory_order_relaxed);
@@ -348,7 +386,7 @@ void PlatformThreadLocalStorage::OnThreadExit() {
     return;
   OnThreadExitInternal(tls_vector);
 }
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 void PlatformThreadLocalStorage::OnThreadExit(void* value) {
   // On posix this function may be called twice. The first pass calls dtors and
   // sets state to kDestroyed. The second pass sets kDestroyed to
@@ -364,7 +402,7 @@ void PlatformThreadLocalStorage::OnThreadExit(void* value) {
 
   OnThreadExitInternal(tls_vector);
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace internal
 
@@ -445,7 +483,7 @@ void ThreadLocalStorage::Slot::Set(void* value) {
   const TlsVectorState state = GetTlsVectorStateAndValue(
       g_native_tls_key.load(std::memory_order_relaxed), &tls_data);
   DCHECK_NE(state, TlsVectorState::kDestroyed);
-  if (!tls_data) {
+  if (UNLIKELY(!tls_data)) {
     if (!value)
       return;
     tls_data = ConstructTlsVector();

@@ -9,6 +9,7 @@
 #include "base/allocator/partition_allocator/random.h"
 #include "base/check_op.h"
 #include "base/cpu.h"
+#include "build/build_config.h"
 
 namespace {
 
@@ -62,7 +63,7 @@ void PageAllocator::SetRandomMmapSeed(int64_t seed) {
 }
 
 void* PageAllocator::GetRandomMmapAddr() {
-  return base::GetRandomPageBase();
+  return reinterpret_cast<void*>(base::GetRandomPageBase());
 }
 
 void* PageAllocator::AllocatePages(void* address,
@@ -85,10 +86,10 @@ bool PageAllocator::ReleasePages(void* address,
   DCHECK_LT(new_length, length);
   uint8_t* release_base = reinterpret_cast<uint8_t*>(address) + new_length;
   size_t release_size = length - new_length;
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   // On POSIX, we can unmap the trailing pages.
   base::FreePages(release_base, release_size);
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   // On Windows, we can only de-commit the trailing pages. FreePages() will
   // still free all pages in the region including the released tail, so it's
   // safe to just decommit the tail.

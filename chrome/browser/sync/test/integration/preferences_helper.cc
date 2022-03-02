@@ -61,8 +61,8 @@ void ChangeListPref(int index,
                     const char* pref_name,
                     const base::ListValue& new_value) {
   ListPrefUpdate update(GetPrefs(index), pref_name);
-  base::ListValue* list = update.Get();
-  for (const auto& it : new_value.GetList()) {
+  base::Value* list = update.Get();
+  for (const base::Value& it : new_value.GetList()) {
     list->Append(it.Clone());
   }
 }
@@ -130,7 +130,7 @@ bool ClearedPrefMatches(const char* pref_name) {
 }
 
 bool ListPrefMatches(const char* pref_name) {
-  const base::ListValue* reference_value = GetPrefs(0)->GetList(pref_name);
+  const base::Value* reference_value = GetPrefs(0)->GetList(pref_name);
   for (int i = 1; i < test()->num_clients(); ++i) {
     if (*reference_value != *GetPrefs(i)->GetList(pref_name)) {
       DVLOG(1) << "List preference " << pref_name << " mismatched in"

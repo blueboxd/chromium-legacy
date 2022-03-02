@@ -542,19 +542,18 @@ std::string SetWhitelistedPref(Profile* profile,
     DCHECK(value.is_bool());
   } else if (pref_name == prefs::kPrintingAPIExtensionsAllowlist) {
     DCHECK(value.is_list());
-  } else if (pref_name == ash::quick_answers::prefs::kQuickAnswersEnabled) {
+  } else if (pref_name == quick_answers::prefs::kQuickAnswersEnabled) {
     DCHECK(value.is_bool());
   } else if (pref_name ==
-             ash::quick_answers::prefs::kQuickAnswersDefinitionEnabled) {
+             quick_answers::prefs::kQuickAnswersDefinitionEnabled) {
     DCHECK(value.is_bool());
   } else if (pref_name ==
-             ash::quick_answers::prefs::kQuickAnswersTranslationEnabled) {
+             quick_answers::prefs::kQuickAnswersTranslationEnabled) {
     DCHECK(value.is_bool());
   } else if (pref_name ==
-             ash::quick_answers::prefs::kQuickAnswersUnitConverstionEnabled) {
+             quick_answers::prefs::kQuickAnswersUnitConversionEnabled) {
     DCHECK(value.is_bool());
-  } else if (pref_name ==
-             ash::quick_answers::prefs::kQuickAnswersConsentStatus) {
+  } else if (pref_name == quick_answers::prefs::kQuickAnswersConsentStatus) {
     DCHECK(value.is_int());
   } else {
     return "The pref " + pref_name + " is not whitelisted.";
@@ -2366,6 +2365,22 @@ ExtensionFunction::ResponseAction AutotestPrivateImportCrostiniFunction::Run() {
   return RespondLater();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateCouldAllowCrostiniFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateCouldAllowCrostiniFunction::
+    ~AutotestPrivateCouldAllowCrostiniFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateCouldAllowCrostiniFunction::Run() {
+  DVLOG(1) << "AutotestPrivateCouldAllowCrostiniFunction";
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  return RespondNow(OneArgument(
+      base::Value(crostini::CrostiniFeatures::Get()->CouldBeAllowed(profile))));
+}
+
 void AutotestPrivateImportCrostiniFunction::CrostiniImported(
     crostini::CrostiniResult result) {
   if (result == crostini::CrostiniResult::SUCCESS) {
@@ -3696,7 +3711,7 @@ AutotestPrivateShowVirtualKeyboardIfEnabledFunction::Run() {
   ui::IMEBridge::Get()
       ->GetInputContextHandler()
       ->GetInputMethod()
-      ->ShowVirtualKeyboardIfEnabled();
+      ->SetVirtualKeyboardVisibilityIfEnabled(true);
   return RespondNow(NoArguments());
 }
 
@@ -4212,16 +4227,16 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
         app_banner_manager_->GetInstallableWebAppCheckResultForTesting();
     switch (installable) {
       case Installable::kNo:
-        FALLTHROUGH;
+        [[fallthrough]];
       case Installable::kNo_AlreadyInstalled:
-        FALLTHROUGH;
+        [[fallthrough]];
       case Installable::kUnknown:
         DCHECK(false) << "Unexpected AppBannerManager::Installable value (kNo "
                          "or kNoAlreadyInstalled or kUnknown)";
         break;
 
       case Installable::kYes_Promotable:
-        FALLTHROUGH;
+        [[fallthrough]];
       case Installable::kYes_ByUserRequest:
         observation_.Reset();
         std::move(callback_).Run();
@@ -4977,9 +4992,10 @@ std::unique_ptr<base::DictionaryValue> BuildSetWindowBoundsResult(
     const gfx::Rect& bounds_in_display,
     int64_t display_id) {
   auto result = std::make_unique<base::DictionaryValue>();
-  result->SetDictionary("bounds",
-                        ToBoundsDictionary(bounds_in_display).ToValue());
-  result->SetString("displayId", base::NumberToString(display_id));
+  result->SetKey("bounds",
+                 base::Value::FromUniquePtrValue(
+                     ToBoundsDictionary(bounds_in_display).ToValue()));
+  result->SetStringKey("displayId", base::NumberToString(display_id));
   return result;
 }
 

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
 #include "components/sync/base/model_type.h"
@@ -71,11 +70,6 @@ class SyncUserSettings {
   virtual void SetSelectedOsTypes(bool sync_all_os_types,
                                   UserSelectableOsTypeSet types) = 0;
   virtual UserSelectableOsTypeSet GetRegisteredSelectableOsTypes() const = 0;
-
-  // Whether the OS sync feature is enabled. Implies the user has consented.
-  // Exists in this interface for easier mocking in tests.
-  virtual bool IsOsSyncFeatureEnabled() const = 0;
-  virtual void SetOsSyncFeatureEnabled(bool enabled) = 0;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Encryption state.
@@ -124,8 +118,8 @@ class SyncUserSettings {
   // Asynchronously decrypts pending keys using |passphrase|. Returns false
   // immediately if the passphrase could not be used to decrypt a locally cached
   // copy of encrypted keys; returns true otherwise.
-  virtual bool SetDecryptionPassphrase(const std::string& passphrase)
-      WARN_UNUSED_RESULT = 0;
+  [[nodiscard]] virtual bool SetDecryptionPassphrase(
+      const std::string& passphrase) = 0;
 };
 
 }  // namespace syncer

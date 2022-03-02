@@ -62,7 +62,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </variants>
 
 <histogram name="Power.ApproxCpuTimeSecondsPerCoreTypeAndFrequency"
-    units="50 MHz" expires_after="2022-04-24">
+    units="50 MHz" expires_after="2022-06-26">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <summary>
@@ -196,7 +196,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
   </summary>
 </histogram>
 
-<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2022-04-10">
+<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2022-06-12">
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -330,7 +330,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerCoreTypeAndFrequency" units="50 MHz"
-    expires_after="2022-05-08">
+    expires_after="2022-07-11">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <summary>
@@ -571,64 +571,11 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 <histogram
     name="Power.ForegroundBatteryDrain.30SecondsAvg2{Exclusive}{DarkeningType}"
     units="uAh" expires_after="2022-11-07">
-  <owner>eseckler@chromium.org</owner>
-  <owner>khokhlov@chromium.org</owner>
-  <summary>
-    Periodically samples the battery capacity drained while Chrome is the
-    foreground app and the device is on battery power {DarkeningType}. Sampled
-    every 30 seconds while foregrounded. Also sampled when Chrome is
-    backgrounded or the device connects to a charger. {Exclusive}
-
-    Sample values are reported in microampere-hours and averaged over successive
-    sampling points without a change in capacity counter values. Since the
-    capacity counter resolution differs between device models, averaging the
-    values allows us to make comparisons between frequent small capacity drops
-    and infrequent large drops. For example, a 20,000 uAh drop over two
-    successive periods of 30 seconds will be reported as two samples of 10,000
-    uAh.
-
-    For more details, see http://bit.ly/chrome-android-foreground-battery-drain.
-
-    Only supported on Android. For WebView, the metric considers the time during
-    in which at least one WebView is visible on the screen as
-    &quot;foreground&quot; time.
-  </summary>
-  <token key="Exclusive">
-    <variant name="" summary=""/>
-    <variant name=".Exclusive"
-        summary="However, only battery drain that can be attributed
-                 exclusively to Chrome is reported: The first drain after
-                 becoming the foreground app is not reported. As a result,
-                 this metric typically doesn't include drain related to app
-                 startup. Similarly, no values are reported for the time
-                 after the last capacity drop in a session, since these would
-                 likely under-account the actual battery drain in that time."/>
-  </token>
-  <token key="DarkeningType">
-    <variant name="" summary=""/>
-    <variant name=".DarkMode"
-        summary="and the browser has dark theme preferred (web page darkening
-                 only) for all WebContents"/>
-    <variant name=".ForcedDarkMode"
-        summary="and the browser has forced dark mode (user-agent darkening)
-                 enabled for all WebContents"/>
-    <variant name=".LightMode"
-        summary="and the browser has forced dark mode disabled and light
-                 theme preferred for all WebContents"/>
-    <variant name=".MixedMode"
-        summary="and there is a mix of WebContents that have forced dark mode
-                 enabled, dark theme preferred, or light theme preferred"/>
-  </token>
-</histogram>
-
-<histogram
-    name="Power.ForegroundBatteryDrain.30SecondsAvg{Exclusive}{DarkeningType}"
-    units="uAh" expires_after="2022-11-07">
   <obsolete>
     Replaced with Power.ForegroundBatteryDrain.30SecondsAvg2.* in Dec 2021.
   </obsolete>
   <owner>eseckler@chromium.org</owner>
-  <owner>skyostil@chromium.org</owner>
+  <owner>khokhlov@chromium.org</owner>
   <summary>
     Periodically samples the battery capacity drained while Chrome is the
     foreground app and the device is on battery power {DarkeningType}. Sampled
@@ -662,7 +609,9 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
                  exclusively to Chrome is reported: The first drain after
                  becoming the foreground app is not reported. As a result,
                  this metric typically doesn't include drain related to app
-                 startup."/>
+                 startup. Similarly, no values are reported for the time
+                 after the last capacity drop in a session, since these would
+                 likely under-account the actual battery drain in that time."/>
   </token>
   <token key="DarkeningType">
     <variant name="" summary=""/>
@@ -711,22 +660,6 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
                  this metric typically doesn't include drain related to app
                  startup."/>
   </token>
-</histogram>
-
-<histogram name="Power.ForegroundBatteryDrain.TimeBetweenEvents" units="ms"
-    expires_after="2021-07-03">
-  <obsolete>
-    Obsolete in M93, no longer needed.
-  </obsolete>
-  <owner>eseckler@chromium.org</owner>
-  <owner>skyostil@chromium.org</owner>
-  <summary>
-    A companion metric for Power.ForegroundBatteryDrain.30SecondsAvg which
-    reports the time interval between successive capacity drops reported by the
-    battery manager.
-
-    Only supported on Android.
-  </summary>
 </histogram>
 
 <histogram name="Power.ForegroundBatteryDrain{Exclusive}" units="0.1 mAh"
@@ -972,6 +905,15 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
   </summary>
 </histogram>
 
+<histogram name="Power.IOPMPowerSource.SamplingEventDelta" units="ms"
+    expires_after="2022-07-11">
+  <owner>pmonette@chromium.org</owner>
+  <owner>catan-team@chromium.org</owner>
+  <summary>
+    Records the time between each IOPMPowerSource event. Only recorded on MacOS.
+  </summary>
+</histogram>
+
 <histogram name="Power.KernelResumeTimeOnAC" units="ms"
     expires_after="2021-10-17">
   <owner>puthik@chromium.org</owner>
@@ -1057,7 +999,10 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.Mac.AppleSMCOpened" enum="BooleanSuccess"
-    expires_after="2022-05-01">
+    expires_after="2022-07-03">
+  <obsolete>
+    Stopped reporting in M98, deprecated in M99
+  </obsolete>
   <owner>lgrey@chromium.org</owner>
   <summary>
     When metrics collection started, records true if a handle to the System
@@ -1065,37 +1010,6 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
     consumption, false otherwise. If false, a system API might have changed in a
     new version of macOS, or Chrome might be running in a nonstandard
     environment (VM, hackintosh). Only recorded on macOS.
-  </summary>
-</histogram>
-
-<histogram name="Power.Mac.BatteryDischarge" units="hundredth of percent"
-    expires_after="2021-08-15">
-  <obsolete>
-    Replaced with cross-platform Power.BatteryDischargeRate2 03/2021.
-  </obsolete>
-  <owner>olivierli@chromium.org</owner>
-  <owner>lgrey@chromium.org</owner>
-  <summary>
-    Every minute after startup a measure of the remaining and maximum battery
-    capacity is taken. Then a ratio of the remaining capacity over the maximum
-    capicity is calculated and scaled by 10000. (For example: 13 / 2000 = 0.0065
-    ; 0.0065 * 10000 = 65). Power.Mac.BatteryDischarge is the the delta in this
-    relative capacity measure compaired to the measurement that was taken a
-    minute before. This metric is only recorded when on battery power. Only
-    recorded on macOS.
-  </summary>
-</histogram>
-
-<histogram name="Power.Mac.IsOnBattery" enum="BooleanOnBattery"
-    expires_after="2021-02-21">
-  <obsolete>
-    Replaced with Power.Mac.IsOnBattery2 09/2020 as it was broken.
-  </obsolete>
-  <owner>lgrey@chromium.org</owner>
-  <summary>
-    Whether the user's machine is on battery power. Sampled once per minute.
-    Warning: This incorrectly logs desktop Macs as being on battery power.
-    Replaced by Power.Mac.IsOnBattery2.
   </summary>
 </histogram>
 
@@ -1120,20 +1034,6 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
   </summary>
 </histogram>
 
-<histogram name="Power.MainScreenBrightness" units="%"
-    expires_after="2021-11-30">
-  <obsolete>
-    Replaced by Power.MainScreenBrightness2 in July 2021. The new histogram
-    allows value superior to 100% as sometime reported by the OS.
-  </obsolete>
-  <owner>fdoray@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    The level of the screen backlight in percent if it's not available. Only
-    recorded on Mac devices with an Intel processor. Recorded every 2 minutes
-  </summary>
-</histogram>
-
 <histogram name="Power.MainScreenBrightness2" units="%"
     expires_after="2021-11-30">
   <owner>fdoray@chromium.org</owner>
@@ -1147,7 +1047,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="Power.MainScreenBrightnessAvailable" units="Boolean"
-    expires_after="2022-04-10">
+    expires_after="2022-06-12">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1488,7 +1388,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="PowerML.SmartDimComponent.WorkerType"
-    enum="PowerMLSmartDimComponentWorkerType" expires_after="2022-04-17">
+    enum="PowerMLSmartDimComponentWorkerType" expires_after="2022-06-19">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
@@ -1510,7 +1410,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCanceledDuration" units="ms"
-    expires_after="2022-04-24">
+    expires_after="2022-06-26">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>
@@ -1522,7 +1422,7 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCompleteDuration" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-07-03">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>

@@ -41,6 +41,7 @@
       dark: "$google_blue_300",
       debug: "$google_red_600",
       generate_per_mode: true,
+      generate_inverted: true,
     },
     color_alert: {
       light: "$google_red_600",
@@ -120,6 +121,7 @@
     text_highlight_color: {
       light: "rgba($google_blue_600_rgb, 0.3)",
       dark: "rgba($google_blue_400_rgb, 0.3)",
+      generate_per_mode: true,
     },
 
     /*
@@ -187,6 +189,7 @@
       light: "$google_blue_50",
       dark: "rgba($google_blue_300_rgb, 0.3)",
       debug: "rgba($google_red_300_rgb, 0.3)",
+      generate_per_mode: true,
     },
     highlight_color_error: {
       light: "$google_red_50",
@@ -223,12 +226,6 @@
     },
     menu_item_ripple_color: "$ripple_color",
 
-    toggle_color: "$color_prominent",
-    toggle_bg_color_inactive: "$google_grey_400",
-    toggle_button_color_inactive: "$white",
-    toggle_ripple_color: "rgba($toggle_color_rgb, .2)",
-    toggle_ripple_color_inactive: "rgba($google_grey_600_rgb, .15)",
-
     radio_button_color: "$color_prominent",
     radio_button_ripple_color: "rgba($radio_button_color_rgb, .2)",
     radio_button_color_unchecked: "$google_grey_700",
@@ -243,6 +240,11 @@
     button_ripple_color_primary: { light: "$white", dark: "$black" },
     /* button-primary:hover */
     button_background_color_primary_hover: "rgba($black_rgb, 0.08)",
+    /* the _preblended variant can be used directly as hover background color
+    because it's already blended on top of the background color, the above
+    _hover variable is still required because it's being used on google3 side */
+    button_background_color_primary_hover_preblended:
+      "blend($button_background_color_primary_hover, $button_background_color_primary)",
     /* button-primary:active */
     button_active_shadow_color_ambient_primary: {
       light: "rgba($google_blue_500_rgb, 0.15)",
@@ -319,6 +321,9 @@
       light: "rgba($black_rgb, 0.05)",
       dark: "rgba($white_rgb, 0.1)",
     },
+    /* when icon button is pressed, we layer the $ripple_color on top of the
+    hover color (which is also $ripple_color) */
+    icon_button_pressed_color: "blend($ripple_color, $ripple_color)",
 
     /* menu */
     menu_label_color: {
@@ -381,7 +386,7 @@
       light: "$google_grey_700",
       dark: "rgba($white_rgb, 0.6)",
     },
-    textfield_input_color: "$icon_color_primary",
+    textfield_input_color: "$color_primary",
     /* textfield:focus */
     textfield_cursor_color_focus: "$color_prominent",
     textfield_label_color_focus: "$color_prominent",
@@ -431,10 +436,14 @@
       light:"$google_grey_100",
       dark:"$google_grey_900",
     },
+    /* TODO(crbug.com/1284178) waiting for UX input to see how to combine
+    this variable together with `dialog_title_background_color` */
+    dialog_title_bar_color: "blend($highlight_color_hover, $bg_color)",
 
     /* toast */
     /* Toast colors are inverted for contrast. */
     toast_background_color: "$bg_color_elevation_2_inverted",
+    toast_button_color: "$color_prominent_inverted",
     toast_text_color: "$color_primary_inverted",
     toast_icon_color: "$color_primary_inverted",
     toast_icon_color_warning: "$color_warning_inverted",

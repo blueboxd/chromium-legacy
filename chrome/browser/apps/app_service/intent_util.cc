@@ -14,6 +14,7 @@
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_service/file_utils.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -29,7 +30,9 @@
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
+#include "base/files/file_path.h"
+#include "base/files/safe_base_name.h"
 #include "chromeos/crosapi/mojom/app_service_types.mojom.h"
 #endif
 
@@ -38,8 +41,7 @@
 #include "ash/components/arc/mojom/intent_helper.mojom.h"
 #include "ash/constants/ash_features.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
-#include "base/files/file_path.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/arc/intent.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "components/arc/intent_helper/intent_constants.h"
@@ -396,52 +398,25 @@ std::vector<apps::mojom::IntentFilterPtr> CreateExtensionIntentFilters(
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// TODO(crbug.com/853604): Make this not link to file manager extension if
-// possible. Added support to not link with file manager extension but still
-// need to refactor all users of the util functions to switch to it (alanding).
+// TODO(crbug.com/1253219): Use FilePaths in intents to avoid dependency on
+// File Manager.
 apps::mojom::IntentPtr CreateShareIntentFromFiles(
-    absl::optional<Profile*> profile,
+    Profile* profile,
     const std::vector<base::FilePath>& file_paths,
     const std::vector<std::string>& mime_types) {
-  auto file_urls = profile.has_value()
-                       ? apps::GetFileSystemUrls(profile.value(), file_paths)
-                       : apps::GetFileUrls(file_paths);
+  auto file_urls = apps::GetFileSystemUrls(profile, file_paths);
   return CreateShareIntentFromFiles(file_urls, mime_types);
 }
 
 apps::mojom::IntentPtr CreateShareIntentFromFiles(
-    absl::optional<Profile*> profile,
+    Profile* profile,
     const std::vector<base::FilePath>& file_paths,
     const std::vector<std::string>& mime_types,
     const std::string& share_text,
     const std::string& share_title) {
-  auto file_urls = profile.has_value()
-                       ? apps::GetFileSystemUrls(profile.value(), file_paths)
-                       : apps::GetFileUrls(file_paths);
+  auto file_urls = apps::GetFileSystemUrls(profile, file_paths);
   return CreateShareIntentFromFiles(file_urls, mime_types, share_text,
                                     share_title);
-}
-
-apps::mojom::IntentPtr CreateIntentForArcIntentAndActivity(
-    arc::mojom::IntentInfoPtr arc_intent,
-    arc::mojom::ActivityNamePtr activity) {
-  auto intent = apps::mojom::Intent::New();
-  if (arc_intent) {
-    intent->action = std::move(arc_intent->action);
-    intent->data = std::move(arc_intent->data);
-    intent->mime_type = std::move(arc_intent->type);
-    intent->categories = std::move(arc_intent->categories);
-    intent->ui_bypassed = arc_intent->ui_bypassed
-                              ? apps::mojom::OptionalBool::kTrue
-                              : apps::mojom::OptionalBool::kFalse;
-    intent->extras = std::move(arc_intent->extras);
-  }
-
-  if (activity) {
-    intent->activity_name = std::move(activity->activity_name);
-  }
-
-  return intent;
 }
 
 base::flat_map<std::string, std::string> CreateArcIntentExtras(
@@ -754,7 +729,7 @@ apps::mojom::IntentFilterPtr ConvertArcToAppServiceIntentFilter(
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 crosapi::mojom::IntentPtr ConvertAppServiceToCrosapiIntent(
     const apps::mojom::IntentPtr& app_service_intent,
     Profile* profile) {
@@ -780,6 +755,7 @@ crosapi::mojom::IntentPtr ConvertAppServiceToCrosapiIntent(
       if (file_system_url.is_valid()) {
         auto crosapi_file = crosapi::mojom::IntentFile::New();
         crosapi_file->file_path = file_system_url.path();
+        crosapi_file->mime_type = file->mime_type;
         crosapi_files.push_back(std::move(crosapi_file));
       }
     }
@@ -809,23 +785,30 @@ apps::mojom::IntentPtr ConvertCrosapiToAppServiceIntent(
   if (crosapi_intent->share_title.has_value()) {
     app_service_intent->share_title = crosapi_intent->share_title.value();
   }
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (crosapi_intent->files.has_value() && profile) {
     std::vector<apps::mojom::IntentFilePtr> intent_files;
     for (const auto& file : crosapi_intent->files.value()) {
+      auto intent_file = apps::mojom::IntentFile::New();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       auto file_url = apps::GetFileSystemUrl(profile, file->file_path);
       if (file_url.is_empty()) {
         continue;
       }
-      auto intent_file = apps::mojom::IntentFile::New();
       intent_file->url = file_url;
+#else
+      // The directory is omitted from the human readable file name.
+      intent_file->file_name =
+          base::SafeBaseName::Create(file->file_path.BaseName());
+#endif
+      intent_file->mime_type = file->mime_type;
+
       intent_files.push_back(std::move(intent_file));
     }
     if (intent_files.size() > 0) {
       app_service_intent->files = std::move(intent_files);
     }
   }
-#endif
   if (crosapi_intent->activity_name.has_value()) {
     app_service_intent->activity_name = crosapi_intent->activity_name.value();
   }

@@ -95,6 +95,11 @@ class ShortcutTest : public testing::Test {
 }  // namespace
 
 TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
+  // This test is extremely flaky on Win7, so disable.
+  // TODO(crbug.com/1264563): Investigate why it's so flaky on Win7 bots.
+  if (base::win::OSInfo::GetInstance()->version() <= base::win::Version::WIN7)
+    GTEST_SKIP() << "Skipping test for win7";
+
   // Test all properties.
   FilePath file_1(temp_dir_.GetPath().Append(FILE_PATH_LITERAL("Link1.lnk")));
   ASSERT_TRUE(CreateOrUpdateShortcutLink(file_1, link_properties_,
@@ -142,6 +147,10 @@ TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
 }
 
 TEST_F(ShortcutTest, CreateAndResolveShortcut) {
+  // TODO(crbug.com/1264563): Disabled on Win7 bots for being flaky.
+  if (base::win::OSInfo::GetInstance()->version() <= base::win::Version::WIN7)
+    GTEST_SKIP() << "Skipping test for win7";
+
   ShortcutProperties only_target_properties;
   only_target_properties.set_target(link_properties_.target);
 
@@ -157,6 +166,10 @@ TEST_F(ShortcutTest, CreateAndResolveShortcut) {
 }
 
 TEST_F(ShortcutTest, ResolveShortcutWithArgs) {
+  // TODO(crbug.com/1264563): Disabled on Win7 bots for being flaky.
+  if (base::win::OSInfo::GetInstance()->version() <= base::win::Version::WIN7)
+    GTEST_SKIP() << "Skipping test for win7";
+
   ASSERT_TRUE(CreateOrUpdateShortcutLink(link_file_, link_properties_,
                                          SHORTCUT_CREATE_ALWAYS));
 
@@ -189,7 +202,7 @@ TEST_F(ShortcutTest, CreateShortcutVerifyProperties) {
 }
 
 // TODO(crbug.com/1271993): Flaky on Win7 x86.
-#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+#if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_X86)
 #define MAYBE_UpdateShortcutVerifyProperties \
   DISABLED_UpdateShortcutVerifyProperties
 #else

@@ -1099,7 +1099,7 @@
 <translation id="8656888282555543604">Habilitar registro de braille</translation>
 <translation id="8659501358298941449">Listas desplegables</translation>
 <translation id="8666733765751421568">Fin de <ph name="TYPE" /></translation>
-<translation id="867187640362843212">Encabezado 5</translation>
+<translation id="867187640362843212">Título 5</translation>
 <translation id="8690400660839620419">{COUNT,plural, =1{}other{nivel anidado #}}</translation>
 <translation id="8693391540059827073">Mi estación favorita</translation>
 <translation id="8696284982970258155">Verde claro</translation>
@@ -1168,6 +1168,7 @@
 <translation id="9223032053830369045">Rojo oscuro</translation>
 <translation id="923331726185079994">ChromeVox se ha actualizado</translation>
 <translation id="93384979447910801">Verde mar oscuro</translation>
+<translation id="937605981140327129">TalkBack no está instalado. Descarga Suite Accesibilidad Android de Play Store y vuelve a intentarlo.</translation>
 <translation id="948171205378458592">Habla más lento</translation>
 <translation id="957570623732056069">Desliza un dedo a la izquierda o la derecha para desplazarte por esta lección</translation>
 <translation id="958854023026327378">Desliza un dedo hacia abajo</translation>

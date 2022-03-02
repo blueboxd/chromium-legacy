@@ -910,8 +910,6 @@ void ServiceWorkerContainerHost::UpdateUrls(
       fetch_request_window_id_ = base::UnguessableToken::Create();
   }
 
-  auto previous_origin = url::Origin::Create(previous_url);
-  auto new_origin = url::Origin::Create(url);
   // Update client id on cross origin redirects. This corresponds to the HTML
   // standard's "process a navigation fetch" algorithm's step for discarding
   // |reservedEnvironment|.
@@ -920,8 +918,7 @@ void ServiceWorkerContainerHost::UpdateUrls(
   // same as |reservedEnvironment|'s creation URL's origin, then:
   //    1. Run the environment discarding steps for |reservedEnvironment|.
   //    2. Set |reservedEnvironment| to null."
-  if (previous_url.is_valid() &&
-      !new_origin.IsSameOriginWith(previous_origin)) {
+  if (previous_url.is_valid() && !url::IsSameOriginWith(previous_url, url)) {
     // Remove old controller since we know the controller is definitely
     // changed. We need to remove |this| from |controller_|'s controllee before
     // updating UUID since ServiceWorkerVersion has a map from uuid to provider
@@ -1174,7 +1171,7 @@ void ServiceWorkerContainerHost::EvictFromBackForwardCache(
 void ServiceWorkerContainerHost::OnEnterBackForwardCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK(IsContainerForWindowClient());
+  DCHECK(IsContainerForClient());
   if (controller_)
     controller_->MoveControlleeToBackForwardCacheMap(client_uuid());
   is_in_back_forward_cache_ = true;
@@ -1183,7 +1180,7 @@ void ServiceWorkerContainerHost::OnEnterBackForwardCache() {
 void ServiceWorkerContainerHost::OnRestoreFromBackForwardCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsBackForwardCacheEnabled());
-  DCHECK(IsContainerForWindowClient());
+  DCHECK(IsContainerForClient());
   if (controller_)
     controller_->RestoreControlleeFromBackForwardCacheMap(client_uuid());
   is_in_back_forward_cache_ = false;

@@ -145,9 +145,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   if (!GetContentClient()->browser()->AllowSharedWorker(
           info->url, render_frame_host->ComputeSiteForCookies(),
           main_frame->GetLastCommittedOrigin(), info->options->name,
-          storage_key,
-          WebContentsImpl::FromRenderFrameHostID(client_render_frame_host_id)
-              ->GetBrowserContext(),
+          storage_key, render_frame_host->GetBrowserContext(),
           client_render_frame_host_id.child_id,
           client_render_frame_host_id.frame_routing_id)) {
     ScriptLoadFailed(std::move(client), /*error_message=*/"");
@@ -321,7 +319,7 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
       worker_hosts_.insert(std::make_unique<SharedWorkerHost>(
           this, instance, std::move(site_instance),
           std::move(content_security_policies),
-          creator.cross_origin_embedder_policy()));
+          creator.BuildClientSecurityState()));
   DCHECK(insertion_result.second);
   SharedWorkerHost* host = insertion_result.first->get();
 
@@ -392,7 +390,6 @@ void SharedWorkerServiceImpl::StartWorker(
     const blink::MessagePortChannel& message_port,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
-    bool did_fetch_worker_script,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
@@ -410,7 +407,7 @@ void SharedWorkerServiceImpl::StartWorker(
 
   // If the script fetcher failed to load the shared worker's main script,
   // terminate the worker.
-  if (!did_fetch_worker_script) {
+  if (!main_script_load_params) {
     DestroyHost(host.get());
     return;
   }

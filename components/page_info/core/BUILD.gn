@@ -30,15 +30,20 @@ static_library("core") {
     "about_this_site_validation.h",
     "features.cc",
     "features.h",
+    "page_info_history_data_source.cc",
+    "page_info_history_data_source.h",
   ]
 
   deps = [
     "//base",
+    "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/optimization_guide/core",
     "//components/page_info/core:proto",
+    "//components/strings:components_strings_grit",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
+    "//ui/base:base",
   ]
 }
 
@@ -47,6 +52,7 @@ source_set("unit_tests") {
   sources = [
     "about_this_site_service_unittest.cc",
     "about_this_site_validation_unittest.cc",
+    "page_info_history_data_source_unittest.cc",
   ]
 
   deps = [
@@ -54,6 +60,7 @@ source_set("unit_tests") {
     ":proto",
     "//base",
     "//base/test:test_support",
+    "//components/history/core/browser",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//services/metrics/public/cpp:metrics_cpp",
     "//testing/gtest",

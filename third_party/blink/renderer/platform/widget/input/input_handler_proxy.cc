@@ -561,7 +561,6 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
     const base::TimeTicks original_timestamp,
     const cc::EventMetrics* original_metrics) {
   gfx::Vector2dF scroll_delta = pointer_result.scroll_delta;
-  ;
 
   std::unique_ptr<WebGestureEvent> synthetic_gesture_event =
       WebGestureEvent::GenerateInjectedScrollGesture(
@@ -593,38 +592,39 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
   DCHECK(!scrollbar_latency_info.FindLatency(
       ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT, nullptr));
 
-  cc::EventMetrics::GestureParams gesture_params(
-      synthetic_gesture_event->GetScrollInputType(),
-      /*scroll_is_inertial=*/false);
-
-  if (type == WebInputEvent::Type::kGestureScrollBegin) {
-    last_injected_gesture_was_begin_ = true;
+  std::unique_ptr<cc::EventMetrics> metrics;
+  if (type == WebInputEvent::Type::kGestureScrollUpdate) {
+    // For injected GSUs, add a scroll update component to the latency info
+    // so that it is properly classified as a scroll. If the last injected
+    // gesture was a GSB, then this GSU is the first scroll update - mark
+    // the LatencyInfo as such.
+    scrollbar_latency_info.AddLatencyNumberWithTimestamp(
+        last_injected_gesture_was_begin_
+            ? ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT
+            : ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+        original_timestamp);
+    metrics = cc::ScrollUpdateEventMetrics::CreateFromExisting(
+        synthetic_gesture_event->GetTypeAsUiEventType(),
+        synthetic_gesture_event->GetScrollInputType(),
+        /*is_inertial=*/false,
+        last_injected_gesture_was_begin_
+            ? cc::ScrollUpdateEventMetrics::ScrollUpdateType::kStarted
+            : cc::ScrollUpdateEventMetrics::ScrollUpdateType::kContinued,
+        synthetic_gesture_event->data.scroll_update.delta_y,
+        cc::EventMetrics::DispatchStage::kArrivedInRendererCompositor,
+        original_metrics);
   } else {
-    if (type == WebInputEvent::Type::kGestureScrollUpdate) {
-      // For injected GSUs, add a scroll update component to the latency info
-      // so that it is properly classified as a scroll. If the last injected
-      // gesture was a GSB, then this GSU is the first scroll update - mark
-      // the LatencyInfo as such.
-      scrollbar_latency_info.AddLatencyNumberWithTimestamp(
-          last_injected_gesture_was_begin_
-              ? ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT
-              : ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-          original_timestamp);
-      DCHECK(gesture_params.scroll_params.has_value());
-      gesture_params.scroll_params->update_type =
-          last_injected_gesture_was_begin_
-              ? cc::EventMetrics::ScrollUpdateType::kStarted
-              : cc::EventMetrics::ScrollUpdateType::kContinued;
-    }
-
-    last_injected_gesture_was_begin_ = false;
+    metrics = cc::ScrollEventMetrics::CreateFromExisting(
+        synthetic_gesture_event->GetTypeAsUiEventType(),
+        synthetic_gesture_event->GetScrollInputType(),
+        /*is_inertial=*/false,
+        cc::EventMetrics::DispatchStage::kArrivedInRendererCompositor,
+        original_metrics);
   }
 
-  std::unique_ptr<cc::EventMetrics> metrics =
-      cc::EventMetrics::CreateFromExisting(
-          synthetic_gesture_event->GetTypeAsUiEventType(), gesture_params,
-          cc::EventMetrics::DispatchStage::kArrivedInRendererCompositor,
-          original_metrics);
+  last_injected_gesture_was_begin_ =
+      type == WebInputEvent::Type::kGestureScrollBegin;
+
   auto gesture_event_with_callback_update = std::make_unique<EventWithCallback>(
       std::make_unique<WebCoalescedInputEvent>(
           std::move(synthetic_gesture_event), scrollbar_latency_info),
@@ -697,7 +697,11 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
 
     case WebInputEvent::Type::kGesturePinchBegin: {
       DCHECK(!gesture_pinch_in_progress_);
-      input_handler_->PinchGestureBegin();
+      const WebGestureEvent& gesture_event =
+          static_cast<const WebGestureEvent&>(event);
+      input_handler_->PinchGestureBegin(
+          gfx::ToFlooredPoint(gesture_event.PositionInWidget()),
+          GestureScrollInputType(gesture_event.SourceDevice()));
       gesture_pinch_in_progress_ = true;
       return DID_HANDLE;
     }
@@ -708,8 +712,7 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
       const WebGestureEvent& gesture_event =
           static_cast<const WebGestureEvent&>(event);
       input_handler_->PinchGestureEnd(
-          gfx::ToFlooredPoint(gesture_event.PositionInWidget()),
-          gesture_event.SourceDevice() == WebGestureDevice::kTouchpad);
+          gfx::ToFlooredPoint(gesture_event.PositionInWidget()));
       return DID_HANDLE;
     }
 
@@ -1479,9 +1482,9 @@ void InputHandlerProxy::SynchronouslySetRootScrollOffset(
 void InputHandlerProxy::SynchronouslyZoomBy(float magnify_delta,
                                             const gfx::Point& anchor) {
   DCHECK(synchronous_input_handler_);
-  input_handler_->PinchGestureBegin();
+  input_handler_->PinchGestureBegin(anchor, ui::ScrollInputType::kTouchscreen);
   input_handler_->PinchGestureUpdate(magnify_delta, anchor);
-  input_handler_->PinchGestureEnd(anchor, false);
+  input_handler_->PinchGestureEnd(anchor);
 }
 
 bool InputHandlerProxy::GetSnapFlingInfoAndSetAnimatingSnapTarget(
@@ -1564,7 +1567,7 @@ const cc::InputHandlerPointerResult InputHandlerProxy::HandlePointerDown(
     DCHECK_NE(*currently_active_gesture_device_,
               WebGestureDevice::kUninitialized);
     if (gesture_pinch_in_progress_) {
-      input_handler_->PinchGestureEnd(gfx::ToFlooredPoint(position), true);
+      input_handler_->PinchGestureEnd(gfx::ToFlooredPoint(position));
     }
     if (handling_gesture_on_impl_thread_) {
       input_handler_->RecordScrollEnd(

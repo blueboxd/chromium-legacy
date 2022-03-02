@@ -29,6 +29,7 @@ extern const base::Feature kFillingAcrossAffiliatedWebsites;
 extern const base::Feature kFillOnAccountSelect;
 extern const base::Feature kInferConfirmationPasswordField;
 extern const base::Feature kIOSEnablePasswordManagerBrandingUpdate;
+extern const base::Feature kMuteCompromisedPasswords;
 extern const base::Feature kLeakDetectionUnauthenticated;
 extern const base::Feature kPasswordChange;
 extern const base::Feature kPasswordChangeOnlyRecentCredentials;
@@ -40,13 +41,20 @@ extern const base::Feature kPasswordScriptsFetching;
 extern const base::Feature kRecoverFromNeverSaveAndroid;
 extern const base::Feature kReparseServerPredictionsFollowingFormChange;
 extern const base::Feature kSecondaryServerFieldPredictions;
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+extern const base::Feature kSkipUndecryptablePasswords;
+#endif
 extern const base::Feature kSupportForAddPasswordsInSettings;
+#if BUILDFLAG(IS_LINUX)
+extern const base::Feature kSyncUndecryptablePasswordsLinux;
+#endif
 extern const base::Feature kTreatNewPasswordHeuristicsAsReliable;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 extern const base::Feature kUnifiedCredentialManagerDryRun;
 extern const base::Feature kUnifiedPasswordManagerAndroid;
 extern const base::Feature kUnifiedPasswordManagerMigration;
 extern const base::Feature kUnifiedPasswordManagerShadowAndroid;
+extern const base::Feature kUnifiedPasswordManagerShadowWriteOperationsAndroid;
 extern const base::Feature kUnifiedPasswordManagerSyncUsingAndroidBackendOnly;
 
 #endif
@@ -56,7 +64,7 @@ extern const base::Feature kUsernameFirstFlowFallbackCrowdsourcing;
 
 // All features parameters are in alphabetical order.
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 extern const base::FeatureParam<int> kMigrationVersion;
 #endif
 

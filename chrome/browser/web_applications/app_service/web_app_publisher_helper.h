@@ -27,12 +27,13 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/app_service/app_notifications.h"
 #include "chrome/browser/apps/app_service/app_web_contents_data.h"
 #include "chrome/browser/apps/app_service/media_requests.h"
@@ -68,7 +69,7 @@ void UninstallImpl(WebAppProvider* provider,
                    gfx::NativeWindow parent_window);
 
 class WebAppPublisherHelper : public AppRegistrarObserver,
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
                               public NotificationDisplayService::Observer,
                               public MediaCaptureDevicesDispatcher::Observer,
                               public apps::AppWebContentsData::Client,
@@ -121,9 +122,13 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   void SetWebAppShowInFields(apps::mojom::AppPtr& app, const WebApp* web_app);
 
   // Appends |web_app| permissions to |target|.
+  // TODO(crbug.com/1253250): Remove and use CreatePermissions.
   void PopulateWebAppPermissions(
       const WebApp* web_app,
       std::vector<apps::mojom::PermissionPtr>* target);
+
+  // Creates permissions for `web_app`.
+  apps::Permissions CreatePermissions(const WebApp* web_app);
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
   // Creates an |std::unique_ptr<apps::App>| describing |web_app|.
@@ -162,9 +167,9 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   bool IsPaused(const std::string& app_id);
 
   void LoadIcon(const std::string& app_id,
-                const apps::IconKey& icon_key,
                 apps::IconType icon_type,
                 int32_t size_hint_in_dip,
+                apps::IconEffects icon_effects,
                 LoadIconCallback callback);
 
   content::WebContents* Launch(const std::string& app_id,
@@ -226,6 +231,15 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
       const std::string& shortcut_id,
       int64_t display_id);
 
+  // Checks that the user permits the app launch (possibly presenting a blocking
+  // user choice dialog). Launches the app with read access to the files in
+  // `params.launch_files` and returns the created WebContents via `callback`,
+  // or doesn't launch the app and returns null in `callback`.
+  void LaunchAppWithFilesCheckingUserPermission(
+      const std::string& app_id,
+      apps::AppLaunchParams params,
+      base::OnceCallback<void(content::WebContents*)> callback);
+
   Profile* profile() { return profile_; }
 
   apps::mojom::AppType app_type() const { return app_type_; }
@@ -235,7 +249,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   bool IsShuttingDown() const;
 
  private:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   class BadgeManagerDelegate : public badging::BadgeManagerDelegate {
    public:
     explicit BadgeManagerDelegate(
@@ -264,7 +278,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
       const base::Time& last_launch_time) override;
   void OnWebAppUserDisplayModeChanged(const AppId& app_id,
                                       DisplayMode user_display_mode) override;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   void OnWebAppDisabledStateChanged(const AppId& app_id,
                                     bool is_disabled) override;
   void OnWebAppsDisabledModeChanged() override;
@@ -278,7 +292,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
       NotificationDisplayService* service) override;
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // MediaCaptureDevicesDispatcher::Observer:
   void OnRequestUpdate(int render_process_id,
                        int render_frame_id,
@@ -311,7 +325,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
       int64_t display_id,
       base::OnceCallback<void(content::WebContents*)> callback);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // Updates app visibility.
   void UpdateAppDisabledMode(apps::mojom::AppPtr& app);
 
@@ -326,15 +340,6 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
       const std::string& app_id,
       apps::mojom::OptionalBool has_notification_indicator);
 #endif
-
-  // Checks that the user permits the app launch (possibly presenting a blocking
-  // user choice dialog). Launches the app with read access to the files in
-  // `params.launch_files` and returns the created WebContents via `callback`,
-  // or doesn't launch the app and returns null in `callback`.
-  void LaunchAppWithFilesCheckingUserPermission(
-      const std::string& app_id,
-      apps::AppLaunchParams params,
-      base::OnceCallback<void(content::WebContents*)> callback);
 
   // Called after the user has allowed or denied an app launch with files.
   void OnFileHandlerDialogCompleted(
@@ -368,7 +373,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
 
   apps::PausedApps paused_apps_;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   base::ScopedObservation<NotificationDisplayService,
                           NotificationDisplayService::Observer>
       notification_display_service_{this};

@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">อนุญาตคุกกี้</translation>
 <translation id="2228071138934252756">หากต้องการอนุญาตให้ <ph name="APP_NAME" /> เข้าถึงกล้องถ่ายรูป ให้เปิดใช้กล้องใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /> ด้วย</translation>
 <translation id="2241634353105152135">เพียงครั้งเดียว</translation>
+<translation id="2253414712144136228">นำ<ph name="NAME_OF_LIST_ITEM" />ออก</translation>
 <translation id="2289270750774289114">ถามเมื่อเว็บไซต์ต้องการค้นหาอุปกรณ์บลูทูธใกล้เคียง (แนะนำ)</translation>
 <translation id="2315043854645842844">ระบบปฏิบัติการไม่สนับสนุนการเลือกใบรับรองฝั่งลูกค้า</translation>
 <translation id="2359808026110333948">ต่อไป</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">แสดงข้อมูล</translation>
 <translation id="3123473560110926937">บล็อกในบางเว็บไซต์</translation>
 <translation id="3198916472715691905">ข้อมูลที่จัดเก็บมี <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3203366800380907218">จากเว็บ</translation>
 <translation id="321187648315454507">หากต้องการอนุญาตให้ <ph name="APP_NAME" /> ส่งการแจ้งเตือนให้คุณ ให้เปิดใช้การแจ้งเตือนใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /> ด้วย</translation>
 <translation id="3227137524299004712">ไมโครโฟน</translation>
 <translation id="3277252321222022663">อนุญาตให้เว็บไซต์เข้าถึงเซ็นเซอร์ (แนะนำ)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">ถูกบล็อก</translation>
 <translation id="5689516760719285838">ตำแหน่ง</translation>
 <translation id="5690795753582697420">กล้องปิดอยู่ในการตั้งค่า Android</translation>
-<translation id="5710871682236653961">ถามก่อนที่จะอนุญาตให้เว็บไซต์ส่งและรับข้อมูลเมื่อคุณแตะอุปกรณ์ NFC (แนะนำ)</translation>
 <translation id="5719847187258001597">การดำเนินการนี้จะล้างข้อมูลและคุกกี้ทั้งหมดที่ <ph name="ORIGIN" /> หรือแอปที่อยู่ในหน้าจอหลักจัดเก็บไว้</translation>
 <translation id="5771720122942595109">บล็อก<ph name="PERMISSION_1" /></translation>
 <translation id="5804241973901381774">การอนุญาต</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">อนุญาตสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="7053983685419859001">บล็อก</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{เลือก 1 รายการ}other{เลือก # รายการ}}</translation>
-<translation id="7070090581017165256">เกี่ยวกับเว็บไซต์นี้</translation>
 <translation id="7087918508125750058">เลือกไว้ <ph name="ITEM_COUNT" /> รายการ ตัวเลือกอยู่ตรงบริเวณด้านบนของหน้าจอ</translation>
 <translation id="7141896414559753902">บล็อกเว็บไซต์ไม่ให้แสดงป๊อปอัปและการเปลี่ยนเส้นทาง (แนะนำ)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">มีเว็บไซต์กำลังใช้ไมโครโฟน</translation>
 <translation id="7561196759112975576">ทุกครั้ง</translation>
-<translation id="7572498721684305250">บล็อกเว็บไซต์ไม่ให้ส่งหรือรับข้อมูลเมื่อคุณแตะอุปกรณ์ NFC</translation>
 <translation id="757524316907819857">บล็อกไม่ให้เว็บไซต์เล่นเนื้อหาที่ได้รับความคุ้มครอง</translation>
 <translation id="7649070708921625228">ความช่วยเหลือ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>

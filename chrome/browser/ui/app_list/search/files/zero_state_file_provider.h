@@ -19,6 +19,8 @@
 #include "chrome/browser/ash/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/ash/file_manager/file_tasks_observer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/app_list/search/util/mrfu_cache.h"
+#include "chrome/browser/ui/app_list/search/util/persistent_proto.h"
 #include "chrome/browser/ui/ash/thumbnail_loader.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -33,8 +35,6 @@ using ValidAndInvalidResults = std::pair<ScoredResults, Results>;
 
 }  // namespace internal
 
-class RecurrenceRanker;
-
 // ZeroStateFileProvider dispatches queries to extensions and fetches the
 // results from them via chrome.launcherSearchProvider API.
 class ZeroStateFileProvider : public SearchProvider,
@@ -48,8 +48,9 @@ class ZeroStateFileProvider : public SearchProvider,
   ~ZeroStateFileProvider() override;
 
   // SearchProvider:
-  void Start(const std::u16string& query) override;
-  ash::AppListSearchResultType ResultType() override;
+  void StartZeroState() override;
+  ash::AppListSearchResultType ResultType() const override;
+  bool ShouldBlockZeroState() const override;
 
   // file_manager::file_tasks::FileTaskObserver:
   void OnFilesOpened(const std::vector<FileOpenEvent>& file_opens) override;
@@ -58,11 +59,13 @@ class ZeroStateFileProvider : public SearchProvider,
   // Takes a pair of vectors: <valid paths, invalid paths>, and converts the
   // valid paths to ZeroStatFilesResults and sets them as this provider's
   // results. The invalid paths are removed from the model.
-  void SetSearchResults(const internal::ValidAndInvalidResults& results);
+  void SetSearchResults(internal::ValidAndInvalidResults results);
 
   // TODO(crbug.com/1216084): Remove this after finishing developing Continue
   // Section. Appends mock results to the driver provider.
   void AppendFakeSearchResults(Results* results);
+
+  void OnProtoInitialized(ReadStatus status);
 
   // The reference to profile to get ZeroStateFileProvider service.
   Profile* const profile_;
@@ -71,7 +74,7 @@ class ZeroStateFileProvider : public SearchProvider,
 
   // The ranking model used to produce local file results for searches with an
   // empty query.
-  std::unique_ptr<RecurrenceRanker> files_ranker_;
+  std::unique_ptr<MrfuCache> files_ranker_;
 
   base::TimeTicks query_start_time_;
 

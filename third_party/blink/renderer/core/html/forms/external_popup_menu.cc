@@ -49,9 +49,9 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 namespace blink {
 
@@ -151,7 +151,7 @@ bool ExternalPopupMenu::ShowInternal() {
 void ExternalPopupMenu::Show(PopupMenu::ShowEventType) {
   if (!ShowInternal())
     return;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   const WebInputEvent* current_event = CurrentInputEvent::Get();
   if (current_event &&
       current_event->GetType() == WebInputEvent::Type::kMouseDown) {

@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
+#include "chrome/browser/ui/views/download/bubble/download_toolbar_button_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
@@ -103,11 +104,11 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #include "chrome/browser/recovery/recovery_install_global_error_factory.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 #endif
 
@@ -263,11 +264,15 @@ void ToolbarView::Init() {
         browser_view_, MediaToolbarButtonContextualMenu::Create(browser_));
   }
 
+  std::unique_ptr<DownloadToolbarButtonView> download_button;
+  if (base::FeatureList::IsEnabled(features::kDownloadBubble)) {
+    download_button =
+        std::make_unique<DownloadToolbarButtonView>(browser_view_);
+  }
+
   std::unique_ptr<send_tab_to_self::SendTabToSelfToolbarIconView>
       send_tab_to_self_button;
-  if ((base::FeatureList::IsEnabled(send_tab_to_self::kSendTabToSelfV2) ||
-       share::AreUpcomingSharingFeaturesEnabled()) &&
-      !browser_->profile()->IsOffTheRecord()) {
+  if (!browser_->profile()->IsOffTheRecord()) {
     send_tab_to_self_button =
         std::make_unique<send_tab_to_self::SendTabToSelfToolbarIconView>(
             browser_view_);
@@ -345,6 +350,9 @@ void ToolbarView::Init() {
   if (media_button)
     media_button_ = AddChildView(std::move(media_button));
 
+  if (download_button)
+    download_button_ = AddChildView(std::move(download_button));
+
   if (send_tab_to_self_button)
     send_tab_to_self_button_ = AddChildView(std::move(send_tab_to_self_button));
 
@@ -377,7 +385,7 @@ void ToolbarView::Init() {
   // Start global error services now so we set the icon on the menu correctly.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   SigninGlobalErrorFactory::GetForProfile(browser_->profile());
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   RecoveryInstallGlobalErrorFactory::GetForProfile(browser_->profile());
 #endif
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -931,7 +939,7 @@ void ToolbarView::LoadImages() {
 }
 
 void ToolbarView::ShowCriticalNotification() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   views::BubbleDialogDelegateView::CreateBubble(
       new CriticalNotificationBubbleView(app_menu_button_))
       ->Show();

@@ -67,7 +67,6 @@ class DedicatedWorkerService;
 class DevToolsBackgroundServicesContext;
 class DOMStorageContext;
 class FileSystemAccessEntryFactory;
-class FontAccessContext;
 class GeneratedCodeCacheContext;
 class HostZoomLevelContext;
 class HostZoomMap;
@@ -135,7 +134,6 @@ class CONTENT_EXPORT StoragePartition {
   virtual storage::QuotaManager* GetQuotaManager() = 0;
   virtual BackgroundSyncContext* GetBackgroundSyncContext() = 0;
   virtual storage::FileSystemContext* GetFileSystemContext() = 0;
-  virtual FontAccessContext* GetFontAccessContext() = 0;
   virtual storage::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual storage::mojom::LocalStorageControl* GetLocalStorageControl() = 0;
@@ -179,6 +177,7 @@ class CONTENT_EXPORT StoragePartition {
     // Public explainer here:
     // https://github.com/WICG/turtledove/blob/main/FLEDGE.md
     REMOVE_DATA_MASK_INTEREST_GROUPS = 1 << 12,
+    REMOVE_DATA_MASK_AGGREGATION_SERVICE = 1 << 13,
     REMOVE_DATA_MASK_ALL = 0xFFFFFFFF,
 
     // Corresponds to storage::kStorageTypeTemporary.

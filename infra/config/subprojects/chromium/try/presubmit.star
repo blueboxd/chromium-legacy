@@ -7,11 +7,14 @@ load("//lib/builders.star", "os")
 load("//lib/branches.star", "branches")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
-load("//project.star", "BRANCH_TYPES", "branch_type")
+load("//project.star", "branch_type")
+load("../fallback-cq.star", "fallback_cq")
 
 try_.defaults.set(
     cores = 8,
-    execution_timeout = 15 * time.minute,
+    # TODO(gbeaty) After prod freeze, lower this to something sensible for the
+    # actual time these builders take
+    execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     list_view = "presubmit",
     main_list_view = "try",
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
@@ -38,10 +41,11 @@ def presubmit_builder(*, name, tryjob, **kwargs):
     against generated files being out of date, so they MUST run quickly so that
     the submit after a CQ dry run doesn't take long.
     """
-    tryjob_args = {a: getattr(tryjob, a) for a in dir(tryjob)}
-    tryjob_args["disable_reuse"] = True
-    tryjob_args["add_default_excludes"] = False
-    tryjob = try_.job(**tryjob_args)
+    if tryjob:
+        tryjob_args = {a: getattr(tryjob, a) for a in dir(tryjob)}
+        tryjob_args["disable_reuse"] = True
+        tryjob_args["add_default_excludes"] = False
+        tryjob = try_.job(**tryjob_args)
     return try_.builder(name = name, tryjob = tryjob, **kwargs)
 
 # Errors that this builder would catch would go unnoticed until a project is set
@@ -49,35 +53,29 @@ def presubmit_builder(*, name, tryjob, **kwargs):
 # long after the change has been made, so make it a presubmit builder to ensure
 # it's checked with current code. The builder runs in a few minutes and only for
 # infra/config changes, so it won't impose a heavy burden on our capacity.
-def branch_configs():
-    """Get the branch configs to be tested.
-
-    Returns:
-      A list of objects that can be used as the value of the "branch_configs"
-      property for the branch_configuration/tester recipe. See
-      https://chromium.googlesource.com/chromium/tools/build/+/refs/heads/main/recipes/recipes/branch_configuration/tester.proto
-      The returned configs will cover standard branches and every combination of
-      post-stable branches.
-    """
-    type_combos = []
-    for t in BRANCH_TYPES:
-        # The standard branch type can only appear alone, so add it afterwards
-        if t == branch_type.STANDARD:
-            continue
-        type_combos = type_combos + [[t]] + [c + [t] for c in type_combos]
-
-    type_combos = [[branch_type.STANDARD]] + sorted(type_combos, key = lambda x: (len(x), x))
-    return [{
-        "name": " + ".join(c),
-        "branch_types": c,
-    } for c in type_combos]
-
 presubmit_builder(
     name = "branch-config-verifier",
     executable = "recipe:branch_configuration/tester",
     properties = {
         "branch_script": "infra/config/scripts/branch.py",
-        "branch_configs": branch_configs(),
+        "branch_configs": [
+            {
+                "name": branch_type.STANDARD,
+                "branch_types": [branch_type.STANDARD],
+            },
+            {
+                "name": branch_type.DESKTOP_EXTENDED_STABLE,
+                "branch_types": [branch_type.DESKTOP_EXTENDED_STABLE],
+            },
+            {
+                "name": branch_type.CROS_LTS,
+                "branch_types": [branch_type.CROS_LTS],
+            },
+            {
+                "name": "{} + {}".format(branch_type.DESKTOP_EXTENDED_STABLE, branch_type.CROS_LTS),
+                "branch_types": [branch_type.DESKTOP_EXTENDED_STABLE, branch_type.CROS_LTS],
+            },
+        ],
         "starlark_entry_points": ["infra/config/main.star", "infra/config/dev.star"],
     },
     tryjob = try_.job(
@@ -108,10 +106,25 @@ presubmit_builder(
 )
 
 presubmit_builder(
+    name = "builder-config-verifier",
+    description_html = "checks that builder configs in properties files match the recipe-side configs",
+    executable = "recipe:chromium/builder_config_verifier",
+    properties = {
+        "properties_file_globs": [
+            "infra/config/generated/builders/*/*/properties.textpb",
+        ],
+    },
+    # TODO(crbug.com/1288604) Add to the CQ once the recipe is ready
+    tryjob = None,
+    # tryjob = try_.job(
+    #     location_regexp = [r".+/[+]infra/config/generated/builders"],
+    # ),
+)
+
+presubmit_builder(
     name = "chromium_presubmit",
     branch_selector = branches.ALL_BRANCHES,
     executable = "recipe:presubmit",
-    execution_timeout = 40 * time.minute,
     properties = {
         "$depot_tools/presubmit": {
             "runhooks": True,
@@ -119,5 +132,13 @@ presubmit_builder(
         },
         "repo_name": "chromium",
     },
+    tryjob = try_.job(),
+)
+
+presubmit_builder(
+    name = "requires-testing-checker",
+    cq_group = fallback_cq.GROUP,
+    description_html = "prevents CLs that requires testing from landing on branches with no CQ",
+    executable = "recipe:requires_testing_checker",
     tryjob = try_.job(),
 )

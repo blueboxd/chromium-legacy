@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -11,7 +11,6 @@ from __future__ import print_function
 import copy
 import os
 import os.path
-import psutil
 import random
 import re
 import signal
@@ -19,7 +18,11 @@ import subprocess
 import sys
 import threading
 import time
+
+import psutil
+
 import test_env
+
 
 class _XvfbProcessError(Exception):
   """Exception raised when Xvfb cannot start."""
@@ -208,7 +211,7 @@ def _run_with_xvfb(cmd, env, stdoutfile, use_openbox, use_xcompmgr):
       # quick enough to start up before openbox is ready.
       # TODO(dpranke): remove this nasty hack once the test() template is
       # reworked.
-      wait_for_openbox = False
+      wait_for_openbox = True
       wait_openbox_program = './xwmstartupcheck'
       if not os.path.isfile(wait_openbox_program):
         wait_for_openbox = False

@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -326,7 +327,7 @@ void WebCacheManager::ClearRendererCache(
 }
 
 void WebCacheManager::ReviseAllocationStrategy() {
-  DCHECK(!base::FeatureList::IsEnabled(kTrimWebCacheOnMemoryPressureOnly));
+  DCHECK(!base::FeatureList::IsEnabled(kDisableWebCache));
 
   DCHECK(stats_.size() <=
       active_renderers_.size() + inactive_renderers_.size());
@@ -379,7 +380,7 @@ void WebCacheManager::ReviseAllocationStrategy() {
 }
 
 void WebCacheManager::ReviseAllocationStrategyLater() {
-  if (base::FeatureList::IsEnabled(kTrimWebCacheOnMemoryPressureOnly))
+  if (base::FeatureList::IsEnabled(kDisableWebCache))
     return;
 
   // Ask to be called back in a few milliseconds to actually recompute our

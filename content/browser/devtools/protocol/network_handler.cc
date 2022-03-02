@@ -1008,7 +1008,8 @@ NetworkHandler::NetworkHandler(
     const std::string& host_id,
     const base::UnguessableToken& devtools_token,
     DevToolsIOContext* io_context,
-    base::RepeatingClosure update_loader_factories_callback)
+    base::RepeatingClosure update_loader_factories_callback,
+    bool allow_file_access)
     : DevToolsDomainHandler(Network::Metainfo::domainName),
       host_id_(host_id),
       devtools_token_(devtools_token),
@@ -1023,7 +1024,8 @@ NetworkHandler::NetworkHandler(
       bypass_service_worker_(false),
       cache_disabled_(false),
       update_loader_factories_callback_(
-          std::move(update_loader_factories_callback)) {
+          std::move(update_loader_factories_callback)),
+      allow_file_access_(allow_file_access) {
   DCHECK(io_context_);
   static bool have_configured_service_worker_context = false;
   if (have_configured_service_worker_context)
@@ -1322,7 +1324,7 @@ NetworkHandler::BuildProtocolReport(const net::ReportingReport& report) {
         .SetDepth(report.depth)
         .SetCompletedAttempts(report.attempts)
         .SetBody(protocol::DictionaryValue::cast(
-            protocol::toProtocolValue(report.body.get(), 1000)))
+            protocol::toProtocolValue(*report.body.get(), 1000)))
         .SetStatus(BuildReportStatus(report.status))
         .Build();
   }
@@ -2078,7 +2080,7 @@ void NetworkHandler::NavigationRequestWillBeSent(
       nav_request.begin_params().devtools_initiator;
   if (initiator_optional.has_value()) {
     initiator = protocol::ValueTypeConverter<Network::Initiator>::FromValue(
-        *toProtocolValue(&initiator_optional.value(), 1000));
+        *toProtocolValue(initiator_optional.value(), 1000));
   }
   if (!initiator) {
     initiator = Network::Initiator::Create()
@@ -2151,14 +2153,24 @@ void NetworkHandler::RequestSent(
     request_object->SetTrustTokenParams(
         BuildTrustTokenParams(*request_info.trust_token_params));
   }
+
+  std::string resource_type = Network::ResourceTypeEnum::Other;
+  if (request_info.resource_type ==
+          static_cast<int>(blink::mojom::ResourceType::kWorker) ||
+      request_info.resource_type ==
+          static_cast<int>(blink::mojom::ResourceType::kSharedWorker) ||
+      request_info.resource_type ==
+          static_cast<int>(blink::mojom::ResourceType::kServiceWorker)) {
+    resource_type = Network::ResourceTypeEnum::Script;
+  }
+
   // TODO(crbug.com/1261605): Populate redirect_emitted_extra_info instead of
   // just returning false.
   frontend_->RequestWillBeSent(
       request_id, loader_id, url_without_fragment, std::move(request_object),
       timestamp.since_origin().InSecondsF(), base::Time::Now().ToDoubleT(),
       std::move(initiator), /*redirect_emitted_extra_info=*/false,
-      std::unique_ptr<Network::Response>(),
-      std::string(Network::ResourceTypeEnum::Other),
+      std::unique_ptr<Network::Response>(), resource_type,
       Maybe<std::string>() /* frame_id */, request_info.has_user_gesture);
 }
 
@@ -2886,7 +2898,10 @@ namespace {
 
 mojo::PendingRemote<network::mojom::URLLoaderFactory>
 CreateNetworkFactoryForDevTools(
+    base::StringPiece scheme,
     RenderProcessHost* host,
+    int routing_id,
+    const url::Origin& origin,
     network::mojom::URLLoaderFactoryParamsPtr params) {
   if (!host || !params) {
     // Return an invalid remote by default.
@@ -2901,10 +2916,26 @@ CreateNetworkFactoryForDevTools(
   // See BUG(chromium:1076435) for more context.
   params->is_corb_enabled = false;
 
-  mojo::PendingRemote<network::mojom::URLLoaderFactory> remote;
-  host->CreateURLLoaderFactory(remote.InitWithNewPipeAndPassReceiver(),
-                               std::move(params));
-  return remote;
+  if (scheme == url::kHttpScheme || scheme == url::kHttpsScheme) {
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> remote;
+    host->CreateURLLoaderFactory(remote.InitWithNewPipeAndPassReceiver(),
+                                 std::move(params));
+    return remote;
+  }
+
+  if (scheme != url::kFileScheme) {
+    ContentBrowserClient::NonNetworkURLLoaderFactoryMap factories;
+    GetContentClient()
+        ->browser()
+        ->RegisterNonNetworkSubresourceURLLoaderFactories(
+            host->GetID(), routing_id, origin, &factories);
+    auto i = factories.find(std::string(scheme));
+    if (i == factories.end()) {
+      return {};
+    }
+    return std::move(i->second);
+  }
+  return {};
 }
 }  // namespace
 
@@ -2914,10 +2945,14 @@ void NetworkHandler::LoadNetworkResource(
     std::unique_ptr<protocol::Network::LoadNetworkResourceOptions> options,
     std::unique_ptr<LoadNetworkResourceCallback> callback) {
   GURL gurl(url);
-  const bool is_gurl_valid = gurl.is_valid() && gurl.SchemeIsHTTPOrHTTPS();
+  const bool is_gurl_valid = gurl.is_valid();
   if (!is_gurl_valid) {
-    callback->sendFailure(Response::InvalidParams(
-        "The url must be valid and have scheme http or https"));
+    callback->sendFailure(Response::InvalidParams("The url must be valid"));
+    return;
+  }
+
+  if (gurl.SchemeIs(url::kFileScheme) && !allow_file_access_) {
+    callback->sendFailure(Response::InvalidParams("Unsupported URL scheme"));
     return;
   }
 
@@ -2964,8 +2999,14 @@ void NetworkHandler::LoadNetworkResource(
         network::mojom::TrustTokenRedemptionPolicy::kForbid,
         "NetworkHandler::LoadNetworkResource");
 
-    auto factory =
-        CreateNetworkFactoryForDevTools(frame->GetProcess(), std::move(params));
+    auto factory = CreateNetworkFactoryForDevTools(
+        gurl.scheme(), frame->GetProcess(), frame->GetRoutingID(),
+        frame->GetLastCommittedOrigin(), std::move(params));
+    if (!factory.is_valid()) {
+      callback->sendFailure(Response::InvalidParams("Unsupported URL scheme"));
+      return;
+    }
+
     url_loader_factory.Bind(std::move(factory));
     auto loader = DevToolsNetworkResourceLoader::Create(
         std::move(url_loader_factory), std::move(gurl),
@@ -2980,7 +3021,8 @@ void NetworkHandler::LoadNetworkResource(
     // TODO(sigurds): Support dedicated workers.
     auto info = host->CreateNetworkFactoryParamsForDevTools();
     auto factory = CreateNetworkFactoryForDevTools(
-        host->GetProcessHost(), std::move(info.factory_params));
+        gurl.scheme(), host->GetProcessHost(), MSG_ROUTING_NONE, info.origin,
+        std::move(info.factory_params));
     if (factory.is_valid()) {
       url_loader_factory.Bind(std::move(factory));
       auto loader = DevToolsNetworkResourceLoader::Create(

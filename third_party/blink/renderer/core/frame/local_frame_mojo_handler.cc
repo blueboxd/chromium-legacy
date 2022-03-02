@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/local_frame_mojo_handler.h"
 
+#include "build/build_config.h"
 #include "components/power_scheduler/power_mode.h"
 #include "components/power_scheduler/power_mode_arbiter.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -59,7 +60,7 @@
 #include "third_party/blink/renderer/platform/mhtml/serialized_resource.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "third_party/blink/renderer/core/editing/substring_util.h"
 #include "third_party/blink/renderer/platform/fonts/mac/attributed_string_type_converter.h"
 #include "ui/base/mojom/attributed_string.mojom-blink.h"
@@ -72,7 +73,7 @@ namespace {
 constexpr char kInvalidWorldID[] =
     "JavaScriptExecuteRequestInIsolatedWorld gets an invalid world id.";
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 uint32_t GetCurrentCursorPositionInFrame(LocalFrame* local_frame) {
   blink::WebRange range =
       WebLocalFrameImpl::FromFrame(local_frame)->SelectionRange();
@@ -350,7 +351,7 @@ LocalFrameMojoHandler::LocalFrameMojoHandler(blink::LocalFrame& frame)
   frame.GetRemoteNavigationAssociatedInterfaces()->GetInterface(
       back_forward_cache_controller_host_remote_.BindNewEndpointAndPassReceiver(
           frame.GetTaskRunner(TaskType::kInternalDefault)));
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // It should be bound before accessing TextInputHost which is the interface to
   // respond to GetCharacterIndexAtPoint.
   frame.GetBrowserInterfaceBroker().GetInterface(
@@ -378,7 +379,7 @@ LocalFrameMojoHandler::LocalFrameMojoHandler(blink::LocalFrame& frame)
 void LocalFrameMojoHandler::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(back_forward_cache_controller_host_remote_);
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   visitor->Trace(text_input_host_);
 #endif
   visitor->Trace(reporting_service_);
@@ -415,7 +416,7 @@ LocalFrameMojoHandler::BackForwardCacheControllerHostRemote() {
   return *back_forward_cache_controller_host_remote_.get();
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 mojom::blink::TextInputHost& LocalFrameMojoHandler::TextInputHost() {
   DCHECK(text_input_host_.is_bound());
   return *text_input_host_.get();
@@ -977,7 +978,7 @@ void LocalFrameMojoHandler::JavaScriptExecuteRequestInIsolatedWorld(
       power_scheduler::PowerModeVoter::kScriptExecutionTimeout);
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 void LocalFrameMojoHandler::GetCharacterIndexAtPoint(const gfx::Point& point) {
   frame_->GetCharacterIndexAtPoint(point);
 }
@@ -988,14 +989,25 @@ void LocalFrameMojoHandler::GetFirstRectForRange(const gfx::Range& range) {
   if (!client)
     return;
 
-  if (!client->GetCaretBoundsFromFocusedPlugin(rect)) {
-    // When request range is invalid we will try to obtain it from current
-    // frame selection. The fallback value will be 0.
-    uint32_t start = range.IsValid() ? range.start()
-                                     : GetCurrentCursorPositionInFrame(frame_);
+  WebPluginContainerImpl* plugin_container = frame_->GetWebPluginContainer();
+  if (plugin_container) {
+    // Pepper-free PDF will reach here.
+    FrameWidget* frame_widget = frame_->GetWidgetForLocalRoot();
+    rect = frame_widget->BlinkSpaceToEnclosedDIPs(
+        plugin_container->Plugin()->GetPluginCaretBounds());
+  } else {
+    // TODO(crbug.com/702990): Remove `pepper_has_caret` once pepper is removed.
+    bool pepper_has_caret = client->GetCaretBoundsFromFocusedPlugin(rect);
+    if (!pepper_has_caret) {
+      // When request range is invalid we will try to obtain it from current
+      // frame selection. The fallback value will be 0.
+      uint32_t start = range.IsValid()
+                           ? range.start()
+                           : GetCurrentCursorPositionInFrame(frame_);
 
-    WebLocalFrameImpl::FromFrame(frame_)->FirstRectForCharacterRange(
-        start, range.length(), rect);
+      WebLocalFrameImpl::FromFrame(frame_)->FirstRectForCharacterRange(
+          start, range.length(), rect);
+    }
   }
 
   TextInputHost().GotFirstRectForRange(rect);
@@ -1078,7 +1090,7 @@ void LocalFrameMojoHandler::BindDevToolsAgent(
   frame_->Client()->BindDevToolsAgent(std::move(host), std::move(receiver));
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void LocalFrameMojoHandler::ExtractSmartClipData(
     const gfx::Rect& rect,
     ExtractSmartClipDataCallback callback) {
@@ -1090,7 +1102,7 @@ void LocalFrameMojoHandler::ExtractSmartClipData(
                           clip_html.IsNull() ? g_empty_string : clip_html,
                           clip_rect);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 void LocalFrameMojoHandler::HandleRendererDebugURL(const KURL& url) {
   DCHECK(IsRendererDebugURL(url));
@@ -1140,9 +1152,6 @@ void LocalFrameMojoHandler::ClosePage(
     mojom::blink::LocalMainFrame::ClosePageCallback completion_callback) {
   SECURITY_CHECK(frame_->IsMainFrame());
 
-  // TODO(crbug.com/1161996): Remove this VLOG once the investigation is done.
-  VLOG(1) << "LocalFrame::ClosePage() URL = " << frame_->GetDocument()->Url();
-
   // There are two ways to close a page:
   //
   // 1/ Via webview()->Close() that currently sets the WebView's delegate_ to
@@ -1160,7 +1169,7 @@ void LocalFrameMojoHandler::ClosePage(
   // when unloading itself.
   IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
       frame_->GetDocument());
-  frame_->Loader().DispatchUnloadEvent(nullptr, nullptr);
+  frame_->Loader().DispatchUnloadEvent(/*unload_timing_info=*/nullptr);
 
   std::move(completion_callback).Run();
 }

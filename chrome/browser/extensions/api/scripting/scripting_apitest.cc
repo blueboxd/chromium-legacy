@@ -104,6 +104,13 @@ IN_PROC_BROWSER_TEST_F(ScriptingAPITest, DynamicContentScripts) {
   ASSERT_TRUE(RunExtensionTest("scripting/dynamic_scripts")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ScriptingAPITest, DynamicContentScriptParameters) {
+  // Dynamic content script parameters are currently limited to trunk.
+  ScopedCurrentChannel scoped_channel(version_info::Channel::UNKNOWN);
+  ASSERT_TRUE(RunExtensionTest("scripting/dynamic_script_parameters"))
+      << message_;
+}
+
 // Test that if an extension with persistent scripts is quickly unloaded while
 // these scripts are being fetched, requests that wait on that extension's
 // script load will be unblocked. Regression for crbug.com/1250575
@@ -149,13 +156,19 @@ class PersistentScriptingAPITest : public ScriptingAPITest {
   PersistentScriptingAPITest() = default;
 
   // ScriptingAPITest override.
-  void SetUpOnMainThread() override {
-    ScriptingAPITest::SetUpOnMainThread();
-
-    // Set the test name as a custom arge before the test is run. This avoids a
+  void SetUp() override {
+    // Initialize the listener object here before calling SetUp. This avoids a
     // race condition where the extension loads (as part of browser startup) and
     // sends a message before a message listener in C++ has been initialized.
-    SetCustomArg(testing::UnitTest::GetInstance()->current_test_info()->name());
+
+    listener_ = std::make_unique<ExtensionTestMessageListener>("ready", true);
+    ScriptingAPITest::SetUp();
+  }
+
+  // Reset listener before the browser gets torn down.
+  void TearDownOnMainThread() override {
+    listener_.reset();
+    ScriptingAPITest::TearDownOnMainThread();
   }
 
  protected:
@@ -164,6 +177,12 @@ class PersistentScriptingAPITest : public ScriptingAPITest {
   // (as part of startup) and finishes its tests before the ResultCatcher is
   // created.
   ResultCatcher result_catcher_;
+
+  // Used to wait for the extension to load and send a ready message so the test
+  // can reply which the extension waits for to start its testing functions.
+  // This ensures that the testing functions will run after the browser has
+  // finished initializing.
+  std::unique_ptr<ExtensionTestMessageListener> listener_;
 };
 
 // Tests that registered content scripts which persist across sessions behave as
@@ -173,16 +192,25 @@ IN_PROC_BROWSER_TEST_F(PersistentScriptingAPITest,
   const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("scripting/persistent_dynamic_scripts"));
   ASSERT_TRUE(extension);
+  ASSERT_TRUE(listener_->WaitUntilSatisfied());
+  listener_->Reply(
+      testing::UnitTest::GetInstance()->current_test_info()->name());
   EXPECT_TRUE(result_catcher_.GetNextResult()) << result_catcher_.message();
 }
 
 IN_PROC_BROWSER_TEST_F(PersistentScriptingAPITest,
                        PRE_PersistentDynamicContentScripts) {
+  ASSERT_TRUE(listener_->WaitUntilSatisfied());
+  listener_->Reply(
+      testing::UnitTest::GetInstance()->current_test_info()->name());
   EXPECT_TRUE(result_catcher_.GetNextResult()) << result_catcher_.message();
 }
 
 IN_PROC_BROWSER_TEST_F(PersistentScriptingAPITest,
                        PersistentDynamicContentScripts) {
+  ASSERT_TRUE(listener_->WaitUntilSatisfied());
+  listener_->Reply(
+      testing::UnitTest::GetInstance()->current_test_info()->name());
   EXPECT_TRUE(result_catcher_.GetNextResult()) << result_catcher_.message();
 }
 

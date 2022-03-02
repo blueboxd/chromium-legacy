@@ -183,9 +183,8 @@ class PrerenderHostRegistryTest : public RenderViewHostImplTestHarness {
   // params match the potential activation navigation params. Use setup_callback
   // to set the parameters. Returns true if the host was selected as a
   // potential candidate for activation, and false otherwise.
-  bool CheckIsActivatedForParams(
-      base::OnceCallback<void(NavigationSimulatorImpl*)> setup_callback)
-      WARN_UNUSED_RESULT {
+  [[nodiscard]] bool CheckIsActivatedForParams(
+      base::OnceCallback<void(NavigationSimulatorImpl*)> setup_callback) {
     const GURL kOriginalUrl("https://example.com/");
 
     std::unique_ptr<TestWebContents> web_contents =
@@ -269,12 +268,14 @@ class PrerenderHostRegistryTest : public RenderViewHostImplTestHarness {
 
   void ExpectUniqueSampleOfFinalStatus(PrerenderHost::FinalStatus status) {
     histogram_tester_.ExpectUniqueSample(
-        "Prerender.Experimental.PrerenderHostFinalStatus", status, 1);
+        "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+        status, 1);
   }
 
   void ExpectBucketCountOfFinalStatus(PrerenderHost::FinalStatus status) {
     histogram_tester_.ExpectBucketCount(
-        "Prerender.Experimental.PrerenderHostFinalStatus", status, 1);
+        "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+        status, 1);
   }
 
  private:
@@ -328,7 +329,7 @@ TEST_F(PrerenderHostRegistryTest, CreateAndStartHost_Embedder_DirectURLInput) {
   const int prerender_frame_tree_node_id = registry->CreateAndStartHost(
       GeneratePrerenderAttributes(kPrerenderingUrl,
                                   PrerenderTriggerType::kEmbedder,
-                                  "_DirectURLInput", render_frame_host),
+                                  "DirectURLInput", render_frame_host),
       *web_contents);
   ASSERT_NE(prerender_frame_tree_node_id, kNoFrameTreeNodeId);
   PrerenderHost* prerender_host =

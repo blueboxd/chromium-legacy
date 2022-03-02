@@ -29,9 +29,11 @@ import org.chromium.chrome.browser.firstrun.FirstRunFragment;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.firstrun.MobileFreProgress;
 import org.chromium.chrome.browser.firstrun.SkipTosDialogPolicyListener;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.ui.signin.SigninUtils;
 import org.chromium.chrome.browser.ui.signin.fre.FreUMADialogCoordinator;
 import org.chromium.chrome.browser.ui.signin.fre.SigninFirstRunCoordinator;
+import org.chromium.chrome.browser.ui.signin.fre.SigninFirstRunView;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
@@ -94,7 +96,7 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mAllowCrashUpload = true;
+        mAllowCrashUpload = false;
         mFragmentView = new FrameLayout(getActivity());
         mFragmentView.addView(inflateFragmentView(inflater, getResources().getConfiguration()));
 
@@ -199,20 +201,21 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
                 && getPageDelegate().getPolicyLoadListener().get() != null) {
             mSigninFirstRunCoordinator.onNativeAndPolicyLoaded(
                     getPageDelegate().getPolicyLoadListener().get());
+            mAllowCrashUpload = !mSigninFirstRunCoordinator.isMetricsReportingDisabledByPolicy();
         }
     }
 
     private View inflateFragmentView(LayoutInflater inflater, Configuration configuration) {
         // Since the landscape view has two panes the minimum screenWidth to show it is set to
         // 600dp per android guideline.
-        final View view =
-                inflater.inflate(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-                                        && configuration.screenWidthDp >= 600
-                                ? R.layout.signin_first_run_landscape_view
-                                : R.layout.signin_first_run_portrait_view,
-                        null, false);
-        mSigninFirstRunCoordinator =
-                new SigninFirstRunCoordinator(requireContext(), view, mModalDialogManager, this);
+        final SigninFirstRunView view = (SigninFirstRunView) inflater.inflate(
+                configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+                                && configuration.screenWidthDp >= 600
+                        ? R.layout.signin_first_run_landscape_view
+                        : R.layout.signin_first_run_portrait_view,
+                null, false);
+        mSigninFirstRunCoordinator = new SigninFirstRunCoordinator(requireContext(), view,
+                mModalDialogManager, this, PrivacyPreferencesManagerImpl.getInstance());
         notifyCoordinatorWhenNativeAndPolicyAreLoaded();
         return view;
     }

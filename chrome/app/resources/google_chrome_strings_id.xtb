@@ -48,7 +48,6 @@
 <translation id="2121284319307530122">Luncurkan kembali untuk Mengupdate &amp;Chrome</translation>
 <translation id="2123055963409958220">Bantu Chrome jadi lebih baik dengan melaporkan <ph name="BEGIN_LINK" />setelan saat ini<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Mulai ulang Chrome sekarang</translation>
-<translation id="2189289170880510015">Sesuaikan beberapa pilihan privasi terpenting Chrome</translation>
 <translation id="2258103955319320201">Untuk mengakses aktivitas browser Chrome di semua perangkat, login lalu aktifkan sinkronisasi</translation>
 <translation id="2290014774651636340">Kunci API Google tidak ada. Beberapa fungsi Google Chrome tidak akan berfungsi.</translation>
 <translation id="2290095356545025170">Apakah Anda yakin ingin mencopot penginstalan Google Chrome?</translation>
@@ -62,6 +61,7 @@
 <translation id="2467438592969358367">Google Chrome ingin mengekspor sandi. Ketik sandi Windows Anda untuk mengizinkannya.</translation>
 <translation id="2485422356828889247">Uninstal</translation>
 <translation id="2534507159460261402">Google Pay (disalin ke Chrome)</translation>
+<translation id="2563121210305478421">Luncurkan kembali Chrome?</translation>
 <translation id="2574930892358684005"><ph name="EXISTING_USER" /> telah login ke profil Chrome ini. Agar penjelajahan Anda tetap terpisah, Chrome dapat membuat profil tersendiri untuk Anda.</translation>
 <translation id="2580411288591421699">Tak dapat memasang Google Chrome dengan versi yang sama dengan yang sedang aktif. Tutup dulu, baru coba lagi.</translation>
 <translation id="2586406160782125153">Tindakan ini akan menghapus data browsing dari perangkat ini. Untuk mengambil data nanti, login ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
@@ -86,6 +86,7 @@
 <translation id="2926952073016206995">Chrome memerlukan izin kamera untuk situs ini</translation>
 <translation id="2929907241665500097">Chrome tidak dapat diupdate, terjadi error. <ph name="BEGIN_LINK" />Perbaiki masalah update Chrome dan update yang gagal.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - Login Jaringan - Chrome</translation>
+<translation id="303514781271618814">Chrome sedang menjelajahi fitur baru yang memungkinkan situs memberikan pengalaman penjelajahan yang sama dengan menggunakan lebih sedikit data Anda</translation>
 <translation id="3037838751736561277">Google Chrome berjalan di mode latar belakang.</translation>
 <translation id="3059710691562604940">Safe Browsing nonaktif. Chrome merekomendasikan untuk mengaktifkannya.</translation>
 <translation id="3065168410429928842">Tab Chrome</translation>
@@ -96,6 +97,7 @@
 <translation id="3114643501466072395">Untuk memeriksa apakah sandi Anda yang lain aman dari pelanggaran data dan masalah keamanan lainnya, <ph name="BEGIN_LINK" />login ke Chrome<ph name="END_LINK" />.</translation>
 <translation id="3140883423282498090">Perubahan Anda akan berlaku pada peluncuran ulang Google Chrome selanjutnya.</translation>
 <translation id="3149510190863420837">Aplikasi Chrome</translation>
+<translation id="3245429137663807393">Jika Anda juga membagikan laporan penggunaan Chrome, laporan tersebut akan menyertakan URL yang Anda buka</translation>
 <translation id="3360895254066713204">Pembantu Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome akan diluncurkan ulang sekarang}=1{Chrome akan diluncurkan ulang dalam 1 detik}other{Chrome akan diluncurkan ulang dalam # detik}}</translation>
 <translation id="3395323229510056640">Dapatkan bantuan Chrome OS</translation>
@@ -113,7 +115,6 @@
 <translation id="3596080736082218006">{COUNT,plural, =0{Administrator mewajibkan Anda meluncurkan kembali Chrome untuk menerapkan update}=1{Administrator mewajibkan Anda meluncurkan kembali Chrome untuk menerapkan update. Jendela Samaran Anda tidak akan dibuka kembali.}other{Administrator mewajibkan Anda meluncurkan kembali Chrome untuk menerapkan update. # jendela Samaran Anda tidak akan dibuka kembali.}}</translation>
 <translation id="3622797965165704966">Kini, menggunakan Chrome dengan Akun Google Anda dan di komputer bersama jadi lebih mudah.</translation>
 <translation id="3673813398384385993">Chrome menemukan bahwa "<ph name="EXTENSION_NAME" />" berisi malware</translation>
-<translation id="3678552270983184277">Setelan default berfungsi untuk sebagian besar pengguna, tetapi Anda dapat menyesuaikannya dengan cara yang Anda inginkan untuk menggunakan Chrome</translation>
 <translation id="3718181793972440140">Tindakan ini akan menghapus 1 item dari perangkat ini. Untuk mengambil data nanti, login ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Ekstensi "<ph name="EXTENSION_NAME" />" telah mengubah apa yang ditampilkan oleh halaman saat Anda memulai Chrome.</translation>
 <translation id="3779473566290487688">Untuk mendapatkan update Google Chrome selanjutnya, Anda perlu OS X 10.11 atau yang lebih baru. Komputer ini menggunakan OS X 10.10.</translation>
@@ -157,6 +158,7 @@
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">File ini mungkin berbahaya, jadi Chrome telah memblokirnya.</translation>
 <translation id="479167709087336770">Tindakan ini akan menggunakan pemeriksa ejaan yang sama dengan yang digunakan di penelusuran Google. Teks yang Anda ketikkan di browser dikirim ke Google. Anda dapat mengubah perilaku ini di setelan.</translation>
+<translation id="4873783916118289636">Meninjau kontrol privasi dan keamanan utama di Chrome</translation>
 <translation id="4891791193823137474">Jalankan Google Chrome di latar belakang</translation>
 <translation id="4895437082222824641">Buka link di &amp;tab Chrome baru</translation>
 <translation id="4953650215774548573">Setel Google Chrome sebagai browser default Anda</translation>
@@ -171,7 +173,6 @@
 <translation id="5193136243808726294">Google Chrome OS tidak dapat membuka halaman ini.</translation>
 <translation id="521447420733633466">Jika Anda berbagi perangkat, teman dan keluarga dapat menjelajah secara terpisah dan menyiapkan Chrome sesuai keinginannya</translation>
 <translation id="5251420635869119124">Tamu dapat menggunakan Chrome tanpa meninggalkan apa pun.</translation>
-<translation id="5251679006894510177">Update hampir selesai. Luncurkan kembali Chrome untuk menyelesaikan update. Jendela Samaran tidak akan dibuka kembali.</translation>
 <translation id="5334487786912937552">Chrome memerlukan izin akses penyimpanan untuk mendownload file</translation>
 <translation id="5386244825306882791">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chrome atau menelusuri dari Omnibox.</translation>
 <translation id="5394833366792865639">Bagikan tab Chrome</translation>
@@ -212,7 +213,6 @@
 <translation id="6506909944137591434">Chrome memerlukan izin kamera untuk membuat peta 3D area sekitar Anda</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6568793831116033768">Sistem Chrome OS</translation>
-<translation id="6594121454516132231">Lihat upaya Chrome dalam mengamankan Anda dari pelacakan lintas situs sekaligus mempertahankan web terbuka</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6679975945624592337">Jalankan Google Chrome di Background</translation>
 <translation id="6696915334902295848">Chrome memerlukan izin mikrofon untuk situs ini</translation>
@@ -294,6 +294,7 @@
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
 <translation id="8679801911857917785">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chrome.</translation>
 <translation id="8686817260976772516">Dengan profil Chrome, Anda dapat memisahkan semua aktivitas Chrome Anda. Buat profil untuk teman dan keluarga, atau pisahkan antara aktivitas kerja dan hiburan.</translation>
+<translation id="8712767363896337380">Update hampir selesai. Luncurkan kembali Chrome untuk menyelesaikan update.</translation>
 <translation id="873133009373065397">Google Chrome tidak dapat menentukan atau menyetel browser default</translation>
 <translation id="8823341990149967727">Chrome Terlalu Lawas</translation>
 <translation id="8834965163890861871">Google Chrome mencoba mengedit sandi. Ketik sandi Windows Anda untuk mengizinkannya.</translation>

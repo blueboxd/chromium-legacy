@@ -191,7 +191,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     PrefService* prefs = profile_->GetPrefs();
     std::unique_ptr<ListPrefUpdate> update(
         new ListPrefUpdate(prefs, prefs::kMediaGalleriesRememberedGalleries));
-    base::ListValue* list = update->Get();
+    base::Value* list = update->Get();
 
     for (auto& entry : list->GetList()) {
       base::DictionaryValue* dict;

@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
+#include "chrome/browser/ui/app_list/arc/intent.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/webui/chromeos/diagnostics_dialog.h"
@@ -472,7 +473,7 @@ ArcSessionManager::ExpansionResult ReadSaltInternal() {
 // for the presence of kEnableHoudiniDlc flag in the command line.
 bool IsDlcRequired() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableHoudiniDlc);
+      ash::switches::kEnableHoudiniDlc);
 }
 
 }  // namespace
@@ -810,7 +811,7 @@ void ArcSessionManager::SetUserInfo() {
   const AccountId account(multi_user_util::GetAccountIdFromProfile(profile_));
   const cryptohome::Identification cryptohome_id(account);
   const std::string user_id_hash =
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_);
+      ash::ProfileHelper::GetUserIdHashFromProfile(profile_);
 
   std::string serialno = GetSerialNumber();
   arc_session_runner_->SetUserInfo(cryptohome_id, user_id_hash, serialno);
@@ -826,7 +827,7 @@ std::string ArcSessionManager::GetSerialNumber() const {
 
   const AccountId account(multi_user_util::GetAccountIdFromProfile(profile_));
   const std::string user_id_hash =
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_);
+      ash::ProfileHelper::GetUserIdHashFromProfile(profile_);
 
   std::string serialno;
   // ARC container doesn't need the serial number.
@@ -1784,7 +1785,7 @@ void ArcSessionManager::ExpandPropertyFilesAndReadSalt() {
   const bool is_arcvm = arc::IsArcVmEnabled();
   bool add_native_bridge_64bit_support = false;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kArcEnableNativeBridge64BitSupportExperiment)) {
+          ash::switches::kArcEnableNativeBridge64BitSupportExperiment)) {
     PrefService* local_pref_service = g_browser_process->local_state();
     if (base::FeatureList::IsEnabled(
             arc::kNativeBridge64BitSupportExperimentFeature)) {

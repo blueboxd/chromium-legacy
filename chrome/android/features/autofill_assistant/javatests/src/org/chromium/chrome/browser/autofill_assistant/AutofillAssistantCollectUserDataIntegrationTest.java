@@ -12,15 +12,12 @@ import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.contrib.PickerActions.setDate;
-import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.hasSibling;
 import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
-import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
@@ -48,7 +45,6 @@ import static org.chromium.chrome.browser.autofill_assistant.ProtoTestUtil.toCss
 import static org.chromium.chrome.browser.autofill_assistant.ProtoTestUtil.toVisibleCssSelector;
 
 import android.os.Build;
-import android.widget.DatePicker;
 import android.widget.RadioButton;
 
 import androidx.test.espresso.matcher.ViewMatchers;
@@ -62,13 +58,11 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.LocaleUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.autofill_assistant.carousel.ButtonView;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.AutofillEntryProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipIcon;
@@ -80,8 +74,6 @@ import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto.UserDataProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataResultProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ContactDetailsProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.DateProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.DateTimeRangeProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DropdownSelectStrategy;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto.Rectangle;
@@ -90,6 +82,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.IntList;
 import org.chromium.chrome.browser.autofill_assistant.proto.KeyboardValueFillStrategy;
 import org.chromium.chrome.browser.autofill_assistant.proto.LoginDetailsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ModelProto.ModelValue;
+import org.chromium.chrome.browser.autofill_assistant.proto.PaymentInstrumentProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PopupListSectionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionStatusProto;
@@ -113,14 +106,10 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Integration tests for the collect user data action.
@@ -590,137 +579,6 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
                 .check(matches(withText(containsString("Enter a valid address"))));
     }
 
-    @Test
-    @MediumTest
-    public void testDateRange() {
-        // Create timeslots from 08:00 AM to 04:00 PM in 30 minute steps.
-        List<DateTimeRangeProto.TimeSlot> timeSlots = new ArrayList<>();
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(2020, 1, 1, 8, 0, 0);
-        Locale locale = LocaleUtils.forLanguageTag("en-US");
-        DateFormat dateFormat = new SimpleDateFormat("hh:mm a", locale);
-        for (int i = 0; i <= 16; i++) {
-            timeSlots.add((DateTimeRangeProto.TimeSlot) DateTimeRangeProto.TimeSlot.newBuilder()
-                                  .setLabel(dateFormat.format(calendar.getTime()))
-                                  .setComparisonValue(i)
-                                  .build());
-            calendar.add(Calendar.MINUTE, 30);
-        }
-
-        ArrayList<ActionProto> list = new ArrayList<>();
-        list.add(ActionProto.newBuilder()
-                         .setCollectUserData(
-                                 CollectUserDataProto.newBuilder()
-                                         .setDateTimeRange(
-                                                 DateTimeRangeProto.newBuilder()
-                                                         .setStartDate(DateProto.newBuilder()
-                                                                               .setYear(2020)
-                                                                               .setMonth(1)
-                                                                               .setDay(1))
-                                                         .setEndDate(DateProto.newBuilder()
-                                                                             .setYear(2020)
-                                                                             .setMonth(1)
-                                                                             .setDay(13))
-                                                         .setMinDate(DateProto.newBuilder()
-                                                                             .setYear(2020)
-                                                                             .setMonth(1)
-                                                                             .setDay(1))
-                                                         .setMaxDate(DateProto.newBuilder()
-                                                                             .setYear(2020)
-                                                                             .setMonth(12)
-                                                                             .setDay(31))
-                                                         .addAllTimeSlots(timeSlots)
-                                                         .setStartTimeSlot(4)
-                                                         .setEndTimeSlot(4)
-                                                         .setStartDateLabel("Start date")
-                                                         .setStartTimeLabel("Start time")
-                                                         .setEndDateLabel("End date")
-                                                         .setEndTimeLabel("End time")
-                                                         .setDateNotSetError("Date not set")
-                                                         .setTimeNotSetError("Time not set"))
-                                         .setRequestTermsAndConditions(false))
-                         .build());
-        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
-                SupportedScriptProto.newBuilder()
-                        .setPath("form_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
-                        .build(),
-                list);
-
-        AutofillAssistantTestService testService =
-                new AutofillAssistantTestService(Collections.singletonList(script));
-        startAutofillAssistant(mTestRule.getActivity(), testService);
-
-        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
-
-        // Set end date to same as start date. Because time slots are both the same, start time will
-        // be unset.
-        onView(withText("End date")).perform(click());
-        onView(withClassName(equalTo(DatePicker.class.getName())))
-                .inRoot(isDialog())
-                .perform(setDate(2020, 1, 1));
-        onView(withText(R.string.date_picker_dialog_set)).inRoot(isDialog()).perform(click());
-
-        // Continue should be disabled, because start time is not set.
-        onView(allOf(withText("Continue"),
-                isDescendantOfA(allOf(instanceOf(ButtonView.class), not(isEnabled())))));
-
-        // Set valid start time.
-        onView(withText("Start time")).perform(click());
-        onView(withText("09:00 AM")).inRoot(isDialog()).perform(click());
-
-        onView(allOf(withText("Continue"),
-                isDescendantOfA(allOf(instanceOf(ButtonView.class), isEnabled()))));
-
-        // Change end date and time.
-        onView(withText("End date")).perform(click());
-        onView(withClassName(equalTo(DatePicker.class.getName())))
-                .inRoot(isDialog())
-                .perform(setDate(2020, 2, 16));
-        onView(withText(R.string.date_picker_dialog_set)).inRoot(isDialog()).perform(click());
-        onView(withText("End time")).perform(click());
-        onView(withText("10:30 AM")).inRoot(isDialog()).perform(click());
-
-        // Change start date and time.
-        onView(withText("Start date")).perform(click());
-        onView(withClassName(equalTo(DatePicker.class.getName())))
-                .inRoot(isDialog())
-                .perform(setDate(2020, 2, 7));
-        onView(withText(R.string.date_picker_dialog_set)).inRoot(isDialog()).perform(click());
-        onView(withText("Start time")).perform(click());
-        onView(withText("09:30 AM")).inRoot(isDialog()).perform(scrollTo(), click());
-
-        // Finish action, wait for response and prepare next set of actions.
-        List<ActionProto> nextActions = new ArrayList<>();
-        nextActions.add(
-                ActionProto.newBuilder()
-                        .setPrompt(PromptProto.newBuilder()
-                                           .setMessage("Finished")
-                                           .addChoices(PromptProto.Choice.newBuilder().setChip(
-                                                   ChipProto.newBuilder()
-                                                           .setType(ChipType.DONE_ACTION)
-                                                           .setText("End"))))
-                        .build());
-        testService.setNextActions(nextActions);
-        int numNextActionsCalled = testService.getNextActionsCounter();
-        onView(withText("Continue")).perform(click());
-        testService.waitUntilGetNextActions(numNextActionsCalled + 1);
-
-        List<ProcessedActionProto> processedActions = testService.getProcessedActions();
-        ViewMatchers.assertThat(processedActions, iterableWithSize(1));
-        ViewMatchers.assertThat(processedActions.get(0).getStatus(),
-                CoreMatchers.is(ProcessedActionStatusProto.ACTION_APPLIED));
-        CollectUserDataResultProto result = processedActions.get(0).getCollectUserDataResult();
-        assertThat(result.getDateRangeStartDate(),
-                equalTo(DateProto.newBuilder().setYear(2020).setMonth(2).setDay(7).build()));
-        // Index 3 == 09:30 PM.
-        assertThat(result.getDateRangeStartTimeslot(), is(3));
-        assertThat(result.getDateRangeEndDate(),
-                equalTo(DateProto.newBuilder().setYear(2020).setMonth(2).setDay(16).build()));
-        // Index 5 == 10:30 PM.
-        assertThat(result.getDateRangeEndTimeslot(), is(5));
-    }
-
     /**
      * Select an item in the popup list section
      */
@@ -1131,5 +989,60 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
         assertThat(getElementValue(getWebContents(), "profile_name"), is("John Doe"));
         assertThat(getElementValue(getWebContents(), "email"), is("johndoe@google.com"));
+    }
+
+    /**
+     * Load and show a card from backend.
+     * TODO(b/214022384): Fill it into a form (requires unmasking).
+     */
+    @Test
+    @MediumTest
+    public void testShowBackendCard() throws Exception {
+        UserDataProto.Builder
+                data = UserDataProto.newBuilder().setLocale("en-US").addAvailablePaymentInstruments(
+                PaymentInstrumentProto.newBuilder()
+                        .putCardValues(55, AutofillEntryProto.newBuilder().setValue("2050").build())
+                        .putCardValues(53, AutofillEntryProto.newBuilder().setValue("7").build())
+                        .putCardValues(
+                                51, AutofillEntryProto.newBuilder().setValue("John Doe").build())
+                        .setNetwork("visaCC")
+                        .setLastFourDigits("1111")
+                        .putAddressValues(
+                                35, AutofillEntryProto.newBuilder().setValue("80302").build())
+                        .putAddressValues(
+                                36, AutofillEntryProto.newBuilder().setValue("US").build())
+                        .putAddressValues(
+                                33, AutofillEntryProto.newBuilder().setValue("Boulder").build())
+                        .putAddressValues(30,
+                                AutofillEntryProto.newBuilder().setValue("123 Broadway St").build())
+                        .putAddressValues(
+                                34, AutofillEntryProto.newBuilder().setValue("CO").build())
+                        .putAddressValues(
+                                7, AutofillEntryProto.newBuilder().setValue("John Doe").build()));
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(ActionProto.newBuilder()
+                         .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                     .setUserData(data)
+                                                     .setRequestPaymentMethod(true)
+                                                     .setBillingAddressName("billing_address")
+                                                     .addSupportedBasicCardNetworks("visa")
+                                                     .setRequestTermsAndConditions(false))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(allOf(withId(R.id.credit_card_number),
+                                              isDescendantOfA(withId(R.id.payment_method_summary))),
+                allOf(withText(containsString("1111")), isDisplayed()));
+        waitUntilViewMatchesCondition(withContentDescription("Continue"), isEnabled());
     }
 }

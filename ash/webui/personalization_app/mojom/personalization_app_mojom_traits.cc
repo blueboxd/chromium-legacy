@@ -4,8 +4,13 @@
 
 #include "ash/webui/personalization_app/mojom/personalization_app_mojom_traits.h"
 
+#include <string>
+#include <vector>
+
+#include "ash/public/cpp/default_user_image.h"
+#include "ash/public/cpp/personalization_app/user_display_info.h"
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
-#include "ash/webui/personalization_app/mojom/personalization_app.mojom-shared.h"
+#include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "base/notreached.h"
 #include "base/unguessable_token.h"
@@ -13,6 +18,9 @@
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/image/image_skia.h"
+#include "url/gurl.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {
@@ -231,6 +239,56 @@ bool StructTraits<ash::personalization_app::mojom::WallpaperImageDataView,
   if (!image_url.is_valid())
     return true;
   return false;
+}
+
+const std::string&
+StructTraits<ash::personalization_app::mojom::UserInfoDataView,
+             ash::personalization_app::UserDisplayInfo>::
+    email(const ash::personalization_app::UserDisplayInfo& user_display_info) {
+  return user_display_info.email;
+}
+
+const std::string&
+StructTraits<ash::personalization_app::mojom::UserInfoDataView,
+             ash::personalization_app::UserDisplayInfo>::
+    name(const ash::personalization_app::UserDisplayInfo& user_display_info) {
+  return user_display_info.name;
+}
+
+bool StructTraits<ash::personalization_app::mojom::UserInfoDataView,
+                  ash::personalization_app::UserDisplayInfo>::
+    Read(ash::personalization_app::mojom::UserInfoDataView data,
+         ash::personalization_app::UserDisplayInfo* out) {
+  return data.ReadEmail(&out->email) && data.ReadName(&out->name);
+}
+
+int StructTraits<ash::personalization_app::mojom::DefaultUserImageDataView,
+                 ash::default_user_image::DefaultUserImage>::
+    index(const ash::default_user_image::DefaultUserImage& default_user_image) {
+  return default_user_image.index;
+}
+
+const std::u16string&
+StructTraits<ash::personalization_app::mojom::DefaultUserImageDataView,
+             ash::default_user_image::DefaultUserImage>::
+    title(const ash::default_user_image::DefaultUserImage& default_user_image) {
+  return default_user_image.title;
+}
+
+const GURL&
+StructTraits<ash::personalization_app::mojom::DefaultUserImageDataView,
+             ash::default_user_image::DefaultUserImage>::
+    url(const ash::default_user_image::DefaultUserImage& default_user_image) {
+  return default_user_image.url;
+}
+
+bool StructTraits<ash::personalization_app::mojom::DefaultUserImageDataView,
+                  ash::default_user_image::DefaultUserImage>::
+    Read(ash::personalization_app::mojom::DefaultUserImageDataView data,
+         ash::default_user_image::DefaultUserImage* out) {
+  out->index = data.index();
+
+  return data.ReadTitle(&out->title) && data.ReadUrl(&out->url);
 }
 
 }  // namespace mojo

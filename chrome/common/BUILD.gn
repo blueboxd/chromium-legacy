@@ -241,7 +241,6 @@ static_library("common") {
 
   deps = [
     "//build:chromeos_buildflags",
-    "//build:os_buildflags",
     "//components/google/core/common",
     "//components/live_caption:constants",
     "//components/metrics:call_stack_profile_builder",
@@ -315,7 +314,10 @@ static_library("common") {
       "initialize_extensions_client.cc",
       "initialize_extensions_client.h",
     ]
-    deps += [ "//chrome/common/apps/platform_apps" ]
+    deps += [
+      "//chrome/common/apps/platform_apps",
+      "//components/services/app_service/public/mojom",
+    ]
     public_deps += [
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:extensions_features",
@@ -373,39 +375,6 @@ static_library("common") {
       "//components/printing/common",
       "//printing",
     ]
-    if (enable_print_preview && !is_chromeos_ash) {
-      # Part of the service_process_util code below is based on a model where
-      # the cloud print service is a long-lived process independent of chrome,
-      # which is not appropriate on android.
-      assert(!is_android)
-      sources += [
-        "service_process_util.cc",
-        "service_process_util.h",
-      ]
-      if (is_linux || is_chromeos) {
-        sources += [ "service_process_util_linux.cc" ]
-      }
-      if (is_mac) {
-        sources += [ "service_process_util_mac.mm" ]
-      }
-      if (is_posix) {
-        sources += [
-          "service_process_util_posix.cc",
-          "service_process_util_posix.h",
-        ]
-      }
-      if (is_win) {
-        sources += [
-          "chrome_utility_printing_param_traits_macros.h",
-          "service_process_util_win.cc",
-        ]
-
-        public_deps += [
-          "//printing/backend",
-          "//printing/mojom",
-        ]
-      }
-    }
   }
 
   if (is_android) {
@@ -636,6 +605,7 @@ static_library("constants") {
       "chrome_paths_lacros.h",
     ]
     deps += [ "//chromeos/crosapi/cpp" ]
+    public_deps += [ "//chromeos/crosapi/mojom" ]
   } else if (is_linux || is_chromeos) {
     sources += [ "chrome_paths_linux.cc" ]
   }
@@ -720,7 +690,6 @@ mojom("mojo_bindings") {
     "open_search_description_document_handler.mojom",
     "plugin.mojom",
     "renderer_configuration.mojom",
-    "subresource_redirect_service.mojom",
     "sync_encryption_keys_extension.mojom",
   ]
 
@@ -735,13 +704,10 @@ mojom("mojo_bindings") {
   }
 
   if (is_win) {
-    sources += [ "conflicts/module_event_sink_win.mojom" ]
-  }
-
-  if (enable_offline_pages) {
-    sources += [ "mhtml_page_notifier.mojom" ]
-    deps += [ "//third_party/blink/public/mojom:mojom_mhtml_load_result" ]
-    enabled_features = [ "enable_offline_pages" ]
+    sources += [
+      "conflicts/module_event_sink_win.mojom",
+      "font_prewarmer.mojom",
+    ]
   }
 
   public_deps = [
@@ -771,15 +737,17 @@ mojom("mojo_bindings") {
   ]
 
   component_deps = [ "//content/public/common" ]
-}
 
-if (enable_print_preview && !is_chromeos_ash) {
-  mojom("service_process_mojom") {
-    sources = [
-      "cloud_print.mojom",
-      "service_process.mojom",
-    ]
-    public_deps = [ "//mojo/public/mojom/base" ]
+  enabled_features = []
+
+  if (enable_offline_pages) {
+    sources += [ "mhtml_page_notifier.mojom" ]
+    deps += [ "//third_party/blink/public/mojom:mojom_mhtml_load_result" ]
+    enabled_features += [ "enable_offline_pages" ]
+  }
+
+  if (enable_plugins) {
+    enabled_features += [ "enable_plugins" ]
   }
 }
 
@@ -795,26 +763,4 @@ mojom("available_offline_content_mojom") {
 mojom("offline_page_auto_fetcher_mojom") {
   sources = [ "offline_page_auto_fetcher.mojom" ]
   public_deps = [ "//url/mojom:url_mojom_gurl" ]
-}
-
-if (enable_basic_printing && is_win) {
-  mojom("cloud_print_utility_mojom") {
-    sources = [ "cloud_print_utility.mojom" ]
-    cpp_typemaps = [
-      {
-        types = [
-          {
-            mojom = "chrome.mojom.PrinterCapsAndDefaults"
-            cpp = "::printing::PrinterCapsAndDefaults"
-          },
-          {
-            mojom = "chrome.mojom.PrinterSemanticCapsAndDefaults"
-            cpp = "::printing::PrinterSemanticCapsAndDefaults"
-          },
-        ]
-        traits_headers = [ "chrome_utility_printing_param_traits_macros.h" ]
-        traits_public_deps = [ ":common" ]
-      },
-    ]
-  }
 }

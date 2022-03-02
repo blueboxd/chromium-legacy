@@ -87,7 +87,7 @@ class GuestOsSharePathTest : public testing::Test {
       const base::FilePath& container_path,
       bool success,
       const std::string& failure_reason) {
-    const base::DictionaryValue* prefs =
+    const base::Value* prefs =
         profile()->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
     EXPECT_NE(prefs->FindKey(shared_path_.value()), nullptr);
     EXPECT_EQ(prefs->FindKey(shared_path_.value())->GetList().size(), 1U);
@@ -172,7 +172,7 @@ class GuestOsSharePathTest : public testing::Test {
       const std::string& expected_failure_reason,
       bool success,
       const std::string& failure_reason) {
-    const base::DictionaryValue* prefs =
+    const base::Value* prefs =
         profile()->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
     if (expected_persist == Persist::YES) {
       EXPECT_NE(prefs->FindKey(path.value()), nullptr);
@@ -249,7 +249,7 @@ class GuestOsSharePathTest : public testing::Test {
     ASSERT_TRUE(base::CreateDirectory(shared_path_));
     DictionaryPrefUpdate update(profile()->GetPrefs(),
                                 prefs::kGuestOSPathsSharedToVms);
-    base::DictionaryValue* shared_paths = update.Get();
+    base::Value* shared_paths = update.Get();
     base::Value termina(base::Value::Type::LIST);
     termina.Append(base::Value(crostini::kCrostiniDefaultVmName));
     shared_paths->SetKey(shared_path_.value(), std::move(termina));
@@ -718,7 +718,7 @@ TEST_F(GuestOsSharePathTest, RegisterPersistedPaths) {
   profile()->GetPrefs()->Set(prefs::kGuestOSPathsSharedToVms, shared_paths);
 
   guest_os_share_path_->RegisterPersistedPath("v1", base::FilePath("/a/a/a"));
-  const base::DictionaryValue* prefs =
+  const base::Value* prefs =
       profile()->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
   EXPECT_EQ(prefs->DictSize(), 1U);
   EXPECT_EQ(prefs->FindKey("/a/a/a")->GetList().size(), 1U);
@@ -788,7 +788,7 @@ TEST_F(GuestOsSharePathTest, UnsharePathSuccess) {
   SetUpVolume();
   DictionaryPrefUpdate update(profile()->GetPrefs(),
                               prefs::kGuestOSPathsSharedToVms);
-  base::DictionaryValue* shared_paths = update.Get();
+  base::Value* shared_paths = update.Get();
   base::Value vms(base::Value::Type::LIST);
   vms.Append(base::Value("vm-running"));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));
@@ -815,7 +815,7 @@ TEST_F(GuestOsSharePathTest, UnsharePathVmNotRunning) {
   SetUpVolume();
   DictionaryPrefUpdate update(profile()->GetPrefs(),
                               prefs::kGuestOSPathsSharedToVms);
-  base::DictionaryValue* shared_paths = update.Get();
+  base::Value* shared_paths = update.Get();
   base::Value vms(base::Value::Type::LIST);
   vms.Append(base::Value("vm-not-running"));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));
@@ -832,7 +832,7 @@ TEST_F(GuestOsSharePathTest, UnsharePathPluginVmNotRunning) {
   SetUpVolume();
   DictionaryPrefUpdate update(profile()->GetPrefs(),
                               prefs::kGuestOSPathsSharedToVms);
-  base::DictionaryValue* shared_paths = update.Get();
+  base::Value* shared_paths = update.Get();
   base::Value vms(base::Value::Type::LIST);
   vms.Append(base::Value("PvmDefault"));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));
@@ -850,7 +850,7 @@ TEST_F(GuestOsSharePathTest, UnsharePathArcvmNotRunning) {
   SetUpVolume();
   DictionaryPrefUpdate update(profile()->GetPrefs(),
                               prefs::kGuestOSPathsSharedToVms);
-  base::DictionaryValue* shared_paths = update.Get();
+  base::Value* shared_paths = update.Get();
   base::Value vms(base::Value::Type::LIST);
   vms.Append(base::Value(arc::kArcVmName));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));

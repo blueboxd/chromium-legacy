@@ -451,6 +451,8 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
 }
 
+// Continue reading suggestions have been disabled, and should not appear as
+// suggestions.
 TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
   constexpr char kLocalSessionTag[] = "local";
   constexpr char kLocalSessionName[] = "LocalSessionName";
@@ -466,8 +468,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
 
   const base::Time now = base::Time::Now();
 
-  // Case 1: test that ContinueReading is recommended for the latest foreign
-  // tab.
+  // Case 1: test that ContinueReading is not recommended for foreign tabs.
   {
     CreateSearchWithContinueReading();
     session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
@@ -515,7 +516,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->GetSession(kForeignSessionTag3)->device_type =
         sync_pb::SyncEnums::TYPE_PHONE;
 
-    EXPECT_EQ("title2,Hosted App,Packaged App 1,Packaged App 2",
+    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2",
               RunQueryNotSortingByRelevance(""));
   }
 
@@ -568,7 +569,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
               RunQueryNotSortingByRelevance(""));
   }
 
-  // Case 4: test that ContinueReading is recommended for foreign tab with
+  // Case 4: test that ContinueReading is not recommended for foreign tab with
   // TYPE_TABLET.
   {
     CreateSearchWithContinueReading();
@@ -589,7 +590,7 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     session_tracker()->GetSession(kForeignSessionTag1)->device_type =
         sync_pb::SyncEnums::TYPE_TABLET;
 
-    EXPECT_EQ("title1,Hosted App,Packaged App 1,Packaged App 2",
+    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2",
               RunQueryNotSortingByRelevance(""));
   }
 
@@ -862,6 +863,13 @@ TEST_F(AppSearchProviderTest, AppServiceIconCache) {
   // The number of LoadIconFromIconKey calls should not change, when hiding the
   // UI (i.e. calling ViewClosing).
   CallViewClosing();
+
+  // Verify the search results are cleared async.
+  EXPECT_FALSE(results().empty());
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(results().empty());
+
   EXPECT_EQ(2, stub_icon_loader.NumLoadIconFromIconKeyCalls());
 
   // The icon has been added to the map, so issuing the same "pa" query should

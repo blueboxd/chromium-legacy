@@ -311,9 +311,9 @@ base::Value ForeignSessionHandler::GetForeignSessions() {
     // and only add back sessions that are still current.
     DictionaryPrefUpdate pref_update(Profile::FromWebUI(web_ui())->GetPrefs(),
                                      prefs::kNtpCollapsedForeignSessions);
-    base::DictionaryValue* current_collapsed_sessions = pref_update.Get();
-    std::unique_ptr<base::DictionaryValue> collapsed_sessions(
-        current_collapsed_sessions->DeepCopy());
+    base::Value* current_collapsed_sessions = pref_update.Get();
+    std::unique_ptr<base::Value> collapsed_sessions(
+        current_collapsed_sessions->CreateDeepCopy());
     current_collapsed_sessions->DictClear();
 
     // Note: we don't own the SyncedSessions themselves.
@@ -333,10 +333,10 @@ base::Value ForeignSessionHandler::GetForeignSessions() {
                                 FormatSessionTime(session->modified_time));
       session_data.SetDoubleKey("timestamp", session->modified_time.ToJsTime());
 
-      bool is_collapsed = collapsed_sessions->HasKey(session_tag);
+      bool is_collapsed = collapsed_sessions->FindKey(session_tag);
       session_data.SetBoolKey("collapsed", is_collapsed);
       if (is_collapsed)
-        current_collapsed_sessions->SetBoolean(session_tag, true);
+        current_collapsed_sessions->SetBoolKey(session_tag, true);
 
       base::Value window_list(base::Value::Type::LIST);
 
@@ -451,7 +451,7 @@ void ForeignSessionHandler::HandleSetForeignSessionCollapsed(
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   DictionaryPrefUpdate update(prefs, prefs::kNtpCollapsedForeignSessions);
   if (is_collapsed)
-    update.Get()->SetBoolean(session_tag, true);
+    update.Get()->SetBoolKey(session_tag, true);
   else
     update.Get()->RemoveKey(session_tag);
 }

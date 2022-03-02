@@ -417,7 +417,7 @@ void MenuViewDragAndDropTestTestInMenuDrag::StartDrag() {
 // menu automatically once the drag is complete, and does not ask the delegate
 // to stay open.
 // TODO(pkasting): https://crbug.com/939621 Fails on Mac.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_TestInMenuDrag DISABLED_TestInMenuDrag
 #else
 #define MAYBE_TestInMenuDrag TestInMenuDrag
@@ -509,7 +509,7 @@ void MenuViewDragAndDropTestNestedDrag::StartDrag() {
 // implemented in menu code) will consult the delegate before closing the view
 // after the drag.
 // TODO(pkasting): https://crbug.com/939621 Fails on Mac.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_MenuViewDragAndDropNestedDrag \
   DISABLED_MenuViewDragAndDropNestedDrag
 #else
@@ -547,7 +547,15 @@ void MenuViewDragAndDropForDropStayOpen::DoTestWithMenuOpen() {
 // Test that if a menu is opened for a drop which is handled by a child view
 // that the menu does not immediately try to close.
 // If this flakes, disable and log details in http://crbug.com/523255.
-VIEW_TEST(MenuViewDragAndDropForDropStayOpen, MenuViewStaysOpenForNestedDrag)
+// Flaky on Lacros. https://crbug.com/1281104
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_MenuViewStaysOpenForNestedDrag \
+  DISABLED_MenuViewStaysOpenForNestedDrag
+#else
+#define MAYBE_MenuViewStaysOpenForNestedDrag MenuViewStaysOpenForNestedDrag
+#endif
+VIEW_TEST(MenuViewDragAndDropForDropStayOpen,
+          MAYBE_MenuViewStaysOpenForNestedDrag)
 
 class MenuViewDragAndDropForDropCancel : public MenuViewDragAndDropTest {
  public:
@@ -576,4 +584,11 @@ void MenuViewDragAndDropForDropCancel::DoTestWithMenuOpen() {
 
 // Test that if a menu is opened for a drop handled entirely by menu code, the
 // menu will try to close if it does not receive any drag updates.
-VIEW_TEST(MenuViewDragAndDropForDropCancel, MenuViewCancelsForOwnDrag)
+// Flaky on Lacros. https://crbug.com/1281103
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_MenuViewCancelsForOwnDrag \
+  DISABLED_MenuViewCancelsForOwnDrag
+#else
+#define MAYBE_MenuViewCancelsForOwnDrag MenuViewCancelsForOwnDrag
+#endif
+VIEW_TEST(MenuViewDragAndDropForDropCancel, MAYBE_MenuViewCancelsForOwnDrag)

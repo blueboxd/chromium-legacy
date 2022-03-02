@@ -5,6 +5,7 @@
 #include "base/allocator/partition_allocator/partition_page.h"
 
 #include <algorithm>
+#include <cstdint>
 
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/address_pool_manager.h"
@@ -12,6 +13,7 @@
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
@@ -33,6 +35,8 @@ void UnmapNow(uintptr_t reservation_start,
 template <bool thread_safe>
 ALWAYS_INLINE void PartitionDirectUnmap(
     SlotSpanMetadata<thread_safe>* slot_span) {
+  using ::partition_alloc::internal::ScopedUnlockGuard;
+
   auto* root = PartitionRoot<thread_safe>::FromSlotSpan(slot_span);
   root->lock_.AssertAcquired();
   auto* extent = PartitionDirectMapExtent<thread_safe>::FromSlotSpan(slot_span);
@@ -57,8 +61,8 @@ ALWAYS_INLINE void PartitionDirectUnmap(
   PA_DCHECK(root->total_size_of_direct_mapped_pages >= reservation_size);
   root->total_size_of_direct_mapped_pages -= reservation_size;
 
-  uintptr_t reservation_start = reinterpret_cast<uintptr_t>(
-      SlotSpanMetadata<thread_safe>::ToSlotSpanStartPtr(slot_span));
+  uintptr_t reservation_start =
+      SlotSpanMetadata<thread_safe>::ToSlotSpanStart(slot_span);
   // The mapping may start at an unspecified location within a super page, but
   // we always reserve memory aligned to super page size.
   reservation_start = bits::AlignDown(reservation_start, kSuperPageSize);
@@ -73,32 +77,29 @@ ALWAYS_INLINE void PartitionDirectUnmap(
   // second one may not find enough space in the GigaCage, and fail. This is
   // expected to be very rare though, and likely preferable to holding the lock
   // while releasing the address space.
-  ScopedUnlockGuard<thread_safe> unlock{root->lock_};
-  ScopedSyscallTimer<thread_safe> timer{root};
+  ScopedUnlockGuard unlock{root->lock_};
+  ScopedSyscallTimer timer{root};
   UnmapNow(reservation_start, reservation_size, root->ChoosePool());
 }
 
+}  // namespace
+
 template <bool thread_safe>
-ALWAYS_INLINE void PartitionRegisterEmptySlotSpan(
-    SlotSpanMetadata<thread_safe>* slot_span) {
-  PA_DCHECK(slot_span->is_empty());
-  PartitionRoot<thread_safe>* root =
-      PartitionRoot<thread_safe>::FromSlotSpan(slot_span);
+ALWAYS_INLINE void SlotSpanMetadata<thread_safe>::RegisterEmpty() {
+  PA_DCHECK(is_empty());
+  auto* root = PartitionRoot<thread_safe>::FromSlotSpan(this);
   root->lock_.AssertAcquired();
 
   root->empty_slot_spans_dirty_bytes +=
-      base::bits::AlignUp(slot_span->GetProvisionedSize(), SystemPageSize());
+      base::bits::AlignUp(GetProvisionedSize(), SystemPageSize());
 
-  slot_span->ToSuperPageExtent()->DecrementNumberOfNonemptySlotSpans();
+  ToSuperPageExtent()->DecrementNumberOfNonemptySlotSpans();
 
   // If the slot span is already registered as empty, give it another life.
-  if (slot_span->empty_cache_index != -1) {
-    PA_DCHECK(slot_span->empty_cache_index >= 0);
-    PA_DCHECK(static_cast<unsigned>(slot_span->empty_cache_index) <
-              kMaxFreeableSpans);
-    PA_DCHECK(root->global_empty_slot_span_ring[slot_span->empty_cache_index] ==
-              slot_span);
-    root->global_empty_slot_span_ring[slot_span->empty_cache_index] = nullptr;
+  if (in_empty_cache_) {
+    PA_DCHECK(empty_cache_index_ < kMaxFreeableSpans);
+    PA_DCHECK(root->global_empty_slot_span_ring[empty_cache_index_] == this);
+    root->global_empty_slot_span_ring[empty_cache_index_] = nullptr;
   }
 
   int16_t current_index = root->global_empty_slot_span_ring_index;
@@ -110,13 +111,14 @@ ALWAYS_INLINE void PartitionRegisterEmptySlotSpan(
     slot_span_to_decommit->DecommitIfPossible(root);
 
   // We put the empty slot span on our global list of "slot spans that were once
-  // empty". thus providing it a bit of breathing room to get re-used before
-  // we really free it. This improves performance, particularly on Mac OS X
-  // which has subpar memory management performance.
-  root->global_empty_slot_span_ring[current_index] = slot_span;
-  slot_span->empty_cache_index = current_index;
+  // empty", thus providing it a bit of breathing room to get re-used before we
+  // really free it. This reduces the number of system calls. Otherwise any
+  // free() from a single-slot slot span would lead to a syscall, for instance.
+  root->global_empty_slot_span_ring[current_index] = this;
+  empty_cache_index_ = current_index;
+  in_empty_cache_ = 1;
   ++current_index;
-  if (current_index == kMaxFreeableSpans)
+  if (current_index == root->global_empty_slot_span_ring_size)
     current_index = 0;
   root->global_empty_slot_span_ring_index = current_index;
 
@@ -135,8 +137,6 @@ ALWAYS_INLINE void PartitionRegisterEmptySlotSpan(
   }
 }
 
-}  // namespace
-
 // static
 template <bool thread_safe>
 SlotSpanMetadata<thread_safe>
@@ -152,7 +152,7 @@ SlotSpanMetadata<thread_safe>::get_sentinel_slot_span() {
 template <bool thread_safe>
 SlotSpanMetadata<thread_safe>::SlotSpanMetadata(
     PartitionBucket<thread_safe>* bucket)
-    : bucket(bucket), can_store_raw_size(bucket->CanStoreRawSize()) {}
+    : bucket(bucket), can_store_raw_size_(bucket->CanStoreRawSize()) {}
 
 template <bool thread_safe>
 void SlotSpanMetadata<thread_safe>::FreeSlowPath(size_t number_of_freed) {
@@ -161,6 +161,32 @@ void SlotSpanMetadata<thread_safe>::FreeSlowPath(size_t number_of_freed) {
   root->lock_.AssertAcquired();
 #endif
   PA_DCHECK(this != get_sentinel_slot_span());
+
+  // The caller has already modified |num_allocated_slots|. It is a
+  // responsibility of this function to react to it, and update the state. We
+  // can get here only if the slot span is marked full and/or is now empty. Both
+  // are possible at the same time, which can happen when the caller lowered
+  // |num_allocated_slots| from "all" to 0 (common for single-slot spans). First
+  // execute the "is marked full" path, as it sets up |active_slot_spans_head|
+  // in a way later needed for the "is empty" path.
+  if (marked_full) {
+    // Direct map slot spans aren't added to any lists, hence never marked full.
+    PA_DCHECK(!bucket->is_direct_mapped());
+    // Double check that the slot span was full.
+    PA_DCHECK(num_allocated_slots ==
+              bucket->get_slots_per_span() - number_of_freed);
+    marked_full = 0;
+    // Fully used slot span became partially used. It must be put back on the
+    // non-full list. Also make it the current slot span to increase the
+    // chances of it being filled up again. The old current slot span will be
+    // the next slot span.
+    PA_DCHECK(!next_slot_span);
+    if (LIKELY(bucket->active_slot_spans_head != get_sentinel_slot_span()))
+      next_slot_span = bucket->active_slot_spans_head;
+    bucket->active_slot_spans_head = this;
+    --bucket->num_full_slot_spans;
+  }
+
   if (LIKELY(num_allocated_slots == 0)) {
     // Slot span became fully unused.
     if (UNLIKELY(bucket->is_direct_mapped())) {
@@ -179,32 +205,7 @@ void SlotSpanMetadata<thread_safe>::FreeSlowPath(size_t number_of_freed) {
     if (CanStoreRawSize())
       SetRawSize(0);
 
-    PartitionRegisterEmptySlotSpan(this);
-  } else {
-    PA_DCHECK(!bucket->is_direct_mapped());
-    // Ensure that the slot span is full. That's the only valid case if we
-    // arrive here.
-    PA_DCHECK(num_allocated_slots < 0);
-    // A transition of num_allocated_slots from 0 to a negative value is not
-    // legal, and likely indicates a double-free.
-    PA_CHECK(static_cast<intptr_t>(num_allocated_slots) <
-             -static_cast<intptr_t>(number_of_freed));
-    num_allocated_slots = -num_allocated_slots - 2 * number_of_freed;
-    PA_DCHECK(static_cast<size_t>(num_allocated_slots) ==
-              bucket->get_slots_per_span() - number_of_freed);
-    // Fully used slot span became partially used. It must be put back on the
-    // non-full list. Also make it the current slot span to increase the
-    // chances of it being filled up again. The old current slot span will be
-    // the next slot span.
-    PA_DCHECK(!next_slot_span);
-    if (LIKELY(bucket->active_slot_spans_head != get_sentinel_slot_span()))
-      next_slot_span = bucket->active_slot_spans_head;
-    bucket->active_slot_spans_head = this;
-    --bucket->num_full_slot_spans;
-    // Special case: for a partition slot span with just a single slot, it may
-    // now be empty and we want to run it through the empty logic.
-    if (UNLIKELY(num_allocated_slots == 0))
-      FreeSlowPath(number_of_freed /*ignored*/);
+    RegisterEmpty();
   }
 }
 
@@ -213,12 +214,11 @@ void SlotSpanMetadata<thread_safe>::Decommit(PartitionRoot<thread_safe>* root) {
   root->lock_.AssertAcquired();
   PA_DCHECK(is_empty());
   PA_DCHECK(!bucket->is_direct_mapped());
-  uintptr_t slot_span_start =
-      reinterpret_cast<uintptr_t>(SlotSpanMetadata::ToSlotSpanStartPtr(this));
+  uintptr_t slot_span_start = SlotSpanMetadata::ToSlotSpanStart(this);
   // If lazy commit is enabled, only provisioned slots are committed.
   size_t dirty_size = bits::AlignUp(GetProvisionedSize(), SystemPageSize());
   size_t size_to_decommit =
-      root->use_lazy_commit ? dirty_size : bucket->get_bytes_per_span();
+      kUseLazyCommit ? dirty_size : bucket->get_bytes_per_span();
 
   PA_DCHECK(root->empty_slot_spans_dirty_bytes >= dirty_size);
   root->empty_slot_spans_dirty_bytes -= dirty_size;
@@ -243,10 +243,10 @@ template <bool thread_safe>
 void SlotSpanMetadata<thread_safe>::DecommitIfPossible(
     PartitionRoot<thread_safe>* root) {
   root->lock_.AssertAcquired();
-  PA_DCHECK(empty_cache_index >= 0);
-  PA_DCHECK(static_cast<unsigned>(empty_cache_index) < kMaxFreeableSpans);
-  PA_DCHECK(this == root->global_empty_slot_span_ring[empty_cache_index]);
-  empty_cache_index = -1;
+  PA_DCHECK(in_empty_cache_);
+  PA_DCHECK(empty_cache_index_ < kMaxFreeableSpans);
+  PA_DCHECK(this == root->global_empty_slot_span_ring[empty_cache_index_]);
+  in_empty_cache_ = 0;
   if (is_empty())
     Decommit(root);
 }
@@ -254,42 +254,49 @@ void SlotSpanMetadata<thread_safe>::DecommitIfPossible(
 template <bool thread_safe>
 void SlotSpanMetadata<thread_safe>::SortFreelist() {
   std::bitset<kMaxSlotsPerSlotSpan> free_slots;
-  char* slot_span_base = reinterpret_cast<char*>(ToSlotSpanStartPtr(this));
+  uintptr_t slot_span_start = ToSlotSpanStart(this);
 
   size_t num_provisioned_slots =
       bucket->get_slots_per_span() - num_unprovisioned_slots;
-  PA_CHECK(num_unprovisioned_slots <= kMaxSlotsPerSlotSpan);
+  PA_CHECK(num_provisioned_slots <= kMaxSlotsPerSlotSpan);
 
+  size_t num_free_slots = 0;
   size_t slot_size = bucket->slot_size;
   for (PartitionFreelistEntry* head = freelist_head; head;
        head = head->GetNext(slot_size)) {
+    ++num_free_slots;
     size_t offset_in_slot_span =
-        reinterpret_cast<char*>(memory::UnmaskPtr(head)) - slot_span_base;
+        memory::UnmaskPtr(reinterpret_cast<uintptr_t>(head)) - slot_span_start;
     size_t slot_number = bucket->GetSlotNumber(offset_in_slot_span);
     PA_DCHECK(slot_number < num_provisioned_slots);
     free_slots[slot_number] = true;
   }
 
-  PartitionFreelistEntry* back = nullptr;
-  PartitionFreelistEntry* head = nullptr;
+  // Empty or single-element list is always sorted.
+  if (num_free_slots > 1) {
+    PartitionFreelistEntry* back = nullptr;
+    PartitionFreelistEntry* head = nullptr;
 
-  for (size_t slot_number = 0; slot_number < num_provisioned_slots;
-       slot_number++) {
-    if (free_slots[slot_number]) {
-      char* slot_address =
-          memory::RemaskPtr(slot_span_base + (slot_size * slot_number));
-      auto* entry = new (slot_address) PartitionFreelistEntry();
+    for (size_t slot_number = 0; slot_number < num_provisioned_slots;
+         slot_number++) {
+      if (free_slots[slot_number]) {
+        uintptr_t slot_address =
+            memory::RemaskPtr(slot_span_start + (slot_size * slot_number));
+        auto* entry = new (reinterpret_cast<void*>(slot_address))
+            PartitionFreelistEntry();
 
-      if (!head)
-        head = entry;
-      else
-        back->SetNext(entry);
+        if (!head)
+          head = entry;
+        else
+          back->SetNext(entry);
 
-      back = entry;
+        back = entry;
+      }
     }
+    SetFreelistHead(head);
   }
-  SetFreelistHead(head);
-  freelist_is_sorted = true;
+
+  freelist_is_sorted_ = true;
 }
 
 namespace {
@@ -346,12 +353,11 @@ void UnmapNow(uintptr_t reservation_start,
 
   // After resetting the table entries, unreserve and decommit the memory.
   AddressPoolManager::GetInstance()->UnreserveAndDecommit(
-      pool, reinterpret_cast<void*>(reservation_start), reservation_size);
+      pool, reservation_start, reservation_size);
 }
 }  // namespace
 
 template struct SlotSpanMetadata<ThreadSafe>;
-template struct SlotSpanMetadata<NotThreadSafe>;
 
 }  // namespace internal
 }  // namespace base

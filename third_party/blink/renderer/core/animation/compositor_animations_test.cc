@@ -43,6 +43,7 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
+#include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
@@ -71,7 +72,6 @@
 #include "third_party/blink/renderer/platform/animation/compositor_float_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_float_keyframe.h"
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
-#include "third_party/blink/renderer/platform/geometry/float_box.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
@@ -555,8 +555,8 @@ class LayoutObjectProxy : public LayoutObject {
 
   const char* GetName() const override { return nullptr; }
   void UpdateLayout() override {}
-  FloatRect LocalBoundingBoxRectForAccessibility() const override {
-    return FloatRect();
+  gfx::RectF LocalBoundingBoxRectForAccessibility() const override {
+    return gfx::RectF();
   }
 
   void EnsureIdForTestingProxy() {
@@ -2234,6 +2234,25 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_NE(
       CheckCanStartElementOnCompositor(*target, *keyframe_animation_effect2_),
       CompositorAnimations::kNoFailure);
+}
+
+TEST_P(AnimationCompositorAnimationsTest, DetachCompositorTimelinesTest) {
+  LoadTestData("transform-animation.html");
+  Document* document = GetFrame()->GetDocument();
+  cc::AnimationHost* host = document->View()->GetCompositorAnimationHost();
+
+  Element* target = document->getElementById("target");
+  const Animation& animation =
+      *target->GetElementAnimations()->Animations().begin()->key;
+  EXPECT_TRUE(animation.GetCompositorAnimation());
+
+  CompositorAnimationTimeline* compositor_timeline =
+      animation.timeline()->CompositorTimeline();
+  ASSERT_TRUE(compositor_timeline);
+  int id = compositor_timeline->GetAnimationTimeline()->id();
+  ASSERT_TRUE(host->GetTimelineById(id));
+  document->GetDocumentAnimations().DetachCompositorTimelines();
+  ASSERT_FALSE(host->GetTimelineById(id));
 }
 
 TEST_P(AnimationCompositorAnimationsTest,

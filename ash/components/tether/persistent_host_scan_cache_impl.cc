@@ -13,7 +13,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -31,11 +31,11 @@ std::unique_ptr<base::DictionaryValue> HostScanCacheEntryToDictionary(
   std::unique_ptr<base::DictionaryValue> dictionary =
       std::make_unique<base::DictionaryValue>();
 
-  dictionary->SetString(kTetherNetworkGuidKey, entry.tether_network_guid);
-  dictionary->SetString(kDeviceNameKey, entry.device_name);
-  dictionary->SetString(kCarrierKey, entry.carrier);
-  dictionary->SetInteger(kBatteryPercentageKey, entry.battery_percentage);
-  dictionary->SetInteger(kSignalStrengthKey, entry.signal_strength);
+  dictionary->SetStringKey(kTetherNetworkGuidKey, entry.tether_network_guid);
+  dictionary->SetStringKey(kDeviceNameKey, entry.device_name);
+  dictionary->SetStringKey(kCarrierKey, entry.carrier);
+  dictionary->SetIntKey(kBatteryPercentageKey, entry.battery_percentage);
+  dictionary->SetIntKey(kSignalStrengthKey, entry.signal_strength);
   dictionary->SetBoolean(kSetupRequiredKey, entry.setup_required);
 
   return dictionary;
@@ -45,38 +45,36 @@ std::unique_ptr<HostScanCacheEntry> DictionaryToHostScanCacheEntry(
     const base::DictionaryValue& dictionary) {
   HostScanCacheEntry::Builder builder;
 
-  std::string tether_network_guid;
-  if (!dictionary.GetString(kTetherNetworkGuidKey, &tether_network_guid) ||
-      tether_network_guid.empty()) {
+  const std::string* tether_network_guid =
+      dictionary.FindStringKey(kTetherNetworkGuidKey);
+  if (!tether_network_guid || tether_network_guid->empty())
     return nullptr;
-  }
-  builder.SetTetherNetworkGuid(tether_network_guid);
+  builder.SetTetherNetworkGuid(*tether_network_guid);
 
-  std::string device_name;
-  if (!dictionary.GetString(kDeviceNameKey, &device_name)) {
+  const std::string* device_name = dictionary.FindStringKey(kDeviceNameKey);
+  if (!device_name)
     return nullptr;
-  }
-  builder.SetDeviceName(device_name);
+  builder.SetDeviceName(*device_name);
 
-  std::string carrier;
-  if (!dictionary.GetString(kCarrierKey, &carrier)) {
+  const std::string* carrier = dictionary.FindStringKey(kCarrierKey);
+  if (!carrier)
     return nullptr;
-  }
-  builder.SetCarrier(carrier);
+  builder.SetCarrier(*carrier);
 
-  int battery_percentage;
-  if (!dictionary.GetInteger(kBatteryPercentageKey, &battery_percentage) ||
-      battery_percentage < 0 || battery_percentage > 100) {
+  absl::optional<int> battery_percentage =
+      dictionary.FindIntKey(kBatteryPercentageKey);
+  if (!battery_percentage || *battery_percentage < 0 ||
+      *battery_percentage > 100) {
     return nullptr;
   }
-  builder.SetBatteryPercentage(battery_percentage);
+  builder.SetBatteryPercentage(*battery_percentage);
 
-  int signal_strength;
-  if (!dictionary.GetInteger(kSignalStrengthKey, &signal_strength) ||
-      signal_strength < 0 || signal_strength > 100) {
+  absl::optional<int> signal_strength =
+      dictionary.FindIntKey(kSignalStrengthKey);
+  if (!signal_strength || *signal_strength < 0 || *signal_strength > 100) {
     return nullptr;
   }
-  builder.SetSignalStrength(signal_strength);
+  builder.SetSignalStrength(*signal_strength);
 
   absl::optional<bool> setup_required =
       dictionary.FindBoolPath(kSetupRequiredKey);
@@ -103,7 +101,7 @@ PersistentHostScanCacheImpl::~PersistentHostScanCacheImpl() = default;
 
 std::unordered_map<std::string, HostScanCacheEntry>
 PersistentHostScanCacheImpl::GetStoredCacheEntries() {
-  const base::ListValue* cache_entry_list =
+  const base::Value* cache_entry_list =
       pref_service_->GetList(prefs::kHostScanCache);
   DCHECK(cache_entry_list);
 
@@ -209,4 +207,4 @@ void PersistentHostScanCacheImpl::StoreCacheEntriesToPrefs(
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

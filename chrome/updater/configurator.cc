@@ -4,7 +4,12 @@
 
 #include "chrome/updater/configurator.h"
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/cxx17_backports.h"
+#include "base/enterprise_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/rand_util.h"
 #include "base/version.h"
@@ -16,6 +21,7 @@
 #include "chrome/updater/policy/service.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/updater_scope.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/network.h"
 #include "components/update_client/patch/in_process_patcher.h"
@@ -24,13 +30,14 @@
 #include "components/update_client/unzip/in_process_unzipper.h"
 #include "components/update_client/unzipper.h"
 #include "components/version_info/version_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/updater/win/net/network.h"
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
 #include "chrome/updater/mac/net/network.h"
-#elif defined(OS_LINUX)
+#elif BUILDFLAG(IS_LINUX)
 #include "chrome/updater/linux/net/network.h"
 #endif
 
@@ -111,7 +118,7 @@ std::string Configurator::GetOSLongName() const {
 
 base::flat_map<std::string, std::string> Configurator::ExtraRequestParams()
     const {
-  return {{"testrequest", "1"}, {"testsource", "dev"}};
+  return {};
 }
 
 std::string Configurator::GetDownloadPreference() const {
@@ -182,8 +189,20 @@ Configurator::GetProtocolHandlerFactory() const {
   return std::make_unique<update_client::ProtocolHandlerFactoryJSON>();
 }
 
+absl::optional<bool> Configurator::IsMachineExternallyManaged() const {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  return base::IsMachineExternallyManaged();
+#else
+  return absl::nullopt;
+#endif
+}
+
 scoped_refptr<PolicyService> Configurator::GetPolicyService() const {
   return policy_service_;
+}
+
+crx_file::VerifierFormat Configurator::GetCrxVerifierFormat() const {
+  return external_constants_->CrxVerifierFormat();
 }
 
 }  // namespace updater

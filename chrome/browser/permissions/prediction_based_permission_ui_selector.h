@@ -26,6 +26,12 @@ class GeneratePredictionsResponse;
 class PredictionBasedPermissionUiSelector
     : public permissions::PermissionUiSelector {
  public:
+  enum class PredictionSource {
+    USE_SERVER_SIDE,
+    USE_ONDEVICE,
+    USE_ANY,
+    USE_NONE,
+  };
   using PredictionGrantLikelihood =
       permissions::PermissionUmaUtil::PredictionGrantLikelihood;
   // Constructs an instance in the context of the given |profile|.
@@ -52,15 +58,20 @@ class PredictionBasedPermissionUiSelector
  private:
   permissions::PredictionRequestFeatures BuildPredictionRequestFeatures(
       permissions::PermissionRequest* request);
-  void LookupReponseReceived(
+  void LookupResponseReceived(
+      bool is_on_device,
       bool lookup_succesful,
       bool response_from_cache,
-      std::unique_ptr<permissions::GeneratePredictionsResponse> response);
-  bool IsAllowedToUseAssistedPrompts(permissions::RequestType request_type);
+      const absl::optional<permissions::GeneratePredictionsResponse>& response);
+  PredictionSource GetPredictionTypeToUse(
+      permissions::RequestType request_type);
 
   void set_likelihood_override(PredictionGrantLikelihood mock_likelihood) {
     likelihood_override_for_testing_ = mock_likelihood;
   }
+
+  void OnModelExecutionComplete(
+      const absl::optional<permissions::GeneratePredictionsResponse>& result);
 
   raw_ptr<Profile> profile_;
   std::unique_ptr<PredictionServiceRequest> request_;
@@ -69,6 +80,9 @@ class PredictionBasedPermissionUiSelector
   absl::optional<PredictionGrantLikelihood> likelihood_override_for_testing_;
 
   DecisionMadeCallback callback_;
+
+  base::WeakPtrFactory<PredictionBasedPermissionUiSelector> weak_ptr_factory_{
+      this};
 };
 
 #endif  // CHROME_BROWSER_PERMISSIONS_PREDICTION_BASED_PERMISSION_UI_SELECTOR_H_

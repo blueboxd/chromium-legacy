@@ -40,8 +40,6 @@ js_library("app_notifications_subpage") {
 
 js_library("app_notification_row") {
   deps = [
-    "../:permission_constants",
-    "../:permission_util",
     "../..:metrics_recorder.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]

@@ -16,16 +16,15 @@
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
-#include "third_party/blink/renderer/platform/geometry/double_rect.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
 namespace {
 // Computes the rect of valid scroll offsets reachable by user scrolls for the
 // scrollable area.
-FloatRect GetUserScrollableRect(const ScrollableArea& area) {
-  FloatRect user_scrollable_rect;
+gfx::RectF GetUserScrollableRect(const ScrollableArea& area) {
+  gfx::RectF user_scrollable_rect;
   ScrollOffset scrollable_size =
       area.MaximumScrollOffset() - area.MinimumScrollOffset();
   if (area.UserInputScrollable(kHorizontalScrollbar)) {
@@ -138,13 +137,13 @@ LayoutBox* RootFrameViewport::GetLayoutBox() const {
   return LayoutViewport().GetLayoutBox();
 }
 
-FloatQuad RootFrameViewport::LocalToVisibleContentQuad(
-    const FloatQuad& quad,
+gfx::QuadF RootFrameViewport::LocalToVisibleContentQuad(
+    const gfx::QuadF& quad,
     const LayoutObject* local_object,
     unsigned flags) const {
   if (!layout_viewport_)
     return quad;
-  FloatQuad viewport_quad =
+  gfx::QuadF viewport_quad =
       layout_viewport_->LocalToVisibleContentQuad(quad, local_object, flags);
   if (visual_viewport_) {
     viewport_quad = visual_viewport_->LocalToVisibleContentQuad(
@@ -320,8 +319,11 @@ mojom::blink::ColorScheme RootFrameViewport::UsedColorScheme() const {
 ScrollOffset RootFrameViewport::ClampToUserScrollableOffset(
     const ScrollOffset& offset) const {
   ScrollOffset scroll_offset = offset;
-  FloatRect user_scrollable = GetUserScrollableRect(LayoutViewport()) +
-                              GetUserScrollableRect(GetVisualViewport());
+  gfx::RectF layout_scrollable = GetUserScrollableRect(LayoutViewport());
+  gfx::RectF visual_scrollable = GetUserScrollableRect(GetVisualViewport());
+  gfx::RectF user_scrollable(
+      layout_scrollable.origin() + visual_scrollable.OffsetFromOrigin(),
+      layout_scrollable.size() + visual_scrollable.size());
   scroll_offset.set_x(
       ClampTo(scroll_offset.x(), user_scrollable.x(), user_scrollable.right()));
   scroll_offset.set_y(ClampTo(scroll_offset.y(), user_scrollable.y(),
@@ -408,8 +410,18 @@ void RootFrameViewport::DistributeScrollBetweenViewports(
   ScrollableArea& secondary =
       scroll_first == kVisualViewport ? LayoutViewport() : GetVisualViewport();
 
-  ScrollOffset target_offset = primary.ClampScrollOffset(
+  // Compute the clamped offsets for both viewports before performing any
+  // scrolling since the order of distribution can vary (and is typically
+  // visualViewport-first) but, per-spec, if we scroll both viewports the
+  // scroll event must be sent to the DOMWindow first, then to the
+  // VisualViewport. Thus, we'll always perform the scrolls in that order,
+  // regardless of the order of distribution.
+  ScrollOffset primary_offset = primary.ClampScrollOffset(
       primary.GetScrollAnimator().CurrentOffset() + delta);
+  ScrollOffset unconsumed_by_primary =
+      (primary.GetScrollAnimator().CurrentOffset() + delta) - primary_offset;
+  ScrollOffset secondary_offset = secondary.ClampScrollOffset(
+      secondary.GetScrollAnimator().CurrentOffset() + unconsumed_by_primary);
 
   auto all_done = on_finish ? base::BarrierClosure(2, std::move(on_finish))
                             : base::RepeatingClosure();
@@ -418,24 +430,15 @@ void RootFrameViewport::DistributeScrollBetweenViewports(
   // so we assume that aborting sequenced smooth scrolls has been handled.
   // It can also be called from inside an animation to set the offset in
   // each frame. In that case, we shouldn't abort sequenced smooth scrolls.
-  primary.SetScrollOffset(target_offset, scroll_type, behavior, all_done);
 
-  // Scroll the secondary viewport if all of the scroll was not applied to the
-  // primary viewport.
-  ScrollOffset updated_offset =
-      secondary.GetScrollAnimator().CurrentOffset() + target_offset;
-  ScrollOffset applied = updated_offset - old_offset;
-  delta -= applied;
-
-  if (delta.IsZero()) {
-    if (all_done)
-      all_done.Run();
-    return;
-  }
-
-  target_offset = secondary.ClampScrollOffset(
-      secondary.GetScrollAnimator().CurrentOffset() + delta);
-  secondary.SetScrollOffset(target_offset, scroll_type, behavior, all_done);
+  // Actually apply the scroll the layout viewport first so that the DOM event
+  // is dispatched to the DOMWindow before the VisualViewport.
+  LayoutViewport().SetScrollOffset(
+      scroll_first == kLayoutViewport ? primary_offset : secondary_offset,
+      scroll_type, behavior, all_done);
+  GetVisualViewport().SetScrollOffset(
+      scroll_first == kVisualViewport ? primary_offset : secondary_offset,
+      scroll_type, behavior, all_done);
 }
 
 gfx::Vector2d RootFrameViewport::ScrollOffsetInt() const {
@@ -490,10 +493,6 @@ bool RootFrameViewport::ShouldPlaceVerticalScrollbarOnLeft() const {
 
 void RootFrameViewport::ScrollControlWasSetNeedsPaintInvalidation() {
   LayoutViewport().ScrollControlWasSetNeedsPaintInvalidation();
-}
-
-cc::Layer* RootFrameViewport::LayerForScrolling() const {
-  return LayoutViewport().LayerForScrolling();
 }
 
 cc::Layer* RootFrameViewport::LayerForHorizontalScrollbar() const {

@@ -73,7 +73,7 @@ int ProximityAuthLocalStatePrefManager::GetPromotionShownCount() const {
 }
 
 bool ProximityAuthLocalStatePrefManager::IsEasyUnlockAllowed() const {
-  const base::DictionaryValue* user_prefs = GetActiveUserPrefsDictionary();
+  const base::Value* user_prefs = GetActiveUserPrefsDictionary();
   if (user_prefs) {
     absl::optional<bool> pref_value = user_prefs->FindBoolKey(
         chromeos::multidevice_setup::kSmartLockAllowedPrefName);
@@ -86,7 +86,7 @@ bool ProximityAuthLocalStatePrefManager::IsEasyUnlockAllowed() const {
 }
 
 bool ProximityAuthLocalStatePrefManager::IsEasyUnlockEnabled() const {
-  const base::DictionaryValue* user_prefs = GetActiveUserPrefsDictionary();
+  const base::Value* user_prefs = GetActiveUserPrefsDictionary();
   if (user_prefs) {
     absl::optional<bool> pref_value = user_prefs->FindBoolKey(
         chromeos::multidevice_setup::kSmartLockEnabledPrefName);
@@ -104,7 +104,7 @@ bool ProximityAuthLocalStatePrefManager::IsEasyUnlockEnabledStateSet() const {
 }
 
 bool ProximityAuthLocalStatePrefManager::IsChromeOSLoginAllowed() const {
-  const base::DictionaryValue* user_prefs = GetActiveUserPrefsDictionary();
+  const base::Value* user_prefs = GetActiveUserPrefsDictionary();
   if (user_prefs) {
     absl::optional<bool> pref_value = user_prefs->FindBoolKey(
         chromeos::multidevice_setup::kSmartLockSigninAllowedPrefName);
@@ -117,7 +117,7 @@ bool ProximityAuthLocalStatePrefManager::IsChromeOSLoginAllowed() const {
 }
 
 bool ProximityAuthLocalStatePrefManager::IsSmartLockEligible() const {
-  const base::DictionaryValue* user_prefs = GetActiveUserPrefsDictionary();
+  const base::Value* user_prefs = GetActiveUserPrefsDictionary();
   if (user_prefs) {
     absl::optional<bool> pref_value =
         user_prefs->FindBoolKey(prefs::kSmartLockEligiblePrefName);
@@ -135,7 +135,7 @@ void ProximityAuthLocalStatePrefManager::SetIsChromeOSLoginEnabled(
 }
 
 bool ProximityAuthLocalStatePrefManager::IsChromeOSLoginEnabled() const {
-  const base::DictionaryValue* user_prefs = GetActiveUserPrefsDictionary();
+  const base::Value* user_prefs = GetActiveUserPrefsDictionary();
   if (user_prefs) {
     absl::optional<bool> pref_value =
         user_prefs->FindBoolKey(prefs::kProximityAuthIsChromeOSLoginEnabled);
@@ -152,30 +152,25 @@ void ProximityAuthLocalStatePrefManager::SetHasShownLoginDisabledMessage(
   DictionaryPrefUpdate update(local_state_,
                               prefs::kEasyUnlockLocalStateUserPrefs);
 
-  base::DictionaryValue* current_user_prefs;
-  update.Get()->GetDictionaryWithoutPathExpansion(active_user_.GetUserEmail(),
-                                                  &current_user_prefs);
+  base::Value* current_user_prefs =
+      update.Get()->FindDictKey(active_user_.GetUserEmail());
   if (current_user_prefs) {
-    current_user_prefs->SetKey(
-        prefs::kProximityAuthHasShownLoginDisabledMessage,
-        base::Value(has_shown));
+    current_user_prefs->SetBoolKey(
+        prefs::kProximityAuthHasShownLoginDisabledMessage, has_shown);
     return;
   }
 
   // Create an otherwise empty dictionary in order to ensure |has_shown| is
   // persisted for |active_user_|.
-  std::unique_ptr<base::DictionaryValue> new_current_user_prefs =
-      std::make_unique<base::DictionaryValue>();
-  new_current_user_prefs->SetKey(
-      prefs::kProximityAuthHasShownLoginDisabledMessage,
-      base::Value(has_shown));
-  update->SetKey(
-      active_user_.GetUserEmail(),
-      base::Value::FromUniquePtrValue(std::move(new_current_user_prefs)));
+  base::Value new_current_user_prefs(base::Value::Type::DICTIONARY);
+  new_current_user_prefs.SetBoolKey(
+      prefs::kProximityAuthHasShownLoginDisabledMessage, has_shown);
+  update->SetKey(active_user_.GetUserEmail(),
+                 std::move(new_current_user_prefs));
 }
 
 bool ProximityAuthLocalStatePrefManager::HasShownLoginDisabledMessage() const {
-  const base::DictionaryValue* user_prefs = GetActiveUserPrefsDictionary();
+  const base::Value* user_prefs = GetActiveUserPrefsDictionary();
   if (!user_prefs)
     return false;
 
@@ -184,20 +179,20 @@ bool ProximityAuthLocalStatePrefManager::HasShownLoginDisabledMessage() const {
       .value_or(false);
 }
 
-const base::DictionaryValue*
+const base::Value*
 ProximityAuthLocalStatePrefManager::GetActiveUserPrefsDictionary() const {
   if (!active_user_.is_valid()) {
     PA_LOG(ERROR) << "No active account.";
     return nullptr;
   }
 
-  const base::DictionaryValue* all_user_prefs_dict =
+  const base::Value* all_user_prefs_dict =
       local_state_->GetDictionary(prefs::kEasyUnlockLocalStateUserPrefs);
   DCHECK(all_user_prefs_dict);
 
-  const base::DictionaryValue* current_user_prefs;
-  if (!all_user_prefs_dict->GetDictionaryWithoutPathExpansion(
-          active_user_.GetUserEmail(), &current_user_prefs)) {
+  const base::Value* current_user_prefs =
+      all_user_prefs_dict->FindDictKey(active_user_.GetUserEmail());
+  if (!current_user_prefs) {
     PA_LOG(ERROR) << "Failed to find prefs for current user.";
     return nullptr;
   }

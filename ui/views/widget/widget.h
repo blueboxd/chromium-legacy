@@ -374,6 +374,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     std::string wm_class_name;
     std::string wm_class_class;
 
+    // Only used by Wayland, for root level windows.
+    std::string wayland_app_id;
+
     // If true then the widget uses software compositing.
     bool force_software_compositing = false;
 
@@ -594,6 +597,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Sets the visibility transitions that should animate.
   // Default behavior is to animate both show and hide.
   void SetVisibilityAnimationTransition(VisibilityTransition transition);
+
+  // Whether calling RunMoveLoop() is supported for the widget.
+  bool IsMoveLoopSupported() const;
 
   // Starts a nested run loop that moves the window. This can be used to
   // start a window move operation from a mouse or touch event. This returns

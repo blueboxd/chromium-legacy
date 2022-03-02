@@ -30,6 +30,9 @@ RENDERING_BENCHMARK_UMA = [
     'Graphics.Smoothness.PercentDroppedFrames.AllAnimations',
     'Graphics.Smoothness.PercentDroppedFrames.AllInteractions',
     'Graphics.Smoothness.PercentDroppedFrames.AllSequences',
+    'Graphics.Smoothness.PercentDroppedFrames2.AllAnimations',
+    'Graphics.Smoothness.PercentDroppedFrames2.AllInteractions',
+    'Graphics.Smoothness.PercentDroppedFrames2.AllSequences',
     'Memory.GPU.PeakMemoryUsage2.Scroll',
     'Memory.GPU.PeakMemoryUsage2.PageLoad',
 ]
@@ -70,7 +73,7 @@ class _RenderingBenchmark(perf_benchmark.PerfBenchmark):
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
     options.AppendExtraBrowserArgs('--touch-events=enabled')
-    if self.allow_software_compositing:
+    if self.allow_software_compositing or self.NeedsSoftwareCompositing():
       logging.warning('Allowing software compositing. Some of the reported '
                       'metrics will have unreliable values.')
     else:

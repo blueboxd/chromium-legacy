@@ -28,12 +28,15 @@ class ItemSuggestCache {
  public:
   // Information on a single file suggestion result.
   struct Result {
-    Result(const std::string& id, const std::string& title);
+    Result(const std::string& id,
+           const std::string& title,
+           const absl::optional<std::string>& prediction_reason);
     Result(const Result& other);
     ~Result();
 
     std::string id;
     std::string title;
+    absl::optional<std::string> prediction_reason;
   };
 
   // Information on all file suggestion results returned from an ItemSuggest
@@ -53,7 +56,8 @@ class ItemSuggestCache {
 
   ItemSuggestCache(
       Profile* profile,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      base::RepeatingCallback<void()> on_results_updated);
   ~ItemSuggestCache();
 
   ItemSuggestCache(const ItemSuggestCache&) = delete;
@@ -145,6 +149,8 @@ class ItemSuggestCache {
   const base::TimeDelta min_time_between_updates_;
   // Whether we should query item suggest more than once per session.
   const bool multiple_queries_per_session_;
+
+  base::RepeatingCallback<void()> on_results_updated_;
 
   Profile* profile_;
   std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> token_fetcher_;

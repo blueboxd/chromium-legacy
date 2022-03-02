@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -99,6 +100,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
@@ -200,39 +202,58 @@ bool ShouldComputeBaseComputedStyle(const ComputedStyle* base_computed_style) {
 String ComputeBaseComputedStyleDiff(const ComputedStyle* base_computed_style,
                                     const ComputedStyle& computed_style) {
 #if DCHECK_IS_ON()
+  using DebugField = ComputedStyleBase::DebugField;
+
   if (!base_computed_style)
     return g_null_atom;
+  if (*base_computed_style == computed_style)
+    return g_null_atom;
+
+  HashSet<DebugField> exclusions;
+
   // Under certain conditions ComputedStyle::operator==() may return false for
   // differences that are permitted during an animation.
   // The FontFaceCache version number may be increased without forcing a style
   // recalc (see crbug.com/471079).
   if (!base_computed_style->GetFont().IsFallbackValid())
-    return g_null_atom;
+    exclusions.insert(DebugField::font_);
+
   // Images use instance equality rather than value equality (see
   // crbug.com/781461).
-  for (CSSPropertyID id :
-       {CSSPropertyID::kBackgroundImage, CSSPropertyID::kWebkitMaskImage}) {
-    if (!CSSPropertyEquality::PropertiesEqual(
-            PropertyHandle(CSSProperty::Get(id)), *base_computed_style,
-            computed_style)) {
-      return g_null_atom;
-    }
+  if (!CSSPropertyEquality::PropertiesEqual(
+          PropertyHandle(CSSProperty::Get(CSSPropertyID::kBackgroundImage)),
+          *base_computed_style, computed_style)) {
+    exclusions.insert(DebugField::background_);
+  }
+  if (!CSSPropertyEquality::PropertiesEqual(
+          PropertyHandle(CSSProperty::Get(CSSPropertyID::kWebkitMaskImage)),
+          *base_computed_style, computed_style)) {
+    exclusions.insert(DebugField::mask_);
   }
 
-  if (*base_computed_style == computed_style)
-    return g_null_atom;
+  // Changes to this flag caused by history.pushState do not always mark
+  // for recalc in time, yet VisitedLinkState::DetermineLinkState will provide
+  // the up-to-date answer when polled.
+  //
+  // See crbug.com/1158076.
+  exclusions.insert(DebugField::inside_link_);
+
+  Vector<DebugField> diff =
+      base_computed_style->DebugDiffFields(computed_style);
 
   StringBuilder builder;
-  builder.Append("Field diff: ");
 
-  Vector<String> diff = base_computed_style->DebugDiffFields(computed_style);
-
-  for (const String& s : diff) {
-    builder.Append(s);
+  for (DebugField field : diff) {
+    if (exclusions.Contains(field))
+      continue;
+    builder.Append(ComputedStyleBase::DebugFieldToString(field));
     builder.Append(" ");
   }
 
-  return builder.ReleaseString();
+  if (builder.IsEmpty())
+    return g_null_atom;
+
+  return String("Field diff: ") + builder.ReleaseString();
 #else
   return g_null_atom;
 #endif  // DCHECK_IS_ON()
@@ -266,6 +287,13 @@ bool TextAutosizingMultiplierChanged(const StyleResolverState& state,
   const ComputedStyle* old_style = state.GetElement().GetComputedStyle();
   return old_style && (old_style->TextAutosizingMultiplier() !=
                        base_computed_style.TextAutosizingMultiplier());
+}
+
+PseudoId GetPseudoId(const Element& element, ElementRuleCollector* collector) {
+  if (element.IsPseudoElement())
+    return element.GetPseudoId();
+
+  return collector ? collector->GetPseudoId() : kPseudoIdNone;
 }
 
 }  // namespace
@@ -484,17 +512,20 @@ static void MatchSlottedRules(const Element& element,
   if (!slot)
     return;
 
-  HeapVector<Member<ScopedStyleResolver>> resolvers;
+  HeapVector<std::pair<Member<HTMLSlotElement>, Member<ScopedStyleResolver>>>
+      resolvers;
   for (; slot; slot = slot->AssignedSlot()) {
     if (ScopedStyleResolver* resolver =
-            slot->GetTreeScope().GetScopedStyleResolver())
-      resolvers.push_back(resolver);
+            slot->GetTreeScope().GetScopedStyleResolver()) {
+      resolvers.push_back(std::make_pair(slot, resolver));
+    }
   }
   for (auto it = resolvers.rbegin(); it != resolvers.rend(); ++it) {
+    ElementRuleCollector::SlottedRulesScope scope(collector, *(*it).first);
     collector.ClearMatchedRules();
-    (*it)->CollectMatchingSlottedRules(collector);
+    (*it).second->CollectMatchingSlottedRules(collector);
     collector.SortAndTransferMatchedRules();
-    collector.FinishAddingAuthorRulesForTreeScope((*it)->GetTreeScope());
+    collector.FinishAddingAuthorRulesForTreeScope((*it).first->GetTreeScope());
   }
 }
 
@@ -543,7 +574,7 @@ static void MatchElementScopeRules(const Element& element,
 
   MatchVTTRules(element, collector);
   if (element.IsStyledElement() && element.InlineStyle() &&
-      !collector.IsCollectingForPseudoElement()) {
+      collector.GetPseudoId() == kPseudoIdNone) {
     // Inline style is immutable as long as there is no CSSOM wrapper.
     bool is_inline_style_cacheable = !element.InlineStyle()->IsMutable();
     collector.AddElementStyleProperties(element.InlineStyle(),
@@ -592,6 +623,7 @@ void StyleResolver::MatchPseudoPartRules(const Element& element,
   while (current_names.size()) {
     TreeScope& tree_scope = host->GetTreeScope();
     if (ScopedStyleResolver* resolver = tree_scope.GetScopedStyleResolver()) {
+      ElementRuleCollector::PartRulesScope scope(collector, *host);
       collector.ClearMatchedRules();
       resolver->CollectMatchingPartPseudoRules(collector, current_names,
                                                for_shadow_pseudo);
@@ -681,11 +713,13 @@ void StyleResolver::ForEachUARulesForElement(const Element& element,
   if (IsForcedColorsModeEnabled())
     func(default_style_sheets.DefaultForcedColorStyle());
 
-  if (element.IsPseudoElement() ||
-      (collector && collector->IsCollectingForPseudoElement())) {
-    if (RuleSet* default_pseudo_style =
-            default_style_sheets.DefaultPseudoElementStyleOrNull()) {
-      func(default_style_sheets.DefaultPseudoElementStyleOrNull());
+  const auto pseudo_id = GetPseudoId(element, collector);
+  if (pseudo_id != kPseudoIdNone) {
+    if (IsTransitionPseudoElement(pseudo_id)) {
+      func(GetDocument().GetStyleEngine().DefaultDocumentTransitionStyle());
+    } else if (auto* rule_set =
+                   default_style_sheets.DefaultPseudoElementStyleOrNull()) {
+      func(rule_set);
     }
   }
 }
@@ -811,6 +845,20 @@ static void IncrementResolvedStyleCounters(const StyleRequest& style_request,
   }
 }
 
+// This is the core of computing style for a given element, ie., first compute
+// base style and then apply animation style. (Not all elements needing style
+// recalc ever hit ResolveStyle(); e.g., the “independent inherited properties
+// optimization” can cause it to be skipped.)
+//
+// Generally, when an element is marked for style recalc, we do not reuse any
+// style from previous computations, but re-compute from scratch every time.
+// However: If possible, we compute base style only once and cache it, and then
+// just apply animation style on top of the cached base style. This is because
+// it's a common situation that elements have an unchanging base and then some
+// independent animation properties that change every frame and don't affect
+// any other properties or elements. (The exceptions can be found in
+// CanReuseBaseComputedStyle().) This is known as the “base computed style
+// optimization”.
 scoped_refptr<ComputedStyle> StyleResolver::ResolveStyle(
     Element* element,
     const StyleRecalcContext& style_recalc_context,
@@ -825,11 +873,18 @@ scoped_refptr<ComputedStyle> StyleResolver::ResolveStyle(
 
   SelectorFilterParentScope::EnsureParentStackIsPushed();
 
+  // The StyleResolverState is where we actually end up accumulating the
+  // computed style. It's just a convenient way of not having to send
+  // a lot of input/output variables around between the different functions.
   StyleResolverState state(GetDocument(), *element, style_recalc_context,
                            style_request);
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
+  // Compute the base style, or reuse an existing cached base style if
+  // applicable (ie., only animation has changed). This is the bulk of the
+  // style computation itself, also also where the caching for the base
+  // computed style optimization happens.
   ApplyBaseStyle(element, style_recalc_context, style_request, state, cascade);
 
   if (style_request.IsPseudoStyleRequest() && state.HadNoMatchedProperties())
@@ -1004,6 +1059,24 @@ void StyleResolver::ApplyMathMLCustomStyleProperties(
   }
 }
 
+// This is the core of computing base style for a given element, ie., the style
+// that does not depend on animations.
+//
+// The typical flow (barring special rules for pseudo-elements and similar) is:
+//
+//   1. Initialize the style object, by cloning the initial style.
+//      (InitStyleAndApplyInheritance() -> ApplyInheritance() ->
+//      CreateComputedStyle()).
+//   2. Copy any inherited properties from the parent element.
+//      (InitStyleAndApplyInheritance() -> ApplyInheritance() ->
+//      ComputedStyleBase::InheritFrom()).
+//   3. Collect all CSS rules that apply to this element
+//      (MatchAllRules(), into ElementRuleCollector).
+//   4. Apply all the found rules in the correct order
+//      (CascadeAndApplyMatchedProperties(), using StyleCascade).
+//
+// The base style is cached if possible (see ResolveStyle() on the “base
+// computed style optimization”).
 void StyleResolver::ApplyBaseStyle(
     Element* element,
     const StyleRecalcContext& style_recalc_context,
@@ -1019,6 +1092,8 @@ void StyleResolver::ApplyBaseStyle(
   if (ShouldComputeBaseComputedStyle(animation_base_computed_style)) {
     InitStyleAndApplyInheritance(*element, style_request, state);
 
+    // For some very special elements (e.g. <video>): Ensure internal UA style
+    // rules that are relevant for the element exist in the stylesheet.
     GetDocument().GetStyleEngine().EnsureUAStyleForElement(*element);
 
     if (!style_request.IsPseudoStyleRequest() && IsForcedColorsModeEnabled()) {
@@ -1183,10 +1258,12 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(
 }
 
 const ComputedStyle& StyleResolver::InitialStyle() const {
+  DCHECK(initial_style_);
   return *initial_style_;
 }
 
 scoped_refptr<ComputedStyle> StyleResolver::CreateComputedStyle() const {
+  DCHECK(initial_style_);
   return ComputedStyle::Clone(*initial_style_);
 }
 
@@ -1361,11 +1438,14 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
   if (!animating_element)
     return false;
 
-  DCHECK(animating_element == &element ||
-         animating_element->ParentOrShadowHostElement() == element);
-
   if (!HasAnimationsOrTransitions(state))
     return false;
+
+  // TODO(crbug.com/1276575) : This assert is currently hit for nested ::marker
+  // pseudo elements.
+  DCHECK(animating_element == &element ||
+         DynamicTo<PseudoElement>(animating_element)->OriginatingElement() ==
+             &element);
 
   if (!IsAnimationStyleChange(*animating_element) ||
       !state.StyleRef().BaseData()) {
@@ -1528,16 +1608,18 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
                                     matched_property_cache_inherited_hit, 1);
 
       EInsideLink link_status = state.Style()->InsideLink();
-      bool ancestors_affected_by_has = state.Style()->AncestorsAffectedByHas();
+      unsigned dynamic_restyle_flags_for_has =
+          state.Style()->DynamicRestyleFlagsForHas();
       // If the cache item parent style has identical inherited properties to
       // the current parent style then the resulting style will be identical
       // too. We copy the inherited properties over from the cache and are done.
       state.Style()->InheritFrom(*cached_matched_properties->computed_style);
 
-      // Unfortunately the link status and 'ancestors affected by has' are
+      // Unfortunately the 'link status' and 'dynamic restyle flags for has' are
       // treated like an inherited property. We need to explicitly restore it.
       state.Style()->SetInsideLink(link_status);
-      state.Style()->SetAncestorsAffectedByHas(ancestors_affected_by_has);
+      state.Style()->SetDynamicRestyleFlagsForHas(
+          dynamic_restyle_flags_for_has);
 
       is_inherited_cache_hit = true;
     }

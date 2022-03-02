@@ -17,12 +17,12 @@
 #include "components/signin/public/base/signin_buildflags.h"
 #include "url/gurl.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/signin/signin_promo.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
+#include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
 #endif
 
 namespace signin {
@@ -79,6 +79,7 @@ enum FeedbackSource {
   kFeedbackSourceQuickAnswers,
   kFeedbackSourceWhatsNew,
   kFeedbackSourceConnectivityDiagnostics,
+  kFeedbackSourceProjectorApp,
 
   // Must be last.
   kFeedbackSourceCount,
@@ -86,6 +87,7 @@ enum FeedbackSource {
 
 void ShowBookmarkManager(Browser* browser);
 void ShowBookmarkManagerForNode(Browser* browser, int64_t node_id);
+void ShowHistory(Browser* browser, const std::string& host_name);
 void ShowHistory(Browser* browser);
 void ShowDownloads(Browser* browser);
 void ShowExtensions(Browser* browser,
@@ -164,7 +166,7 @@ GURL GetOSSettingsUrl(const std::string& sub_page);
 
 void ShowAppManagementPage(Profile* profile,
                            const std::string& app_id,
-                           AppManagementEntryPoint entry_point);
+                           ash::settings::AppManagementEntryPoint entry_point);
 
 void ShowPrintManagementApp(Profile* profile);
 

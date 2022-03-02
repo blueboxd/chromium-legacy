@@ -11,6 +11,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "components/optimization_guide/core/model_enums.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/proto/models.pb.h"
 
@@ -25,9 +26,11 @@ class PredictionModel {
 
   virtual ~PredictionModel();
 
-  // Creates an Prediction model of the correct ModelType specified in
+  // Creates an Prediction model of the correct model type specified in
   // |prediction_model|. The validation overhead of this factory can be high and
   // should should be called in the background.
+  //
+  // TODO(crbug/1245793): Remove this function.
   static std::unique_ptr<PredictionModel> Create(
       const proto::PredictionModel& prediction_model);
 

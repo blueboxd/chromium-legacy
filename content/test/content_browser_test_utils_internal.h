@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -63,13 +62,13 @@ RenderFrameHost* ConvertToRenderFrameHost(FrameTreeNode* frame_tree_node);
 // browser-initiated navigations swap BrowsingInstances, but some tests need a
 // navigation to swap processes for cross-site URLs (even outside of
 // --site-per-process) while staying in the same BrowsingInstance.
-WARN_UNUSED_RESULT bool NavigateToURLInSameBrowsingInstance(Shell* window,
-                                                            const GURL& url);
+[[nodiscard]] bool NavigateToURLInSameBrowsingInstance(Shell* window,
+                                                       const GURL& url);
 
 // Helper function to checks for a subframe navigation starting  in
 // `start_site_instance` and results in an error page correctly transitions to
 // `end_site_instance` based on whether error page isolation is enabled or not.
-WARN_UNUSED_RESULT bool IsExpectedSubframeErrorTransition(
+[[nodiscard]] bool IsExpectedSubframeErrorTransition(
     SiteInstance* start_site_instance,
     SiteInstance* end_site_instance);
 
@@ -268,7 +267,7 @@ class RenderProcessHostBadIpcMessageWaiter {
   // Waits until the renderer process exits.  Returns the bad message that made
   // //content kill the renderer.  |absl::nullopt| is returned if the renderer
   // was killed outside of //content or exited normally.
-  absl::optional<bad_message::BadMessageReason> Wait() WARN_UNUSED_RESULT;
+  [[nodiscard]] absl::optional<bad_message::BadMessageReason> Wait();
 
  private:
   RenderProcessHostKillWaiter internal_waiter_;
@@ -296,7 +295,7 @@ class ShowPopupWidgetWaiter
   void Stop();
 
  private:
-#if defined(OS_MAC) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
   void ShowPopupMenu(const gfx::Rect& bounds);
 #endif
 
@@ -314,7 +313,7 @@ class ShowPopupWidgetWaiter
   int32_t routing_id_ = MSG_ROUTING_NONE;
   int32_t process_id_ = 0;
   raw_ptr<RenderFrameHostImpl> frame_host_;
-#if defined(OS_MAC) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
   raw_ptr<WebContentsImpl> web_contents_;
 #endif
 };

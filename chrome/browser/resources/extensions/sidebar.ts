@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import 'chrome://resources/polymer/v3_0/paper-ripple/paper-ripple.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -27,6 +27,14 @@ class ExtensionsSidebarElement extends PolymerElement {
     return html`{__html_template__}`;
   }
 
+  static get properties() {
+    return {
+      enableEnhancedSiteControls: Boolean,
+    };
+  }
+
+  enableEnhancedSiteControls: boolean;
+
   ready() {
     super.ready();
     this.setAttribute('role', 'navigation');
@@ -35,8 +43,14 @@ class ExtensionsSidebarElement extends PolymerElement {
   connectedCallback() {
     super.connectedCallback();
 
-    this.$.sectionMenu.select(
-        navigation.getCurrentPage().page === Page.SHORTCUTS ? 1 : 0);
+    const page = navigation.getCurrentPage().page;
+    let selectIndex = 0;
+    if (page === Page.SITE_PERMISSIONS) {
+      selectIndex = 1;
+    } else if (page === Page.SHORTCUTS) {
+      selectIndex = 2;
+    }
+    this.$.sectionMenu.select(selectIndex);
   }
 
   private onLinkTap_(e: Event) {

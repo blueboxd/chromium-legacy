@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_PROPERTY_TREE_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_PROPERTY_TREE_MANAGER_H_
 
+#include "cc/layers/layer_collections.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -159,6 +160,18 @@ class PropertyTreeManager {
   // Sets the cc::ScrollNode::is_composited bit to true for the node with ID
   // |cc_node_id|.
   void SetCcScrollNodeIsComposited(int cc_node_id);
+
+  // Updates conditional render surface reasons for all effect nodes in
+  // |GetEffectTree|. Every effect is supposed to have render surface enabled
+  // for grouping, but we can omit a conditional render surface if it controls
+  // less than two composited layers or render surfaces.
+  // See ConditionalRenderSurfaceReasonForEffect() in property_tree_manager.cc
+  // for which reasons are conditional. This is both for optimization and not
+  // introducing sub-pixel differences in web tests.
+  // TODO(crbug.com/504464): There is ongoing work in cc to delay render surface
+  // decision until later phase of the pipeline. Remove premature optimization
+  // here once the work is ready.
+  void UpdateConditionalRenderSurfaceReasons(const cc::LayerList& layers);
 
  private:
   void SetupRootTransformNode();

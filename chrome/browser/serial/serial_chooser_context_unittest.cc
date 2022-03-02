@@ -31,7 +31,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -61,7 +61,7 @@ device::mojom::SerialPortInfoPtr CreatePersistentPort(
   auto port = device::mojom::SerialPortInfo::New();
   port->token = base::UnguessableToken::Create();
   port->display_name = std::move(name);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   port->device_instance_id = persistent_id;
 #else
   port->has_vendor_id = true;
@@ -69,10 +69,10 @@ device::mojom::SerialPortInfoPtr CreatePersistentPort(
   port->has_product_id = true;
   port->product_id = 0;
   port->serial_number = persistent_id;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   port->usb_driver_name = "AppleUSBCDC";
 #endif
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
   return port;
 }
 

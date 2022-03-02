@@ -36,7 +36,6 @@
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "cc/input/event_listener_properties.h"
-#include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/paint_holding_reason.h"
@@ -201,7 +200,6 @@ class CORE_EXPORT WebFrameWidgetImpl
       const cc::OverscrollBehavior& overscroll_behavior) final;
   void RequestAnimationAfterDelay(const base::TimeDelta&) final;
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
-  void RegisterSelection(cc::LayerSelection selection) final;
   void RequestDecode(const cc::PaintImage&,
                      base::OnceCallback<void(bool)>) override;
   void NotifyPresentationTimeInBlink(
@@ -625,6 +623,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   // overridden by tests to disable this.
   virtual bool ShouldAutoDetermineCompositingToLCDTextSetting();
 
+  WidgetBase* widget_base_for_testing() const { return widget_base_.get(); }
+
   // WebFrameWidget overrides.
   cc::LayerTreeHost* LayerTreeHost() override;
 
@@ -733,7 +733,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   // Sets the inert bit on an out-of-process iframe, causing it to ignore
   // input.
   void SetIsInertForSubFrame(bool inert) override;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   void GetStringAtPoint(const gfx::Point& point_in_local_root,
                         GetStringAtPointCallback callback) override;
 #endif
@@ -778,7 +778,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   void ScrollFocusedEditableNodeIntoRect(
       const gfx::Rect& rect_in_dips) override;
   void MoveCaret(const gfx::Point& point_in_dips) override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void SelectAroundCaret(mojom::blink::SelectionGranularity granularity,
                          bool should_show_handle,
                          bool should_show_context_menu,

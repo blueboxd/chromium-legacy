@@ -22,9 +22,9 @@
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/prerender_test_utils.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -511,8 +511,8 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordVisitOnBrowserClose) {
   ExpectScores(1, 0);
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_MAC)
 // Flaky timeout. https://crbug.com/1014229
 #define MAYBE_RecordSingleVisitOnSameOrigin \
   DISABLED_RecordSingleVisitOnSameOrigin
@@ -534,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExpectScores(1, 0);
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 // Flaky: https://crbug.com/1115238
 #define MAYBE_RecordVisitOnNewOrigin DISABLED_RecordVisitOnNewOrigin
 #else
@@ -626,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExpectScores(1, 0);
 }
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
 // https://crbug.com/1222896
 #define MAYBE_SessionNewTabNavigateSameURL DISABLED_SessionNewTabNavigateSameURL
 #else
@@ -648,7 +648,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExpectScores(2, 2);
 }
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
 // https://crbug.com/1222896
 #define MAYBE_SessionNewTabSameURL DISABLED_SessionNewTabSameURL
 #else
@@ -732,7 +732,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementPreloadBrowserTest,
   EXPECT_TRUE(MediaEngagementPreloadedList::GetInstance()->loaded());
 }
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
 // https://crbug.com/1222896
 #define MAYBE_SessionNewTabNavigateSameURLWithOpener_Typed \
   DISABLED_SessionNewTabNavigateSameURLWithOpener_Typed
@@ -759,7 +759,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExpectScores(2, 2);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_Ignored DISABLED_Ignored
 #else
 #define MAYBE_Ignored Ignored

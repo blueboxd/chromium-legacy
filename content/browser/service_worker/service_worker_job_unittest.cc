@@ -1358,7 +1358,6 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
         blink::mojom::ServiceWorkerRegistrationObjectInfoPtr,
         blink::mojom::ServiceWorkerObjectInfoPtr,
         blink::mojom::FetchHandlerExistence,
-        std::unique_ptr<blink::PendingURLLoaderFactoryBundle>,
         mojo::PendingReceiver<blink::mojom::ReportingObserver>) override {
       client_->SimulateFailureOfScriptEvaluation();
     }
@@ -2113,18 +2112,11 @@ Cross-Origin-Embedder-Policy: none
   scoped_refptr<ServiceWorkerRegistration> registration =
       update_helper_->SetupInitialRegistration(kNewVersionOrigin);
   ASSERT_TRUE(registration.get());
-  if (base::FeatureList::IsEnabled(features::kPlzServiceWorker)) {
-    // COEP is populated here because the worker's script is loaded as a part of
-    // the start worker sequence before registration and the response header is
-    // reflected to the version at that point
-    EXPECT_EQ(CrossOriginEmbedderPolicyNone(),
-              registration->active_version()->cross_origin_embedder_policy());
-  } else {
-    // COEP is not set to the version because the script is not loaded before
-    // starting the worker.
-    EXPECT_FALSE(
-        registration->active_version()->cross_origin_embedder_policy());
-  }
+  // COEP is populated here because the worker's script is loaded as a part of
+  // the start worker sequence before registration and the response header is
+  // reflected to the version at that point
+  EXPECT_EQ(CrossOriginEmbedderPolicyNone(),
+            registration->active_version()->cross_origin_embedder_policy());
 
   registration->AddListener(update_helper_);
 

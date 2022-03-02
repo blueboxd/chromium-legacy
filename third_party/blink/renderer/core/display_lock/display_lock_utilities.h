@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/commands/apply_style_command.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -48,6 +49,9 @@ class CORE_EXPORT DisplayLockUtilities {
     friend void Document::UpdateStyleAndLayoutForNode(
         const Node* node,
         DocumentUpdateReason reason);
+    friend void Document::UpdateStyleAndLayoutForRange(
+        const Range* range,
+        DocumentUpdateReason reason);
     friend void Document::UpdateStyleAndLayoutTreeForNode(const Node*);
     friend void Document::UpdateStyleAndLayoutTreeForSubtree(const Node* node);
     friend void Document::EnsurePaintLocationDataValidForNode(
@@ -55,7 +59,7 @@ class CORE_EXPORT DisplayLockUtilities {
         DocumentUpdateReason reason);
     friend VisibleSelection
     FrameSelection::ComputeVisibleSelectionInDOMTreeDeprecated() const;
-    friend FloatRect Range::BoundingRect() const;
+    friend gfx::RectF Range::BoundingRect() const;
     friend DOMRectList* Range::getClientRects() const;
 
     friend class DisplayLockContext;

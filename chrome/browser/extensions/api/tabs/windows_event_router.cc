@@ -67,7 +67,7 @@ bool WillDispatchWindowEvent(WindowController* window_controller,
                              const base::DictionaryValue* listener_filter) {
   bool has_filter =
       listener_filter &&
-      listener_filter->HasKey(extensions::tabs_constants::kWindowTypesKey);
+      listener_filter->FindKey(extensions::tabs_constants::kWindowTypesKey);
   // TODO(https://crbug.com/807313): Remove this.
   bool allow_dev_tools_windows = has_filter;
   if (!window_controller->IsVisibleToTabsAPIForExtension(
@@ -99,7 +99,7 @@ bool WillDispatchWindowFocusedEvent(
   Profile* new_active_context = nullptr;
   bool has_filter =
       listener_filter &&
-      listener_filter->HasKey(extensions::tabs_constants::kWindowTypesKey);
+      listener_filter->FindKey(extensions::tabs_constants::kWindowTypesKey);
 
   // We might not have a window controller if the focus moves away
   // from chromium's windows.
@@ -160,7 +160,7 @@ WindowsEventRouter::WindowsEventRouter(Profile* profile)
   // rely on the notification sent by AppControllerMac after AppKit sends
   // NSWindowDidBecomeKeyNotification and there is no [NSApp keyWindo7w]. This
   // allows windows not created by toolkit-views to be tracked.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   observed_key_window_notifier_.Observe(
       &g_browser_process->platform_part()->key_window_notifier());
 #elif defined(TOOLKIT_VIEWS)
@@ -175,7 +175,7 @@ WindowsEventRouter::WindowsEventRouter(Profile* profile)
 }
 
 WindowsEventRouter::~WindowsEventRouter() {
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
+#if defined(TOOLKIT_VIEWS) && !BUILDFLAG(IS_MAC)
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 #endif
 }
@@ -265,14 +265,14 @@ void WindowsEventRouter::OnWindowBoundsChanged(
                 std::move(args));
 }
 
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
+#if defined(TOOLKIT_VIEWS) && !BUILDFLAG(IS_MAC)
 void WindowsEventRouter::OnNativeFocusChanged(gfx::NativeView focused_now) {
   if (!focused_now)
     OnActiveWindowChanged(nullptr);
 }
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 void WindowsEventRouter::OnNoKeyWindow() {
   OnActiveWindowChanged(nullptr);
 }

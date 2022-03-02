@@ -25,7 +25,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #error "Instant is only used on desktop";
 #endif
 
@@ -40,7 +40,6 @@ class Image;
 
 class GURL;
 class InstantService;
-class NTPUserDataLogger;
 class Profile;
 class SearchIPCRouterTest;
 class SkBitmap;
@@ -128,8 +127,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   raw_ptr<InstantService> instant_service_;
 
   bool is_setting_title_ = false;
-
-  std::unique_ptr<NTPUserDataLogger> logger_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

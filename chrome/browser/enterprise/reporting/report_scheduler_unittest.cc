@@ -27,6 +27,7 @@
 #include "components/enterprise/browser/reporting/real_time_report_generator.h"
 #include "components/enterprise/browser/reporting/real_time_uploader.h"
 #include "components/enterprise/browser/reporting/report_generator.h"
+#include "components/enterprise/browser/reporting/report_request.h"
 #include "components/enterprise/common/proto/extensions_workflow_events.pb.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/reporting/client/report_queue_provider.h"
@@ -36,12 +37,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/enterprise/reporting/reporting_delegate_factory_android.h"
 #else
 #include "chrome/browser/enterprise/reporting/report_scheduler_desktop.h"
 #include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
@@ -61,7 +62,7 @@ constexpr char kDMToken[] = "dm_token";
 constexpr char kClientId[] = "client_id";
 constexpr base::TimeDelta kDefaultUploadInterval = base::Hours(24);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 constexpr char kUploadTriggerMetricName[] =
     "Enterprise.CloudReportingUploadTrigger";
 #endif
@@ -69,16 +70,16 @@ constexpr char kUploadTriggerMetricName[] =
 }  // namespace
 
 ACTION_P(ScheduleGeneratorCallback, request_number) {
-  ReportGenerator::ReportRequests requests;
+  ReportRequestQueue requests;
   for (int i = 0; i < request_number; i++)
-    requests.push(std::make_unique<ReportGenerator::ReportRequest>());
+    requests.push(std::make_unique<ReportRequest>(ReportType::kFull));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(arg0), std::move(requests)));
 }
 
 class MockReportGenerator : public ReportGenerator {
  public:
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   explicit MockReportGenerator(
       ReportingDelegateFactoryAndroid* delegate_factory)
       : ReportGenerator(delegate_factory) {}
@@ -86,13 +87,13 @@ class MockReportGenerator : public ReportGenerator {
   explicit MockReportGenerator(
       ReportingDelegateFactoryDesktop* delegate_factory)
       : ReportGenerator(delegate_factory) {}
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   void Generate(ReportType report_type, ReportCallback callback) override {
     OnGenerate(report_type, callback);
   }
   MOCK_METHOD2(OnGenerate,
                void(ReportType report_type, ReportCallback& callback));
-  MOCK_METHOD0(GenerateBasic, ReportRequests());
+  MOCK_METHOD0(GenerateBasic, ReportRequestQueue());
 };
 
 class MockReportUploader : public ReportUploader {
@@ -103,12 +104,13 @@ class MockReportUploader : public ReportUploader {
   MockReportUploader& operator=(const MockReportUploader&) = delete;
 
   ~MockReportUploader() override = default;
-  MOCK_METHOD2(SetRequestAndUpload, void(ReportRequests, ReportCallback));
+  MOCK_METHOD3(SetRequestAndUpload,
+               void(ReportType, ReportRequestQueue, ReportCallback));
 };
 
 class MockRealTimeReportGenerator : public RealTimeReportGenerator {
  public:
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   explicit MockRealTimeReportGenerator(
       ReportingDelegateFactoryAndroid* delegate_factory)
       : RealTimeReportGenerator(delegate_factory) {}
@@ -116,7 +118,7 @@ class MockRealTimeReportGenerator : public RealTimeReportGenerator {
   explicit MockRealTimeReportGenerator(
       ReportingDelegateFactoryDesktop* delegate_factory)
       : RealTimeReportGenerator(delegate_factory) {}
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   MOCK_METHOD2(Generate,
                std::vector<std::unique_ptr<google::protobuf::MessageLite>>(
@@ -225,10 +227,10 @@ class ReportSchedulerTest : public ::testing::Test {
     }
   }
 
-  ReportGenerator::ReportRequests CreateRequests(int number) {
-    ReportGenerator::ReportRequests requests;
+  ReportRequestQueue CreateRequests(int number) {
+    ReportRequestQueue requests;
     for (int i = 0; i < number; i++)
-      requests.push(std::make_unique<ReportGenerator::ReportRequest>());
+      requests.push(std::make_unique<ReportRequest>(ReportType::kFull));
     return requests;
   }
 
@@ -251,22 +253,22 @@ class ReportSchedulerTest : public ::testing::Test {
 #endif
   }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   void TriggerExtensionRequestReport(Profile* profile) {
     static_cast<ReportSchedulerDesktop*>(scheduler_->GetDelegateForTesting())
         ->TriggerExtensionRequest(profile);
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state_;
   TestingProfileManager profile_manager_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   ReportingDelegateFactoryAndroid report_delegate_factory_;
 #else
   ReportingDelegateFactoryDesktop report_delegate_factory_;
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   std::unique_ptr<ReportScheduler> scheduler_;
   raw_ptr<policy::MockCloudPolicyClient> client_;
   raw_ptr<MockReportGenerator> generator_;
@@ -312,8 +314,8 @@ TEST_F(ReportSchedulerTest, UploadReportSucceeded) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
@@ -333,8 +335,8 @@ TEST_F(ReportSchedulerTest, UploadReportTransientError) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kTransientError));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kTransientError));
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
@@ -354,8 +356,8 @@ TEST_F(ReportSchedulerTest, UploadReportPersistentError) {
   EXPECT_CALL_SetupRegistrationWithSetDMToken();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kPersistentError));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kPersistentError));
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
@@ -380,7 +382,7 @@ TEST_F(ReportSchedulerTest, NoReportGenerate) {
   EXPECT_CALL_SetupRegistrationWithSetDMToken();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(0)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _)).Times(0);
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _, _)).Times(0);
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
@@ -408,8 +410,8 @@ TEST_F(ReportSchedulerTest, TimerDelayWithLastUploadTimestamp) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
@@ -428,8 +430,8 @@ TEST_F(ReportSchedulerTest, TimerDelayWithoutLastUploadTimestamp) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
@@ -465,8 +467,8 @@ TEST_F(ReportSchedulerTest, ReportingIsDisabledWhileNewReportIsPosted) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
 
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
@@ -488,7 +490,7 @@ TEST_F(ReportSchedulerTest, ReportingIsDisabledWhileNewReportIsPosted) {
 }
 
 // Android does not support version updates nor extensions
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -501,8 +503,9 @@ TEST_F(ReportSchedulerTest, OnUpdate) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kBrowserVersion, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
+  EXPECT_CALL(*uploader_,
+              SetRequestAndUpload(ReportType::kBrowserVersion, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
 
   CreateScheduler();
   g_browser_process->GetBuildState()->SetUpdate(
@@ -524,8 +527,9 @@ TEST_F(ReportSchedulerTest, OnUpdateAndPersistentError) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kBrowserVersion, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kPersistentError));
+  EXPECT_CALL(*uploader_,
+              SetRequestAndUpload(ReportType::kBrowserVersion, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kPersistentError));
 
   CreateScheduler();
   g_browser_process->GetBuildState()->SetUpdate(
@@ -558,8 +562,10 @@ TEST_F(ReportSchedulerTest, DeferredTimer) {
 
   // Hang on to the uploader's ReportCallback.
   ReportUploader::ReportCallback saved_callback;
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce([&saved_callback](ReportUploader::ReportRequests requests,
+  EXPECT_CALL(*uploader_,
+              SetRequestAndUpload(ReportType::kBrowserVersion, _, _))
+      .WillOnce([&saved_callback](ReportType report_type,
+                                  ReportRequestQueue requests,
                                   ReportUploader::ReportCallback callback) {
         saved_callback = std::move(callback);
       });
@@ -581,8 +587,8 @@ TEST_F(ReportSchedulerTest, DeferredTimer) {
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
   auto new_uploader = std::make_unique<MockReportUploader>();
-  EXPECT_CALL(*new_uploader, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
+  EXPECT_CALL(*new_uploader, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
   std::move(saved_callback).Run(ReportUploader::kSuccess);
   ExpectLastUploadTimestampUpdated(false);
   ::testing::Mock::VerifyAndClearExpectations(generator_);
@@ -611,8 +617,9 @@ TEST_F(ReportSchedulerTest, OnNewVersion) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kBrowserVersion, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
+  EXPECT_CALL(*uploader_,
+              SetRequestAndUpload(ReportType::kBrowserVersion, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
 
   CreateScheduler();
 
@@ -641,8 +648,8 @@ TEST_F(ReportSchedulerTest, OnNewVersionRegularReport) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
       .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _))
-      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
 
   CreateScheduler();
 
@@ -663,7 +670,7 @@ TEST_F(ReportSchedulerTest, OnNewVersionRegularReport) {
 TEST_F(ReportSchedulerTest, ExtensionRequestWithRealTimePipeline) {
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(_, _)).Times(0);
-  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _)).Times(0);
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _, _)).Times(0);
 
   Profile* profile = profile_manager_.CreateTestingProfile("profile");
 
@@ -693,6 +700,6 @@ TEST_F(ReportSchedulerTest, ExtensionRequestWithRealTimePipeline) {
   histogram_tester_.ExpectUniqueSample(kUploadTriggerMetricName, 5, 1);
 }
 
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace enterprise_reporting

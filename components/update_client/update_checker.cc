@@ -70,11 +70,12 @@ class UpdateCheckerImpl : public UpdateChecker {
       UpdateCheckCallback update_check_callback) override;
 
  private:
-  void ReadUpdaterStateAttributes();
+  std::unique_ptr<UpdaterState::Attributes> ReadUpdaterStateAttributes() const;
   void CheckForUpdatesHelper(
       const std::string& session_id,
       const IdToComponentPtrMap& components,
       const base::flat_map<std::string, std::string>& additional_attributes,
+      std::unique_ptr<UpdaterState::Attributes> updater_state_attributes,
       const std::set<std::string>& active_ids);
   void OnRequestSenderComplete(int error,
                                const std::string& response,
@@ -91,7 +92,6 @@ class UpdateCheckerImpl : public UpdateChecker {
   raw_ptr<PersistedData> metadata_ = nullptr;
   std::vector<std::string> ids_checked_;
   UpdateCheckCallback update_check_callback_;
-  std::unique_ptr<UpdaterState::Attributes> updater_state_attributes_;
   std::unique_ptr<RequestSender> request_sender_;
 };
 
@@ -114,40 +114,47 @@ void UpdateCheckerImpl::CheckForUpdates(
   ids_checked_ = ids_checked;
   update_check_callback_ = std::move(update_check_callback);
 
-  base::ThreadPool::PostTaskAndReply(
+  auto check_for_updates_invoker = base::BindOnce(
+      &UpdateCheckerImpl::CheckForUpdatesHelper, base::Unretained(this),
+      session_id, std::cref(components), additional_attributes);
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(&UpdateCheckerImpl::ReadUpdaterStateAttributes,
                      base::Unretained(this)),
       base::BindOnce(
-          [](base::OnceCallback<void(const std::set<std::string>&)>
-                 checkForUpdatesHelper,
-             PersistedData* metadata, std::vector<std::string> ids) {
-            metadata->GetActiveBits(ids, std::move(checkForUpdatesHelper));
+          [](base::OnceCallback<void(std::unique_ptr<UpdaterState::Attributes>,
+                                     const std::set<std::string>&)>
+                 check_for_updates_invoker,
+             PersistedData* metadata, std::vector<std::string> ids,
+             std::unique_ptr<UpdaterState::Attributes>
+                 updater_state_attributes) {
+            metadata->GetActiveBits(
+                ids, base::BindOnce(std::move(check_for_updates_invoker),
+                                    std::move(updater_state_attributes)));
           },
-          base::BindOnce(&UpdateCheckerImpl::CheckForUpdatesHelper,
-                         base::Unretained(this), session_id,
-                         std::cref(components), additional_attributes),
-          base::Unretained(metadata_), ids_checked));
+          std::move(check_for_updates_invoker), base::Unretained(metadata_),
+          ids_checked));
 }
 
 // This function runs on the blocking pool task runner.
-void UpdateCheckerImpl::ReadUpdaterStateAttributes() {
-#if defined(OS_WIN)
+std::unique_ptr<UpdaterState::Attributes>
+UpdateCheckerImpl::ReadUpdaterStateAttributes() const {
+#if BUILDFLAG(IS_WIN)
   // On Windows, the Chrome and the updater install modes are matched by design.
-  updater_state_attributes_ =
-      UpdaterState::GetState(!config_->IsPerUserInstall());
-#elif defined(OS_MAC)
-  // MacOS ignores this value in the current implementation but this may change.
-  updater_state_attributes_ = UpdaterState::GetState(false);
+  return UpdaterState::GetState(!config_->IsPerUserInstall());
+#elif BUILDFLAG(IS_MAC)
+  return UpdaterState::GetState(false);
 #else
-// Other platforms don't have updaters.
-#endif  // OS_WIN
+  return nullptr;
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 void UpdateCheckerImpl::CheckForUpdatesHelper(
     const std::string& session_id,
     const IdToComponentPtrMap& components,
     const base::flat_map<std::string, std::string>& additional_attributes,
+    std::unique_ptr<UpdaterState::Attributes> updater_state_attributes,
     const std::set<std::string>& active_ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -200,8 +207,8 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
       !config_->IsPerUserInstall(), session_id, config_->GetProdId(),
       config_->GetBrowserVersion().GetString(), config_->GetLang(),
       config_->GetChannel(), config_->GetOSLongName(),
-      config_->GetDownloadPreference(), additional_attributes,
-      updater_state_attributes_.get(), std::move(apps));
+      config_->GetDownloadPreference(), config_->IsMachineExternallyManaged(),
+      additional_attributes, updater_state_attributes.get(), std::move(apps));
 
   request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(

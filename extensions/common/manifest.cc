@@ -204,11 +204,11 @@ Manifest::Type Manifest::GetTypeFromManifestValue(
     const base::DictionaryValue& value,
     bool for_login_screen) {
   Type type = TYPE_UNKNOWN;
-  if (value.HasKey(keys::kTheme)) {
+  if (value.FindKey(keys::kTheme)) {
     type = TYPE_THEME;
-  } else if (value.HasKey(api::shared_module::ManifestKeys::kExport)) {
+  } else if (value.FindKey(api::shared_module::ManifestKeys::kExport)) {
     type = TYPE_SHARED_MODULE;
-  } else if (value.HasKey(keys::kApp)) {
+  } else if (value.FindKey(keys::kApp)) {
     if (value.Get(keys::kWebURLs, nullptr) ||
         value.Get(keys::kLaunchWebURL, nullptr)) {
       type = TYPE_HOSTED_APP;
@@ -217,7 +217,7 @@ Manifest::Type Manifest::GetTypeFromManifestValue(
     } else {
       type = TYPE_LEGACY_PACKAGED_APP;
     }
-  } else if (value.HasKey(keys::kChromeOSSystemExtension)) {
+  } else if (value.FindKey(keys::kChromeOSSystemExtension)) {
     type = TYPE_CHROMEOS_SYSTEM_EXTENSION;
   } else if (for_login_screen) {
     type = TYPE_LOGIN_SCREEN_EXTENSION;
@@ -329,30 +329,16 @@ const base::Value* Manifest::FindPath(base::StringPiece path) const {
   return available_values_->FindPath(path);
 }
 
-bool Manifest::GetBoolean(
-    const std::string& path, bool* out_value) const {
-  absl::optional<bool> value = available_values_->FindBoolPath(path);
-  if (value)
-    *out_value = *value;
-  return value.has_value();
+absl::optional<bool> Manifest::FindBoolPath(base::StringPiece path) const {
+  return available_values_->FindBoolPath(path);
 }
 
-bool Manifest::GetInteger(
-    const std::string& path, int* out_value) const {
-  absl::optional<int> value = available_values_->FindIntPath(path);
-  if (value)
-    *out_value = *value;
-  return value.has_value();
+absl::optional<int> Manifest::FindIntPath(base::StringPiece path) const {
+  return available_values_->FindIntPath(path);
 }
 
-bool Manifest::GetString(
-    const std::string& path, std::string* out_value) const {
-  return available_values_->GetString(path, out_value);
-}
-
-bool Manifest::GetString(const std::string& path,
-                         std::u16string* out_value) const {
-  return available_values_->GetString(path, out_value);
+const std::string* Manifest::FindStringPath(base::StringPiece path) const {
+  return available_values_->FindStringPath(path);
 }
 
 bool Manifest::GetDictionary(

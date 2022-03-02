@@ -148,7 +148,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   LayoutUnit MarginTop() const final;
   LayoutUnit MarginBottom() const final;
 
-  FloatRect LocalBoundingBoxRectForAccessibility() const final;
+  gfx::RectF LocalBoundingBoxRectForAccessibility() const final;
 
   PhysicalRect PhysicalLinesBoundingBox() const;
   PhysicalRect PhysicalVisualOverflowRect() const final;
@@ -286,8 +286,8 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
 
-  void LocalQuadsForSelf(Vector<FloatQuad>& quads) const override;
-  void AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
+  void LocalQuadsForSelf(Vector<gfx::QuadF>& quads) const override;
+  void AbsoluteQuadsForSelf(Vector<gfx::QuadF>& quads,
                             MapCoordinatesFlags mode = 0) const override;
 
   PhysicalOffset OffsetFromContainerInternal(
@@ -296,7 +296,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
  private:
   bool AbsoluteTransformDependsOnPoint(const LayoutObject& object) const;
-  void QuadsForSelfInternal(Vector<FloatQuad>& quads,
+  void QuadsForSelfInternal(Vector<gfx::QuadF>& quads,
                             MapCoordinatesFlags mode,
                             bool map_to_absolute) const;
 

@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
@@ -132,7 +132,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static bool IsANGLEDisplayPowerPreferenceSupported();
   static bool IsANGLEExternalContextAndSurfaceSupported();
   static bool IsANGLEContextVirtualizationSupported();
-  static bool IsANGLEVulkanImageClientBufferSupported();
+  static bool IsANGLEVulkanImageSupported();
 
   static bool IsEGLQueryDeviceSupported();
 

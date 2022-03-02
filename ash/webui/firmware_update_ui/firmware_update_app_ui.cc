@@ -4,13 +4,19 @@
 
 #include "ash/webui/firmware_update_ui/firmware_update_app_ui.h"
 
+#include <memory>
+#include <utility>
+
+#include "ash/components/fwupd/firmware_update_manager.h"
 #include "ash/grit/ash_firmware_update_app_resources.h"
 #include "ash/grit/ash_firmware_update_app_resources_map.h"
+#include "ash/webui/firmware_update_ui/mojom/firmware_update.mojom.h"
 #include "ash/webui/firmware_update_ui/url_constants.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/resources/grit/webui_generated_resources.h"
 #include "ui/resources/grit/webui_resources.h"
@@ -40,11 +46,16 @@ void AddFirmwareUpdateAppStrings(content::WebUIDataSource* source) {
       {"cancelButton", IDS_FIRMWARE_CANCEL_BUTTON_TEXT},
       {"doneButton", IDS_FIRMWARE_DONE_BUTTON_TEXT},
       {"updateButton", IDS_FIRMWARE_UPDATE_BUTTON_TEXT},
+      {"updateFailedBodyText", IDS_FIRMWARE_UPDATE_FAILED_BODY_TEXT},
+      {"updateFailedTitleText", IDS_FIRMWARE_UPDATE_FAILED_TITLE_TEXT},
       {"updating", IDS_FIRMWARE_UPDATING_TEXT},
       {"deviceUpToDate", IDS_FIRMWARE_DEVICE_UP_TO_DATE_TEXT},
       {"hasBeenUpdated", IDS_FIRMWARE_HAS_BEEN_UPDATED_TEXT},
       {"updatingInfo", IDS_FIRMWARE_UPDATING_INFO_TEXT},
       {"installing", IDS_FIRMWARE_INSTALLING_TEXT},
+      {"restartingBodyText", IDS_FIRMWARE_RESTARTING_BODY_TEXT},
+      {"restartingFooterText", IDS_FIRMWARE_RESTARTING_FOOTER_TEXT},
+      {"restartingTitleText", IDS_FIRMWARE_RESTARTING_TITLE_TEXT},
       {"upToDate", IDS_FIRMWARE_UP_TO_DATE_TEXT},
       {"versionText", IDS_FIRMWARE_VERSION_TEXT}};
 
@@ -55,7 +66,7 @@ void AddFirmwareUpdateAppStrings(content::WebUIDataSource* source) {
 }  // namespace
 
 FirmwareUpdateAppUI::FirmwareUpdateAppUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui) {
+    : ui::MojoWebDialogUI(web_ui) {
   auto source = base::WrapUnique(
       content::WebUIDataSource::Create(kChromeUIFirmwareUpdateAppHost));
   source->OverrideContentSecurityPolicy(
@@ -76,4 +87,10 @@ FirmwareUpdateAppUI::FirmwareUpdateAppUI(content::WebUI* web_ui)
 
 FirmwareUpdateAppUI::~FirmwareUpdateAppUI() = default;
 
+void FirmwareUpdateAppUI::BindInterface(
+    mojo::PendingReceiver<firmware_update::mojom::UpdateProvider> receiver) {
+  FirmwareUpdateManager::Get()->BindInterface(std::move(receiver));
+}
+
+WEB_UI_CONTROLLER_TYPE_IMPL(FirmwareUpdateAppUI)
 }  // namespace ash

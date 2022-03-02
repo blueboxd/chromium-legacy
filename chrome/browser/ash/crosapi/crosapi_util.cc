@@ -67,6 +67,7 @@
 #include "chromeos/crosapi/mojom/system_display.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
+#include "chromeos/crosapi/mojom/timezone.mojom.h"
 #include "chromeos/crosapi/mojom/tts.mojom.h"
 #include "chromeos/crosapi/mojom/url_handler.mojom.h"
 #include "chromeos/crosapi/mojom/video_capture.mojom.h"
@@ -199,6 +200,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::SystemDisplay>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TaskManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::TestController>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::TimeZoneService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Tts>(),
     MakeInterfaceVersionEntry<crosapi::mojom::UrlHandler>(),
     MakeInterfaceVersionEntry<crosapi::mojom::VideoCaptureDeviceFactory>(),
@@ -294,18 +296,12 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
   // the long term fix is made in ash-chrome, atomically.
   params->exo_ime_support =
       crosapi::mojom::ExoImeSupport::kConsumedByImeWorkaround;
-  params->cros_user_id_hash = chromeos::ProfileHelper::GetUserIdHashFromProfile(
+  params->cros_user_id_hash = ash::ProfileHelper::GetUserIdHashFromProfile(
       ProfileManager::GetPrimaryUserProfile());
   params->device_account_policy = GetDeviceAccountPolicy(environment_provider);
   params->idle_info = IdleServiceAsh::ReadIdleInfoFromSystem();
   params->native_theme_info = NativeThemeServiceAsh::GetNativeThemeInfo();
 
-  params->is_incognito_deprecated =
-      initial_browser_action.action ==
-      crosapi::mojom::InitialBrowserAction::kOpenIncognitoWindow;
-  params->restore_last_session_deprecated =
-      initial_browser_action.action ==
-      crosapi::mojom::InitialBrowserAction::kRestoreLastSession;
   params->initial_browser_action = initial_browser_action.action;
   if (initial_browser_action.action ==
       crosapi::mojom::InitialBrowserAction::kOpenWindowWithUrls) {
@@ -373,7 +369,7 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
           : crosapi::mojom::BrowserInitParams::InitialKeepAlive::kDisabled;
 
   params->is_unfiltered_bluetooth_device_enabled =
-      chromeos::switches::IsUnfilteredBluetoothDevicesEnabled();
+      ash::switches::IsUnfilteredBluetoothDevicesEnabled();
 
   // Pass the accepted internal urls to lacros. Only accepted urls are allowed
   // to be passed via OpenURL from Lacros to Ash.
@@ -426,14 +422,14 @@ base::ScopedFD CreateStartupData(EnvironmentProvider* environment_provider,
 }
 
 bool IsSigninProfileOrBelongsToAffiliatedUser(Profile* profile) {
-  if (chromeos::ProfileHelper::IsSigninProfile(profile))
+  if (ash::ProfileHelper::IsSigninProfile(profile))
     return true;
 
   if (profile->IsOffTheRecord())
     return false;
 
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
     return false;
   return user->IsAffiliated();

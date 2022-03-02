@@ -14,8 +14,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace test {
 
 class NetworkThrottlingObserverTest : public ::testing::Test {
@@ -58,9 +57,9 @@ TEST_F(NetworkThrottlingObserverTest, ThrottlingChangeCallsShill) {
   constexpr bool enabled = true;
   constexpr uint32_t upload_rate = 1200;
   constexpr uint32_t download_rate = 2000;
-  updated_throttling_policy.SetBoolean("enabled", enabled);
-  updated_throttling_policy.SetInteger("upload_rate_kbits", upload_rate);
-  updated_throttling_policy.SetInteger("download_rate_kbits", download_rate);
+  updated_throttling_policy.SetBoolKey("enabled", enabled);
+  updated_throttling_policy.SetIntKey("upload_rate_kbits", upload_rate);
+  updated_throttling_policy.SetIntKey("download_rate_kbits", download_rate);
 
   // Make sure throttling is disabled just before setting preferece.
   EXPECT_FALSE(GetNetworkThrottlingStatus().enabled);
@@ -83,4 +82,4 @@ TEST_F(NetworkThrottlingObserverTest, ThrottlingChangeCallsShill) {
 }
 
 }  // namespace test
-}  // namespace chromeos
+}  // namespace ash

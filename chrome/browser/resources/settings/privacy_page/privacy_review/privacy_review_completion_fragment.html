@@ -2,27 +2,25 @@
   :host {
     display: flex;
     flex-flow: column;
+    min-height: calc(432px - var(--privacy-guide-footer-total-height));
   }
 
-  .header {
-    align-items: center;
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    justify-content: space-between;
+  .headline-container {
     padding: 36px 120px 16px 120px;
     row-gap: 8px;
-    text-align: center;
   }
 
   .footer {
     align-items: center;
+    bottom: calc(-1 * var(--privacy-guide-footer-total-height));
     display: flex;
     justify-content: space-between;
-    padding: 16px 0;
+    padding: var(--privacy-guide-footer-vertical-padding) 0;
+    position: absolute;
+    width: calc(100% - 48px);  /* 48px = 2x :host horizontal padding */
   }
 </style>
-<div class="header">
+<div class="headline-container" focus-element tabindex="-1">
   <picture>
     <source
         srcset="./images/privacy_review/completion_banner_dark.svg"

@@ -33,9 +33,8 @@ void MediaRouterGmcUiForTest::SetUp() {
 }
 
 void MediaRouterGmcUiForTest::ShowDialog() {
-  base::RunLoop loop;
   dialog_ui_.ClickToolbarIcon();
-  loop.Run();
+  CHECK(dialog_ui_.WaitForDialogOpened());
 }
 
 bool MediaRouterGmcUiForTest::IsDialogShown() const {
@@ -75,19 +74,10 @@ void MediaRouterGmcUiForTest::WaitForAnyRoute() {
 }
 
 void MediaRouterGmcUiForTest::WaitForDialogShown() {
-  NOTIMPLEMENTED();
+  CHECK(dialog_ui_.WaitForDialogOpened());
 }
 
 void MediaRouterGmcUiForTest::WaitForDialogHidden() {
-  NOTIMPLEMENTED();
-}
-
-void MediaRouterGmcUiForTest::SetLocalFile(const GURL& file_url) {
-  NOTIMPLEMENTED();
-}
-
-void MediaRouterGmcUiForTest::SetLocalFileSelectionIssue(
-    const IssueInfo& issue) {
   NOTIMPLEMENTED();
 }
 

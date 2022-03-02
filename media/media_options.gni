@@ -9,6 +9,7 @@ import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//media/gpu/args.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/libaom/options.gni")
 import("//third_party/libgav1/options.gni")
 
 declare_args() {
@@ -218,6 +219,10 @@ if (is_chromecast) {
 # |_default_mojo_media_host| which controls where the MediaService runs in.
 if (enable_library_cdms) {
   _default_mojo_media_services += [ "cdm" ]
+}
+
+if (is_win) {
+  _default_mojo_media_services += [ "audio_encoder" ]
 }
 
 declare_args() {

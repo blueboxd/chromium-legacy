@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/app_list/search/files/item_suggest_cache.h"
 
+#include <algorithm>
+#include <string>
+
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
@@ -119,11 +122,14 @@ absl::optional<ItemSuggestCache::Result> ConvertResult(
     const base::Value* value) {
   const auto& item_id = GetString(value, "itemId");
   const auto& display_text = GetString(value, "displayText");
+  const auto& prediction_reason = GetString(value, "predictionReason");
 
+  // Allow |prediction_reason| to be nullopt.
   if (!item_id || !display_text)
     return absl::nullopt;
 
-  return ItemSuggestCache::Result(item_id.value(), display_text.value());
+  return ItemSuggestCache::Result(item_id.value(), display_text.value(),
+                                  prediction_reason);
 }
 
 absl::optional<ItemSuggestCache::Results> ConvertResults(
@@ -164,12 +170,16 @@ constexpr base::FeatureParam<std::string> ItemSuggestCache::kModelName;
 constexpr base::FeatureParam<int> ItemSuggestCache::kMinMinutesBetweenUpdates;
 constexpr base::FeatureParam<bool> ItemSuggestCache::kMultipleQueriesPerSession;
 
-ItemSuggestCache::Result::Result(const std::string& id,
-                                 const std::string& title)
-    : id(id), title(title) {}
+ItemSuggestCache::Result::Result(
+    const std::string& id,
+    const std::string& title,
+    const absl::optional<std::string>& prediction_reason)
+    : id(id), title(title), prediction_reason(prediction_reason) {}
 
 ItemSuggestCache::Result::Result(const Result& other)
-    : id(other.id), title(other.title) {}
+    : id(other.id),
+      title(other.title),
+      prediction_reason(other.prediction_reason) {}
 
 ItemSuggestCache::Result::~Result() = default;
 
@@ -183,7 +193,8 @@ ItemSuggestCache::Results::~Results() = default;
 
 ItemSuggestCache::ItemSuggestCache(
     Profile* profile,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    base::RepeatingCallback<void()> on_results_updated)
     : made_request_(false),
       enabled_(kEnabled.Get()),
       server_url_(kServerUrl.Get()),
@@ -191,6 +202,7 @@ ItemSuggestCache::ItemSuggestCache(
       multiple_queries_per_session_(
           app_list_features::IsSuggestedFilesEnabled() ||
           kMultipleQueriesPerSession.Get()),
+      on_results_updated_(on_results_updated),
       profile_(profile),
       url_loader_factory_(std::move(url_loader_factory)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -357,6 +369,7 @@ void ItemSuggestCache::OnJsonParsed(
     LogStatus(Status::kOk);
     LogLatency(base::TimeTicks::Now() - update_start_time_);
     results_ = std::move(results.value());
+    on_results_updated_.Run();
   }
 }
 

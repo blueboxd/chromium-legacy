@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/enterprise/connectors/service_provider_config.h"
-#include "components/policy/core/browser/url_util.h"
+#include "components/url_matcher/url_util.h"
 
 namespace enterprise_connectors {
 
@@ -94,6 +94,14 @@ AnalysisServiceSettings::AnalysisServiceSettings(
       custom_message_data_[*tag] = data;
     }
   }
+
+  const base::Value* require_justification_tags =
+      settings_value.FindListKey(kKeyRequireJustificationTags);
+  if (require_justification_tags && require_justification_tags->is_list()) {
+    for (const base::Value& tag : require_justification_tags->GetList()) {
+      tags_requiring_justification_.insert(tag.GetString());
+    }
+  }
 }
 
 // static
@@ -142,6 +150,7 @@ absl::optional<AnalysisSettings> AnalysisServiceSettings::GetAnalysisSettings(
   DCHECK(settings.analysis_url.is_valid());
   settings.minimum_data_size = minimum_data_size_;
   settings.custom_message_data = custom_message_data_;
+  settings.tags_requiring_justification = tags_requiring_justification_;
 
   return settings;
 }
@@ -205,8 +214,8 @@ void AnalysisServiceSettings::AddUrlPatternSettings(
   if (!url_list)
     return;
 
-  policy::url_util::AddFilters(matcher_.get(), enabled, id,
-                               &base::Value::AsListValue(*url_list));
+  url_matcher::util::AddFilters(matcher_.get(), enabled, id,
+                                &base::Value::AsListValue(*url_list));
 
   if (enabled)
     enabled_patterns_settings_[*id] = std::move(setting);

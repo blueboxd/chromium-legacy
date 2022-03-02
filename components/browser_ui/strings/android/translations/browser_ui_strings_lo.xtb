@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">ອະນຸຍາດຄຸກກີ້</translation>
 <translation id="2228071138934252756">ເພື່ອອະນຸຍາດໃຫ້ <ph name="APP_NAME" /> ເຂົ້າເຖິງກ້ອງຖ່າຍຮູບຂອງທ່ານ, ກະລຸນາເປີດກ້ອງຖ່າຍຮູບໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" /> ນຳ.</translation>
 <translation id="2241634353105152135">ຄັ້ງ​ດຽວ​ເທົ່າ​ນັ້ນ</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> ລຶບອອກ</translation>
 <translation id="2289270750774289114">ຖາມເມື່ອເວັບໄຊຕ້ອງການກວດຫາອຸປະກອນ Bluetooth ທີ່ຢູ່ໃກ້ຄຽງ (ແນະນຳ)</translation>
 <translation id="2315043854645842844">ການ​ເລືອກ​ໃບ​ຢັ້ງ​ຢືນເບື້ອງ​ລູກ​ຂ່າຍ​ບໍ່​ຖືກ​ຮອງ​ຮັບ​ໂດຍ​ລະ​ບົບ​ປະຕິບັດການ.</translation>
 <translation id="2359808026110333948">ສືບຕໍ່</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">ສະແດງຂໍ້ມູນ</translation>
 <translation id="3123473560110926937">ບລັອກໃນບາງເວັບໄຊ</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> ຂໍ້​ມູນ​ເກັບ​ຮັກ​ສາ​ໄວ້</translation>
+<translation id="3203366800380907218">​ຈາກ​ເວັບ​ໄຊ</translation>
 <translation id="321187648315454507">ເພື່ອອະນຸຍາດໃຫ້ <ph name="APP_NAME" /> ສົ່ງການແຈ້ງເຕືອນໃຫ້ທ່ານ, ກະລຸນາເປີດການແຈ້ງເຕືອນໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" /> ນຳ.</translation>
 <translation id="3227137524299004712">ໄມໂຄຣໂຟນ</translation>
 <translation id="3277252321222022663">ອະນຸຍາດໃຫ້ເວັບໄຊເຂົ້າເຖິງເຊັນເຊີ (ແນະນຳ)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">ບລັອກແລ້ວ</translation>
 <translation id="5689516760719285838">ສະຖານທີ່</translation>
 <translation id="5690795753582697420">ກ້ອງປິດຢູ່ໃນການຕັ້ງຄ່າ Android</translation>
-<translation id="5710871682236653961">ຖາມກ່ອນທີ່ຈະອະນຸຍາດໃຫ້ເວັບໄຊສົ່ງ ແລະ ຮັບຂໍ້ມູນໃນເວລາທີ່ທ່ານແຕະອຸປະກອນ NFC (ແນະນຳ)</translation>
 <translation id="5719847187258001597">ນີ້ຈະລຶບລ້າງຂໍ້ມູນ ແລະ ຄຸກກີ້ທັງໝົດທີ່ເກັບໄວ້ໂດຍ <ph name="ORIGIN" /> ຫຼື ໂດຍແອັບຂອງມັນໃນໜ້າຈໍຫຼັກຂອງທ່ານ.</translation>
 <translation id="5771720122942595109">ບລັອກ <ph name="PERMISSION_1" /> ໄວ້ແລ້ວ</translation>
 <translation id="5804241973901381774">ການ​ອະ​ນຸ​ຍາດ</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">ອະນຸຍາດສຳລັບໂປຣແກຣມຊອກຫາປັດຈຸບັນແລ້ວ</translation>
 <translation id="7053983685419859001">ບລັອກ</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{ເລືອກ 1 ລາຍການແລ້ວ}other{ເລືອກ # ລາຍການແລ້ວ}}</translation>
-<translation id="7070090581017165256">ກ່ຽວກັບເວັບໄຊນີ້</translation>
 <translation id="7087918508125750058">ເລືອກ <ph name="ITEM_COUNT" /> ລາຍການແລ້ວ.  ມີຕົວເລືອກໃຫ້ນຳໃຊ້ຢູ່ໃກ້ສ່ວນເທິງຂອງໜ້າຈໍ</translation>
 <translation id="7141896414559753902">ບລັອກບໍ່ໃຫ້ເວັບໄຊສະແດງປັອບອັບ ແລະ ການປ່ຽນເສັ້ນທາງ (ແນະນຳ)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">ເວັບໄຊກຳລັງໃຊ້ໄມໂຄຣໂຟນຂອງທ່ານ</translation>
 <translation id="7561196759112975576">ຢູ່ສະເໝີ</translation>
-<translation id="7572498721684305250">ບລັອກບໍ່ໃຫ້ເວັບໄຊສົ່ງ ແລະ ຮັບຂໍ້ມູນໃນເວລາທີ່ທ່ານແຕະອຸປະກອນ NFC</translation>
 <translation id="757524316907819857">ບລັອກເວັບໄຊບໍ່ໃຫ້ຫຼິ້ນເນື້ອຫາທີ່ມີການປ້ອງກັນໄວ້</translation>
 <translation id="7649070708921625228">ຊ່ວຍ​ເຫຼືອ</translation>
 <translation id="7658239707568436148">ຍົກ​ເລີກ​</translation>

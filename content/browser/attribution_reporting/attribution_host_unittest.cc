@@ -202,8 +202,8 @@ TEST_F(AttributionHostTest, ConversionInSubframeOnInsecurePage_BadMessage) {
       url::Origin::Create(GURL("https://secure.com"));
   conversion_host_mojom()->RegisterConversion(std::move(conversion));
   EXPECT_EQ(
-      "blink.mojom.ConversionHost can only be used in secure contexts with a "
-      "secure conversion registration origin.",
+      "blink.mojom.ConversionHost can only be used with a secure top-level "
+      "frame.",
       bad_message_observer.WaitForBadMessage());
 }
 
@@ -261,8 +261,7 @@ TEST_F(AttributionHostTest, ConversionOnInsecurePage_BadMessage) {
   // Message should be ignored because it was registered from an insecure page.
   conversion_host_mojom()->RegisterConversion(std::move(conversion));
   EXPECT_EQ(
-      "blink.mojom.ConversionHost can only be used in secure contexts with a "
-      "secure conversion registration origin.",
+      "blink.mojom.ConversionHost can only be used in secure contexts.",
       bad_message_observer.WaitForBadMessage());
 }
 
@@ -281,8 +280,8 @@ TEST_F(AttributionHostTest, ConversionWithInsecureReportingOrigin_BadMessage) {
   // redirect.
   conversion_host_mojom()->RegisterConversion(std::move(conversion));
   EXPECT_EQ(
-      "blink.mojom.ConversionHost can only be used in secure contexts with a "
-      "secure conversion registration origin.",
+      "blink.mojom.ConversionHost can only be used with a secure conversion "
+      "registration origin.",
       bad_message_observer.WaitForBadMessage());
 }
 
@@ -830,7 +829,7 @@ TEST_F(AttributionHostTest, AndroidConversion_DuringNavigation) {
   }
 
   std::string origin(
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       "android-app:com.any.app");
   url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddStandardScheme(kAndroidAppScheme, url::SCHEME_WITH_HOST);
@@ -868,7 +867,7 @@ TEST_F(AttributionHostTest, AndroidConversion_AfterNavigation) {
   }
 
   std::string origin(
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       "android-app:com.any.app");
   url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddStandardScheme(kAndroidAppScheme, url::SCHEME_WITH_HOST);
@@ -896,7 +895,7 @@ TEST_F(AttributionHostTest, AndroidConversion_AfterNavigation_SubDomain) {
   EXPECT_CALL(mock_manager_, HandleSource);
 
   std::string origin(
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       "android-app:com.any.app");
   url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddStandardScheme(kAndroidAppScheme, url::SCHEME_WITH_HOST);
@@ -919,7 +918,7 @@ TEST_F(AttributionHostTest,
   EXPECT_CALL(mock_manager_, HandleSource).Times(0);
 
   std::string origin(
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       "android-app:com.any.app");
   url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddStandardScheme(kAndroidAppScheme, url::SCHEME_WITH_HOST);
@@ -947,7 +946,7 @@ TEST_F(AttributionHostTest, AndroidConversion_NavigationAborted) {
   EXPECT_CALL(mock_manager_, HandleSource).Times(0);
 
   std::string origin(
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       "android-app:com.any.app");
   url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddStandardScheme(kAndroidAppScheme, url::SCHEME_WITH_HOST);
@@ -976,7 +975,7 @@ TEST_F(AttributionHostTest, AndroidConversion_NavigationError) {
   EXPECT_CALL(mock_manager_, HandleSource).Times(0);
 
   std::string origin(
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       "android-app:com.any.app");
   url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddStandardScheme(kAndroidAppScheme, url::SCHEME_WITH_HOST);
@@ -1006,7 +1005,7 @@ TEST_F(AttributionHostTest, AndroidConversion_BeforeNavigation) {
   EXPECT_CALL(mock_manager_, HandleSource).Times(0);
 
   std::string origin(
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       "android-app:com.any.app");
   url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddStandardScheme(kAndroidAppScheme, url::SCHEME_WITH_HOST);
@@ -1028,7 +1027,7 @@ TEST_F(AttributionHostTest, AndroidConversion_SameDocument) {
   EXPECT_CALL(mock_manager_, HandleSource);
 
   std::string origin(
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       "android-app:com.any.app");
   url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddStandardScheme(kAndroidAppScheme, url::SCHEME_WITH_HOST);
@@ -1046,7 +1045,7 @@ TEST_F(AttributionHostTest, AndroidConversion_SameDocument) {
       url::Origin::Create(GURL(origin)), CreateValidImpression());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_F(AttributionHostTest, AndroidConversion) {
   EXPECT_CALL(mock_manager_, HandleSource);
 

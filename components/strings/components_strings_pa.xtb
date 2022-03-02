@@ -111,7 +111,7 @@
 <translation id="1307966114820526988">ਨਾਪਸੰਦ ਕੀਤੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ</translation>
 <translation id="1308113895091915999">ਪੇਸ਼ਕਸ਼ ਉਪਲਬਧ ਹੈ</translation>
 <translation id="1312803275555673949">ਕਿਹੜਾ ਸਬੂਤ ਇਸ ਦਾ ਸਮਰਥਨ ਕਰਦਾ ਹੈ?</translation>
-<translation id="131405271941274527">ਜਦੋਂ ਤੁਸੀਂ ਆਪਣੇ ਫ਼ੋਨ ਨੂੰ ਕਿਸੇ NFC ਡੀਵਾਈਸ 'ਤੇ ਟੈਪ ਕਰਦੇ ਹੋ ਤਾਂ <ph name="URL" /> ਜਾਣਕਾਰੀ ਭੇਜਣਾ ਅਤੇ ਪ੍ਰਾਪਤ ਕਰਨਾ ਚਾਹੁੰਦਾ ਹੈ</translation>
+<translation id="1314311879718644478">ਆਗਮੈਂਟਿਡ ਰਿਐਲਿਟੀ ਸੰਬੰਧੀ ਸਮੱਗਰੀ ਦੇਖੋ</translation>
 <translation id="1314509827145471431">ਸੱਜੇ ਜਿਲਦਬੰਦ</translation>
 <translation id="1318023360584041678">ਟੈਬ ਗਰੁੱਪ ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤੀ ਗਈ</translation>
 <translation id="1319245136674974084">ਇਸ ਐਪ ਲਈ ਦੁਬਾਰਾ ਨਾ ਪੁੱਛੋ</translation>
@@ -215,6 +215,7 @@
 <translation id="1583429793053364125">ਇਹ ਵੈਬਸਫ਼ਾ ਪ੍ਰਦਰਸ਼ਿਤ ਕਰਦੇ ਸਮੇਂ ਕੁਝ ਗ਼ਲਤ ਹੋਇਆ ਸੀ।</translation>
 <translation id="1586541204584340881">ਤੁਸੀਂ ਕਿਹੜੀਆਂ ਐਕਸਟੈਂਸ਼ਨਾਂ ਸਥਾਪਤ ਕੀਤੀਆਂ ਹੋਈਆਂ ਹਨ</translation>
 <translation id="1588438908519853928">ਸਧਾਰਨ</translation>
+<translation id="1589050138437146318">ਕੀ ARCore ਨੂੰ ਸਥਾਪਤ ਕਰਨਾ ਹੈ?</translation>
 <translation id="1592005682883173041">ਸਥਾਨਕ  ਡਾਟਾ  ਪਹੁੰਚ</translation>
 <translation id="1594030484168838125">ਚੁਣੋ</translation>
 <translation id="160851722280695521">Chrome ਵਿੱਚ Dino Run ਗੇਮ ਖੇਡੋ</translation>
@@ -474,6 +475,7 @@
 <translation id="2465655957518002998">ਡਿਲੀਵਰੀ ਵਿਧੀ ਚੁਣੋ</translation>
 <translation id="2465688316154986572">ਪਿੰਨ</translation>
 <translation id="2465914000209955735">Chrome ਵਿੱਚ ਤੁਹਾਡੇ ਵੱਲੋਂ ਡਾਊਨਲੋਡ ਕੀਤੀਆਂ ਫ਼ਾਈਲਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
+<translation id="2466004615675155314">ਵੈੱਬ ਤੋਂ ਜਾਣਕਾਰੀ ਦਿਖਾਓ</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />ਨੈੱਟਵਰਕ ਤਸ਼ਖੀਸਾਂ ਚਲਾਇਆ ਜਾ ਰਿਹਾ ਹੈ<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">1-ਤੋਂ-N ਕ੍ਰਮ</translation>
 <translation id="2470767536994572628">ਜਦੋਂ ਤੁਸੀਂ ਐਨੋਟੇਸ਼ਨਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰਦੇ ਹੋ, ਤਾਂ ਇਹ ਦਸਤਾਵੇਜ਼ ਇਕਹਿਰੇ ਪੰਨਾ-ਦ੍ਰਿਸ਼ ਅਤੇ ਆਪਣੇ ਮੂਲ ਘੁਮਾਅ 'ਤੇ ਵਾਪਸ ਆ ਜਾਵੇਗਾ</translation>
@@ -520,6 +522,7 @@
 <translation id="2609632851001447353">ਵੈਰੀਏਸ਼ੰਸ</translation>
 <translation id="2610561535971892504">ਕਾਪੀ ਕਰਨ ਲਈ ਕਲਿੱਕ ਕਰੋ</translation>
 <translation id="2618023639789766142">C10 (ਲਿਫ਼ਾਫ਼ਾ)</translation>
+<translation id="2623663032199728144">ਤੁਹਾਡੀਆਂ ਸਕ੍ਰੀਨਾਂ ਬਾਰੇ ਜਾਣਕਾਰੀ ਵਰਤਣ ਲਈ ਇਜਾਜ਼ਤ ਮੰਗ ਸਕਦੀਆਂ ਹਨ</translation>
 <translation id="2625385379895617796">ਤੁਹਾਡੀ ਘੜੀ ਅੱਗੇ ਹੈ</translation>
 <translation id="262745152991669301">ਸਾਈਟ USB ਡੀਵਾਈਸਾਂ ਨਾਲ ਕਨੈਕਟ ਕਰਨ ਲਈ ਪੁੱਛ ਸਕਦੀ ਹੈ</translation>
 <translation id="2629325967560697240">Chrome ਦੀ ਉੱਚਤਮ ਪੱਧਰ ਦੀ ਸੁਰੱਖਿਆ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ, <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />ਵਿਸਤ੍ਰਿਤ ਸੁਰੱਖਿਆ ਨੂੰ ਚਾਲੂ ਕਰੋ<ph name="END_ENHANCED_PROTECTION_LINK" /></translation>
@@ -639,6 +642,7 @@
 <translation id="3037605927509011580">ਆਹ, ਸਨੈਪ!</translation>
 <translation id="3041612393474885105">ਪ੍ਰਮਾਣ-ਪੱਤਰ ਬਾਰੇ ਜਾਣਕਾਰੀ</translation>
 <translation id="3044034790304486808">ਆਪਣੀ ਖੋਜ ਨੂੰ ਮੁੜ-ਚਾਲੂ ਕਰੋ</translation>
+<translation id="305162504811187366">ਟਾਈਮਸਟੈਂਪਾਂ, ਹੋਸਟਾਂ ਅਤੇ ਕਲਾਇੰਟ ਸੈਸ਼ਨ ਆਈਡੀਆਂ ਸਮੇਤ, Chrome ਰਿਮੋਟ ਡੈਸਕਟਾਪ ਦਾ ਇਤਿਹਾਸ</translation>
 <translation id="3060227939791841287">C9 (ਲਿਫ਼ਾਫ਼ਾ)</translation>
 <translation id="3061707000357573562">ਪੈਚ ਸੇਵਾ</translation>
 <translation id="306573536155379004">ਗੇਮ ਸ਼ੁਰੂ ਕੀਤੀ ਗਈ।</translation>
@@ -677,6 +681,7 @@
 <translation id="3197136577151645743">ਸਾਈਟ ਤੁਹਾਡੇ ਵੱਲੋਂ ਇਸ ਡੀਵਾਈਸ ਦੀ ਸਰਗਰਮੀ ਨਾਲ ਕੀਤੀ ਜਾ ਰਹੀ ਵਰਤੋਂ ਬਾਰੇ ਜਾਣਨ ਲਈ ਪੁੱਛ ਸਕਦੀ ਹੈ</translation>
 <translation id="3202497928925179914"><ph name="MANAGE_SYNC_FOCUSED_FRIENDLY_MATCH_TEXT" />, Tab ਦਬਾਓ, ਫਿਰ Chrome ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਤੁਸੀਂ ਜਿਹੜੀ ਜਾਣਕਾਰੀ ਦਾ ਸਿੰਕ ਕਰਦੇ ਹੋ, ਇਸਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="320323717674993345">ਭੁਗਤਾਨ ਰੱਦ ਕਰੋ</translation>
+<translation id="3203366800380907218">ਵੈੱਬ ਤੋਂ</translation>
 <translation id="3207960819495026254">ਬੁੱਕਮਾਰਕ ਕੀਤੇ</translation>
 <translation id="3209034400446768650">ਸ਼ਾਇਦ ਪੰਨੇ ਵੱਲੋਂ ਖਰਚੇ ਲਏ ਜਾਣ</translation>
 <translation id="3212581601480735796"><ph name="HOSTNAME" /> 'ਤੇ ਤੁਹਾਡੀ ਸਰਗਰਮੀ ਦੀ ਨਿਗਰਾਨੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
@@ -1161,6 +1166,7 @@
 <translation id="4708268264240856090">ਤੁਹਾਡੇ ਕਨੈਕਸ਼ਨ ਵਿੱਚ ਰੁਕਾਵਟ ਆਈ ਸੀ</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows ਨੈੱਟਵਰਕ ਤਸ਼ਖੀਸ ਚਲਾਇਆ ਜਾ ਰਿਹਾ ਹੈ<ph name="END_LINK" /></translation>
+<translation id="4722735765955348426"><ph name="USERNAME" /> ਦਾ ਪਾਸਵਰਡ</translation>
 <translation id="4724144314178270921">ਸਾਈਟ ਤੁਹਾਡੇ ਕਲਿੱਪਬੋਰਡ 'ਤੇ ਲਿਖਤ ਅਤੇ ਚਿੱਤਰਾਂ ਨੂੰ ਦੇਖਣ ਲਈ ਪੁੱਛ ਸਕਦੀ ਹੈ</translation>
 <translation id="4726672564094551039">ਨੀਤੀਆਂ ਰੀਲੋਡ ਕਰੋ</translation>
 <translation id="4728558894243024398">ਪਲੇਟਫਾਰਮ</translation>
@@ -1224,7 +1230,6 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{ਕੋਈ ਨਹੀਂ}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> ਖੋਜ</translation>
 <translation id="4879491255372875719">ਸਵੈਚਲਿਤ (ਪੂਰਵ-ਨਿਰਧਾਰਤ)</translation>
-<translation id="4879725228911483934">ਆਪਣੀਆਂ ਸਕ੍ਰੀਨਾਂ 'ਤੇ ਵਿੰਡੋ ਖੋਲ੍ਹੋ ਅਤੇ ਉਸਨੂੰ ਰੱਖੋ</translation>
 <translation id="4880827082731008257">ਖੋਜ ਇਤਿਹਾਸ</translation>
 <translation id="4881695831933465202">ਖੋਲ੍ਹੋ</translation>
 <translation id="4885256590493466218">ਚੈੱਕਆਊਟ ਕਰਨ ਵੇਲੇ <ph name="CARD_DETAIL" /> ਨਾਲ ਭੁਗਤਾਨ ਕਰੋ</translation>
@@ -1250,6 +1255,7 @@
 <translation id="4968522289500246572">ਇਹ ਐਪ ਮੋਬਾਈਲ ਲਈ ਡਿਜ਼ਾਈਨ ਕੀਤੀ ਗਈ ਹੈ ਅਤੇ ਹੋ ਸਕਦਾ ਹੈ ਕਿ ਇਸਦਾ ਆਕਾਰ ਸਹੀ ਤਰੀਕੇ ਨਾਲ ਨਾ ਬਦਲੇ। ਐਪ ਵਿਚ ਸਮੱਸਿਆਵਾਂ ਆ ਸਕਦੀਆਂ ਹਨ ਜਾਂ ਮੁੜ-ਸ਼ੁਰੂ ਹੋ ਸਕਦੀ ਹੈ।</translation>
 <translation id="4969341057194253438">ਰਿਕਾਰਡਿੰਗ ਨੂੰ ਮਿਟਾਓ</translation>
 <translation id="4973922308112707173">ਉੱਪਰ ਦੋ ਮੋਰੀਆਂ</translation>
+<translation id="4976702386844183910">ਪਿਛਲੀ ਵਾਰ <ph name="DATE" /> ਨੂੰ ਦੇਖੀ ਗਈ</translation>
 <translation id="4984088539114770594">ਕੀ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਵਰਤਣਾ ਹੈ?</translation>
 <translation id="4984339528288761049">Prc5 (ਲਿਫ਼ਾਫ਼ਾ)</translation>
 <translation id="4989163558385430922">ਸਭ ਦੇਖੋ</translation>
@@ -1335,6 +1341,7 @@
 <translation id="5215116848420601511">Google Pay ਦੀ ਵਰਤੋਂ ਕਰਨ ਵਾਲੀਆਂ ਭੁਗਤਾਨ ਵਿਧੀਆਂ ਅਤੇ ਪਤੇ</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="521659676233207110">ਟ੍ਰੇਅ 13</translation>
+<translation id="5216942107514965959">ਪਿਛਲੀ ਵਾਰ ਅੱਜ ਦੇਖੀ ਗਈ</translation>
 <translation id="5222812217790122047">ਈਮੇਲ ਲੋੜੀਂਦੀ ਹੈ</translation>
 <translation id="5230733896359313003">ਸ਼ਿਪਿੰਗ ਪਤਾ</translation>
 <translation id="5230815978613972521">B8</translation>
@@ -1355,7 +1362,6 @@
 <translation id="5283044957620376778">B1</translation>
 <translation id="5284295735376057059">ਦਸਤਾਵੇਜ਼ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ</translation>
 <translation id="528468243742722775">ਸਮਾਪਤੀ</translation>
-<translation id="5284909709419567258">ਨੈੱਟਵਰਕ ਪਤੇ</translation>
 <translation id="5285570108065881030">ਸਾਰੇ ਰੱਖਿਅਤ ਕੀਤੇ ਪਾਸਵਰਡ ਦਿਖਾਓ</translation>
 <translation id="5287240709317226393">ਕੁਕੀਜ਼ ਦਿਖਾਓ</translation>
 <translation id="5287456746628258573">ਇਹ ਸਾਈਟ ਪੁਰਾਣੇ ਸੁਰੱਖਿਆ ਸੰਰੂਪਣ ਦੀ ਵਰਤੋਂ ਕਰਦੀ ਹੈ, ਜਿਸ ਨਾਲ ਇਸ ਸਾਈਟ 'ਤੇ ਭੇਜੀ ਜਾਣ ਵਾਲੀ ਤੁਹਾਡੀ ਜਾਣਕਾਰੀ (ਉਦਾਹਰਨ ਲਈ, ਪਾਸਵਰਡ ਜਾਂ ਕ੍ਰੈਡਿਟ ਕਾਰਡ ਨੰਬਰ) ਪ੍ਰਗਟ ਹੋ ਸਕਦੀ ਹੈ।</translation>
@@ -1521,6 +1527,7 @@
 <translation id="5869522115854928033">ਸੁਰੱਖਿਅਤ ਕੀਤੇ ਪਾਸਵਰਡ</translation>
 <translation id="5873013647450402046">ਤੁਹਾਡਾ ਬੈਂਕ ਤਸਦੀਕ ਕਰਨਾ ਚਾਹੁੰਦਾ ਹੈ ਕਿ ਇਹ ਤੁਸੀਂ ਹੀ ਹੋ।</translation>
 <translation id="5887400589839399685">ਕਾਰਡ ਰੱਖਿਅਤ ਕੀਤਾ ਗਿਆ</translation>
+<translation id="5887687176710214216">ਪਿਛਲੀ ਵਾਰ ਕੱਲ੍ਹ ਦੇਖੀ ਗਈ</translation>
 <translation id="5895138241574237353">ਰੀਸਟਾਰਟ ਕਰੋ</translation>
 <translation id="5895187275912066135">ਨੂੰ ਜਾਰੀ ਕੀਤਾ</translation>
 <translation id="5901630391730855834">ਪੀਲਾ</translation>
@@ -1609,7 +1616,6 @@
 <translation id="6169916984152623906">ਹੁਣ ਤੁਸੀਂ ਨਿੱਜੀ ਤੌਰ 'ਤੇ ਬ੍ਰਾਊਜ਼ ਕਰ ਸਕਦੇ ਹੋ, ਅਤੇ ਇਸ ਡੀਵਾਈਸ ਨੂੰ ਵਰਤਣ ਵਾਲੇ ਹੋਰ ਲੋਕਾਂ ਨੂੰ ਤੁਹਾਡੀ ਸਰਗਰਮੀ ਨਹੀਂ ਦਿਖਾਈ ਦੇਵੇਗੀ। ਹਾਲਾਂਕਿ, ਡਾਊਨਲੋਡ ਅਤੇ ਬੁੱਕਮਾਰਕ ਰੱਖਿਅਤ ਕੀਤੇ ਜਾਣਗੇ।</translation>
 <translation id="6177128806592000436">ਇਸ ਸਾਈਟ ਨਾਲ ਤੁਹਾਡਾ ਕਨੈਕਸ਼ਨ ਸੁਰੱਖਿਅਤ ਨਹੀਂ ਹੈ</translation>
 <translation id="6180316780098470077">ਮੁੜ-ਕੋਸ਼ਿਸ਼ ਅੰਤਰਾਲ</translation>
-<translation id="619448280891863779">ਸਾਈਟ ਤੁਹਾਡੀਆਂ ਸਕ੍ਰੀਨਾਂ 'ਤੇ ਵਿੰਡੋ ਨੂੰ ਖੋਲ੍ਹਣ ਅਤੇ ਉਸਨੂੰ ਰੱਖਣ ਲਈ ਪੁੱਛ ਸਕਦੀ ਹੈ</translation>
 <translation id="6196640612572343990">ਤੀਜੀ-ਧਿਰ ਵਾਲੀਆਂ ਕੁੱਕੀਜ਼ ਨੂੰ ਬਲੌਕ ਕਰੋ</translation>
 <translation id="6203231073485539293">ਆਪਣੇ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਦੀ ਜਾਂਚ ਕਰੋ</translation>
 <translation id="6218753634732582820">ਕੀ Chromium ਤੋਂ ਪਤਾ ਮਿਟਾਉਣਾ ਹੈ?</translation>
@@ -1713,6 +1719,7 @@
 <translation id="6529602333819889595">&amp;ਮਿਟਾਏ ਗਏ ਨੂੰ ਮੁੜ-ਓਹੀ ਕਰੋ</translation>
 <translation id="6545864417968258051">ਬਲੂਟੁੱਥ ਸਕੈਨਿੰਗ</translation>
 <translation id="6547208576736763147">ਖੱਬੇ ਪਾਸੇ ਦੋ ਮੋਰੀਆਂ</translation>
+<translation id="6554732001434021288">ਪਿਛਲੀ ਵਾਰ <ph name="NUM_DAYS" /> ਦਿਨ ਪਹਿਲਾਂ ਦੇਖੀ ਗਈ</translation>
 <translation id="6556866813142980365">ਮੁੜ-ਓਹੀ ਕਰੋ</translation>
 <translation id="6569060085658103619">ਤੁਸੀਂ ਇੱਕ ਐਕਸਟੈਂਸ਼ਨ ਪੰਨਾ ਦੇਖ ਰਹੇ ਹੋ</translation>
 <translation id="6573200754375280815">ਸੱਜੇ ਦੋ ਮੋਰੀਆਂ</translation>
@@ -1857,7 +1864,6 @@
 <translation id="706295145388601875">Chrome ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਪਤੇ ਸ਼ਾਮਲ ਕਰੋ ਅਤੇ ਉਹਨਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
 <translation id="7064851114919012435">ਸੰਪਰਕ ਜਾਣਕਾਰੀ</translation>
 <translation id="7068733155164172741"><ph name="OTP_LENGTH" />-ਅੰਕਾਂ ਦਾ ਕੋਡ ਦਾਖਲ ਕਰੋ</translation>
-<translation id="7070090581017165256">ਇਸ ਸਾਈਟ ਬਾਰੇ</translation>
 <translation id="70705239631109039">ਤੁਹਾਡਾ ਕਨੈਕਸ਼ਨ ਪੂਰੀ ਤਰ੍ਹਾਂ ਸੁਰੱਖਿਅਤ ਨਹੀਂ ਹੈ</translation>
 <translation id="7075452647191940183">ਬੇਨਤੀ ਬਹੁਤ ਜ਼ਿਆਦਾ ਵੱਡੀ ਹੈ</translation>
 <translation id="7079718277001814089">ਇਸ ਸਾਈਟ ਵਿੱਚ ਮਾਲਵੇਅਰ ਸ਼ਾਮਲ ਹਨ</translation>
@@ -2105,7 +2111,6 @@
 <translation id="7813600968533626083">ਕੀ Chrome ਤੋਂ ਫ਼ਾਰਮ ਸੰਬੰਧੀ ਸੁਝਾਅ ਨੂੰ ਮਿਟਾਉਣਾ ਹੈ?</translation>
 <translation id="781440967107097262">ਕੀ ਕਲਿੱਪਬੋਰਡ ਨੂੰ ਸਾਂਝਾ ਕਰਨਾ ਹੈ?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' ਲਈ <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> ਮਿਲੇ</translation>
-<translation id="782125616001965242">ਇਸ ਸਾਈਟ ਬਾਰੇ ਜਾਣਕਾਰੀ ਦਿਖਾਓ</translation>
 <translation id="782886543891417279">ਤੁਹਾਡੇ ਵੱਲੋਂ ਵਰਤਿਆ ਜਾ ਰਿਹਾ ਵਾਈ-ਫਾਈ (<ph name="WIFI_NAME" />) ਇਹ ਚਾਹ ਸਕਦਾ ਹੈ ਕਿ ਤੁਸੀਂ ਇਸਦੇ ਲੌਗ-ਇਨ ਪੰਨੇ 'ਤੇ ਜਾਓ।</translation>
 <translation id="7836231406687464395">Postfix (ਲਿਫ਼ਾਫ਼ਾ)</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{ਕੋਈ ਨਹੀਂ}=1{1 ਐਪ (<ph name="EXAMPLE_APP_1" />)}=2{2 ਐਪਾਂ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# ਐਪਾਂ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
@@ -2149,7 +2154,6 @@
 <translation id="7977894662897852582">Edp</translation>
 <translation id="798134797138789862">ਸਾਈਟ ਆਭਾਸੀ ਵਾਸਤਵਿਕਤਾ ਵਾਲੇ ਡੀਵਾਈਸਾਂ ਅਤੇ ਡਾਟੇ ਨੂੰ ਵਰਤਣ ਲਈ ਪੁੱਛ ਸਕਦੀ ਹੈ</translation>
 <translation id="7984945080620862648">ਤੁਸੀਂ ਇਸ ਵੇਲੇ <ph name="SITE" /> ਤੇ ਵਿਜਿਟ ਨਹੀਂ ਕਰ ਸਕਦੇ ਕਿਉਂਕਿ ਵੈੱਬਸਾਈਟ ਨੇ ਸਕ੍ਰੈਂਬਲ ਕੀਤੇ ਕ੍ਰੈਡੈਂਸ਼ੀਅਲਸ ਭੇਜੇ ਸਨ ਜਿਹਨਾਂ ਨਾਲ Chrome ਪ੍ਰਕਿਰਿਆ ਨਹੀਂ ਕਰ ਸਕਦਾ। ਨੈਟਵਰਕ ਅਸ਼ੁੱਧੀਆਂ ਅਤੇ ਹਮਲੇ ਆਮ ਤੌਰ ਤੇ ਅਸਥਾਈ ਹੁੰਦੇ ਹਨ, ਇਸਲਈ ਇਹ ਸਫ਼ਾ ਸ਼ਾਇਦ ਬਾਅਦ ਵਿੱਚ ਕੰਮ ਕਰੇਗਾ।</translation>
-<translation id="79859296434321399">ਸੰਵਰਧਿਤ ਵਾਸਤਵਿਕਤਾ ਵਾਲੀ ਸਮੱਗਰੀ ਦੇਖਣ ਲਈ, ARCore ਸਥਾਪਤ ਕਰੋ</translation>
 <translation id="7986319120639858961"><ph name="CARD_TITLE" /> <ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="799149739215780103">ਜਿਲਦਬੰਦ</translation>
 <translation id="7992044431894087211"><ph name="APPLICATION_TITLE" /> ਨਾਲ ਸਕ੍ਰੀਨ ਸਾਂਝਾਕਰਨ ਨੂੰ ਮੁੜ-ਚਾਲੂ ਕੀਤਾ ਗਿਆ</translation>
@@ -2253,6 +2257,7 @@
 <translation id="830498451218851433">ਅੱਧੀ ਤਹਿ</translation>
 <translation id="8307358339886459768">ਛੋਟੀ-ਫ਼ੋਟੋ</translation>
 <translation id="8307888238279532626">ਸਥਾਪਤ ਐਪਾਂ ਅਤੇ ਐਪਾਂ ਵਰਤਣ ਦਾ ਸਮਾਂ</translation>
+<translation id="8317207217658302555">ਕੀ ARCore ਨੂੰ ਅੱਪਡੇਟ ਕਰਨਾ ਹੈ?</translation>
 <translation id="831997045666694187">ਸ਼ਾਮ</translation>
 <translation id="8321476692217554900">ਸੂਚਨਾਵਾਂ</translation>
 <translation id="8328484624016508118">ਸਾਰੀਆਂ ਇਨਕੋਗਨਿਟੋ ਟੈਬਾਂ ਨੂੰ ਬੰਦ ਕਰਨ ਤੋਂ ਬਾਅਦ, Chrome ਇਨ੍ਹਾਂ ਚੀਜ਼ਾਂ ਨੂੰ ਕਲੀਅਰ ਕਰਦਾ ਹੈ:
@@ -2297,7 +2302,7 @@
 <translation id="8446884382197647889">ਹੋਰ ਜਾਣੋ</translation>
 <translation id="8449836157089738489">ਸਾਰਿਆਂ ਨੂੰ ਨਵੇਂ ਟੈਬ ਗਰੁੱਪ ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>
 <translation id="8457125768502047971">ਅਨਿਸ਼ਚਿਤ</translation>
-<translation id="8461694314515752532">ਆਪਣੇ ਖੁਦ ਦੇ ਸਿੰਕ ਪਾਸਫਰੇਜ਼ ਨਾਲ ਸਿੰਕ ਕੀਤੇ ਡਾਟੇ ਨੂੰ ਇਨਕ੍ਰਿਪਟ ਕਰੋ</translation>
+<translation id="8461694314515752532">ਆਪਣੇ ਖੁਦ ਦੇ ਸਿੰਕ ਪਾਸਫਰੇਜ਼ ਨਾਲ ਸਮਕਾਲੀਕਿਰਤ ਡਾਟੇ ਨੂੰ ਇਨਕ੍ਰਿਪਟ ਕਰੋ</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 ਕ੍ਰੈਡਿਟ ਕਾਰਡ}one{# ਕ੍ਰੈਡਿਟ ਕਾਰਡ}other{ # ਕ੍ਰੈਡਿਟ ਕਾਰਡ}}</translation>
 <translation id="8473863474539038330">ਪਤੇ ਅਤੇ ਹੋਰ</translation>
 <translation id="8474910779563686872">ਵਿਕਾਸਕਾਰ ਵੇਰਵੇ ਦਿਖਾਓ</translation>
@@ -2323,7 +2328,6 @@
 <translation id="8554912124839363479">{NUM_PERMISSIONS,plural, =1{ਇਜਾਜ਼ਤ ਨੂੰ ਰੀਸੈੱਟ ਕਰੋ}one{ਇਜਾਜ਼ਤ ਨੂੰ ਰੀਸੈੱਟ ਕਰੋ}other{ਇਜਾਜ਼ਤਾਂ ਨੂੰ ਰੀਸੈੱਟ ਕਰੋ}}</translation>
 <translation id="8555010941760982128">ਚੈੱਕ-ਆਊਟ 'ਤੇ ਇਸ ਕੋਡ ਦੀ ਵਰਤੋਂ ਕਰੋ</translation>
 <translation id="8557066899867184262">CVC ਤੁਹਾਡੇ ਕਾਰਡ ਦੇ ਪਿੱਛੇ ਮੌਜੂਦ ਹੈ।</translation>
-<translation id="8558485628462305855">ਸੰਵਰਧਿਤ ਵਾਸਤਵਿਕਤਾ ਵਾਲੀ ਸਮੱਗਰੀ ਦੇਖਣ ਲਈ, ARCore ਅੱਪਡੇਟ ਕਰੋ</translation>
 <translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ਨਾਲ ਇੱਕ ਨਿੱਜੀ ਕਨੈਕਸ਼ਨ ਨੂੰ ਸਥਾਪਿਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ ਕਿਉਂਕਿ ਤੁਹਾਡੀ ਡੀਵਾਈਸ ਦੀ ਤਾਰੀਖ ਅਤੇ ਸਮਾਂ (<ph name="DATE_AND_TIME" />) ਗ਼ਲਤ ਹੈ।</translation>
 <translation id="8564182942834072828">ਵੱਖਰੇ ਦਸਤਾਵੇਜ਼/ਅਣਇਕੱਤਰ ਕਾਪੀਆਂ</translation>
 <translation id="8564985650692024650">ਜੇਕਰ ਤੁਸੀਂ ਆਪਣੇ <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ਪਾਸਵਰਡ ਨੂੰ ਹੋਰ ਸਾਈਟਾਂ 'ਤੇ ਮੁੜ ਵਰਤਿਆ ਹੈ, ਤਾਂ Chromium ਵੱਲੋਂ ਇਸਨੂੰ ਰੀਸੈੱਟ ਕਰਨ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।</translation>
@@ -2342,6 +2346,7 @@
 <translation id="865032292777205197">ਮੋਸ਼ਨ ਸੈਂਸਰ</translation>
 <translation id="8663226718884576429">ਆਰਡਰ ਸਾਰਾਂਸ਼, <ph name="TOTAL_LABEL" />, ਹੋਰ ਵੇਰਵੇ</translation>
 <translation id="8666678546361132282">ਅੰਗਰੇਜ਼ੀ</translation>
+<translation id="8669306706049782872">ਵਿੰਡੋ ਨੂੰ ਖੋਲ੍ਹਣ ਅਤੇ ਉਸਨੂੰ ਰੱਖਣ ਲਈ ਤੁਹਾਡੀਆਂ ਸਕ੍ਰੀਨਾਂ ਬਾਰੇ ਜਾਣਕਾਰੀ ਵਰਤਣਾ ਚਾਹੁੰਦੀ ਹੈ</translation>
 <translation id="867224526087042813">ਹਸਤਾਖਰ</translation>
 <translation id="8676424191133491403">ਕੋਈ ਦੇਰੀ ਨਹੀਂ</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, ਜਵਾਬ, <ph name="ANSWER" /></translation>

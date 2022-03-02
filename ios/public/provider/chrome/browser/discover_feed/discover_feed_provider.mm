@@ -17,12 +17,14 @@ bool DiscoverFeedProvider::IsDiscoverFeedEnabled() {
   return false;
 }
 
-UIViewController* DiscoverFeedProvider::NewFeedViewController(
-    Browser* browser) {
+UIViewController*
+DiscoverFeedProvider::NewDiscoverFeedViewControllerWithConfiguration(
+    DiscoverFeedViewControllerConfiguration* configuration) {
   return nil;
 }
 
-UIViewController* DiscoverFeedProvider::NewFeedViewControllerWithConfiguration(
+UIViewController*
+DiscoverFeedProvider::NewFollowingFeedViewControllerWithConfiguration(
     DiscoverFeedViewControllerConfiguration* configuration) {
   return nil;
 }
@@ -38,5 +40,3 @@ void DiscoverFeedProvider::UpdateFeedForAccountChange() {}
 
 void DiscoverFeedProvider::AddObserver(Observer* observer) {}
 void DiscoverFeedProvider::RemoveObserver(Observer* observer) {}
-void DiscoverFeedProvider::LoadMoreFeedArticles() {}
-void DiscoverFeedProvider::FeedWasShown() {}

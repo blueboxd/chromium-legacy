@@ -10,6 +10,7 @@ import android.text.SpannableString;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -34,6 +35,7 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.settings.GoogleServicesSettings;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
 import org.chromium.chrome.browser.usage_stats.UsageStatsConsentDialog;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -61,9 +63,12 @@ public class PrivacySettings
     private static final String PREF_PRIVACY_SANDBOX = "privacy_sandbox";
     private static final String PREF_PRIVACY_REVIEW = "privacy_review";
     private static final String PREF_INCOGNITO_LOCK = "incognito_lock";
+    private static final String PREF_PHONE_AS_A_SECURITY_KEY = "phone_as_a_security_key";
 
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
     private IncognitoLockSettings mIncognitoLockSettings;
+    private ViewGroup mDialogContainer;
+    private BottomSheetController mBottomSheetController;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -88,8 +93,10 @@ public class PrivacySettings
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_REVIEW)) {
             getPreferenceScreen().removePreference(privacyReviewPreference);
         } else {
+            // Display the privacy review dialog when the menu item is clicked.
             privacyReviewPreference.setOnPreferenceClickListener(preference -> {
-                PrivacyReviewDialog dialog = new PrivacyReviewDialog(getContext());
+                PrivacyReviewDialog dialog = new PrivacyReviewDialog(
+                        getContext(), mDialogContainer, mBottomSheetController);
                 dialog.show();
                 return true;
             });
@@ -135,6 +142,10 @@ public class PrivacySettings
 
         Preference syncAndServicesLink = findPreference(PREF_SYNC_AND_SERVICES_LINK);
         syncAndServicesLink.setSummary(buildSyncAndServicesLink());
+
+        Preference phoneAsASecurityKey = findPreference(PREF_PHONE_AS_A_SECURITY_KEY);
+        phoneAsASecurityKey.setVisible(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_AUTH_PHONE_SUPPORT));
 
         updatePreferences();
     }
@@ -270,5 +281,13 @@ public class PrivacySettings
             return true;
         }
         return false;
+    }
+
+    public void setDialogContainer(ViewGroup dialogContainer) {
+        mDialogContainer = dialogContainer;
+    }
+
+    public void setBottomSheetController(BottomSheetController controller) {
+        mBottomSheetController = controller;
     }
 }

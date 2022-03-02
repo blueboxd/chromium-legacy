@@ -88,10 +88,6 @@ bool TestCaptureModeDelegate::Uses24HourFormat() const {
   return false;
 }
 
-bool TestCaptureModeDelegate::IsCaptureModeInitRestrictedByDlp() const {
-  return false;
-}
-
 void TestCaptureModeDelegate::CheckCaptureModeInitRestrictionByDlp(
     OnCaptureModeDlpRestrictionChecked callback) {
   std::move(callback).Run(/*proceed=*/is_allowed_by_dlp_);
@@ -102,12 +98,6 @@ void TestCaptureModeDelegate::CheckCaptureOperationRestrictionByDlp(
     const gfx::Rect& bounds,
     OnCaptureModeDlpRestrictionChecked callback) {
   std::move(callback).Run(/*proceed=*/is_allowed_by_dlp_);
-}
-
-bool TestCaptureModeDelegate::IsCaptureAllowedByDlp(
-    const aura::Window* window,
-    const gfx::Rect& bounds) const {
-  return is_allowed_by_dlp_;
 }
 
 bool TestCaptureModeDelegate::IsCaptureAllowedByPolicy() const {
@@ -129,6 +119,9 @@ void TestCaptureModeDelegate::StopObservingRestrictedContent(
   DCHECK(callback);
   std::move(callback).Run(should_save_after_dlp_check_);
 }
+
+void TestCaptureModeDelegate::OnCaptureImageAttempted(aura::Window const*,
+                                                      gfx::Rect const&) {}
 
 mojo::Remote<recording::mojom::RecordingService>
 TestCaptureModeDelegate::LaunchRecordingService() {

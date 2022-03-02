@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">കുക്കികൾ അനുവദിക്കുക</translation>
 <translation id="2228071138934252756"><ph name="APP_NAME" /> ആപ്പിനെ നിങ്ങളുടെ ക്യാമറ ആക്‌സസ് ചെയ്യാൻ അനുവദിക്കുന്നതിന്, <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിലും<ph name="END_LINK" /> ക്യാമറ ഓണാക്കുക.</translation>
 <translation id="2241634353105152135">ഒരിക്കൽ മാത്രം</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> നീക്കം ചെയ്യുക</translation>
 <translation id="2289270750774289114">സമീപത്തുള്ള Bluetooth ഉപകരണങ്ങൾ കണ്ടെത്താൻ ഒരു സൈറ്റ് താൽപ്പര്യപ്പെടുമ്പോൾ ചോദിക്കുക (ശുപാർശചെയ്‌തത്)</translation>
 <translation id="2315043854645842844">ഓപ്പറേറ്റിംഗ് സിസ്റ്റം ക്ലയന്റിന്റെ സർട്ടിഫിക്കറ്റ് തിരഞ്ഞെടുക്കലിനെ പിന്തുണയ്‌ക്കുന്നില്ല.</translation>
 <translation id="2359808026110333948">തുടരുക</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">വിവരങ്ങൾ കാണിക്കുക</translation>
 <translation id="3123473560110926937">ചില സൈറ്റുകളിൽ ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> സംഭരിച്ച വിവരം</translation>
+<translation id="3203366800380907218">വെബിൽ നിന്ന്</translation>
 <translation id="321187648315454507">അറിയിപ്പുകൾ അയയ്ക്കാൻ <ph name="APP_NAME" /> ആപ്പിനെ അനുവദിക്കുന്നതിന്, <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിലും<ph name="END_LINK" /> അറിയിപ്പുകൾ ഓണാക്കുക.</translation>
 <translation id="3227137524299004712">മൈക്രോഫോൺ</translation>
 <translation id="3277252321222022663">സെൻസറുകൾ ആക്‌സസ് ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശ ചെയ്യുന്നത്)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">തടഞ്ഞു</translation>
 <translation id="5689516760719285838">ലൊക്കേഷൻ</translation>
 <translation id="5690795753582697420">Android ക്രമീകരണത്തിൽ ക്യാമറ ഓഫാക്കിയിരിക്കുന്നു</translation>
-<translation id="5710871682236653961">നിങ്ങൾ NFC ഉപകരണങ്ങളിൽ ടാപ്പ് ചെയ്യുമ്പോൾ വിവരങ്ങൾ അയയ്‌ക്കാനും സ്വീകരിക്കാനും സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ചോദിക്കുക (ശുപാർശ ചെയ്യുന്നത്)</translation>
 <translation id="5719847187258001597">ഇത് <ph name="ORIGIN" /> അല്ലെങ്കിൽ അതിന്റെ ആപ്പ് നിങ്ങളുടെ ഹോം സ്ക്രീനിൽ സംഭരിച്ച എല്ലാ ഡാറ്റയും കുക്കികളും മായ്ക്കും.</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> ബ്ലോക്ക് ചെയ്‌തു</translation>
 <translation id="5804241973901381774">അനുമതികൾ</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">നിലവിലെ തിരയൽ യന്ത്രത്തിൽ അനുവദിച്ചിരിക്കുന്നു</translation>
 <translation id="7053983685419859001">തടയുക</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 തിരഞ്ഞെടുത്തു}other{# തിരഞ്ഞെടുത്തു}}</translation>
-<translation id="7070090581017165256">ഈ സൈറ്റിനെ കുറിച്ച്</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> എണ്ണം തിരഞ്ഞെടുത്തു. സ്‌ക്രീനിന്റെ മുകളിലുള്ള ഭാഗത്തിന് സമീപം ഓപ്‌ഷനുകൾ ലഭ്യമാണ്</translation>
 <translation id="7141896414559753902">പോപ്പ് അപ്പുകളും റീഡയറക്‌റ്റുകളും കാണിക്കുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക (ശുപാർശ ചെയ്‌തിരിക്കുന്നു)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">ഒരു സൈറ്റ് നിങ്ങളുടെ മൈക്രോഫോൺ ഉപയോഗിക്കുന്നു</translation>
 <translation id="7561196759112975576">എല്ലായ്പ്പോഴും</translation>
-<translation id="7572498721684305250">നിങ്ങൾ NFC ഉപകരണങ്ങളിൽ ടാപ്പ് ചെയ്യുമ്പോൾ വിവരങ്ങൾ അയയ്‌ക്കുന്നതിൽ നിന്നും സ്വീകരിക്കുന്നതിൽ നിന്നും സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="757524316907819857">പരിരക്ഷിത ഉള്ളടക്കം പ്ലേ ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="7649070708921625228">സഹായം</translation>
 <translation id="7658239707568436148">റദ്ദാക്കൂ</translation>

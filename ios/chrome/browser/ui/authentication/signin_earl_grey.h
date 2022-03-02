@@ -13,6 +13,10 @@
 @protocol GREYMatcher;
 @class FakeChromeIdentity;
 
+namespace signin {
+enum class ConsentLevel;
+}
+
 #define SigninEarlGrey \
   [SigninEarlGreyImpl invokedFromFile:@"" __FILE__ lineNumber:__LINE__]
 
@@ -48,6 +52,10 @@
 // profile.
 - (void)verifySignedInWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
+// Induces a GREYAssert if the user is not signed in with |expectedEmail|.
+- (void)verifyPrimaryAccountWithEmail:(NSString*)expectedEmail
+                              consent:(signin::ConsentLevel)consent;
+
 // Induces a GREYAssert if an identity is signed in.
 - (void)verifySignedOut;
 
@@ -56,6 +64,9 @@
 
 // Induces a GREYAssert if the Sync state does not match |enabled|.
 - (void)verifySyncUIEnabled:(BOOL)enabled;
+
+// Induces a GREYAssert if the Sync cell is not hidden.
+- (void)verifySyncUIIsHidden;
 
 @end
 

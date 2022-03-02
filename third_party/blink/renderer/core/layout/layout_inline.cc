@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 
+#include "cc/base/region.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
@@ -49,9 +50,8 @@
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/outline_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
-#include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 namespace blink {
 
@@ -1004,16 +1004,16 @@ bool LayoutInline::AbsoluteTransformDependsOnPoint(
   return false;
 }
 
-void LayoutInline::LocalQuadsForSelf(Vector<FloatQuad>& quads) const {
+void LayoutInline::LocalQuadsForSelf(Vector<gfx::QuadF>& quads) const {
   QuadsForSelfInternal(quads, 0, false);
 }
 
-void LayoutInline::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
+void LayoutInline::AbsoluteQuadsForSelf(Vector<gfx::QuadF>& quads,
                                         MapCoordinatesFlags mode) const {
   QuadsForSelfInternal(quads, mode, true);
 }
 
-void LayoutInline::QuadsForSelfInternal(Vector<FloatQuad>& quads,
+void LayoutInline::QuadsForSelfInternal(Vector<gfx::QuadF>& quads,
                                         MapCoordinatesFlags mode,
                                         bool map_to_absolute) const {
   NOT_DESTROYED();
@@ -1032,10 +1032,12 @@ void LayoutInline::QuadsForSelfInternal(Vector<FloatQuad>& quads,
       if (!transform_depends_on_point)
         mapping_to_absolute.emplace(LocalToAbsoluteTransform(mode));
     }
-    if (transform_depends_on_point)
-      quads.push_back(LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)), mode));
-    else
-      quads.push_back(mapping_to_absolute->MapQuad(FloatQuad(FloatRect(rect))));
+    if (transform_depends_on_point) {
+      quads.push_back(LocalToAbsoluteQuad(gfx::QuadF(gfx::RectF(rect)), mode));
+    } else {
+      quads.push_back(
+          mapping_to_absolute->MapQuad(gfx::QuadF(gfx::RectF(rect))));
+    }
   };
 
   CollectLineBoxRects(
@@ -1043,13 +1045,13 @@ void LayoutInline::QuadsForSelfInternal(Vector<FloatQuad>& quads,
         if (map_to_absolute)
           PushAbsoluteQuad(rect);
         else
-          quads.push_back(FloatQuad(FloatRect(rect)));
+          quads.push_back(gfx::QuadF(gfx::RectF(rect)));
       });
   if (quads.IsEmpty()) {
     if (map_to_absolute)
       PushAbsoluteQuad(PhysicalRect());
     else
-      quads.push_back(FloatQuad());
+      quads.push_back(gfx::QuadF());
   }
 }
 
@@ -1174,7 +1176,7 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
                                const PhysicalOffset& accumulated_offset,
                                HitTestAction hit_test_action) {
   NOT_DESTROYED();
-  if (ContainingNGBlockFlow()) {
+  if (IsInLayoutNGInlineFormattingContext()) {
     // TODO(crbug.com/965976): We should fix the root cause of the missed
     // layout.
     if (UNLIKELY(NeedsLayout())) {
@@ -1237,13 +1239,13 @@ bool LayoutInline::HitTestCulledInline(HitTestResult& result,
     return false;
 
   HitTestLocation adjusted_location(hit_test_location, -accumulated_offset);
-  Region region_result;
+  cc::Region region_result;
   bool intersected = false;
   auto yield = [&adjusted_location, &region_result,
                 &intersected](const PhysicalRect& rect) {
     if (adjusted_location.Intersects(rect)) {
       intersected = true;
-      region_result.Unite(ToEnclosingRect(rect));
+      region_result.Union(ToEnclosingRect(rect));
     }
   };
 
@@ -1259,7 +1261,7 @@ bool LayoutInline::HitTestCulledInline(HitTestResult& result,
     for (; cursor; cursor.MoveToNextForSameLayoutObject())
       yield(cursor.Current().RectInContainerFragment());
   } else {
-    DCHECK(!ContainingNGBlockFlow());
+    DCHECK(!IsInLayoutNGInlineFormattingContext());
     CollectCulledLineBoxRects(yield);
   }
 
@@ -1289,7 +1291,7 @@ PositionWithAffinity LayoutInline::PositionForPoint(
         To<LayoutBlockFlow>(continuation)->InlineElementContinuation();
   }
 
-  if (const LayoutBlockFlow* ng_block_flow = ContainingNGBlockFlow())
+  if (const LayoutBlockFlow* ng_block_flow = FragmentItemsContainer())
     return ng_block_flow->PositionForPoint(point);
 
   DCHECK(CanUseInlineBox(*this));
@@ -1916,11 +1918,11 @@ void LayoutInline::AddOutlineRectsForContinuations(
   }
 }
 
-FloatRect LayoutInline::LocalBoundingBoxRectForAccessibility() const {
+gfx::RectF LayoutInline::LocalBoundingBoxRectForAccessibility() const {
   NOT_DESTROYED();
   Vector<PhysicalRect> rects = OutlineRects(
       PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
-  return FloatRect(FlipForWritingMode(UnionRect(rects).ToLayoutRect()));
+  return gfx::RectF(FlipForWritingMode(UnionRect(rects).ToLayoutRect()));
 }
 
 void LayoutInline::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {

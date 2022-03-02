@@ -20,7 +20,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
-#include "net/base/features.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_constants.h"
@@ -409,7 +408,7 @@ class CookieManagerTest : public testing::Test {
 
     connection_error_seen_ = false;
     cookie_monster_ = std::make_unique<net::CookieMonster>(
-        std::move(store), nullptr /* netlog */);
+        std::move(store), nullptr /* netlog */, first_party_sets_enabled_);
     url_request_context_ = std::make_unique<net::URLRequestContext>();
     url_request_context_->set_cookie_store(cookie_monster_.get());
     cookie_service_ = std::make_unique<CookieManager>(
@@ -430,6 +429,7 @@ class CookieManagerTest : public testing::Test {
   void OnConnectionError() { connection_error_seen_ = true; }
 
   bool connection_error_seen_;
+  const bool first_party_sets_enabled_ = true;
 
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::CookieMonster> cookie_monster_;
@@ -844,8 +844,6 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
 }
 
 TEST_F(CookieManagerTest, GetCookieListSameParty) {
-  scoped_feature_list().Reset();
-  scoped_feature_list().InitAndEnableFeature(net::features::kFirstPartySets);
   // Create SameParty & non-SameParty cookies for each valid SameSite choice.
   // Unspecified:
   ASSERT_TRUE(SetCanonicalCookie(
@@ -2721,6 +2719,10 @@ TEST_F(FlushableCookieManagerTest, DeletionFilterToInfo) {
   filter_ptr->url = GURL("https://www.example.com");
   filter_ptr->session_control =
       mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES;
+  filter_ptr->cookie_partition_key_collection =
+      net::CookiePartitionKeyCollection(
+          net::CookiePartitionKey::FromURLForTesting(
+              GURL("https://www.foo.com")));
 
   delete_info = DeletionFilterToInfo(std::move(filter_ptr));
   EXPECT_EQ(base::Time::FromDoubleT(kTestStartEpoch),
@@ -2746,6 +2748,12 @@ TEST_F(FlushableCookieManagerTest, DeletionFilterToInfo) {
   EXPECT_NE(delete_info.domains_and_ips_to_ignore.find("twelve.com"),
             delete_info.domains_and_ips_to_ignore.end());
   EXPECT_FALSE(delete_info.value_for_testing.has_value());
+  EXPECT_FALSE(delete_info.cookie_partition_key_collection.ContainsAllKeys());
+  EXPECT_EQ(1u,
+            delete_info.cookie_partition_key_collection.PartitionKeys().size());
+  EXPECT_EQ(
+      net::CookiePartitionKey::FromURLForTesting(GURL("https://www.foo.com")),
+      delete_info.cookie_partition_key_collection.PartitionKeys()[0]);
 }
 
 // A test class having cookie store with a persistent backing store. The cookie

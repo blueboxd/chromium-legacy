@@ -454,12 +454,14 @@ void AuditsIssue::ReportSharedArrayBufferIssue(
 
 // static
 void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
-                                         const String& message) {
+                                         const String& message,
+                                         const String& type) {
   auto source_location = SourceLocation::Capture(execution_context);
   auto deprecation_issue_details =
       protocol::Audits::DeprecationIssueDetails::create()
           .setSourceCodeLocation(CreateProtocolLocation(*source_location))
           .setMessage(message)
+          .setDeprecationType(type)
           .build();
   if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
     auto affected_frame =
@@ -478,6 +480,42 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
           .setDetails(std::move(issue_details))
           .build();
   execution_context->AddInspectorIssue(AuditsIssue(std::move(issue)));
+}
+
+namespace {
+
+protocol::Audits::ClientHintIssueReason ClientHintIssueReasonToProtocol(
+    ClientHintIssueReason reason) {
+  switch (reason) {
+    case ClientHintIssueReason::kMetaTagAllowListInvalidOrigin:
+      return protocol::Audits::ClientHintIssueReasonEnum::
+          MetaTagAllowListInvalidOrigin;
+    case ClientHintIssueReason::kMetaTagModifiedHTML:
+      return protocol::Audits::ClientHintIssueReasonEnum::MetaTagModifiedHTML;
+  }
+}
+
+}  // namespace
+
+// static
+void AuditsIssue::ReportClientHintIssue(LocalDOMWindow* local_dom_window,
+                                        ClientHintIssueReason reason) {
+  auto source_location = SourceLocation::Capture(local_dom_window);
+  auto client_hint_issue_details =
+      protocol::Audits::ClientHintIssueDetails::create()
+          .setSourceCodeLocation(CreateProtocolLocation(*source_location))
+          .setClientHintIssueReason(ClientHintIssueReasonToProtocol(reason))
+          .build();
+  auto issue_details =
+      protocol::Audits::InspectorIssueDetails::create()
+          .setClientHintIssueDetails(std::move(client_hint_issue_details))
+          .build();
+  auto issue =
+      protocol::Audits::InspectorIssue::create()
+          .setCode(protocol::Audits::InspectorIssueCodeEnum::ClientHintIssue)
+          .setDetails(std::move(issue_details))
+          .build();
+  local_dom_window->AddInspectorIssue(AuditsIssue(std::move(issue)));
 }
 
 AuditsIssue AuditsIssue::CreateBlockedByResponseIssue(

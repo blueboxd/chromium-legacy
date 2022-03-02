@@ -122,7 +122,7 @@ class ASH_EXPORT CalendarViewController {
   int selected_date_row_index() { return selected_date_row_index_; }
 
   // Getters and setters: the row index when the event list view is showing,
-  // today's row number and today's row height.
+  // today's row number, today's row height and expanded area height.
   int GetExpandedRowIndex() const;
   void set_expanded_row_index(int row_index) {
     expanded_row_index_ = row_index;
@@ -131,6 +131,12 @@ class ASH_EXPORT CalendarViewController {
   void set_today_row(int row) { today_row_ = row; }
   int row_height() const { return row_height_; }
   void set_row_height(int height) { row_height_ = height; }
+  int expanded_area_available_height() const {
+    return expanded_area_available_height_;
+  }
+  void set_expanded_area_available_height(int height) {
+    expanded_area_available_height_ = height;
+  }
 
   // Getters of the today's row position, top and bottom.
   int GetTodayRowTopHeight() const;
@@ -142,12 +148,10 @@ class ASH_EXPORT CalendarViewController {
   // The calendar events of the selected date.
   SingleDayEventList SelectedDateEvents();
 
-  // Same as `IsDayWithEventsInternal`, except that return of any events on
+  // Same as `EventsNumberOfDayInternal`, except that return of any events on
   // `day` constitutes "use" in the most-recently-used sense, so the month that
-  // includes day will then be promoted to most-recently-used status.  If you
-  // just want to know whether a day contains any events, use
-  // `IsDayWithEventsInternal`.
-  bool IsDayWithEvents(base::Time day, SingleDayEventList* events);
+  // includes day will then be promoted to most-recently-used status.
+  int EventsNumberOfDay(base::Time day, SingleDayEventList* events);
 
   // A callback passed into the`CalendarDateCellView`, which is called when the
   // cell is clicked to show the event list view.
@@ -170,6 +174,7 @@ class ASH_EXPORT CalendarViewController {
  private:
   // For unit tests.
   friend class MockCalendarViewController;
+  friend class CalendarMonthViewTest;
   friend class CalendarViewControllerEventsTest;
   friend class CalendarViewEventListViewTest;
 
@@ -216,12 +221,12 @@ class ASH_EXPORT CalendarViewController {
   // limit the amount we cache.
   void QueuePrunableMonth(base::Time start_of_month);
 
-  // Returns true if `day` contains any events we've previously fetched, false
-  // otherwise. If `events` is non-nullptr then we assign it to the EventList
-  // for `day`. Callers should NOT cache `events` themselves, and should
-  // instead just call this method again if they need to.
-  bool IsDayWithEventsInternal(base::Time day,
-                               SingleDayEventList* events) const;
+  // Returns the number of events that this `day` contains. If `events` is
+  // non-nullptr then we assign it to the EventList for `day`. Callers should
+  // NOT cache `events` themselves, and should instead just call this method
+  // again if they need to.
+  int EventsNumberOfDayInternal(base::Time day,
+                                SingleDayEventList* events) const;
 
   // The current date, which can be today or the first day of the current month
   // if current month is not today's month.
@@ -248,6 +253,10 @@ class ASH_EXPORT CalendarViewController {
   // Each row's height. Every row should have the same height, so this height is
   // only updated once with today's row.
   int row_height_ = 0;
+
+  // The expanded area available height, which will be used to set the expanded
+  // event list min height.
+  int expanded_area_available_height_ = 0;
 
   // If before getting to the on-screen-month, it was showing a later month.
   bool was_on_later_month_ = false;

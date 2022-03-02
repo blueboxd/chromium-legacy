@@ -68,7 +68,9 @@ using UniqueIdMap = std::unordered_map<int32_t, AXPlatformNode*>;
 base::LazyInstance<UniqueIdMap>::Leaky g_unique_id_map =
     LAZY_INSTANCE_INITIALIZER;
 
-#if !BUILDFLAG_INTERNAL_HAS_NATIVE_ACCESSIBILITY()
+// TODO(fxbug.dev/91030): Remove the !defined(OS_FUCHSIA) condition once fuchsia
+// has native accessibility.
+#if !BUILDFLAG_INTERNAL_HAS_NATIVE_ACCESSIBILITY() && !defined(OS_FUCHSIA)
 // static
 AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
   AXPlatformNodeBase* node = new AXPlatformNodeBase();
@@ -126,6 +128,12 @@ gfx::NativeViewAccessible AXPlatformNodeBase::GetFocus() const {
 gfx::NativeViewAccessible AXPlatformNodeBase::GetParent() const {
   if (delegate_)
     return delegate_->GetParent();
+  return nullptr;
+}
+
+AXPlatformNodeBase* AXPlatformNodeBase::GetPlatformParent() const {
+  if (delegate_)
+    return FromNativeViewAccessible(delegate_->GetParent());
   return nullptr;
 }
 
@@ -639,6 +647,12 @@ bool AXPlatformNodeBase::GetStringListAttribute(
   if (!delegate_)
     return false;
   return delegate_->GetStringListAttribute(attribute, value);
+}
+
+bool AXPlatformNodeBase::HasHtmlAttribute(const char* attribute) const {
+  if (!delegate_)
+    return false;
+  return delegate_->HasHtmlAttribute(attribute);
 }
 
 const base::StringPairs& AXPlatformNodeBase::GetHtmlAttributes() const {
@@ -2124,14 +2138,11 @@ ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
     unsigned int red = SkColorGetR(color);
     unsigned int green = SkColorGetG(color);
     unsigned int blue = SkColorGetB(color);
-    // Don't expose default value of black.
-    if (red || green || blue) {
-      std::string color_value = "rgb(" + base::NumberToString(red) + ',' +
-                                base::NumberToString(green) + ',' +
-                                base::NumberToString(blue) + ')';
-      SanitizeTextAttributeValue(color_value, &color_value);
-      attributes.push_back(std::make_pair("color", color_value));
-    }
+    std::string color_value = "rgb(" + base::NumberToString(red) + ',' +
+                              base::NumberToString(green) + ',' +
+                              base::NumberToString(blue) + ')';
+    SanitizeTextAttributeValue(color_value, &color_value);
+    attributes.push_back(std::make_pair("color", color_value));
   }
 
   // First try to get the inherited font family name from the delegate. If we
@@ -2321,7 +2332,7 @@ std::string AXPlatformNodeBase::ComputeDetailsRoles() const {
           details_roles_set.insert("comment");
           break;
         }
-        FALLTHROUGH;
+        [[fallthrough]];
       }
       default:
         // Use * to indicate some other role.

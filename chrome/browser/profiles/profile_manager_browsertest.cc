@@ -20,13 +20,13 @@
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/policy/policy_test_utils.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -58,8 +58,6 @@
 #endif
 
 namespace {
-
-const ProfileManager::CreateCallback kOnProfileSwitchDoNothing;
 
 // An observer that returns back to test code after a new profile is
 // initialized.
@@ -229,10 +227,9 @@ base::FilePath GetFirstNonSigninNonLockScreenAppProfile(
   std::vector<ProfileAttributesEntry*> entries =
       storage->GetAllProfilesAttributesSortedByName();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  const base::FilePath signin_path =
-      chromeos::ProfileHelper::GetSigninProfileDir();
+  const base::FilePath signin_path = ash::ProfileHelper::GetSigninProfileDir();
   const base::FilePath lock_screen_apps_path =
-      chromeos::ProfileHelper::GetLockScreenAppProfilePath();
+      ash::ProfileHelper::GetLockScreenAppProfilePath();
 
   for (ProfileAttributesEntry* entry : entries) {
     base::FilePath profile_path = entry->GetPath();
@@ -256,7 +253,7 @@ class ProfileManagerBrowserTestBase : public InProcessBrowserTest {
   void SetUp() override {
     // Shortcut deletion delays tests shutdown on Win-7 and results in time out.
     // See crbug.com/1073451.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     AppShortcutManager::SuppressShortcutsForTesting();
 #endif
     InProcessBrowserTest::SetUp();
@@ -265,7 +262,7 @@ class ProfileManagerBrowserTestBase : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpCommandLine(command_line);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     command_line->AppendSwitch(
-        chromeos::switches::kIgnoreUserProfileMappingForTests);
+        ash::switches::kIgnoreUserProfileMappingForTests);
 #endif
   }
 };
@@ -390,7 +387,7 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, DeleteCurrentProfile) {
 }
 
 // Test is flaky. https://crbug.com/1206184
-#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 #define MAYBE_DeleteAllProfiles DISABLED_DeleteAllProfiles
 #else
 #define MAYBE_DeleteAllProfiles DeleteAllProfiles
@@ -494,7 +491,7 @@ class ProfileManagerCrOSBrowserTest : public ProfileManagerBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Use a user hash other than the default chrome::kTestUserProfileDir
     // so that the prefix case is tested.
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+    command_line->AppendSwitchASCII(ash::switches::kLoginProfile,
                                     "test-user-hash");
   }
 };
@@ -566,20 +563,20 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, SwitchToProfile) {
   EXPECT_EQ(1U, browser_list->size());
 
   // Open a browser window for the first profile.
-  profiles::SwitchToProfile(path_profile1, false, kOnProfileSwitchDoNothing);
+  profiles::SwitchToProfile(path_profile1, false);
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
   EXPECT_EQ(1U, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
 
   // Open a browser window for the second profile.
-  profiles::SwitchToProfile(path_profile2, false, kOnProfileSwitchDoNothing);
+  profiles::SwitchToProfile(path_profile2, false);
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(2U, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2U, browser_list->size());
   EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
 
   // Switch to the first profile without opening a new window.
-  profiles::SwitchToProfile(path_profile1, false, kOnProfileSwitchDoNothing);
+  profiles::SwitchToProfile(path_profile1, false);
   EXPECT_EQ(2U, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2U, browser_list->size());
 
@@ -615,12 +612,12 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, PRE_AddMultipleProfiles) {
   EXPECT_EQ(1U, browser_list->size());
 
   // Open a browser window for the first profile.
-  profiles::SwitchToProfile(path_profile1, false, kOnProfileSwitchDoNothing);
+  profiles::SwitchToProfile(path_profile1, false);
   EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
   ASSERT_EQ(1U, browser_list->size());
   EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
   // Open a browser window for the second profile.
-  profiles::SwitchToProfile(path_profile2, false, kOnProfileSwitchDoNothing);
+  profiles::SwitchToProfile(path_profile2, false);
   EXPECT_EQ(2U, chrome::GetTotalBrowserCount());
   ASSERT_EQ(2U, browser_list->size());
   EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
@@ -665,14 +662,14 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, EphemeralProfile) {
   EXPECT_EQ(1U, browser_list->size());
 
   // Open a browser window for the second profile.
-  profiles::SwitchToProfile(path_profile2, false, kOnProfileSwitchDoNothing);
+  profiles::SwitchToProfile(path_profile2, false);
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(2U, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2U, browser_list->size());
   EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
 
   // Create a second window for the ephemeral profile.
-  profiles::SwitchToProfile(path_profile2, true, kOnProfileSwitchDoNothing);
+  profiles::SwitchToProfile(path_profile2, true);
   EXPECT_EQ(3U, chrome::GetTotalBrowserCount());
   EXPECT_EQ(3U, browser_list->size());
 
@@ -696,7 +693,7 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, EphemeralProfile) {
 // The following check is flaky on Windows.
 // TODO(https://crbug.com/1191455): re-enable this check when the profile
 // directory deletion works more reliably on Windows.
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
   if (base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose)) {
     // Check that NukeProfileFromDisk() works correctly.
     base::ScopedAllowBlockingForTesting allow_blocking;
@@ -715,11 +712,11 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, EphemeralProfile) {
     run_loop.Run();
     EXPECT_FALSE(base::PathExists(path_profile2));
   }
-#endif  // !defined(OS_WIN)
+#endif  // !BUILDFLAG(IS_WIN)
 }
 
 // The test makes sense on those platforms where the keychain exists.
-#if !defined(OS_WIN) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, DeletePasswords) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   ASSERT_TRUE(profile);
@@ -756,7 +753,7 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, DeletePasswords) {
   verify_delete.Wait();
   EXPECT_EQ(0u, verify_delete.GetPasswords().size());
 }
-#endif  // !defined(OS_WIN) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Tests Profile::HasOffTheRecordProfile, Profile::IsValidProfile and the
 // profile counts in ProfileManager with respect to the creation and destruction

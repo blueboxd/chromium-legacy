@@ -102,7 +102,7 @@ def ParseArgs():
       help='The test suite being checked.')
 
   args = parser.parse_args()
-  argument_parsing.SetLoggingVerbosity(args)
+  argument_parsing.PerformCommonPostParseSetup(args)
 
   if not (args.tests or args.expectation_file):
     args.expectation_file = os.path.join(
@@ -120,7 +120,7 @@ def ParseArgs():
 def main():
   args = ParseArgs()
 
-  builders_instance = gpu_builders.GpuBuilders()
+  builders_instance = gpu_builders.GpuBuilders(args.include_internal_builders)
   builders.RegisterInstance(builders_instance)
   expectations_instance = gpu_expectations.GpuExpectations()
 
@@ -135,12 +135,11 @@ def main():
   # Unmatched results are mainly useful for script maintainers, as they don't
   # provide any additional information for the purposes of finding unexpectedly
   # passing tests or unused expectations.
-  unmatched = querier.FillExpectationMapForCiBuilders(test_expectation_map,
-                                                      ci_builders)
+  unmatched = querier.FillExpectationMapForBuilders(test_expectation_map,
+                                                    ci_builders)
   try_builders = builders_instance.GetTryBuilders(ci_builders)
   unmatched.update(
-      querier.FillExpectationMapForTryBuilders(test_expectation_map,
-                                               try_builders))
+      querier.FillExpectationMapForBuilders(test_expectation_map, try_builders))
   unused_expectations = test_expectation_map.FilterOutUnusedExpectations()
   stale, semi_stale, active = test_expectation_map.SplitByStaleness()
   result_output.OutputResults(stale, semi_stale, active, unmatched,

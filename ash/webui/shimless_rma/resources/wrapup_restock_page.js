@@ -39,6 +39,16 @@ export class WrapupRestockPage extends WrapupRestockPageBase {
     return html`{__html_template__}`;
   }
 
+  static get properties() {
+    return {
+      /**
+       * Set by shimless_rma.js.
+       * @type {boolean}
+       */
+      allButtonsDisabled: Boolean,
+    };
+  }
+
   constructor() {
     super();
     /** @private {ShimlessRmaServiceInterface} */
@@ -68,9 +78,18 @@ export class WrapupRestockPage extends WrapupRestockPageBase {
         ));
   }
 
-  /** @return {!Promise<StateResult>} */
-  onNextButtonClick() {
-    return this.shimlessRmaService_.continueFinalizationAfterRestock();
+  /** @protected */
+  onRestockContinueButtonClicked_() {
+    this.dispatchEvent(new CustomEvent(
+        'transition-state',
+        {
+          bubbles: true,
+          composed: true,
+          detail: (() => {
+            return this.shimlessRmaService_.continueFinalizationAfterRestock();
+          })
+        },
+        ));
   }
 }
 

@@ -5,11 +5,11 @@
 #include "net/spdy/spdy_session_pool.h"
 
 #include <cstddef>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/cxx17_backports.h"
-#include "base/ignore_result.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -204,7 +204,7 @@ class SessionOpeningDelegate : public SpdyStream::Delegate {
   void OnTrailers(const spdy::Http2HeaderBlock& trailers) override {}
 
   void OnClose(int status) override {
-    ignore_result(CreateFakeSpdySession(spdy_session_pool_, key_));
+    std::ignore = CreateFakeSpdySession(spdy_session_pool_, key_);
   }
 
   bool CanGreaseFrameType() const override { return false; }
@@ -1100,7 +1100,7 @@ TEST_F(SpdySessionPoolTest, HandleIPAddressChangeThenShutdown) {
 
   spdy_session_pool_->OnIPAddressChanged();
 
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_IOS)
   EXPECT_EQ(1u, num_active_streams(session));
   EXPECT_TRUE(session->IsGoingAway());
   EXPECT_FALSE(session->IsDraining());
@@ -1108,7 +1108,7 @@ TEST_F(SpdySessionPoolTest, HandleIPAddressChangeThenShutdown) {
   EXPECT_EQ(0u, num_active_streams(session));
   EXPECT_FALSE(session->IsGoingAway());
   EXPECT_TRUE(session->IsDraining());
-#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_IOS)
 
   http_session_.reset();
 

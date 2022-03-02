@@ -62,7 +62,7 @@ constexpr gfx::Size kDialogSize = gfx::Size(380, 490);
 }  // namespace
 
 bool CanPlatformShowAppInfoDialog() {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   return false;
 #else
   return true;
@@ -112,6 +112,11 @@ void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
         constrained_window::CreateBrowserModalDialogViews(dialog, window);
     dialog_widget->Show();
   }
+}
+
+base::WeakPtr<AppInfoDialog>& AppInfoDialog::GetLastDialogForTesting() {
+  static base::NoDestructor<base::WeakPtr<AppInfoDialog>> last_dialog;
+  return *last_dialog;
 }
 
 AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)
@@ -174,8 +179,11 @@ AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)
     dialog_footer_ = AddChildView(std::move(dialog_footer));
   }
 
-  // Close the dialog if the app is uninstalled, or if the profile is destroyed.
+  // Close the dialog if the app is uninstalled, unloaded, or if the profile is
+  // destroyed.
   StartObservingExtensionRegistry();
+
+  GetLastDialogForTesting() = AsWeakPtr();
 }
 
 AppInfoDialog::~AppInfoDialog() {
@@ -197,6 +205,16 @@ void AppInfoDialog::StopObservingExtensionRegistry() {
   if (extension_registry_)
     extension_registry_->RemoveObserver(this);
   extension_registry_ = nullptr;
+}
+
+void AppInfoDialog::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionReason reason) {
+  if (extension->id() != app_id_)
+    return;
+
+  Close();
 }
 
 void AppInfoDialog::OnExtensionUninstalled(

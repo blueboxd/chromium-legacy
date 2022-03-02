@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -26,7 +25,7 @@
 #include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include <jni.h>
 #endif
 
@@ -154,7 +153,7 @@ std::string GetWebUIURLString(const std::string& host);
 // inner WebContents will be deleted if the frame it's attached to goes away.
 WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh);
 
-// Spins a run loop until IsDocumentOnLoadCompletedInMainFrame() is true.
+// Spins a run loop until IsDocumentOnLoadCompletedInPrimaryMainFrame() is true.
 void AwaitDocumentOnLoadCompleted(WebContents* web_contents);
 
 // Helper class to Run and Quit the message loop. Run and Quit can only happen
@@ -355,7 +354,7 @@ class RenderFrameDeletedObserver : public WebContentsObserver {
   // Overridden WebContentsObserver methods.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
 
-  // TODO(1267073): Add WARN_UNUSED_RESULT
+  // TODO(1267073): Add [[nodiscard]]
   // Returns true if the frame was deleted before the timeout.
   bool WaitUntilDeleted();
   bool deleted() const;
@@ -390,7 +389,7 @@ class RenderFrameHostWrapper {
   // See RenderFrameDeletedObserver for notes on the difference between
   // RenderFrame being deleted and RenderFrameHost being destroyed.
   // Returns true if the frame was deleted before the timeout.
-  WARN_UNUSED_RESULT bool WaitUntilRenderFrameDeleted();
+  [[nodiscard]] bool WaitUntilRenderFrameDeleted();
   bool IsRenderFrameDeleted() const;
 
   // Pointerish operators. Feel free to add more if you need them.

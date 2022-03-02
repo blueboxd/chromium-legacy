@@ -80,6 +80,7 @@ crbug.com/902685 virtual/split-http-cache-not-site-per-process/http/tests/devtoo
 crbug.com/243492 inspector-protocol/injected-script-discard.js [ Slow ]
 crbug.com/678482 http/tests/devtools/debugger/fetch-breakpoints.js [ Slow ]
 crbug.com/1236466 inspector-protocol/runtime/runtime-execution-contexts-events.js [ Slow ]
+crbug.com/1229701 http/tests/inspector-protocol/network/disable-cache-media-resource.js [ Slow ]
 
 crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
 
@@ -270,6 +271,7 @@ crbug.com/866850 [ Mac ] virtual/gpu/fast/canvas/color-space/canvas-createImageB
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Slow ]
 crbug.com/866850 [ Mac ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Slow ]
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/OffscreenCanvas-filter.html [ Slow ]
+crbug.com/866850 [ Mac11 ] virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Slow ]
 crbug.com/866850 [ Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-filter.html [ Slow ]
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/OffscreenCanvas-filter-in-worker.html [ Slow ]
 crbug.com/866850 [ Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-filter-in-worker.html [ Slow ]
@@ -318,6 +320,7 @@ crbug.com/874695 fast/dom/timer-throttling-hidden-page.html [ Slow ]
 crbug.com/874695 fast/events/frame-detached-in-mousedown.html [ Slow ]
 crbug.com/874695 fast/events/popup-blocking-timers4.html [ Slow ]
 crbug.com/874695 fast/forms/color/* [ Slow ]
+crbug.com/874695 fast/forms/color-scheme/* [ Slow ]
 crbug.com/874695 fast/forms/number/number-spinbutton-gets-disabled-or-readonly.html [ Slow ]
 crbug.com/874695 fast/forms/select/input-select-after-resize.html [ Slow ]
 crbug.com/874695 fast/history/history-back-twice-with-subframes-assert.html [ Slow ]
@@ -739,8 +742,6 @@ crbug.com/1146221 [ Linux ] http/tests/devtools/sources/debugger-ui/debugger-inl
 crbug.com/1182691 external/wpt/webcodecs/audio-encoder.https.any.html [ Slow ]
 crbug.com/1182691 external/wpt/webcodecs/video-encoder.https.any.html [ Slow ]
 crbug.com/1182691 external/wpt/webcodecs/video-encoder.https.any.worker.html [ Slow ]
-crbug.com/1176474 wpt_internal/webcodecs/temporal_svc.https.any.html [ Slow ]
-crbug.com/1176474 wpt_internal/webcodecs/temporal_svc.https.any.worker.html [ Slow ]
 
 # Composited scroll snap is not accelerated for testing.
 crbug.com/1186753 virtual/threaded-prefer-compositing/fast/scroll-snap/snaps-after-scrollbar-scrolling-arrow.html [ Slow ]
@@ -783,3 +784,5 @@ crbug.com/1195814 [ Mac11 ] storage/indexeddb/key-generator.html [ Slow ]
 crbug.com/1195814 [ Mac11 ] storage/indexeddb/odd-strings.html [ Slow ]
 
 crbug.com/1263580 editing/deleting/delete-many-lines-of-text.html [ Slow ]
+
+crbug.com/1255482 external/wpt/css/css-fonts/crash-large-grapheme-cluster.html [ Slow ]

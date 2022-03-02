@@ -24,7 +24,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_usage_store.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
@@ -49,12 +48,13 @@ namespace {
   }
 
 // Returns the value at |index| of |list_value| as an int64_t.
-int64_t GetInt64PrefValue(const base::ListValue& list_value, size_t index) {
+int64_t GetInt64PrefValue(const base::Value& list_value, size_t index) {
   int64_t val = 0;
   base::Value::ConstListView list_value_view = list_value.GetList();
   if (index < list_value_view.size() && list_value_view[index].is_string()) {
-    std::string pref_value = list_value_view[index].GetString();
-    bool rv = base::StringToInt64(pref_value, &val);
+    const base::Value& pref_value = list_value_view[index];
+    DCHECK(pref_value.is_string());
+    bool rv = base::StringToInt64(pref_value.GetString(), &val);
     DCHECK(rv);
   }
   return val;
@@ -62,7 +62,7 @@ int64_t GetInt64PrefValue(const base::ListValue& list_value, size_t index) {
 
 // Ensure list has exactly |length| elements, either by truncating at the
 // front, or appending "0"'s to the back.
-void MaintainContentLengthPrefsWindow(base::ListValue* list, size_t length) {
+void MaintainContentLengthPrefsWindow(base::Value* list, size_t length) {
   // Remove data for old days from the front.
   base::Value::ListView list_view = list->GetList();
   while (list_view.size() > length)
@@ -79,10 +79,9 @@ void MaintainContentLengthPrefsWindow(base::ListValue* list, size_t length) {
 // number.
 void AddInt64ToListPref(size_t index,
                         int64_t length,
-                        base::ListValue* list_update) {
+                        base::Value* list_update) {
   int64_t value = GetInt64PrefValue(*list_update, index) + length;
-  list_update->Set(index,
-                   std::make_unique<base::Value>(base::NumberToString(value)));
+  list_update->GetList()[index] = base::Value(base::NumberToString(value));
 }
 
 void RecordSavingsClearedMetric(DataReductionProxySavingsClearedReason reason) {
@@ -94,7 +93,7 @@ void RecordSavingsClearedMetric(DataReductionProxySavingsClearedReason reason) {
 
 // TODO(rajendrant): Enable aggregate metrics recording in x86 Android.
 // http://crbug.com/865373
-#if !defined(OS_ANDROID) || !defined(ARCH_CPU_X86)
+#if !BUILDFLAG(IS_ANDROID) || !defined(ARCH_CPU_X86)
 const double kSecondsPerWeek =
     base::Time::kMicrosecondsPerWeek / base::Time::kMicrosecondsPerSecond;
 
@@ -112,12 +111,12 @@ void AddToDictionaryPref(PrefService* pref_service,
                          int key,
                          int value) {
   DictionaryPrefUpdate pref_update(pref_service, pref);
-  base::DictionaryValue* pref_dict = pref_update.Get();
+  base::Value* pref_dict = pref_update.Get();
   const std::string key_str = base::NumberToString(key);
   base::Value* dict_value = pref_dict->FindKey(key_str);
   if (dict_value)
     value += dict_value->GetInt();
-  pref_dict->SetKey(key_str, base::Value(value));
+  pref_dict->SetIntKey(key_str, value);
 }
 
 // Moves the dictionary stored in preference |pref_src| to |pref_dst|, and
@@ -126,12 +125,11 @@ void MoveAndClearDictionaryPrefs(PrefService* pref_service,
                                  const std::string& pref_dst,
                                  const std::string& pref_src) {
   DictionaryPrefUpdate pref_update_dst(pref_service, pref_dst);
-  base::DictionaryValue* pref_dict_dst = pref_update_dst.Get();
+  base::Value* pref_dict_dst = pref_update_dst.Get();
   DictionaryPrefUpdate pref_update_src(pref_service, pref_src);
-  base::DictionaryValue* pref_dict_src = pref_update_src.Get();
-  pref_dict_dst->DictClear();
-  pref_dict_dst->Swap(pref_dict_src);
-  DCHECK(pref_dict_src->DictEmpty());
+  base::Value* pref_dict_src = pref_update_src.Get();
+  *pref_dict_dst = std::move(*pref_dict_src);
+  *pref_dict_src = base::Value(base::Value::Type::DICTIONARY);
 }
 
 void MaybeInitWeeklyAggregateDataUsePrefs(const base::Time& now,
@@ -171,7 +169,7 @@ void MaybeInitWeeklyAggregateDataUsePrefs(const base::Time& now,
 
 // Records the key-value pairs in the dictionary in a sparse histogram.
 void RecordDictionaryToHistogram(const std::string& histogram_name,
-                                 const base::DictionaryValue* dictionary) {
+                                 const base::Value* dictionary) {
   base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
       histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag);
   for (auto entry : dictionary->DictItems()) {
@@ -265,7 +263,7 @@ class DataReductionProxyCompressionStats::DailyContentLengthUpdate {
   }
 
   // Non-owned. Lazily initialized, set to nullptr until initialized.
-  raw_ptr<base::ListValue> update_;
+  raw_ptr<base::Value> update_;
   // Non-owned pointer.
   raw_ptr<DataReductionProxyCompressionStats> compression_stats_;
   // The path of the content length pref for |this|.
@@ -396,8 +394,7 @@ void DataReductionProxyCompressionStats::InitInt64Pref(const char* pref) {
 }
 
 void DataReductionProxyCompressionStats::InitListPref(const char* pref) {
-  std::unique_ptr<base::ListValue> pref_value =
-      pref_service_->GetList(pref)->CreateDeepCopy();
+  base::Value pref_value = pref_service_->GetList(pref)->Clone();
   list_pref_map_[pref] = std::move(pref_value);
 }
 
@@ -426,7 +423,7 @@ void DataReductionProxyCompressionStats::IncreaseInt64Pref(
   SetInt64(pref_path, GetInt64(pref_path) + delta);
 }
 
-base::ListValue* DataReductionProxyCompressionStats::GetList(
+base::Value* DataReductionProxyCompressionStats::GetList(
     const char* pref_path) {
   if (delay_.is_zero())
     return ListPrefUpdate(pref_service_, pref_path).Get();
@@ -435,7 +432,7 @@ base::ListValue* DataReductionProxyCompressionStats::GetList(
   auto it = list_pref_map_.find(pref_path);
   if (it == list_pref_map_.end())
     return nullptr;
-  return it->second.get();
+  return &it->second;
 }
 
 void DataReductionProxyCompressionStats::WritePrefs() {
@@ -449,7 +446,7 @@ void DataReductionProxyCompressionStats::WritePrefs() {
 
   for (auto iter = list_pref_map_.begin(); iter != list_pref_map_.end();
        ++iter) {
-    TransferList(*(iter->second.get()),
+    TransferList(iter->second,
                  ListPrefUpdate(pref_service_, iter->first).Get());
   }
 }
@@ -462,9 +459,9 @@ int64_t DataReductionProxyCompressionStats::GetLastUpdateTime() {
 }
 
 void DataReductionProxyCompressionStats::ResetStatistics() {
-  base::ListValue* original_update =
+  base::Value* original_update =
       GetList(prefs::kDailyHttpOriginalContentLength);
-  base::ListValue* received_update =
+  base::Value* received_update =
       GetList(prefs::kDailyHttpReceivedContentLength);
   original_update->ClearList();
   received_update->ClearList();
@@ -485,7 +482,7 @@ int64_t DataReductionProxyCompressionStats::GetHttpOriginalContentLength() {
 ContentLengthList DataReductionProxyCompressionStats::GetDailyContentLengths(
     const char* pref_name) {
   ContentLengthList content_lengths;
-  const base::ListValue* list_value = GetList(pref_name);
+  const base::Value* list_value = GetList(pref_name);
   if (list_value->GetList().size() == kNumDaysInHistory) {
     for (size_t i = 0; i < kNumDaysInHistory; ++i)
       content_lengths.push_back(GetInt64PrefValue(*list_value, i));
@@ -500,9 +497,9 @@ void DataReductionProxyCompressionStats::GetContentLengths(
     int64_t* last_update_time) {
   DCHECK_LE(days, kNumDaysInHistory);
 
-  const base::ListValue* original_list =
+  const base::Value* original_list =
       GetList(prefs::kDailyHttpOriginalContentLength);
-  const base::ListValue* received_list =
+  const base::Value* received_list =
       GetList(prefs::kDailyHttpReceivedContentLength);
 
   if (original_list->GetList().size() != kNumDaysInHistory ||
@@ -612,7 +609,7 @@ void DataReductionProxyCompressionStats::ClearDataSavingStatistics(
 
   for (auto iter = list_pref_map_.begin(); iter != list_pref_map_.end();
        ++iter) {
-    iter->second->ClearList();
+    iter->second.ClearList();
   }
 
   RecordSavingsClearedMetric(reason);
@@ -757,7 +754,7 @@ void DataReductionProxyCompressionStats::DeleteHistoricalDataUsage() {
 void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
     HistoricalDataUsageCallback get_data_usage_callback,
     const base::Time& now) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   if (current_data_usage_load_status_ != LOADED) {
     // If current data usage has not yet loaded, we return an empty array. The
     // extension can retry after a slight delay.
@@ -796,7 +793,7 @@ void DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged() {
     }
   } else {
 // Don't delete the historical data on Android, but clear the map.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     if (current_data_usage_load_status_ == LOADED)
       PersistDataUsage();
 
@@ -814,7 +811,7 @@ void DataReductionProxyCompressionStats::InitializeWeeklyAggregateDataUse(
     const base::Time& now) {
   // TODO(rajendrant): Enable aggregate metrics recording in x86 Android.
   // http://crbug.com/865373
-#if !defined(OS_ANDROID) || !defined(ARCH_CPU_X86)
+#if !BUILDFLAG(IS_ANDROID) || !defined(ARCH_CPU_X86)
   MaybeInitWeeklyAggregateDataUsePrefs(now, pref_service_);
   // Record the histograms that will show up in the user feedback.
   RecordDictionaryToHistogram(
@@ -854,7 +851,7 @@ void DataReductionProxyCompressionStats::RecordWeeklyAggregateDataUse(
     int32_t service_hash_code) {
   // TODO(rajendrant): Enable aggregate metrics recording in x86 Android.
   // http://crbug.com/865373
-#if !defined(OS_ANDROID) || !defined(ARCH_CPU_X86)
+#if !BUILDFLAG(IS_ANDROID) || !defined(ARCH_CPU_X86)
   // Update the prefs if this is a new week. This can happen when chrome is open
   // for weeks without being closed.
   MaybeInitWeeklyAggregateDataUsePrefs(now, pref_service_);

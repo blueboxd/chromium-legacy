@@ -180,7 +180,7 @@ mojom::FetchResponseType CalculateResponseTainting(
 
   if (request_mode == mojom::RequestMode::kNoCors) {
     if (tainted_origin ||
-        (!origin->IsSameOriginWith(url::Origin::Create(url)) &&
+        (!origin->IsSameOriginWith(url) &&
          origin_access_list.CheckAccessState(source_origin, url) !=
              OriginAccessList::AccessState::kAllowed)) {
       return mojom::FetchResponseType::kOpaque;
@@ -212,7 +212,7 @@ absl::optional<CorsErrorStatus> CheckRedirectLocation(
   // URL’s origin, then return a network error.
   DCHECK(!IsCorsEnabledRequestMode(request_mode) || origin);
   if (IsCorsEnabledRequestMode(request_mode) && url_has_credentials &&
-      (tainted || !origin->IsSameOriginWith(url::Origin::Create(url)))) {
+      (tainted || !origin->IsSameOriginWith(url))) {
     return CorsErrorStatus(mojom::CorsError::kRedirectContainsCredentials);
   }
 
@@ -567,10 +567,8 @@ void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
   // with `request`’s current url’s origin, then set `request`’s tainted origin
   // flag.
   if (request_.request_initiator &&
-      (!url::Origin::Create(redirect_info.new_url)
-            .IsSameOriginWith(url::Origin::Create(request_.url)) &&
-       !request_.request_initiator->IsSameOriginWith(
-           url::Origin::Create(request_.url)))) {
+      (!url::IsSameOriginWith(redirect_info.new_url, request_.url) &&
+       !request_.request_initiator->IsSameOriginWith(request_.url))) {
     tainted_ = true;
   }
 
@@ -790,6 +788,10 @@ absl::optional<URLLoaderCompletionStatus> CorsURLLoader::ConvertPreflightResult(
 
   base::UmaHistogramEnumeration(kPreflightErrorHistogramName, histogram_error);
   if (status) {
+    // Report the target IP address space unconditionally as part of the error
+    // if there was one. This allows higher layers to understand that a PNA
+    // preflight request was attempted.
+    status->target_address_space = request_.target_ip_address_space;
     return URLLoaderCompletionStatus(*std::move(status));
   }
 

@@ -63,6 +63,20 @@ void DismissSignOut() {
   }
 }
 
+// Waits for the settings done button to be enabled.
+void WaitForSettingDoneButton() {
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+        assertWithMatcher:grey_sufficientlyVisible()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForClearBrowsingDataTimeout, condition),
+             @"Settings done button not visible");
+}
+
 }  // namespace
 
 // Integration tests using the Google services settings screen.
@@ -131,11 +145,11 @@ void DismissSignOut() {
 
   // Check that Safe Browsing is enabled, and toggle it off.
   [[self elementInteractionWithGreyMatcher:
-             chrome_test_util::SettingsSwitchCell(
+             chrome_test_util::TableViewSwitchCell(
                  kSafeBrowsingItemAccessibilityIdentifier,
                  /*is_toggled_on=*/YES,
                  /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
 
   // Check the underlying pref value.
   GREYAssertFalse([ChromeEarlGrey userBooleanPref:prefs::kSafeBrowsingEnabled],
@@ -149,11 +163,11 @@ void DismissSignOut() {
   // it.
   [self openGoogleServicesSettings];
   [[self elementInteractionWithGreyMatcher:
-             chrome_test_util::SettingsSwitchCell(
+             chrome_test_util::TableViewSwitchCell(
                  kSafeBrowsingItemAccessibilityIdentifier,
                  /*is_toggled_on=*/NO,
                  /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
 
   // Check the underlying pref value.
   GREYAssertTrue([ChromeEarlGrey userBooleanPref:prefs::kSafeBrowsingEnabled],
@@ -178,34 +192,34 @@ void DismissSignOut() {
 
   // Check that Safe Browsing is enabled, and toggle it off.
   [[self elementInteractionWithGreyMatcher:
-             chrome_test_util::SettingsSwitchCell(
+             chrome_test_util::TableViewSwitchCell(
                  kSafeBrowsingItemAccessibilityIdentifier,
                  /*is_toggled_on=*/YES,
                  /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
 
   // Check that the password leak check toggle is both toggled off and disabled.
   [[self elementInteractionWithGreyMatcher:
-             chrome_test_util::SettingsSwitchCell(
+             chrome_test_util::TableViewSwitchCell(
                  kPasswordLeakCheckItemAccessibilityIdentifier,
                  /*is_toggled_on=*/NO,
                  /*enabled=*/NO)] assertWithMatcher:grey_notNil()];
 
   // Toggle Safe Browsing on.
   [[self elementInteractionWithGreyMatcher:
-             chrome_test_util::SettingsSwitchCell(
+             chrome_test_util::TableViewSwitchCell(
                  kSafeBrowsingItemAccessibilityIdentifier,
                  /*is_toggled_on=*/NO,
                  /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
 
   // Check that the password leak check toggle is enabled, and toggle it off.
   [[self elementInteractionWithGreyMatcher:
-             chrome_test_util::SettingsSwitchCell(
+             chrome_test_util::TableViewSwitchCell(
                  kPasswordLeakCheckItemAccessibilityIdentifier,
                  /*is_toggled_on=*/YES,
                  /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
 
   // Check the underlying pref value.
   GREYAssertFalse(
@@ -215,11 +229,11 @@ void DismissSignOut() {
 
   // Toggle password leak check detection back on.
   [[self elementInteractionWithGreyMatcher:
-             chrome_test_util::SettingsSwitchCell(
+             chrome_test_util::TableViewSwitchCell(
                  kPasswordLeakCheckItemAccessibilityIdentifier,
                  /*is_toggled_on=*/NO,
                  /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
 
   // Check the underlying pref value.
   GREYAssertTrue(
@@ -243,34 +257,34 @@ void DismissSignOut() {
 
   // Check that Safe Browsing is enabled, and toggle it off.
   [[self elementInteractionWithGreyMatcher:
-             chrome_test_util::SettingsSwitchCell(
+             chrome_test_util::TableViewSwitchCell(
                  kSafeBrowsingItemAccessibilityIdentifier,
                  /*is_toggled_on=*/YES,
                  /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
 
   // Check that the password leak check toggle is both toggled off and disabled.
   [[self elementInteractionWithGreyMatcher:
-             chrome_test_util::SettingsSwitchCell(
+             chrome_test_util::TableViewSwitchCell(
                  kPasswordLeakCheckItemAccessibilityIdentifier,
                  /*is_toggled_on=*/NO,
                  /*enabled=*/NO)] assertWithMatcher:grey_notNil()];
 
   // Toggle Safe Browsing on.
   [[self elementInteractionWithGreyMatcher:
-             chrome_test_util::SettingsSwitchCell(
+             chrome_test_util::TableViewSwitchCell(
                  kSafeBrowsingItemAccessibilityIdentifier,
                  /*is_toggled_on=*/NO,
                  /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
 
   // Check that the password leak check toggle is enabled, and toggle it off.
   [[self elementInteractionWithGreyMatcher:
-             chrome_test_util::SettingsSwitchCell(
+             chrome_test_util::TableViewSwitchCell(
                  kPasswordLeakCheckItemAccessibilityIdentifier,
                  /*is_toggled_on=*/YES,
                  /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
 
   // Check the underlying pref value.
   GREYAssertFalse(
@@ -280,11 +294,11 @@ void DismissSignOut() {
 
   // Toggle password leak check detection back on.
   [[self elementInteractionWithGreyMatcher:
-             chrome_test_util::SettingsSwitchCell(
+             chrome_test_util::TableViewSwitchCell(
                  kPasswordLeakCheckItemAccessibilityIdentifier,
                  /*is_toggled_on=*/NO,
                  /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
 
   // Check the underlying pref value.
   GREYAssertTrue(
@@ -306,11 +320,11 @@ void DismissSignOut() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+      selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                    kAllowSigninItemAccessibilityIdentifier,
                                    /*is_toggled_on=*/YES,
                                    /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
   [[EarlGrey
       selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                    IDS_IOS_SIGNOUT_DIALOG_SIGN_OUT_BUTTON)]
@@ -322,6 +336,7 @@ void DismissSignOut() {
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(kSettingsSignInCellId)]
       assertWithMatcher:grey_notVisible()];
+  WaitForSettingDoneButton();
 
   // Verify signed out.
   [SigninEarlGrey verifySignedOut];
@@ -332,11 +347,11 @@ void DismissSignOut() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+      selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                    kAllowSigninItemAccessibilityIdentifier,
                                    /*is_toggled_on=*/NO,
                                    /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
 
   // Verify that the user is signed out and sign-in is enabled.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -363,11 +378,11 @@ void DismissSignOut() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+      selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                    kAllowSigninItemAccessibilityIdentifier,
                                    /*is_toggled_on=*/YES,
                                    /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
   [[EarlGrey
       selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                    IDS_IOS_SIGNOUT_DIALOG_SIGN_OUT_BUTTON)]
@@ -376,6 +391,7 @@ void DismissSignOut() {
       selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                    IDS_IOS_SIGNOUT_DIALOG_CLEAR_DATA_BUTTON)]
       performAction:grey_tap()];
+  WaitForSettingDoneButton();
 
   // Verify that sign-in is disabled.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -399,11 +415,11 @@ void DismissSignOut() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+      selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                    kAllowSigninItemAccessibilityIdentifier,
                                    /*is_toggled_on=*/NO,
                                    /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
 
   // Verify that the user is signed out and sign-in is enabled.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -430,11 +446,11 @@ void DismissSignOut() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+      selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                    kAllowSigninItemAccessibilityIdentifier,
                                    /*is_toggled_on=*/YES,
                                    /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
   [[EarlGrey
       selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                    IDS_IOS_SIGNOUT_DIALOG_SIGN_OUT_BUTTON)]
@@ -443,6 +459,7 @@ void DismissSignOut() {
       selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                    IDS_IOS_SIGNOUT_DIALOG_KEEP_DATA_BUTTON)]
       performAction:grey_tap()];
+  WaitForSettingDoneButton();
 
   // Verify that sign-in is disabled.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -466,11 +483,11 @@ void DismissSignOut() {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+      selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                    kAllowSigninItemAccessibilityIdentifier,
                                    /*is_toggled_on=*/NO,
                                    /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
 
   // Verify that the user is signed out and sign-in is enabled.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -495,11 +512,11 @@ void DismissSignOut() {
 
   // Turn off "Allow Chrome Sign-in" feature.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+      selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                    kAllowSigninItemAccessibilityIdentifier,
                                    /*is_toggled_on=*/YES,
                                    /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
 
   // Verify that the user is signed out and sign-in is disabled.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -513,11 +530,11 @@ void DismissSignOut() {
 
   // Turn on "Allow Chrome Sign-in" feature.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+      selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                    kAllowSigninItemAccessibilityIdentifier,
                                    /*is_toggled_on=*/NO,
                                    /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(YES)];
 
   // Verify that the user is signed out and sign-in is enabled.
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -539,17 +556,17 @@ void DismissSignOut() {
 
   // Turn off "Allow Chrome Sign-in" feature.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+      selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                    kAllowSigninItemAccessibilityIdentifier,
                                    /*is_toggled_on=*/YES,
                                    /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
 
   // Dismiss the sign-out dialog.
   DismissSignOut();
 
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+      selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                    kAllowSigninItemAccessibilityIdentifier,
                                    /*is_toggled_on=*/YES,
                                    /*enabled=*/YES)]
@@ -557,11 +574,11 @@ void DismissSignOut() {
 
   // Turn off "Allow Chrome Sign-in" feature.
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+      selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                    kAllowSigninItemAccessibilityIdentifier,
                                    /*is_toggled_on=*/YES,
                                    /*enabled=*/YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnTableViewSwitchOn(NO)];
 
   // Select "sign out" option then dismiss the sign-out dialog.
   [[EarlGrey
@@ -571,7 +588,7 @@ void DismissSignOut() {
   DismissSignOut();
 
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+      selectElementWithMatcher:chrome_test_util::TableViewSwitchCell(
                                    kAllowSigninItemAccessibilityIdentifier,
                                    /*is_toggled_on=*/YES,
                                    /*enabled=*/YES)]

@@ -32,7 +32,6 @@
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/publishers/extension_apps_util.h"
 #include "chrome/browser/ash/arc/arc_util.h"
-#include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
@@ -40,7 +39,9 @@
 #include "chrome/browser/ash/file_manager/file_browser_handlers.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
+#include "chrome/browser/extensions/extension_keeplist_ash.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -120,25 +121,6 @@ ExtensionAppsChromeOs::~ExtensionAppsChromeOs() {
   }
 }
 
-// static
-void ExtensionAppsChromeOs::RecordUninstallCanceledAction(
-    Profile* profile,
-    const std::string& app_id) {
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
-          app_id);
-  if (!extension) {
-    return;
-  }
-
-  if (extension->from_bookmark()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Webapp.UninstallDialogAction",
-        extensions::ExtensionUninstallDialog::CLOSE_ACTION_CANCELED,
-        extensions::ExtensionUninstallDialog::CLOSE_ACTION_LAST);
-  }
-}
-
 void ExtensionAppsChromeOs::Shutdown() {
   if (arc_prefs_) {
     arc_prefs_->RemoveObserver(this);
@@ -190,6 +172,39 @@ void ExtensionAppsChromeOs::Initialize() {
         base::BindRepeating(&ExtensionAppsBase::OnSystemFeaturesPrefChanged,
                             GetWeakPtr()));
     OnSystemFeaturesPrefChanged();
+  }
+}
+
+void ExtensionAppsChromeOs::LaunchAppWithParamsImpl(AppLaunchParams&& params,
+                                                    LaunchCallback callback) {
+  const auto* extension = MaybeGetExtension(params.app_id);
+
+  if (params.launch_files.empty() && !params.intent) {
+    LaunchImpl(std::move(params));
+    return;
+  }
+
+  bool is_quickoffice =
+      extension->id() == extension_misc::kQuickOfficeComponentExtensionId;
+  if (extension->is_app() || is_quickoffice) {
+    auto launch_source = params.launch_source;
+    content::WebContents* web_contents = LaunchImpl(std::move(params));
+
+    if (launch_source == apps::mojom::LaunchSource::kFromArc && web_contents) {
+      // Add a flag to remember this web_contents originated in the ARC context.
+      web_contents->SetUserData(
+          &arc::ArcWebContentsData::kArcTransitionFlag,
+          std::make_unique<arc::ArcWebContentsData>(web_contents));
+    }
+  } else {
+    DCHECK(extension->is_extension());
+    // TODO(petermarshall): Set Arc flag as above?
+    auto event_flags = apps::GetEventFlags(params.container, params.disposition,
+                                           /*prefer_container=*/false);
+    auto window_info = apps::MakeWindowInfo(params.display_id);
+    LaunchExtension(params.app_id, event_flags, std::move(params.intent),
+                    params.launch_source, std::move(window_info),
+                    base::DoNothing());
   }
 }
 
@@ -477,7 +492,8 @@ void ExtensionAppsChromeOs::OnRequestUpdate(
   }
 
   absl::optional<web_app::AppId> web_app_id =
-      web_app::FindInstalledAppWithUrlInScope(profile(), web_contents->GetURL(),
+      web_app::FindInstalledAppWithUrlInScope(profile(),
+                                              web_contents->GetVisibleURL(),
                                               /*window_only=*/false);
   if (web_app_id.has_value()) {
     // WebAppsChromeOs is responsible for |app_id|.
@@ -490,7 +506,7 @@ void ExtensionAppsChromeOs::OnRequestUpdate(
   DCHECK(registry);
   const extensions::ExtensionSet& extensions = registry->enabled_extensions();
   const extensions::Extension* extension =
-      extensions.GetAppByURL(web_contents->GetURL());
+      extensions.GetAppByURL(web_contents->GetVisibleURL());
   if (extension && Accepts(extension)) {
     app_id = extension->id();
   }
@@ -653,7 +669,7 @@ void ExtensionAppsChromeOs::OnSystemFeaturesPrefChanged() {
     return;
   }
 
-  const base::ListValue* disabled_system_features_pref =
+  const base::Value* disabled_system_features_pref =
       local_state->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
   if (!disabled_system_features_pref) {
     return;
@@ -693,7 +709,7 @@ bool ExtensionAppsChromeOs::Accepts(const extensions::Extension* extension) {
   if (!extension->is_app() || IsBlocklisted(extension->id())) {
     return false;
   }
-  return !extension->from_bookmark();
+  return true;
 }
 
 void ExtensionAppsChromeOs::SetShowInFields(
@@ -744,7 +760,7 @@ std::unique_ptr<App> ExtensionAppsChromeOs::CreateApp(
   const bool disable_for_lacros =
       extension->is_platform_app() &&
       crosapi::browser_util::IsLacrosChromeAppsEnabled() &&
-      !apps::ExtensionAppRunsInAsh(extension->id());
+      !extensions::ExtensionAppRunsInAsh(extension->id());
   const bool is_app_disabled =
       base::Contains(disabled_apps_, extension->id()) || disable_for_lacros;
 
@@ -764,7 +780,7 @@ apps::mojom::AppPtr ExtensionAppsChromeOs::Convert(
   const bool disable_for_lacros =
       extension->is_platform_app() &&
       crosapi::browser_util::IsLacrosChromeAppsEnabled() &&
-      !apps::ExtensionAppRunsInAsh(extension->id());
+      !extensions::ExtensionAppRunsInAsh(extension->id());
   const bool is_app_disabled =
       base::Contains(disabled_apps_, extension->id()) || disable_for_lacros;
 
@@ -928,7 +944,7 @@ content::WebContents* ExtensionAppsChromeOs::LaunchImpl(
 }
 
 void ExtensionAppsChromeOs::UpdateAppDisabledState(
-    const base::ListValue* disabled_system_features_pref,
+    const base::Value* disabled_system_features_pref,
     int feature,
     const std::string& app_id,
     bool is_disabled_mode_changed) {

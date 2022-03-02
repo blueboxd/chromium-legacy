@@ -273,7 +273,7 @@ void ExecuteTaskAfterMimeTypesCollected(
 
   DCHECK_EQ(task.task_type, TASK_TYPE_ARC_APP);
   apps::RecordAppLaunchMetrics(
-      profile, apps::mojom::AppType::kArc, task.app_id,
+      profile, apps::AppType::kArc, task.app_id,
       apps::mojom::LaunchSource::kFromFileManager,
       apps::mojom::LaunchContainer::kLaunchContainerWindow);
   ExecuteArcTask(profile, task, file_urls, *mime_types, std::move(done));
@@ -449,7 +449,7 @@ void UpdateDefaultTask(PrefService* pref_service,
     DictionaryPrefUpdate mime_type_pref(pref_service,
                                         prefs::kDefaultTasksByMimeType);
     for (const std::string& mime_type : mime_types) {
-      mime_type_pref->SetKey(mime_type, base::Value(task_id));
+      mime_type_pref->SetStringKey(mime_type, task_id);
     }
   }
 
@@ -459,7 +459,7 @@ void UpdateDefaultTask(PrefService* pref_service,
     for (const std::string& suffix : suffixes) {
       // Suffixes are case insensitive.
       std::string lower_suffix = base::ToLowerASCII(suffix);
-      mime_type_pref->SetKey(lower_suffix, base::Value(task_id));
+      mime_type_pref->SetStringKey(lower_suffix, task_id);
     }
   }
 }
@@ -471,7 +471,7 @@ bool GetDefaultTaskFromPrefs(const PrefService& pref_service,
   VLOG(1) << "Looking for default for MIME type: " << mime_type
       << " and suffix: " << suffix;
   if (!mime_type.empty()) {
-    const base::DictionaryValue* mime_task_prefs =
+    const base::Value* mime_task_prefs =
         pref_service.GetDictionary(prefs::kDefaultTasksByMimeType);
     DCHECK(mime_task_prefs);
     LOG_IF(ERROR, !mime_task_prefs) << "Unable to open MIME type prefs";
@@ -484,7 +484,7 @@ bool GetDefaultTaskFromPrefs(const PrefService& pref_service,
     }
   }
 
-  const base::DictionaryValue* suffix_task_prefs =
+  const base::Value* suffix_task_prefs =
       pref_service.GetDictionary(prefs::kDefaultTasksBySuffix);
   DCHECK(suffix_task_prefs);
   LOG_IF(ERROR, !suffix_task_prefs) << "Unable to open suffix prefs";
@@ -761,7 +761,8 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
   // Unless it's HTML which should open in the browser (crbug.com/1121396).
   for (FullTaskDescriptor& task : *tasks) {
     if (IsFallbackFileHandler(task) &&
-        task.task_descriptor.action_id != "view-in-browser") {
+        parseFilesAppActionId(task.task_descriptor.action_id) !=
+            "view-in-browser") {
       const extensions::EntryInfo entry = entries[0];
       const base::FilePath& file_path = entry.path;
 

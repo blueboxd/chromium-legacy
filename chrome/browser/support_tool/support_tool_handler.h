@@ -12,9 +12,14 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/support_tool/data_collector.h"
+#include "components/feedback/pii_types.h"
+#include "components/feedback/redaction_tool.h"
+#include "components/feedback/system_logs/system_logs_source.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 using SupportToolDataCollectedCallback =
@@ -79,7 +84,7 @@ class SupportToolHandler {
   // Exports collected data to the `target_path` and archives the file. This
   // function should be called only once on an instance of SupportToolHandler.
   void ExportCollectedData(
-      std::set<PIIType> pii_types_to_keep,
+      std::set<feedback::PIIType> pii_types_to_keep,
       base::FilePath target_path,
       SupportToolDataExportedCallback on_data_exported_callback);
 
@@ -99,7 +104,7 @@ class SupportToolHandler {
   // DataCollector with their name. The DataCollectors will export their output
   // to that path then the contents of the `tmp_path` will be put inside a zip
   // archive on `target_path`.
-  void ExportIntoTempDir(std::set<PIIType> pii_types_to_keep,
+  void ExportIntoTempDir(std::set<feedback::PIIType> pii_types_to_keep,
                          base::FilePath target_path,
                          base::FilePath tmp_path);
 
@@ -139,6 +144,11 @@ class SupportToolHandler {
   // data export is done or on destruction of the SupportToolHandler instance if
   // it hasn't been removed before.
   base::FilePath temp_dir_;
+  // SequencedTaskRunner and RedactionToolContainer for the data collectors that
+  // will need to use feedback::RedactionTool for masking PII from the collected
+  // logs.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_for_redaction_tool_;
+  scoped_refptr<feedback::RedactionToolContainer> redaction_tool_container_;
   base::WeakPtrFactory<SupportToolHandler> weak_ptr_factory_{this};
 };
 

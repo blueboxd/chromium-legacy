@@ -142,7 +142,7 @@ class IsIconURLSyncedChecker : public SingleClientStatusChangeChecker {
     *os << "Waiting for URLs to be commited to the server";
     std::vector<sync_pb::SyncEntity> sessions =
         fake_server_->GetSyncEntitiesByModelType(syncer::SESSIONS);
-    for (const auto& entity : sessions) {
+    for (const sync_pb::SyncEntity& entity : sessions) {
       const sync_pb::SessionSpecifics& session_specifics =
           entity.specifics().session();
       if (!session_specifics.has_tab()) {
@@ -249,9 +249,10 @@ class SingleClientSessionsSyncTest : public SyncTest {
 
     int index = 0;
     EXPECT_EQ(urls.size(), tab->navigations.size());
-    for (auto it = tab->navigations.begin(); it != tab->navigations.end();
-         ++it, ++index) {
-      EXPECT_EQ(urls[index], it->virtual_url());
+    for (const sessions::SerializedNavigationEntry& navigation :
+         tab->navigations) {
+      EXPECT_EQ(urls[index], navigation.virtual_url());
+      index++;
     }
   }
 
@@ -277,7 +278,7 @@ class SingleClientSessionsSyncTest : public SyncTest {
   void UpdateCookieJarAccountsAndWait(std::vector<CoreAccountId> account_ids,
                                       bool expected_cookie_jar_mismatch) {
     std::vector<gaia::ListedAccount> accounts;
-    for (const auto& account_id : account_ids) {
+    for (const CoreAccountId& account_id : account_ids) {
       gaia::ListedAccount signed_in_account;
       signed_in_account.id = account_id;
       accounts.push_back(signed_in_account);
@@ -499,19 +500,19 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TimestampMatchesHistory) {
   ASSERT_TRUE(GetLocalWindows(0, &windows));
 
   int found_navigations = 0;
-  for (auto it = windows.begin(); it != windows.end(); ++it) {
-    for (auto it2 = it->second->wrapped_window.tabs.begin();
-         it2 != it->second->wrapped_window.tabs.end(); ++it2) {
-      for (auto it3 = (*it2)->navigations.begin();
-           it3 != (*it2)->navigations.end(); ++it3) {
-        const base::Time timestamp = it3->timestamp();
-
+  for (const auto& [window_id, window] : windows) {
+    for (const std::unique_ptr<sessions::SessionTab>& tab :
+         window->wrapped_window.tabs) {
+      for (const sessions::SerializedNavigationEntry& navigation :
+           tab->navigations) {
         history::URLRow virtual_row;
-        ASSERT_TRUE(GetUrlFromClient(0, it3->virtual_url(), &virtual_row));
+        ASSERT_TRUE(
+            GetUrlFromClient(0, navigation.virtual_url(), &virtual_row));
         const base::Time history_timestamp = virtual_row.last_visit();
         // Propagated timestamps have millisecond-level resolution, so we avoid
         // exact comparison here (i.e. usecs might differ).
-        ASSERT_EQ(0, (timestamp - history_timestamp).InMilliseconds());
+        ASSERT_EQ(
+            0, (navigation.timestamp() - history_timestamp).InMilliseconds());
         ++found_navigations;
       }
     }
@@ -530,12 +531,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ResponseCodeIsPreserved) {
   ASSERT_TRUE(GetLocalWindows(0, &windows));
 
   int found_navigations = 0;
-  for (auto it = windows.begin(); it != windows.end(); ++it) {
-    for (auto it2 = it->second->wrapped_window.tabs.begin();
-         it2 != it->second->wrapped_window.tabs.end(); ++it2) {
-      for (auto it3 = (*it2)->navigations.begin();
-           it3 != (*it2)->navigations.end(); ++it3) {
-        EXPECT_EQ(200, it3->http_status_code());
+  for (const auto& [window_id, window] : windows) {
+    for (const std::unique_ptr<sessions::SessionTab>& tab :
+         window->wrapped_window.tabs) {
+      for (const sessions::SerializedNavigationEntry& navigation :
+           tab->navigations) {
+        EXPECT_EQ(200, navigation.http_status_code());
         ++found_navigations;
       }
     }
@@ -995,7 +996,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsWithoutDestroyProfileSyncTest,
   WaitForHierarchyOnServer(SessionsHierarchy());
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS)
 class SingleClientSessionsWithDestroyProfileSyncTest
     : public SingleClientSessionsSyncTest {
  public:
@@ -1035,6 +1036,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsWithDestroyProfileSyncTest,
   fake_server::FakeServerVerifier verifier(GetFakeServer());
   EXPECT_TRUE(verifier.VerifySessions(SessionsHierarchy({{kURL2}})));
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace

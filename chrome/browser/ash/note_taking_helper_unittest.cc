@@ -44,9 +44,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -54,7 +54,7 @@
 #include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/test/fake_intent_helper_host.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
@@ -188,7 +188,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
           ->file_system()
           ->CloseInstance(file_system_.get());
       NoteTakingHelper::Shutdown();
-      intent_helper_bridge_.reset();
+      intent_helper_host_.reset();
       file_system_bridge_.reset();
       arc_test_.TearDown();
     }
@@ -230,10 +230,10 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
     profile()->GetPrefs()->SetBoolean(arc::prefs::kArcEnabled,
                                       flags & ENABLE_PLAY_STORE);
     arc_test_.SetUp(profile());
-    // Set up ArcIntentHelperBridge to emulate full-duplex IntentHelper
+    // Set up FakeIntentHelperHost to emulate full-duplex IntentHelper
     // connection.
-    intent_helper_bridge_ = std::make_unique<arc::ArcIntentHelperBridge>(
-        profile(), arc::ArcServiceManager::Get()->arc_bridge_service());
+    intent_helper_host_ = std::make_unique<arc::FakeIntentHelperHost>(
+        arc::ArcServiceManager::Get()->arc_bridge_service()->intent_helper());
     arc::ArcServiceManager::Get()
         ->arc_bridge_service()
         ->intent_helper()
@@ -475,7 +475,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   bool initialized_ = false;
 
   ArcAppTest arc_test_;
-  std::unique_ptr<arc::ArcIntentHelperBridge> intent_helper_bridge_;
+  std::unique_ptr<arc::FakeIntentHelperHost> intent_helper_host_;
 };
 
 TEST_F(NoteTakingHelperTest, PaletteNotEnabled) {
@@ -748,7 +748,7 @@ TEST_F(NoteTakingHelperTest, CustomWebApps_FlagEnabled) {
   Init(ENABLE_PALETTE);
 
   {
-    auto app_info = std::make_unique<WebApplicationInfo>();
+    auto app_info = std::make_unique<WebAppInstallInfo>();
     app_info->start_url = GURL("http://some1.url");
     app_info->scope = GURL("http://some1.url");
     app_info->title = u"Web App 1";
@@ -756,7 +756,7 @@ TEST_F(NoteTakingHelperTest, CustomWebApps_FlagEnabled) {
   }
   std::string app2_id;
   {
-    auto app_info = std::make_unique<WebApplicationInfo>();
+    auto app_info = std::make_unique<WebAppInstallInfo>();
     app_info->start_url = GURL("http://some2.url");
     app_info->scope = GURL("http://some2.url");
     app_info->title = u"Web App 2";
@@ -833,7 +833,7 @@ TEST_F(NoteTakingHelperTest, LaunchHardcodedWebApp) {
   GURL app_url("https://yielding-large-chef.glitch.me/");
   // Install a default-allowed web app corresponding to ID of
   // |NoteTakingHelper::kNoteTakingWebAppIdTest|.
-  auto app_info = std::make_unique<WebApplicationInfo>();
+  auto app_info = std::make_unique<WebAppInstallInfo>();
   app_info->start_url = app_url;
   app_info->title = u"Default Allowed Web App";
   std::string app_id =
@@ -866,7 +866,7 @@ TEST_F(NoteTakingHelperTest, LaunchWebApp) {
 
   // Install a web app with a note_taking_new_note_url.
   GURL new_note_url("http://some.url/new-note");
-  auto app_info = std::make_unique<WebApplicationInfo>();
+  auto app_info = std::make_unique<WebAppInstallInfo>();
   app_info->start_url = GURL("http://some.url");
   app_info->scope = GURL("http://some.url");
   app_info->title = u"Web App 2";
@@ -903,7 +903,7 @@ TEST_F(NoteTakingHelperTest, FallBackIfPreferredAppUnavailable) {
   {
     // Install a default-allowed web app corresponding to ID of
     // |NoteTakingHelper::kNoteTakingWebAppIdTest|.
-    auto app_info = std::make_unique<WebApplicationInfo>();
+    auto app_info = std::make_unique<WebAppInstallInfo>();
     app_info->start_url = GURL("https://yielding-large-chef.glitch.me/");
     app_info->title = u"Default Allowed Web App";
     std::string app_id =
@@ -1604,8 +1604,7 @@ TEST_F(NoteTakingHelperTest, LockScreenSupportInSecondaryProfile) {
       kSecondProfileName, std::move(prefs),
       base::UTF8ToUTF16(kSecondProfileName), 1 /*avatar_id*/,
       std::string() /*supervised_user_id*/, TestingProfile::TestingFactories());
-  chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
-      user, second_profile);
+  ProfileHelper::Get()->SetUserToProfileMappingForTesting(user, second_profile);
   InitExtensionService(second_profile);
 
   // Add test apps to secondary profile.

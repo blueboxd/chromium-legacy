@@ -128,12 +128,12 @@ std::string TestSyncedTabDelegate::GetExtensionAppId() const {
   return std::string();
 }
 
-bool TestSyncedTabDelegate::ProfileIsSupervised() const {
-  return is_supervised_;
+bool TestSyncedTabDelegate::ProfileHasChildAccount() const {
+  return has_child_account_;
 }
 
-void TestSyncedTabDelegate::set_is_supervised(bool is_supervised) {
-  is_supervised_ = is_supervised;
+void TestSyncedTabDelegate::set_has_child_account(bool has_child_account) {
+  has_child_account_ = has_child_account;
 }
 
 const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>*
@@ -248,7 +248,7 @@ void PlaceholderTabDelegate::GetSerializedNavigationAtIndex(
   NOTREACHED();
 }
 
-bool PlaceholderTabDelegate::ProfileIsSupervised() const {
+bool PlaceholderTabDelegate::ProfileHasChildAccount() const {
   NOTREACHED();
   return false;
 }
@@ -427,10 +427,10 @@ TestSyncedWindowDelegatesGetter::GetSyncedWindowDelegates() {
 }
 
 const SyncedWindowDelegate* TestSyncedWindowDelegatesGetter::FindById(
-    SessionID id) {
-  for (auto window_iter_pair : delegates_) {
-    if (window_iter_pair.second->GetSessionId() == id)
-      return window_iter_pair.second;
+    SessionID session_id) {
+  for (const auto& [window_id, delegate] : delegates_) {
+    if (delegate->GetSessionId() == session_id)
+      return delegate;
   }
   return nullptr;
 }

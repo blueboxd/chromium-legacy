@@ -821,6 +821,9 @@
   <message name="IDS_BLUETOOTH_PAIRING_PAIRING_NO_AVAILABLE_DEVICES" desc="Bluetooth pairing dialog: Title for the list of Bluetooth devices when no devices are available for pairing.">
     No devices found nearby
   </message>
+  <message name="IDS_BLUETOOTH_PAIRING_PAIRING_BLUETOOTH_DISABLED" desc="Bluetooth pairing dialog: Title for the list of Bluetooth devices when Bluetooth is disabled so no devices are found for pairing.">
+    Bluetooth is turned off. To see available devices, turn Bluetooth on.
+  </message>
   <message name="IDS_BLUETOOTH_PAIRING_LEARN_MORE" desc="Bluetooth pairing dialog: Message informing the user on what actions to take in order to see a device in the list of available devices.">
     Make sure your Bluetooth device is in pairing mode and nearby. Only pair with devices you trust. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
   </message>
@@ -851,7 +854,7 @@
   <message name="IDS_BLUETOOTH_PAIRING_ENTER_KEYS" desc="Bluetooth pairing dialog: Message displayed informing the user to enter the keys below on the device being paired.">
     Enter these keys on <ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>
   </message>
-  <message name="IDS_BLUETOOTH_PAIRINGS_DEVICE_ITEM_A11Y_LABEL_UNKNOWN" desc="Bluetooth pairing UI: Accessibility label used for a device of unknown type in a list of devices which can be paired.">
+    <message name="IDS_BLUETOOTH_PAIRINGS_DEVICE_ITEM_A11Y_LABEL_UNKNOWN" desc="Bluetooth pairing UI: Accessibility label used for a device of unknown type in a list of devices which can be paired.">
     Device <ph name="DEVICE_INDEX">$1<ex>1</ex></ph> of <ph name="DEVICE_COUNT">$2<ex>15</ex></ph>, Unknown device named <ph name="DEVICE_NAME">$3<ex>Beats</ex></ph>
   </message>
   <message name="IDS_BLUETOOTH_PAIRINGS_DEVICE_ITEM_A11Y_LABEL_COMPUTER" desc="Bluetooth pairing UI: Accessibility label used for a computer device in a list of devices which can be paired.">
@@ -1136,13 +1139,13 @@
     Installing <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> will overwrite all data on your device.
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_INTRO_CONTENT_0" desc="First part of body text of the OS install screen's introduction step.">
-    Before starting, make sure you have a backup of your data. Installing <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> will overwrite your hard drive. Learn more at g.co/TBD.
+    Before starting, make sure you have a backup of your data. Installing <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> will overwrite your hard drive. Learn more at g.co/CR2/InstallGuide.
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_INTRO_CONTENT_1" desc="Second part of body text of the OS install screen's introduction step.">
     Installation takes a few easy steps. You’ll have another chance to confirm before changes are made to your computer.
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_INTRO_FOOTER" desc="Footer text of the OS install screen's introduction step.">
-    Google isn’t responsible for any data loss, and <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> may not work on uncertified models. Learn more at g.co/TBD.
+    Google isn’t responsible for any data loss, and <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> may not work on uncertified models. Learn more at g.co/CR2/InstallGuide.
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_INTRO_NEXT_BUTTON" desc="Text of the next button on the introduction page of the OS install screen">
     Install <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph>
@@ -1168,7 +1171,7 @@
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_ERROR_FAILED_SUBTITLE" desc="Subtitle of the error page of the OS install screen for general failure.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Something went wrong and <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> couldn’t be installed.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>For more help visit: g.co/xxxxx<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>For more help, visit: g.co/CR2/InstallErrors.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_ERROR_VIEW_LOGS" desc="Label for an actionable link that opens dialog with installation logs.">
     View logs
@@ -1185,7 +1188,7 @@
     <ph name="LIST_ITEM">&lt;li&gt;</ph>Make sure you're using a certified model and check install notes
     <ph name="END_LIST">&lt;/ul&gt;</ph>
     <ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>For more help, visit: g.co/xxxxx<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>For more help, visit: g.co/CR2/InstallErrors.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_SUCCESS_TITLE" desc="Title of the success page of the OS install screen">
     Installation complete
@@ -1473,11 +1476,20 @@
   <message name="IDS_LOGIN_SAML_NOTICE" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider. This is the version of the string used in the GAIA flow.">
     This sign-in service is hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>
   </message>
+  <message name="IDS_LOGIN_SAML_NOTICE_SHORT" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider. This is the version of the string used in the GAIA flow.">
+    Sign-in hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>
+  </message>
   <message name="IDS_LOGIN_SAML_PASSWORD_CHANGE_NOTICE" desc="Text message displayed in the system dialog title. The dialog shows a web-page where the user can change their SAML password while staying in the session">
     This authentication service is hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>
   </message>
   <message name="IDS_LOGIN_SAML_NOTICE_WITH_VIDEO" desc="Text message displayed above SAML portal to early indicate that the user is being redirected to another sign-in provider which has requested video media access.">
     This sign-in service, hosted by <ph name="SAML_DOMAIN">$1<ex>saml.com</ex></ph>, is accessing your camera.
+  </message>
+  <message name="IDS_LOGIN_SAML_CHANGE_PROVIDER_MESSAGE" desc="Text message displayed below SAML portal to let user change sign-in provider.">
+    Wrong sign-in option?
+  </message>
+  <message name="IDS_LOGIN_SAML_CHANGE_PROVIDER_BUTTON" desc="Button to change sign-in provider.">
+    Enter Google Account info
   </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_TITLE" desc="Title for the confirm password dialog.">
     Please re-enter your password to update your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> profile.
@@ -2238,7 +2250,7 @@
   <message name="IDS_LOGIN_ERROR_ENROLLMENT_TPM_FAILURE_CONTENT" desc="Steps that can help users to properly setup TPM manually.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Before enrolling you need to clear the TPM so <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> can take ownership of the device.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can also turn off the TPM device entirely. Your data will still be stored safely with software encryption, but certain security features such as hardware-backed certificates will be disabled.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>You can change your TPM settings by rebooting and entering the system BIOS/UEFI settings. Steps vary based on the device model. For more info, open the <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> documentation on a separate device before you reboot: [URL link]<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>You can change your TPM settings by rebooting and entering the system BIOS/UEFI settings. Steps vary based on the device model. For more info, open the <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> documentation on a separate device before you reboot: g.co/CR2/TPMHelp.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT_BUTTON" desc="Label on button that restarts device.">
     Restart
@@ -2876,6 +2888,9 @@
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ERROR_SAVE_DEVICE_CONFIGURATION" desc="Error message shown on the enrollment screen when the system failed to save some part of the device configuration. E.g. token from the Device Management server.">
     Oops!  The system failed to save device configuration.
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_ERROR_MAY_NOT_BLOCK_DEV_MODE" desc="Error message shown on the enrollment screen when the incoming device policy block developer mode but a command-line switch prevents this." translateable="false">
+    Device policy would block developer mode but a command-line switch prevents this.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
     Enterprise enrollment
@@ -3656,10 +3671,10 @@
   <message name="IDS_HATS_DONE_BUTTON_LABEL" desc="Label used for the done button at the end of survey">
     Done
   </message>
-  <message name="IDS_ARC_CHILD_TRANSITION_TITLE" desc="Title of the toast shown when the user tries to activate ARC app and transition from child to regular user or from regular to child user is not completed.">
+  <message name="IDS_ARC_CHILD_TRANSITION_TITLE" desc="Title of the notification shown when the user tries to activate ARC app and transition from child to regular user or from regular to child user is not completed.">
     Action not available
   </message>
-  <message name="IDS_ARC_CHILD_TRANSITION_MESSAGE" desc="Message of the toast shown when the user tries to activate ARC app and transition from child to regular user or from regular to child user is not completed.">
+  <message name="IDS_ARC_CHILD_TRANSITION_MESSAGE" desc="Message of the notification shown when the user tries to activate ARC app and transition from child to regular user or from regular to child user is not completed.">
     Please try again in a few moments
   </message>
   <message name="IDS_ARC_DATA_REMOVAL_CONFIRMATION_HEADING" desc="Heading text in the content area of the confirmation for data removal in case ARC comes to wrong state.">
@@ -3901,36 +3916,72 @@
   <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_TITLE" desc="Title for the message in the consolidated consent screen to opt-in for metrics for accounts.">
     Send usage and diagnostic data.
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN" desc="Message in the consolidated consent screen to opt-in for metrics.">
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_OWNER" desc="Message in the consolidated consent screen to opt-in for metrics when the user is the device owner.">
     Help improve Chrome and ChromeOS features and performance by automatically sending crash reports as well as diagnostic and usage data to Google. Some aggregate data will also help Android apps and Google partners. If the Web &amp; App Activity setting is turned on for your Google Account, your Android data may be saved to your Google Account.
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_CHILD" desc="Message in the consolidated consent screen to opt-in for metrics for a child account.">
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN" desc="Message in the consolidated consent screen to opt-in for metrics.">
+    Help improve Chrome and ChromeOS features and performance by automatically sending diagnostic and usage data to Google. Some aggregate data will also help Android apps and Google partners. If the Web &amp; App Activity setting is turned on for your Google Account, your Android data may be saved to your Google Account.
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_CHILD_OWNER" desc="Message in the consolidated consent screen to opt-in for metrics for a child device owner account.">
     Help improve Chrome and ChromeOS features and performance by automatically sending crash reports as well as diagnostic and usage data to Google. Some aggregate data will also help Android apps and Google partners. If the Web &amp; App Activity setting is turned on for your child's Google Account, your child's Android data may be saved to your child's Google Account.
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_ARC_DISABLED" desc="Message in the consolidated consent screen to opt-in for metrics when ARC is disabled.">
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_CHILD" desc="Message in the consolidated consent screen to opt-in for metrics for a child account.">
+    Help improve Chrome and ChromeOS features and performance by automatically sending diagnostic and usage data to Google. Some aggregate data will also help Android apps and Google partners. If the Web &amp; App Activity setting is turned on for your child's Google Account, your child's Android data may be saved to your child's Google Account.
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_ARC_DISABLED_OWNER" desc="Message in the consolidated consent screen to opt-in for metrics when ARC is disabled for device owner.">
     Help improve Chrome and ChromeOS features and performance by automatically sending crash reports as well as diagnostic and usage data to Google.
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for metrics opt-in.">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Help improve Chrome and ChromeOS features and performance by automatically sending crash reports as well as diagnostic and usage data to Google.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can start or stop allowing these reports any time in your ChromeOS device settings. If you're a domain administrator, you can change this setting in the admin console.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>Turning off this feature doesn't affect your device's ability to send the information needed for essential services such as system updates and security.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>If the Web &amp; App Activity setting is turned on for your Google Account, your Android data may be saved to your Google Account. You can see your data, delete it, and change your account settings at account.google.com.<ph name="END_PARAGRAPH4">&lt;/p&gt;</ph>
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_ARC_DISABLED" desc="Message in the consolidated consent screen to opt-in for metrics when ARC is disabled.">
+    Help improve Chrome and ChromeOS features and performance by automatically sending diagnostic and usage data to Google.
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_CHILD" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for metrics opt-in for a child account.">
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_LINK" desc="Learn more about usage opt in">
+    Learn more about diagnostic and usage data.
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_OWNER" desc="Text shown in a pop-up dialog in the consolidated consent screen when the device owner clicks on the learn more for metrics opt-in.">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing your ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like when ChromeOS crashes, which features you use, how much memory you typically use, and Android app diagnostic and usage data. Some aggregate data will also help Google apps and partners, such as Android developers.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can start or stop allowing these reports any time in your ChromeOS device settings. If you’re a domain administrator, you can change this setting in the admin console.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>If the Web &amp; App Activity setting is turned on for your Google Account, your Android data may be saved to your Google Account. You can see your data, delete it, and change your account settings at account.google.com.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for metrics opt-in.">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing your ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like which features you use, how much memory you typically use, Android app diagnostic and usage data, and errors. Some aggregate data will also help Google apps and partners, such as Android developers.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can start or stop allowing these reports any time in your ChromeOS device settings. If you’re a domain administrator, you can change this setting in the admin console.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>If the Web &amp; App Activity setting is turned on for your Google Account, your Android data may be saved to your Google Account. You can see your data, delete it, and change your account settings at account.google.com.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>If the device owner turns on "Send usage and diagnostic data", crash reports might also be uploaded to Google.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_CHILD_OWNER" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for metrics opt-in for a child device owner account.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like when ChromeOS crashes, which features were used, how much memory was typically used, and Android app diagnostic and usage data. Some aggregate data will also help Google apps and partners, such as Android developers.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can start or stop allowing these reports any time in your child's ChromeOS device settings. If you're a domain administrator, you can change this setting in the admin console.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>Turning off this feature doesn't affect this device's ability to send the information needed for essential services such as system updates and security.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>If the Web &amp; App Activity setting is turned on for your child's Google Account, your child's data may be saved to their Google Account. Learn more about these settings and how to adjust them at families.google.com.<ph name="END_PARAGRAPH4">&lt;/p&gt;</ph>
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_ARC_DISABLED" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for metrics opt-in when ARC is disabled.">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like when ChromeOS crashes, which features were used, and how much memory was typically used.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_CHILD" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for metrics opt-in for a child account.">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like which features were used, how much memory was typically used, and Android app diagnostic and usage data. Some aggregate data will also help Google apps and partners, such as Android developers.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can start or stop allowing these reports any time in your child's ChromeOS device settings. If you're a domain administrator, you can change this setting in the admin console.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>Turning off this feature doesn't affect this device's ability to send the information needed for essential services such as system updates and security.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>If the Web &amp; App Activity setting is turned on for your child's Google Account, your child's data may be saved to their Google Account. Learn more about these settings and how to adjust them at families.google.com.<ph name="END_PARAGRAPH4">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>If the device owner turns on "Send usage and diagnostic data", crash reports might also be uploaded to Google.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_ARC_DISABLED_OWNER" desc="Text shown in a pop-up dialog in the consolidated consent screen when the device owner clicks on the learn more for metrics opt-in when ARC is disabled.">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing your ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like when ChromeOS crashes, which features you use and how much memory you typically use.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can start or stop allowing these reports any time in your Chrome device settings. If you’re a domain administrator, you can change this setting in the admin console.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>Turning off this feature doesn't affect your device's ability to send the information needed for essential services such as system updates and security.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
   </message>
-  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_ARC_DISABLED_CHILD" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for metrics opt-in when ARC is disabled in a child account.">
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_ARC_DISABLED" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for metrics opt-in when ARC is disabled.">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing your ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like which features you use and how much memory you typically use.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can start or stop allowing these reports any time in your Chrome device settings. If you’re a domain administrator, you can change this setting in the admin console.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>Turning off this feature doesn't affect your device's ability to send the information needed for essential services such as system updates and security.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>If the device owner turns on "Send usage and diagnostic data", crash reports might also be uploaded to Google.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_ARC_DISABLED_CHILD_OWNER" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for metrics opt-in when ARC is disabled in a child account.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like when ChromeOS crashes, which features were used, and how much memory was typically used.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can start or stop allowing these reports any time in your child's ChromeOS device settings. If you're a domain administrator, you can change this setting in the admin console.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>Turning off this feature doesn't affect this device's ability to send the information needed for essential services such as system updates and security.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_USAGE_OPT_IN_LEARN_MORE_ARC_DISABLED_CHILD" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for metrics opt-in when ARC is disabled in a child account.">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like when which features were used, and how much memory was typically used.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can start or stop allowing these reports any time in your child's ChromeOS device settings. If you're a domain administrator, you can change this setting in the admin console.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>Turning off this feature doesn't affect this device's ability to send the information needed for essential services such as system updates and security.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH4">&lt;p&gt;</ph>If the device owner turns on "Send usage and diagnostic data", crash reports might also be uploaded to Google.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_CONSOLIDATED_CONSENT_BACKUP_OPT_IN_TITLE" desc="Title for the message in the consolidated consent screen to opt-in for back-up.">
     Back up Android apps to Google Drive.
@@ -3949,6 +4000,9 @@
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>App data can be any data that an app has saved (based on developer settings), including data such as contacts, messages, and photos. Backup data will not count toward your child's Drive storage quota.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn this service off in Settings.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_BACKUP_OPT_IN_LEARN_MORE_LINK" desc="Learn more about backup opt in">
+    Learn more about backing up your apps
+  </message>
   <message name="IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_TITLE" desc="Title for the message in the consolidated consent screen to opt-in for location services.">
     Use location for Android apps and services.
   </message>
@@ -3965,6 +4019,9 @@
   <message name="IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_LEARN_MORE_CHILD" desc="Text shown in a pop-up dialog in the consolidated consent screen when the user clicks on the learn more for location services opt-in. for a child account">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Google's location service uses sources like Wi-Fi, mobile networks, and sensors to help estimate this device's location.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn off Android location on this device at any time by going to Settings &gt; Apps &gt; Google Play Store &gt; Manage Android preferences &gt; Security &amp; location &gt; Location. You can also turn off the use of Wi-Fi, mobile networks, and sensors for Android location by turning off “Google Location Accuracy” in the same menu.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_CONSOLIDATED_CONSENT_LOCATION_OPT_IN_LEARN_MORE_LINK" desc="Learn more about location opt in">
+    Learn more about using location
   </message>
   <message name="IDS_CONSOLIDATED_CONSENT_FOOTER" desc="Message in the footer of the consolidated consent screen.">
     By continuing, you agree that this device may also automatically download and install updates and apps from Google, your carrier, and your device's manufacturer, possibly using cellular data. Some of these apps may offer in-app purchases.
@@ -3997,7 +4054,7 @@
     Google terms of service
   </message>
   <message name="IDS_CONSOLIDATED_CONSENT_CROS_EULA_TITLE" desc="Title of Google Chrome and Chrome OS additional terms screen">
-    Google Chrome and ChromeOS Additional Terms
+    Google Chrome and ChromeOS additional terms of service
   </message>
   <message name="IDS_CONSOLIDATED_CONSENT_ARC_TITLE" desc="Title of Goolge Play terms of service in opt-in screen">
     Google Play terms of service
@@ -4037,8 +4094,8 @@
   <message name="IDS_GUEST_TOS_USAGE_OPT_IN" desc="Message in the guest terms of service screen to opt-in for metrics during the guest session.">
     Help improve Chrome and ChromeOS features and performance by automatically sending crash reports as well as diagnostic and usage data to Google.
   </message>
-  <message name="IDS_GUEST_TOS_LEARN_MORE" desc="Learn more link text in guest terms of service screen.">
-    Learn more
+  <message name="IDS_GUEST_TOS_USAGE_OPT_IN_LEARN_MORE_LINK" desc="Learn more link text in guest terms of service screen.">
+    Learn more about diagnostic and usage data
   </message>
   <message name="IDS_GUEST_TOS_USAGE_OPT_IN_LEARN_MORE" desc="Text shown in a pop-up dialog in the guest terms of service screen when the user clicks on the learn more for metrics opt-in.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Allowing ChromeOS devices to send automatic reports helps us prioritize what to fix and improve in ChromeOS. These reports can include things like when ChromeOS crashes, which features were used, and how much memory was typically used.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
@@ -4053,10 +4110,10 @@
   <message name="IDS_HW_DATA_COLLECTION_CONTENT" desc="Content of the hardware data collection notice screen.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>To provide the best experience, <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> collects hardware data about devices and shares it with Google to determine which updates should be delivered. Optionally, you can allow Google to use this data for additional purposes like support and improvements to the <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> experience and service.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can log in on this device and visit the CLOUDREADY_HARDWARE_INFO section in chrome://system to see the data sent to Google for update filtering, as well as any other instances where you choose to share data with Google.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>For more details on data <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> may share with Google, and how it is used visit g.co/xxxxx<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>For more details on data <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> may share with Google, and how it is used visit g.co/CR2/HWDataCollection.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_HW_DATA_COLLECTION_USAGE_INFO" desc="Checkbox description for additional hardware data usage. This message is followed by a 'Learn more' link.">
-    Let Google use your hardware data to help improve <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph>. If you decline, this data is still sent to Google to determine proper updates, but is not stored or used otherwise.
+    Let Google use your hardware data to help improve <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph>. If you decline, this data is still sent to Google to determine proper updates, but is not stored or used otherwise. Learn more at g.co/CR2/HWDataCollection.
   </message>
   <message name="IDS_HW_DATA_COLLECTION_ACCEPT_AND_CONTINUE_BUTTON_TEXT" desc="Label on a button on the hardware data collection notice screen to accept the terms and continue.">
     Accept and continue
@@ -4573,6 +4630,9 @@
   </message>
   <message name="IDS_CROSTINI_UPGRADER_RESTORE_MESSAGE" desc="Title of the Crostini upgrader when the container upgrade fails and restore of a backup is in progress.">
     Linux files and apps are being restored to their backed up state.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_LOG_FILE" desc="A message shown in the Crostini upgrader that says which file the upgrade log messages have been stored in.">
+    These logs have been saved in My Files as
   </message>
   <message name="IDS_CROSTINI_UPGRADER_NOT_NOW" desc="Text on the button to defer performing the upgrade">
     Not now
@@ -5620,29 +5680,6 @@
   </message>
   <message name="IDS_BOREALIS_INSTALLER_IN_PROGRESS_ERROR_MESSAGE" desc="" translateable="false">
       Couldn't install <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph>. Another process is already trying to install <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph> or hasn't finished cancelling. Please try again later.
-  </message>
-  <!--
-    ==================================================================================
-    If you change any IDS_EDU_LOGIN_INFO_* string, update kConsentScreenTextVersion in
-    chrome/browser/ash/child_accounts/secondary_account_consent_logger.cc
-    to the value of "v<GERRIT_CL_NUMBER>"
-  -->
-  <message name="IDS_EDU_LOGIN_INFO_COEXISTENCE_TITLE" desc="Title for the screen explaining co-existence to a parent.">
-    School account information for parents
-  </message>
-  <message name="IDS_EDU_LOGIN_INFO_COEXISTENCE_BODY" desc="Text on the screen explaining co-existence to a parent.">
-    Adding a school account to a profile enables easy sign-in to websites, extensions, and apps as a student while operating under parental controls. It does not give a child access to bookmarks, passwords, or other browser data synced with the school account.&lt;br&gt;&lt;br&gt;
-    If your child uses a Chromebook in school and you wish to mirror the school experience at home to ensure your child has access to all necessary schoolwork, please sign out of this Family Link account and sign in to the school account from the Chrome OS accounts page (note: Family Link parental controls will not apply).&lt;br&gt;&lt;br&gt;
-    If your child does not use a Chromebook in school or if you prefer to manage your child’s experience at home using Family Link, please click the Next button below to add a school account to this profile.
-  </message>
-  <message name="IDS_EDU_LOGIN_INFO_TITLE" desc="Title for the parent information screen in EDU account addition flow.">
-    G Suite for Education accounts
-  </message>
-  <message name="IDS_EDU_LOGIN_INFO_BODY" desc="Text informing parent that only EDU account may be added to the device.">
-    The <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://gsuite.google.com/terms/education_privacy.html</ex>"&gt;</ph>G Suite for Education Privacy Notice<ph name="LINK_END">&lt;/a&gt;</ph> is meant to help G Suite for Education users and parents understand what data the product collects, why it is collected, and what is done with it.
-  </message>
-  <message name="IDS_EDU_LOGIN_INFO_PARENT_SETTINGS" desc="Text informing parent about Google services that users can access, browsing data storage and Family Link parent settings.">
-    G Suite for Education administrators determine which Google services their users can access while signed into a G Suite for Education account. This may include some features or services that your child was previously unable to access using this supervised  account. School administrators are required to provide or obtain consent for the use of the services by their minor users.
   </message>
   <!--
     IDS_EDU_LOGIN_INFO_* strings END

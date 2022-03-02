@@ -73,10 +73,11 @@ class CC_EXPORT ThreadedInputHandler : public InputHandler,
   void RequestUpdateForSynchronousInputHandler() override;
   void SetSynchronousInputHandlerRootScrollOffset(
       const gfx::PointF& root_content_offset) override;
-  void PinchGestureBegin() override;
+  void PinchGestureBegin(const gfx::Point& anchor,
+                         ui::ScrollInputType source) override;
   void PinchGestureUpdate(float magnify_delta,
                           const gfx::Point& anchor) override;
-  void PinchGestureEnd(const gfx::Point& anchor, bool snap_to_min) override;
+  void PinchGestureEnd(const gfx::Point& anchor) override;
   void SetNeedsAnimateInput() override;
   bool IsCurrentlyScrollingViewport() const override;
   EventListenerProperties GetEventListenerProperties(
@@ -137,6 +138,8 @@ class CC_EXPORT ThreadedInputHandler : public InputHandler,
                                   const gfx::Vector2dF& delta,
                                   const gfx::Point& viewport_point,
                                   bool is_direct_manipulation);
+
+  float LineStep() const;
 
   // Resolves a delta in the given granularity for the |scroll_node| into
   // physical pixels to scroll.

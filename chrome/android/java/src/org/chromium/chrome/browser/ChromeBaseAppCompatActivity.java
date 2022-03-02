@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser;
 
-import static org.chromium.chrome.browser.base.SplitCompatUtils.CHROME_SPLIT_NAME;
+import static org.chromium.chrome.browser.base.SplitCompatApplication.CHROME_SPLIT_NAME;
 
 import android.app.ActivityManager.TaskDescription;
 import android.content.Context;
@@ -20,13 +20,14 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.color.DynamicColors;
+
 import org.chromium.base.BundleUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.base.SplitChromeApplication;
-import org.chromium.chrome.browser.base.SplitCompatUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.language.GlobalAppLocaleController;
@@ -34,7 +35,6 @@ import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.theme.ThemeUtils;
-import org.chromium.chrome.browser.ui.theme.ColorDelegateImpl;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 
@@ -86,7 +86,7 @@ public class ChromeBaseAppCompatActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        SplitCompatUtils.restoreLoadedSplits(savedInstanceState);
+        BundleUtils.restoreLoadedSplits(savedInstanceState);
         mModalDialogManagerSupplier.set(createModalDialogManager());
 
         initializeNightModeStateProvider();
@@ -116,13 +116,13 @@ public class ChromeBaseAppCompatActivity extends AppCompatActivity
         // LayoutInflaters that use this ClassLoader can find view classes that
         // live inside splits. Very useful when FragmentManger tries to inflate
         // the UI automatically on restore.
-        return SplitCompatUtils.getSplitCompatClassLoader();
+        return BundleUtils.getSplitCompatClassLoader();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        SplitCompatUtils.saveLoadedSplits(outState);
+        BundleUtils.saveLoadedSplits(outState);
     }
 
     @Override
@@ -213,7 +213,7 @@ public class ChromeBaseAppCompatActivity extends AppCompatActivity
         setTheme(R.style.ColorOverlay_ChromiumAndroid);
 
         if (supportsDynamicColors()) {
-            new ColorDelegateImpl().applyDynamicColorsIfAvailable(this);
+            DynamicColors.applyIfAvailable(this);
         }
 
         // Try to enable browser overscroll when content overscroll is enabled for consistency. This

@@ -6,10 +6,12 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/direct_sockets/direct_sockets_service_impl.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -60,10 +62,18 @@ struct RecordedCall {
   int32_t receive_buffer_size = 0;
 
   bool no_delay = false;
+
+  network::mojom::TCPKeepAliveOptionsPtr keep_alive_options;
 };
 
 constexpr char kPermissionDeniedHistogramName[] =
     "DirectSockets.PermissionDeniedFailures";
+
+constexpr char kTCPNetworkFailuresHistogramName[] =
+    "DirectSockets.TCPNetworkFailures";
+
+constexpr char kUDPNetworkFailuresHistogramName[] =
+    "DirectSockets.UDPNetworkFailures";
 
 const std::string kIPv4_tests[] = {
     // 0.0.0.0/8
@@ -225,11 +235,13 @@ class MockNetworkContext : public network::TestNetworkContext {
       mojo::PendingRemote<network::mojom::SocketObserver> observer,
       CreateTCPConnectedSocketCallback callback) override {
     const net::IPEndPoint& peer_addr = remote_addr_list.front();
-    Record(RecordedCall{DirectSocketsServiceImpl::ProtocolType::kTcp,
-                        peer_addr.address().ToString(), peer_addr.port(),
-                        tcp_connected_socket_options->send_buffer_size,
-                        tcp_connected_socket_options->receive_buffer_size,
-                        tcp_connected_socket_options->no_delay});
+    Record(RecordedCall{
+        DirectSocketsServiceImpl::ProtocolType::kTcp,
+        peer_addr.address().ToString(), peer_addr.port(),
+        tcp_connected_socket_options->send_buffer_size,
+        tcp_connected_socket_options->receive_buffer_size,
+        tcp_connected_socket_options->no_delay,
+        std::move(tcp_connected_socket_options->keep_alive_options)});
 
     mojo::ScopedDataPipeProducerHandle producer;
     mojo::ScopedDataPipeConsumerHandle consumer;
@@ -308,11 +320,13 @@ class MockUDPSocket : public network::mojom::UDPSocket {
     const net::Error result = (remote_addr.port() == 0)
                                   ? net::ERR_INVALID_ARGUMENT
                                   : network_context_->result();
-    network_context_->Record(RecordedCall{
-        DirectSocketsServiceImpl::ProtocolType::kUdp,
-        remote_addr.address().ToString(), remote_addr.port(),
-        socket_options->send_buffer_size, socket_options->receive_buffer_size,
-        /*no_delay=*/false});
+    network_context_->Record(
+        RecordedCall{DirectSocketsServiceImpl::ProtocolType::kUdp,
+                     remote_addr.address().ToString(),
+                     remote_addr.port(),
+                     socket_options->send_buffer_size,
+                     socket_options->receive_buffer_size,
+                     {}});
 
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), result,
@@ -415,12 +429,12 @@ class DirectSocketsOpenBrowserTest : public ContentBrowserTest {
         protocol == DirectSocketsServiceImpl::ProtocolType::kTcp ? "Tcp"
                                                                  : "Udp";
     const std::string expected_result = base::StringPrintf(
-        "open%s failed: NotAllowedError: Permission denied", type.c_str());
+        "open%s failed: NetworkError: Network error.", type.c_str());
 
     base::HistogramTester histogram_tester;
     histogram_tester.ExpectBucketCount(
         kPermissionDeniedHistogramName,
-        DirectSocketsServiceImpl::FailureType::kResolvingToNonPublic, 0);
+        blink::mojom::DirectSocketFailureType::kResolvingToNonPublic, 0);
 
     const std::string script =
         base::StringPrintf("open%s({remoteAddress: '%s', remotePort: 993})",
@@ -429,7 +443,7 @@ class DirectSocketsOpenBrowserTest : public ContentBrowserTest {
     EXPECT_EQ(expected_result, EvalJs(shell(), script));
     histogram_tester.ExpectBucketCount(
         kPermissionDeniedHistogramName,
-        DirectSocketsServiceImpl::FailureType::kResolvingToNonPublic, 1);
+        blink::mojom::DirectSocketFailureType::kResolvingToNonPublic, 1);
   }
 
  protected:
@@ -476,28 +490,22 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_Success_Hostname) {
   EXPECT_EQ(expected_result, EvalJs(shell(), script));
 }
 
-// TODO(crbug.com/1196515): Fix this flaky test.
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
-                       DISABLED_OpenTcp_TransientActivation) {
+                       OpenTcp_TransientActivation) {
   EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
-
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kTransientActivation, 0);
 
   MockNetworkContext mock_network_context(net::OK);
   DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
 
-  const std::string script =
-      "openTcp({remoteAddress: '::1', remotePort: 993});\
-       openTcp({remoteAddress: '::1', remotePort: 993})";
+  // The first call consumes the transient activation. The second fails.
+  const std::string open =
+      "openTcp({remoteAddress: '127.0.0.1', remotePort: 993})";
+  const std::string script = open + ".then(() => " + open + ")";
 
-  EXPECT_EQ("openTcp failed: NotAllowedError: Permission denied",
-            EvalJs(shell(), script));
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kTransientActivation, 1);
+  EXPECT_EQ(
+      "openTcp failed: NotAllowedError: Failed to execute 'openTCPSocket' on "
+      "'Navigator': Must be handling a user gesture to open a socket.",
+      EvalJs(shell(), script));
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_CannotEvadeCors) {
@@ -506,17 +514,17 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_CannotEvadeCors) {
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectBucketCount(
       kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kCORS, 0);
+      blink::mojom::DirectSocketFailureType::kCORS, 0);
 
   // HTTPS uses port 443.
   const std::string script =
       "openTcp({remoteAddress: '127.0.0.1', remotePort: 443})";
 
-  EXPECT_EQ("openTcp failed: NotAllowedError: Permission denied",
+  EXPECT_EQ("openTcp failed: NetworkError: Network error.",
             EvalJs(shell(), script));
   histogram_tester.ExpectBucketCount(
       kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kCORS, 1);
+      blink::mojom::DirectSocketFailureType::kCORS, 1);
 }
 
 // Permission Denied failures(user dialog) should be triggered if connection
@@ -528,18 +536,18 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectBucketCount(
       kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kUserDialog, 0);
+      blink::mojom::DirectSocketFailureType::kUserDialog, 0);
 
   DirectSocketsServiceImpl::SetConnectionDialogBypassForTesting(false);
 
   const std::string script =
       "openTcp({remoteAddress: '127.0.0.1', remotePort: 993})";
 
-  EXPECT_EQ("openTcp failed: NotAllowedError: Permission denied",
+  EXPECT_EQ("openTcp failed: NetworkError: Network error.",
             EvalJs(shell(), script));
   histogram_tester.ExpectBucketCount(
       kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kUserDialog, 1);
+      blink::mojom::DirectSocketFailureType::kUserDialog, 1);
 }
 
 // Remote address should be provided or TEST will fail with NotAllowedError. In
@@ -551,8 +559,20 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
 
   const std::string script = "openTcp({remotePort: 993})";
 
-  EXPECT_EQ("openTcp failed: NotAllowedError: Permission denied",
+  EXPECT_EQ("openTcp failed: NetworkError: Network error.",
             EvalJs(shell(), script));
+}
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
+                       OpenTcp_RemotePortCurrentlyRequired) {
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
+
+  const std::string script = "openTcp({})";
+
+  EXPECT_EQ(
+      "openTcp failed: TypeError: Failed to execute 'openTCPSocket' on "
+      "'Navigator': remotePort was not specified.",
+      EvalJs(shell(), script));
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
@@ -562,18 +582,18 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectBucketCount(
       kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kEnterprisePolicy, 0);
+      blink::mojom::DirectSocketFailureType::kEnterprisePolicy, 0);
 
   DirectSocketsServiceImpl::SetEnterpriseManagedForTesting(true);
 
   const std::string script =
       "openTcp({remoteAddress: '127.0.0.1', remotePort: 993})";
 
-  EXPECT_EQ("openTcp failed: NotAllowedError: Permission denied",
+  EXPECT_EQ("openTcp failed: NetworkError: Network error.",
             EvalJs(shell(), script));
   histogram_tester.ExpectBucketCount(
       kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kEnterprisePolicy, 1);
+      blink::mojom::DirectSocketFailureType::kEnterprisePolicy, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
@@ -606,10 +626,15 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_OptionsOne) {
   DirectSocketsServiceImpl::SetPermissionCallbackForTesting(
       base::BindRepeating(&UnconditionallyPermitConnection));
 
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectUniqueSample(kTCPNetworkFailuresHistogramName,
+                                      -net::Error::ERR_PROXY_CONNECTION_FAILED,
+                                      0);
+
   MockNetworkContext mock_network_context(net::ERR_PROXY_CONNECTION_FAILED);
   DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
   const std::string expected_result =
-      "openTcp failed: NotAllowedError: Permission denied";
+      "openTcp failed: NetworkError: Network error.";
 
   const std::string script =
       R"(
@@ -631,6 +656,13 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_OptionsOne) {
   EXPECT_EQ(3456, call.send_buffer_size);
   EXPECT_EQ(7890, call.receive_buffer_size);
   EXPECT_EQ(false, call.no_delay);
+  EXPECT_FALSE(call.keep_alive_options);
+
+  // To sync histograms from renderer.
+  FetchHistogramsFromChildProcesses();
+  histogram_tester.ExpectUniqueSample(kTCPNetworkFailuresHistogramName,
+                                      -net::Error::ERR_PROXY_CONNECTION_FAILED,
+                                      1);
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_OptionsTwo) {
@@ -649,7 +681,9 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_OptionsTwo) {
             remotePort: 789,
             sendBufferSize: 0,
             receiveBufferSize: 1234,
-            noDelay: true
+            noDelay: true,
+            keepAlive: true,
+            keepAliveDelay: 100_000
           })
         )";
   EXPECT_THAT(EvalJs(shell(), script).ExtractString(),
@@ -663,9 +697,12 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_OptionsTwo) {
   EXPECT_EQ(0, call.send_buffer_size);
   EXPECT_EQ(1234, call.receive_buffer_size);
   EXPECT_EQ(true, call.no_delay);
+  EXPECT_TRUE(call.keep_alive_options);
+  EXPECT_EQ(true, call.keep_alive_options->enable);
+  EXPECT_EQ(100U, call.keep_alive_options->delay);
 }
 
-IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_Success) {
+IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_OptionsThree) {
   EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
 
   DirectSocketsServiceImpl::SetPermissionCallbackForTesting(
@@ -674,33 +711,69 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_Success) {
   MockNetworkContext mock_network_context(net::OK);
   DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
 
-  uint16_t remotePort = 513;
-  const std::string script = base::StringPrintf(
-      "openUdp({remoteAddress: '127.0.0.1', remotePort: %d})", remotePort);
+  const std::string script =
+      R"(
+          openTcp({
+            remoteAddress: 'fedc:ba98:7654:3210:fedc:ba98:7654:3210',
+            remotePort: 789,
+            sendBufferSize: 0,
+            receiveBufferSize: 1234,
+            noDelay: true,
+            keepAlive: false
+          })
+        )";
+  EXPECT_THAT(EvalJs(shell(), script).ExtractString(),
+              StartsWith("openTcp succeeded"));
 
-  EXPECT_EQ("openUdp succeeded", EvalJs(shell(), script));
+  DCHECK_EQ(1U, mock_network_context.history().size());
+  const RecordedCall& call = mock_network_context.history()[0];
+  EXPECT_EQ(DirectSocketsServiceImpl::ProtocolType::kTcp, call.protocol_type);
+  EXPECT_EQ("fedc:ba98:7654:3210:fedc:ba98:7654:3210", call.remote_address);
+  EXPECT_EQ(789, call.remote_port);
+  EXPECT_EQ(0, call.send_buffer_size);
+  EXPECT_EQ(1234, call.receive_buffer_size);
+  EXPECT_EQ(true, call.no_delay);
+  EXPECT_TRUE(call.keep_alive_options);
+  EXPECT_EQ(false, call.keep_alive_options->enable);
 }
 
-// TODO(crbug.com/1213100): Fix this flaky test.
-IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
-                       DISABLED_OpenUdp_TransientActivation) {
+IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_Success_Hostname) {
   EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
 
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kTransientActivation, 0);
+  const char kExampleHostname[] = "mail.example.com";
+  const char kExampleAddress[] = "98.76.54.32";
+  const std::string mapping_rules =
+      base::StringPrintf("MAP %s %s", kExampleHostname, kExampleAddress);
+
+  MockNetworkContext mock_network_context(net::OK);
+  mock_network_context.set_host_mapping_rules(mapping_rules);
+  DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
+  const std::string expected_result = base::StringPrintf(
+      "openUdp succeeded: {remoteAddress: \"%s\", remotePort: 993}",
+      kExampleAddress);
 
   const std::string script = base::StringPrintf(
-      "openUdp({remoteAddress: '127.0.0.1', remotePort: %d});\
-       openUdp({remoteAddress: '127.0.0.1', remotePort: %d})",
-      0, 0);
+      "openUdp({remoteAddress: '%s', remotePort: 993})", kExampleHostname);
 
-  EXPECT_EQ("openUdp failed: NotAllowedError: Permission denied",
-            EvalJs(shell(), script));
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kTransientActivation, 1);
+  EXPECT_EQ(expected_result, EvalJs(shell(), script));
+}
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
+                       OpenUdp_TransientActivation) {
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
+
+  MockNetworkContext mock_network_context(net::OK);
+  DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
+
+  // The first call consumes the transient activation. The second fails.
+  const std::string open =
+      "openUdp({remoteAddress: '127.0.0.1', remotePort: 993})";
+  const std::string script = open + ".then(() => " + open + ")";
+
+  EXPECT_EQ(
+      "openUdp failed: NotAllowedError: Failed to execute 'openUDPSocket' on "
+      "'Navigator': Must be handling a user gesture to open a socket.",
+      EvalJs(shell(), script));
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_NotAllowedError) {
@@ -713,7 +786,7 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_NotAllowedError) {
   const std::string script = base::StringPrintf(
       "openUdp({remoteAddress: '127.0.0.1', remotePort: %d})", 0);
 
-  EXPECT_EQ("openUdp failed: NotAllowedError: Permission denied",
+  EXPECT_EQ("openUdp failed: NetworkError: Network error.",
             EvalJs(shell(), script));
 }
 
@@ -723,17 +796,17 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_CannotEvadeCors) {
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectBucketCount(
       kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kCORS, 0);
+      blink::mojom::DirectSocketFailureType::kCORS, 0);
 
   // QUIC uses port 443.
   const std::string script =
       "openUdp({remoteAddress: '127.0.0.1', remotePort: 443})";
 
-  EXPECT_EQ("openUdp failed: NotAllowedError: Permission denied",
+  EXPECT_EQ("openUdp failed: NetworkError: Network error.",
             EvalJs(shell(), script));
   histogram_tester.ExpectBucketCount(
       kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kCORS, 1);
+      blink::mojom::DirectSocketFailureType::kCORS, 1);
 }
 
 // Permission Denied failures(user dialog) should be triggered if connection
@@ -745,18 +818,18 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectBucketCount(
       kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kUserDialog, 0);
+      blink::mojom::DirectSocketFailureType::kUserDialog, 0);
 
   DirectSocketsServiceImpl::SetConnectionDialogBypassForTesting(false);
 
   const std::string script =
       "openUdp({remoteAddress: '127.0.0.1', remotePort: 993})";
 
-  EXPECT_EQ("openUdp failed: NotAllowedError: Permission denied",
+  EXPECT_EQ("openUdp failed: NetworkError: Network error.",
             EvalJs(shell(), script));
   histogram_tester.ExpectBucketCount(
       kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kUserDialog, 1);
+      blink::mojom::DirectSocketFailureType::kUserDialog, 1);
 }
 
 // Remote address should be provided or TEST will fail with NotAllowedError. In
@@ -768,8 +841,20 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
 
   const std::string script = "openUdp({remotePort: 993})";
 
-  EXPECT_EQ("openUdp failed: NotAllowedError: Permission denied",
+  EXPECT_EQ("openUdp failed: NetworkError: Network error.",
             EvalJs(shell(), script));
+}
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
+                       OpenUdp_RemotePortCurrentlyRequired) {
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
+
+  const std::string script = "openUdp({remoteAddress: '127.0.0.1'})";
+
+  EXPECT_EQ(
+      "openUdp failed: TypeError: Failed to execute 'openUDPSocket' on "
+      "'Navigator': remotePort was not specified.",
+      EvalJs(shell(), script));
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
@@ -779,18 +864,18 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
   base::HistogramTester histogram_tester;
   histogram_tester.ExpectBucketCount(
       kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kEnterprisePolicy, 0);
+      blink::mojom::DirectSocketFailureType::kEnterprisePolicy, 0);
 
   DirectSocketsServiceImpl::SetEnterpriseManagedForTesting(true);
 
   const std::string script =
       "openUdp({remoteAddress: '127.0.0.1', remotePort: 993})";
 
-  EXPECT_EQ("openUdp failed: NotAllowedError: Permission denied",
+  EXPECT_EQ("openUdp failed: NetworkError: Network error.",
             EvalJs(shell(), script));
   histogram_tester.ExpectBucketCount(
       kPermissionDeniedHistogramName,
-      DirectSocketsServiceImpl::FailureType::kEnterprisePolicy, 1);
+      blink::mojom::DirectSocketFailureType::kEnterprisePolicy, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
@@ -823,10 +908,15 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_OptionsOne) {
   DirectSocketsServiceImpl::SetPermissionCallbackForTesting(
       base::BindRepeating(&UnconditionallyPermitConnection));
 
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectUniqueSample(kUDPNetworkFailuresHistogramName,
+                                      -net::Error::ERR_PROXY_CONNECTION_FAILED,
+                                      0);
+
   MockNetworkContext mock_network_context(net::ERR_PROXY_CONNECTION_FAILED);
   DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
   const std::string expected_result =
-      "openUdp failed: NotAllowedError: Permission denied";
+      "openUdp failed: NetworkError: Network error.";
 
   const std::string script =
       R"(
@@ -846,6 +936,12 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_OptionsOne) {
   EXPECT_EQ(9012, call.remote_port);
   EXPECT_EQ(3456, call.send_buffer_size);
   EXPECT_EQ(7890, call.receive_buffer_size);
+
+  // To sync histograms from renderer.
+  FetchHistogramsFromChildProcesses();
+  histogram_tester.ExpectUniqueSample(kUDPNetworkFailuresHistogramName,
+                                      -net::Error::ERR_PROXY_CONNECTION_FAILED,
+                                      1);
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_OptionsTwo) {

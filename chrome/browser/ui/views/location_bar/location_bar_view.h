@@ -44,7 +44,6 @@
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
 class GURL;
-class KeywordHintView;
 class LocationIconView;
 enum class OmniboxPart;
 class OmniboxPopupView;
@@ -274,7 +273,7 @@ class LocationBarView : public LocationBar,
                            IMEInlineAutocompletePosition);
   using ContentSettingViews = std::vector<ContentSettingImageView*>;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Manage a subscription to GeolocationManager, which may
   // outlive this object.
   base::ScopedObservation<device::GeolocationManager,
@@ -319,8 +318,6 @@ class LocationBarView : public LocationBar,
 
   // Gets the OmniboxPopupView associated with the model in |omnibox_view_|.
   OmniboxPopupView* GetOmniboxPopupView();
-
-  void KeywordHintViewPressed(const ui::Event& event);
 
   // Called when the page info bubble is closed.
   void OnPageInfoBubbleClosed(views::Widget::ClosedReason closed_reason,
@@ -459,9 +456,6 @@ class LocationBarView : public LocationBar,
 
   // Shown if the user has selected a keyword.
   raw_ptr<SelectedKeywordView> selected_keyword_view_ = nullptr;
-
-  // Shown if the selected url has a corresponding keyword.
-  raw_ptr<KeywordHintView> keyword_hint_view_ = nullptr;
 
   // The content setting views.
   ContentSettingViews content_setting_views_;

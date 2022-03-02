@@ -50,6 +50,11 @@ ScopedClipboardWriter::~ScopedClipboardWriter() {
     Clipboard::GetForCurrentThread()->MarkAsConfidential();
 }
 
+void ScopedClipboardWriter::SetDataSource(
+    std::unique_ptr<DataTransferEndpoint> data_src) {
+  data_src_ = std::move(data_src);
+}
+
 void ScopedClipboardWriter::WriteText(const std::u16string& text) {
   RecordWrite(ClipboardFormatMetric::kText);
   std::string utf8_text = base::UTF16ToUTF8(text);
@@ -211,6 +216,16 @@ void ScopedClipboardWriter::WriteData(const std::u16string& format,
         {web_custom_format_string, std::move(data)});
   }
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void ScopedClipboardWriter::WriteEncodedDataTransferEndpointForTesting(
+    const std::string& json) {
+  Clipboard::ObjectMapParams parameters;
+  parameters.push_back(Clipboard::ObjectMapParam(json.begin(), json.end()));
+  objects_[Clipboard::PortableFormat::kEncodedDataTransferEndpoint] =
+      parameters;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void ScopedClipboardWriter::Reset() {
   objects_.clear();

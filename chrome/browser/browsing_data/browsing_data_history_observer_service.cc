@@ -19,7 +19,7 @@
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/commerce/merchant_viewer/merchant_viewer_data_manager.h"
 #include "chrome/browser/commerce/merchant_viewer/merchant_viewer_data_manager_factory.h"
 #endif
@@ -62,7 +62,9 @@ void DeleteTemplateUrlsForTimeRange(TemplateURLService* keywords_model,
                                     base::Time delete_begin,
                                     base::Time delete_end) {
   if (!keywords_model->loaded()) {
-    keywords_model->RegisterOnLoadedCallback(
+    // TODO(https://crbug.com/1288724): Ignoring the return value here is
+    // probably a bug.
+    (void)keywords_model->RegisterOnLoadedCallback(
         base::BindOnce(&DeleteTemplateUrlsForTimeRange, keywords_model,
                        delete_begin, delete_end));
     keywords_model->Load();
@@ -75,7 +77,9 @@ void DeleteTemplateUrlsForTimeRange(TemplateURLService* keywords_model,
 void DeleteTemplateUrlsForDeletedOrigins(TemplateURLService* keywords_model,
                                          base::flat_set<GURL> deleted_origins) {
   if (!keywords_model->loaded()) {
-    keywords_model->RegisterOnLoadedCallback(
+    // TODO(https://crbug.com/1288724): Ignoring the return value here is
+    // probably a bug.
+    (void)keywords_model->RegisterOnLoadedCallback(
         base::BindOnce(&DeleteTemplateUrlsForDeletedOrigins, keywords_model,
                        std::move(deleted_origins)));
     keywords_model->Load();
@@ -87,7 +91,7 @@ void DeleteTemplateUrlsForDeletedOrigins(TemplateURLService* keywords_model,
       base::Time::Min(), base::Time::Max());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void ClearCommerceData(Profile* profile,
                        const history::DeletionInfo& deletion_info) {
   MerchantViewerDataManager* merchant_viewer_data_manager =
@@ -232,7 +236,7 @@ void BrowsingDataHistoryObserverService::OnURLsDeleted(
     }
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   ClearCommerceData(profile_, deletion_info);
 #endif
 }
@@ -258,7 +262,7 @@ BrowsingDataHistoryObserverService::Factory::Factory()
   DependsOn(SessionServiceFactory::GetInstance());
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   DependsOn(MerchantViewerDataManagerFactory::GetInstance());
 #endif
 }

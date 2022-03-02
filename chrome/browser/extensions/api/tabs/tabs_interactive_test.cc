@@ -44,7 +44,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetLastFocusedWindow) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(new_browser));
 
   GURL url("about:blank");
-  AddTabAtIndexToBrowser(new_browser, 0, url, ui::PAGE_TRANSITION_LINK, true);
+  ASSERT_TRUE(AddTabAtIndexToBrowser(new_browser, 0, url,
+                                     ui::PAGE_TRANSITION_LINK, true));
 
   int focused_window_id =
       extensions::ExtensionTabUtil::GetWindowId(new_browser);
@@ -91,8 +92,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_QueryLastFocusedWindowTabs) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(focused_window));
 
   GURL url("about:blank");
-  AddTabAtIndexToBrowser(focused_window, 0, url, ui::PAGE_TRANSITION_LINK,
-                         true);
+  ASSERT_TRUE(AddTabAtIndexToBrowser(focused_window, 0, url,
+                                     ui::PAGE_TRANSITION_LINK, true));
   int focused_window_id =
       extensions::ExtensionTabUtil::GetWindowId(focused_window);
 
@@ -109,11 +110,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_QueryLastFocusedWindowTabs) {
   base::ListValue* result_tabs = result.get();
   // We should have one initial tab and one added tab.
   EXPECT_EQ(2u, result_tabs->GetList().size());
-  for (size_t i = 0; i < result_tabs->GetList().size(); ++i) {
-    base::DictionaryValue* result_tab = NULL;
-    EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
-    EXPECT_EQ(focused_window_id,
-              api_test_utils::GetInteger(result_tab, keys::kWindowIdKey));
+  for (const base::Value& result_tab : result_tabs->GetList()) {
+    EXPECT_TRUE(result_tab.is_dict());
+    EXPECT_EQ(
+        focused_window_id,
+        api_test_utils::GetInteger(&base::Value::AsDictionaryValue(result_tab),
+                                   keys::kWindowIdKey));
   }
 
   // Get tabs NOT in the 'last focused' window called from the focused browser.
@@ -125,11 +127,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_QueryLastFocusedWindowTabs) {
   result_tabs = result.get();
   // We should get one tab for each extra window and one for the initial window.
   EXPECT_EQ(kExtraWindows + 1, result_tabs->GetList().size());
-  for (size_t i = 0; i < result_tabs->GetList().size(); ++i) {
-    base::DictionaryValue* result_tab = NULL;
-    EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
-    EXPECT_NE(focused_window_id,
-              api_test_utils::GetInteger(result_tab, keys::kWindowIdKey));
+  for (const base::Value& result_tab : result_tabs->GetList()) {
+    EXPECT_TRUE(result_tab.is_dict());
+    EXPECT_NE(
+        focused_window_id,
+        api_test_utils::GetInteger(&base::Value::AsDictionaryValue(result_tab),
+                                   keys::kWindowIdKey));
   }
 }
 
@@ -149,7 +152,7 @@ class NonPersistentExtensionTabsTest
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_TabCurrentWindow DISABLED_TabCurrentWindow
 // Flakes on Linux Tests. http://crbug.com/1162432
-#elif defined(OS_LINUX)
+#elif BUILDFLAG(IS_LINUX)
 #define MAYBE_TabCurrentWindow DISABLED_TabCurrentWindow
 #else
 #define MAYBE_TabCurrentWindow TabCurrentWindow
@@ -178,7 +181,7 @@ IN_PROC_BROWSER_TEST_P(NonPersistentExtensionTabsTest,
 // TODO(http://crbug.com/58229): The Linux and Lacros window managers
 // behave differently, which complicates the test. A separate  test should
 // be written for them to avoid complicating this one.
-#if !defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 IN_PROC_BROWSER_TEST_P(NonPersistentExtensionTabsTest, WindowSetFocus) {
   ASSERT_TRUE(RunExtensionTest("window_update/set_focus")) << message_;
 }
@@ -195,7 +198,7 @@ INSTANTIATE_TEST_SUITE_P(ServiceWorker,
 // TODO(llandwerlin): Activating a browser window and waiting for the
 // action to happen requires views::Widget which is not available on
 // MacOSX. Deactivate for now.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 class ExtensionWindowLastFocusedTest : public PlatformAppBrowserTest {
  public:
   void SetUpOnMainThread() override;
@@ -418,6 +421,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
   CloseAppWindow(app_window);
 }
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
 
 }  // namespace extensions

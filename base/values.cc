@@ -872,10 +872,6 @@ bool Value::GetAsDictionary(const DictionaryValue** out_value) const {
   return is_dict();
 }
 
-Value* Value::DeepCopy() const {
-  return new Value(Clone());
-}
-
 std::unique_ptr<Value> Value::CreateDeepCopy() const {
   return std::make_unique<Value>(Clone());
 }
@@ -1154,12 +1150,6 @@ Value* DictionaryValue::SetString(StringPiece path,
   return Set(path, std::make_unique<Value>(in_value));
 }
 
-DictionaryValue* DictionaryValue::SetDictionary(
-    StringPiece path,
-    std::unique_ptr<DictionaryValue> in_value) {
-  return static_cast<DictionaryValue*>(Set(path, std::move(in_value)));
-}
-
 ListValue* DictionaryValue::SetList(StringPiece path,
                                     std::unique_ptr<ListValue> in_value) {
   return static_cast<ListValue*>(Set(path, std::move(in_value)));
@@ -1358,17 +1348,6 @@ ListValue::ListValue(span<const Value> in_list) : Value(in_list) {}
 ListValue::ListValue(ListStorage&& in_list) noexcept
     : Value(std::move(in_list)) {}
 
-bool ListValue::Set(size_t index, std::unique_ptr<Value> in_value) {
-  if (!in_value)
-    return false;
-
-  if (index >= list().size())
-    list().resize(index + 1);
-
-  list()[index] = std::move(*in_value);
-  return true;
-}
-
 bool ListValue::Get(size_t index, const Value** out_value) const {
   if (index >= list().size())
     return false;
@@ -1381,22 +1360,6 @@ bool ListValue::Get(size_t index, const Value** out_value) const {
 
 bool ListValue::Get(size_t index, Value** out_value) {
   return as_const(*this).Get(index, const_cast<const Value**>(out_value));
-}
-
-bool ListValue::GetString(size_t index, std::string* out_value) const {
-  const Value* value;
-  if (!Get(index, &value))
-    return false;
-
-  return value->GetAsString(out_value);
-}
-
-bool ListValue::GetString(size_t index, std::u16string* out_value) const {
-  const Value* value;
-  if (!Get(index, &value))
-    return false;
-
-  return value->GetAsString(out_value);
 }
 
 bool ListValue::GetDictionary(size_t index,

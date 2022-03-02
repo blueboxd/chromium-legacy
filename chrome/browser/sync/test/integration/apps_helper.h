@@ -9,14 +9,13 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/scoped_multi_source_observation.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/web_applications/web_app_id.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/sync/model/string_ordinal.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -32,7 +31,7 @@ bool HasSameApps(Profile* profile1, Profile* profile2);
 
 // Returns true iff all existing profiles have the same apps (hosted,
 // legacy packaged and platform).
-bool AllProfilesHaveSameApps() WARN_UNUSED_RESULT;
+[[nodiscard]] bool AllProfilesHaveSameApps();
 
 // Installs the hosted app for the given index to |profile|, and returns the
 // extension ID of the new app.
@@ -47,9 +46,9 @@ std::string InstallPlatformApp(Profile* profile, int index);
 // verifier), and returns the extension ID of the new app.
 std::string InstallHostedAppForAllProfiles(int index);
 
-// Installs the web app for the given WebApplicationInfo and profile. This does
+// Installs the web app for the given WebAppInstallInfo and profile. This does
 // not download icons or run OS integration installs.
-web_app::AppId InstallWebApp(Profile* profile, const WebApplicationInfo& info);
+web_app::AppId InstallWebApp(Profile* profile, const WebAppInstallInfo& info);
 
 // Uninstalls the app for the given index from |profile|. Assumes that it was
 // previously installed.

@@ -35,7 +35,7 @@ namespace {
 
 #if defined(COMPILER_MSVC)
 #define RETURN_ADDRESS() _ReturnAddress()
-#elif defined(COMPILER_GCC) && !defined(OS_NACL)
+#elif defined(COMPILER_GCC) && !BUILDFLAG(IS_NACL)
 #define RETURN_ADDRESS() \
   __builtin_extract_return_addr(__builtin_return_address(0))
 #else
@@ -73,8 +73,7 @@ volatile base::subtle::Atomic32 AccessibilityEventRecorderUia::instantiated_ =
 AccessibilityEventRecorderUia::AccessibilityEventRecorderUia(
     BrowserAccessibilityManager* manager,
     base::ProcessId pid,
-    const base::StringPiece& application_name_match_pattern)
-    : AccessibilityEventRecorder(manager) {
+    const base::StringPiece& application_name_match_pattern) {
   CHECK(!base::subtle::NoBarrier_AtomicExchange(&instantiated_, 1))
       << "There can be only one instance at a time.";
 

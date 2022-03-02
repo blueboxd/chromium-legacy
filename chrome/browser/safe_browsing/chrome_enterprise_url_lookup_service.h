@@ -54,13 +54,13 @@ class ChromeEnterpriseRealTimeUrlLookupService
   bool CanPerformFullURLLookup() const override;
   bool CanCheckSubresourceURL() const override;
   bool CanCheckSafeBrowsingDb() const override;
+  bool CanSendRTSampleRequest() const override;
 
  private:
   // RealTimeUrlLookupServiceBase:
   GURL GetRealTimeLookupUrl() const override;
   net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const override;
   bool CanPerformFullURLLookupWithToken() const override;
-  bool CanAttachReferrerChain() const override;
   int GetReferrerUserGestureLimit() const override;
   bool CanSendPageLoadToken() const override;
   void GetAccessToken(

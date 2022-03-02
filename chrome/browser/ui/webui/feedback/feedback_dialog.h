@@ -10,14 +10,17 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "extensions/common/api/feedback_private.h"
 #include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
+class Profile;
+
 class FeedbackDialog : public ui::WebDialogDelegate {
  public:
   static void CreateOrShow(
+      Profile* profile,
       const extensions::api::feedback_private::FeedbackInfo& info);
 
   FeedbackDialog(const FeedbackDialog&) = delete;
@@ -61,6 +64,8 @@ class FeedbackDialog : public ui::WebDialogDelegate {
   // Widget for the Feedback WebUI.
   raw_ptr<views::Widget> widget_;
   static FeedbackDialog* current_instance_;
+  // Whether `this` should correspond to `current_instance_`.
+  bool attached_to_current_instance_ = true;
 
   // Prevent Profile destruction until the dialog is closed, to prevent a
   // dangling RenderProcessHost crash.

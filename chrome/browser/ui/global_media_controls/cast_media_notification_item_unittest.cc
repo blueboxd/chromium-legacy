@@ -41,7 +41,7 @@ constexpr char kSinkName[] = "My Sink";
 media_router::MediaRoute CreateMediaRoute() {
   media_router::MediaRoute route(
       kRouteId, media_router::MediaSource("source_id"), "sink_id", kRouteDesc,
-      /* is_local */ true, /* for_display */ true);
+      /* is_local */ true);
   route.set_media_sink_name(kSinkName);
   return route;
 }
@@ -56,10 +56,10 @@ class MockBitmapFetcher : public BitmapFetcher {
 
   MOCK_METHOD(void,
               Init,
-              (const std::string& referrer,
-               net::ReferrerPolicy referrer_policy,
+              (net::ReferrerPolicy referrer_policy,
                network::mojom::CredentialsMode credentials_mode,
-               const net::HttpRequestHeaders& additional_headers),
+               const net::HttpRequestHeaders& additional_headers,
+               const url::Origin& initiator),
               (override));
   MOCK_METHOD(void,
               Start,
@@ -293,7 +293,7 @@ TEST_F(CastMediaNotificationItemTest, DownloadImage) {
             bitmap_fetcher_delegate = delegate;
 
             EXPECT_EQ(url, image_url);
-            EXPECT_CALL(*bitmap_fetcher, Init(_, _, _, _));
+            EXPECT_CALL(*bitmap_fetcher, Init);
             EXPECT_CALL(*bitmap_fetcher, Start(_));
             return bitmap_fetcher;
           });

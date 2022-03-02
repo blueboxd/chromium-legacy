@@ -17,7 +17,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/resources/grit/ui_resources.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/aura/cursor/cursor_loader.h"
 #include "ui/base/win/win_cursor.h"
 #include "ui/gfx/icon_util.h"
@@ -164,7 +164,7 @@ const CursorData kLargeCursors[] = {
      IDR_AURA_CURSOR_BIG_NO_DROP,
      {10, 10},
      {20, 20}},
-    {mojom::CursorType::kCopy, IDR_AURA_CURSOR_BIG_COPY, {10, 10}, {20, 20}},
+    {mojom::CursorType::kCopy, IDR_AURA_CURSOR_BIG_COPY, {21, 11}, {42, 22}},
     {mojom::CursorType::kHand, IDR_AURA_CURSOR_BIG_HAND, {25, 7}, {50, 14}},
     {mojom::CursorType::kMove, IDR_AURA_CURSOR_BIG_MOVE, {32, 31}, {64, 62}},
     {mojom::CursorType::kNorthEastResize,
@@ -330,7 +330,7 @@ bool GetCursorDataFor(ui::CursorSize cursor_size,
 }
 
 SkBitmap GetDefaultBitmap(const ui::Cursor& cursor) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   ui::Cursor cursor_copy = cursor;
   aura::CursorLoader cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor_copy);
@@ -351,7 +351,7 @@ SkBitmap GetDefaultBitmap(const ui::Cursor& cursor) {
 }
 
 gfx::Point GetDefaultHotspot(const ui::Cursor& cursor) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   ui::Cursor cursor_copy = cursor;
   aura::CursorLoader cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor_copy);

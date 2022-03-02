@@ -17,6 +17,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
@@ -127,7 +128,8 @@ URLRequestContextBuilder::~URLRequestContextBuilder() = default;
 
 void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
     const URLRequestContext* request_context,
-    HttpNetworkSessionContext* session_context) {
+    HttpNetworkSessionContext* session_context,
+    bool suppress_setting_socket_performance_watcher_factory) {
   session_context->host_resolver = request_context->host_resolver();
   session_context->cert_verifier = request_context->cert_verifier();
   session_context->transport_security_state =
@@ -149,7 +151,8 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
   session_context->net_log = request_context->net_log();
   session_context->network_quality_estimator =
       request_context->network_quality_estimator();
-  if (request_context->network_quality_estimator()) {
+  if (request_context->network_quality_estimator() &&
+      !suppress_setting_socket_performance_watcher_factory) {
     session_context->socket_performance_watcher_factory =
         request_context->network_quality_estimator()
             ->GetSocketPerformanceWatcherFactory();
@@ -364,8 +367,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (cookie_store_set_by_client_) {
     storage->set_cookie_store(std::move(cookie_store_));
   } else {
-    std::unique_ptr<CookieStore> cookie_store(
-        new CookieMonster(nullptr /* store */, context->net_log()));
+    std::unique_ptr<CookieStore> cookie_store(new CookieMonster(
+        nullptr /* store */, context->net_log(), first_party_sets_enabled_));
     storage->set_cookie_store(std::move(cookie_store));
   }
 
@@ -424,7 +427,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (!proxy_resolution_service_) {
-#if !defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
     // TODO(willchan): Switch to using this code when
     // ConfiguredProxyResolutionService::CreateSystemProxyConfigService()'s
     // signature doesn't suck.
@@ -433,7 +436,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
           ConfiguredProxyResolutionService::CreateSystemProxyConfigService(
               base::ThreadTaskRunnerHandle::Get().get());
     }
-#endif  // !defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS) &&
+        // !BUILDFLAG(IS_ANDROID)
     proxy_resolution_service_ = CreateProxyResolutionService(
         std::move(proxy_config_service_), context.get(),
         context->host_resolver(), context->network_delegate(),
@@ -454,9 +458,12 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (network_error_logging_enabled_) {
+    if (!network_error_logging_service_) {
+      network_error_logging_service_ = NetworkErrorLoggingService::Create(
+          persistent_reporting_and_nel_store_.get());
+    }
     storage->set_network_error_logging_service(
-        NetworkErrorLoggingService::Create(
-            persistent_reporting_and_nel_store_.get()));
+        std::move(network_error_logging_service_));
   }
 
   if (persistent_reporting_and_nel_store_) {
@@ -480,7 +487,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   HttpNetworkSessionContext network_session_context;
-  SetHttpNetworkSessionComponents(context.get(), &network_session_context);
+  SetHttpNetworkSessionComponents(
+      context.get(), &network_session_context,
+      suppress_setting_socket_performance_watcher_factory_for_testing_);
   // Unlike the other fields of HttpNetworkSession::Context,
   // |client_socket_factory| is not mirrored in URLRequestContext.
   network_session_context.client_socket_factory =
@@ -526,7 +535,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_cache_backend =
           HttpCache::DefaultBackend::InMemory(http_cache_params_.max_size);
     }
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     http_cache_backend->SetAppStatusListener(
         http_cache_params_.app_status_listener);
 #endif

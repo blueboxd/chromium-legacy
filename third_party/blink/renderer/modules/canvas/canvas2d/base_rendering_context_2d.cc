@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_pattern.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/path_2d.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
@@ -34,6 +33,7 @@
 #include "third_party/blink/renderer/platform/graphics/video_frame_image_util.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 
 namespace blink {
@@ -181,7 +181,7 @@ void BaseRenderingContext2D::beginLayer() {
     // two layers, so the shadow and filter can properly interact with alpha.
     // We also need to flip how and where the shadows and filter are applied
     // if there are shadows.
-    PaintFlags flags;
+    cc::PaintFlags flags;
     GetState().FillStyle()->ApplyToFlags(flags);
     flags.setColor(GetState().FillStyle()->PaintColor());
     flags.setBlendMode(GetState().GlobalComposite());
@@ -195,7 +195,7 @@ void BaseRenderingContext2D::beginLayer() {
         GetState(), CanvasRenderingContext2DState::kDontCopyClipList,
         CanvasRenderingContext2DState::SaveType::kInternalLayer));
 
-    PaintFlags extra_flags;
+    cc::PaintFlags extra_flags;
     GetState().FillStyle()->ApplyToFlags(extra_flags);
     extra_flags.setColor(GetState().FillStyle()->PaintColor());
     extra_flags.setAlpha(globalAlpha() * 255);
@@ -203,7 +203,7 @@ void BaseRenderingContext2D::beginLayer() {
       extra_flags.setImageFilter(StateGetFilter());
     canvas->saveLayer(nullptr, &extra_flags);
   } else {
-    PaintFlags flags;
+    cc::PaintFlags flags;
     GetState().FillStyle()->ApplyToFlags(flags);
     flags.setColor(GetState().FillStyle()->PaintColor());
     flags.setBlendMode(GetState().GlobalComposite());
@@ -714,16 +714,16 @@ void BaseRenderingContext2D::setGlobalAlpha(double alpha) {
 }
 
 String BaseRenderingContext2D::globalCompositeOperation() const {
-  return CompositeOperatorName(
-      CompositeOperatorFromSkBlendMode(GetState().GlobalComposite()),
-      BlendModeFromSkBlendMode(GetState().GlobalComposite()));
+  auto [composite_op, blend_mode] =
+      CompositeAndBlendOpsFromSkBlendMode(GetState().GlobalComposite());
+  return CanvasCompositeOperatorName(composite_op, blend_mode);
 }
 
 void BaseRenderingContext2D::setGlobalCompositeOperation(
     const String& operation) {
   CompositeOperator op = kCompositeSourceOver;
   BlendMode blend_mode = BlendMode::kNormal;
-  if (!ParseCompositeAndBlendMode(operation, op, blend_mode))
+  if (!ParseCanvasCompositeAndBlendMode(operation, op, blend_mode))
     return;
   SkBlendMode sk_blend_mode = WebCoreCompositeToSkiaComposite(op, blend_mode);
   if (GetState().GlobalComposite() == sk_blend_mode)
@@ -1012,7 +1012,7 @@ void BaseRenderingContext2D::DrawPathInternal(
 
   Draw<OverdrawOp::kNone>(
       [sk_path, use_paint_cache](cc::PaintCanvas* c,
-                                 const PaintFlags* flags)  // draw lambda
+                                 const cc::PaintFlags* flags)  // draw lambda
       { c->drawPath(sk_path, *flags, use_paint_cache); },
       [](const SkIRect& rect)  // overdraw test lambda
       { return false; },
@@ -1111,7 +1111,7 @@ void BaseRenderingContext2D::fillRect(double x,
 
   SkRect rect = SkRect::MakeXYWH(fx, fy, fwidth, fheight);
   Draw<OverdrawOp::kNone>(
-      [rect](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
+      [rect](cc::PaintCanvas* c, const cc::PaintFlags* flags)  // draw lambda
       { c->drawRect(rect, *flags); },
       [rect, this](const SkIRect& clip_bounds)  // overdraw test lambda
       {
@@ -1127,8 +1127,8 @@ void BaseRenderingContext2D::fillRect(double x,
 
 static void StrokeRectOnCanvas(const gfx::RectF& rect,
                                cc::PaintCanvas* canvas,
-                               const PaintFlags* flags) {
-  DCHECK_EQ(flags->getStyle(), PaintFlags::kStroke_Style);
+                               const cc::PaintFlags* flags) {
+  DCHECK_EQ(flags->getStyle(), cc::PaintFlags::kStroke_Style);
   if ((rect.width() > 0) != (rect.height() > 0)) {
     // When stroking, we must skip the zero-dimension segments
     SkPath path;
@@ -1171,7 +1171,7 @@ void BaseRenderingContext2D::strokeRect(double x,
     return;
 
   Draw<OverdrawOp::kNone>(
-      [rect](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
+      [rect](cc::PaintCanvas* c, const cc::PaintFlags* flags)  // draw lambda
       { StrokeRectOnCanvas(rect, c, flags); },
       kNoOverdraw, gfx::RectFToSkRect(bounds),
       CanvasRenderingContext2DState::kStrokePaintType,
@@ -1312,9 +1312,9 @@ void BaseRenderingContext2D::clearRect(double x,
                                                 width, height);
   }
 
-  PaintFlags clear_flags;
+  cc::PaintFlags clear_flags;
   clear_flags.setBlendMode(SkBlendMode::kClear);
-  clear_flags.setStyle(PaintFlags::kFill_Style);
+  clear_flags.setStyle(cc::PaintFlags::kFill_Style);
 
   // clamp to float to avoid float cast overflow when used as SkScalar
   AdjustRectForCanvas(x, y, width, height);
@@ -1506,11 +1506,11 @@ void BaseRenderingContext2D::DrawImageInternal(
     const gfx::RectF& src_rect,
     const gfx::RectF& dst_rect,
     const SkSamplingOptions& sampling,
-    const PaintFlags* flags) {
+    const cc::PaintFlags* flags) {
   cc::RecordPaintCanvas::DisableFlushCheckScope disable_flush_check_scope(
       static_cast<cc::RecordPaintCanvas*>(c));
   int initial_save_count = c->getSaveCount();
-  PaintFlags image_flags = *flags;
+  cc::PaintFlags image_flags = *flags;
 
   if (flags->getImageFilter()) {
     SkMatrix ctm = c->getTotalMatrix();
@@ -1535,7 +1535,7 @@ void BaseRenderingContext2D::DrawImageInternal(
     c->save();
     c->concat(inv_ctm);
 
-    PaintFlags layer_flags;
+    cc::PaintFlags layer_flags;
     layer_flags.setBlendMode(flags->getBlendMode());
     layer_flags.setImageFilter(flags->getImageFilter());
 
@@ -1682,10 +1682,10 @@ void BaseRenderingContext2D::drawImage(CanvasImageSource* image_source,
 
   Draw<OverdrawOp::kDrawImage>(
       [this, image_source, image, src_rect, dst_rect](
-          cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
+          cc::PaintCanvas* c, const cc::PaintFlags* flags)  // draw lambda
       {
         SkSamplingOptions sampling =
-            PaintFlags::FilterQualityToSkSamplingOptions(
+            cc::PaintFlags::FilterQualityToSkSamplingOptions(
                 flags ? flags->getFilterQuality()
                       : cc::PaintFlags::FilterQuality::kNone);
         DrawImageInternal(c, image_source, image.get(), src_rect, dst_rect,
@@ -1709,8 +1709,8 @@ void BaseRenderingContext2D::ClearCanvasForSrcCompositeOp() {
 bool BaseRenderingContext2D::RectContainsTransformedRect(
     const gfx::RectF& rect,
     const SkIRect& transformed_rect) const {
-  FloatQuad quad(rect);
-  FloatQuad transformed_quad(
+  gfx::QuadF quad(rect);
+  gfx::QuadF transformed_quad(
       gfx::RectF(transformed_rect.x(), transformed_rect.y(),
                  transformed_rect.width(), transformed_rect.height()));
   return GetState().GetTransform().MapQuad(quad).ContainsQuad(transformed_quad);
@@ -1899,7 +1899,7 @@ ImageData* BaseRenderingContext2D::createImageData(
     ExceptionState& exception_state) const {
   ImageData::ValidateAndCreateParams params;
   params.context_2d_error_mode = true;
-  params.default_color_space = GetCanvas2DColorParams().ColorSpace();
+  params.default_color_space = GetDefaultImageDataColorSpace();
   return ImageData::ValidateAndCreate(std::abs(sw), std::abs(sh), absl::nullopt,
                                       /*settings=*/nullptr, params,
                                       exception_state);
@@ -1912,7 +1912,7 @@ ImageData* BaseRenderingContext2D::createImageData(
     ExceptionState& exception_state) const {
   ImageData::ValidateAndCreateParams params;
   params.context_2d_error_mode = true;
-  params.default_color_space = GetCanvas2DColorParams().ColorSpace();
+  params.default_color_space = GetDefaultImageDataColorSpace();
   return ImageData::ValidateAndCreate(std::abs(sw), std::abs(sh), absl::nullopt,
                                       image_data_settings, params,
                                       exception_state);
@@ -1991,7 +1991,7 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
   ImageData::ValidateAndCreateParams validate_and_create_params;
   validate_and_create_params.context_2d_error_mode = true;
   validate_and_create_params.default_color_space =
-      GetCanvas2DColorParams().ColorSpace();
+      GetDefaultImageDataColorSpace();
 
   if (!CanCreateCanvas2dResourceProvider() || isContextLost()) {
     return ImageData::ValidateAndCreate(
@@ -2009,7 +2009,8 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
   // attribute that let the users indicate if a canvas will be read frequently
   // through getImageData, thus uses CPU rendering from the start in such cases.
   if (!RuntimeEnabledFeatures::NewCanvas2DAPIEnabled(
-          GetTopExecutionContext())) {
+          GetTopExecutionContext()) ||
+      base::FeatureList::IsEnabled(features::kSoftwareCanvas2DOnReadback)) {
     // GetImagedata is faster in Unaccelerated canvases.
     // In Desynchronized canvas disabling the acceleration will break
     // putImageData: crbug.com/1112060.
@@ -2093,8 +2094,8 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   if (identifiability_study_helper_.ShouldUpdateBuilder()) {
     identifiability_study_helper_.UpdateBuilder(
         CanvasOps::kPutImageData, data->width(), data->height(),
-        data->GetCanvasColorSpace(), data->GetImageDataStorageFormat(), dx, dy,
-        dirty_x, dirty_y, dirty_width, dirty_height);
+        data->GetPredefinedColorSpace(), data->GetImageDataStorageFormat(), dx,
+        dy, dirty_x, dirty_y, dirty_width, dirty_height);
     identifiability_study_helper_.set_encountered_partially_digested_image();
   }
 
@@ -2129,46 +2130,33 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   gfx::Rect source_rect = dest_rect;
   source_rect.Offset(-dest_offset);
 
-  // Color / format convert ImageData to context 2D settings if needed. Color /
-  // format conversion is not needed only if context 2D and ImageData are both
-  // in sRGB color space and use uint8 pixel storage format. We use RGBA pixel
-  // order for both ImageData and CanvasResourceProvider, therefore no
-  // additional swizzling is needed.
   SkPixmap data_pixmap = data->GetSkPixmap();
-  CanvasColorParams data_color_params(
-      data->GetCanvasColorSpace(),
-      data->GetImageDataStorageFormat() != kUint8ClampedArrayStorageFormat
-          ? CanvasPixelFormat::kF16
-          : CanvasPixelFormat::kUint8,
-      kNonOpaque);
-  if (data_color_params.ColorSpace() != GetCanvas2DColorParams().ColorSpace() ||
-      data_color_params.PixelFormat() !=
-          GetCanvas2DColorParams().PixelFormat() ||
-      GetCanvas2DColorParams().PixelFormat() == CanvasPixelFormat::kF16) {
-    SkImageInfo converted_info = data_pixmap.info();
-    converted_info =
-        converted_info.makeColorType(GetCanvas2DColorParams().GetSkColorType());
-    converted_info = converted_info.makeColorSpace(
-        GetCanvas2DColorParams().GetSkColorSpace());
-    if (converted_info.colorType() == kN32_SkColorType)
-      converted_info = converted_info.makeColorType(kRGBA_8888_SkColorType);
 
-    const size_t converted_data_bytes = converted_info.computeMinByteSize();
-    const size_t converted_row_bytes = converted_info.minRowBytes();
-    if (SkImageInfo::ByteSizeOverflowed(converted_data_bytes))
+  // WritePixels (called by PutByteArray) requires that the source and
+  // destination pixel formats have the same bytes per pixel.
+  if (auto* host = GetCanvasRenderingContextHost()) {
+    SkColorType dest_color_type =
+        host->GetRenderingContextSkColorInfo().colorType();
+    if (SkColorTypeBytesPerPixel(dest_color_type) !=
+        SkColorTypeBytesPerPixel(data_pixmap.colorType())) {
+      SkImageInfo converted_info =
+          data_pixmap.info().makeColorType(dest_color_type);
+      SkBitmap converted_bitmap;
+      if (!converted_bitmap.tryAllocPixels(converted_info)) {
+        exception_state.ThrowRangeError("Out of memory in putImageData");
+        return;
+      }
+      if (!converted_bitmap.writePixels(data_pixmap, 0, 0))
+        NOTREACHED() << "Failed to convert ImageData with writePixels.";
+
+      PutByteArray(converted_bitmap.pixmap(), source_rect, dest_offset);
+      GetPaintCanvasForDraw(gfx::RectToSkIRect(dest_rect),
+                            CanvasPerformanceMonitor::DrawType::kImageData);
       return;
-    std::unique_ptr<uint8_t[]> converted_pixels(
-        new uint8_t[converted_data_bytes]);
-    if (data_pixmap.readPixels(converted_info, converted_pixels.get(),
-                               converted_row_bytes)) {
-      PutByteArray(
-          SkPixmap(converted_info, converted_pixels.get(), converted_row_bytes),
-          source_rect, dest_offset);
     }
-  } else {
-    PutByteArray(data_pixmap, source_rect, dest_offset);
   }
 
+  PutByteArray(data_pixmap, source_rect, dest_offset);
   GetPaintCanvasForDraw(gfx::RectToSkIRect(dest_rect),
                         CanvasPerformanceMonitor::DrawType::kImageData);
 }
@@ -2189,7 +2177,7 @@ void BaseRenderingContext2D::PutByteArray(const SkPixmap& source,
 
   SkImageInfo info =
       source.info().makeWH(source_rect.width(), source_rect.height());
-  if (kOpaque == GetCanvas2DColorParams().GetOpacityMode()) {
+  if (!HasAlpha()) {
     // If the surface is opaque, tell it that we are writing opaque
     // pixels.  Writing non-opaque pixels to opaque is undefined in
     // Skia.  There is some discussion about whether it should be
@@ -2199,8 +2187,6 @@ void BaseRenderingContext2D::PutByteArray(const SkPixmap& source,
   } else {
     info = info.makeAlphaType(kUnpremul_SkAlphaType);
   }
-  if (info.colorType() == kN32_SkColorType)
-    info = info.makeColorType(kRGBA_8888_SkColorType);
 
   WritePixels(info, source.addr(source_rect.x(), source_rect.y()),
               source.rowBytes(), dest_x, dest_y);

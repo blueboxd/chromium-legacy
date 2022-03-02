@@ -55,6 +55,16 @@ class Vp9Decoder {
   Vp9Parser::Result ReadNextFrame(Vp9FrameHeader& vp9_frame_header,
                                   gfx::Size& size);
 
+  // Copies the frame data into the V4L2 buffer of OUTPUT |queue|.
+  bool CopyFrameData(const Vp9FrameHeader& frame_hdr,
+                     std::unique_ptr<V4L2Queue>& queue);
+
+  // Sets up per frame parameters |v4l2_frame_params| needed for VP9 decoding
+  // with VIDIOC_S_EXT_CTRLS ioctl call.
+  void SetupFrameParams(
+      const Vp9FrameHeader& frame_hdr,
+      struct v4l2_ctrl_vp9_frame_decode_params* v4l2_frame_params);
+
   // Refreshes |ref_frames_| slots with the current |buffer|.
   void RefreshReferenceSlots(const uint8_t refresh_frame_flags,
                              scoped_refptr<MmapedBuffer> buffer);

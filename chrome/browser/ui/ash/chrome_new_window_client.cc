@@ -27,7 +27,6 @@
 #include "chrome/browser/apps/intent_helper/metrics/intent_handling_metrics.h"
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
 #include "chrome/browser/ash/arc/arc_util.h"
-#include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/ash/arc/intent_helper/custom_tab_session_impl.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
@@ -37,6 +36,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/web_applications/calculator_app/calculator_app_utils.h"
 #include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_delegate.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -583,6 +583,12 @@ void ChromeNewWindowClient::OpenFeedbackPage(
                              MapToChromeSource(source), description_template);
 }
 
+void ChromeNewWindowClient::OpenPersonalizationHub() {
+  Profile* const profile = ProfileManager::GetActiveUserProfile();
+  web_app::LaunchSystemWebAppAsync(profile,
+                                   web_app::SystemAppType::PERSONALIZATION);
+}
+
 void ChromeNewWindowClient::OpenUrlFromArc(const GURL& url) {
   if (!url.is_valid())
     return;
@@ -614,7 +620,7 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
 
   // |profile| may be null if sign-in has happened but the profile isn't loaded
   // yet.
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
   if (!profile)
     return;
 
@@ -781,7 +787,7 @@ void ChromeNewWindowClient::OpenAppWithIntent(
 
   // |profile| may be null if sign-in has happened but the profile isn't loaded
   // yet.
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
   if (!profile)
     return;
 

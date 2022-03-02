@@ -29,12 +29,13 @@
 #include "chrome/browser/ash/login/screens/recommend_apps/recommend_apps_fetcher_delegate.h"
 #include "chrome/browser/ash/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
+#include "chrome/browser/ash/login/test/embedded_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/embedded_test_server_setup_mixin.h"
 #include "chrome/browser/ash/login/test/enrollment_ui_mixin.h"
+#include "chrome/browser/ash/login/test/fake_arc_tos_mixin.h"
 #include "chrome/browser/ash/login/test/fake_eula_mixin.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
-#include "chrome/browser/ash/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/login_or_lock_screen_visible_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
@@ -166,6 +167,16 @@ void LogInAsRegularUser() {
   LOG(INFO) << "OobeInteractiveUITest: Logged in.";
 }
 
+void RunConsolidatedConsentScreenChecks() {
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"consolidated-consent", "loadedDialog"})
+      ->Wait();
+
+  EXPECT_FALSE(LoginScreenTestApi::IsShutdownButtonShown());
+  EXPECT_FALSE(LoginScreenTestApi::IsGuestButtonShown());
+  EXPECT_FALSE(LoginScreenTestApi::IsAddUserButtonShown());
+}
+
 void RunSyncConsentScreenChecks() {
   SyncConsentScreen* screen = static_cast<SyncConsentScreen*>(
       WizardController::default_controller()->GetScreen(
@@ -173,9 +184,8 @@ void RunSyncConsentScreenChecks() {
   screen->SetProfileSyncEngineInitializedForTesting(true);
   screen->OnStateChanged(nullptr);
 
-  const std::string button_name = features::IsSyncConsentOptionalEnabled()
-                                      ? "acceptButton"
-                                      : "nonSplitSettingsAcceptButton";
+  // TODO(TBD): Rename the button to remove SplitSettings from its name.
+  const std::string button_name = "nonSplitSettingsAcceptButton";
   test::OobeJS().ExpectEnabledPath({"sync-consent", button_name});
   test::OobeJS().CreateFocusWaiter({"sync-consent", button_name})->Wait();
 
@@ -471,7 +481,11 @@ class NativeWindowVisibilityBrowserMainExtraParts
   ~NativeWindowVisibilityBrowserMainExtraParts() override = default;
 
   // ChromeBrowserMainExtraParts:
-  void PostProfileInit() override {
+  void PostProfileInit(Profile* profile, bool is_initial_profile) override {
+    // The setup below is intended to run for only the initial profile.
+    if (!is_initial_profile)
+      return;
+
     gfx::NativeWindow window =
         LoginDisplayHost::default_host()->GetNativeWindow();
     if (window)
@@ -660,6 +674,7 @@ class OobeInteractiveUITest : public OobeBaseTest,
   void ForceBrandedBuild() const;
   FakeGaiaMixin fake_gaia_{&mixin_host_};
   FakeEulaMixin fake_eula_{&mixin_host_, embedded_test_server()};
+  FakeArcTosMixin fake_arc_tos_{&mixin_host_, embedded_test_server()};
 
   net::EmbeddedTestServer arc_tos_server_{net::EmbeddedTestServer::TYPE_HTTPS};
   EmbeddedTestServerSetupMixin arc_tos_server_setup_{&mixin_host_,
@@ -681,9 +696,11 @@ void OobeInteractiveUITest::PerformStepsBeforeEnrollmentCheck() {
   RunNetworkSelectionScreenChecks();
   test::TapNetworkSelectionNext();
 
-  test::WaitForEulaScreen();
-  RunEulaScreenChecks();
-  test::TapEulaAccept();
+  if (!chromeos::features::IsOobeConsolidatedConsentEnabled()) {
+    test::WaitForEulaScreen();
+    RunEulaScreenChecks();
+    test::TapEulaAccept();
+  }
 
   test::WaitForUpdateScreen();
   test::ExitUpdateScreenNoUpdate();
@@ -697,6 +714,12 @@ void OobeInteractiveUITest::PerformSessionSignInSteps() {
   }
   WaitForGaiaSignInScreen(test_setup()->arc_state() != ArcState::kNotAvailable);
   LogInAsRegularUser();
+
+  if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
+    test::WaitForConsolidatedConsentScreen();
+    RunConsolidatedConsentScreenChecks();
+    test::TapConsolidatedConsentAccept();
+  }
 
   test::WaitForSyncConsentScreen();
   RunSyncConsentScreenChecks();
@@ -714,7 +737,8 @@ void OobeInteractiveUITest::PerformSessionSignInSteps() {
     test::ExitPinSetupScreen();
   }
 
-  if (test_setup()->arc_state() != ArcState::kNotAvailable) {
+  if (!chromeos::features::IsOobeConsolidatedConsentEnabled() &&
+      test_setup()->arc_state() != ArcState::kNotAvailable) {
     HandleArcTermsOfServiceScreen();
   }
 
@@ -788,7 +812,7 @@ class OobeZeroTouchInteractiveUITest : public OobeInteractiveUITest {
                                      PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
                                  ""));
     OobeInteractiveUITest::SetUpOnMainThread();
-    policy_server_.ConfigureFakeStatisticsForZeroTouch(
+    policy_test_server_mixin_.ConfigureFakeStatisticsForZeroTouch(
         &fake_statistics_provider_);
   }
 
@@ -808,13 +832,13 @@ class OobeZeroTouchInteractiveUITest : public OobeInteractiveUITest {
   void ZeroTouchEndToEnd();
 
  private:
-  LocalPolicyTestServerMixin policy_server_{&mixin_host_};
+  EmbeddedPolicyTestServerMixin policy_test_server_mixin_{&mixin_host_};
   test::EnrollmentUIMixin enrollment_ui_{&mixin_host_};
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 };
 
 void OobeZeroTouchInteractiveUITest::ZeroTouchEndToEnd() {
-  policy_server_.SetupZeroTouchForcedEnrollment();
+  policy_test_server_mixin_.SetupZeroTouchForcedEnrollment();
 
   PerformStepsBeforeEnrollmentCheck();
 

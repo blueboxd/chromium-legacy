@@ -36,6 +36,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "chrome/browser/ash/account_manager/account_apps_availability.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -83,19 +84,6 @@ void AddEduStrings(content::WebUIDataSource* source,
   source->AddString("parentSigninAccountRecoveryUrl",
                     chrome::kAccountRecoveryURL);
 
-  source->AddLocalizedString("parentInfoTitle", IDS_EDU_LOGIN_INFO_TITLE);
-  source->AddLocalizedString("parentInfoParentSettingsText",
-                             IDS_EDU_LOGIN_INFO_PARENT_SETTINGS);
-  source->AddString(
-      "parentInfoBody",
-      l10n_util::GetStringFUTF16(
-          IDS_EDU_LOGIN_INFO_BODY,
-          base::ASCIIToUTF16(chrome::kGsuiteTermsEducationPrivacyURL)));
-  source->AddLocalizedString("coexistenceTitle",
-                             IDS_EDU_LOGIN_INFO_COEXISTENCE_TITLE);
-  source->AddLocalizedString("coexistenceBody",
-                             IDS_EDU_LOGIN_INFO_COEXISTENCE_BODY);
-
   // Strings for server based EDU Coexistence flow.
   source->AddLocalizedString("eduCoexistenceNetworkDownHeading",
                              IDS_EDU_COEXISTENCE_NETWORK_DOWN_HEADING);
@@ -135,21 +123,6 @@ content::WebUIDataSource* CreateWebUIDataSource(Profile* profile) {
     {"account_manager_shared_css.js", IDR_ACCOUNT_MANAGER_SHARED_CSS_JS},
     {"gaia_action_buttons.js", IDR_GAIA_ACTION_BUTTONS_JS},
     {"error_screen.js", IDR_ACCOUNT_MANAGER_COMPONENTS_ERROR_SCREEN_JS},
-    {"edu", IDR_EDU_LOGIN_EDU_LOGIN_HTML},
-    {"app.js", IDR_EDU_LOGIN_EDU_LOGIN_JS},
-    {"edu_login_button.js", IDR_EDU_LOGIN_EDU_LOGIN_BUTTON_JS},
-    {"edu_login_template.js", IDR_EDU_LOGIN_EDU_LOGIN_TEMPLATE_JS},
-    {"edu_login_css.js", IDR_EDU_LOGIN_EDU_LOGIN_CSS_JS},
-    {"icons.js", IDR_EDU_LOGIN_ICONS_JS},
-    {"browser_proxy.js", IDR_EDU_LOGIN_BROWSER_PROXY_JS},
-    {"edu_login_util.js", IDR_EDU_LOGIN_EDU_LOGIN_UTIL_JS},
-    {"edu_login_coexistence_info.js",
-     IDR_EDU_LOGIN_EDU_LOGIN_COEXISTENCE_INFO_JS},
-    {"edu_login_parents.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENTS_JS},
-    {"edu_login_parent_signin.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENT_SIGNIN_JS},
-    {"edu_login_parent_info.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENT_INFO_JS},
-    {"edu_login_signin.js", IDR_EDU_LOGIN_EDU_LOGIN_SIGNIN_JS},
-    {"edu_login_error.js", IDR_EDU_LOGIN_EDU_LOGIN_ERROR_JS},
     // Resources for the server-based edu coexistence flow.
     {"edu-coexistence", IDR_EDU_COEXISTENCE_EDU_COEXISTENCE_HTML},
     {"edu_coexistence_app.js", IDR_EDU_COEXISTENCE_EDU_COEXISTENCE_APP_JS},
@@ -203,6 +176,9 @@ content::WebUIDataSource* CreateWebUIDataSource(Profile* profile) {
   source->AddLocalizedStrings(kLocalizedStrings);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  source->AddBoolean(
+      "isArcAccountRestrictionsEnabled",
+      ash::AccountAppsAvailability::IsArcAccountRestrictionsEnabled());
   source->AddBoolean("shouldSkipWelcomePage",
                      profile->GetPrefs()->GetBoolean(
                          chromeos::prefs::kShouldSkipInlineLoginWelcomePage));
@@ -224,7 +200,7 @@ content::WebUIDataSource* CreateWebUIDataSource(Profile* profile) {
           ui::GetChromeOSDeviceName()));
 
   user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   DCHECK(user);
   source->AddString("userName", user->GetGivenName());
   source->AddString("accountManagerOsSettingsUrl",
@@ -254,7 +230,7 @@ bool IsValidChromeSigninReason(const GURL& url) {
       // Used by the profile picker.
       return true;
     case signin_metrics::Reason::kFetchLstOnly:
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       // Used by the Google Credential Provider for Windows.
       return true;
 #else
@@ -279,7 +255,7 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   content::WebUIDataSource* source = CreateWebUIDataSource(profile);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   std::u16string username =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile)->GetGivenName();
+      ash::ProfileHelper::Get()->GetUserByProfile(profile)->GetGivenName();
   AddEduStrings(source, username);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   content::WebUIDataSource::Add(profile, source);

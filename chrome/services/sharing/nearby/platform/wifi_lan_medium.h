@@ -8,18 +8,28 @@
 #include <memory>
 #include <string>
 
+#include "ash/services/nearby/public/mojom/firewall_hole.mojom.h"
+#include "ash/services/nearby/public/mojom/tcp_socket_factory.mojom.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/scoped_refptr.h"
 #include "chrome/services/sharing/nearby/platform/wifi_lan_server_socket.h"
 #include "chrome/services/sharing/nearby/platform/wifi_lan_socket.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/address_list.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
-#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/nearby/src/cpp/platform/api/wifi_lan.h"
+
+namespace ash {
+namespace nearby {
+class TcpServerSocketPort;
+}  // namespace nearby
+}  // namespace ash
 
 namespace base {
 class SequencedTaskRunner;
@@ -31,18 +41,22 @@ namespace nearby {
 namespace chrome {
 
 // An implementation of the abstract Nearby Connections's class
-// api::WifiLanMedium. The implementation uses the network services's
-// NetworkContext mojo interface to 1) connect to remote server sockets, and 2)
-// open local server sockets to listen for incoming connection requests from
-// remote devices. We block while 1) trying to connect, 2) creating a server
-// socket, and 3) cancelling pending tasks in the destructor. We guarantee
-// thread safety, and we guarantee that all blocking connection and listening
-// attempts return before destruction.
+// api::WifiLanMedium. The implementation uses the
+// sharing::mojom::TcpSocketFactory mojo interface to 1) connect to remote
+// server sockets, and 2) open local server sockets to listen for incoming
+// connection requests from remote devices. We block while 1) trying to connect,
+// 2) creating a server socket, and 3) cancelling pending tasks in the
+// destructor. We guarantee thread safety, and we guarantee that all blocking
+// connection and listening attempts return before destruction.
 class WifiLanMedium : public api::WifiLanMedium {
  public:
-  explicit WifiLanMedium(
-      const mojo::SharedRemote<network::mojom::NetworkContext>&
-          network_context);
+  WifiLanMedium(const mojo::SharedRemote<sharing::mojom::TcpSocketFactory>&
+                    socket_factory,
+                const mojo::SharedRemote<
+                    chromeos::network_config::mojom::CrosNetworkConfig>&
+                    cros_network_config,
+                const mojo::SharedRemote<sharing::mojom::FirewallHoleFactory>&
+                    firewall_hole_factory);
   WifiLanMedium(const WifiLanMedium&) = delete;
   WifiLanMedium& operator=(const WifiLanMedium&) = delete;
   ~WifiLanMedium() override;
@@ -58,6 +72,25 @@ class WifiLanMedium : public api::WifiLanMedium {
   std::unique_ptr<api::WifiLanServerSocket> ListenForService(int port) override;
 
  private:
+  enum class ConnectResult {
+    kSuccess,
+    kCanceled,
+    kErrorFailedToCreateTcpSocket,
+  };
+
+  enum class ListenResult {
+    kSuccess,
+    kCanceled,
+    kErrorInvalidPort,
+    kErrorFetchIpFailedToGetNetworkStateList,
+    kErrorFetchIpFailedToGetManagedProperties,
+    kErrorFetchIpMissingIpConfigs,
+    kErrorFetchIpNoValidLocalIpAddress,
+    kErrorFailedToCreateTcpServerSocket,
+    kErrorUnexpectedTcpServerSocketIpEndpoint,
+    kErrorFailedToCreateFirewallHole,
+  };
+
   /*==========================================================================*/
   // ConnectToService() helpers: Connect to remote server socket.
   /*==========================================================================*/
@@ -85,25 +118,35 @@ class WifiLanMedium : public api::WifiLanMedium {
           server_socket_parameters,
       base::WaitableEvent* listen_waitable_event,
       int port);
-  void OnLocalIpAddressFetched(
+  void OnGetNetworkStateList(
       absl::optional<WifiLanServerSocket::ServerSocketParameters>*
           server_socket_parameters,
       base::WaitableEvent* listen_waitable_event,
-      const net::IPEndPoint& local_end_point);
+      const ash::nearby::TcpServerSocketPort& port,
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
+          result);
+  void OnGetNetworkProperties(
+      absl::optional<WifiLanServerSocket::ServerSocketParameters>*
+          server_socket_parameters,
+      base::WaitableEvent* listen_waitable_event,
+      const ash::nearby::TcpServerSocketPort& port,
+      chromeos::network_config::mojom::ManagedPropertiesPtr properties);
   void OnTcpServerSocketCreated(
       absl::optional<WifiLanServerSocket::ServerSocketParameters>*
           server_socket_parameters,
       base::WaitableEvent* listen_waitable_event,
       mojo::PendingRemote<network::mojom::TCPServerSocket> tcp_server_socket,
+      const net::IPAddress& ip_address,
+      const ash::nearby::TcpServerSocketPort& port,
       int32_t result,
       const absl::optional<net::IPEndPoint>& local_addr);
-  // TODO(https://crbug.com/1261238): Add firewall hole PendingRemote argument.
   void OnFirewallHoleCreated(
       absl::optional<WifiLanServerSocket::ServerSocketParameters>*
           server_socket_parameters,
       base::WaitableEvent* listen_waitable_event,
       mojo::PendingRemote<network::mojom::TCPServerSocket> tcp_server_socket,
-      const absl::optional<net::IPEndPoint>& local_addr);
+      const net::IPEndPoint& local_addr,
+      mojo::PendingRemote<sharing::mojom::FirewallHole> firewall_hole);
   /*==========================================================================*/
 
   /*==========================================================================*/
@@ -114,20 +157,25 @@ class WifiLanMedium : public api::WifiLanMedium {
   bool StartDiscovery(const std::string& service_type,
                       DiscoveredServiceCallback callback) override;
   bool StopDiscovery(const std::string& service_type) override;
+  absl::optional<std::pair<std::int32_t, std::int32_t>> GetDynamicPortRange()
+      override;
   /*==========================================================================*/
 
   // Removes |event| from the set of pending events and signals |event|. Calls
   // to these methods are sequenced on |task_runner_| and thus thread safe.
-  void FinishConnectAttempt(base::WaitableEvent* event);
-  void FinishListenAttempt(base::WaitableEvent* event);
+  void FinishConnectAttempt(base::WaitableEvent* event, ConnectResult result);
+  void FinishListenAttempt(base::WaitableEvent* event, ListenResult result);
 
-  // Resets the |network_context_| and finishes all pending connect/listen
-  // attempts with null results.
+  // Resets the SharedRemotes and finishes all pending connect/listen attempts
+  // with null results.
   void Shutdown(base::WaitableEvent* shutdown_waitable_event);
 
-  // TODO(https://crbug.com/1261238): Add firewall hole factory.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  mojo::SharedRemote<network::mojom::NetworkContext> network_context_;
+  mojo::SharedRemote<sharing::mojom::TcpSocketFactory> socket_factory_;
+  mojo::SharedRemote<chromeos::network_config::mojom::CrosNetworkConfig>
+      cros_network_config_;
+  mojo::SharedRemote<sharing::mojom::FirewallHoleFactory>
+      firewall_hole_factory_;
 
   // Track all pending connect/listen tasks in case Close() is called while
   // waiting.

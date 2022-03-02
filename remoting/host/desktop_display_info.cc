@@ -16,7 +16,7 @@ DesktopDisplayInfo& DesktopDisplayInfo::operator=(DesktopDisplayInfo&&) =
     default;
 DesktopDisplayInfo::~DesktopDisplayInfo() = default;
 
-bool DesktopDisplayInfo::operator==(const DesktopDisplayInfo& other) {
+bool DesktopDisplayInfo::operator==(const DesktopDisplayInfo& other) const {
   if (other.displays_.size() == displays_.size()) {
     for (size_t display = 0; display < displays_.size(); display++) {
       const DisplayGeometry& this_display = displays_[display];
@@ -37,7 +37,7 @@ bool DesktopDisplayInfo::operator==(const DesktopDisplayInfo& other) {
   return false;
 }
 
-bool DesktopDisplayInfo::operator!=(const DesktopDisplayInfo& other) {
+bool DesktopDisplayInfo::operator!=(const DesktopDisplayInfo& other) const {
   return !(*this == other);
 }
 
@@ -61,11 +61,12 @@ void DesktopDisplayInfo::Reset() {
   displays_.clear();
 }
 
-int DesktopDisplayInfo::NumDisplays() {
+int DesktopDisplayInfo::NumDisplays() const {
   return displays_.size();
 }
 
-const DisplayGeometry* DesktopDisplayInfo::GetDisplayInfo(unsigned int id) {
+const DisplayGeometry* DesktopDisplayInfo::GetDisplayInfo(
+    unsigned int id) const {
   if (id < 0 || id >= displays_.size())
     return nullptr;
   return &displays_[id];
@@ -93,19 +94,19 @@ const DisplayGeometry* DesktopDisplayInfo::GetDisplayInfo(unsigned int id) {
 // x = upper left of desktop
 // a,b,c = origin of display A,B,C
 webrtc::DesktopVector DesktopDisplayInfo::CalcDisplayOffset(
-    webrtc::ScreenId disp_id) {
+    webrtc::ScreenId disp_id) const {
   bool full_desktop = (disp_id == webrtc::kFullDesktopScreenId);
   unsigned int disp_index = disp_id;
 
   if (full_desktop) {
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
     // For Mac, we need to calculate the offset relative to the default
     // display.
     disp_index = 0;
 #else
     // For other platforms, the origin for full desktop is 0,0.
     return webrtc::DesktopVector();
-#endif  // !defined(OS_APPLE)
+#endif  // !BUILDFLAG(IS_APPLE)
   }
 
   if (displays_.size() == 0) {
@@ -131,7 +132,7 @@ webrtc::DesktopVector DesktopDisplayInfo::CalcDisplayOffset(
   }
   webrtc::DesktopVector topleft(dx, dy);
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // Mac display offsets need to be relative to the main display's origin.
   if (full_desktop) {
     // For full desktop, this is the offset to the topleft display coord.
@@ -144,7 +145,7 @@ webrtc::DesktopVector DesktopDisplayInfo::CalcDisplayOffset(
 #else
   // Return offset to this screen, relative to topleft.
   return origin.subtract(topleft);
-#endif  // defined(OS_APPLE)
+#endif  // BUILDFLAG(IS_APPLE)
 }
 
 void DesktopDisplayInfo::AddDisplay(const DisplayGeometry& display) {

@@ -62,6 +62,7 @@
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_test_data.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/fido_types.h"
 #include "device/fido/filter.h"
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
@@ -81,7 +82,9 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom-shared.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/ec_key.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
@@ -89,12 +92,12 @@
 #include "third_party/zlib/google/compression_utils.h"
 #include "url/url_util.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "device/fido/mac/authenticator_config.h"
 #include "device/fido/mac/scoped_touch_id_test_environment.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "device/fido/win/fake_webauthn_api.h"
 #endif
 
@@ -114,7 +117,9 @@ using blink::mojom::AuthenticatorStatus;
 using blink::mojom::AuthenticatorTransport;
 using blink::mojom::CableAuthentication;
 using blink::mojom::CableAuthenticationPtr;
+using blink::mojom::CommonCredentialInfo;
 using blink::mojom::GetAssertionAuthenticatorResponsePtr;
+using blink::mojom::MakeCredentialAuthenticatorResponse;
 using blink::mojom::MakeCredentialAuthenticatorResponsePtr;
 using blink::mojom::PublicKeyCredentialCreationOptions;
 using blink::mojom::PublicKeyCredentialCreationOptionsPtr;
@@ -492,7 +497,7 @@ class AuthenticatorTestBase : public RenderViewHostTestHarness {
     chromeos::U2FClient::InitializeFake();
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // Disable the Windows WebAuthn API integration by default. Individual tests
     // can modify this.
     fake_win_webauthn_api_.set_available(false);
@@ -512,7 +517,7 @@ class AuthenticatorTestBase : public RenderViewHostTestHarness {
     chromeos::U2FClient::Shutdown();
     chromeos::TpmManagerClient::Shutdown();
 #endif
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     AuthenticatorEnvironmentImpl::GetInstance()
         ->ClearWinWebAuthnApiForTesting();
 #endif
@@ -525,7 +530,7 @@ class AuthenticatorTestBase : public RenderViewHostTestHarness {
     AuthenticatorEnvironmentImpl::GetInstance()
         ->ReplaceDefaultDiscoveryFactoryForTesting(
             std::move(virtual_device_factory));
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     virtual_device_factory_->set_win_webauthn_api(&fake_win_webauthn_api_);
 #endif
   }
@@ -536,7 +541,7 @@ class AuthenticatorTestBase : public RenderViewHostTestHarness {
   }
 
   raw_ptr<device::test::VirtualFidoDeviceFactory> virtual_device_factory_;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   device::FakeWinWebAuthnApi fake_win_webauthn_api_;
 #endif
 
@@ -1639,7 +1644,7 @@ TEST_F(AuthenticatorImplTest, GetAssertionResponseWithAttestedCredentialData) {
       AuthenticatorStatus::NOT_ALLOWED_ERROR);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 TEST_F(AuthenticatorImplTest, IsUVPAA) {
   NavigateAndCommit(GURL(kTestOrigin1));
   mojo::Remote<blink::mojom::Authenticator> authenticator =
@@ -1662,7 +1667,7 @@ TEST_F(AuthenticatorImplTest, IsUVPAA) {
     }
   }
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(AuthenticatorImplTest, IsUVPAA) {
@@ -1681,11 +1686,24 @@ TEST_F(AuthenticatorImplTest, IsUVPAA) {
 class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
  public:
   struct Config {
+    // If true, resolves all request event callbacks instantly.
+    bool resolve_callbacks = true;
+
+    // The return value of IsActive().
     bool is_active = true;
+
+    // The fake response to SignalIsUVPAARequest().
     bool is_uvpaa = true;
+
+    // Fake response values to SignalCreateRequest().
+    blink::mojom::AuthenticatorStatus make_credential_status =
+        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+    blink::mojom::MakeCredentialAuthenticatorResponsePtr
+        make_credential_response = nullptr;
   };
 
   struct CallCounts {
+    size_t signal_create_request;
     size_t signal_is_uvpaa_request;
   };
 
@@ -1695,14 +1713,46 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
 
   bool IsActive() override { return config_.is_active; }
 
+  void SignalCreateRequest(const PublicKeyCredentialCreationOptionsPtr& options,
+                           CreateCallback callback) override {
+    call_counts_.signal_create_request++;
+    if (config_.resolve_callbacks) {
+      std::move(callback).Run(config_.make_credential_status,
+                              config_.make_credential_response.Clone());
+      return;
+    }
+    DCHECK(!pending_create_callback_);
+    pending_create_callback_ = std::move(callback);
+  }
+
   void SignalIsUvpaaRequest(IsUvpaaCallback callback) override {
     call_counts_.signal_is_uvpaa_request++;
-    std::move(callback).Run(config_.is_uvpaa);
+    if (config_.resolve_callbacks) {
+      std::move(callback).Run(config_.is_uvpaa);
+      return;
+    }
+    DCHECK(!pending_is_uvpaa_callback_);
+    pending_is_uvpaa_callback_ = std::move(callback);
+  }
+
+  void RunPendingCreateCallback() {
+    DCHECK(pending_create_callback_);
+    std::move(pending_create_callback_)
+        .Run(config_.make_credential_status,
+             config_.make_credential_response.Clone());
+  }
+
+  void RunPendingIsUvpaaCallback() {
+    DCHECK(pending_is_uvpaa_callback_);
+    std::move(pending_is_uvpaa_callback_).Run(config_.is_uvpaa);
   }
 
  private:
   Config config_;
   CallCounts call_counts_;
+
+  CreateCallback pending_create_callback_;
+  IsUvpaaCallback pending_is_uvpaa_callback_;
 };
 
 // TestWebAuthenticationDelegate is a test fake implementation of the
@@ -1734,7 +1784,7 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
 
   bool IsFocused(WebContents* web_contents) override { return is_focused; }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   absl::optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig(
       BrowserContext* browser_context) override {
     return touch_id_authenticator_config;
@@ -1768,7 +1818,7 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
   // The return value of the focus check issued at the end of a request.
   bool is_focused = true;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Configuration data for the macOS platform authenticator.
   absl::optional<TouchIdAuthenticatorConfig> touch_id_authenticator_config;
 #endif
@@ -1813,7 +1863,8 @@ class TestAuthenticatorRequestDelegate
       : action_callbacks_registered_callback_(
             std::move(action_callbacks_registered_callback)),
         attestation_consent_(attestation_consent),
-        started_over_callback_(std::move(started_over_callback)) {}
+        started_over_callback_(std::move(started_over_callback)),
+        does_block_request_on_failure_(!started_over_callback_.is_null()) {}
 
   TestAuthenticatorRequestDelegate(const TestAuthenticatorRequestDelegate&) =
       delete;
@@ -1836,8 +1887,7 @@ class TestAuthenticatorRequestDelegate
     std::move(action_callbacks_registered_callback_).Run();
     if (started_over_callback_) {
       action_callbacks_registered_callback_ = std::move(started_over_callback_);
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(start_over_callback)));
+      start_over_callback_ = start_over_callback;
     }
   }
 
@@ -1882,10 +1932,22 @@ class TestAuthenticatorRequestDelegate
     }
   }
 
+  bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override {
+    if (!does_block_request_on_failure_) {
+      return false;
+    }
+
+    std::move(start_over_callback_).Run();
+    does_block_request_on_failure_ = false;
+    return true;
+  }
+
   base::OnceClosure action_callbacks_registered_callback_;
   absl::optional<base::OnceClosure> cancel_callback_;
   const AttestationConsent attestation_consent_;
   base::OnceClosure started_over_callback_;
+  base::OnceClosure start_over_callback_;
+  bool does_block_request_on_failure_ = false;
   bool attestation_consent_queried_ = false;
 };
 
@@ -1932,7 +1994,8 @@ class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
   // be restarted after action callbacks are registered, and
   // |started_over_callback| will replace
   // |action_callbacks_registered_callback|. This should then be called the
-  // second time action callbacks are registered.
+  // second time action callbacks are registered. It also causes
+  // DoesBlockRequestOnFailure to return true, once.
   base::OnceClosure started_over_callback_;
 };
 
@@ -3044,6 +3107,9 @@ TEST_F(AuthenticatorContentBrowserClientTest, MakeCredentialStartOver) {
 
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
+  // Make the request fail so that it's started over.
+  options->authenticator_selection->user_verification_requirement =
+      device::UserVerificationRequirement::kRequired;
 
   TestRequestStartedCallback request_started;
   test_client_.action_callbacks_registered_callback =
@@ -3054,6 +3120,13 @@ TEST_F(AuthenticatorContentBrowserClientTest, MakeCredentialStartOver) {
   authenticator->MakeCredential(std::move(options), base::DoNothing());
   request_started.WaitForCallback();
   request_restarted.WaitForCallback();
+
+  const auto& discoveries_trace = virtual_device_factory_->trace()->discoveries;
+  ASSERT_EQ(discoveries_trace.size(), 2u);
+  EXPECT_TRUE(discoveries_trace[0].is_stopped);
+  EXPECT_TRUE(discoveries_trace[0].is_destroyed);
+  EXPECT_FALSE(discoveries_trace[1].is_stopped);
+  EXPECT_FALSE(discoveries_trace[1].is_destroyed);
 }
 
 TEST_F(AuthenticatorContentBrowserClientTest, GetAssertionStartOver) {
@@ -3073,6 +3146,13 @@ TEST_F(AuthenticatorContentBrowserClientTest, GetAssertionStartOver) {
   authenticator->GetAssertion(std::move(options), base::DoNothing());
   request_started.WaitForCallback();
   request_restarted.WaitForCallback();
+
+  const auto& discoveries_trace = virtual_device_factory_->trace()->discoveries;
+  ASSERT_EQ(discoveries_trace.size(), 2u);
+  EXPECT_TRUE(discoveries_trace[0].is_stopped);
+  EXPECT_TRUE(discoveries_trace[0].is_destroyed);
+  EXPECT_FALSE(discoveries_trace[1].is_stopped);
+  EXPECT_FALSE(discoveries_trace[1].is_destroyed);
 }
 
 TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
@@ -4150,6 +4230,10 @@ TEST_F(AuthenticatorImplTest, TestAuthenticationTransport) {
         device::FidoTransportProtocol::kBluetoothLowEnergy,
         device::FidoTransportProtocol::kNearFieldCommunication,
         device::FidoTransportProtocol::kInternal}) {
+    device::AuthenticatorAttachment attachment =
+        (transport == device::FidoTransportProtocol::kInternal
+             ? device::AuthenticatorAttachment::kPlatform
+             : device::AuthenticatorAttachment::kCrossPlatform);
     ResetVirtualDevice();
     virtual_device_factory_->SetSupportedProtocol(
         device::ProtocolVersion::kCtap2);
@@ -4161,7 +4245,7 @@ TEST_F(AuthenticatorImplTest, TestAuthenticationTransport) {
     MakeCredentialResult create_result =
         AuthenticatorMakeCredential(std::move(create_options));
     ASSERT_EQ(create_result.status, AuthenticatorStatus::SUCCESS);
-    EXPECT_EQ(create_result.response->transport, transport);
+    EXPECT_EQ(create_result.response->authenticator_attachment, attachment);
 
     PublicKeyCredentialRequestOptionsPtr get_options =
         GetTestPublicKeyCredentialRequestOptions();
@@ -4172,7 +4256,7 @@ TEST_F(AuthenticatorImplTest, TestAuthenticationTransport) {
     GetAssertionResult get_result =
         AuthenticatorGetAssertion(std::move(get_options));
     ASSERT_EQ(get_result.status, AuthenticatorStatus::SUCCESS);
-    EXPECT_EQ(get_result.response->transport, transport);
+    EXPECT_EQ(get_result.response->authenticator_attachment, attachment);
   }
 }
 
@@ -4267,27 +4351,31 @@ TEST_F(AuthenticatorImplTest, CredBlob) {
 TEST_F(AuthenticatorImplTest, MinPINLength) {
   NavigateAndCommit(GURL(kTestOrigin1));
 
-  device::VirtualCtap2Device::Config config;
-  virtual_device_factory_->SetCtap2Config(config);
+  for (const bool min_pin_length_supported : {false, true}) {
+    device::VirtualCtap2Device::Config config;
+    config.min_pin_length_extension_support = min_pin_length_supported;
+    virtual_device_factory_->SetCtap2Config(config);
 
-  for (const bool min_pin_length_requested : {false, true}) {
-    PublicKeyCredentialCreationOptionsPtr options =
-        GetTestPublicKeyCredentialCreationOptions();
-    options->min_pin_length_requested = min_pin_length_requested;
-    auto result = AuthenticatorMakeCredential(std::move(options));
-    ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+    for (const bool min_pin_length_requested : {false, true}) {
+      PublicKeyCredentialCreationOptionsPtr options =
+          GetTestPublicKeyCredentialCreationOptions();
+      options->min_pin_length_requested = min_pin_length_requested;
+      auto result = AuthenticatorMakeCredential(std::move(options));
+      ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
 
-    const device::AuthenticatorData auth_data =
-        AuthDataFromMakeCredentialResponse(result.response);
-    bool has_min_pin_length = false;
-    if (auth_data.extensions().has_value()) {
-      const cbor::Value::MapValue& extensions =
-          auth_data.extensions()->GetMap();
-      const auto it =
-          extensions.find(cbor::Value(device::kExtensionMinPINLength));
-      has_min_pin_length = it != extensions.end() && it->second.is_unsigned();
+      const device::AuthenticatorData auth_data =
+          AuthDataFromMakeCredentialResponse(result.response);
+      bool has_min_pin_length = false;
+      if (auth_data.extensions().has_value()) {
+        const cbor::Value::MapValue& extensions =
+            auth_data.extensions()->GetMap();
+        const auto it =
+            extensions.find(cbor::Value(device::kExtensionMinPINLength));
+        has_min_pin_length = it != extensions.end() && it->second.is_unsigned();
+      }
+      ASSERT_EQ(has_min_pin_length,
+                min_pin_length_supported && min_pin_length_requested);
     }
-    ASSERT_EQ(has_min_pin_length, min_pin_length_requested);
   }
 }
 
@@ -7301,7 +7389,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WithAppIDExtension) {
   EXPECT_TRUE(HasUV(result.response));
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Requests with a credProtect extension that have |enforce_protection_policy|
 // set should be rejected if the Windows WebAuthn API doesn't support
 // credProtect.
@@ -7334,7 +7422,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
                                     : AuthenticatorStatus::NOT_ALLOWED_ERROR);
   }
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 TEST_F(ResidentKeyAuthenticatorImplTest, PRFExtension) {
   NavigateAndCommit(GURL(kTestOrigin1));
@@ -7720,7 +7808,7 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
   }
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 class TouchIdAuthenticatorImplTest : public AuthenticatorImplTest {
  public:
   void SetUp() override {
@@ -7759,7 +7847,7 @@ TEST_F(TouchIdAuthenticatorImplTest, IsUVPAA) {
     }
   }
 }
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 class CableV2AuthenticatorImplTest : public AuthenticatorImplTest {
  public:
@@ -8108,6 +8196,17 @@ class AuthenticatorImplWithRequestProxyTest : public AuthenticatorImplTest {
   TestAuthenticatorContentBrowserClient test_client_;
 };
 
+TEST_F(AuthenticatorImplWithRequestProxyTest, Inactive) {
+  request_proxy().config().is_active = false;
+  NavigateAndCommit(GURL(kTestOrigin1));
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  TestIsUvpaaCallback cb;
+  authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+  cb.WaitForCallback();
+  EXPECT_EQ(request_proxy().call_counts().signal_is_uvpaa_request, 0u);
+}
+
 TEST_F(AuthenticatorImplWithRequestProxyTest, IsUVPAA) {
   size_t i = 0;
   for (const bool is_uvpaa : {false, true}) {
@@ -8124,15 +8223,40 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, IsUVPAA) {
   }
 }
 
-TEST_F(AuthenticatorImplWithRequestProxyTest, Inactive) {
-  request_proxy().config().is_active = false;
+TEST_F(AuthenticatorImplWithRequestProxyTest, MakeCredential) {
+  request_proxy().config().make_credential_status =
+      blink::mojom::AuthenticatorStatus::SUCCESS;
+  request_proxy().config().make_credential_response =
+      MakeCredentialAuthenticatorResponse::New();
+  request_proxy().config().make_credential_response->info =
+      CommonCredentialInfo::New();
+
   NavigateAndCommit(GURL(kTestOrigin1));
-  mojo::Remote<blink::mojom::Authenticator> authenticator =
-      ConnectToAuthenticator();
-  TestIsUvpaaCallback cb;
-  authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
-  cb.WaitForCallback();
-  EXPECT_EQ(request_proxy().call_counts().signal_is_uvpaa_request, 0u);
+  MakeCredentialResult result =
+      AuthenticatorMakeCredential(GetTestPublicKeyCredentialCreationOptions());
+
+  EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+  EXPECT_EQ(request_proxy().call_counts().signal_create_request, 1u);
 }
 
+TEST_F(AuthenticatorImplWithRequestProxyTest, MakeCredential_Timeout) {
+  request_proxy().config().resolve_callbacks = false;
+  request_proxy().config().make_credential_status =
+      blink::mojom::AuthenticatorStatus::SUCCESS;
+  request_proxy().config().make_credential_response =
+      MakeCredentialAuthenticatorResponse::New();
+  request_proxy().config().make_credential_response->info =
+      CommonCredentialInfo::New();
+
+  NavigateAndCommit(GURL(kTestOrigin1));
+  MakeCredentialResult result = AuthenticatorMakeCredentialAndWaitForTimeout(
+      GetTestPublicKeyCredentialCreationOptions());
+
+  EXPECT_EQ(result.status, AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  EXPECT_EQ(request_proxy().call_counts().signal_create_request, 1u);
+
+  // Proxy should still be able to run the callback after a timeout. But it does
+  // nothing.
+  request_proxy().RunPendingCreateCallback();
+}
 }  // namespace content

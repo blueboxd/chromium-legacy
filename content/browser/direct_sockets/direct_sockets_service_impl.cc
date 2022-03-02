@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/direct_sockets/direct_udp_socket_impl.h"
@@ -29,7 +30,7 @@
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #include "base/enterprise_util.h"
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/tpm/install_attributes.h"
@@ -37,6 +38,8 @@
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"  // nogncheck
 #include "chromeos/lacros/lacros_service.h"        // nogncheck
 #endif
+
+using blink::mojom::DirectSocketFailureType;
 
 namespace content {
 
@@ -114,7 +117,7 @@ net::Error ValidateAddressAndPort(blink::mojom::DirectSocketOptions& options,
 
   if (options.remote_port == 443) {
     base::UmaHistogramEnumeration(kPermissionDeniedHistogramName,
-                                  DirectSocketsServiceImpl::FailureType::kCORS);
+                                  DirectSocketFailureType::kCORS);
     // TODO(crbug.com/1119601): Issue a CORS preflight request.
     return net::ERR_UNSAFE_PORT;
   }
@@ -145,7 +148,7 @@ bool IsEnterpriseManaged() {
   if (g_is_enterprise_managed_for_testing.has_value())
     return g_is_enterprise_managed_for_testing.value();
 
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   return base::IsMachineExternallyManaged();
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
   return chromeos::InstallAttributes::IsInitialized() &&
@@ -253,8 +256,9 @@ class DirectSocketsServiceImpl::ResolveHostAndOpenSocket final
     if (!is_raw_address_ && !is_mdns_name_ && resolved_addresses &&
         ContainNonPubliclyRoutableAddress(*resolved_addresses)) {
       result = net::Error::ERR_NETWORK_ACCESS_DENIED;
-      base::UmaHistogramEnumeration(kPermissionDeniedHistogramName,
-                                    FailureType::kResolvingToNonPublic);
+      base::UmaHistogramEnumeration(
+          kPermissionDeniedHistogramName,
+          DirectSocketFailureType::kResolvingToNonPublic);
     }
     protocol_ == ProtocolType::kTcp ? OpenTCPSocket(result, resolved_addresses)
                                     : OpenUDPSocket(result, resolved_addresses);
@@ -296,6 +300,13 @@ class DirectSocketsServiceImpl::ResolveHostAndOpenSocket final
           std::min(options_->receive_buffer_size, kMaxBufferSize);
     }
     tcp_connected_socket_options->no_delay = options_->no_delay;
+    if (options_->keep_alive_options) {
+      // options_->keep_alive_options will be invalidated.
+      tcp_connected_socket_options->keep_alive_options =
+          std::move(options_->keep_alive_options);
+    }
+    // invalidate options_.
+    options_.reset();
 
     network_context->CreateTCPConnectedSocket(
         local_addr, *resolved_addresses,
@@ -389,9 +400,7 @@ void DirectSocketsServiceImpl::OpenTcpSocket(
     return;
   }
 
-  const net::Error result = ValidateOptions(*options);
-
-  if (result != net::OK) {
+  if (const net::Error result = ValidateOptions(*options); result != net::OK) {
     std::move(callback).Run(result, absl::nullopt, absl::nullopt,
                             mojo::ScopedDataPipeConsumerHandle(),
                             mojo::ScopedDataPipeProducerHandle());
@@ -422,9 +431,7 @@ void DirectSocketsServiceImpl::OpenUdpSocket(
     return;
   }
 
-  const net::Error result = ValidateOptions(*options);
-
-  if (result != net::OK) {
+  if (const net::Error result = ValidateOptions(*options); result != net::OK) {
     std::move(callback).Run(result, absl::nullopt, absl::nullopt);
     return;
   }
@@ -493,6 +500,9 @@ network::mojom::NetworkContext* DirectSocketsServiceImpl::GetNetworkContext() {
   if (GetNetworkContextForTesting())
     return GetNetworkContextForTesting();
 
+  if (!frame_host_)
+    return nullptr;
+
   return frame_host_->GetStoragePartition()->GetNetworkContext();
 }
 
@@ -508,7 +518,7 @@ bool DirectSocketsServiceImpl::IsAllowedRestrictedApiOrigin(
 
   for (std::string& origin_string : origin_strings) {
     GURL url(std::move(origin_string));
-    if (last_committed_origin.IsSameOriginWith(url::Origin::Create(url))) {
+    if (last_committed_origin.IsSameOriginWith(url)) {
       return true;
     }
   }
@@ -525,21 +535,6 @@ net::Error DirectSocketsServiceImpl::ValidateOptions(
   if (!IsAllowedRestrictedApiOrigin(frame_host_->GetLastCommittedOrigin()))
     return net::ERR_NETWORK_ACCESS_DENIED;
 
-  // TODO(crbug.com/1119600): Do not consume (or check) transient activation
-  // for reconnection attempts.
-  bool is_consumed =
-      static_cast<RenderFrameHostImpl*>(frame_host_)
-          ->frame_tree_node()
-          ->UpdateUserActivationState(
-              blink::mojom::UserActivationUpdateType::
-                  kConsumeTransientActivation,
-              blink::mojom::UserActivationNotificationType::kNone);
-  if (!is_consumed) {
-    base::UmaHistogramEnumeration(kPermissionDeniedHistogramName,
-                                  FailureType::kTransientActivation);
-    return net::ERR_NETWORK_ACCESS_DENIED;
-  }
-
   if (GetPermissionCallbackForTesting())
     return GetPermissionCallbackForTesting().Run(options);  // IN-TEST
 
@@ -550,7 +545,7 @@ net::Error DirectSocketsServiceImpl::ValidateOptions(
   // policies are in effect.
   if (IsEnterpriseManaged()) {
     base::UmaHistogramEnumeration(kPermissionDeniedHistogramName,
-                                  FailureType::kEnterprisePolicy);
+                                  DirectSocketFailureType::kEnterprisePolicy);
     return net::ERR_NETWORK_ACCESS_DENIED;
   }
 
@@ -569,7 +564,7 @@ void DirectSocketsServiceImpl::OnDialogProceedTcp(
     const std::string& port) {
   if (!accepted && !g_connection_dialog_bypass_for_testing) {
     base::UmaHistogramEnumeration(kPermissionDeniedHistogramName,
-                                  FailureType::kUserDialog);
+                                  DirectSocketFailureType::kUserDialog);
     std::move(callback).Run(net::ERR_ABORTED, absl::nullopt, absl::nullopt,
                             mojo::ScopedDataPipeConsumerHandle(),
                             mojo::ScopedDataPipeProducerHandle());
@@ -606,7 +601,7 @@ void DirectSocketsServiceImpl::OnDialogProceedUdp(
     const std::string& port) {
   if (!accepted && !g_connection_dialog_bypass_for_testing) {
     base::UmaHistogramEnumeration(kPermissionDeniedHistogramName,
-                                  FailureType::kUserDialog);
+                                  DirectSocketFailureType::kUserDialog);
     std::move(callback).Run(net::ERR_ABORTED, absl::nullopt, absl::nullopt);
     return;
   }

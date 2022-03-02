@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Cookie fayllariga ruxsat berish</translation>
 <translation id="2228071138934252756"><ph name="APP_NAME" /> kameradan foydalanishiga ruxsat berish uchun <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali kamerani yoqing.</translation>
 <translation id="2241634353105152135">Bir marta</translation>
+<translation id="2253414712144136228">Olib tashlash: <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">Sayt atrofdagi Bluetooth qurilmalarni tekshirmoqchi boʻlsa, xabar berilsin (tavsiya etiladi)</translation>
 <translation id="2315043854645842844">Tanlangan mijoz sertifikati eskirgan va operatsion tizim tomonidan qo‘llab-quvvatlanmaydi.</translation>
 <translation id="2359808026110333948">Davom etish</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Ma’lumotlarni ko‘rsatish</translation>
 <translation id="3123473560110926937">Ayrim saytlarda bloklangan</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> xotira band</translation>
+<translation id="3203366800380907218">Internetdan</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> sizga bildirishnomalar yuborishi uchun <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali bildirishnomalarni yoqing.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3277252321222022663">Saytlarga sensorlardan foydalanish uchun ruxsat berish (tavsiya etiladi)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">Bloklangan</translation>
 <translation id="5689516760719285838">Joylashuv</translation>
 <translation id="5690795753582697420">Kamera Android sozlamalarida yoqilmagan</translation>
-<translation id="5710871682236653961">NFC qurilmalar ustiga bosilganda saytlarda axborot almashinuviga ruxsat soʻralsin (tavsiya etiladi)</translation>
 <translation id="5719847187258001597">Bunda <ph name="ORIGIN" /> saytidan saqlangan barcha maʼlumotlar va cookie fayllar yoki Bosh ekrandagi ilovalar tozalab tashlanadi.</translation>
 <translation id="5771720122942595109">Bloklandi: <ph name="PERMISSION_1" /></translation>
 <translation id="5804241973901381774">Ruxsatlar</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">Joriy qidiruv tizimiga ruxsat berilgan</translation>
 <translation id="7053983685419859001">Taqiqlash</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{ 1 ta belgilandi}other{# ta belgilandi}}</translation>
-<translation id="7070090581017165256">Bu sayt haqida</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ta element tanlandi. Parametrlar ekranning yuqoriroq qismida joylashgan</translation>
 <translation id="7141896414559753902">Saytlarga qalqib chiquvchi oynalarni ochishni taqiqlash (tavsiya etiladi)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Sayt mikrofondan foydalanmoqda</translation>
 <translation id="7561196759112975576">Har doim</translation>
-<translation id="7572498721684305250">NFC qurilmalar ustiga bosilganda saytlarda axborot almashinuvi taqiqlansin</translation>
 <translation id="757524316907819857">Saytlarga himoyalangan kontent ijrosini taqiqlash</translation>
 <translation id="7649070708921625228">Yordam</translation>
 <translation id="7658239707568436148">Bekor qilish</translation>

@@ -102,7 +102,7 @@ void RunTests(content::BrowserMainRunner* main_runner) {
 }  // namespace
 
 void WebTestBrowserMainRunner::Initialize() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   bool layout_system_deps_ok = content::WebTestBrowserCheckLayoutSystemDeps();
   CHECK(layout_system_deps_ok);
 #endif
@@ -139,11 +139,8 @@ void WebTestBrowserMainRunner::Initialize() {
   // only default to a software GL if the flag isn't already specified.
   if (!command_line.HasSwitch(switches::kUseGpuInTests) &&
       !command_line.HasSwitch(switches::kUseGL)) {
-    bool legacy_software_gl = true;
-#if defined(OS_LINUX) || defined(OS_WIN)
     // This setting makes web tests run on SwANGLE instead of SwiftShader GL.
-    legacy_software_gl = false;
-#endif
+    bool legacy_software_gl = false;
     gl::SetSoftwareGLCommandLineSwitches(&command_line, legacy_software_gl);
   }
   command_line.AppendSwitchASCII(switches::kTouchEventFeatureDetection,
@@ -223,8 +220,8 @@ void WebTestBrowserMainRunner::Initialize() {
   // interference. This GPU process is launched 120 seconds after chrome starts.
   command_line.AppendSwitch(switches::kDisableGpuProcessForDX12InfoCollection);
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
   content::WebTestBrowserPlatformInitialize();
 #endif
 

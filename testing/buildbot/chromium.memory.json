@@ -282,6 +282,7 @@
               "os": "Ubuntu-18.04"
             }
           ],
+          "quickrun_shards": 80,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 40
         },
@@ -485,6 +486,7 @@
               "os": "Ubuntu-18.04"
             }
           ],
+          "quickrun_shards": 24,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
         },
@@ -934,6 +936,7 @@
               "os": "Ubuntu-18.04"
             }
           ],
+          "quickrun_shards": 12,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 6
         },
@@ -1396,6 +1399,7 @@
               "os": "Ubuntu-18.04"
             }
           ],
+          "quickrun_shards": 2,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "services_unittests",
@@ -3569,6 +3573,26 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
+        "test": "ash_components_unittests",
+        "test_id_prefix": "ninja://ash/components:ash_components_unittests/"
+      },
+      {
+        "args": [
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
         "test": "ash_unittests",
         "test_id_prefix": "ninja://ash:ash_unittests/"
       },
@@ -5413,6 +5437,27 @@
         },
         "test": "app_shell_unittests",
         "test_id_prefix": "ninja://extensions/shell:app_shell_unittests/"
+      },
+      {
+        "args": [
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "ash_components_unittests",
+        "test_id_prefix": "ninja://ash/components:ash_components_unittests/"
       },
       {
         "args": [
@@ -9619,7 +9664,6 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
           "--enable-features=UseSkiaRenderer,UiGpuRasterization,Vulkan",
           "--use-vulkan=swiftshader",
-          "--enable-oop-rasterization",
           "--enable-gpu-rasterization",
           "--disable-software-compositing-fallback",
           "--disable-vulkan-fallback-to-gl-for-testing",
@@ -12663,7 +12707,7 @@
           "--num-retries=3",
           "--additional-expectations",
           "../../third_party/blink/web_tests/ASANExpectations",
-          "--time-out-ms",
+          "--timeout-ms",
           "48000",
           "--enable-sanitizer"
         ],
@@ -12703,7 +12747,7 @@
           "--num-retries=3",
           "--additional-expectations",
           "../../third_party/blink/web_tests/LeakExpectations",
-          "--time-out-ms",
+          "--timeout-ms",
           "48000",
           "--enable-leak-detection"
         ],
@@ -12740,7 +12784,7 @@
           "--num-retries=3",
           "--additional-expectations",
           "../../third_party/blink/web_tests/MSANExpectations",
-          "--time-out-ms",
+          "--timeout-ms",
           "66000",
           "--enable-sanitizer"
         ],
@@ -13782,7 +13826,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 6
         },
         "test": "components_unittests",
         "test_id_prefix": "ninja://components:components_unittests/"

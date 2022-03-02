@@ -2488,7 +2488,7 @@ void LayoutBlockFlow::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
     AddLayoutOverflowFromFloats();
 }
 
-void LayoutBlockFlow::AbsoluteQuads(Vector<FloatQuad>& quads,
+void LayoutBlockFlow::AbsoluteQuads(Vector<gfx::QuadF>& quads,
                                     MapCoordinatesFlags mode) const {
   NOT_DESTROYED();
   if (!IsAnonymousBlockContinuation()) {
@@ -2498,16 +2498,16 @@ void LayoutBlockFlow::AbsoluteQuads(Vector<FloatQuad>& quads,
   LayoutBoxModelObject::AbsoluteQuads(quads, mode);
 }
 
-void LayoutBlockFlow::LocalQuadsForSelf(Vector<FloatQuad>& quads) const {
+void LayoutBlockFlow::LocalQuadsForSelf(Vector<gfx::QuadF>& quads) const {
   return QuadsForSelfInternal(quads, 0, false);
 }
 
-void LayoutBlockFlow::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
+void LayoutBlockFlow::AbsoluteQuadsForSelf(Vector<gfx::QuadF>& quads,
                                            MapCoordinatesFlags mode) const {
   return QuadsForSelfInternal(quads, mode, true);
 }
 
-void LayoutBlockFlow::QuadsForSelfInternal(Vector<FloatQuad>& quads,
+void LayoutBlockFlow::QuadsForSelfInternal(Vector<gfx::QuadF>& quads,
                                            MapCoordinatesFlags mode,
                                            bool map_to_absolute) const {
   NOT_DESTROYED();
@@ -2521,13 +2521,7 @@ void LayoutBlockFlow::QuadsForSelfInternal(Vector<FloatQuad>& quads,
   if (map_to_absolute)
     quads.push_back(LocalRectToAbsoluteQuad(local_rect, mode));
   else
-    quads.push_back(FloatQuad(FloatRect(local_rect)));
-}
-
-LayoutObject* LayoutBlockFlow::HoverAncestor() const {
-  NOT_DESTROYED();
-  return IsAnonymousBlockContinuation() ? Continuation()
-                                        : LayoutBlock::HoverAncestor();
+    quads.push_back(gfx::QuadF(gfx::RectF(local_rect)));
 }
 
 RootInlineBox* LayoutBlockFlow::CreateAndAppendRootInlineBox() {
@@ -4247,60 +4241,6 @@ LayoutUnit LayoutBlockFlow::LogicalRightFloatOffsetForAvoidingFloats(
   return fixed_offset;
 }
 
-void LayoutBlockFlow::UpdateAncestorShouldPaintFloatingObject(
-    const LayoutBox& float_box) {
-  // Normally, the ShouldPaint flags of FloatingObjects should have been set
-  // during layout, based on overhaning, intruding, self-painting status, etc.
-  // However, sometimes a layer's self painting status is affected by its
-  // compositing status, so we need to call this method during compositing
-  // update when we find a layer changes self painting status. This doesn't
-  // apply to CAP in which a layer's self painting status no longer depends on
-  // compositing status.
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  DCHECK(float_box.IsFloating());
-  bool float_box_is_self_painting_layer =
-      float_box.HasLayer() && float_box.Layer()->IsSelfPaintingLayer();
-  bool found_painting_ancestor = false;
-  for (LayoutObject* ancestor = float_box.ContainingBlock(); ancestor;
-       ancestor = ancestor->ContainingBlock()) {
-    if (!ancestor->IsLayoutBlockFlow())
-      continue;
-
-    auto* ancestor_block = To<LayoutBlockFlow>(ancestor);
-    FloatingObjects* ancestor_floating_objects =
-        ancestor_block->floating_objects_;
-    if (!ancestor_floating_objects)
-      break;
-    FloatingObjectSet::iterator it =
-        ancestor_floating_objects->MutableSet()
-            .Find<FloatingObjectHashTranslator>(
-                const_cast<LayoutBox*>(&float_box));
-    if (it == ancestor_floating_objects->MutableSet().end())
-      break;
-
-    FloatingObject& floating_object = **it;
-    if (!found_painting_ancestor && !float_box_is_self_painting_layer) {
-      // This tries to repeat the logic in AddOverhangingFloats() about
-      // ShouldPaint flag with the following rules:
-      // - The nearest enclosing block in which the float doesn't overhang
-      //   paints the float;
-      // - Or even if the float overhangs, if the ancestor block has
-      //   self-painting layer, it paints the float.
-      // However it is not fully consistent with AddOverhangingFloats() when
-      // a float doesn't overhang in an ancestor but overhangs in an ancestor
-      // of the ancestor. This results different ancestor painting the float,
-      // but there seems no problem for now.
-      if (ancestor_block->HasSelfPaintingLayer() ||
-          !ancestor_block->IsOverhangingFloat(floating_object)) {
-        floating_object.SetShouldPaint(true);
-        found_painting_ancestor = true;
-      }
-    } else {
-      floating_object.SetShouldPaint(false);
-    }
-  }
-}
-
 bool LayoutBlockFlow::AllowsColumns() const {
   // Ruby elements manage child insertion in a special way, and would mess up
   // insertion of the flow thread. The flow thread needs to be a direct child of
@@ -4550,6 +4490,21 @@ void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
   DCHECK_EQ(flow_thread->Parent(), this);
 
   flow_thread->Populate();
+
+  if (auto* child = DynamicTo<LayoutNGBlockFlow>(flow_thread->FirstChild())) {
+    // Attempt to identify the anonymous inline wrapper that may have been
+    // created, if all multicol children are inline. The child insertion
+    // machinery (invoked above, when adding |flow_thread|) may already have
+    // inserted an anonymous block for other reasons (when the flow thread
+    // temporarily becomes a sibling of the actual DOM children), in which case
+    // we haven't tagged this anonymous wrapper properly. Do it now. This is
+    // important for OOF descendants, as this anonymous wrapper may act as their
+    // containing block, but that will only happen if it is tagged correctly;
+    // see LayoutObject::FindNonAnonymousContainingBlock().
+    if (child->IsAnonymousBlock() && !child->NextSibling())
+      child->SetIsAnonymousNGMulticolInlineWrapper();
+  }
+
   LayoutBlockFlowRareData& rare_data = EnsureRareData();
   DCHECK(!rare_data.multi_column_flow_thread_);
   rare_data.multi_column_flow_thread_ = flow_thread;

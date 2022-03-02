@@ -16,10 +16,10 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -73,8 +73,8 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
 
   AppId app_id;
   {
-    std::unique_ptr<WebApplicationInfo> web_application_info =
-        std::make_unique<WebApplicationInfo>();
+    std::unique_ptr<WebAppInstallInfo> web_application_info =
+        std::make_unique<WebAppInstallInfo>();
     web_application_info->start_url = start_url;
     web_application_info->scope = start_url.GetWithoutFilename();
     web_application_info->title = u"App Name";

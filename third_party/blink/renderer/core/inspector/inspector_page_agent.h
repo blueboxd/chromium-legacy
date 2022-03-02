@@ -43,6 +43,8 @@
 
 namespace blink {
 
+class GenericFontFamilySettings;
+
 namespace probe {
 class RecalculateStyle;
 class UpdateLayout;
@@ -170,7 +172,9 @@ class CORE_EXPORT InspectorPageAgent final
                                          Maybe<bool> grant_universal_access,
                                          int* execution_context_id) override;
   protocol::Response setFontFamilies(
-      std::unique_ptr<protocol::Page::FontFamilies>) override;
+      std::unique_ptr<protocol::Page::FontFamilies>,
+      Maybe<protocol::Array<protocol::Page::ScriptFontFamilies>> forScripts)
+      override;
   protocol::Response setFontSizes(
       std::unique_ptr<protocol::Page::FontSizes>) override;
   protocol::Response generateTestReport(const String& message,
@@ -259,6 +263,9 @@ class CORE_EXPORT InspectorPageAgent final
 
   void PageLayoutInvalidated(bool resized);
 
+  protocol::Response setFontFamilies(
+      GenericFontFamilySettings& family_settings,
+      const protocol::Array<protocol::Page::ScriptFontFamilies>& forScripts);
   std::unique_ptr<protocol::Page::Frame> BuildObjectForFrame(LocalFrame*);
   std::unique_ptr<protocol::Page::FrameTree> BuildObjectForFrameTree(
       LocalFrame*);
@@ -277,8 +284,8 @@ class CORE_EXPORT InspectorPageAgent final
   String pending_script_to_evaluate_on_load_once_;
   String script_to_evaluate_on_load_once_;
   Member<InspectorResourceContentLoader> inspector_resource_content_loader_;
-  bool intercept_file_chooser_ = false;
   int resource_content_loader_client_id_;
+  InspectorAgentState::Boolean intercept_file_chooser_;
   InspectorAgentState::Boolean enabled_;
   InspectorAgentState::Boolean screencast_enabled_;
   InspectorAgentState::Boolean lifecycle_events_enabled_;
@@ -287,14 +294,9 @@ class CORE_EXPORT InspectorPageAgent final
   InspectorAgentState::StringMap worlds_to_evaluate_on_load_;
   InspectorAgentState::BooleanMap
       include_command_line_api_for_scripts_to_evaluate_on_load_;
-  InspectorAgentState::String standard_font_family_;
-  InspectorAgentState::String fixed_font_family_;
-  InspectorAgentState::String serif_font_family_;
-  InspectorAgentState::String sans_serif_font_family_;
-  InspectorAgentState::String cursive_font_family_;
-  InspectorAgentState::String fantasy_font_family_;
   InspectorAgentState::Integer standard_font_size_;
   InspectorAgentState::Integer fixed_font_size_;
+  InspectorAgentState::Bytes script_font_families_cbor_;
 };
 
 }  // namespace blink

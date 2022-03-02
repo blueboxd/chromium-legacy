@@ -43,10 +43,9 @@
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_enums.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -54,6 +53,7 @@
 #include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_enums.mojom-blink.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 namespace skia {
 class Matrix44;
@@ -847,11 +847,11 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // If the object clips its children, for example by having overflow:hidden,
   // set |clips_children| to true.
   virtual void GetRelativeBounds(AXObject** out_container,
-                                 FloatRect& out_bounds_in_container,
+                                 gfx::RectF& out_bounds_in_container,
                                  skia::Matrix44& out_container_transform,
                                  bool* clips_children = nullptr) const;
 
-  FloatRect LocalBoundingBoxRectForAccessibility();
+  gfx::RectF LocalBoundingBoxRectForAccessibility();
 
   // Get the bounds in frame-relative coordinates as a LayoutRect.
   LayoutRect GetBoundsInFrameCoordinates() const;
@@ -1446,7 +1446,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   mutable Member<AXObject> cached_live_region_root_;
   mutable int cached_aria_column_index_;
   mutable int cached_aria_row_index_;
-  mutable FloatRect cached_local_bounding_box_rect_for_accessibility_;
+  mutable gfx::RectF cached_local_bounding_box_rect_for_accessibility_;
 
   Member<AXObjectCacheImpl> ax_object_cache_;
 
@@ -1459,7 +1459,10 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   ax::mojom::blink::Role RemapAriaRoleDueToParent(ax::mojom::blink::Role) const;
   unsigned ComputeAriaColumnIndex() const;
   unsigned ComputeAriaRowIndex() const;
-  bool ComputeIsHiddenViaStyle() const;
+  const ComputedStyle* GetComputedStyle() const;
+  bool ComputeIsHiddenViaStyle(const ComputedStyle*) const;
+  bool ComputeIsInertViaStyle(const ComputedStyle*,
+                              IgnoredReasons* = nullptr) const;
 
   // This returns true if the element associated with this AXObject is has
   // focusable style, meaning that it is visible. Note that we prefer to rely on

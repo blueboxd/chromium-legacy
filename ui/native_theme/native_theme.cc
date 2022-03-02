@@ -11,7 +11,6 @@
 #include "base/containers/fixed_flat_map.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ui_base_switches.h"
@@ -41,7 +40,7 @@ NativeTheme::ExtraParams::ExtraParams(const ExtraParams& other) {
   memcpy(this, &other, sizeof(*this));
 }
 
-#if !defined(OS_WIN) && !defined(OS_APPLE)
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_APPLE)
 // static
 bool NativeTheme::SystemDarkModeSupported() {
   return false;

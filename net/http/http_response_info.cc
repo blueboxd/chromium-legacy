@@ -185,7 +185,6 @@ HttpResponseInfo::ConnectionInfoCoarse HttpResponseInfo::ConnectionInfoToCoarse(
 HttpResponseInfo::HttpResponseInfo()
     : was_cached(false),
       cache_entry_status(CacheEntryStatus::ENTRY_UNDEFINED),
-      server_data_unavailable(false),
       network_accessed(false),
       was_fetched_via_spdy(false),
       was_alpn_negotiated(false),
@@ -381,7 +380,7 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
     for (int i = 0; i < num_aliases; i++) {
       if (!iter.ReadString(&alias))
         return false;
-      dns_aliases.push_back(alias);
+      dns_aliases.insert(alias);
     }
   }
 

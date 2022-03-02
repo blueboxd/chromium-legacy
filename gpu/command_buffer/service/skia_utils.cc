@@ -16,12 +16,13 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContextThreadSafeProxy.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "gpu/config/gpu_finch_features.h"
 #endif
 
@@ -96,6 +97,9 @@ GrContextOptions GetDefaultGrContextOptions(GrContextType type) {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableMipmapGeneration);
 
+  // fSupportBilerpFromGlyphAtlas is needed for Raw Draw.
+  options.fSupportBilerpFromGlyphAtlas = features::IsUsingRawDraw();
+
   return options;
 }
 
@@ -108,7 +112,7 @@ GLuint GetGrGLBackendTextureFormat(
       version_info, viz::TextureStorageFormat(resource_format));
 
   bool use_version_es2 = false;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   use_version_es2 = base::FeatureList::IsEnabled(features::kUseGles2ForOopR);
 #endif
 
@@ -258,7 +262,7 @@ GrVkImageInfo CreateGrVkImageInfo(VulkanImage* image) {
   image_info.fImage = image->image();
   image_info.fAlloc = alloc;
   image_info.fImageTiling = image->image_tiling();
-  image_info.fImageLayout = image->image_layout();
+  image_info.fImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
   image_info.fFormat = image->format();
   image_info.fImageUsageFlags = image->usage();
   image_info.fSampleCount = 1;

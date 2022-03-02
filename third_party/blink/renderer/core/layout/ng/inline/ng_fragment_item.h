@@ -452,13 +452,13 @@ class CORE_EXPORT NGFragmentItem {
   bool HasSvgTransformForBoundingBox() const;
   // A transform which should be used on computing a bounding box.
   // This contains no transform for lengthAdjust=spacingAndGlyphs because
-  // FloatRectInContainerFragment() already takes into account of
+  // RectInContainerFragment() already takes into account of
   // lengthAdjust=spacingAndGlyphs.
   AffineTransform BuildSvgTransformForBoundingBox() const;
 
   // Returns a transformed text cell in the unscaled coordination system.
   // This works only with kSvgText type.
-  FloatQuad SvgUnscaledQuad() const;
+  gfx::QuadF SvgUnscaledQuad() const;
 
   // Returns a font scaling factor for SVG <text>.
   // This returns 1 for an NGFragmentItem not for LayoutSVGInlineText.

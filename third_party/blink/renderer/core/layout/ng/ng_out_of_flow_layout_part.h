@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -310,9 +310,9 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       wtf_size_t* start_index,
       LogicalOffset* offset) const;
 
-  static void ReplaceFragment(scoped_refptr<const NGLayoutResult> new_result,
-                              const NGPhysicalBoxFragment& old_fragment,
-                              wtf_size_t index);
+  void ReplaceFragment(scoped_refptr<const NGLayoutResult> new_result,
+                       const NGPhysicalBoxFragment& old_fragment,
+                       wtf_size_t index);
 
   // This saves the static-position for an OOF-positioned object into its
   // paint-layer.

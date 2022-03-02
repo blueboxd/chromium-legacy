@@ -8,11 +8,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/compiler_specific.h"
 #include "base/observer_list_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
-#include "content/browser/attribution_reporting/sent_report.h"
 
 namespace base {
 class Time;
@@ -28,6 +26,8 @@ class AttributionPolicy;
 class StorableTrigger;
 class StorableSource;
 class WebContents;
+
+struct SendResult;
 
 // Interface that mediates data flow between the network, storage layer, and
 // blink.
@@ -58,7 +58,8 @@ class AttributionManager {
     virtual void OnSourceDeactivated(
         const AttributionStorage::DeactivatedSource& source) {}
 
-    virtual void OnReportSent(const SentReport& info) {}
+    virtual void OnReportSent(const AttributionReport& report,
+                              const SendResult& info) {}
 
     virtual void OnReportDropped(
         const AttributionStorage::CreateReportResult& result) {}
@@ -88,14 +89,15 @@ class AttributionManager {
   virtual void GetPendingReportsForWebUI(
       base::OnceCallback<void(std::vector<AttributionReport>)> callback) = 0;
 
-  // Sends all pending reports immediately, and runs |done| once they have all
+  // Sends the given reports immediately, and runs |done| once they have all
   // been sent.
-  virtual void SendReportsForWebUI(base::OnceClosure done) = 0;
+  virtual void SendReportsForWebUI(
+      const std::vector<AttributionReport::Id>& ids,
+      base::OnceClosure done) = 0;
 
   // Returns the AttributionPolicy that is used to control API policies such
   // as noise.
-  virtual const AttributionPolicy& GetAttributionPolicy() const
-      WARN_UNUSED_RESULT = 0;
+  virtual const AttributionPolicy& GetAttributionPolicy() const = 0;
 
   // Deletes all data in storage for URLs matching |filter|, between
   // |delete_begin| and |delete_end| time.

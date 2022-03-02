@@ -43,11 +43,11 @@
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/size_f.h"
 
 extern "C" {
 #include <stdio.h>  // jpeglib.h needs stdio FILE.
@@ -276,7 +276,7 @@ static bool CheckExifHeader(jpeg_saved_marker_ptr marker,
 
 struct DecodedImageMetaData {
   ImageOrientation orientation;
-  FloatSize resolution;
+  gfx::SizeF resolution;
   gfx::Size size;
   unsigned resolution_unit { 0 };
 };
@@ -642,9 +642,10 @@ class JPEGImageReader final {
 
         switch (info_.jpeg_color_space) {
           case JCS_YCbCr:
-            FALLTHROUGH;  // libjpeg can convert YCbCr image pixels to RGB.
+            [[fallthrough]];  // libjpeg can convert YCbCr image pixels to RGB.
           case JCS_GRAYSCALE:
-            FALLTHROUGH;  // libjpeg can convert GRAYSCALE image pixels to RGB.
+            [[fallthrough]];  // libjpeg can convert GRAYSCALE image pixels to
+                              // RGB.
           case JCS_RGB:
             info_.out_color_space = rgbOutputColorSpace();
             break;
@@ -769,7 +770,7 @@ class JPEGImageReader final {
           return true;
         }
       }
-      FALLTHROUGH;
+        [[fallthrough]];
       case kJpegStartDecompress:
         if (decoding_mode == JPEGImageDecoder::DecodingMode::kDecodeToYuv) {
           DCHECK(decoder_->CanDecodeToYUV());
@@ -808,7 +809,7 @@ class JPEGImageReader final {
         // If this is a progressive JPEG ...
         state_ = (info_.buffered_image) ? kJpegDecompressProgressive
                                         : kJpegDecompressSequential;
-        FALLTHROUGH;
+        [[fallthrough]];
 
       case kJpegDecompressSequential:
         if (state_ == kJpegDecompressSequential) {
@@ -819,7 +820,7 @@ class JPEGImageReader final {
           DCHECK_EQ(info_.output_scanline, info_.output_height);
           state_ = kJpegDone;
         }
-        FALLTHROUGH;
+        [[fallthrough]];
 
       case kJpegDecompressProgressive:
         if (state_ == kJpegDecompressProgressive) {
@@ -900,7 +901,7 @@ class JPEGImageReader final {
 
           state_ = kJpegDone;
         }
-        FALLTHROUGH;
+        [[fallthrough]];
 
       case kJpegDone:
         // Finish decompression.

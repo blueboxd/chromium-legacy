@@ -17,7 +17,8 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/task/sequenced_task_runner.h"
-#include "media/base/decode_status.h"
+#include "base/trace_event/trace_event.h"
+#include "media/base/decoder_status.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/accelerated_video_decoder.h"
@@ -418,11 +419,11 @@ bool V4L2StatelessVideoDecoderBackend::PumpDecodeTask() {
       case AcceleratedVideoDecoder::kRanOutOfStreamData:
         // Current decode request is finished processing.
         if (current_decode_request_) {
-          encoding_timestamps_[current_decode_request_->buffer->timestamp()
-                                   .InMilliseconds()] = base::TimeTicks::Now();
+          enqueuing_timestamps_[current_decode_request_->buffer->timestamp()
+                                    .InMilliseconds()] = base::TimeTicks::Now();
 
-          DCHECK(current_decode_request_->decode_cb);
-          std::move(current_decode_request_->decode_cb).Run(DecodeStatus::OK);
+          std::move(current_decode_request_->decode_cb)
+              .Run(DecoderStatus::Codes::kOk);
           current_decode_request_ = absl::nullopt;
         }
 
@@ -498,7 +499,7 @@ void V4L2StatelessVideoDecoderBackend::PumpOutputSurfaces() {
       case OutputRequest::kFlushFence:
         DCHECK(output_request_queue_.empty());
         DVLOGF(2) << "Flush finished.";
-        std::move(flush_cb_).Run(DecodeStatus::OK);
+        std::move(flush_cb_).Run(DecoderStatus::Codes::kOk);
         resume_decode = true;
         client_->CompleteFlush();
         break;
@@ -519,11 +520,22 @@ void V4L2StatelessVideoDecoderBackend::PumpOutputSurfaces() {
           const int64_t flat_timestamp = request.timestamp.InMilliseconds();
           // TODO(b/190615065) |flat_timestamp| might be repeated with H.264
           // bitstreams, investigate why, and change the if() to DCHECK().
-          if (base::Contains(encoding_timestamps_, flat_timestamp)) {
-            UMA_HISTOGRAM_TIMES(
-                "Media.PlatformVideoDecoding.Decode",
-                base::TimeTicks::Now() - encoding_timestamps_[flat_timestamp]);
-            encoding_timestamps_.erase(flat_timestamp);
+          if (base::Contains(enqueuing_timestamps_, flat_timestamp)) {
+            const auto decoding_begin = enqueuing_timestamps_[flat_timestamp];
+            const auto decoding_end = base::TimeTicks::Now();
+
+            UMA_HISTOGRAM_TIMES("Media.PlatformVideoDecoding.Decode",
+                                decoding_end - decoding_begin);
+
+            static const char* kVideoDecoding = "V4L2 Video Decoding";
+            TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+                "media,gpu", kVideoDecoding, TRACE_ID_LOCAL(this),
+                decoding_begin);
+            TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+                "media,gpu", kVideoDecoding, TRACE_ID_LOCAL(this),
+                decoding_end);
+
+            enqueuing_timestamps_.erase(flat_timestamp);
           }
         }
 
@@ -606,7 +618,7 @@ void V4L2StatelessVideoDecoderBackend::OnStreamStopped(bool stop_input_queue) {
 }
 
 void V4L2StatelessVideoDecoderBackend::ClearPendingRequests(
-    DecodeStatus status) {
+    DecoderStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(3);
 

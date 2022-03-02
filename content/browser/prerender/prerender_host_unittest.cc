@@ -149,7 +149,8 @@ class PrerenderHostTest : public RenderViewHostImplTestHarness {
 
   void ExpectFinalStatus(PrerenderHost::FinalStatus status) {
     histogram_tester_.ExpectUniqueSample(
-        "Prerender.Experimental.PrerenderHostFinalStatus", status, 1);
+        "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+        status, 1);
   }
 
   std::unique_ptr<TestWebContents> CreateWebContents(const GURL& url) {
@@ -427,7 +428,7 @@ TEST_F(PrerenderHostTest, DontCancelPrerenderWhenTriggerGetsVisible) {
 }
 
 // Skip this test on Android as it doesn't support the OCCLUDED state.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(PrerenderHostTest, DontCancelPrerenderWhenTriggerGetsOcculded) {
   std::unique_ptr<TestWebContents> web_contents =
       CreateWebContents(GURL("https://example.com/"));

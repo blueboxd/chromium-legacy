@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "remoting/host/chromoting_host_services_client.h"
+#include "remoting/host/chromoting_host_services_provider.h"
 #include "remoting/host/mojom/webauthn_proxy.mojom.h"
 
 namespace remoting {
@@ -35,13 +35,22 @@ class RemoteWebAuthnNativeMessagingHost final
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override;
 
  private:
+  friend class RemoteWebAuthnNativeMessagingHostTest;
+
+  RemoteWebAuthnNativeMessagingHost(
+      std::unique_ptr<ChromotingHostServicesProvider> host_service_api_client,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
   void ProcessHello(base::Value response);
   void ProcessGetRemoteState(base::Value response);
   void ProcessIsUvpaa(const base::Value& request, base::Value response);
+  void ProcessCreate(const base::Value& request, base::Value response);
 
   void OnQueryVersionResult(uint32_t version);
   void OnIpcDisconnected();
   void OnIsUvpaaResponse(base::Value response, bool is_available);
+  void OnCreateResponse(base::Value response,
+                        mojom::WebAuthnCreateResponsePtr remote_response);
 
   void QueryNextRemoteState();
   void SendNextRemoteState(bool is_remoted);
@@ -54,7 +63,7 @@ class RemoteWebAuthnNativeMessagingHost final
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   raw_ptr<extensions::NativeMessageHost::Client> client_ = nullptr;
-  ChromotingHostServicesClient host_service_api_client_;
+  std::unique_ptr<ChromotingHostServicesProvider> host_service_api_client_;
   mojo::Remote<mojom::WebAuthnProxy> remote_;
 
   // Pending getRemoteStateResponses to be sent.

@@ -142,7 +142,7 @@ class NavigationControllerBrowserTestBase : public ContentBrowserTest {
     TitleWatcher title_watcher(shell()->web_contents(),
                                base::UTF8ToUTF16(title));
     if (use_load_data_as_string_with_base_url) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       shell()->LoadDataAsStringWithBaseURL(history_url, data, base_url);
 #else
       NOTREACHED();
@@ -443,7 +443,7 @@ class LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest
 // used in the NavigationEntries.
 IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest,
                        LoadDataWithBaseURLThenReload) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -481,7 +481,7 @@ IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest,
   // 1) Load data, but don't commit yet.
   TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
   if (use_load_data_as_string_with_base_url()) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     shell()->LoadDataAsStringWithBaseURL(supplied_history_url, data,
                                          supplied_base_url);
 #else
@@ -570,7 +570,7 @@ IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest,
 // same-document navigations after LoadDataWithBaseURL instead.
 IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest,
                        LoadDataWithBaseURLThenRendererInitiatedSameDocument) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -664,7 +664,7 @@ IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest,
 // same-document navigations after LoadDataWithBaseURL instead.
 IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest,
                        LoadDataWithBaseURLThenBrowserInitiatedSameDocument) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -946,7 +946,7 @@ class LoadDataWithBaseURLBrowserTest
 // URL given is invalid.
 IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLBrowserTest,
                        LoadDataWithInvalidBaseURL) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -1024,7 +1024,7 @@ class BlockAllCommitContentBrowserClient : public TestContentBrowserClient {
 // typically blocked by an embedder, because it bypasses the renderer check.
 IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLBrowserTest,
                        LoadDataWithBlockedDataURL) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -1123,7 +1123,7 @@ IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLBrowserTest,
 // the checks since the base URL is invalid.
 IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLBrowserTest,
                        LoadDataWithBlockedDataURLAndInvalidBaseURL) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -1155,7 +1155,7 @@ IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLBrowserTest,
       shell()->web_contents()->GetMainFrame()->GetProcess());
 
   if (use_load_data_as_string_with_base_url()) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     shell()->LoadDataAsStringWithBaseURL(history_url, data, base_url);
 #else
     NOTREACHED();
@@ -1176,7 +1176,7 @@ IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLBrowserTest,
 IN_PROC_BROWSER_TEST_P(
     LoadDataWithBaseURLBrowserTest,
     LoadDataWithBaseURLThenJavaScriptURLThenSameDocumentNavigation) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -1415,7 +1415,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   // Load data and commit.
   TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   shell()->LoadDataAsStringWithBaseURL(history_url, data, base_url);
 #else
   shell()->LoadDataWithBaseURL(history_url, data, base_url);
@@ -1759,7 +1759,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   // Load data and commit.
   TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   shell()->LoadDataAsStringWithBaseURL(history_url, data, base_url);
 #else
   shell()->LoadDataWithBaseURL(history_url, data, base_url);
@@ -4320,8 +4320,7 @@ IN_PROC_BROWSER_TEST_P(InitialEmptyDocNavigationControllerBrowserTest,
     WebContentsImpl* new_contents =
         static_cast<WebContentsImpl*>(new_shell->web_contents());
     NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_TRUE(!controller.GetLastCommittedEntry() ||
-                controller.GetLastCommittedEntry()->IsInitialEntry());
+    EXPECT_TRUE(controller.GetLastCommittedEntry()->IsInitialEntry());
 
     // Navigating the window to |url_2| will be classified as NEW_ENTRY and will
     // replace the previous entry if it exists.
@@ -4625,281 +4624,6 @@ IN_PROC_BROWSER_TEST_P(InitialEmptyDocNavigationControllerBrowserTest,
     EXPECT_EQ(1, controller.GetEntryCount());
     EXPECT_TRUE(controller.GetLastCommittedEntry());
   }
-
-  // 2) Navigate to about:blank on a new window that hasn't done any navigation.
-  {
-    SCOPED_TRACE(testing::Message() << " Testing case 2.");
-
-    // Create a new blank window that won't create a NavigationEntry.
-    Shell* new_shell = OpenBlankWindow(contents());
-    WebContentsImpl* new_contents =
-        static_cast<WebContentsImpl*>(new_shell->web_contents());
-    NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_EQ(0, controller.GetEntryCount());
-    EXPECT_FALSE(controller.GetLastCommittedEntry());
-
-    // The window should be on the initial empty document.
-    FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Navigating the window to about:blank will be classified as NEW_ENTRY
-    // and will add a new entry.
-    NavigateWindowAndCheck(new_contents, GURL("about:blank"),
-                           true /* wait_for_previous_navigations */,
-                           false /* expect_same_document */,
-                           NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-                           false /* expect_replace */);
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-
-    // The window is no longer on the initial empty document.
-    EXPECT_FALSE(new_root->is_on_initial_empty_document());
-
-    // Navigating the window to about:blank#foo will be classified as a same-
-    // document NEW_ENTRY, and will add a new entry.
-    NavigateWindowAndCheck(new_contents, GURL("about:blank#foo"),
-                           true /* wait_for_previous_navigations */,
-                           true /* expect_same_document */,
-                           NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-                           false /* expect_replace */);
-    EXPECT_EQ(2, controller.GetEntryCount());
-
-    // The window is still marked as no longer being on the initial empty
-    // document.
-    EXPECT_FALSE(new_root->is_on_initial_empty_document());
-  }
-
-  // 3) Navigate to about:blank#foo on a new window that hasn't done any
-  // navigation.
-  {
-    SCOPED_TRACE(testing::Message() << " Testing case 3.");
-
-    // Create a new blank window that won't create a NavigationEntry.
-    Shell* new_shell = OpenBlankWindow(contents());
-    WebContentsImpl* new_contents =
-        static_cast<WebContentsImpl*>(new_shell->web_contents());
-    NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_EQ(0, controller.GetEntryCount());
-    EXPECT_FALSE(controller.GetLastCommittedEntry());
-
-    // The window should be on the initial empty document.
-    FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Navigating the window to about:blank#foo will be classified as a same-
-    // document NEW_ENTRY, and will add a new entry.
-    NavigateWindowAndCheck(new_contents, GURL("about:blank#foo"),
-                           true /* wait_for_previous_navigations */,
-                           true /* expect_same_document */,
-                           NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-                           false /* expect_replace */);
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-
-    // The window should still be on the initial empty document.
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-  }
-
-  // 4) Navigate to |url_2| on a new window that initially loaded about:blank
-  // and has done a same-document navigation to about:blank#foo.
-  {
-    SCOPED_TRACE(testing::Message() << " Testing case 4.");
-
-    // Create a new window with URL set to about:blank, which will create a
-    // NavigationEntry.
-    Shell* new_shell = OpenWindow(contents(), GURL("about:blank"));
-    WebContentsImpl* new_contents =
-        static_cast<WebContentsImpl*>(new_shell->web_contents());
-    NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_EQ(1, controller.GetEntryCount());
-    NavigationEntryImpl* last_entry = controller.GetLastCommittedEntry();
-    EXPECT_TRUE(last_entry);
-
-    // The window should be on the initial empty document.
-    FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Do a navigation on the window to about:blank#foo, creating a
-    // same-document navigation.
-    NavigateWindowAndCheck(new_contents, GURL("about:blank#foo"),
-                           true /* wait_for_previous_navigations */,
-                           true /* expect_same_document */,
-                           NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-                           false /* expect_replace */);
-    EXPECT_EQ(2, controller.GetEntryCount());
-    EXPECT_NE(last_entry, controller.GetLastCommittedEntry());
-    // Check that we did a same-document navigation (the DSN stays the same).
-    EXPECT_EQ(last_entry->GetMainFrameDocumentSequenceNumber(),
-              controller.GetLastCommittedEntry()
-                  ->GetMainFrameDocumentSequenceNumber());
-    last_entry = controller.GetLastCommittedEntry();
-
-    // The window should still be on the initial empty document.
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Navigating the window to |url_2| will be classified as NEW_ENTRY and will
-    // add a new entry.
-    NavigateWindowAndCheck(
-        new_contents, url_2, true /* wait_for_previous_navigations */,
-        false /* expect_same_document */, NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-        false /* expect_replace */);
-    EXPECT_EQ(3, controller.GetEntryCount());
-    EXPECT_NE(last_entry, controller.GetLastCommittedEntry());
-
-    // The window is no longer on theinitial empty document.
-    EXPECT_FALSE(new_root->is_on_initial_empty_document());
-  }
-
-  // 5) Navigate to |url_2| on a new window that has started a navigation to
-  // a URL that never committed.
-  {
-    SCOPED_TRACE(testing::Message() << " Testing case 5.");
-
-    // Create a new window with URL set to a URL that never commits, which will
-    // not create a NavigationEntry.
-    Shell* new_shell = OpenWindow(contents(), hung_url);
-    WebContentsImpl* new_contents =
-        static_cast<WebContentsImpl*>(new_shell->web_contents());
-    NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_EQ(0, controller.GetEntryCount());
-    EXPECT_FALSE(controller.GetLastCommittedEntry());
-
-    // The window should be on the initial empty document.
-    FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Navigate to |url_2|, and ensure that we won't wait for the |hung_url|
-    // navigation to finish.
-    NavigateWindowAndCheck(
-        new_contents, url_2, false /* wait_for_previous_navigations */,
-        false /* expect_same_document */, NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-        false /* expect_replace */);
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-
-    // The window is no longer on the initial empty document.
-    EXPECT_FALSE(new_root->is_on_initial_empty_document());
-  }
-
-  // 6) Navigate to |url_2| on a new window that has done a document.open().
-  {
-    SCOPED_TRACE(testing::Message() << " Testing case 6.");
-
-    // Create a new blank window that won't create a NavigationEntry.
-    Shell* new_shell = OpenBlankWindow(contents());
-    WebContentsImpl* new_contents =
-        static_cast<WebContentsImpl*>(new_shell->web_contents());
-    NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_EQ(0, controller.GetEntryCount());
-    EXPECT_FALSE(controller.GetLastCommittedEntry());
-
-    // The window should be on its initial empty document.
-    FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Do a document.open() on the blank window.
-    TestNavigationObserver nav_observer(new_contents);
-    EXPECT_TRUE(ExecJs(contents(), R"(
-      last_opened_window.document.open();
-          last_opened_window.document.write("foo");
-          last_opened_window.document.close();
-    )"));
-
-    // Ensure the URL update from the document.open() above has finished before
-    // continuing by waiting for a renderer round-trip to run this script.
-    EXPECT_TRUE(ExecJs(new_contents, "true"));
-
-    // The document.open() changed the window's URL in the renderer to be the
-    // same as the main tab's URL, but doesn't actually commit a navigation.
-    EXPECT_EQ(0, controller.GetEntryCount());
-    EXPECT_EQ(GURL("about:blank"),
-              new_contents->GetMainFrame()->GetLastCommittedURL());
-    EXPECT_EQ(main_window_url,
-              new_contents->GetMainFrame()->last_document_url_in_renderer());
-
-    // The window lost its "initial empty document" status.
-    EXPECT_FALSE(new_root->is_on_initial_empty_document());
-
-    // Navigating the window to |url_2| will be classified as NEW_ENTRY and will
-    // add a new entry.
-    NavigateWindowAndCheck(
-        new_contents, url_2, true /* wait_for_previous_navigations */,
-        false /* expect_same_document */, NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-        false /* expect_replace */);
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-  }
-
-  // 7) Navigate to |url_2| on a new window that has navigated to a javascript:
-  // URL that replaced the initial empty document.
-  {
-    SCOPED_TRACE(testing::Message() << " Testing case 7.");
-
-    // Create a new window with URL set to a javascript: URL that replaces the
-    // document, which will not create a NavigationEntry.
-    Shell* new_shell = OpenWindow(contents(), GURL("javascript:'foo'"));
-    WebContentsImpl* new_contents =
-        static_cast<WebContentsImpl*>(new_shell->web_contents());
-    NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_EQ(0, controller.GetEntryCount());
-    EXPECT_FALSE(controller.GetLastCommittedEntry());
-
-    // The window should be on its initial empty document.
-    FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Navigating the window to |url_2| will be classified as NEW_ENTRY and will
-    // add a new entry.
-    NavigateWindowAndCheck(
-        new_contents, url_2, true /* wait_for_previous_navigations */,
-        false /* expect_same_document */, NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-        false /* expect_replace */);
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-
-    // The window is no longer on the initial empty document.
-    EXPECT_FALSE(new_root->is_on_initial_empty_document());
-  }
-}
-
-// Test a same-document navigation in a new window's initial empty document to
-// ensure it is classified correctly.
-IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
-                       SameDocumentInInitialEmptyDocument) {
-  GURL main_window_url(embedded_test_server()->GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_window_url));
-
-  // Create a new blank window that will stay on the initial NavigationEntry.
-  Shell* new_shell = OpenBlankWindow(contents());
-  WebContentsImpl* new_contents =
-      static_cast<WebContentsImpl*>(new_shell->web_contents());
-  NavigationControllerImpl& controller = new_contents->GetController();
-  FrameTreeNode* root = new_contents->GetPrimaryFrameTree().root();
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-  } else {
-    EXPECT_EQ(0, controller.GetEntryCount());
-  }
-
-  {
-    // Do a same-document navigation.
-    LoadCommittedDetailsObserver load_details_observer(new_contents);
-    FrameNavigateParamsCapturer capturer(root);
-    EXPECT_TRUE(ExecJs(contents(), "last_opened_window.location.hash='foo';"));
-    capturer.Wait();
-    load_details_observer.Wait();
-
-    // The pushState will be classified as NEW_ENTRY and will add a new entry.
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-
-    // Check both NavigationHandle and LoadCommittedDetails for whether this was
-    // considered same-document, as these have diverged in the past.
-    // See https://crbug.com/1193134.
-    EXPECT_TRUE(capturer.is_same_document());
-    EXPECT_TRUE(load_details_observer.load_details().is_same_document);
-  }
 }
 
 // Tests that the initial NavigationEntry retains its "initial" status until the
@@ -4910,11 +4634,6 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // will fail.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        InitialNavigationEntryStatus_MainFrame) {
-  if (!blink::features::IsInitialNavigationEntryEnabled()) {
-    // The tests below specifically tests the "initial NavigationEntry" state,
-    // which is not used when InitialNavigationEntry is disabled.
-    return;
-  }
   GURL main_window_url(embedded_test_server()->GetURL("/title1.html"));
   GURL no_commit_url(embedded_test_server()->GetURL("/page204.html"));
   GURL cross_document_url(embedded_test_server()->GetURL("/title2.html"));
@@ -5000,8 +4719,6 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     Shell* new_shell = OpenWindow(contents(), no_commit_url);
     WebContentsImpl* new_contents =
         static_cast<WebContentsImpl*>(new_shell->web_contents());
-    // Stop the navigation so that it won't affect future navigations.
-    new_contents->Stop();
     NavigationControllerImpl& controller = new_contents->GetController();
     EXPECT_EQ(1, controller.GetEntryCount());
     NavigationEntryImpl* last_entry = controller.GetLastCommittedEntry();
@@ -5052,6 +4769,36 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     FrameNavigateParamsCapturer capturer(root);
     root->current_frame_host()->Reload();
     capturer.Wait();
+    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY, capturer.navigation_type());
+    EXPECT_TRUE(capturer.did_replace_entry());
+    EXPECT_FALSE(capturer.is_same_document());
+
+    // We replaced the previous NavigationEntry and it's no longer on the
+    // initial NavigationEntry.
+    EXPECT_EQ(1, controller.GetEntryCount());
+    EXPECT_NE(last_entry, controller.GetLastCommittedEntry());
+    last_entry = controller.GetLastCommittedEntry();
+    EXPECT_FALSE(last_entry->IsInitialEntry());
+    EXPECT_EQ(InitialNavigationEntryState::kNonInitial,
+              last_entry->initial_navigation_entry_state());
+    EXPECT_EQ(cross_document_url, last_entry->GetURL());
+  }
+
+  // 3) Main frame reload (browser-initiated).
+  {
+    // 3a: "For synchronous about:blank" case.
+    // Pop open a new window to an empty URL, which will stay at the initial
+    // NavigationEntry.
+    Shell* new_shell = OpenWindow(contents(), GURL());
+    WebContentsImpl* new_contents =
+        static_cast<WebContentsImpl*>(new_shell->web_contents());
+    NavigationControllerImpl& controller = new_contents->GetController();
+    EXPECT_EQ(1, controller.GetEntryCount());
+    NavigationEntryImpl* last_entry = controller.GetLastCommittedEntry();
+    EXPECT_TRUE(last_entry->IsInitialEntry());
+    EXPECT_EQ(InitialNavigationEntryState::kInitialForSynchronousAboutBlank,
+              last_entry->initial_navigation_entry_state());
+    EXPECT_EQ(GURL("about:blank"), last_entry->GetURL());
 
     // We reused the previous NavigationEntry and it keeps its "initial" status.
     EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
@@ -5067,7 +4814,42 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
               last_entry->initial_navigation_entry_state());
     EXPECT_EQ(GURL("about:blank"), last_entry->GetURL());
   }
+}
 
+// Tests that the initial NavigationEntry keeps its "initial" status on subframe
+// navigations and when restoring/copying history state to another
+// NavigationController. Also tests the fact that reloads on the initial entry
+// that is not for synchronous about:blank will fail.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       InitialNavigationEntryStatus_SubframeAndRestore) {
+  if (!blink::features::IsInitialNavigationEntryEnabled()) {
+    // The tests below specifically tests the "initial NavigationEntry" state,
+    // which is not used when InitialNavigationEntry is disabled.
+    return;
+  }
+  GURL main_window_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  GURL no_commit_url(embedded_test_server()->GetURL("/page204.html"));
+
+  GURL subframe_url(embedded_test_server()->GetURL("/title1.html"));
+  GURL subframe_url_2(embedded_test_server()->GetURL("/title2.html"));
+  GURL subframe_url_3(embedded_test_server()->GetURL("/title3.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), main_window_url));
+  // Pop open a new window which won't commit a navigation, so it will stay at
+  // the initial NavigationEntry.
+  Shell* new_shell = OpenWindow(contents(), no_commit_url);
+  WebContentsImpl* new_contents =
+      static_cast<WebContentsImpl*>(new_shell->web_contents());
+  // Stop the navigation so that it won't affect future navigations.
+  new_contents->Stop();
+  NavigationControllerImpl& controller = new_contents->GetController();
+  NavigationEntryImpl* last_entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_TRUE(last_entry->IsInitialEntry());
+  EXPECT_EQ(GURL(), last_entry->GetURL());
+
+  // 1) Subframe creation.
   {
     // 3b: "Not for synchronous about:blank" case.
     // Pop open a new window which won't commit a navigation, so it will stay at
@@ -5165,11 +4947,6 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // that is not for synchronous about:blank will fail.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        InitialNavigationEntryStatus_SubframeAndRestore) {
-  if (!blink::features::IsInitialNavigationEntryEnabled()) {
-    // The tests below specifically tests the "initial NavigationEntry" state,
-    // which is not used when InitialNavigationEntry is disabled.
-    return;
-  }
   GURL main_window_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   GURL no_commit_url(embedded_test_server()->GetURL("/page204.html"));
@@ -7096,7 +6873,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // recreated on history navigation, disable back/forward cache to force a
   // reload and a URL fetch.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // 4. Go back, recreating the iframe. The subframe entry won't be found, and
   // we should fall back to the default URL.
@@ -7193,7 +6970,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // recreated on history navigation, disable back/forward cache to force a
   // reload and a URL fetch.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // 3. Go back, recreating the iframe.  The subframe will have a new name this
   // time, so we won't find a history item for it.  We should let the new data
@@ -7302,7 +7079,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // later recreated on history navigations. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // 1. Start on a page that injects a nested iframe into an injected
   // about:blank iframe.
@@ -7405,7 +7182,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // later recreated on history navigations. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   // 1. Start on a page that injects a nested iframe srcdoc which contains a
   // nested iframe.
   GURL main_url(embedded_test_server()->GetURL(
@@ -7633,7 +7410,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // later recreated on history navigations. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // 1. Start on a page with two frames.
   GURL initial_url(
@@ -7813,7 +7590,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // later recreated on history navigations. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // 1. Start on a page with an iframe.
   GURL initial_url(embedded_test_server()->GetURL(
@@ -8685,7 +8462,7 @@ IN_PROC_BROWSER_TEST_P(
   // later recreated on history navigations. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetPrimaryFrameTree()
@@ -12173,7 +11950,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // start another forward navigation while another forward navigation has
   // already started.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   // Navigate to a page with an iframe.
   GURL url_a(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_data_iframe.html"));
@@ -13907,7 +13684,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // extensions rely on them being silently blocked. See https://crbug.com/935175
 // and https://cbug.com/941653.
 // This test is flaky on Linux : http://crbug.com/1223051
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #define MAYBE_JavascriptRedirectSilentlyCanceled \
   DISABLED_JavascriptRedirectSilentlyCanceled
 #else
@@ -14337,7 +14114,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // later recreated on history navigations. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
 
@@ -14451,7 +14228,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // (which would fail with a 404 error). Disable back/forward cache to ensure
   // that it doesn't happen.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -14933,7 +14710,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // is still in use by the bfcached document, disable back/forward cache to
   // ensure that the process gets deleted.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   RenderProcessHostWatcher prev_host_watcher(
       prev_host, RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
@@ -15818,7 +15595,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // instead of redirecting, disable back/forward cache to ensure that redirect
   // happens on history navigation.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // Back, which should redirect to |url3|.
   FrameNavigateParamsCapturer capturer(root);
@@ -16272,7 +16049,7 @@ IN_PROC_BROWSER_TEST_P(
   // on navigation as it is stored in bfcache, disable back/forward cache to
   // ensure that the RFH will enter pending deletion state.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // Navigate the main frame cross-process and wait for the unload event to
   // fire.
@@ -17349,7 +17126,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Test GoToOffset with enable history intervention.
 IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        GoToOffsetWithSkippingEnableHistoryIntervention) {
@@ -17402,7 +17179,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(non_skippable_url, controller.GetLastCommittedEntry()->GetURL());
 }
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Tests that the navigation entry that is marked as skippable on back/forward
 // button does not get skipped for GoToOffset calls.
@@ -17495,7 +17272,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
 // redirected_url2]
 IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        SetSkipOnBackForwardDoSkipForGoToOffsetWithSkipping) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   GURL non_skippable_url(
       embedded_test_server()->GetURL("/frame_tree/top.html"));
   EXPECT_TRUE(NavigateToURL(shell(), non_skippable_url));
@@ -17573,7 +17350,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   EXPECT_EQ(4, controller.GetCurrentEntryIndex());
   EXPECT_EQ(4, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(redirected_url2, controller.GetLastCommittedEntry()->GetURL());
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 // Tests that the navigation entry that is marked as skippable on back/forward
@@ -18008,11 +17785,6 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTestNoServer,
 class SandboxedNavigationControllerBrowserTest
     : public NavigationControllerBrowserTest {
  protected:
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(
-        features::kHistoryPreventSandboxedNavigation);
-    NavigationControllerBrowserTest::SetUp();
-  }
 
   void SetupNavigation() {
     NavigationControllerImpl& controller =
@@ -18130,8 +17902,7 @@ class SandboxedNavigationControllerWithBfcacheBrowserTest
   void SetUp() override {
     feature_list_.InitWithFeaturesAndParameters(
         {{features::kBackForwardCache,
-          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}},
-         {features::kHistoryPreventSandboxedNavigation, {}}},
+          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
         // Allow BackForwardCache for all devices regardless of their memory.
         {features::kBackForwardCacheMemoryControls});
     NavigationControllerBrowserTest::SetUp();
@@ -18175,11 +17946,6 @@ IN_PROC_BROWSER_TEST_P(SandboxedNavigationControllerWithBfcacheBrowserTest,
 class SandboxedNavigationControllerPopupBrowserTest
     : public NavigationControllerBrowserTest {
  protected:
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(
-        features::kHistoryPreventSandboxedNavigation);
-    NavigationControllerBrowserTest::SetUp();
-  }
 
   void SetupNavigation() {
     EXPECT_EQ(1u, Shell::windows().size());
@@ -18396,7 +18162,7 @@ class DidCommitNavigationCanceller : public DidCommitNavigationInterceptor {
 }  //  namespace
 
 // Test is flaky on Mac: https://crbug.com/1151545.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof \
   DISABLED_CrossProcessIframeToInvalidURLCancelsRedirectSpoof
 #else
@@ -19521,7 +19287,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // navigation and later recreated on the back navigation. Disable back/forward
   // cache to ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // Navigate main frame to another url.
   EXPECT_TRUE(NavigateToURL(
@@ -19783,7 +19549,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // This test specifically observes behavior of creating a new frame during a
   // history navigation, so disable the back forward cache.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -19818,7 +19584,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // This test specifically observes behavior of creating a new frame during a
   // history navigation, so disable the back forward cache.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -20204,11 +19970,6 @@ class AllNavigationStateChangedDelegate : public WebContentsDelegate {
 // the expected NavigationStateChanged calls.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        NavigationStateChangedForInitialNavigationEntry) {
-  if (!blink::features::IsInitialNavigationEntryEnabled()) {
-    // The tests below specifically tests the "initial NavigationEntry" state,
-    // which is not used when InitialNavigationEntry is disabled.
-    return;
-  }
   GURL url1 = embedded_test_server()->GetURL("/title1.html");
   GURL url2 = embedded_test_server()->GetURL("/title2.html");
   EXPECT_TRUE(NavigateToURL(shell(), url1));

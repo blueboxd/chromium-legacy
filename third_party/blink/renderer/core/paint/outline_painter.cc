@@ -828,7 +828,7 @@ void PaintFocusRing(GraphicsContext& context,
                     const ComputedStyle& style,
                     const FloatRoundedRect::Radii& corner_radii) {
   Color inner_color = style.VisitedDependentColor(GetCSSPropertyOutlineColor());
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   if (style.DarkColorScheme())
     inner_color = Color::kWhite;
 #endif
@@ -935,12 +935,6 @@ int OutlinePainter::OutlineOutsetExtent(const ComputedStyle& style) {
   return base::ClampAdd(OutlineWidthForPainting(style),
                         OutlineOffsetForPainting(style))
       .Max(0);
-}
-
-int OutlinePainter::FocusRingWidthInsideBorderBox(const ComputedStyle& style) {
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  // Not sure why '+1'.
-  return std::ceil(blink::FocusRingInnerStrokeWidth(style)) + 1;
 }
 
 void OutlinePainter::IterateRightAnglePathForTesting(

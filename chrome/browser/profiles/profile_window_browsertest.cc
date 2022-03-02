@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_P(ProfileWindowCountBrowserTest, CountProfileWindows) {
 
 // |OpenDevToolsWindowSync| is slow on Linux Debug and can result in flacky test
 // failure. See (crbug.com/1186994).
-#if defined(OS_LINUX) && !defined(NDEBUG)
+#if BUILDFLAG(IS_LINUX) && !defined(NDEBUG)
 #define MAYBE_DevToolsWindowsNotCounted DISABLED_DevToolsWindowsNotCounted
 #else
 #define MAYBE_DevToolsWindowsNotCounted DevToolsWindowsNotCounted
@@ -307,16 +307,15 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, GuestAppMenuLacksBookmarks) {
 IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, OpenBrowserWindowForProfile) {
   Profile* profile = browser()->profile();
   size_t num_browsers = BrowserList::GetInstance()->size();
-  profiles::OpenBrowserWindowForProfile(
-      ProfileManager::CreateCallback(), true, false, false, profile,
-      Profile::CreateStatus::CREATE_STATUS_INITIALIZED);
+  profiles::OpenBrowserWindowForProfile(base::OnceCallback<void(Profile*)>(),
+                                        true, false, false, profile);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(num_browsers + 1, BrowserList::GetInstance()->size());
   EXPECT_FALSE(ProfilePicker::IsOpen());
 }
 
 // TODO(crbug.com/935746): Test is flaky on Win and Linux.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
 #define MAYBE_OpenBrowserWindowForProfileWithSigninRequired \
   DISABLED_OpenBrowserWindowForProfileWithSigninRequired
 #else
@@ -337,9 +336,8 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest,
   base::RunLoop run_loop;
   ProfilePicker::AddOnProfilePickerOpenedCallbackForTesting(
       run_loop.QuitClosure());
-  profiles::OpenBrowserWindowForProfile(
-      ProfileManager::CreateCallback(), true, false, false, profile,
-      Profile::CreateStatus::CREATE_STATUS_INITIALIZED);
+  profiles::OpenBrowserWindowForProfile(base::OnceCallback<void(Profile*)>(),
+                                        true, false, false, profile);
   run_loop.Run();
   EXPECT_EQ(num_browsers, BrowserList::GetInstance()->size());
   EXPECT_TRUE(ProfilePicker::IsOpen());

@@ -52,7 +52,6 @@
 <translation id="2121284319307530122">Поново покрени да би се &amp;Chrome ажурирао</translation>
 <translation id="2123055963409958220">Помозите да побољшамо Chrome тако што ћете послати извештај о <ph name="BEGIN_LINK" />актуелним подешавањима<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Поново покрените Chrome</translation>
-<translation id="2189289170880510015">Прилагодите неке од најважнијих избора за приватност у Chrome-у</translation>
 <translation id="2258103955319320201">Да бисте приступали Chrome прегледачу на свим уређајима, пријавите се, па укључите синхронизацију</translation>
 <translation id="2290014774651636340">Недостају шифре за Google API. Неке функције Google Chrome-а ће бити онемогућене.</translation>
 <translation id="2290095356545025170">Да ли стварно желите да деинсталирате Google Chrome?</translation>
@@ -66,6 +65,7 @@
 <translation id="2467438592969358367">Google Chrome жели да извезе лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
 <translation id="2534507159460261402">Google Pay (копирано у Chrome)</translation>
+<translation id="2563121210305478421">Желите поново да покренете Chrome?</translation>
 <translation id="2574930892358684005">Корисник <ph name="EXISTING_USER" /> је већ пријављен на овај Chrome профил. Да би вам прегледање било раздвојено, Chrome може да направи засебан профил за вас.</translation>
 <translation id="2580411288591421699">Није могуће инсталирати верзију Google Chrome прегледача која је иста као тренутно покренута верзија. Затворите Google Chrome и покушајте поново.</translation>
 <translation id="2586406160782125153">Овим ћете избрисати податке прегледања са уређаја. Да бисте касније вратили податке, пријавите се у Chrome као <ph name="USER_EMAIL" />.</translation>
@@ -90,6 +90,7 @@
 <translation id="2926952073016206995">Chrome-у треба дозвола за камеру за овај сајт</translation>
 <translation id="2929907241665500097">Chrome се није ажурирао. Дошло је до грешке. <ph name="BEGIN_LINK" />Отклоните проблеме са ажурирањем Chrome-а и неуспела ажурирања.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – пријављивање на мрежу – Chrome</translation>
+<translation id="303514781271618814">Chrome истражује нове функције које омогућавају сајтовима да пружају исти доживљај прегледања, а да користе мање података</translation>
 <translation id="3037838751736561277">Google Chrome је у позадинском режиму.</translation>
 <translation id="3059710691562604940">Безбедно прегледање је искључено. Chrome препоручује да га укључите.</translation>
 <translation id="3065168410429928842">Chrome картица</translation>
@@ -100,6 +101,7 @@
 <translation id="3114643501466072395">Да бисте проверили да ли су остале лозинке безбедне од упада у податке и других безбедносних проблема, <ph name="BEGIN_LINK" />пријавите се у Chrome<ph name="END_LINK" />.</translation>
 <translation id="3140883423282498090">Промене ће ступити на снагу када следећи пут поново покренете Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome апликације</translation>
+<translation id="3245429137663807393">Ако делите и Chrome извештаје о коришћењу, ти извештаји обухватају URL-ове које посећујете</translation>
 <translation id="3360895254066713204">Chrome помоћник</translation>
 <translation id="3379938682270551431">{0,plural, =0{Поново ћемо покренути Chrome}=1{Поново ћемо покренути Chrome за 1 секунду}one{Поново ћемо покренути Chrome за # секунду}few{Поново ћемо покренути Chrome за # секунде}other{Поново ћемо покренути Chrome за # секунди}}</translation>
 <translation id="3395323229510056640">Пронађите помоћ за Chrome OS</translation>
@@ -117,7 +119,6 @@
 <translation id="3596080736082218006">{COUNT,plural, =0{Администратор захтева да поново покренете Chrome да бисте применили ажурирање}=1{Администратор захтева да поново покренете Chrome да бисте применили ажурирање. Прозор без архивирања се неће поново отворити.}one{Администратор захтева да поново покренете Chrome да бисте применили ажурирање. # прозор без архивирања се неће поново отворити.}few{Администратор захтева да поново покренете Chrome да бисте применили ажурирање. # прозора без архивирања се неће поново отворити.}other{Администратор захтева да поново покренете Chrome да бисте применили ажурирање. # прозора без архивирања се неће поново отворити.}}</translation>
 <translation id="3622797965165704966">Сада можете лакше да користите Chrome са Google налогом и на дељеним рачунарима.</translation>
 <translation id="3673813398384385993">Chrome је открио да <ph name="EXTENSION_NAME" /> садржи малвер</translation>
-<translation id="3678552270983184277">Подразумевана подешавања одговарају многим људима, али можете да их прилагодите да би се уклопила у ваш начин коришћења Chrome-а</translation>
 <translation id="3718181793972440140">Овим ћете избрисати 1 ставку са овог уређаја. Да бисте касније вратили податке, пријавите се у Chrome као <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Додатак „<ph name="EXTENSION_NAME" />“ је променио страницу која се приказује када покренете Chrome.</translation>
 <translation id="3779473566290487688">Да бисте добијали будућа Google Chrome ажурирања, треба вам ОС X 10.11 или новија верзија. Овај рачунар користи ОС X 10.10.</translation>
@@ -161,6 +162,7 @@
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Ова датотека може да буде опасна, па ју је Chrome блокирао.</translation>
 <translation id="479167709087336770">Користи исту проверу правописа као Google претрага. Текст који унесете у прегледач се шаље Google-у. То увек можете да промените у подешавањима.</translation>
+<translation id="4873783916118289636">Прегледајте кључне контроле приватности и безбедности у Chrome-у</translation>
 <translation id="4891791193823137474">Нека Google Chrome ради у позадини</translation>
 <translation id="4895437082222824641">Отвори линк у новој Chrome &amp;картици</translation>
 <translation id="4953650215774548573">Подеси Google Chrome као подразумевани прегледач</translation>
@@ -177,7 +179,6 @@
 <translation id="5193136243808726294">Google Chrome ОС не може да отвори ову страницу.</translation>
 <translation id="521447420733633466">Ако делите уређај, пријатељи и породица могу засебно да прегледају и да подесе Chrome баш онако како желе</translation>
 <translation id="5251420635869119124">Гости могу да користе Chrome а да не остављају никакве трагове.</translation>
-<translation id="5251679006894510177">Скоро је ажуриран! Поново покрените Chrome да бисте завршили ажурирање. Прозори без архивирања се неће поново отворити.</translation>
 <translation id="5334487786912937552">Chrome-у треба приступ меморијском простору да би преузимао фајлове</translation>
 <translation id="5386244825306882791">Контролише и страницу која се приказује када покренете Chrome или претражујете из омнибокса.</translation>
 <translation id="5394833366792865639">Делите Chrome картицу</translation>
@@ -220,7 +221,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6506909944137591434">Chrome-у треба дозвола за камеру да би направио 3D мапу окружења</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Програмерска верзија Google Chrome-а</translation>
 <translation id="6568793831116033768">Систем Chrome ОС</translation>
-<translation id="6594121454516132231">Погледајте како Chrome намерава да вас предострожно заштити од праћења на више сајтова уз очување отвореног веба</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>
 <translation id="6679975945624592337">Нека Google Chrome ради у позадини</translation>
 <translation id="6696915334902295848">Chrome-у треба дозвола за микрофон за овај сајт</translation>
@@ -302,6 +302,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="8669527147644353129">Google Chrome помоћник</translation>
 <translation id="8679801911857917785">Контролише и страницу која се приказује када покренете Chrome.</translation>
 <translation id="8686817260976772516">Помоћу Chrome профила можете да раздвојите све Chrome садржаје. Направите профиле за пријатеље и породицу или раздвојите посао и забаву.</translation>
+<translation id="8712767363896337380">Скоро је ажуриран! Поново покрените Chrome да бисте завршили ажурирање.</translation>
 <translation id="873133009373065397">Google Chrome не може да одреди ни да подеси подразумевани прегледач</translation>
 <translation id="8823341990149967727">Chrome је застарео</translation>
 <translation id="8834965163890861871">Google Chrome покушава да измени лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>

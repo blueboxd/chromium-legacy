@@ -33,6 +33,7 @@ import("//build/config/rust.gni")
 import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 import("//build/nocompile.gni")
+import("//build/rust/mixed_component.gni")
 import("//build/timestamp.gni")
 import("//build_overrides/build.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
@@ -95,6 +96,14 @@ if (is_android) {
 
 if (is_fuchsia) {
   import("//third_party/fuchsia-sdk/sdk/build/fidl_library.gni")
+}
+
+# TODO(crbug.com/1280708): Switch to enable_rust after we have NaCl support.
+build_rust_json_parser = toolchain_has_rust
+
+buildflag_header("parsing_buildflags") {
+  header = "parsing_buildflags.h"
+  flags = [ "BUILD_RUST_JSON_PARSER=$build_rust_json_parser" ]
 }
 
 config("memory_tagging") {
@@ -169,7 +178,10 @@ config("perfetto_config") {
 # base compilation units to be linked in where they wouldn't have otherwise.
 # This does not include test code (test support and anything in the test
 # directory) which should use source_set as is recommended for GN targets).
-component("base") {
+#
+# mixed_component is a regular C++ "component", but may have some Rust files
+# if Rust is enabled.
+mixed_component("base") {
   sources = [
     "allocator/allocator_check.cc",
     "allocator/allocator_check.h",
@@ -413,6 +425,7 @@ component("base") {
     "memory/unsafe_shared_memory_pool.h",
     "memory/unsafe_shared_memory_region.cc",
     "memory/unsafe_shared_memory_region.h",
+    "memory/values_equivalent.h",
     "memory/weak_ptr.cc",
     "memory/weak_ptr.h",
     "memory/writable_shared_memory_region.cc",
@@ -582,6 +595,7 @@ component("base") {
     "scoped_native_library.cc",
     "scoped_native_library.h",
     "scoped_observation.h",
+    "sequence_checker.cc",
     "sequence_checker.h",
     "sequence_checker_impl.cc",
     "sequence_checker_impl.h",
@@ -665,6 +679,7 @@ component("base") {
     "task/default_delayed_task_handle_delegate.h",
     "task/deferred_sequenced_task_runner.cc",
     "task/deferred_sequenced_task_runner.h",
+    "task/delay_policy.h",
     "task/delayed_task_handle.cc",
     "task/delayed_task_handle.h",
     "task/lazy_thread_pool_task_runner.cc",
@@ -814,6 +829,8 @@ component("base") {
     "threading/hang_watcher.h",
     "threading/platform_thread.cc",
     "threading/platform_thread.h",
+    "threading/platform_thread_ref.cc",
+    "threading/platform_thread_ref.h",
     "threading/post_task_and_reply_impl.cc",
     "threading/post_task_and_reply_impl.h",
     "threading/scoped_blocking_call.cc",
@@ -833,6 +850,7 @@ component("base") {
     "threading/simple_thread.h",
     "threading/thread.cc",
     "threading/thread.h",
+    "threading/thread_checker.cc",
     "threading/thread_checker.h",
     "threading/thread_checker_impl.cc",
     "threading/thread_checker_impl.h",
@@ -1386,7 +1404,6 @@ component("base") {
     "//build:branding_buildflags",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
-    "//build:os_buildflags",
     "//build/config/compiler:compiler_buildflags",
     "//third_party/modp_b64",
   ]
@@ -1394,6 +1411,34 @@ component("base") {
   # native_unwinder_android is intended for use solely via a dynamic feature
   # module, to avoid increasing Chrome's executable size.
   assert_no_deps = [ ":native_unwinder_android" ]
+
+  if (build_rust_json_parser) {
+    rs_crate_root = "lib.rs"
+    rs_deps = [
+      "//third_party/rust/serde/v1:lib",
+      "//third_party/rust/serde_jsonrc/v0_1:lib",
+    ]
+    rs_sources = [
+      "json/json_parser.rs",
+      "json/mod.rs",
+      "lib.rs",
+      "rs_glue/mod.rs",
+      "values.rs",
+      "values_deserialization.rs",
+    ]
+    rs_cxx_bindings = [
+      "rs_glue/mod.rs",
+      "json/json_parser.rs",
+    ]
+    sources += [
+      "rs_glue/values_glue.cc",
+      "rs_glue/values_glue.h",
+    ]
+    sources -= [
+      "json/json_parser.cc",
+      "json/json_parser.h",
+    ]
+  }
 
   public_deps = [
     ":anchor_functions_buildflags",
@@ -1405,6 +1450,7 @@ component("base") {
     ":feature_list_buildflags",
     ":logging_buildflags",
     ":orderfile_buildflags",
+    ":parsing_buildflags",
     ":profiler_buildflags",
     ":sanitizer_buildflags",
     ":synchronization_buildflags",
@@ -1443,6 +1489,7 @@ component("base") {
         "allocator/allocator_shim_override_mac_symbols.h",
         "allocator/early_zone_registration_mac.h",
       ]
+      # configs += [ "//base/allocator:mac_no_default_new_delete_symbols" ]
     }
     if (is_chromeos || is_linux) {
       sources += [
@@ -1674,17 +1721,14 @@ component("base") {
   }
 
   # Chromeos.
-  if (is_chromeos_ash) {
+  if (is_chromeos) {
     sources += [
       "logging_chromeos.cc",
-      "power_monitor/power_monitor_device_source_chromeos.cc",
       "system/sys_info_chromeos.cc",
     ]
-  }
-
-  # Lacros.
-  if (is_chromeos_lacros) {
-    sources += [ "system/sys_info_chromeos.cc" ]
+    if (is_chromeos_ash) {
+      sources += [ "power_monitor/power_monitor_device_source_chromeos.cc" ]
+    }
   }
 
   # Fuchsia.
@@ -2208,6 +2252,7 @@ component("base") {
       "files/file_util_mac.mm",
       "mac/backup_util.h",
       "mac/backup_util.mm",
+      "mac/bridging.h",
       "mac/bundle_locations.h",
       "mac/bundle_locations.mm",
       "mac/call_with_eh_frame.cc",
@@ -2462,7 +2507,7 @@ component("base") {
     ]
   }
 
-  if (using_sanitizer) {
+  if (using_sanitizer && !is_fuchsia) {
     data += [ "//tools/valgrind/asan/" ]
     data_deps +=
         [ "//build/config/clang:llvm-symbolizer_data($host_toolchain)" ]
@@ -3067,6 +3112,7 @@ test("base_unittests") {
     "i18n/string_search_unittest.cc",
     "i18n/time_formatting_unittest.cc",
     "i18n/timezone_unittest.cc",
+    "i18n/transliterator_unittest.cc",
     "immediate_crash_unittest.cc",
     "json/json_parser_unittest.cc",
     "json/json_reader_unittest.cc",
@@ -3093,6 +3139,7 @@ test("base_unittests") {
     "memory/shared_memory_region_unittest.cc",
     "memory/singleton_unittest.cc",
     "memory/unsafe_shared_memory_pool_unittest.cc",
+    "memory/values_equivalent_unittest.cc",
     "memory/weak_ptr_unittest.cc",
     "message_loop/message_pump_glib_unittest.cc",
     "message_loop/message_pump_unittest.cc",
@@ -3250,6 +3297,7 @@ test("base_unittests") {
     "test/metrics/histogram_tester_unittest.cc",
     "test/metrics/user_action_tester_unittest.cc",
     "test/mock_callback_unittest.cc",
+    "test/repeating_test_future_unittest.cc",
     "test/scoped_feature_list_unittest.cc",
     "test/scoped_logging_settings.h",
     "test/scoped_mock_clock_override_unittest.cc",
@@ -3304,6 +3352,10 @@ test("base_unittests") {
     "vlog_unittest.cc",
   ]
 
+  if (build_rust_json_parser) {
+    sources -= [ "json/json_parser_unittest.cc" ]
+  }
+
   defines = []
 
   deps = [
@@ -3321,7 +3373,6 @@ test("base_unittests") {
     "//base/third_party/dynamic_annotations",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
-    "//build:os_buildflags",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu",
@@ -3747,7 +3798,10 @@ test("base_unittests") {
       sources += [ "allocator/winheap_stubs_win_unittest.cc" ]
     }
 
-    sources += [ "allocator/allocator_shim_default_dispatch_to_partition_alloc_unittest.cc" ]
+    sources += [
+      "allocator/allocator_shim_default_dispatch_to_partition_alloc_unittest.cc",
+      "allocator/partition_alloc_support_unittest.cc",
+    ]
   }
 
   if (enable_base_tracing) {
@@ -3822,6 +3876,7 @@ if (enable_nocompile_tests) {
       "containers/buffer_iterator_unittest.nc",
       "containers/checked_iterators_unittest.nc",
       "containers/contains_unittest.nc",
+      "containers/enum_set_unittest.nc",
       "containers/span_unittest.nc",
       "debug/crash_logging_unittest.nc",
       "memory/raw_ptr_unittest.nc",
@@ -4170,6 +4225,7 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/task/SequencedTaskRunnerImplTest.java",
       "android/javatests/src/org/chromium/base/task/SingleThreadTaskRunnerImplTest.java",
       "android/javatests/src/org/chromium/base/task/TaskRunnerImplTest.java",
+      "android/javatests/src/org/chromium/base/test/metrics/HistogramTestRuleTest.java",
       "android/javatests/src/org/chromium/base/util/GarbageCollectionTestUtilsTest.java",
     ]
 
@@ -4223,6 +4279,7 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/TestTraceEvent.java",
       "test/android/javatests/src/org/chromium/base/test/UiThreadStatement.java",
       "test/android/javatests/src/org/chromium/base/test/UiThreadTest.java",
+      "test/android/javatests/src/org/chromium/base/test/metrics/HistogramTestRule.java",
       "test/android/javatests/src/org/chromium/base/test/params/BaseJUnit4RunnerDelegate.java",
       "test/android/javatests/src/org/chromium/base/test/params/BlockJUnit4RunnerDelegate.java",
       "test/android/javatests/src/org/chromium/base/test/params/MethodParamAnnotationRule.java",

@@ -7,11 +7,14 @@
 
 #include <set>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "net/base/net_export.h"
+#include "net/base/schemeful_site.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_partition_key.h"
+#include "net/cookies/first_party_set_metadata.h"
 #include "net/cookies/same_party_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -47,22 +50,17 @@ class NET_EXPORT CookieAccessDelegate {
       const GURL& url,
       const SiteForCookies& site_for_cookies) const = 0;
 
-  // Returns the SamePartyContext indicating whether `site` is same-party
-  // with `party_context` and `top_frame_site`. If `top_frame_site` is nullptr,
-  // then `site` will be checked only against `party_context`.
-  virtual SamePartyContext ComputeSamePartyContext(
+  // Calls `callback` with metadata indicating whether `site` is same-party with
+  // `party_context` and `top_frame_site`; and `site`'s owner, if applicable..
+  // If `top_frame_site` is nullptr, then `site` will be checked only against
+  // `party_context`.
+  //
+  // `callback` may be invoked synchronously or asynchronously.
+  virtual void ComputeFirstPartySetMetadataMaybeAsync(
       const net::SchemefulSite& site,
       const net::SchemefulSite* top_frame_site,
-      const std::set<net::SchemefulSite>& party_context) const = 0;
-
-  // Returns whether `site` belongs to a non-singleton First-Party Set.
-  virtual bool IsInNontrivialFirstPartySet(
-      const net::SchemefulSite& site) const = 0;
-
-  virtual FirstPartySetsContextType ComputeFirstPartySetsContextType(
-      const SchemefulSite& site,
-      const absl::optional<SchemefulSite>& top_frame_site,
-      const std::set<SchemefulSite>& party_context) const = 0;
+      const std::set<net::SchemefulSite>& party_context,
+      base::OnceCallback<void(FirstPartySetMetadata)> callback) const = 0;
 
   // Returns the owner of a `site`'s First-Party Set if `site` is in a
   // non-trivial set. Returns nullopt otherwise.
@@ -81,13 +79,20 @@ class NET_EXPORT CookieAccessDelegate {
 
   // Converts the CookiePartitionKey's site to its First-Party Set owner if
   // the site is in a nontrivial set.
-  static absl::optional<CookiePartitionKey> FirstPartySetifyPartitionKey(
+  //
+  // May invoke `callback` either synchronously or asynchronously.
+  static void FirstPartySetifyPartitionKey(
       const CookieAccessDelegate* delegate,
-      const CookiePartitionKey& cookie_partition_key);
+      const CookiePartitionKey& cookie_partition_key,
+      base::OnceCallback<void(absl::optional<CookiePartitionKey>)> callback);
 
-  // Returns the First-Party Sets.
-  virtual base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
-  RetrieveFirstPartySets() const = 0;
+  // Computes the First-Party Sets.
+  //
+  // May invoke `callback` either synchronously or asynchronously.
+  virtual void RetrieveFirstPartySets(
+      base::OnceCallback<void(
+          base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>)>
+          callback) const = 0;
 };
 
 }  // namespace net

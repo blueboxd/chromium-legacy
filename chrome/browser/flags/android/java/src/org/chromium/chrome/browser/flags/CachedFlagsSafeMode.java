@@ -19,7 +19,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.version.ChromeVersionInfo;
+import org.chromium.components.version_info.VersionInfo;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -79,7 +79,7 @@ class CachedFlagsSafeMode {
                 int behavior;
                 if (cachedVersion.isEmpty()) {
                     behavior = Behavior.ENGAGED_WITHOUT_SAFE_VALUES;
-                } else if (!cachedVersion.equals(ChromeVersionInfo.getProductVersion())) {
+                } else if (!cachedVersion.equals(VersionInfo.getProductVersion())) {
                     behavior = Behavior.ENGAGED_IGNORING_OUTDATED_SAFE_VALUES;
                 } else {
                     behavior = Behavior.ENGAGED_WITH_SAFE_VALUES;
@@ -206,7 +206,7 @@ class CachedFlagsSafeMode {
                 editor.putString(pair.getKey(), pair.getValue());
             }
         }
-        editor.putString(PREF_SAFE_VALUES_VERSION, ChromeVersionInfo.getProductVersion());
+        editor.putString(PREF_SAFE_VALUES_VERSION, VersionInfo.getProductVersion());
         editor.apply();
         TraceEvent.end("writeSafeValues");
     }

@@ -261,7 +261,7 @@ namespace developerPrivate {
     boolean inDeveloperMode;
     boolean isDeveloperModeControlledByPolicy;
     boolean isIncognitoAvailable;
-    boolean isSupervised;
+    boolean isChildAccount;
   };
 
   // DEPRECATED: Prefer ExtensionInfo.
@@ -355,6 +355,14 @@ namespace developerPrivate {
     // of the page. notifyDragInstallInProgress() needs to be called prior to
     // this being used. This cannot be used with |retryGuid|.
     boolean? useDraggedPath;
+  };
+
+  dictionary UserSiteSettings {
+    // The list of origins where the user has allowed all extensions to run on.
+    DOMString[] permittedSites;
+    // The list of origins where the user has blocked all extensions from
+    // running on.
+    DOMString[] restrictedSites;
   };
 
   enum PackStatus {
@@ -534,6 +542,7 @@ namespace developerPrivate {
       void (RequestFileSourceResponse response);
   callback LoadErrorCallback = void (optional LoadError error);
   callback DragInstallInProgressCallback = void (DOMString loadGuid);
+  callback UserSiteSettingsCallback = void (UserSiteSettings settings);
 
   interface Functions {
     // Runs auto update for extensions and apps immediately.
@@ -706,6 +715,11 @@ namespace developerPrivate {
         DOMString extensionId,
         DOMString host,
         optional VoidCallback callback);
+
+    // Returns the user specified site settings (which origins can extensions
+    // always/never run on) for the current profile.
+    [supportsPromises] static void getUserSiteSettings(
+        optional UserSiteSettingsCallback callback);
 
     [nocompile, deprecated="Use management.setEnabled"]
         static void enable(DOMString id,

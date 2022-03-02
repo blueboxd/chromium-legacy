@@ -284,6 +284,10 @@
   self.baseViewController.activePage = page;
 }
 
+- (void)setActiveMode:(TabGridMode)mode {
+  self.baseViewController.tabGridMode = mode;
+}
+
 - (UIViewController*)activeViewController {
   if (self.bvcContainer) {
     // When installing the thumb strip while the tab grid is opened, there is no
@@ -319,8 +323,11 @@
           self.baseViewController.traitCollection)) {
     [self.thumbStripCoordinator.panHandler
         setNextState:ViewRevealState::Revealed
-            animated:animated];
-    [self.baseViewController contentWillAppearAnimated:animated];
+            animated:animated
+             trigger:ViewRevealTrigger::TabGrid];
+    // Don't do any animation in the tab grid. All that animation will be
+    // controlled by the pan handler/-animateViewReveal:.
+    [self.baseViewController contentWillAppearAnimated:NO];
     return;
   }
 
@@ -403,7 +410,8 @@
       [self.baseViewController contentWillDisappearAnimated:YES];
       [self.thumbStripCoordinator.panHandler
           setNextState:ViewRevealState::Hidden
-              animated:YES];
+              animated:YES
+               trigger:ViewRevealTrigger::TabGrid];
     }
 
     if (completion) {
@@ -916,10 +924,14 @@
   ViewRevealingVerticalPanHandler* panHandler =
       self.thumbStripCoordinator.panHandler;
   if (fullscreen && panHandler.currentState == ViewRevealState::Revealed) {
-    [panHandler setNextState:ViewRevealState::Fullscreen animated:YES];
+    [panHandler setNextState:ViewRevealState::Fullscreen
+                    animated:YES
+                     trigger:ViewRevealTrigger::Fullscreen];
   } else if (!fullscreen &&
              panHandler.currentState == ViewRevealState::Fullscreen) {
-    [panHandler setNextState:ViewRevealState::Revealed animated:YES];
+    [panHandler setNextState:ViewRevealState::Revealed
+                    animated:YES
+                     trigger:ViewRevealTrigger::Fullscreen];
   }
 }
 
@@ -1067,7 +1079,9 @@
   BOOL isInPeekState = panHandler.currentState == ViewRevealState::Peeked;
   if ([self isThumbStripEnabled] && isInPeekState &&
       level <= SceneActivationLevelBackground) {
-    [panHandler setNextState:ViewRevealState::Hidden animated:NO];
+    [panHandler setNextState:ViewRevealState::Hidden
+                    animated:NO
+                     trigger:ViewRevealTrigger::AppBackgrounding];
     [self dismissPopovers];
   }
 }

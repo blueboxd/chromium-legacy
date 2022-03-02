@@ -24,8 +24,6 @@ using CompositingReasons = uint64_t;
   V(Plugin)                                                                   \
   V(IFrame)                                                                   \
   V(DocumentTransitionContentElement)                                         \
-  /* This is used for pre-CompositAfterPaint + CompositeSVG only. */          \
-  V(SVGRoot)                                                                  \
   V(BackfaceVisibilityHidden)                                                 \
   V(ActiveTransformAnimation)                                                 \
   V(ActiveOpacityAnimation)                                                   \
@@ -35,9 +33,6 @@ using CompositingReasons = uint64_t;
   V(FixedPosition)                                                            \
   V(StickyPosition)                                                           \
   V(OverflowScrolling)                                                        \
-  V(OverflowScrollingParent)                                                  \
-  V(OutOfFlowClipping)                                                        \
-  V(VideoOverlay)                                                             \
   V(WillChangeTransform)                                                      \
   V(WillChangeOpacity)                                                        \
   V(WillChangeFilter)                                                         \
@@ -55,45 +50,30 @@ using CompositingReasons = uint64_t;
   V(BackdropFilter)                                                           \
   V(BackdropFilterMask)                                                       \
   V(RootScroller)                                                             \
-  V(XrOverlay)                                                                \
   V(Viewport)                                                                 \
                                                                               \
-  /* Overlap reasons that require knowing what's behind you in paint-order    \
-     before knowing the answer. */                                            \
-  V(AssumedOverlap)                                                           \
+  /* This is based on overlapping relationship among pending layers,          \
+     determined after paint. See PaintArtifactCompositor. */                  \
   V(Overlap)                                                                  \
-  V(NegativeZIndexChildren)                                                   \
-  V(SquashingDisallowed)                                                      \
                                                                               \
   /* Subtree reasons that require knowing what the status of your subtree is  \
      before knowing the answer. */                                            \
   V(OpacityWithCompositedDescendants)                                         \
   V(MaskWithCompositedDescendants)                                            \
-  V(ReflectionWithCompositedDescendants)                                      \
   V(FilterWithCompositedDescendants)                                          \
   V(BlendingWithCompositedDescendants)                                        \
   V(PerspectiveWith3DDescendants)                                             \
   V(Preserve3DWith3DDescendants)                                              \
-  V(IsolateCompositedDescendants)                                             \
-  V(FullscreenVideoWithCompositedDescendants)                                 \
                                                                               \
   /* The root layer is a special case. It may be forced to be a layer, but it \
   also needs to be a layer if anything else in the subtree is composited. */  \
   V(Root)                                                                     \
                                                                               \
-  /* CompositedLayerMapping internal hierarchy reasons. Some of them are also \
-  used in CompositeAfterPaint. */                                             \
   V(LayerForHorizontalScrollbar)                                              \
   V(LayerForVerticalScrollbar)                                                \
-  V(LayerForScrollCorner)                                                     \
-  V(LayerForScrollingContents)                                                \
-  V(LayerForSquashingContents)                                                \
-  V(LayerForForeground)                                                       \
-  V(LayerForMask)                                                             \
-  /* Composited layer painted on top of all other layers as decoration. */    \
-  V(LayerForDecoration)                                                       \
-  /* Used in CompositeAfterPaint for link highlight, frame overlay, etc. */   \
+  /* Link highlight, frame overlay, etc. */                                   \
   V(LayerForOther)                                                            \
+                                                                              \
   /* DocumentTransition shared element.                                       \
   See third_party/blink/renderer/core/document_transition/README.md. */       \
   V(DocumentTransitionSharedElement)
@@ -131,50 +111,11 @@ class PLATFORM_EXPORT CompositingReason {
     kComboActiveAnimation =
         kActiveTransformAnimation | kActiveOpacityAnimation |
         kActiveFilterAnimation | kActiveBackdropFilterAnimation,
-
-    kComboAllDirectStyleDeterminedReasons =
-        k3DTransform | kTrivial3DTransform | kBackfaceVisibilityHidden |
-        kComboActiveAnimation | kWillChangeTransform | kWillChangeOpacity |
-        kWillChangeFilter | kWillChangeOther | kBackdropFilter |
-        kWillChangeBackdropFilter,
-
     kComboScrollDependentPosition = kFixedPosition | kStickyPosition,
-
-    kComboAllDirectNonStyleDeterminedReasons =
-        kVideo | kCanvas | kPlugin | kIFrame | kSVGRoot |
-        kOverflowScrollingParent | kOutOfFlowClipping | kVideoOverlay |
-        kXrOverlay | kRoot | kRootScroller | kComboScrollDependentPosition |
-        kAffectedByOuterViewportBoundsDelta | kBackfaceInvisibility3DAncestor |
-        kTransform3DSceneLeaf | kDocumentTransitionSharedElement,
-
-    kComboAllDirectReasons = kComboAllDirectStyleDeterminedReasons |
-                             kComboAllDirectNonStyleDeterminedReasons,
-
-    kComboAllCompositedScrollingDeterminedReasons =
-        kComboScrollDependentPosition | kAffectedByOuterViewportBoundsDelta |
-        kOverflowScrolling,
-
-    kComboCompositedDescendants =
-        kIsolateCompositedDescendants | kOpacityWithCompositedDescendants |
-        kMaskWithCompositedDescendants | kFilterWithCompositedDescendants |
-        kBlendingWithCompositedDescendants |
-        kReflectionWithCompositedDescendants,
-
-    kCombo3DDescendants =
-        kPreserve3DWith3DDescendants | kPerspectiveWith3DDescendants,
-
-    kComboAllStyleDeterminedReasons = kComboAllDirectStyleDeterminedReasons |
-                                      kComboCompositedDescendants |
-                                      kCombo3DDescendants,
-
-    kComboSquashableReasons =
-        kOverlap | kAssumedOverlap | kOverflowScrollingParent,
-
     kPreventingSubpixelAccumulationReasons = kWillChangeTransform,
-
     kDirectReasonsForPaintOffsetTranslationProperty =
         kComboScrollDependentPosition | kAffectedByOuterViewportBoundsDelta |
-        kVideo | kCanvas | kPlugin | kIFrame | kSVGRoot,
+        kVideo | kCanvas | kPlugin | kIFrame,
     kDirectReasonsForTransformProperty =
         k3DTransform | kTrivial3DTransform | kWillChangeTransform |
         kWillChangeOther | kPerspectiveWith3DDescendants |
@@ -192,19 +133,6 @@ class PLATFORM_EXPORT CompositingReason {
                                       kWillChangeBackdropFilter,
   };
 };
-
-// Any reasons other than overlap or assumed overlap will require the layer to
-// be separately compositing.
-inline bool RequiresCompositing(CompositingReasons reasons) {
-  return reasons & ~CompositingReason::kComboSquashableReasons;
-}
-
-// If the layer has overlap or assumed overlap, but no other reasons, then it
-// should be squashed.
-inline bool RequiresSquashing(CompositingReasons reasons) {
-  return !RequiresCompositing(reasons) &&
-         (reasons & CompositingReason::kComboSquashableReasons);
-}
 
 }  // namespace blink
 

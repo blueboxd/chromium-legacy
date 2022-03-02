@@ -89,14 +89,12 @@ builder(
 
 builder(
     name = "WebRTC Chromium FYI Mac Builder",
-    cores = 8,
     goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
 )
 
 builder(
     name = "WebRTC Chromium FYI Mac Builder (dbg)",
-    cores = 8,
     goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
 )
@@ -133,12 +131,6 @@ builder(
 # dimensions.
 builder(
     name = "WebRTC Chromium FYI Win7 Tester",
-    os = os.WINDOWS_DEFAULT,
-    triggered_by = ["WebRTC Chromium FYI Win Builder"],
-)
-
-builder(
-    name = "WebRTC Chromium FYI Win8 Tester",
     os = os.WINDOWS_DEFAULT,
     triggered_by = ["WebRTC Chromium FYI Win Builder"],
 )

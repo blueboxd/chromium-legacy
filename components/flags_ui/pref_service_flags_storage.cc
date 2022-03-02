@@ -62,7 +62,7 @@ void PrefServiceFlagsStorage::SetOriginListFlag(
     const std::string& internal_entry_name,
     const std::string& origin_list_value) {
   DictionaryPrefUpdate update(prefs_, prefs::kAboutFlagsOriginLists);
-  update->SetString(internal_entry_name, origin_list_value);
+  update->SetStringPath(internal_entry_name, origin_list_value);
 }
 
 void PrefServiceFlagsStorage::CommitPendingWrites() {

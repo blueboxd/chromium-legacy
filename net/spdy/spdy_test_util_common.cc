@@ -257,11 +257,14 @@ base::WeakPtr<SpdyStream> CreateStreamSynchronously(
     const base::WeakPtr<SpdySession>& session,
     const GURL& url,
     RequestPriority priority,
-    const NetLogWithSource& net_log) {
+    const NetLogWithSource& net_log,
+    bool detect_broken_connection,
+    base::TimeDelta heartbeat_interval) {
   SpdyStreamRequest stream_request;
   int rv = stream_request.StartRequest(
       type, session, url, false /* no early data */, priority, SocketTag(),
-      net_log, CompletionOnceCallback(), TRAFFIC_ANNOTATION_FOR_TESTS);
+      net_log, CompletionOnceCallback(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      detect_broken_connection, heartbeat_interval);
 
   return
       (rv == OK) ? stream_request.ReleaseStream() : base::WeakPtr<SpdyStream>();
@@ -319,16 +322,22 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_early_data(false),
       key_auth_cache_server_entries_by_network_isolation_key(false),
       enable_priority_update(false),
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_IOS)
       go_away_on_ip_change(true) {
 #else
       go_away_on_ip_change(false) {
-#endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_IOS)
   http2_settings[spdy::SETTINGS_INITIAL_WINDOW_SIZE] =
       kDefaultInitialWindowSize;
 }
 
+SpdySessionDependencies::SpdySessionDependencies(SpdySessionDependencies&&) =
+    default;
+
 SpdySessionDependencies::~SpdySessionDependencies() = default;
+
+SpdySessionDependencies& SpdySessionDependencies::operator=(
+    SpdySessionDependencies&&) = default;
 
 // static
 std::unique_ptr<HttpNetworkSession> SpdySessionDependencies::SpdyCreateSession(
@@ -371,8 +380,6 @@ HttpNetworkSessionParams SpdySessionDependencies::CreateSessionParams(
   params.time_func = session_deps->time_func;
   params.enable_http2_alternative_service =
       session_deps->enable_http2_alternative_service;
-  params.enable_websocket_over_http2 =
-      session_deps->enable_websocket_over_http2;
   params.enable_http2_settings_grease =
       session_deps->enable_http2_settings_grease;
   params.greased_http2_frame = session_deps->greased_http2_frame;
@@ -506,6 +513,10 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(spdy_session);
   EXPECT_TRUE(HasSpdySession(http_session->spdy_session_pool(), key));
+  // Disable the time-based receive window updates by setting the delay to
+  // the max time interval. This prevents time-based flakiness in the tests
+  // for any test not explicitly exercising the window update buffering.
+  spdy_session->SetTimeToBufferSmallWindowUpdates(base::TimeDelta::Max());
   return spdy_session;
 }
 
@@ -596,6 +607,10 @@ base::WeakPtr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(spdy_session);
   EXPECT_TRUE(HasSpdySession(pool, key));
+  // Disable the time-based receive window updates by setting the delay to
+  // the max time interval. This prevents time-based flakiness in the tests
+  // for any test not explicitly exercising the window update buffering.
+  spdy_session->SetTimeToBufferSmallWindowUpdates(base::TimeDelta::Max());
   return spdy_session;
 }
 

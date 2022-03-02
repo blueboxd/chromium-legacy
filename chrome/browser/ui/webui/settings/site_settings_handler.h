@@ -127,7 +127,12 @@ class SiteSettingsHandler
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            HandleClearEtldPlus1DataAndCookies);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, HandleClearUsage);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
+                           HandleClearUnpartitionedUsage);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
+                           ClearUnpartitionedClearsHints);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
+                           HandleClearPartitionedUsage);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, CookieSettingDescription);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, HandleGetFormattedBytes);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
@@ -135,6 +140,7 @@ class SiteSettingsHandler
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExcludeWebUISchemesInLists);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            IncludeWebUISchemesInGetOriginPermissions);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, HandleGetUsageInfo);
 
   // Creates the CookiesTreeModel if necessary.
   void EnsureCookiesTreeModelCreated();
@@ -147,21 +153,26 @@ class SiteSettingsHandler
   // Calculates the data storage that has been used for each origin, and
   // stores the information in the |all_sites_map| and |origin_size_map|.
   void GetOriginStorage(
-      std::map<std::string, std::set<std::string>>* all_sites_map,
+      std::map<std::string, std::set<std::pair<std::string, bool>>>*
+          all_sites_map,
       std::map<std::string, int64_t>* origin_size_map);
 
   // Calculates the number of cookies for each etld+1 and each origin, and
   // stores the information in the |all_sites_map| and |origin_cookie_map|.
   void GetOriginCookies(
-      std::map<std::string, std::set<std::string>>* all_sites_map,
-      std::map<std::string, int>* origin_cookie_map);
+      std::map<std::string, std::set<std::pair<std::string, bool>>>*
+          all_sites_map,
+      std::map<std::pair<std::string, absl::optional<std::string>>, int>*
+          origin_cookie_map);
 
   // Asynchronously fetches the usage for a given origin. Replies back with
   // OnGetUsageInfo above.
   void HandleFetchUsageTotal(const base::ListValue* args);
 
   // Deletes the storage being used for a given host.
-  void HandleClearUsage(const base::ListValue* args);
+  void HandleClearUnpartitionedUsage(const base::ListValue* args);
+
+  void HandleClearPartitionedUsage(const base::ListValue* args);
 
   // Gets and sets the default value for a particular content settings type.
   void HandleSetDefaultValueForContentType(const base::ListValue* args);
@@ -299,11 +310,15 @@ class SiteSettingsHandler
 
   std::unique_ptr<CookiesTreeModel> cookies_tree_model_;
 
+  // Whether the tree model was set for testing. Allows the handler to avoid
+  // resetting the tree model.
+  bool tree_model_set_for_testing_ = false;
+
   // Whether to send all sites list on cookie tree model update.
   bool send_sites_list_ = false;
 
   // Populated every time the user reloads the All Sites page.
-  std::map<std::string, std::set<std::string>> all_sites_map_;
+  std::map<std::string, std::set<std::pair<std::string, bool>>> all_sites_map_;
 
   // Store the origins that has permission settings.
   std::set<std::string> origin_permission_set_;

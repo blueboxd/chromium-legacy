@@ -111,7 +111,6 @@ import org.chromium.content_public.common.UseZoomForDSFPolicy;
 import org.chromium.device.gamepad.GamepadList;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.network.mojom.ReferrerPolicy;
-import org.chromium.ui.VSyncMonitor;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.IntentRequestTracker;
@@ -771,7 +770,7 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public void invalidate() {
-            postInvalidateOnAnimation();
+            mContainerView.postInvalidateOnAnimation();
         }
 
         @Override
@@ -1555,7 +1554,7 @@ public class AwContents implements SmartClipProvider {
         if (!wasPaused) onResume();
         if (wasAttached) {
             onAttachedToWindow();
-            postInvalidateOnAnimation();
+            mContainerView.postInvalidateOnAnimation();
         }
         onSizeChanged(mContainerView.getWidth(), mContainerView.getHeight(), 0, 0);
         if (wasWindowVisible) setWindowVisibilityInternal(true);
@@ -2802,7 +2801,7 @@ public class AwContents implements SmartClipProvider {
      */
     public void addWebMessageListener(@NonNull String jsObjectName,
             @NonNull String[] allowedOriginRules, @NonNull WebMessageListener listener) {
-        if (TRACE) Log.i(TAG, "%s addWebMessageListener", this);
+        if (TRACE) Log.i(TAG, "%s addWebMessageListener=%s", this, jsObjectName);
         if (listener == null) {
             throw new NullPointerException("listener shouldn't be null");
         }
@@ -3645,11 +3644,11 @@ public class AwContents implements SmartClipProvider {
     }
 
     @CalledByNative
-    private void postInvalidateOnAnimation() {
-        if (!VSyncMonitor.isInsideVSync()) {
-            mContainerView.postInvalidateOnAnimation();
-        } else {
+    private void postInvalidate(boolean insideVSync) {
+        if (insideVSync) {
             mContainerView.invalidate();
+        } else {
+            mContainerView.postInvalidateOnAnimation();
         }
     }
 
@@ -3696,7 +3695,8 @@ public class AwContents implements SmartClipProvider {
     }
 
     @CalledByNative
-    private void didOverscroll(int deltaX, int deltaY, float velocityX, float velocityY) {
+    private void didOverscroll(
+            int deltaX, int deltaY, float velocityX, float velocityY, boolean insideVSync) {
         mScrollOffsetManager.overScrollBy(deltaX, deltaY);
 
         if (mOverScrollGlow == null) return;
@@ -3713,7 +3713,7 @@ public class AwContents implements SmartClipProvider {
                 (float) Math.hypot(velocityX, velocityY));
 
         if (mOverScrollGlow.isAnimating()) {
-            postInvalidateOnAnimation();
+            postInvalidate(insideVSync);
         }
     }
 
@@ -3997,7 +3997,7 @@ public class AwContents implements SmartClipProvider {
             if (mOverScrollGlow != null && mOverScrollGlow.drawEdgeGlows(canvas,
                     mScrollOffsetManager.computeMaximumHorizontalScrollOffset(),
                     mScrollOffsetManager.computeMaximumVerticalScrollOffset())) {
-                postInvalidateOnAnimation();
+                mContainerView.postInvalidateOnAnimation();
             }
 
             if (mInvalidateRootViewOnNextDraw) {

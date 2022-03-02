@@ -5,11 +5,11 @@
 #include <stddef.h>
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/base_switches.h"
 #include "base/files/file_path.h"
-#include "base/ignore_result.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,7 +41,7 @@
 #include "media/cdm/cdm_paths.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #error This file needs to be updated to run on Android.
 #endif
 
@@ -76,7 +76,7 @@ const char16_t kUnexpectedResult16[] = u"unexpected result";
 // Any support is acceptable. This can be used around new CDM check-in time
 // where test expectations can change based on the new CDM's capability.
 // For any usage of EXPECT_ANY, add a TODO explaining the plan to fix it.
-#define EXPECT_ANY(test) ignore_result(test)
+#define EXPECT_ANY(test) std::ignore = test
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 #define EXPECT_AV1 EXPECT_SUCCESS
@@ -442,19 +442,21 @@ class EncryptedMediaSupportedTypesExternalClearKeyTest
   EncryptedMediaSupportedTypesExternalClearKeyTest& operator=(
       const EncryptedMediaSupportedTypesExternalClearKeyTest&) = delete;
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
  protected:
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   EncryptedMediaSupportedTypesExternalClearKeyTest() {
     enabled_features_.push_back(media::kExternalClearKeyForTesting);
   }
-
-  ~EncryptedMediaSupportedTypesExternalClearKeyTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
     RegisterClearKeyCdm(command_line);
   }
+#else
+  EncryptedMediaSupportedTypesExternalClearKeyTest() = default;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+  ~EncryptedMediaSupportedTypesExternalClearKeyTest() override = default;
 };
 
 // By default, the External Clear Key (ECK) key system is not supported even if
@@ -1219,7 +1221,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, SessionType) {
   auto result =
       IsSessionTypeSupported(kWidevine, SessionType::kPersistentLicense);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   // Persistent license session supported by Widevine key system on Windows and
   // Mac. On ChromeOS, it is supported when the protected media identifier
   // permission is allowed. See kUnsafelyAllowProtectedMediaIdentifierForDomain
@@ -1458,7 +1460,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_WV(IsAudioRobustnessSupported(kWidevine, "SW_SECURE_CRYPTO"));
 
   // Widevine experiment key system is only supported on Windows.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Widevine key system doesn't support hardware security.
   EXPECT_UNSUPPORTED(IsVideoRobustnessSupported(kWidevine, "HW_SECURE_CRYPTO"));
   EXPECT_UNSUPPORTED(IsVideoRobustnessSupported(kWidevine, "HW_SECURE_ALL"));

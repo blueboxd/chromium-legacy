@@ -1089,6 +1089,13 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
   }
   UMA_HISTOGRAM_ENUMERATION("Net.SSLHandshakeDetails", details);
 
+  // Measure TLS connections that implement the renegotiation_info extension.
+  // Note this records true for TLS 1.3. By removing renegotiation altogether,
+  // TLS 1.3 is implicitly patched against the bug. See
+  // https://crbug.com/850800.
+  base::UmaHistogramBoolean("Net.SSLRenegotiationInfoSupported",
+                            SSL_get_secure_renegotiation_support(ssl_.get()));
+
   completed_connect_ = true;
   next_handshake_state_ = STATE_NONE;
 
@@ -1282,7 +1289,7 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
         break;
       case TransportSecurityState::PKPStatus::BYPASSED:
         pkp_bypassed_ = true;
-        FALLTHROUGH;
+        [[fallthrough]];
       case TransportSecurityState::PKPStatus::OK:
         // Do nothing.
         break;
@@ -1658,10 +1665,10 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
   // Clear any currently configured certificates.
   SSL_certs_clear(ssl_.get());
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
   // TODO(droger): Support client auth on iOS. See http://crbug.com/145954).
   LOG(WARNING) << "Client auth is not supported";
-#else   // !defined(OS_IOS)
+#else   // !BUILDFLAG(IS_IOS)
   if (!send_client_cert_) {
     // First pass: we know that a client certificate is needed, but we do not
     // have one at hand. Suspend the handshake. SSL_get_error will return
@@ -1696,7 +1703,7 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
                                 client_cert_->intermediate_buffers().size()));
     return 1;
   }
-#endif  // defined(OS_IOS)
+#endif  // BUILDFLAG(IS_IOS)
 
   // Send no client certificate.
   net_log_.AddEventWithIntParams(NetLogEventType::SSL_CLIENT_CERT_PROVIDED,
@@ -1776,6 +1783,7 @@ ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignCallback(
         client_private_key_.get());
   });
 
+  base::UmaHistogramSparse("Net.SSLClientCertSignatureAlgorithm", algorithm);
   signature_result_ = ERR_IO_PENDING;
   client_private_key_->Sign(
       algorithm, base::make_span(in, in_len),

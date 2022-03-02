@@ -9,6 +9,20 @@
 
 namespace blink {
 
+PaintPropertyChangeType ClipPaintPropertyNode::State::ComputeChange(
+    const State& other) const {
+  if (local_transform_space != other.local_transform_space ||
+      paint_clip_rect != other.paint_clip_rect ||
+      clip_path != other.clip_path) {
+    return PaintPropertyChangeType::kChangedOnlyValues;
+  }
+  if (layout_clip_rect_excluding_overlay_scrollbars !=
+      other.layout_clip_rect_excluding_overlay_scrollbars) {
+    return PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
+  }
+  return PaintPropertyChangeType::kUnchanged;
+}
+
 const ClipPaintPropertyNode& ClipPaintPropertyNode::Root() {
   DEFINE_STATIC_REF(
       ClipPaintPropertyNode, root,
@@ -37,6 +51,19 @@ bool ClipPaintPropertyNodeOrAlias::Changed(
   }
 
   return false;
+}
+
+void ClipPaintPropertyNodeOrAlias::ClearChangedToRoot(
+    int sequence_number) const {
+  for (auto* n = this; n && n->ChangedSequenceNumber() != sequence_number;
+       n = n->Parent()) {
+    n->ClearChanged(sequence_number);
+    if (n->IsParentAlias())
+      continue;
+    static_cast<const ClipPaintPropertyNode*>(n)
+        ->LocalTransformSpace()
+        .ClearChangedToRoot(sequence_number);
+  }
 }
 
 std::unique_ptr<JSONObject> ClipPaintPropertyNode::ToJSON() const {

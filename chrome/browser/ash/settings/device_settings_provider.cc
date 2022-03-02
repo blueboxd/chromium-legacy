@@ -154,6 +154,7 @@ const char* const kKnownSettings[] = {
     kReportDeviceSystemInfo,
     kReportDevicePrintJobs,
     kReportDeviceLoginLogout,
+    kReportCRDSessions,
     kReportOsUpdateStatus,
     kReportRunningKioskApp,
     kReportUploadFrequency,
@@ -687,9 +688,8 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
           reporting_policy.report_network_interfaces());
     }
     if (reporting_policy.has_report_network_status()) {
-      new_values_cache->SetBoolean(
-          kReportDeviceNetworkStatus,
-          reporting_policy.report_network_status());
+      new_values_cache->SetBoolean(kReportDeviceNetworkStatus,
+                                   reporting_policy.report_network_status());
     }
     if (reporting_policy.has_report_users()) {
       new_values_cache->SetBoolean(kReportDeviceUsers,
@@ -778,6 +778,10 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (reporting_policy.has_report_login_logout()) {
       new_values_cache->SetBoolean(kReportDeviceLoginLogout,
                                    reporting_policy.report_login_logout());
+    }
+    if (reporting_policy.has_report_crd_sessions()) {
+      new_values_cache->SetBoolean(kReportCRDSessions,
+                                   reporting_policy.report_crd_sessions());
     }
     if (reporting_policy.has_report_network_telemetry_collection_rate_ms()) {
       new_values_cache->SetInteger(
@@ -1603,7 +1607,7 @@ bool DeviceSettingsProvider::UpdateFromService() {
     case DeviceSettingsService::STORE_NO_POLICY:
       if (MitigateMissingPolicy())
         break;
-      FALLTHROUGH;
+      [[fallthrough]];
     case DeviceSettingsService::STORE_KEY_UNAVAILABLE:
       VLOG(1) << "No policies present yet, will use the temp storage.";
       trusted_status_ = PERMANENTLY_UNTRUSTED;

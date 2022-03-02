@@ -61,6 +61,7 @@
 #include "content/browser/renderer_host/debug_urls.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/navigation_controller_delegate.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/navigation_entry_restore_context_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -500,21 +501,6 @@ bool DoesSandboxNavigationStayWithinSubtree(
       return false;
   }
   return true;
-}
-
-bool ShouldStorePolicyContainerPoliciesInFrameNavigationEntry(const GURL& url) {
-  // For local schemes we need to store the policy container in the
-  // FrameNavigationEntry, so that we can reload it in case of history
-  // navigation. Note that `url` can be empty in case this is called for the
-  // initial NavigationEntry, which should always store the
-  // PolicyContainerPolicies.
-  //
-  // TODO(https://crbug.com/1146361 and https://crbug.com/1146362): blob: and
-  // filesystem: should be removed from this list when we have properly
-  // implemented storing their policy container in the respective store.
-  return (url.is_empty() || url.SchemeIs(url::kAboutScheme) ||
-          url.SchemeIs(url::kDataScheme) || url.SchemeIsBlob() ||
-          url.SchemeIsFileSystem());
 }
 
 }  // namespace
@@ -972,7 +958,7 @@ bool NavigationControllerImpl::CanGoToOffset(int offset) {
   return index >= 0 && index < GetEntryCount();
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 bool NavigationControllerImpl::CanGoToOffsetWithSkipping(int offset) {
   if (offset == 0)
     return true;
@@ -1083,7 +1069,7 @@ void NavigationControllerImpl::GoToOffsetFromRenderer(int offset) {
             false /* is_browser_initiated */);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void NavigationControllerImpl::GoToOffsetWithSkipping(int offset) {
   // Note: This is actually reached in unit tests.
   if (!CanGoToOffsetWithSkipping(offset))
@@ -1197,6 +1183,10 @@ bool NavigationControllerImpl::PendingEntryMatchesRequest(
          pending_entry_->GetUniqueID() == request->nav_entry_id();
 }
 
+bool NavigationControllerImpl::has_post_commit_error_entry() const {
+  return entry_replaced_by_post_commit_error_ != nullptr;
+}
+
 bool NavigationControllerImpl::RendererDidNavigate(
     RenderFrameHostImpl* rfh,
     const mojom::DidCommitProvisionalLoadParams& params,
@@ -1206,6 +1196,12 @@ bool NavigationControllerImpl::RendererDidNavigate(
     bool previous_document_was_activated,
     NavigationRequest* navigation_request) {
   DCHECK(navigation_request);
+
+  // Note: validation checks and renderer kills due to invalid commit messages
+  // must happen before getting here, in
+  // RenderFrameHostImpl::ValidateDidCommitParams. By the time we get here, some
+  // effects of the navigation have already occurred.
+
   if (ShouldMaintainTrivialSessionHistory(rfh->frame_tree_node()) &&
       GetLastCommittedEntry()) {
     // Ensure that this navigation does not add a navigation entry, since
@@ -1222,13 +1218,11 @@ bool NavigationControllerImpl::RendererDidNavigate(
   bool overriding_user_agent_changed = false;
   if (GetLastCommittedEntry()) {
     if (entry_replaced_by_post_commit_error_) {
-      if (is_same_document_navigation) {
-        // Same document navigations should not be possible on error pages and
-        // would leave the controller in a weird state. Kill the renderer if
-        // that happens.
-        bad_message::ReceivedBadMessage(
-            rfh->GetProcess(), bad_message::NC_SAME_DOCUMENT_POST_COMMIT_ERROR);
-      }
+      // Same document navigation events with a post-commit error should already
+      // be blocked by RenderFrameHostImpl::ValidateDidCommitParams() before
+      // reaching here.
+      CHECK(!is_same_document_navigation);
+
       // Any commit while a post-commit error page is showing should put the
       // original entry back, replacing the error page's entry.  This includes
       // reloads, where the original entry was used as the pending entry and
@@ -1242,7 +1236,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
         pending_entry_->GetIsOverridingUserAgent() !=
             GetLastCommittedEntry()->GetIsOverridingUserAgent())
       overriding_user_agent_changed = true;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // TODO(crbug.com/1266277): Clean up the logic of setting
     // |overriding_user_agent_changed| post-launch.
     if (base::FeatureList::IsEnabled(features::kRequestDesktopSiteExceptions)) {
@@ -1256,7 +1250,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
         overriding_user_agent_changed = true;
       }
     }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   } else {
     // GetLastCommittedEntry() is null, so this is the first entry.
     details->previous_main_frame_url = GURL();
@@ -1267,7 +1261,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
       // well.
       overriding_user_agent_changed = true;
     }
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // TODO(crbug.com/1266277): Clean up the logic of setting
     // |overriding_user_agent_changed| post-launch.
     if (base::FeatureList::IsEnabled(features::kRequestDesktopSiteExceptions)) {
@@ -1279,7 +1273,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
         overriding_user_agent_changed = true;
       }
     }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   }
 
   bool is_main_frame_navigation = !rfh->GetParent();
@@ -1339,16 +1333,9 @@ bool NavigationControllerImpl::RendererDidNavigate(
   }
 
   // Do navigation-type specific actions. These will make and commit an entry.
-  details->type = ClassifyNavigation(rfh, params, navigation_request);
-  if (GetLastCommittedEntry() && GetLastCommittedEntry()->IsInitialEntry()) {
+  details->type = ClassifyNavigation(rfh, params, navigation_request, details);
+  if (GetLastCommittedEntry()->IsInitialEntry()) {
     if (rfh->GetParent()) {
-      // This is a subframe navigation on the initial empty document, which used
-      // to not have a NavigationEntry to attach to. Now it can attach to the
-      // initial NavigationEntry, and we must ensure that its NavigationEntry
-      // will keep the "initial NavigationEntry" status and won't append a new
-      // NavigationEntry (it should always do replacement instead).
-      // See also https://crbug.com/1277414.
-      details->should_stay_as_initial_entry = true;
       // Subframe navigation on initial NavigationEntry must not append a new
       // NavigationEntry (i.e. should not be classified as NEW_SUBFRAME). This
       // means every subframe navigation that happens while we're on the initial
@@ -1359,20 +1346,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
       // This is a navigation that modifies the initial NavigationEntry, either
       // for a replacement or a reload. The initial NavigationEntry should
       // retain its "initial NavigationEntry" status in this case.
-      details->should_stay_as_initial_entry = true;
-    } else if (navigation_request->is_synchronous_renderer_commit() &&
-               !navigation_request->IsSameDocument() && !rfh->GetParent() &&
-               params.should_replace_current_entry) {
-      // This is a synchronous about:blank navigation on the main frame, which
-      // used to not create a NavigationEntry when we have no NavigationEntry on
-      // FrameTree creation. We now have the initial NavigationEntry and are on
-      // the initial NavigationEntry. To preserve old behavior, we should still
-      // keep the "initial" status for the new NavigationEntry that we will
-      // create for this navigation, so that subframe navigations under the
-      // synchronously committed about:blank document will never append new
-      // NavigationEntry, and instead will just reuse the initial
-      // NavigationEntry and modify the corresponding FrameNavigationEntries.
-      // See also https://crbug.com/1277414.
       details->should_stay_as_initial_entry = true;
     }
   }
@@ -1541,9 +1514,36 @@ bool NavigationControllerImpl::RendererDidNavigate(
 NavigationType NavigationControllerImpl::ClassifyNavigation(
     RenderFrameHostImpl* rfh,
     const mojom::DidCommitProvisionalLoadParams& params,
-    NavigationRequest* navigation_request) {
+    NavigationRequest* navigation_request,
+    LoadCommittedDetails* details) {
+  if (GetLastCommittedEntry()->IsInitialEntry() &&
+      navigation_request->is_synchronous_renderer_commit() &&
+      !navigation_request->IsSameDocument() && !rfh->GetParent() &&
+      params.should_replace_current_entry) {
+    // This is a synchronous about:blank navigation on the main frame, which
+    // used to not create a NavigationEntry when we have no NavigationEntry on
+    // FrameTree creation. We now have the initial NavigationEntry and are on
+    // the initial NavigationEntry. To preserve old behavior, we should still
+    // keep the "initial" status for the new NavigationEntry that we will create
+    // for this navigation, so that subframe navigations under the synchronously
+    // committed about:blank document will never append new NavigationEntry, and
+    // instead will just reuse the initial NavigationEntry and modify the
+    // corresponding FrameNavigationEntries. See also https://crbug.com/1277414.
+    details->should_stay_as_initial_entry = true;
+  }
+
   TraceReturnReason<tracing_category::kNavigation> trace_return(
       "ClassifyNavigation");
+  DCHECK(GetLastCommittedEntry());
+  if (rfh->GetParent() && GetLastCommittedEntry()->IsInitialEntry()) {
+    // This is a subframe navigation on the initial empty document, which used
+    // to not have a NavigationEntry to attach to. Now it can attach to the
+    // initial NavigationEntry, and we must ensure that its NavigationEntry will
+    // keep the "initial NavigationEntry" status and won't append a new
+    // NavigationEntry (it should always do replacement instead).
+    // See also https://crbug.com/1277414.
+    details->should_stay_as_initial_entry = true;
+  }
 
   if (params.did_create_new_entry) {
     // A new entry. We may or may not have a corresponding pending entry, and
@@ -2450,7 +2450,7 @@ void NavigationControllerImpl::SetPendingNavigationSSLError(bool error) {
     pending_entry_->set_ssl_error(error);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // static
 bool NavigationControllerImpl::ValidateDataURLAsString(
     const scoped_refptr<const base::RefCountedString>& data_url_as_string) {
@@ -3042,9 +3042,7 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
     // its tree. If it is possible that the navigation is both inside and
     // outside the frame tree and we discard it entirely because we don't
     // want to end up in a history state that didn't exist before.
-    if (base::FeatureList::IsEnabled(
-            features::kHistoryPreventSandboxedNavigation) &&
-        !navigates_inside_tree) {
+    if (!navigates_inside_tree) {
       DiscardPendingEntry(false);
       return;
     }
@@ -3534,7 +3532,7 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
     case LOAD_TYPE_DATA:
       entry->SetBaseURLForDataURL(params.base_url_for_data_url);
       entry->SetVirtualURL(params.virtual_url_for_data_url);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       entry->SetDataURLAsString(params.data_url_as_string);
 #endif
       entry->SetCanLoadLocalResources(params.can_load_local_resources);
@@ -3623,17 +3621,6 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     return nullptr;
   }
 
-  // Determine if Previews should be used for the navigation.
-  blink::PreviewsState previews_state =
-      blink::PreviewsTypes::PREVIEWS_UNSPECIFIED;
-  if (!node->IsMainFrame()) {
-    // For subframes, use the state of the top-level frame.
-    previews_state = node->frame_tree()
-                         ->root()
-                         ->current_frame_host()
-                         ->last_navigation_previews_state();
-  }
-
   // This will be used to set the Navigation Timing API navigationStart
   // parameter for browser navigations in new tabs (intents, tabs opened through
   // "Open link in new tab"). If the navigation must wait on the current
@@ -3671,7 +3658,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
                                       params.referrer.policy),
           params.transition_type, navigation_type, download_policy,
           should_replace_current_entry, params.base_url_for_data_url,
-          previews_state, navigation_start,
+          navigation_start,
           params.load_type == LOAD_TYPE_HTTP_POST ? "POST" : "GET",
           params.post_data, std::move(source_location),
           params.started_from_context_menu, has_user_gesture,
@@ -3703,7 +3690,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           blink::mojom::WasActivatedOption::kUnknown,
           base::UnguessableToken::Create() /* navigation_token */,
           std::vector<blink::mojom::PrefetchedSignedExchangeInfoPtr>(),
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
           std::string(), /* data_url_as_string */
 #endif
           !params.is_renderer_initiated, /* is_browser_initiated */
@@ -3725,8 +3712,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           std::vector<GURL>() /* early_hints_preloaded_resources */,
           absl::nullopt /* ad_auction_components */,
           // This timestamp will be populated when the commit IPC is sent.
-          base::TimeTicks() /* commit_sent */);
-#if defined(OS_ANDROID)
+          base::TimeTicks() /* commit_sent */, false /* anonymous */);
+#if BUILDFLAG(IS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
     commit_params->data_url_as_string = params.data_url_as_string->data();
   }
@@ -3809,17 +3796,6 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
     return nullptr;
   }
 
-  // Determine if Previews should be used for the navigation.
-  blink::PreviewsState previews_state =
-      blink::PreviewsTypes::PREVIEWS_UNSPECIFIED;
-  if (!frame_tree_node->IsMainFrame()) {
-    // For subframes, use the state of the top-level frame.
-    previews_state = frame_tree_node->frame_tree()
-                         ->root()
-                         ->current_frame_host()
-                         ->last_navigation_previews_state();
-  }
-
   // This will be used to set the Navigation Timing API navigationStart
   // parameter for browser navigations in new tabs (intents, tabs opened through
   // "Open link in new tab"). If the navigation must wait on the current
@@ -3858,7 +3834,7 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
       entry->ConstructCommonNavigationParams(
           *frame_entry, request_body, dest_url,
           blink::mojom::Referrer::New(dest_referrer.url, dest_referrer.policy),
-          navigation_type, previews_state, navigation_start,
+          navigation_type, navigation_start,
           base::TimeTicks() /* input_start */);
   common_params->is_history_navigation_in_new_child_frame =
       is_history_navigation_in_new_child_frame;
@@ -3934,8 +3910,7 @@ void NavigationControllerImpl::LoadIfNecessary() {
     NavigateToExistingPendingEntry(ReloadType::NONE,
                                    FrameTreeNode::kFrameTreeNodeInvalidId,
                                    true /* is_browser_initiated */);
-  } else if (last_committed_entry_index_ != -1 &&
-             !GetLastCommittedEntry()
+  } else if (!GetLastCommittedEntry()
                   ->IsInitialEntryNotForSynchronousAboutBlank()) {
     pending_entry_ = entries_[last_committed_entry_index_].get();
     pending_entry_index_ = last_committed_entry_index_;
@@ -4193,9 +4168,6 @@ NavigationControllerImpl::ComputePolicyContainerPoliciesForFrameEntry(
     RenderFrameHostImpl* rfh,
     bool is_same_document,
     const GURL& url) {
-  if (!ShouldStorePolicyContainerPoliciesInFrameNavigationEntry(url))
-    return nullptr;
-
   if (is_same_document) {
     // TODO(https://crbug.com/524208): Remove this nullptr check when we can
     // ensure we always have a FrameNavigationEntry here.

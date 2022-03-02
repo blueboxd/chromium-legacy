@@ -58,7 +58,7 @@
 #include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 #include "components/open_from_clipboard/clipboard_recent_content_generic.h"
 #endif
 
@@ -338,7 +338,7 @@ AutocompleteController::AutocompleteController(
     }
   }
   if (provider_types & AutocompleteProvider::TYPE_CLIPBOARD) {
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
     // On iOS, a global ClipboardRecentContent should've been created by now
     // (if enabled).  If none has been created (e.g., we're on a different
     // platform), use the generic implementation, which AutocompleteController
@@ -495,6 +495,17 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
 }
 
 void AutocompleteController::StartPrefetch(const AutocompleteInput& input) {
+  // Start prefetch requests iff no non-prefetch request is in progress. Though
+  // not likely, it is possible for the providers to have an active non-prefetch
+  // request when a prefetch request is about to be started. In such scenarios,
+  // starting a prefetch request will cause the providers to invalidate their
+  // active non-prefetch requests and never get a chance to notify the
+  // controller of their status; thus resulting in the controller to remain in
+  // an invalid state.
+  if (!done_) {
+    return;
+  }
+
   for (auto provider : providers_) {
     provider->StartPrefetch(input);
   }
@@ -666,13 +677,17 @@ void AutocompleteController::SetMatchDestinationURL(
 
   match->destination_url = GURL(template_url->url_ref().ReplaceSearchTerms(
       *match->search_terms_args, template_url_service_->search_terms_data()));
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   match->UpdateJavaDestinationUrl();
 #endif
 }
 
-void AutocompleteController::InlineTailPrefixes() {
-  result_.InlineTailPrefixes();
+void AutocompleteController::SetTailSuggestContentPrefixes() {
+  result_.SetTailSuggestContentPrefixes();
+}
+
+void AutocompleteController::SetTailSuggestCommonPrefixes() {
+  result_.SetTailSuggestCommonPrefixes();
 }
 
 void AutocompleteController::UpdateResult(
@@ -703,7 +718,7 @@ void AutocompleteController::UpdateResult(
     result_.AppendMatches(input_, (*i)->matches());
 
   bool perform_tab_match = OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled();
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Do not look for matching tabs on Android unless we collected all the
   // suggestions. Tab matching is an expensive process with multiple JNI calls
   // involved. Run it only when all the suggestions are collected.
@@ -821,7 +836,7 @@ void AutocompleteController::UpdateAssociatedKeywords(
       match->associated_keyword = std::make_unique<AutocompleteMatch>(
           keyword_provider_->CreateVerbatimMatch(exact_keyword, exact_keyword,
                                                  input_));
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       match->UpdateJavaAnswer();
 #endif
       continue;
@@ -888,7 +903,7 @@ void AutocompleteController::UpdateKeywordDescriptions(
           i->description_class.push_back(
               ACMatchClassification(0, ACMatchClassification::DIM));
         }
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
         i->UpdateJavaDescription();
 #endif
 

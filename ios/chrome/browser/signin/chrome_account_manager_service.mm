@@ -153,8 +153,9 @@ class FunctorHasRestrictedIdentities
 // Returns the PatternAccountRestriction according to the given PrefService.
 PatternAccountRestriction PatternAccountRestrictionFromPreference(
     PrefService* pref_service) {
-  auto maybe_restriction = PatternAccountRestrictionFromValue(
-      pref_service->GetList(prefs::kRestrictAccountsToPatterns));
+  auto maybe_restriction =
+      PatternAccountRestrictionFromValue(&base::Value::AsListValue(
+          *pref_service->GetList(prefs::kRestrictAccountsToPatterns)));
   return *std::move(maybe_restriction);
 }
 
@@ -257,6 +258,12 @@ UIImage* ChromeAccountManagerService::GetIdentityAvatarWithIdentity(
       GetAvatarCacheForIdentityAvatarSize(avatar_size);
   DCHECK(avatar_cache);
   return [avatar_cache resizedAvatarForIdentity:identity];
+}
+
+bool ChromeAccountManagerService::IsServiceSupported() const {
+  ios::ChromeIdentityService* identity_service =
+      ios::GetChromeBrowserProvider().GetChromeIdentityService();
+  return identity_service->IsServiceSupported();
 }
 
 void ChromeAccountManagerService::Shutdown() {

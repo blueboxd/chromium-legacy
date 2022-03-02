@@ -79,10 +79,12 @@ build_recipe = _recipe_for_package(
 
 build_recipe(
     name = "recipe:android/androidx_packager",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:android/avd_packager",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -91,10 +93,12 @@ build_recipe(
 
 build_recipe(
     name = "recipe:angle_chromium",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:angle_chromium_trybot",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -106,11 +110,8 @@ build_recipe(
 )
 
 build_recipe(
-    name = "recipe:binary_size_cast_trybot",
-)
-
-build_recipe(
     name = "recipe:binary_size_fuchsia_trybot",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -124,11 +125,18 @@ build_recipe(
 build_recipe(
     name = "recipe:chromium",
     bootstrappable = True,
+    use_python3 = True,
+)
+
+build_recipe(
+    name = "recipe:chromium/builder_config_verifier",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:chromium/orchestrator",
     bootstrappable = True,
+    use_python3 = True,
 )
 
 build_recipe(
@@ -137,7 +145,14 @@ build_recipe(
 )
 
 build_recipe(
+    name = "recipe:chromium/builder_cache_prewarmer",
+    bootstrappable = True,
+    use_python3 = True,
+)
+
+build_recipe(
     name = "recipe:chromium_3pp",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -150,6 +165,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_codesearch",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -162,6 +178,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_libfuzzer_trybot",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -171,6 +188,7 @@ build_recipe(
 build_recipe(
     name = "recipe:chromium_trybot",
     bootstrappable = True,
+    use_python3 = True,
 )
 
 build_recipe(
@@ -179,39 +197,40 @@ build_recipe(
 
 build_recipe(
     name = "recipe:cronet",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:flakiness/generate_builder_test_data",
-)
-
-build_recipe(
-    name = "recipe:findit/chromium/compile",
-)
-
-build_recipe(
-    name = "recipe:findit/chromium/export_bot_db",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:findit/chromium/single_revision",
     bootstrappable = PROPERTIES_OPTIONAL,
-)
-
-build_recipe(
-    name = "recipe:findit/chromium/update_components",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:presubmit",
+    experiments = {
+        "luci.recipes.use_python3": 5,
+    },
 )
 
 build_recipe(
     name = "recipe:reclient_config_deploy_check/tester",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:reclient_goma_comparison",
+    use_python3 = True,
+)
+
+build_recipe(
+    name = "recipe:requires_testing_checker",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -228,6 +247,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:tricium_metrics",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -240,4 +260,5 @@ build_recipe(
 
 build_recipe(
     name = "recipe:webrtc/chromium_ios",
+    use_python3 = True,
 )

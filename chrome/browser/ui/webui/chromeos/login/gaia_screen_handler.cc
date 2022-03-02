@@ -7,6 +7,11 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/login/auth/challenge_response/cert_utils.h"
+#include "ash/components/login/auth/cryptohome_key_constants.h"
+#include "ash/components/login/auth/saml_password_attributes.h"
+#include "ash/components/login/auth/sync_trusted_vault_keys.h"
+#include "ash/components/login/auth/user_context.h"
 #include "ash/components/security_token_pin/constants.h"
 #include "ash/components/security_token_pin/error_generator.h"
 #include "ash/components/settings/cros_settings_names.h"
@@ -56,13 +61,13 @@
 #include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
-#include "chrome/browser/ash/policy/networking/device_network_configuration_updater.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/policy/networking/device_network_configuration_updater_ash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/cookie_waiter.h"
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
@@ -76,13 +81,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chromeos/components/onc/certificate_scope.h"
 #include "chromeos/dbus/util/version_loader.h"
-#include "chromeos/login/auth/challenge_response/cert_utils.h"
-#include "chromeos/login/auth/cryptohome_key_constants.h"
-#include "chromeos/login/auth/saml_password_attributes.h"
-#include "chromeos/login/auth/sync_trusted_vault_keys.h"
-#include "chromeos/login/auth/user_context.h"
-#include "chromeos/network/onc/certificate_scope.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/login/localized_values_builder.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -638,6 +638,11 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_SAML_SECURITY_TOKEN_PIN_DIALOG_SUBTITLE);
 }
 
+void GaiaScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
+  dict->SetKey("isRedirectToDefaultIdPEnabled",
+               base::Value(features::IsRedirectToDefaultIdPEnabled()));
+}
+
 void GaiaScreenHandler::Initialize() {
   initialized_ = true;
   // This should be called only once on page load.
@@ -1158,7 +1163,10 @@ void GaiaScreenHandler::SetSAMLPrincipalsAPIUsed(bool is_third_party_idp,
 }
 
 void GaiaScreenHandler::Show() {
-  ShowScreen(GaiaView::kScreenId);
+  base::DictionaryValue data;
+  data.SetBoolean("hasUserPods",
+                  LoginDisplayHost::default_host()->HasUserPods());
+  ShowScreenWithData(GaiaView::kScreenId, &data);
   elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
   hidden_ = false;
 }

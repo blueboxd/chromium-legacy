@@ -20,6 +20,8 @@
 
 namespace {
 
+bool g_enable_delegate_for_testing = false;
+
 SkColor GetBgColor(bool use_dark_mode) {
   return cros_styles::ResolveColor(
       cros_styles::ColorName::kBgColor, use_dark_mode,
@@ -38,9 +40,9 @@ OsUrlHandlerSystemWebAppDelegate::OsUrlHandlerSystemWebAppDelegate(
 
 OsUrlHandlerSystemWebAppDelegate::~OsUrlHandlerSystemWebAppDelegate() = default;
 
-std::unique_ptr<WebApplicationInfo>
+std::unique_ptr<WebAppInstallInfo>
 OsUrlHandlerSystemWebAppDelegate::GetWebAppInfo() const {
-  auto info = std::make_unique<WebApplicationInfo>();
+  auto info = std::make_unique<WebAppInstallInfo>();
   info->start_url = GURL(chrome::kChromeUIOsUrlAppURL);
   info->scope = GURL(chrome::kChromeUIOsUrlAppURL);
   info->title = l10n_util::GetStringUTF16(IDS_OS_URL_HANDLER_APP_NAME);
@@ -70,7 +72,8 @@ bool OsUrlHandlerSystemWebAppDelegate::ShouldCaptureNavigations() const {
 }
 
 bool OsUrlHandlerSystemWebAppDelegate::IsAppEnabled() const {
-  return crosapi::browser_util::IsLacrosEnabled();
+  return g_enable_delegate_for_testing ||
+         crosapi::browser_util::IsLacrosEnabled();
 }
 
 bool OsUrlHandlerSystemWebAppDelegate::ShouldShowInLauncher() const {
@@ -107,4 +110,8 @@ bool OsUrlHandlerSystemWebAppDelegate::IsUrlInSystemAppScope(
   target_url =
       crosapi::gurl_os_handler_utils::GetSystemUrlFromChromeUrl(target_url);
   return ChromeWebUIControllerFactory::GetInstance()->CanHandleUrl(target_url);
+}
+
+void OsUrlHandlerSystemWebAppDelegate::EnableDelegateForTesting(bool enable) {
+  g_enable_delegate_for_testing = enable;
 }

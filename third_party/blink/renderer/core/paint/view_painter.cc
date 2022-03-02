@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -78,30 +77,13 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   bool has_hit_test_data = layout_view_.HasEffectiveAllowedTouchAction() ||
                            layout_view_.InsideBlockingWheelEventHandler();
   bool painting_background_in_contents_space =
-      BoxDecorationData::IsPaintingBackgroundInContentsSpace(paint_info,
-                                                             layout_view_);
+      paint_info.IsPaintingBackgroundInContentsSpace();
 
   Element* element = DynamicTo<Element>(layout_view_.GetNode());
   bool has_region_capture_data = element && element->GetRegionCaptureCropId();
   bool paints_scroll_hit_test =
       !painting_background_in_contents_space &&
       layout_view_.FirstFragment().PaintProperties()->Scroll();
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // Pre-CompositeAfterPaint, there is no need to emit scroll hit test
-    // display items for composited scrollers because these display items are
-    // only used to create non-fast scrollable regions for non-composited
-    // scrollers. With CompositeAfterPaint, we always paint the scroll hit
-    // test display items but ignore the non-fast region if the scroll was
-    // composited in PaintArtifactCompositor::UpdateNonFastScrollableRegions.
-    if (layout_view_.HasLayer() &&
-        layout_view_.Layer()->GetCompositedLayerMapping() &&
-        layout_view_.Layer()
-            ->GetCompositedLayerMapping()
-            ->ScrollingContentsLayer()) {
-      paints_scroll_hit_test = false;
-    }
-  }
-
   if (!layout_view_.HasBoxDecorationBackground() && !has_hit_test_data &&
       !paints_scroll_hit_test && !has_region_capture_data)
     return;
@@ -145,7 +127,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   bool should_apply_root_background_behavior =
       document.IsHTMLDocument() || document.IsXHTMLDocument();
 
-  bool should_paint_background = !paint_info.SkipRootBackground() &&
+  bool should_paint_background = !paint_info.ShouldSkipBackground() &&
                                  layout_view_.HasBoxDecorationBackground();
 
   LayoutObject* root_object = nullptr;

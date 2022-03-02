@@ -9,10 +9,14 @@
 views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
     views::Widget::InitParams* params,
     views::internal::NativeWidgetDelegate* delegate) {
-  NativeWidgetType native_widget_type =
-      (params->parent && params->type != views::Widget::InitParams::TYPE_MENU &&
-       params->type != views::Widget::InitParams::TYPE_TOOLTIP)
-          ? NativeWidgetType::NATIVE_WIDGET_AURA
-          : NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA;
-  return ::CreateNativeWidget(native_widget_type, params, delegate);
+  DCHECK(!params->native_widget);
+  if (params->parent || params->context) {
+    // TODO(crbug.com/1234748): Until Fuchsia supports sub-window/placement
+    // APIs, have chrome render everything it can inside a single OS view.
+    return ::CreateNativeWidget(NativeWidgetType::NATIVE_WIDGET_AURA, params,
+                                delegate);
+  }
+  // When no context is given, render as a top level desktop window.
+  return ::CreateNativeWidget(NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA,
+                              params, delegate);
 }

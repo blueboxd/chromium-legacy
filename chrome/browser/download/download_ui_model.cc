@@ -8,6 +8,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/offline_item_utils.h"
@@ -25,7 +26,7 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/browser.h"
 #endif
 
@@ -121,7 +122,7 @@ std::u16string FailStateDescription(FailState fail_state) {
       break;
     case FailState::NO_FAILURE:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     // fallthrough
     case FailState::CANNOT_DOWNLOAD:
     case FailState::NETWORK_INSTABILITY:
@@ -209,7 +210,7 @@ std::u16string DownloadUIModel::GetStatusText() const {
         return GetInterruptedStatusText(fail_state);
       }
     }
-      FALLTHROUGH;
+      [[fallthrough]];
     case DownloadItem::CANCELLED:
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
     case DownloadItem::MAX_DOWNLOAD_STATE:
@@ -548,7 +549,7 @@ bool DownloadUIModel::ShouldPromoteOrigin() const {
   return false;
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 bool DownloadUIModel::IsCommandEnabled(
     const DownloadCommands* download_commands,
     DownloadCommands::Command command) const {

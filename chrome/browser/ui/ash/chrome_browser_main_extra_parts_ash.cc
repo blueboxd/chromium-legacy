@@ -214,7 +214,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   }
 #endif
 
-  night_light_client_ = std::make_unique<NightLightClient>(
+  night_light_client_ = std::make_unique<ash::NightLightClient>(
       g_browser_process->shared_url_loader_factory());
   night_light_client_->Start();
 
@@ -239,7 +239,12 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   }
 }
 
-void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
+void ChromeBrowserMainExtraPartsAsh::PostProfileInit(Profile* profile,
+                                                     bool is_initial_profile) {
+  // The setup below is intended to run for only the initial profile.
+  if (!is_initial_profile)
+    return;
+
   login_screen_client_ = std::make_unique<LoginScreenClientImpl>();
   // https://crbug.com/884127 ensuring that LoginScreenClientImpl is initialized
   // before using it InitializeDeviceDisablingManager.
@@ -358,8 +363,8 @@ class ChromeBrowserMainExtraPartsAsh::UserProfileLoadedObserver
   // session_manager::SessionManagerObserver:
   void OnUserProfileLoaded(const AccountId& account_id) override {
     Profile* profile =
-        chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id);
-    if (chromeos::ProfileHelper::IsRegularProfile(profile) &&
+        ash::ProfileHelper::Get()->GetProfileByAccountId(account_id);
+    if (ash::ProfileHelper::IsRegularProfile(profile) &&
         !profile->IsGuestSession()) {
       // Start the error notifier services to show auth/sync notifications.
       ash::SigninErrorNotifierFactory::GetForProfile(profile);

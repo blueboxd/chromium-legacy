@@ -77,7 +77,7 @@ bool IsDriveAvailableForProfile(Profile* profile) {
 
   // Disable Drive for non-Gaia accounts.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableGaiaServices)) {
+          ash::switches::kDisableGaiaServices)) {
     return false;
   }
   if (!chromeos::LoginState::IsInitialized())
@@ -86,7 +86,7 @@ bool IsDriveAvailableForProfile(Profile* profile) {
   if (profile->IsOffTheRecord())
     return false;
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user || !user->HasGaiaAccount())
     return false;
 

@@ -18,7 +18,6 @@
 #include "base/containers/contains.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
@@ -97,11 +96,8 @@
 #include "extensions/browser/updater/extension_cache.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
-#include "extensions/common/feature_switch.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
@@ -379,7 +375,12 @@ ExtensionService::ExtensionService(Profile* profile,
       extension_registrar_(profile_, this),
       force_installed_tracker_(registry_, profile_),
       force_installed_metrics_(registry_, profile_, &force_installed_tracker_),
-      corrupted_extension_reinstaller_(profile_) {
+      corrupted_extension_reinstaller_(profile_)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      ,
+      ash_keeplist_manager_(profile, extension_prefs, this)
+#endif
+{
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT0("browser,startup", "ExtensionService::ExtensionService::ctor");
 
@@ -472,15 +473,14 @@ void ExtensionService::Init() {
   bool load_saved_extensions = true;
   bool load_command_line_extensions = extensions_enabled_;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!chromeos::ProfileHelper::IsRegularProfile(profile_)) {
+  if (!ash::ProfileHelper::IsRegularProfile(profile_)) {
     load_saved_extensions = false;
     load_command_line_extensions = false;
   }
 
   const bool load_autotest_ext =
       command_line_->HasSwitch(switches::kLoadSigninProfileTestExtension);
-  const bool is_signin_profile =
-      chromeos::ProfileHelper::IsSigninProfile(profile_);
+  const bool is_signin_profile = ash::ProfileHelper::IsSigninProfile(profile_);
   if (load_autotest_ext && is_signin_profile) {
     LoadSigninProfileTestExtension(command_line_->GetSwitchValueASCII(
         switches::kLoadSigninProfileTestExtension));
@@ -509,6 +509,10 @@ void ExtensionService::Init() {
 
   // Must be called after extensions are loaded.
   allowlist_.Init();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash_keeplist_manager_.Init();
+#endif
 
   // Check for updates especially for corrupted user installed extension from
   // the webstore. This will do nothing if an extension update check was

@@ -29,6 +29,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/common/bitmap_cursor_factory.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
+#include "ui/ozone/platform/scenic/mojom/scenic_gpu_service.mojom.h"
 #include "ui/ozone/platform/scenic/overlay_manager_scenic.h"
 #include "ui/ozone/platform/scenic/scenic_gpu_host.h"
 #include "ui/ozone/platform/scenic/scenic_gpu_service.h"
@@ -39,7 +40,6 @@
 #include "ui/ozone/platform_selection.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
-#include "ui/ozone/public/mojom/scenic_gpu_service.mojom.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 #include "ui/ozone/public/system_input_injector.h"
@@ -157,7 +157,7 @@ class OzonePlatformScenic : public OzonePlatform,
         delegate, window_manager_->GetWindow(widget)->CloneViewRef());
   }
 
-  void InitializeUI(const InitParams& params) override {
+  bool InitializeUI(const InitParams& params) override {
     if (!PlatformEventSource::GetInstance())
       platform_event_source_ = std::make_unique<ScenicPlatformEventSource>();
     keyboard_layout_engine_ = std::make_unique<StubKeyboardLayoutEngine>();
@@ -178,6 +178,8 @@ class OzonePlatformScenic : public OzonePlatform,
 
     if (base::ThreadTaskRunnerHandle::IsSet())
       BindInMainProcessIfNecessary();
+
+    return true;
   }
 
   void InitializeGPU(const InitParams& params) override {

@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
@@ -670,10 +671,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   // Following checks implement the step 10 of "4.4. HTTP-redirect fetch",
   // https://fetch.spec.whatwg.org/#http-redirect-fetch
   if (request_.request_initiator &&
-      (!url::Origin::Create(redirect_url_)
-            .IsSameOriginWith(url::Origin::Create(request_.url)) &&
-       !request_.request_initiator->IsSameOriginWith(
-           url::Origin::Create(request_.url)))) {
+      (!url::IsSameOriginWith(redirect_url_, request_.url) &&
+       !request_.request_initiator->IsSameOriginWith(request_.url))) {
     // Reset the initiator to pretend tainted origin flag of the spec is set.
     request_.request_initiator = url::Origin();
   }

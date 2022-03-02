@@ -15,6 +15,7 @@
 #import "ios/net/url_scheme_util.h"
 #include "ios/web/common/features.h"
 #import "ios/web/common/url_scheme_util.h"
+#import "ios/web/download/download_native_task_bridge.h"
 #import "ios/web/js_messaging/web_frames_manager_java_script_feature.h"
 #import "ios/web/navigation/crw_error_page_helper.h"
 #import "ios/web/navigation/crw_navigation_item_holder.h"
@@ -45,6 +46,7 @@
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_util_ios.h"
+#include "net/http/http_content_disposition.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -63,7 +65,7 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 
 }  // namespace
 
-@interface CRWWKNavigationHandler () {
+@interface CRWWKNavigationHandler () <DownloadNativeTaskBridgeDelegate> {
   // Referrer for the current page; does not include the fragment.
   NSString* _currentReferrerString;
 
@@ -73,6 +75,18 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
   // cert status from |didReceiveAuthenticationChallenge:| to
   // |didFailProvisionalNavigation:| delegate method.
   std::unique_ptr<web::CertVerificationErrorsCacheType> _certVerificationErrors;
+
+  // Used to keep track of newly created and current download
+  // task objects created from
+  // |webView:navigationAction:didBecomeDownload| and
+  // |webView:navigationResponse:didBecomeDownload|. Respectively,
+  // DownloadNativeTaskBridge objects will help provide a valid
+  // |navigationAction| or |navigationResponse|.
+  NSMutableSet<DownloadNativeTaskBridge*>* _nativeTaskBridges;
+
+  // Stores navigation policy state of download task to indicate if a download
+  // should be performed.
+  BOOL _shouldPerformDownload;
 }
 
 @property(nonatomic, weak) id<CRWWKNavigationHandlerDelegate> delegate;
@@ -88,7 +102,7 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // Returns the CRWCertVerificationController from self.delegate.
 @property(nonatomic, readonly, weak)
     CRWCertVerificationController* certVerificationController;
-// Returns the docuemnt URL from self.delegate.
+// Returns the document URL from self.delegate.
 @property(nonatomic, readonly, assign) GURL documentURL;
 
 @end
@@ -106,9 +120,20 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
         std::make_unique<web::CertVerificationErrorsCacheType>(
             kMaxCertErrorsCount);
 
+    _nativeTaskBridges = [NSMutableSet new];
+
+    _shouldPerformDownload = NO;
+
     _delegate = delegate;
   }
   return self;
+}
+
+- (void)dealloc {
+  for (DownloadNativeTaskBridge* bridge in _nativeTaskBridges) {
+    [bridge cancel];
+  }
+  _nativeTaskBridges = nil;
 }
 
 #pragma mark - WKNavigationDelegate
@@ -315,12 +340,19 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
     }
   }
 
-  BOOL webControllerCanShow =
+  const BOOL webControllerCanShow =
       web::UrlHasWebScheme(requestURL) ||
       web::GetWebClient()->IsAppSpecificURL(requestURL) ||
       requestURL.SchemeIs(url::kFileScheme) ||
       requestURL.SchemeIs(url::kAboutScheme) ||
       requestURL.SchemeIs(url::kBlobScheme);
+
+  _shouldPerformDownload = NO;
+  if (web::features::IsNewDownloadAPIEnabled()) {
+    if (@available(iOS 15, *)) {
+      _shouldPerformDownload = action.shouldPerformDownload;
+    }
+  }
 
   __weak CRWWKNavigationHandler* weakSelf = self;
   auto callback = base::BindOnce(
@@ -355,11 +387,9 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
   BOOL isCrossOriginTargetFrame = NO;
   if (action.sourceFrame && action.targetFrame &&
       action.sourceFrame != action.targetFrame) {
-    url::Origin sourceOrigin = url::Origin::Create(
-        web::GURLOriginWithWKSecurityOrigin(action.sourceFrame.securityOrigin));
-    url::Origin targetOrigin = url::Origin::Create(
+    isCrossOriginTargetFrame = !url::IsSameOriginWith(
+        web::GURLOriginWithWKSecurityOrigin(action.sourceFrame.securityOrigin),
         web::GURLOriginWithWKSecurityOrigin(action.targetFrame.securityOrigin));
-    isCrossOriginTargetFrame = !sourceOrigin.IsSameOriginWith(targetOrigin);
   }
   const web::WebStatePolicyDecider::RequestInfo requestInfo(
       transition, isMainFrameNavigationAction, isCrossOriginTargetFrame,
@@ -422,12 +452,19 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
                     : WKNavigationResponsePolicyCancel);
       });
 
-  if ([self shouldRenderResponse:WKResponse]) {
+  if ([self shouldRenderResponse:WKResponse HTTPHeaders:headers.get()]) {
     const web::WebStatePolicyDecider::ResponseInfo response_info(
         WKResponse.forMainFrame);
     self.webStateImpl->ShouldAllowResponse(WKResponse.response, response_info,
                                            std::move(callback));
     return;
+  }
+
+  if (web::features::IsNewDownloadAPIEnabled()) {
+    if (@available(iOS 15, *)) {
+      handler(WKNavigationResponsePolicyDownload);
+      return;
+    }
   }
 
   if (web::UrlHasWebScheme(responseURL)) {
@@ -1007,6 +1044,54 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
   [self.delegate navigationHandlerWebProcessDidCrash:self];
 }
 
+- (void)webView:(WKWebView*)webView
+     navigationAction:(WKNavigationAction*)navigationAction
+    didBecomeDownload:(WKDownload*)WKDownload API_AVAILABLE(ios(15)) {
+  // As Chromium never return WKNavigationResponsePolicyDownload
+  // when deciding the policy for an action, WebKit should never
+  // invoke this delegate method.
+  NOTREACHED();
+}
+
+- (void)webView:(WKWebView*)webView
+    navigationResponse:(WKNavigationResponse*)navigationResponse
+     didBecomeDownload:(WKDownload*)WKDownload API_AVAILABLE(ios(15)) {
+  // Discard the pending item to ensure that the current URL is not different
+  // from what is displayed on the view.
+  self.navigationManagerImpl->DiscardNonCommittedItems();
+
+  [_nativeTaskBridges
+      addObject:[[DownloadNativeTaskBridge alloc] initWithDownload:WKDownload
+                                                          delegate:self]];
+}
+
+- (void)onDownloadNativeTaskBridgeReadyForDownload:
+    (DownloadNativeTaskBridge*)bridge API_AVAILABLE(ios(15)) {
+  const GURL responseURL = net::GURLWithNSURL(bridge.response.URL);
+  const int64_t contentLength = bridge.response.expectedContentLength;
+  const std::string MIMEType =
+      base::SysNSStringToUTF8(bridge.response.MIMEType);
+
+  std::string contentDisposition;
+  scoped_refptr<net::HttpResponseHeaders> headers;
+  if ([bridge.response isKindOfClass:[NSHTTPURLResponse class]]) {
+    headers = net::CreateHeadersFromNSHTTPURLResponse(
+        static_cast<NSHTTPURLResponse*>(bridge.response));
+    if (headers) {
+      headers->GetNormalizedHeader("content-disposition", &contentDisposition);
+    }
+  }
+
+  NSString* HTTPMethod = bridge.download.originalRequest.HTTPMethod;
+  web::DownloadController::FromBrowserState(
+      self.webStateImpl->GetBrowserState())
+      ->CreateNativeDownloadTask(self.webStateImpl, [NSUUID UUID].UUIDString,
+                                 responseURL, HTTPMethod, contentDisposition,
+                                 contentLength, MIMEType, bridge);
+
+  [_nativeTaskBridges removeObject:bridge];
+}
+
 #pragma mark - Private methods
 
 // Returns the UserAgent that needs to be used for the |navigationAction| from
@@ -1265,7 +1350,23 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 }
 
 // Returns YES if response should be rendered in WKWebView.
-- (BOOL)shouldRenderResponse:(WKNavigationResponse*)WKResponse {
+- (BOOL)shouldRenderResponse:(WKNavigationResponse*)WKResponse
+                 HTTPHeaders:(net::HttpResponseHeaders*)headers {
+  if (headers) {
+    std::string contentDisposition;
+    headers->GetNormalizedHeader("content-disposition", &contentDisposition);
+    net::HttpContentDisposition parsedContentDisposition(contentDisposition,
+                                                         std::string());
+    if (parsedContentDisposition.is_attachment()) {
+      return NO;
+    }
+  }
+
+  if (_shouldPerformDownload) {
+    DCHECK(web::features::IsNewDownloadAPIEnabled());
+    return NO;
+  }
+
   if (!WKResponse.canShowMIMEType) {
     return NO;
   }
@@ -1443,6 +1544,7 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
     decisionHandler(WKNavigationActionPolicyCancel);
     return;
   }
+
   BOOL isOffTheRecord = self.webStateImpl->GetBrowserState()->IsOffTheRecord();
   decisionHandler(web::GetAllowNavigationActionPolicy(
       isOffTheRecord || forceBlockUniversalLinks));

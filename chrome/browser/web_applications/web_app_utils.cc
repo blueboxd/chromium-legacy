@@ -58,7 +58,7 @@ bool AreWebAppsEnabled(const Profile* profile) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Web Apps should not be installed to the ChromeOS system profiles.
-  if (!chromeos::ProfileHelper::IsRegularProfile(original_profile)) {
+  if (!ash::ProfileHelper::IsRegularProfile(original_profile)) {
     return false;
   }
   // Disable Web Apps if running any kiosk app.
@@ -142,13 +142,13 @@ base::FilePath GetWebAppsTempDirectory(
 
 std::string GetProfileCategoryForLogging(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!chromeos::ProfileHelper::IsRegularProfile(profile)) {
+  if (!ash::ProfileHelper::IsRegularProfile(profile)) {
     return "SigninOrLockScreen";
   } else if (user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp()) {
     return "Kiosk";
-  } else if (chromeos::ProfileHelper::IsEphemeralUserProfile(profile)) {
+  } else if (ash::ProfileHelper::IsEphemeralUserProfile(profile)) {
     return "Ephemeral";
-  } else if (chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
+  } else if (ash::ProfileHelper::IsPrimaryProfile(profile)) {
     return "Primary";
   } else {
     return "Other";
@@ -161,7 +161,7 @@ std::string GetProfileCategoryForLogging(Profile* profile) {
 }
 
 bool IsChromeOsDataMandatory() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   return true;
 #else
   return false;
@@ -297,21 +297,55 @@ void PersistFileHandlersUserChoice(Profile* profile,
                                    base::OnceClosure update_finished_callback) {
   WebAppProvider* const provider = WebAppProvider::GetForWebApps(profile);
   DCHECK(provider);
+  provider->sync_bridge().SetAppFileHandlerApprovalState(
+      app_id,
+      allowed ? ApiApprovalState::kAllowed : ApiApprovalState::kDisallowed);
 
-  {
-    ScopedRegistryUpdate update(&provider->sync_bridge());
-    WebApp* app_to_update = update->UpdateApp(app_id);
-    app_to_update->SetFileHandlerApprovalState(
-        allowed ? ApiApprovalState::kAllowed : ApiApprovalState::kDisallowed);
-  }
+  UpdateFileHandlerOsIntegration(provider, app_id,
+                                 std::move(update_finished_callback));
+}
 
-  if (allowed) {
+void UpdateFileHandlerOsIntegration(
+    WebAppProvider* provider,
+    const AppId& app_id,
+    base::OnceClosure update_finished_callback) {
+  bool enabled =
+      provider->os_integration_manager().IsFileHandlingAPIAvailable(app_id) &&
+      !provider->registrar().IsAppFileHandlerPermissionBlocked(app_id);
+
+  if (enabled ==
+      provider->registrar().ExpectThatFileHandlersAreRegisteredWithOs(app_id)) {
     std::move(update_finished_callback).Run();
-  } else {
-    provider->os_integration_manager().UpdateFileHandlers(
-        app_id, FileHandlerUpdateAction::kRemove,
-        std::move(update_finished_callback));
+    return;
   }
+
+  FileHandlerUpdateAction action = enabled ? FileHandlerUpdateAction::kUpdate
+                                           : FileHandlerUpdateAction::kRemove;
+
+#if BUILDFLAG(IS_MAC)
+  // On Mac, the file handlers are encoded in the app shortcut. First
+  // unregister the file handlers (verifying that it finishes synchronously),
+  // then update the shortcut.
+  Result unregister_file_handlers_result = Result::kError;
+  provider->os_integration_manager().UpdateFileHandlers(
+      app_id, action,
+      base::BindOnce([](Result* result_out,
+                        Result actual_result) { *result_out = actual_result; },
+                     &unregister_file_handlers_result));
+  DCHECK_EQ(Result::kOk, unregister_file_handlers_result);
+  provider->os_integration_manager().UpdateShortcuts(
+      app_id, /*old_name=*/{}, std::move(update_finished_callback));
+#else
+  provider->os_integration_manager().UpdateFileHandlers(
+      app_id, action,
+      base::BindOnce([](base::OnceClosure closure,
+                        Result ignored) { std::move(closure).Run(); },
+                     std::move(update_finished_callback)));
+#endif
+
+  DCHECK_EQ(
+      enabled,
+      provider->registrar().ExpectThatFileHandlersAreRegisteredWithOs(app_id));
 }
 
 bool HasAnySpecifiedSourcesAndNoOtherSources(WebAppSources sources,
@@ -330,4 +364,8 @@ bool CanUserUninstallWebApp(WebAppSources sources) {
   return HasAnySpecifiedSourcesAndNoOtherSources(sources, specified_sources);
 }
 
+void RegisterFileHandlersWithOs(WebAppProvider* provider,
+                                const AppId& app_id,
+                                absl::optional<ApiApprovalState> approval_state,
+                                base::OnceClosure finished_closure) {}
 }  // namespace web_app

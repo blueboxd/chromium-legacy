@@ -122,9 +122,6 @@ std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
   survey_configs.emplace_back(&features::kHaTSDesktopDevToolsIssuesCSP,
                               "devtools-issues-csp",
                               "c9fjDmwjb0ugnJ3q1cK0USeAJJ9C");
-  survey_configs.emplace_back(&features::kHaTSDesktopDevToolsLayoutPanel,
-                              "devtools-layout-panel",
-                              "hhoMFLFq70ugnJ3q1cK0XYpqkErh");
 
   // Settings surveys.
   survey_configs.emplace_back(
@@ -400,7 +397,7 @@ void HatsService::RecordSurveyAsShown(std::string trigger_id) {
                             ShouldShowSurveyReasons::kYes);
 
   DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kHatsSurveyMetadata);
-  base::DictionaryValue* pref_data = update.Get();
+  base::Value* pref_data = update.Get();
   pref_data->SetIntPath(GetMajorVersionPath(trigger),
                         version_info::GetVersion().components()[0]);
   pref_data->SetPath(GetLastSurveyStartedTime(trigger),
@@ -417,7 +414,7 @@ void HatsService::SetSurveyMetadataForTesting(
     const HatsService::SurveyMetadata& metadata) {
   const std::string& trigger = kHatsSurveyTriggerSettings;
   DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kHatsSurveyMetadata);
-  base::DictionaryValue* pref_data = update.Get();
+  base::Value* pref_data = update.Get();
   if (!metadata.last_major_version.has_value() &&
       !metadata.last_survey_started_time.has_value() &&
       !metadata.is_survey_full.has_value() &&
@@ -465,7 +462,7 @@ void HatsService::GetSurveyMetadataForTesting(
     HatsService::SurveyMetadata* metadata) const {
   const std::string& trigger = kHatsSurveyTriggerSettings;
   DictionaryPrefUpdate update(profile_->GetPrefs(), prefs::kHatsSurveyMetadata);
-  base::DictionaryValue* pref_data = update.Get();
+  base::Value* pref_data = update.Get();
 
   absl::optional<int> last_major_version =
       pref_data->FindIntPath(GetMajorVersionPath(trigger));
@@ -586,7 +583,7 @@ bool HatsService::CanShowSurvey(const std::string& trigger) const {
     return false;
   }
 
-  const base::DictionaryValue* pref_data =
+  const base::Value* pref_data =
       profile_->GetPrefs()->GetDictionary(prefs::kHatsSurveyMetadata);
   absl::optional<int> last_major_version =
       pref_data->FindIntPath(GetMajorVersionPath(trigger));
@@ -655,7 +652,7 @@ bool HatsService::CanShowAnySurvey(bool user_prompted) const {
   // confrontational manner than the standard HaTS prompt). The bar for whether
   // a user is eligible is thus lower for these types of surveys.
   if (!user_prompted) {
-    const base::DictionaryValue* pref_data =
+    const base::Value* pref_data =
         profile_->GetPrefs()->GetDictionary(prefs::kHatsSurveyMetadata);
 
     // If the profile is too new, measured as the age of the profile directory,
@@ -710,7 +707,7 @@ void HatsService::CheckSurveyStatusAndMaybeShow(
   // Check the survey status in profile first.
   // We record the survey's over capacity information in user profile to avoid
   // duplicated checks since the survey won't change once it is full.
-  const base::DictionaryValue* pref_data =
+  const base::Value* pref_data =
       profile_->GetPrefs()->GetDictionary(prefs::kHatsSurveyMetadata);
   absl::optional<int> is_full =
       pref_data->FindBoolPath(GetIsSurveyFull(trigger));

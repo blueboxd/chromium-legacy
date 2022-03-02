@@ -13,6 +13,7 @@
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/app_list_test_view_delegate.h"
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/views/app_list_bubble_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
@@ -49,6 +50,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/layer_animation_stopped_waiter.h"
 #include "ash/test/test_widget_builder.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -90,7 +92,7 @@ AppListModel* GetAppListModel() {
 }
 
 AppListView* GetAppListView() {
-  return Shell::Get()->app_list_controller()->presenter()->GetView();
+  return Shell::Get()->app_list_controller()->fullscreen_presenter()->GetView();
 }
 
 ContentsView* GetContentsView() {
@@ -117,13 +119,13 @@ PagedAppsGridView* GetAppsGridView() {
 }
 
 void ShowAppListNow(AppListViewState state) {
-  Shell::Get()->app_list_controller()->presenter()->Show(
+  Shell::Get()->app_list_controller()->fullscreen_presenter()->Show(
       state, display::Screen::GetScreen()->GetPrimaryDisplay().id(),
       base::TimeTicks::Now(), /*show_source*/ absl::nullopt);
 }
 
 void DismissAppListNow() {
-  Shell::Get()->app_list_controller()->presenter()->Dismiss(
+  Shell::Get()->app_list_controller()->fullscreen_presenter()->Dismiss(
       base::TimeTicks::Now());
 }
 
@@ -221,7 +223,7 @@ TEST_F(AppListControllerImplTest, AppListHiddenWhenShelfAlignmentChanges) {
     ShowAppListNow(AppListViewState::kPeeking);
     EXPECT_TRUE(Shell::Get()
                     ->app_list_controller()
-                    ->presenter()
+                    ->fullscreen_presenter()
                     ->IsVisibleDeprecated());
     shelf->SetAlignment(alignment);
     EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
@@ -285,10 +287,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCornersWhenEmojiShows) {
   ShowAppListNow(AppListViewState::kPeeking);
   SearchBoxView* search_box_view =
       GetAppListView()->app_list_main_view()->search_box_view();
-  gfx::Point center_point = search_box_view->GetBoundsInScreen().CenterPoint();
-  ui::test::EventGenerator* event_generator = GetEventGenerator();
-  event_generator->MoveMouseTo(center_point);
-  event_generator->ClickRightButton();
+  RightClickOn(search_box_view);
 
   // Expect that the first item in the context menu should be "Emoji". Show the
   // emoji panel.
@@ -430,8 +429,7 @@ TEST_F(AppListControllerImplTest, VirtualKeyboardNotShownWhenUserStartsTyping) {
   EXPECT_FALSE(GetVirtualKeyboardWindow()->IsVisible());
 
   // The keyboard should get shown if the user taps on the search box.
-  GetEventGenerator()->GestureTapAt(
-      GetAppListView()->search_box_view()->GetBoundsInScreen().CenterPoint());
+  GestureTapOn(GetAppListView()->search_box_view());
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   DismissAppListNow();
@@ -482,6 +480,13 @@ TEST_F(AppListControllerImplTest,
 // Verifies that in tablet mode, the AppListView has correct bounds when the
 // virtual keyboard is dismissed (see https://crbug.com/944133).
 TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
+  // This isn't relevant with ProductivityLauncher, which uses separate widgets
+  // in clamshell versus tablet mode. See bug above. Also, the clamshell
+  // launcher closes when transitioning into tablet mode. This test can be
+  // deleted when ProductivityLauncher is the default.
+  if (features::IsProductivityLauncherEnabled())
+    return;
+
   Shell::Get()->keyboard_controller()->SetEnableFlag(
       keyboard::KeyboardEnableFlag::kShelfEnabled);
 
@@ -602,8 +607,7 @@ TEST_F(AppListControllerImplTest,
   window2->Show();
 
   // Tap at the textfield in |window1|. The virtual keyboard should be visible.
-  const gfx::Point tap_point = text_field_p->GetBoundsInScreen().CenterPoint();
-  GetEventGenerator()->GestureTapAt(tap_point);
+  GestureTapOn(text_field_p);
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   // Tap at the center of |window2| to hide the virtual keyboard.
@@ -676,6 +680,12 @@ TEST_F(AppListControllerImplTest,
 // closed.
 TEST_F(AppListControllerImplTest,
        CloseAppListShownFromOverviewAfterTabletExit) {
+  // This test is not relevant for ProductivityLauncher because it uses separate
+  // widgets in clamshell and tablet mode. This test can be deleted when
+  // ProductivityLauncher is the default.
+  if (features::IsProductivityLauncherEnabled())
+    return;
+
   auto* shell = Shell::Get();
   auto* tablet_mode_controller = shell->tablet_mode_controller();
   // Move to tablet mode and back.
@@ -772,10 +782,10 @@ TEST_F(AppListControllerImplTestWithNotificationBadging,
 
   EXPECT_FALSE(item_view->IsNotificationIndicatorShownForTest());
 
-  UpdateAppHasBadge(app_id, /*has_badge=*/true);
+  UpdateAppHasBadge(app_id, /*app_has_badge=*/true);
   EXPECT_TRUE(item_view->IsNotificationIndicatorShownForTest());
 
-  UpdateAppHasBadge(app_id, /*has_badge=*/false);
+  UpdateAppHasBadge(app_id, /*app_has_badge=*/false);
   EXPECT_FALSE(item_view->IsNotificationIndicatorShownForTest());
 }
 
@@ -1135,6 +1145,11 @@ class AppListControllerImplMetricsTest : public AshTestBase {
 // Write this test case for precaution (https://crbug.com/947105).
 TEST_F(AppListControllerImplMetricsTest,
        PresentationMetricsForTabletNotRecordedInClamshell) {
+  // ProductivityLauncher does not support app list dragging. This test can be
+  // deleted when ProductivityLauncher is the default.
+  if (features::IsProductivityLauncherEnabled())
+    return;
+
   // Wait until the construction of TabletModeController finishes.
   base::RunLoop().RunUntilIdle();
 
@@ -1281,10 +1296,25 @@ TEST_F(AppListControllerImplAppListBubbleTest, EnteringTabletModeClosesBubble) {
   EXPECT_FALSE(controller->bubble_presenter_for_test()->IsShowing());
 }
 
-class AppListControllerWithAssistantTest : public AppListControllerImplTest {
+TEST_F(AppListControllerImplAppListBubbleTest,
+       WallpaperColorChangeDoesNotCrash) {
+  auto* controller = Shell::Get()->app_list_controller();
+  controller->ShowAppList();
+  // Simulate synced wallpaper update while bubble is open.
+  controller->OnWallpaperColorsChanged();
+  // No crash.
+}
+
+// App list assistant tests, parameterized by ProductivityLauncher.
+class AppListControllerWithAssistantTest
+    : public AppListControllerImplTest,
+      public testing::WithParamInterface<bool> {
  public:
   AppListControllerWithAssistantTest()
-      : assistant_test_api_(AssistantTestApi::Create()) {}
+      : assistant_test_api_(AssistantTestApi::Create()) {
+    feature_list_.InitWithFeatureState(features::kProductivityLauncher,
+                                       GetParam());
+  }
   AppListControllerWithAssistantTest(
       const AppListControllerWithAssistantTest&) = delete;
   AppListControllerWithAssistantTest& operator=(
@@ -1315,15 +1345,21 @@ class AppListControllerWithAssistantTest : public AppListControllerImplTest {
   }
 
   std::unique_ptr<AssistantTestApi> assistant_test_api_;
+  base::test::ScopedFeatureList feature_list_;
 };
+
+INSTANTIATE_TEST_SUITE_P(ProductivityLauncher,
+                         AppListControllerWithAssistantTest,
+                         testing::Bool());
 
 // Verifies the scenario that the Assistant shortcut is triggered when the the
 // app list close animation is running.
-TEST_F(AppListControllerWithAssistantTest,
+TEST_P(AppListControllerWithAssistantTest,
        TriggerAssistantKeyWhenAppListClosing) {
   // Show the Assistant and verify the app list state.
   ToggleAssistantUiWithAccelerator();
-  EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
+  auto* app_list_controller = Shell::Get()->app_list_controller();
+  EXPECT_TRUE(app_list_controller->IsVisible());
   EXPECT_TRUE(AssistantUiController::Get()->HasShownOnboarding());
   EXPECT_EQ(AssistantVisibility::kVisible, GetAssistantVisibility());
 
@@ -1335,38 +1371,49 @@ TEST_F(AppListControllerWithAssistantTest,
     ui::ScopedAnimationDurationScaleMode non_zero_duration(
         ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-    // Press the search key.
+    // Press the search key. The launcher starts to close.
     PressAndReleaseKey(ui::KeyboardCode::VKEY_COMMAND);
     EXPECT_EQ(AssistantVisibility::kClosing, GetAssistantVisibility());
 
     // Toggle the Assistant ui and wait for app list animation to finish.
-    views::WidgetAnimationWaiter waiter(GetAppListView()->GetWidget());
-    ToggleAssistantUiWithAccelerator();
-    waiter.WaitForAnimation();
+    if (features::IsProductivityLauncherEnabled()) {
+      AppListBubbleView* bubble_view =
+          app_list_controller->bubble_presenter_for_test()
+              ->bubble_view_for_test();
+      ToggleAssistantUiWithAccelerator();
+      LayerAnimationStoppedWaiter().Wait(bubble_view->layer());
+    } else {
+      views::WidgetAnimationWaiter waiter(GetAppListView()->GetWidget());
+      ToggleAssistantUiWithAccelerator();
+      waiter.WaitForAnimation();
+    }
   }
 
   // Verify that the Assistant ui is visible. In addition, the text in the
   // textfield does not change.
   EXPECT_TRUE(assistant_test_api_->IsVisible());
   EXPECT_EQ(u"xyz", assistant_test_api_->input_text_field()->GetText());
-  EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
+  EXPECT_TRUE(app_list_controller->IsVisible());
   EXPECT_EQ(AssistantVisibility::kVisible, GetAssistantVisibility());
 
   // Press the search key to close the app list.
   PressAndReleaseKey(ui::KeyboardCode::VKEY_COMMAND);
-  EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
+  EXPECT_FALSE(app_list_controller->IsVisible());
 
   // Toggle the Assistant ui. The text input field should be cleared.
   ToggleAssistantUiWithAccelerator();
-  EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
-  EXPECT_TRUE(assistant_test_api_->input_text_field()->GetText().empty());
+  EXPECT_TRUE(app_list_controller->IsVisible());
+  // TODO(jamescook): Decide if we want this behavior for ProductivityLauncher.
+  if (!features::IsProductivityLauncherEnabled())
+    EXPECT_TRUE(assistant_test_api_->input_text_field()->GetText().empty());
 }
 
 // Verifies the scenario that the search key is triggered when the the app list
 // close animation is running.
-TEST_F(AppListControllerWithAssistantTest, TriggerSearchKeyWhenAppListClosing) {
+TEST_P(AppListControllerWithAssistantTest, TriggerSearchKeyWhenAppListClosing) {
   ToggleAssistantUiWithAccelerator();
-  EXPECT_EQ(AppListViewState::kHalf, GetAppListView()->app_list_state());
+  auto* app_list_controller = Shell::Get()->app_list_controller();
+  EXPECT_TRUE(app_list_controller->IsVisible());
 
   // Enable animation with non-zero duration.
   ui::ScopedAnimationDurationScaleMode non_zero_duration(
@@ -1377,9 +1424,17 @@ TEST_F(AppListControllerWithAssistantTest, TriggerSearchKeyWhenAppListClosing) {
   EXPECT_EQ(AssistantVisibility::kClosing, GetAssistantVisibility());
 
   // Press the search key to reshow the app list.
-  views::WidgetAnimationWaiter waiter(GetAppListView()->GetWidget());
-  PressAndReleaseKey(ui::KeyboardCode::VKEY_COMMAND);
-  waiter.WaitForAnimation();
+  if (features::IsProductivityLauncherEnabled()) {
+    AppListBubbleView* bubble_view =
+        app_list_controller->bubble_presenter_for_test()
+            ->bubble_view_for_test();
+    PressAndReleaseKey(ui::KeyboardCode::VKEY_COMMAND);
+    LayerAnimationStoppedWaiter().Wait(bubble_view->layer());
+  } else {
+    views::WidgetAnimationWaiter waiter(GetAppListView()->GetWidget());
+    PressAndReleaseKey(ui::KeyboardCode::VKEY_COMMAND);
+    waiter.WaitForAnimation();
+  }
 
   // The Assistant should be closed.
   EXPECT_EQ(AssistantVisibility::kClosed, GetAssistantVisibility());

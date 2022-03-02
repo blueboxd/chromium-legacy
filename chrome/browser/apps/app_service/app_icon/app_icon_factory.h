@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -132,6 +132,10 @@ void ApplyIconEffects(IconEffects icon_effects,
                       int size_hint_in_dip,
                       IconValuePtr iv,
                       LoadIconCallback callback);
+
+// Encodes |iv| as a compressed PNG icon.
+void ConvertUncompressedIconToCompressedIcon(IconValuePtr iv,
+                                             LoadIconCallback callback);
 
 // Loads an icon from an extension.
 void LoadIconFromExtension(IconType icon_type,

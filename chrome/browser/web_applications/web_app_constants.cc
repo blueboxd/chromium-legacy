@@ -28,7 +28,7 @@ DisplayMode ResolveAppDisplayModeForStandaloneLaunchContainer(
       return DisplayMode::kMinimalUi;
     case DisplayMode::kUndefined:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case DisplayMode::kStandalone:
     case DisplayMode::kFullscreen:
       return DisplayMode::kStandalone;
@@ -87,8 +87,8 @@ std::ostream& operator<<(std::ostream& os, InstallResultCode code) {
       return os << "kSuccessNewInstall";
     case InstallResultCode::kSuccessAlreadyInstalled:
       return os << "kSuccessAlreadyInstalled";
-    case InstallResultCode::kGetWebApplicationInfoFailed:
-      return os << "kGetWebApplicationInfoFailed";
+    case InstallResultCode::kGetWebAppInstallInfoFailed:
+      return os << "kGetWebAppInstallInfoFailed";
     case InstallResultCode::kPreviouslyUninstalled:
       return os << "kPreviouslyUninstalled";
     case InstallResultCode::kWebContentsDestroyed:
@@ -144,12 +144,12 @@ DisplayMode ResolveEffectiveDisplayMode(
     case DisplayMode::kFullscreen:
     case DisplayMode::kWindowControlsOverlay:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case DisplayMode::kTabbed:
       if (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStripSettings))
         return user_display_mode;
       // Treat as standalone.
-      FALLTHROUGH;
+      [[fallthrough]];
     case DisplayMode::kStandalone:
       break;
   }

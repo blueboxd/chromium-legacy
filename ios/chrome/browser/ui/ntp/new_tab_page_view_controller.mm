@@ -11,12 +11,12 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
-#import "ios/chrome/browser/ui/content_suggestions/discover_feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_wrapper_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/feed_header_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/feed_menu_commands.h"
+#import "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_content_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
@@ -31,10 +31,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-const CGFloat kFeedHeaderTopPaddingWhenStuck = 10;
-}
 
 @interface NewTabPageViewController () <NewTabPageOmniboxPositioning,
                                         UICollectionViewDelegate,
@@ -135,7 +131,7 @@ const CGFloat kFeedHeaderTopPaddingWhenStuck = 10;
     [self.contentSuggestionsViewController willMoveToParentViewController:nil];
     [self.contentSuggestionsViewController.view removeFromSuperview];
     [self.contentSuggestionsViewController removeFromParentViewController];
-    [self.discoverFeedMetricsRecorder
+    [self.feedMetricsRecorder
         recordBrokenNTPHierarchy:BrokenNTPHierarchyRelationship::
                                      kContentSuggestionsReset];
   }
@@ -452,7 +448,7 @@ const CGFloat kFeedHeaderTopPaddingWhenStuck = 10;
                                               willDecelerate:decelerate];
   [self.panGestureHandler scrollViewDidEndDragging:scrollView
                                     willDecelerate:decelerate];
-  [self.discoverFeedMetricsRecorder
+  [self.feedMetricsRecorder
       recordFeedScrolled:scrollView.contentOffset.y - self.scrollStartPosition];
 }
 
@@ -646,8 +642,7 @@ const CGFloat kFeedHeaderTopPaddingWhenStuck = 10;
 
   self.feedHeaderConstraints = @[
     [self.feedHeaderViewController.view.topAnchor
-        constraintEqualToAnchor:self.headerController.view.bottomAnchor
-                       constant:kFeedHeaderTopPaddingWhenStuck],
+        constraintEqualToAnchor:self.headerController.view.bottomAnchor],
   ];
 
   [NSLayoutConstraint activateConstraints:self.feedHeaderConstraints];
@@ -749,7 +744,7 @@ const CGFloat kFeedHeaderTopPaddingWhenStuck = 10;
 // Handles device rotation.
 - (void)deviceOrientationDidChange {
   if (self.viewDidAppear) {
-    [self.discoverFeedMetricsRecorder
+    [self.feedMetricsRecorder
         recordDeviceOrientationChanged:[[UIDevice currentDevice] orientation]];
   }
 }
@@ -821,8 +816,7 @@ const CGFloat kFeedHeaderTopPaddingWhenStuck = 10;
 // should stick to the top of the NTP.
 - (CGFloat)offsetToStickOmniboxAndHeader {
   return -(self.headerController.view.frame.size.height -
-           [self stickyOmniboxHeight]) -
-         kFeedHeaderTopPaddingWhenStuck;
+           [self stickyOmniboxHeight]);
 }
 
 // Whether the collection view has attained its minimum height.
@@ -861,7 +855,7 @@ const CGFloat kFeedHeaderTopPaddingWhenStuck = 10;
         didMoveToParentViewController:self.discoverFeedWrapperViewController
                                           .discoverFeed];
 
-    [self.discoverFeedMetricsRecorder
+    [self.feedMetricsRecorder
         recordBrokenNTPHierarchy:BrokenNTPHierarchyRelationship::
                                      kContentSuggestionsParent];
   }
@@ -889,7 +883,7 @@ const CGFloat kFeedHeaderTopPaddingWhenStuck = 10;
     DCHECK([parentView.subviews containsObject:subView]);
     [subView removeFromSuperview];
     [parentView addSubview:subView];
-    [self.discoverFeedMetricsRecorder recordBrokenNTPHierarchy:relationship];
+    [self.feedMetricsRecorder recordBrokenNTPHierarchy:relationship];
   }
 }
 

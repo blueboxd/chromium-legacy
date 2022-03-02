@@ -3,11 +3,11 @@
 # found in the LICENSE file.
 
 import("//build/config/chromeos/ui_mode.gni")
-import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
 import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
+import("//crypto/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 
@@ -108,6 +108,8 @@ static_library("utility") {
         "importer/nss_decryptor.cc",
         "importer/nss_decryptor.h",
       ]
+
+      deps += [ "//crypto:buildflags" ]
     }
     if (is_win) {
       sources += [
@@ -165,6 +167,7 @@ static_library("utility") {
     deps += [
       "//ash/services/ime:lib",
       "//ash/services/ime/public/mojom",
+      "//ash/services/nearby/public/mojom:mojom",
       "//ash/services/quick_pair",
       "//ash/services/recording",
       "//chrome/services/file_util",
@@ -172,7 +175,6 @@ static_library("utility") {
       "//chromeos/assistant:buildflags",
       "//chromeos/components/local_search_service:local_search_service",
       "//chromeos/components/local_search_service/public/mojom",
-      "//chromeos/services/nearby/public/mojom:mojom",
       "//chromeos/services/tts",
       "//chromeos/services/tts/public/mojom",
     ]
@@ -213,17 +215,6 @@ static_library("utility") {
         "//chrome/services/ipp_parser",
         "//chrome/services/ipp_parser/public/mojom",
       ]
-    }
-  }
-
-  if (enable_print_preview) {
-    if (is_win) {
-      sources += [
-        "printing_handler.cc",
-        "printing_handler.h",
-      ]
-      public_deps += [ "//chrome/common:cloud_print_utility_mojom" ]
-      deps += [ "//printing/backend" ]
     }
   }
 

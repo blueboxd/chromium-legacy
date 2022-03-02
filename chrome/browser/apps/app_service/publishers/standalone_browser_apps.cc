@@ -60,9 +60,10 @@ StandaloneBrowserApps::~StandaloneBrowserApps() = default;
 std::unique_ptr<App> StandaloneBrowserApps::CreateStandaloneBrowserApp() {
   std::unique_ptr<App> app = AppPublisher::MakeApp(
       AppType::kStandaloneBrowser, extension_misc::kLacrosAppId,
-      Readiness::kReady, "Lacros" /* TODO(crbug.com/1267752): Localized name.*/
-  );
+      Readiness::kReady, "Lacros" /* TODO(crbug.com/1267752): Localized name.*/,
+      InstallReason::kSystem, InstallSource::kSystem);
 
+  app->additional_search_terms.push_back("chrome");
   app->icon_key = std::move(*CreateIconKey(/*is_browser_load_success=*/true));
   return app;
 }
@@ -73,6 +74,7 @@ apps::mojom::AppPtr StandaloneBrowserApps::GetStandaloneBrowserApp() {
       apps::mojom::Readiness::kReady,
       "Lacros",  // TODO(jamescook): Localized name.
       apps::mojom::InstallReason::kSystem);
+  app->install_source = apps::mojom::InstallSource::kSystem;
   // Make Lacros searchable with the term "chrome", too.
   app->additional_search_terms.push_back("chrome");
   app->icon_key = NewIconKey();
@@ -174,7 +176,8 @@ void StandaloneBrowserApps::Launch(const std::string& app_id,
                                    apps::mojom::LaunchSource launch_source,
                                    apps::mojom::WindowInfoPtr window_info) {
   DCHECK_EQ(extension_misc::kLacrosAppId, app_id);
-  crosapi::BrowserManager::Get()->NewWindow(/*incognito=*/false);
+  crosapi::BrowserManager::Get()->NewWindow(
+      /*incognito=*/false, /*should_trigger_session_restore=*/true);
 }
 
 void StandaloneBrowserApps::GetMenuModel(const std::string& app_id,

@@ -107,6 +107,7 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
 
   ExecutionContext* execution_context = canvas->GetTopExecutionContext();
   if (auto* window = DynamicTo<LocalDOMWindow>(execution_context)) {
+    DCHECK(window->GetFrame());
     if (window->GetFrame()->GetSettings()->GetDisableReadingFromCanvas())
       canvas->SetDisableReadingFromCanvasTrue();
     return;
@@ -723,7 +724,7 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
   Draw<OverdrawOp::kNone>(
       [this, text = std::move(text), direction, location](
           cc::PaintCanvas* paint_canvas,
-          const PaintFlags* flags) /* draw lambda */ {
+          const cc::PaintFlags* flags) /* draw lambda */ {
         TextRun text_run(text, 0, 0, TextRun::kAllowTrailingExpansion,
                          direction, false);
         text_run.SetNormalizeSpace(true);

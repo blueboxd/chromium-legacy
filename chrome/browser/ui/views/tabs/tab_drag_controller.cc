@@ -12,6 +12,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
@@ -447,7 +448,7 @@ void TabDragController::Init(TabDragContext* source_context,
   //     synchronous on desktop Linux, so use that.
   // - Chrome OS
   //     Releasing capture on Ash cancels gestures so avoid it.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   can_release_capture_ = false;
 #endif
   start_point_in_screen_ = gfx::Point(source_view_offset, mouse_offset.y());
@@ -895,7 +896,7 @@ TabDragController::DragBrowserToNewTabStrip(TabDragContext* target_context,
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if !(defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
     // EndMoveLoop is going to snap the window back to its original location.
     // Hide it so users don't see this. Hiding a window in Linux aura causes
     // it to lose capture so skip it.
@@ -1638,10 +1639,9 @@ void TabDragController::RestoreInitialSelection() {
   // the tabs from initial_selection_model_ as it was created with the tabs
   // still there.
   ui::ListSelectionModel selection_model = initial_selection_model_;
-  for (DragData::const_reverse_iterator i(drag_data_.rbegin());
-       i != drag_data_.rend(); ++i) {
-    if (i->source_model_index != TabStripModel::kNoTab)
-      selection_model.DecrementFrom(i->source_model_index);
+  for (const TabDragData& data : base::Reversed(drag_data_)) {
+    if (data.source_model_index != TabStripModel::kNoTab)
+      selection_model.DecrementFrom(data.source_model_index);
   }
   // We may have cleared out the selection model. Only reset it if it
   // contains something.
@@ -1794,7 +1794,7 @@ void TabDragController::CompleteDrag() {
 
 void TabDragController::MaximizeAttachedWindow() {
   GetAttachedBrowserWidget()->Maximize();
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   if (was_source_fullscreen_)
     GetAttachedBrowserWidget()->SetFullscreen(true);
 #endif
@@ -1846,15 +1846,14 @@ void TabDragController::BringWindowUnderPointToFront(
     // Find a topmost non-popup window and stack the recipient browser above
     // it in order to avoid stacking the browser window on top of the phantom
     // drag widget created by DragWindowController in a second display.
-    for (aura::Window::Windows::const_reverse_iterator it =
-             browser_window->parent()->children().rbegin();
-         it != browser_window->parent()->children().rend(); ++it) {
+    for (aura::Window* window :
+         base::Reversed(browser_window->parent()->children())) {
       // If the iteration reached the recipient browser window then it is
       // already topmost and it is safe to return with no stacking change.
-      if (*it == browser_window)
+      if (window == browser_window)
         return;
-      if ((*it)->GetType() != aura::client::WINDOW_TYPE_POPUP) {
-        widget_window->StackAbove(*it);
+      if (window->GetType() != aura::client::WINDOW_TYPE_POPUP) {
+        widget_window->StackAbove(window);
         break;
       }
     }
@@ -2105,7 +2104,7 @@ TabDragController::Liveness TabDragController::GetLocalProcessWindow(
   }
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Exclude windows which are pending deletion via Browser::TabStripEmpty().
   // These windows can be returned in the Linux Aura port because the browser
   // window which was used for dragging is not hidden once all of its tabs are

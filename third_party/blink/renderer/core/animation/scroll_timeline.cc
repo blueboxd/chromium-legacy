@@ -6,6 +6,7 @@
 
 #include <tuple>
 
+#include "base/memory/values_equivalent.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_csskeywordvalue_cssnumericvalue_scrolltimelineelementbasedoffset_string.h"
@@ -22,7 +23,6 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -273,7 +273,7 @@ bool ScrollTimeline::ScrollOffsetsEqual(
     return false;
   wtf_size_t size = scroll_offsets_.size();
   for (wtf_size_t i = 0; i < size; ++i) {
-    if (!DataEquivalent(scroll_offsets_.at(i), other.at(i)))
+    if (!base::ValuesEquivalent(scroll_offsets_.at(i), other.at(i)))
       return false;
   }
   return true;

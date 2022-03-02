@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 namespace device {
@@ -53,8 +54,17 @@ class MessageStreamLookupImpl : public MessageStreamLookup,
 
   // Create RFCOMM connection callbacks.
   void OnConnected(std::string device_address,
+                   base::TimeTicks connect_to_service_start_time,
                    scoped_refptr<device::BluetoothSocket> socket);
   void OnConnectError(const std::string& error_message);
+
+  // Helper function to disconnect socket from a MessageStream instance and
+  // destroy the MessageStream instance. Used by both |RemoveMessageStream| and
+  // |DeviceRemoved|.
+  void EraseMessageStream(const std::string& device_address);
+
+  // Callback for disconnected the socket from the MessageStream.
+  void OnSocketDisconnected(const std::string& device_address);
 
   // Internal method called by BluetoothAdapterFactory to provide the adapter
   // object.

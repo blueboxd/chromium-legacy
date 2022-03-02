@@ -8,8 +8,6 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "content/browser/resources/media/grit/media_internals_resources.h"
-#include "content/browser/resources/media/grit/media_internals_resources_map.h"
 #include "content/grit/content_resources.h"
 #include "content/grit/content_resources_map.h"
 #include "content/public/common/url_constants.h"
@@ -28,7 +26,7 @@
 #include "base/feature_list.h"
 #include "chromeos/grit/chromeos_resources.h"
 #include "chromeos/grit/chromeos_resources_map.h"
-#include "ui/chromeos/styles/cros_styles.h"
+#include "ui/chromeos/styles/cros_styles.h"  // nogncheck
 #endif
 
 namespace content {
@@ -38,6 +36,7 @@ namespace {
 const std::set<int> GetContentResourceIds() {
   return std::set<int>{
       IDR_GEOMETRY_MOJOM_WEBUI_JS,
+      IDR_IMAGE_MOJOM_WEBUI_JS,
       IDR_ORIGIN_MOJO_HTML,
       IDR_ORIGIN_MOJO_JS,
       IDR_ORIGIN_MOJO_WEBUI_JS,
@@ -103,20 +102,15 @@ void AddResources(const std::set<int>& resource_ids,
   }
 }
 
-}  // namespace
-
-WebUIDataSource* CreateSharedResourcesDataSource() {
-  WebUIDataSource* source =
-      content::WebUIDataSource::Create(kChromeUIResourcesHost);
+void PopulateSharedResourcesDataSource(WebUIDataSource* source) {
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
-  // TODO(crbug.com/1098690): Trusted Type Polymer
-  source->DisableTrustedTypesCSP();
+
+  // Note: Don't put generated Mojo bindings here. Please explicitly add them to
+  // each WebUI's own data source.
 
   AddResources(GetContentResourceIds(), kContentResources,
                kContentResourcesSize, source);
-  source->AddResourcePaths(
-      base::make_span(kMediaInternalsResources, kMediaInternalsResourcesSize));
   source->AddResourcePaths(
       base::make_span(kWebuiResources, kWebuiResourcesSize));
   source->AddResourcePaths(
@@ -137,22 +131,21 @@ WebUIDataSource* CreateSharedResourcesDataSource() {
 
   source->AddString("fontFamily", webui::GetFontFamily());
   source->AddString("fontSize", webui::GetFontSize());
+}
 
+}  // namespace
+
+WebUIDataSource* CreateSharedResourcesDataSource() {
+  WebUIDataSource* source =
+      content::WebUIDataSource::Create(kChromeUIResourcesHost);
+  PopulateSharedResourcesDataSource(source);
   return source;
 }
 
 WebUIDataSource* CreateUntrustedSharedResourcesDataSource() {
-  // This data source only serves resources used by all chrome-untrusted://
-  // WebUI pages.
-  //
-  // Don't put generated Mojo bindings here. Please explicitly add them to each
-  // WebUI's own data source.
   WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIUntrustedResourcesURL);
-
-  source->AddResourcePaths(
-      base::make_span(kMojoBindingsResources, kMojoBindingsResourcesSize));
-
+  PopulateSharedResourcesDataSource(source);
   return source;
 }
 

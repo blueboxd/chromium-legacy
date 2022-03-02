@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/quick_pair/common/device.h"
+#include "ash/quick_pair/common/fast_pair/fast_pair_metrics.h"
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/common/quick_pair_browser_delegate.h"
 #include "ash/quick_pair/proto/fastpair.pb.h"
@@ -30,7 +31,10 @@
 namespace ash {
 namespace quick_pair {
 
-FastPairPresenter::FastPairPresenter() = default;
+FastPairPresenter::FastPairPresenter()
+    : notification_controller_(
+          std::make_unique<FastPairNotificationController>()) {}
+
 FastPairPresenter::~FastPairPresenter() = default;
 
 void FastPairPresenter::ShowDiscovery(scoped_refptr<Device> device,
@@ -60,12 +64,17 @@ void FastPairPresenter::OnDiscoveryMetadataRetrieved(
           .empty()) {
     device->SetAdditionalData(Device::AdditionalDataType::kFastPairVersion,
                               {1});
+    RecordFastPairDiscoveredVersion(FastPairVersion::kVersion1);
+  } else {
+    RecordFastPairDiscoveredVersion(FastPairVersion::kVersion2);
   }
 
   notification_controller_->ShowDiscoveryNotification(
       base::ASCIIToUTF16(device_metadata->GetDetails().name()),
       device_metadata->image(),
       base::BindRepeating(&FastPairPresenter::OnDiscoveryClicked,
+                          weak_pointer_factory_.GetWeakPtr(), callback),
+      base::BindRepeating(&FastPairPresenter::OnDiscoveryLearnMoreClicked,
                           weak_pointer_factory_.GetWeakPtr(), callback),
       base::BindOnce(&FastPairPresenter::OnDiscoveryDismissed,
                      weak_pointer_factory_.GetWeakPtr(), callback));
@@ -79,6 +88,12 @@ void FastPairPresenter::OnDiscoveryDismissed(DiscoveryCallback callback,
                                              bool user_dismissed) {
   callback.Run(user_dismissed ? DiscoveryAction::kDismissedByUser
                               : DiscoveryAction::kDismissed);
+}
+
+void FastPairPresenter::OnDiscoveryLearnMoreClicked(
+    DiscoveryCallback callback) {
+  // TODO (b/207589697): Implement support for "Learn More" Buttons.
+  callback.Run(DiscoveryAction::kLearnMore);
 }
 
 void FastPairPresenter::ShowPairing(scoped_refptr<Device> device) {
@@ -98,7 +113,7 @@ void FastPairPresenter::OnPairingMetadataRetrieved(
 
   notification_controller_->ShowPairingNotification(
       base::ASCIIToUTF16(device_metadata->GetDetails().name()),
-      device_metadata->image(), base::DoNothing(), base::DoNothing());
+      device_metadata->image(), base::DoNothing());
 }
 
 void FastPairPresenter::ShowPairingFailed(scoped_refptr<Device> device,
@@ -131,9 +146,11 @@ void FastPairPresenter::OnPairingFailedMetadataRetrieved(
 void FastPairPresenter::OnNavigateToSettings(PairingFailedCallback callback) {
   if (TrayPopupUtils::CanOpenWebUISettings()) {
     Shell::Get()->system_tray_model()->client()->ShowBluetoothSettings();
+    RecordNavigateToSettingsResult(/*success=*/true);
   } else {
     QP_LOG(WARNING) << "Cannot open Bluetooth Settings since it's not possible "
                        "to opening WebUI settings";
+    RecordNavigateToSettingsResult(/*success=*/false);
   }
 
   callback.Run(PairingFailedAction::kNavigateToSettings);
@@ -183,8 +200,9 @@ void FastPairPresenter::OnAssociateAccountMetadataRetrieved(
       base::ASCIIToUTF16(email), device_metadata->image(),
       base::BindRepeating(&FastPairPresenter::OnAssociateAccountActionClicked,
                           weak_pointer_factory_.GetWeakPtr(), callback),
-      base::BindRepeating(&FastPairPresenter::OnLearnMoreClicked,
-                          weak_pointer_factory_.GetWeakPtr(), callback),
+      base::BindRepeating(
+          &FastPairPresenter::OnAssociateAccountLearnMoreClicked,
+          weak_pointer_factory_.GetWeakPtr(), callback),
       base::BindOnce(&FastPairPresenter::OnAssociateAccountDismissed,
                      weak_pointer_factory_.GetWeakPtr(), callback));
 }
@@ -194,8 +212,9 @@ void FastPairPresenter::OnAssociateAccountActionClicked(
   callback.Run(AssociateAccountAction::kAssoicateAccount);
 }
 
-void FastPairPresenter::OnLearnMoreClicked(AssociateAccountCallback callback) {
-  // TODO (crbug/1256983): Implement support for "Learn More" Button in Show
+void FastPairPresenter::OnAssociateAccountLearnMoreClicked(
+    AssociateAccountCallback callback) {
+  // TODO (b/207589697): Implement support for "Learn More" Button in Show
   // Associate Account Notification
   callback.Run(AssociateAccountAction::kLearnMore);
 }

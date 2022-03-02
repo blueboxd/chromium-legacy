@@ -186,7 +186,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
 
   tester()->SimulateTimingUpdate(timing);
   page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0, 0, 0, 0,
-                                                              0, 0, 0, {});
+                                                              0, {});
   tester()->SimulateRenderDataUpdate(render_data);
   render_data.layout_shift_delta = 1.5;
   render_data.layout_shift_delta_before_input_or_scroll = 0.0;
@@ -634,7 +634,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   NavigateAndCommit(GURL("https://www.google.com/search#q=test"));
   NavigateAndCommit(GURL(kExampleUrl));
   page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0, 0, 0, 0,
-                                                              0, 0, 0, {});
+                                                              0, {});
   tester()->SimulateRenderDataUpdate(render_data);
 
   web_contents()->WasHidden();
@@ -669,7 +669,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
 }
 
 // Disabled due to flakiness: https://crbug.com/1092018
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_NewNavigationBeforeCommit DISABLED_NewNavigationBeforeCommit
 #else
 #define MAYBE_NewNavigationBeforeCommit NewNavigationBeforeCommit

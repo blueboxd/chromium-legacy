@@ -95,27 +95,6 @@ public final class ChromePreferenceKeys {
     public static final String ATTRIBUTION_PROVIDER_LAST_BROWSER_START =
             "Chrome.Attribution.LastBrowserStart";
 
-    /** Whether Autofill Assistant is enabled */
-    public static final String AUTOFILL_ASSISTANT_ENABLED = "autofill_assistant_switch";
-    /** Whether the Autofill Assistant onboarding has been accepted. */
-    public static final String AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED =
-            "AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED";
-    /** Whether the user has seen a lite-script before or is a first-time user. */
-    public static final String AUTOFILL_ASSISTANT_FIRST_TIME_LITE_SCRIPT_USER =
-            "Chrome.AutofillAssistant.LiteScriptFirstTimeUser";
-    /** The number of times a user has explicitly canceled a lite script. */
-    public static final String AUTOFILL_ASSISTANT_NUMBER_OF_LITE_SCRIPTS_CANCELED =
-            "Chrome.AutofillAssistant.NumberOfLiteScriptsCanceled";
-    /** Whether proactive help is enabled. */
-    public static final String AUTOFILL_ASSISTANT_PROACTIVE_HELP =
-            "Chrome.AutofillAssistant.ProactiveHelp";
-    /**
-     * LEGACY preference indicating whether "do not show again" was checked in the autofill
-     * assistant onboarding
-     */
-    public static final String AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN =
-            "AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN";
-
     public static final String BACKUP_FIRST_BACKUP_DONE = "first_backup_done";
 
     public static final String BOOKMARKS_LAST_MODIFIED_FOLDER_ID = "last_bookmark_folder_id";
@@ -403,6 +382,9 @@ public final class ChromePreferenceKeys {
      */
     public static final String FIRST_RUN_FIELD_TRIAL_GROUP = "Chrome.FirstRun.FieldTrialEnabled";
 
+    public static final String FIRST_RUN_VARIATIONS_FIELD_TRIAL_GROUP =
+            "Chrome.FirstRun.VariationFieldTrialGroup";
+
     /**
      * The Feed articles visibility. This value is used as a pre-native cache and should be kept
      * consistent with {@link Pref.ARTICLES_LIST_VISIBLE}.
@@ -562,9 +544,18 @@ public final class ChromePreferenceKeys {
             "Chrome.CrashReporting.LastSessionApplicationState";
 
     public static final String LOCALE_MANAGER_AUTO_SWITCH = "LocaleManager_PREF_AUTO_SWITCH";
+    public static final String LOCALE_MANAGER_MISSING_TIMEZONES =
+            "com.android.chrome.MISSING_TIMEZONES";
+    public static final String LOCALE_MANAGER_PARTNER_PROMO_KEYWORD_SELECTED =
+            "LocaleManager_PARTNER_PROMO_SELECTED_KEYWORD";
     public static final String LOCALE_MANAGER_PROMO_SHOWN = "LocaleManager_PREF_PROMO_SHOWN";
     public static final String LOCALE_MANAGER_SEARCH_ENGINE_PROMO_SHOW_STATE =
             "com.android.chrome.SEARCH_ENGINE_PROMO_SHOWN";
+    public static final String LOCALE_MANAGER_SEARCH_WIDGET_PRESENT_FIRST_START =
+            "LocaleManager_SEARCH_WIDGET_PRESENT_FIRST_START";
+    public static final String LOCALE_MANAGER_SHOULD_REPING_RLZ_FOR_SEARCH_PROMO =
+            "LocaleManager_SHOULD_REPING_RLZ_FOR_SEARCH_PROMO_KEYWORD";
+    public static final String LOCALE_MANAGER_USER_TYPE = "LocaleManager_USR_TYPE";
     public static final String LOCALE_MANAGER_WAS_IN_SPECIAL_LOCALE =
             "LocaleManager_WAS_IN_SPECIAL_LOCALE";
 
@@ -580,6 +571,13 @@ public final class ChromePreferenceKeys {
     public static final String MULTI_INSTANCE_CLOSE_WINDOW_SKIP_CONFIRM =
             "Chrome.MultiWindow.CloseWindowSkipConfirm";
 
+    public static final String MULTI_INSTANCE_START_TIME = "Chrome.MultiInstance.StartTime";
+
+    // Start timestamp of 1-day period for measuring the max count of instances used simultaneously.
+    public static final String MULTI_INSTANCE_MAX_COUNT_TIME = "Chrome.MultiInstance.MaxCountTime";
+    // Max count of Chrome instances used in a day.
+    public static final String MULTI_INSTANCE_MAX_INSTANCE_COUNT =
+            "Chrome.MultiInstance.MaxInstanceCount";
     // Information on each instance.
     public static final KeyPrefix MULTI_INSTANCE_INCOGNITO_TAB_COUNT =
             new KeyPrefix("Chrome.MultiInstance.IncognitoTabCount.*");
@@ -772,6 +770,12 @@ public final class ChromePreferenceKeys {
      * Whether query tiles should be shown on NTP. Default value is false.
      */
     public static final String QUERY_TILES_SHOW_ON_NTP = "Chrome.Querytiles.ShowOnNTP";
+
+    /**
+     * Keys used to store result from segmentation model of showing query tiles on NTP.
+     */
+    public static final String QUERY_TILES_SHOW_SEGMENTATION_RESULT =
+            "Chrome.QueryTiles.ShowSegmentationResult";
 
     /**
      * Keys used to store user actions for behavioral targeting of showing Start surface on startup.
@@ -1044,9 +1048,6 @@ public final class ChromePreferenceKeys {
                 ASSISTANT_VOICE_CONSENT_OUTSIDE_TAPS,
                 ASSISTANT_VOICE_SEARCH_ENABLED,
                 ATTRIBUTION_PROVIDER_LAST_BROWSER_START,
-                AUTOFILL_ASSISTANT_FIRST_TIME_LITE_SCRIPT_USER,
-                AUTOFILL_ASSISTANT_NUMBER_OF_LITE_SCRIPTS_CANCELED,
-                AUTOFILL_ASSISTANT_PROACTIVE_HELP,
                 APP_LAUNCH_LAST_KNOWN_ACTIVE_TAB_STATE,
                 APP_LAUNCH_SEARCH_ENGINE_HAD_LOGO,
                 APPLICATION_OVERRIDE_LANGUAGE,
@@ -1075,6 +1076,7 @@ public final class ChromePreferenceKeys {
                 EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,
                 FEED_ARTICLES_LIST_VISIBLE,
                 FIRST_RUN_FIELD_TRIAL_GROUP,
+                FIRST_RUN_VARIATIONS_FIELD_TRIAL_GROUP,
                 FIRST_RUN_SKIPPED_BY_POLICY,
                 FLAGS_CACHED.pattern(),
                 FLAGS_CRASH_STREAK_BEFORE_CACHE,
@@ -1093,7 +1095,10 @@ public final class ChromePreferenceKeys {
                 MULTI_INSTANCE_CLOSE_WINDOW_SKIP_CONFIRM,
                 MULTI_INSTANCE_IS_INCOGNITO_SELECTED.pattern(),
                 MULTI_INSTANCE_INCOGNITO_TAB_COUNT.pattern(),
+                MULTI_INSTANCE_MAX_COUNT_TIME,
+                MULTI_INSTANCE_MAX_INSTANCE_COUNT,
                 MULTI_INSTANCE_LAST_ACCESSED_TIME.pattern(),
+                MULTI_INSTANCE_START_TIME,
                 MULTI_INSTANCE_TAB_COUNT.pattern(),
                 MULTI_INSTANCE_TASK_MAP.pattern(),
                 MULTI_INSTANCE_TITLE.pattern(),
@@ -1129,6 +1134,7 @@ public final class ChromePreferenceKeys {
                 QUERY_TILES_NUM_RECENT_MV_TILE_CLICKS,
                 QUERY_TILES_NUM_RECENT_QUERY_TILE_CLICKS,
                 QUERY_TILES_SHOW_ON_NTP,
+                QUERY_TILES_SHOW_SEGMENTATION_RESULT,
                 REGULAR_TAB_COUNT,
                 SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP,
                 SETTINGS_SAFETY_CHECK_RUN_COUNTER,

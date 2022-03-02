@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">కుక్కీలను అనుమతించు</translation>
 <translation id="2228071138934252756">మీ కెమెరాను యాక్సెస్ చేయడానికి <ph name="APP_NAME" />ని అనుమతించడానికి, <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో కూడా కెమెరాను ఆన్ చేయండి.</translation>
 <translation id="2241634353105152135">ఒకసారి మాత్రమే</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" />‌ను తీసివేయండి</translation>
 <translation id="2289270750774289114">ఏదైనా ఒక సైట్ సమీపంలోని బ్లూటూత్ పరికరాలను కనుగొనాలనుకున్నప్పుడు అనుమతి అడుగుతుంది (సిఫార్సు చేయడమైనది)</translation>
 <translation id="2315043854645842844">క్లయింట్ తరపు స‌ర్టిఫికెట్‌ ఎంపికకు ఆపరేటింగ్ సిస్టమ్ మద్దతు లేదు.</translation>
 <translation id="2359808026110333948">కొనసాగించు</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">సమాచారాన్ని చూపు</translation>
 <translation id="3123473560110926937">కొన్ని సైట్‌లలో బ్లాక్ చేయబడింది</translation>
 <translation id="3198916472715691905">నిల్వ చేసిన డేటా <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3203366800380907218">వెబ్ నుండి</translation>
 <translation id="321187648315454507">మీకు నోటిఫికేషన్‌లను పంపడానికి <ph name="APP_NAME" />ని అనుమతించేందుకు, <ph name="BEGIN_LINK" />Android సెట్టింగ్‌ల<ph name="END_LINK" />లో కూడా నోటిఫికేషన్‌లను ఆన్ చేయండి.</translation>
 <translation id="3227137524299004712">మైక్రోఫోన్</translation>
 <translation id="3277252321222022663">సెన్సార్‌లను యాక్సెస్ చేయడానికి సైట్‌లను అనుమతిస్తుంది (సిఫార్సు చేస్తున్నాము)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">బ్లాక్ చేయబడింది</translation>
 <translation id="5689516760719285838">లొకేషన్</translation>
 <translation id="5690795753582697420">Android సెట్టింగ్‌లలో కెమెరా ఆఫ్ చేయబడింది</translation>
-<translation id="5710871682236653961">మీరు NFC పరికరాలను నొక్కినప్పుడు, సైట్‌లు సమాచారాన్ని పంపడానికి, అలాగే స్వీకరించడానికి ముందు అనుమతి కోసం అడుగుతాయి (సిఫార్సు చేయబడింది)</translation>
 <translation id="5719847187258001597">ఇది మీ హోమ్ స్క్రీన్‌లో <ph name="ORIGIN" /> లేదా దాని యాప్ ద్వారా స్టోర్ చేయబడిన మొత్తం డేటా, కుక్కీలను క్లియర్ చేస్తుంది.</translation>
 <translation id="5771720122942595109">'<ph name="PERMISSION_1" />'ను బ్లాక్ చేశారు</translation>
 <translation id="5804241973901381774">అనుమతులు</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">ప్రస్తుత శోధన ఇంజిన్‌కు అనుమతించబడింది</translation>
 <translation id="7053983685419859001">నిరోధించు</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ఎంచుకోబడింది}other{# ఎంచుకోబడ్డాయి}}</translation>
-<translation id="7070090581017165256">ఈ సైట్ గురించి</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ఎంచుకోబడ్డాయి.  ఎంపికలు స్క్రీన్ పైభాగానికి సమీపంలో అందుబాటులో ఉన్నాయి</translation>
 <translation id="7141896414559753902">మళ్లింపులు, పాప్-అప్‌లను చూపనివ్వకుండా సైట్‌లను బ్లాక్ చేస్తుంది (సిఫార్సు చేయడమైనది)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">ఒక సైట్ మీ మైక్రోఫోన్‌ను ఉపయోగిస్తోంది</translation>
 <translation id="7561196759112975576">ఎల్లప్పుడూ</translation>
-<translation id="7572498721684305250">మీరు NFC పరికరాలను నొక్కినప్పుడు, సైట్‌లు సమాచారాన్ని పంపడాన్ని, అలాగే స్వీకరించడాన్ని బ్లాక్ చేస్తుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="757524316907819857">రక్షిత కంటెంట్‌ను ప్లే చేయకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="7649070708921625228">సహాయం</translation>
 <translation id="7658239707568436148">రద్దు చేయండి</translation>

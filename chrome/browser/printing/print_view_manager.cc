@@ -25,8 +25,8 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "printing/buildflags/buildflags.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/policy/dlp/dlp_content_manager.h"
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
 #endif
 
 using content::BrowserThread;
@@ -170,7 +170,7 @@ void PrintViewManager::PrintPreviewDone() {
     return;
 
 // Send OnPrintPreviewDialogClosed message for 'afterprint' event.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On Windows, we always send OnPrintPreviewDialogClosed. It's ok to dispatch
   // 'afterprint' at this timing because system dialog printing on
   // Windows doesn't need the original frame.
@@ -213,7 +213,7 @@ void PrintViewManager::PrintPreviewDone() {
 
 void PrintViewManager::RejectPrintPreviewRequestIfRestricted(
     base::OnceCallback<void(bool should_proceed)> callback) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   // Don't print DLP restricted content on Chrome OS.
   policy::DlpContentManager::Get()->CheckPrintingRestriction(
       web_contents(), std::move(callback));

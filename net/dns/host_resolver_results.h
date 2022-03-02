@@ -6,6 +6,7 @@
 #define NET_DNS_HOST_RESOLVER_RESULTS_H_
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "net/base/connection_endpoint_metadata.h"
@@ -26,16 +27,16 @@ struct NET_EXPORT_PRIVATE HostResolverEndpointResult {
   HostResolverEndpointResult(HostResolverEndpointResult&&);
   HostResolverEndpointResult& operator=(HostResolverEndpointResult&&) = default;
 
+  bool operator==(const HostResolverEndpointResult& other) const {
+    return std::tie(ip_endpoints, metadata) ==
+           std::tie(other.ip_endpoints, other.metadata);
+  }
+  bool operator!=(const HostResolverEndpointResult& other) const {
+    return !(*this == other);
+  }
+
   // IP endpoints at which to connect to the service.
   std::vector<net::IPEndPoint> ip_endpoints;
-
-  // The final name in the alias chain (DNS CNAME or HTTPS) at which the
-  // IPv4 addresses were found.
-  std::string ipv4_alias_name;
-
-  // The final name in the alias chain (DNS CNAME or HTTPS) at which the
-  // IPv6 addresses were found.
-  std::string ipv6_alias_name;
 
   // Additional metadata for creating connections to the endpoint. Typically
   // sourced from DNS HTTPS records.

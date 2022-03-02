@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -63,13 +64,13 @@
 #include "chrome/browser/ui/views/profiles/profile_picker_dice_sign_in_toolbar.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/browser/shell_integration_win.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #endif
 
@@ -258,7 +259,7 @@ bool ProfilePicker::IsActive() {
   if (!IsOpen())
     return false;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   return g_profile_picker_view->GetWidget()->IsVisible();
 #else
   return g_profile_picker_view->GetWidget()->IsActive();
@@ -440,6 +441,7 @@ void ProfilePickerView::ShowScreenInPickerContents(
 }
 
 void ProfilePickerView::Clear() {
+  TRACE_EVENT1("browser,startup", "ProfilePickerView::Clear", "state", state_);
   if (state_ == kClosing)
     return;
 
@@ -530,6 +532,8 @@ bool ProfilePickerView::ShouldReopen(
 
 void ProfilePickerView::Display(ProfilePicker::EntryPoint entry_point) {
   DCHECK_NE(state_, kClosing);
+  TRACE_EVENT2("browser,startup", "ProfilePickerView::Display", "entry_point",
+               entry_point, "state", state_);
   // Record creation metrics.
   base::UmaHistogramEnumeration("ProfilePicker.Shown", entry_point);
   if (entry_point == ProfilePicker::EntryPoint::kOnStartup) {
@@ -564,6 +568,10 @@ void ProfilePickerView::Display(ProfilePicker::EntryPoint entry_point) {
 
 void ProfilePickerView::OnPickerProfileCreated(Profile* picker_profile,
                                                Profile::CreateStatus status) {
+  TRACE_EVENT2("browser,startup", "ProfilePickerView::OnPickerProfileCreated",
+               "profile_path",
+               (picker_profile ? picker_profile->GetPath().AsUTF8Unsafe() : ""),
+               "status", status);
   DCHECK_NE(status, Profile::CREATE_STATUS_LOCAL_FAIL);
   if (status != Profile::CREATE_STATUS_INITIALIZED)
     return;
@@ -573,6 +581,9 @@ void ProfilePickerView::OnPickerProfileCreated(Profile* picker_profile,
 
 void ProfilePickerView::Init(Profile* picker_profile) {
   DCHECK_EQ(state_, kInitializing);
+  TRACE_EVENT1(
+      "browser,startup", "ProfilePickerView::Init", "profile_path",
+      (picker_profile ? picker_profile->GetPath().AsUTF8Unsafe() : ""));
   contents_ = content::WebContents::Create(
       content::WebContents::CreateParams(picker_profile));
   contents_->SetDelegate(this);
@@ -580,7 +591,7 @@ void ProfilePickerView::Init(Profile* picker_profile) {
   // The widget is owned by the native widget.
   new ProfilePickerWidget(this);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Set the app id for the user manager to the app id of its parent.
   ui::win::SetAppIdForWindow(
       shell_integration::win::GetAppUserModelIdForBrowser(
@@ -715,6 +726,7 @@ void ProfilePickerView::CancelSignedInFlow() {
 }
 
 void ProfilePickerView::WindowClosing() {
+  views::WidgetDelegateView::WindowClosing();
   // Now that the window is closed, we can allow a new one to be opened.
   // (WindowClosing comes in asynchronously from the call to Close() and we
   // may have already opened a new instance).
@@ -891,7 +903,7 @@ void ProfilePickerView::ConfigureAccelerators() {
     AddAccelerator(accelerator);
   }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Check Mac-specific accelerators. Note: Chrome does not support dynamic or
   // user-configured accelerators on Mac. Default static accelerators are used
   // instead.
@@ -904,7 +916,7 @@ void ProfilePickerView::ConfigureAccelerators() {
       AddAccelerator(accelerator);
     }
   }
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 }
 
 void ProfilePickerView::ShowDialog(content::BrowserContext* browser_context,

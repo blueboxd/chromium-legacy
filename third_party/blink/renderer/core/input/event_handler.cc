@@ -103,7 +103,7 @@
 #include "third_party/blink/renderer/platform/cursors.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -116,6 +116,7 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -485,7 +486,7 @@ bool EventHandler::ShouldShowResizeForNode(const Node* node,
   if (LayoutObject* layout_object = node->GetLayoutObject()) {
     PaintLayer* layer = layout_object->EnclosingLayer();
     if (layer->GetScrollableArea() &&
-        layer->GetScrollableArea()->IsPointInResizeControl(
+        layer->GetScrollableArea()->IsAbsolutePointInResizeControl(
             ToRoundedPoint(location.Point()), kResizerForPointer)) {
       return true;
     }
@@ -872,7 +873,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     gfx::Point p = view->ConvertFromRootFrame(
         gfx::ToFlooredPoint(mouse_event.PositionInRootFrame()));
     if (layer && layer->GetScrollableArea() &&
-        layer->GetScrollableArea()->IsPointInResizeControl(
+        layer->GetScrollableArea()->IsAbsolutePointInResizeControl(
             p, kResizerForPointer)) {
       scroll_manager_->SetResizeScrollableArea(layer, p);
       return WebInputEventResult::kHandledSystem;
@@ -1662,8 +1663,8 @@ bool EventHandler::GestureCorrespondsToAdjustedTouch(
   // Check if the adjusted point is in the gesture event tap rect.
   // If not, should not use this touch point in following events.
   if (should_use_touch_event_adjusted_point_) {
-    FloatSize size(event.TapAreaInRootFrame());
-    FloatRect tap_rect(
+    gfx::SizeF size = event.TapAreaInRootFrame();
+    gfx::RectF tap_rect(
         event.PositionInRootFrame() -
             gfx::Vector2dF(size.width() * 0.5, size.height() * 0.5),
         size);

@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Tillat informasjonskapsler</translation>
 <translation id="2228071138934252756">For å gi <ph name="APP_NAME" /> tilgang til kameraet må du også slå på kameraet i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">Bare én gang</translation>
+<translation id="2253414712144136228">Fjern <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">Spør når nettsteder vil oppdage Bluetooth-enheter i nærheten (anbefales)</translation>
 <translation id="2315043854645842844">Operativsystemet har ikke støtte for sertifikatvalg på klientsiden.</translation>
 <translation id="2359808026110333948">Fortsett</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Vis informasjon</translation>
 <translation id="3123473560110926937">Blokkert på enkelte nettsteder</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> lagrede data</translation>
+<translation id="3203366800380907218">Fra nettet</translation>
 <translation id="321187648315454507">For at <ph name="APP_NAME" /> skal kunne sende deg varsler, må du også slå på varsler i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3277252321222022663">Gi nettsteder tilgang til sensorer (anbefalt)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">Blokkert</translation>
 <translation id="5689516760719285838">Sted</translation>
 <translation id="5690795753582697420">Kameraet er slått av i Android-innstillingene</translation>
-<translation id="5710871682236653961">Spør før nettsteder får tillatelse til å sende og motta info når du berører NFC-enheter (anbefales)</translation>
 <translation id="5719847187258001597">Dette sletter alle data og informasjonskapsler som er lagret av <ph name="ORIGIN" /> eller den tilhørende appen på startskjermen.</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> er blokkert</translation>
 <translation id="5804241973901381774">Tillatelser</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">tillatt for den aktive søkemotoren</translation>
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 er valgt}other{# er valgt}}</translation>
-<translation id="7070090581017165256">Om dette nettstedet</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> er valgt. Du finner alternativer oppe på skjermen</translation>
 <translation id="7141896414559753902">Blokkér nettsteder fra å vise forgrunnsvinduer og viderekoblinger (anbefales)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Et nettsted bruker mikrofonen din</translation>
 <translation id="7561196759112975576">Alltid</translation>
-<translation id="7572498721684305250">Blokkér nettsteder fra å sende og motta info når du berører NFC-enheter</translation>
 <translation id="757524316907819857">Blokkér nettsteder fra å spille av beskyttet innhold</translation>
 <translation id="7649070708921625228">Hjelp</translation>
 <translation id="7658239707568436148">Avbryt</translation>

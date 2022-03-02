@@ -55,6 +55,13 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
     virtual bool IsPointWithinBottomDragBuffer(
         const gfx::Point& point,
         int page_flip_zone_size) const = 0;
+
+    // Triggered when cardified state begins before animations start.
+    virtual void OnCardifiedStateStarted() {}
+
+    // Triggered when cardified state ends and the bounds animations for leaving
+    // cardified state have completed.
+    virtual void OnCardifiedStateEnded() {}
   };
 
   PagedAppsGridView(ContentsView* contents_view,
@@ -115,7 +122,6 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   void HandleScrollFromParentView(const gfx::Vector2d& offset,
                                   ui::EventType type) override;
   void SetFocusAfterEndDrag() override;
-  void CalculateIdealBoundsForNonFolder() override;
   void RecordAppMovingTypeMetrics(AppListAppMovingType type) override;
   int GetMaxRowsInPage(int page) const override;
   gfx::Vector2d GetGridCenteringOffset(int page) const override;
@@ -124,6 +130,7 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   const gfx::Vector2d CalculateTransitionOffset(
       int page_of_view) const override;
   void EnsureViewVisible(const GridIndex& index) override;
+  VisibleItemIndexRange GetVisibleItemIndexRange() const override;
 
   // PaginationModelObserver:
   void TotalPagesChanged(int previous_page_count, int new_page_count) override;
@@ -151,10 +158,22 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // Gets the PaginationModel used for the grid view.
   PaginationModel* pagination_model() { return &pagination_model_; }
 
-  void set_first_page_offset(int offset) { first_page_offset_ = offset; }
+  // Sets `first_page_offset_` and `shown_under_recent_apps_`, which are used to
+  // calculate the first apps grid page layout (number of rows and the padding
+  // between them).
+  // `offset` is reserved space for continue section in the apps
+  // container (which is shown above the grid on the first app list page with
+  // productivity launcher).
+  // `shown_under_recent_apps` indicates whether the
+  // continue section contains list of recent apps. If this is the case, the
+  // apps grid will add additional padding above the apps grid (i.e. treat the
+  // recent apps row as additional row of apps).
+  // Returns whether the first page configuration changed.
+  bool ConfigureFirstPagePadding(int offset, bool shown_under_recent_apps);
 
   // Calculates the maximum number of rows on the first page. Relies on tile
-  // size, `first_page_offset_`, and the bounds of the apps grid.
+  // size, `first_page_offset_`, `shown_under_recent_apps_` and the bounds of
+  // the apps grid.
   int CalculateFirstPageMaxRows(int available_height, int preferred_rows);
 
   // Calculates the maximum number of rows. Relies on tile size and the bounds
@@ -164,10 +183,18 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   int GetFirstPageRowsForTesting() const { return max_rows_on_first_page_; }
   int GetRowsForTesting() const { return max_rows_; }
 
+  void set_margin_for_gradient_mask(int margin) {
+    margin_for_gradient_mask_ = margin;
+  }
+
  private:
   friend class test::AppsGridViewTest;
 
-  class FadeoutLayerDelegate;
+  // Gets the leading padding for app list item grid on the first app list page.
+  // Includes the space reserved for the continue seaction of the app list UI,
+  // and additional vertical tile padding before the first row of apps when
+  // needed (i.e. if the grid is shown under a row of recent apps).
+  int GetTotalTopPaddingOnFirstPage() const;
 
   // Returns the size reserved for a single apps grid page. May not match the
   // tile grid size when the first page selected, as the first page may have
@@ -180,11 +207,6 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // Indicates whether the drag event (from the gesture or mouse) should be
   // handled by PagedAppsGridView.
   bool ShouldHandleDragEvent(const ui::LocatedEvent& event);
-
-  // Creates a layer mask for gradient alpha when the feature is enabled. The
-  // gradient appears at the top and bottom of the apps grid to create a
-  // "fade out" effect when dragging the whole page.
-  void MaybeCreateGradientMask();
 
   // Returns true if the page is the right target to flip to.
   bool IsValidPageFlipTarget(int page) const;
@@ -265,10 +287,6 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // between-item drags that move the entire grid, not for app icon drags.
   gfx::PointF last_mouse_drag_point_;
 
-  // Implements a "fade out" gradient at the top and bottom of the grid. Used
-  // during page flip transitions and for cardified drags.
-  std::unique_ptr<FadeoutLayerDelegate> fadeout_layer_delegate_;
-
   // Records smoothness of pagination animation.
   absl::optional<ui::ThroughputTracker> pagination_metrics_tracker_;
 
@@ -297,8 +315,21 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // with the recent apps and continue section.
   int first_page_offset_ = 0;
 
+  // Whether the apps grid is shown underneath recent apps container. If this is
+  // the case, layout will add additional vertical tile padding before the first
+  // apps grid row on the first page.
+  bool shown_under_recent_apps_ = false;
+
   // Vertical tile spacing between the tile views on the first page.
   int first_page_vertical_tile_padding_ = 0;
+
+  // Cardified animation observers.
+  std::vector<std::unique_ptr<ui::ImplicitAnimationObserver>>
+      animation_observers_;
+
+  // A margin added to the height of the clip rect used for clipping the
+  // cardified state's background cards.
+  int margin_for_gradient_mask_ = 0;
 
   base::WeakPtrFactory<PagedAppsGridView> weak_ptr_factory_{this};
 };

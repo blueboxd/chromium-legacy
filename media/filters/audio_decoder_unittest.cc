@@ -34,7 +34,7 @@
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/build_info.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/filters/android/media_codec_audio_decoder.h"
@@ -58,7 +58,7 @@ const size_t kDecodeRuns = 3;
 
 enum TestAudioDecoderType {
   FFMPEG,
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   MEDIA_CODEC,
 #endif
 };
@@ -124,13 +124,13 @@ class AudioDecoderTest
         params_(std::get<1>(GetParam())),
         pending_decode_(false),
         pending_reset_(false),
-        last_decode_status_(DecodeStatus::DECODE_ERROR) {
+        last_decode_status_(DecoderStatus::Codes::kFailed) {
     switch (decoder_type_) {
       case FFMPEG:
         decoder_ = std::make_unique<FFmpegAudioDecoder>(
             task_environment_.GetMainThreadTaskRunner(), &media_log_);
         break;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       case MEDIA_CODEC:
         decoder_ = std::make_unique<MediaCodecAudioDecoder>(
             task_environment_.GetMainThreadTaskRunner());
@@ -151,7 +151,7 @@ class AudioDecoderTest
   void DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
     ASSERT_FALSE(pending_decode_);
     pending_decode_ = true;
-    last_decode_status_ = DecodeStatus::DECODE_ERROR;
+    last_decode_status_ = DecoderStatus::Codes::kFailed;
 
     base::RunLoop run_loop;
     decoder_->Decode(
@@ -191,7 +191,7 @@ class AudioDecoderTest
         reader_->codec_context_for_testing(), EncryptionScheme::kUnencrypted,
         &config));
 
-#if defined(OS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
     // MEDIA_CODEC type requires config->extra_data() for AAC codec. For ADTS
     // streams we need to extract it with a separate procedure.
     if (decoder_type_ == MEDIA_CODEC && params_.codec == AudioCodec::kAAC &&
@@ -227,7 +227,7 @@ class AudioDecoderTest
                                    bool success) {
     decoder_->Initialize(config, nullptr,
                          base::BindOnce(
-                             [](bool success, Status status) {
+                             [](bool success, DecoderStatus status) {
                                EXPECT_EQ(status.is_ok(), success);
                              },
                              success),
@@ -280,7 +280,7 @@ class AudioDecoderTest
     decoded_audio_.push_back(std::move(buffer));
   }
 
-  void DecodeFinished(base::OnceClosure quit_closure, Status status) {
+  void DecodeFinished(base::OnceClosure quit_closure, DecoderStatus status) {
     EXPECT_TRUE(pending_decode_);
     EXPECT_FALSE(pending_reset_);
     pending_decode_ = false;
@@ -353,7 +353,9 @@ class AudioDecoderTest
   const scoped_refptr<AudioBuffer>& decoded_audio(size_t i) {
     return decoded_audio_[i];
   }
-  const Status& last_decode_status() const { return last_decode_status_; }
+  const DecoderStatus& last_decode_status() const {
+    return last_decode_status_;
+  }
 
  private:
   const TestAudioDecoderType decoder_type_;
@@ -373,7 +375,7 @@ class AudioDecoderTest
   std::unique_ptr<AudioDecoder> decoder_;
   bool pending_decode_;
   bool pending_reset_;
-  Status last_decode_status_;
+  DecoderStatus last_decode_status_ = DecoderStatus::Codes::kOk;
 
   base::circular_deque<scoped_refptr<AudioBuffer>> decoded_audio_;
   base::TimeDelta start_timestamp_;
@@ -391,7 +393,7 @@ const TestParams kReinitializeTestParams = {
     AudioCodec::kOpus,    "bear-opus.ogg", kBearOpusExpectations, 24, 48000,
     CHANNEL_LAYOUT_STEREO};
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const DecodedBufferExpectations kSfxAdtsMcExpectations[] = {
     {0, 23219, "-1.80,-1.49,-0.23,1.11,1.54,-0.11,"},
@@ -417,7 +419,7 @@ const TestParams kMediaCodecTestParams[] = {
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 const DecodedBufferExpectations kSfxMp3Expectations[] = {
     {0, 1065, "2.81,3.99,4.53,4.10,3.08,2.46,"},
@@ -605,11 +607,11 @@ INSTANTIATE_TEST_SUITE_P(FFmpeg,
                          AudioDecoderTest,
                          Combine(Values(FFMPEG), ValuesIn(kFFmpegTestParams)));
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 INSTANTIATE_TEST_SUITE_P(MediaCodec,
                          AudioDecoderTest,
                          Combine(Values(MEDIA_CODEC),
                                  ValuesIn(kMediaCodecTestParams)));
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace media

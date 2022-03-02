@@ -10,6 +10,7 @@
 #include "base/check_op.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -28,7 +29,6 @@
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/window_open_disposition.h"
@@ -50,7 +50,7 @@ Profile* GetProfileForSystemWebAppLaunch(Profile* profile) {
   if (profile->IsSystemProfile())
     return nullptr;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::ProfileHelper::IsSigninProfile(profile))
+  if (ash::ProfileHelper::IsSigninProfile(profile))
     return nullptr;
 #endif
 
@@ -196,7 +196,7 @@ Browser* LaunchSystemWebAppImpl(Profile* profile,
 
   auto* system_app = provider->system_web_app_manager().GetSystemApp(app_type);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   DCHECK(url.DeprecatedGetOriginAsURL() == provider->registrar()
                                                .GetAppLaunchUrl(params.app_id)
                                                .DeprecatedGetOriginAsURL() ||

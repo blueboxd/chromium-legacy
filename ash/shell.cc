@@ -111,6 +111,7 @@
 #include "ash/system/brightness/brightness_controller_chromeos.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/caps_lock_notification_controller.h"
+#include "ash/system/firmware_update/firmware_update_notification_controller.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
@@ -139,6 +140,7 @@
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/hps_notify_controller.h"
+#include "ash/system/usb_peripheral/usb_peripheral_notification_controller.h"
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/tray_action/tray_action.h"
@@ -796,8 +798,6 @@ Shell::~Shell() {
   ScreenAsh::CreateScreenForShutdown();
   display_configuration_controller_.reset();
 
-  hps_notify_controller_.reset();
-
   // These members access Shell in their destructors.
   wallpaper_controller_.reset();
   accessibility_controller_.reset();
@@ -896,7 +896,11 @@ Shell::~Shell() {
   // before it.
   detachable_base_handler_.reset();
 
+  firmware_update_notification_controller_.reset();
+
   pcie_peripheral_notification_controller_.reset();
+
+  usb_peripheral_notification_controller_.reset();
 
   message_center_ash_impl_.reset();
 
@@ -914,6 +918,9 @@ Shell::~Shell() {
   ash_color_provider_.reset();
 
   shell_delegate_.reset();
+
+  // Is observed by `MessageCenterController`, so must be destructed after it.
+  hps_notify_controller_.reset();
 
   chromeos::UsbguardClient::Shutdown();
 
@@ -941,6 +948,10 @@ void Shell::Init(
   chromeos::InitializeDBusClient<chromeos::UsbguardClient>(dbus_bus.get());
 
   local_state_ = local_state;
+
+  // Is observed by `MessageCenterController`, so must be constructed before it.
+  if (features::IsSnoopingProtectionEnabled())
+    hps_notify_controller_ = std::make_unique<HpsNotifyController>();
 
   // This creates the MessageCenter object which is used by some other objects
   // initialized here, so it needs to come early.
@@ -972,13 +983,19 @@ void Shell::Init(
   media_notification_provider_ =
       std::make_unique<MediaNotificationProviderImpl>(
           shell_delegate_->GetMediaSessionService());
-  if (features::IsSnoopingProtectionEnabled())
-    hps_notify_controller_ = std::make_unique<HpsNotifyController>();
 
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
+  firmware_update_notification_controller_ =
+      std::make_unique<FirmwareUpdateNotificationController>(
+          message_center::MessageCenter::Get());
+
   pcie_peripheral_notification_controller_ =
       std::make_unique<PciePeripheralNotificationController>(
+          message_center::MessageCenter::Get());
+
+  usb_peripheral_notification_controller_ =
+      std::make_unique<UsbPeripheralNotificationController>(
           message_center::MessageCenter::Get());
 
   accessibility_focus_ring_controller_ =

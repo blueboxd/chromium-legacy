@@ -319,8 +319,7 @@ GURL URLRequestJob::ComputeReferrerForPolicy(
   if (stripped_referrer.spec().size() > 4096)
     should_strip_to_origin = true;
 
-  bool same_origin = url::Origin::Create(original_referrer)
-                         .IsSameOriginWith(url::Origin::Create(destination));
+  bool same_origin = url::IsSameOriginWith(original_referrer, destination);
 
   if (same_origin_out_for_metrics)
     *same_origin_out_for_metrics = same_origin;
@@ -404,13 +403,6 @@ void URLRequestJob::NotifySSLCertificateError(int net_error,
                                               const SSLInfo& ssl_info,
                                               bool fatal) {
   request_->NotifySSLCertificateError(net_error, ssl_info, fatal);
-}
-
-void URLRequestJob::AnnotateAndMoveUserBlockedCookies(
-    CookieAccessResultList& maybe_included_cookies,
-    CookieAccessResultList& excluded_cookies) const {
-  request_->AnnotateAndMoveUserBlockedCookies(maybe_included_cookies,
-                                              excluded_cookies);
 }
 
 bool URLRequestJob::CanSetCookie(const net::CanonicalCookie& cookie,

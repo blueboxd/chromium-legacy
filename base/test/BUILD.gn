@@ -88,6 +88,7 @@ static_library("test_support") {
     "perf_time_logger.h",
     "power_monitor_test.cc",
     "power_monitor_test.h",
+    "repeating_test_future.h",
     "scoped_command_line.cc",
     "scoped_command_line.h",
     "scoped_feature_list.cc",
@@ -117,6 +118,7 @@ static_library("test_support") {
     "test_file_util.cc",
     "test_file_util.h",
     "test_future.h",
+    "test_future_internal.h",
     "test_io_thread.cc",
     "test_io_thread.h",
     "test_message_loop.cc",
@@ -161,7 +163,6 @@ static_library("test_support") {
   deps = [
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
-    "//build:os_buildflags",
     "//third_party/icu:icuuc",
     "//third_party/libxml:libxml_utils",
     "//third_party/libxml:xml_reader",

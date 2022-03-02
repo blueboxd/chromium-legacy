@@ -315,8 +315,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
                   content::WebContents** newtab_result);
 
   // Simulates a page navigating itself to an URL and waits for the
-  // navigation.
-  void NavigateInRenderer(content::WebContents* contents, const GURL& url);
+  // navigation. Returns true if the navigation succeeds.
+  [[nodiscard]] bool NavigateInRenderer(content::WebContents* contents,
+                                        const GURL& url);
 
   // Looks for an ExtensionHost whose URL has the given path component
   // (including leading slash).  Also verifies that the expected number of hosts
@@ -408,7 +409,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // Disable external install UI.
   FeatureSwitch::ScopedOverride override_prompt_for_external_extensions_;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Use mock shortcut directories to ensure app shortcuts are cleaned up.
   base::ScopedPathOverride user_desktop_override_;
   base::ScopedPathOverride common_desktop_override_;

@@ -17,7 +17,7 @@
 #include "components/viz/test/buildflags.h"
 #include "components/viz/test/paths.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 
 namespace cc {
 namespace {
@@ -441,8 +441,10 @@ TEST_P(LayerTreeHostReadbackPixelTest, MultipleReadbacksOnLayer) {
 ReadbackTestConfig const kTestConfigs[] = {
     ReadbackTestConfig{viz::RendererType::kSoftware, TestReadBackType::kBitmap},
 #if BUILDFLAG(ENABLE_GL_BACKEND_TESTS)
+#if BUILDFLAG(ENABLE_GL_RENDERER_TESTS)
     ReadbackTestConfig{viz::RendererType::kGL, TestReadBackType::kTexture},
     ReadbackTestConfig{viz::RendererType::kGL, TestReadBackType::kBitmap},
+#endif  // BUILDFLAG(ENABLE_GL_RENDERER_TESTS)
     ReadbackTestConfig{viz::RendererType::kSkiaGL, TestReadBackType::kTexture},
     ReadbackTestConfig{viz::RendererType::kSkiaGL, TestReadBackType::kBitmap},
 #endif  // BUILDFLAG(ENABLE_GL_BACKEND_TESTS)

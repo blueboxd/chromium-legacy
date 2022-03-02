@@ -68,7 +68,6 @@ class SyncEngine : public ModelTypeConfigurer {
     bool enable_local_sync_backend = false;
     base::FilePath local_sync_backend_folder;
     std::unique_ptr<EngineComponentsFactory> engine_components_factory;
-    std::string encryption_bootstrap_token;
   };
 
   SyncEngine();

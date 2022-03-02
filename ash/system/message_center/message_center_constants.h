@@ -30,19 +30,19 @@ constexpr int kMessageListNotificationSpacing = 2;
 constexpr int kNotificationBarVerticalPadding = 8;
 constexpr int kNotificationBarHorizontalPadding = 10;
 
+// Horizontal spacing of the pill buttons inside notification.
+constexpr int kNotificationPillButtonHorizontalSpacing = 12;
+
 // Constants for `ash_notification_view`.
 
 // The width of notification that displayed inside the message center.
 constexpr int kNotificationInMessageCenterWidth = 344;
 
-constexpr gfx::Insets kNotificationExpandButtonInsets(4, 4);
-constexpr int kNotificationExpandButtonChildSpacing = 4;
+constexpr gfx::Insets kNotificationExpandButtonImageInsets(4, 4);
+constexpr gfx::Insets kNotificationExpandButtonLabelInsets(0, 8, 0, 0);
 constexpr int kNotificationExpandButtonCornerRadius = 12;
 constexpr int kNotificationExpandButtonChevronIconSize = 16;
 constexpr int kNotificationExpandButtonLabelFontSize = 12;
-constexpr gfx::Size kNotificationExpandButtonLabelSize(8, 16);
-constexpr gfx::Size kNotificationExpandButtonSize(24, 24);
-constexpr gfx::Size kNotificationExpandButtonWithLabelSize(40, 24);
 
 constexpr gfx::Insets kAppIconExpandButtonExpandedPadding(2, 0, 0, 0);
 constexpr gfx::Insets kAppIconExpandButtonCollapsedPadding(12, 0, 0, 0);
@@ -68,6 +68,12 @@ constexpr int kActionsRowFadeInAnimationDurationMs = 100;
 constexpr int kActionButtonsFadeOutAnimationDurationMs = 100;
 constexpr int kInlineReplyFadeInAnimationDurationMs = 100;
 constexpr int kInlineReplyFadeOutAnimationDurationMs = 50;
+constexpr int kLargeImageFadeInAnimationDelayMs = 50;
+constexpr int kLargeImageFadeInAnimationDurationMs = 50;
+constexpr int kLargeImageFadeOutAnimationDelayMs = 50;
+constexpr int kLargeImageFadeOutAnimationDurationMs = 100;
+constexpr int kLargeImageScaleAndTranslateDurationMs = 250;
+constexpr int kLargeImageScaleDownDurationMs = 150;
 
 constexpr int kCollapsedSummaryViewAnimationDurationMs = 50;
 constexpr int kChildMainViewFadeInAnimationDurationMs = 100;
@@ -77,6 +83,11 @@ constexpr int kExpandButtonFadeInLabelDurationMs = 50;
 constexpr int kExpandButtonFadeOutLabelDurationMs = 50;
 constexpr int kExpandButtonShowLabelBoundsChangeDurationMs = 200;
 constexpr int kExpandButtonHideLabelBoundsChangeDurationMs = 250;
+
+// Animation durations for toggle inline settings in AshNotificationView.
+constexpr int kToggleInlineSettingsFadeInDelayMs = 50;
+constexpr int kToggleInlineSettingsFadeInDurationMs = 100;
+constexpr int kToggleInlineSettingsFadeOutDurationMs = 50;
 
 // Animation durations for expand/collapse of MessageCenterView.
 constexpr int kLargeImageExpandAndCollapseAnimationDuration = 300;

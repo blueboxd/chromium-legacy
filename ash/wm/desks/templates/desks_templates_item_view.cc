@@ -14,27 +14,30 @@
 #include "ash/style/close_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
-#include "ash/wm/desks/desk_name_view.h"
-#include "ash/wm/desks/label_textfield.h"
+#include "ash/wm/desks/desks_textfield.h"
 #include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
 #include "ash/wm/desks/templates/desks_templates_icon_container.h"
 #include "ash/wm/desks/templates/desks_templates_name_view.h"
 #include "ash/wm/desks/templates/desks_templates_presenter.h"
+#include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_session.h"
-#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout_view.h"
-#include "ui/views/view_targeter_delegate.h"
+#include "ui/views/metadata/view_factory_internal.h"
+#include "ui/views/view.h"
 
 namespace ash {
 namespace {
@@ -52,16 +55,16 @@ constexpr int kCornerRadius = 16;
 // The margin for the delete button.
 constexpr int kDeleteButtonMargin = 8;
 
-// The minimum template name view width.
-constexpr int kMinTemplateNameViewWidth = 56;
+// The preferred width of the container that houses the template name textfield
+// and managed status indicator and the time label.
+constexpr int kTemplateNameAndTimePreferredWidth =
+    kPreferredSize.width() - kHorizontalPaddingDp * 2;
 
-// The margin between the grid item contents and the card container.
-constexpr int kGridItemMargin = 24;
 constexpr int kTimeViewHeight = 20;
 
-// Pixel offset for the focus ring around the whole time. Positive values means
-// the focus ring sits outside of the item.
-constexpr int kFocusRingOffset = 2;
+// The spacing between the textfield and the managed status icon.
+constexpr int kManagedStatusIndicatorSpacing = 8;
+constexpr int kManagedStatusIndicatorSize = 20;
 
 constexpr char kAmPmTimeDateFmtStr[] = "%d:%02d%s, %d-%02d-%02d";
 
@@ -91,16 +94,17 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
       &DesksTemplatesItemView::OnGridItemPressed, base::Unretained(this));
 
   const std::u16string template_name = desk_template_->template_name();
+  auto* color_provider = AshColorProvider::Get();
 
-  views::View* spacer;
   views::BoxLayoutView* card_container;
+  views::View* spacer;
   views::Builder<DesksTemplatesItemView>(this)
       .SetPreferredSize(kPreferredSize)
       .SetUseDefaultFillLayout(true)
       .SetAccessibleName(template_name)
       .SetCallback(std::move(launch_template_callback))
       .SetBackground(views::CreateRoundedRectBackground(
-          AshColorProvider::Get()->GetControlsLayerColor(
+          color_provider->GetControlsLayerColor(
               AshColorProvider::ControlsLayerType::
                   kControlBackgroundColorInactive),
           kCornerRadius))
@@ -112,18 +116,40 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
                   views::BoxLayout::CrossAxisAlignment::kStart)
               .SetInsideBorderInsets(
                   gfx::Insets(kVerticalPaddingDp, kHorizontalPaddingDp))
+              // TODO(richui): Consider splitting some of the children into
+              // different files and/or classes.
               .AddChildren(
-                  views::Builder<DesksTemplatesNameView>()
-                      .CopyAddressTo(&name_view_)
-                      .SetText(template_name)
-                      .SetAccessibleName(template_name),
+                  views::Builder<views::BoxLayoutView>()
+                      .SetOrientation(
+                          views::BoxLayout::Orientation::kHorizontal)
+                      .SetBetweenChildSpacing(kManagedStatusIndicatorSpacing)
+                      .SetPreferredSize(gfx::Size(
+                          kTemplateNameAndTimePreferredWidth,
+                          DesksTemplatesNameView::kTemplateNameViewHeight))
+                      .AddChildren(
+                          views::Builder<DesksTemplatesNameView>()
+                              .CopyAddressTo(&name_view_)
+                              .SetText(template_name)
+                              .SetAccessibleName(template_name)
+                              .SetReadOnly(!desk_template_->IsModifiable()),
+                          views::Builder<views::ImageView>()
+                              .SetPreferredSize(
+                                  gfx::Size(kManagedStatusIndicatorSize,
+                                            kManagedStatusIndicatorSize))
+                              .SetImage(gfx::CreateVectorIcon(
+                                  chromeos::kEnterpriseIcon,
+                                  kManagedStatusIndicatorSize,
+                                  color_provider->GetContentLayerColor(
+                                      AshColorProvider::ContentLayerType::
+                                          kIconColorSecondary)))
+                              .SetVisible(desk_template->source() ==
+                                          DeskTemplateSource::kPolicy)),
                   views::Builder<views::Label>()
                       .CopyAddressTo(&time_view_)
                       .SetHorizontalAlignment(gfx::ALIGN_LEFT)
                       .SetText(GetTimeStr(desk_template_->created_time()))
                       .SetPreferredSize(gfx::Size(
-                          kPreferredSize.width() - kGridItemMargin * 2,
-                          kTimeViewHeight)),
+                          kTemplateNameAndTimePreferredWidth, kTimeViewHeight)),
                   views::Builder<views::View>().CopyAddressTo(&spacer),
                   views::Builder<DesksTemplatesIconContainer>().CopyAddressTo(
                       &icon_container_view_)),
@@ -142,7 +168,6 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
                           base::Unretained(this)),
       CloseButton::Type::kMedium));
 
-  name_view_->SetTextAndElideIfNeeded(template_name);
   name_view_->set_controller(this);
   name_view_observation_.Observe(name_view_);
 
@@ -158,14 +183,12 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
                                    /*highlight_on_focus=*/false);
   views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
                                                 kCornerRadius);
-  views::FocusRing::Install(this);
-  views::FocusRing* focus_ring = views::FocusRing::Get(this);
+
+  views::FocusRing* focus_ring =
+      StyleUtil::SetUpFocusRingForView(this, kFocusRingHaloInset);
   focus_ring->SetHasFocusPredicate([](views::View* view) {
     return static_cast<DesksTemplatesItemView*>(view)->IsViewHighlighted();
   });
-  focus_ring->SetPathGenerator(
-      std::make_unique<views::RoundRectHighlightPathGenerator>(
-          gfx::Insets(-kFocusRingOffset), kCornerRadius + kFocusRingOffset));
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
@@ -196,9 +219,14 @@ bool DesksTemplatesItemView::IsTemplateNameBeingModified() const {
 }
 
 void DesksTemplatesItemView::Layout() {
+  const int previous_name_view_width = name_view_->width();
+
   views::View::Layout();
 
-  LayoutTemplateNameView();
+  // A change in the `name_view_`'s width might mean the need to elide the text
+  // differently.
+  if (previous_name_view_width != name_view_->width())
+    OnTemplateNameChanged(desk_template_->template_name());
 
   const gfx::Size delete_button_size = delete_button_->GetPreferredSize();
   DCHECK_EQ(delete_button_size.width(), delete_button_size.height());
@@ -233,6 +261,11 @@ void DesksTemplatesItemView::OnThemeChanged() {
 }
 
 void DesksTemplatesItemView::OnViewFocused(views::View* observed_view) {
+  // `this` is a button which observes itself. Here we only care about focus on
+  // `name_view_`.
+  if (observed_view == this)
+    return;
+
   DCHECK_EQ(observed_view, name_view_);
   is_template_name_being_modified_ = true;
 
@@ -262,10 +295,35 @@ void DesksTemplatesItemView::OnViewFocused(views::View* observed_view) {
 }
 
 void DesksTemplatesItemView::OnViewBlurred(views::View* observed_view) {
+  // `this` is a button which observes itself. Here we only care about blur on
+  // `name_view_`.
+  if (observed_view == this)
+    return;
+
+  // If we exit overview while the `name_view_` is still focused, the shutdown
+  // sequence will reset the presenter before `OnViewBlurred` gets called. This
+  // checks and makes sure that we don't call the presenter while trying to
+  // shutdown the overview session.
+  // `overview_session` may also be null as `OnViewBlurred` may be called after
+  // the owning widget is no longer owned by the session for overview exit
+  // animation. See https://crbug.com/1281422.
+  // TODO(richui): Revisit this once the behavior of the template name when
+  // exiting overview is determined.
+  OverviewSession* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  if (!overview_session || overview_session->is_shutting_down())
+    return;
+
   DCHECK_EQ(observed_view, name_view_);
   is_template_name_being_modified_ = false;
   defer_select_all_ = false;
   name_view_->UpdateViewAppearance();
+
+  // Collapse the whitespace for the text first before comparing it or trying to
+  // commit the name in order to prevent duplicate name issues.
+  name_view_->SetText(
+      base::CollapseWhitespace(name_view_->GetText(),
+                               /*trim_sequences_with_line_breaks=*/false));
 
   // When committing the name, do not allow an empty template name. Also, don't
   // commit the name changes if the view was blurred from the user pressing the
@@ -281,18 +339,28 @@ void DesksTemplatesItemView::OnViewBlurred(views::View* observed_view) {
   updated_template->set_template_name(name_view_->GetText());
   OnTemplateNameChanged(updated_template->template_name());
 
-  // If we exit overview while the `name_view_` is still focused, the shutdown
-  // sequence will reset the presenter before `OnViewBlurred` gets called. This
-  // checks and makes sure that we don't call the presenter while trying to
-  // shutdown the overview session.
-  OverviewSession* overview_session =
-      Shell::Get()->overview_controller()->overview_session();
-  DCHECK(overview_session);
-  if (overview_session->is_shutting_down())
-    return;
+  // Calling `SaveOrUpdateDeskTemplate` will trigger rebuilding the desks
+  // templates grid views hierarchy which includes `this`. Use a post task as
+  // some other `ViewObserver`'s may still be using `this`.
+  // TODO(crbug.com/1266552): Remove the post task once saving and updating does
+  // not cause a `this` to be deleted anymore.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](std::unique_ptr<DeskTemplate> desk_template) {
+                       DesksTemplatesPresenter::Get()->SaveOrUpdateDeskTemplate(
+                           /*is_update=*/false, std::move(desk_template));
+                     },
+                     std::move(updated_template)));
+}
 
-  DesksTemplatesPresenter::Get()->SaveOrUpdateDeskTemplate(
-      /*is_update=*/false, std::move(updated_template));
+views::Button::KeyClickAction DesksTemplatesItemView::GetKeyClickActionForEvent(
+    const ui::KeyEvent& event) {
+  // Prevents any key events from activating a button click while the template
+  // name is being modified.
+  if (is_template_name_being_modified_)
+    return KeyClickAction::kNone;
+
+  return Button::GetKeyClickActionForEvent(event);
 }
 
 void DesksTemplatesItemView::ContentsChanged(
@@ -305,13 +373,13 @@ void DesksTemplatesItemView::ContentsChanged(
   // names to have an unbounded length. Therefore we trim if needed at
   // `kMaxLength` UTF-16 boundary. Note that we don't care about code point
   // boundaries in this case.
-  if (new_contents.size() > LabelTextfield::kMaxLength) {
+  if (new_contents.size() > DesksTextfield::kMaxLength) {
     std::u16string trimmed_new_contents = new_contents;
-    trimmed_new_contents.resize(LabelTextfield::kMaxLength);
+    trimmed_new_contents.resize(DesksTextfield::kMaxLength);
     name_view_->SetText(trimmed_new_contents);
   }
 
-  Layout();
+  name_view_->OnContentsChanged();
 }
 
 bool DesksTemplatesItemView::HandleKeyEvent(views::Textfield* sender,
@@ -378,22 +446,30 @@ bool DesksTemplatesItemView::HandleMouseEvent(
 
 views::View* DesksTemplatesItemView::TargetForRect(views::View* root,
                                                    const gfx::Rect& rect) {
+  gfx::RectF name_view_bounds(name_view_->GetMirroredBounds());
+  views::View::ConvertRectToTarget(name_view_->parent(), this,
+                                   &name_view_bounds);
+
   // With the design of the template card having the textfield within a
   // clickable button, as well as having the grid view be a `PreTargetHandler`,
   // we needed to make `this` a `ViewTargeterDelegate` for the view event
   // targeter in order to allow the `name_view_` to be specifically targeted and
   // focused.
-  if (root == this && name_view_->bounds().Contains(rect))
+  if (root == this && gfx::ToRoundedRect(name_view_bounds).Contains(rect))
     return name_view_;
   return views::ViewTargeterDelegate::TargetForRect(root, rect);
 }
 
 void DesksTemplatesItemView::OnDeleteTemplate() {
   // Notify the highlight controller that we're going away.
-  OverviewSession* overview_session =
-      Shell::Get()->overview_controller()->overview_session();
-  DCHECK(overview_session);
-  overview_session->highlight_controller()->OnViewDestroyingOrDisabling(this);
+  OverviewHighlightController* highlight_controller =
+      Shell::Get()
+          ->overview_controller()
+          ->overview_session()
+          ->highlight_controller();
+  DCHECK(highlight_controller);
+  highlight_controller->OnViewDestroyingOrDisabling(this);
+  highlight_controller->OnViewDestroyingOrDisabling(name_view_);
 
   DesksTemplatesPresenter::Get()->DeleteEntry(
       desk_template_->uuid().AsLowercaseString());
@@ -408,14 +484,27 @@ void DesksTemplatesItemView::OnDeleteButtonPressed() {
                      base::Unretained(this)));
 }
 
-void DesksTemplatesItemView::OnGridItemPressed() {
+void DesksTemplatesItemView::OnGridItemPressed(const ui::Event& event) {
+  MaybeLaunchTemplate(event.IsShiftDown());
+}
+
+void DesksTemplatesItemView::MaybeLaunchTemplate(bool should_delay) {
   if (is_template_name_being_modified_) {
     DesksTemplatesNameView::CommitChanges(GetWidget());
     return;
   }
 
+  // Make shift-click on the launch button launch apps with a delay. This allows
+  // developers to simulate delayed launch behaviors with ARC apps.
+  // TODO(crbug.com/1281685): Remove before feature launch.
+  base::TimeDelta delay;
+#if !defined(OFFICIAL_BUILD)
+  if (should_delay)
+    delay = base::Seconds(3);
+#endif
+
   DesksTemplatesPresenter::Get()->LaunchDeskTemplate(
-      desk_template_->uuid().AsLowercaseString());
+      desk_template_->uuid().AsLowercaseString(), delay);
 }
 
 void DesksTemplatesItemView::OnTemplateNameChanged(
@@ -430,38 +519,12 @@ void DesksTemplatesItemView::OnTemplateNameChanged(
   Layout();
 }
 
-void DesksTemplatesItemView::LayoutTemplateNameView() {
-  const int previous_width = name_view_->width();
-  const gfx::Size name_view_size = name_view_->GetPreferredSize();
-  // The item view's width is supposed to be larger than
-  // `kMinTemplateNameViewWidth`, but it might be not the truth for tests with
-  // extreme abnormal size of display.
-  const int min_width =
-      std::min(kPreferredSize.width(), kMinTemplateNameViewWidth);
-  // TODO(crbug.com/1264174): Investigate the best way to get this to work with
-  // the enterprise indicator. Possibly wrap both in a `BoxLayoutView`.
-  const int max_width =
-      std::max(kPreferredSize.width() - (kHorizontalPaddingDp * 2),
-               kMinTemplateNameViewWidth);
-  const int text_width =
-      base::clamp(name_view_size.width(), min_width, max_width);
-  gfx::Rect name_view_bounds{name_view_->bounds()};
-  name_view_bounds.set_width(text_width);
-
-  name_view_->SetBoundsRect(name_view_bounds);
-
-  // A change in the `name_view_`'s width might mean the need to elide the text
-  // differently.
-  if (previous_width != name_view_bounds.width())
-    OnTemplateNameChanged(desk_template_->template_name());
-}
-
 views::View* DesksTemplatesItemView::GetView() {
   return this;
 }
 
 void DesksTemplatesItemView::MaybeActivateHighlightedView() {
-  OnGridItemPressed();
+  MaybeLaunchTemplate(/*delay=*/false);
 }
 
 void DesksTemplatesItemView::MaybeCloseHighlightedView() {

@@ -34,15 +34,19 @@
 
 #include "build/build_config.h"
 #include "skia/ext/skia_matrix_44.h"
-#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkM44.h"
+#include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace gfx {
+class BoxF;
 class PointF;
+class QuadF;
 class Rect;
 class RectF;
 class Transform;
@@ -52,8 +56,6 @@ namespace blink {
 
 class AffineTransform;
 class LayoutRect;
-class FloatQuad;
-class FloatBox;
 class JSONArray;
 struct Rotation;
 
@@ -199,7 +201,7 @@ class PLATFORM_EXPORT TransformationMatrix {
   }
 
   // Map a 3D point through the transform, returning a 3D point.
-  FloatPoint3D MapPoint(const FloatPoint3D&) const;
+  gfx::Point3F MapPoint(const gfx::Point3F&) const;
 
   // Map a 2D point through the transform, returning a 2D point.
   // Note that this ignores the z component, effectively projecting the point
@@ -208,10 +210,7 @@ class PLATFORM_EXPORT TransformationMatrix {
 
   // If the matrix has 3D components, the z component of the result is
   // dropped, effectively projecting the rect into the z=0 plane
-  FloatRect MapRect(const FloatRect&) const;
-  gfx::RectF MapRect(const gfx::RectF& r) const {
-    return ToGfxRectF(MapRect(FloatRect(r)));
-  }
+  gfx::RectF MapRect(const gfx::RectF&) const;
 
   // Rounds the resulting mapped rectangle out. This is helpful for bounding
   // box computations but may not be what is wanted in other contexts.
@@ -221,7 +220,7 @@ class PLATFORM_EXPORT TransformationMatrix {
 
   // If the matrix has 3D components, the z component of the result is
   // dropped, effectively projecting the quad into the z=0 plane
-  FloatQuad MapQuad(const FloatQuad&) const;
+  gfx::QuadF MapQuad(const gfx::QuadF&) const;
 
   // Map a point on the z=0 plane into a point on the plane with with the
   // transform applied, by extending a ray perpendicular to the source plane and
@@ -229,12 +228,12 @@ class PLATFORM_EXPORT TransformationMatrix {
   // with the destination plane.
   gfx::PointF ProjectPoint(const gfx::PointF&, bool* clamped = nullptr) const;
   // Projects the four corners of the quad.
-  FloatQuad ProjectQuad(const FloatQuad&) const;
+  gfx::QuadF ProjectQuad(const gfx::QuadF&) const;
   // Projects the four corners of the quad and takes a bounding box,
   // while sanitizing values created when the w component is negative.
-  LayoutRect ClampedBoundsOfProjectedQuad(const FloatQuad&) const;
+  LayoutRect ClampedBoundsOfProjectedQuad(const gfx::QuadF&) const;
 
-  void TransformBox(FloatBox&) const;
+  void TransformBox(gfx::BoxF&) const;
 
   // Important: These indices are spoken in col-major order. i.e.:
   // | M11() M21() M31() M41() |
@@ -326,7 +325,7 @@ class PLATFORM_EXPORT TransformationMatrix {
 
   // Changes the transform to apply as if the origin were at (x, y, z).
   TransformationMatrix& ApplyTransformOrigin(double x, double y, double z);
-  TransformationMatrix& ApplyTransformOrigin(const FloatPoint3D& origin) {
+  TransformationMatrix& ApplyTransformOrigin(const gfx::Point3F& origin) {
     return ApplyTransformOrigin(origin.x(), origin.y(), origin.z());
   }
 
@@ -363,8 +362,8 @@ class PLATFORM_EXPORT TransformationMatrix {
     double angle;
   } Decomposed2dType;
 
-  WARN_UNUSED_RESULT bool Decompose(DecomposedType&) const;
-  WARN_UNUSED_RESULT bool Decompose2D(Decomposed2dType&) const;
+  [[nodiscard]] bool Decompose(DecomposedType&) const;
+  [[nodiscard]] bool Decompose2D(Decomposed2dType&) const;
   void Recompose(const DecomposedType&);
   void Recompose2D(const Decomposed2dType&);
   void Blend(const TransformationMatrix& from, double progress);
@@ -472,9 +471,9 @@ class PLATFORM_EXPORT TransformationMatrix {
 
   // If this transformation is identity or 2D translation, returns the
   // translation.
-  FloatSize To2DTranslation() const {
+  gfx::Vector2dF To2DTranslation() const {
     DCHECK(IsIdentityOr2DTranslation());
-    return FloatSize(matrix_[3][0], matrix_[3][1]);
+    return gfx::Vector2dF(matrix_[3][0], matrix_[3][1]);
   }
 
   typedef float FloatMatrix4[16];
@@ -490,7 +489,7 @@ class PLATFORM_EXPORT TransformationMatrix {
 
  private:
   gfx::PointF InternalMapPoint(const gfx::PointF& source_point) const;
-  FloatPoint3D InternalMapPoint(const FloatPoint3D& source_point) const;
+  gfx::Point3F InternalMapPoint(const gfx::Point3F& source_point) const;
 
   void SetMatrix(const Matrix4& m) { memcpy(&matrix_, &m, sizeof(Matrix4)); }
 

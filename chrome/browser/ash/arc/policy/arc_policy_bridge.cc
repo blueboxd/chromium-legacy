@@ -30,7 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/network/onc/network_onc_utils.h"
+#include "chromeos/components/onc/onc_utils.h"
 #include "components/onc/onc_constants.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -313,7 +313,7 @@ std::string GetFilteredJSONPolicies(policy::PolicyService* const policy_service,
   }
 
   if (profile->IsChild() &&
-      chromeos::ProfileHelper::Get()->IsPrimaryProfile(profile)) {
+      ash::ProfileHelper::Get()->IsPrimaryProfile(profile)) {
     // Adds "playStoreMode" policy. The policy value is used to restrict the
     // user from being able to toggle between different accounts in ARC++.
     filtered_policies.SetStringKey("playStoreMode", "SUPERVISED");
@@ -636,7 +636,7 @@ std::string ArcPolicyBridge::GetCurrentJSONPolicies() const {
     return std::string();
   const Profile* const profile = Profile::FromBrowserContext(context_);
   const user_manager::User* const user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   const CertStoreService* cert_store_service =
       CertStoreService::GetForBrowserContext(context_);
 
@@ -675,15 +675,17 @@ void ArcPolicyBridge::UpdateComplianceReportMetrics(
   serializer.Serialize(*report);
   bool is_arc_plus_plus_report_successful =
       report->FindBoolKey("isArcPlusPlusReportSuccessful").value_or(false);
-  std::string reported_policies_hash;
-  report->GetString("policyHash", &reported_policies_hash);
-  if (!is_arc_plus_plus_report_successful || reported_policies_hash.empty())
+  const std::string* reported_policies_hash =
+      report->FindStringKey("policyHash");
+  if (!is_arc_plus_plus_report_successful || !reported_policies_hash ||
+      reported_policies_hash->empty()) {
     return;
+  }
 
   const base::TimeTicks now = base::TimeTicks::Now();
   ArcSessionManager* const session_manager = ArcSessionManager::Get();
 
-  if (reported_policies_hash == initial_policies_hash_ &&
+  if (*reported_policies_hash == initial_policies_hash_ &&
       !first_compliance_timing_reported_) {
     const base::TimeTicks sign_in_start_time =
         session_manager->sign_in_start_time();
@@ -696,7 +698,7 @@ void ArcPolicyBridge::UpdateComplianceReportMetrics(
     first_compliance_timing_reported_ = true;
   }
 
-  if (reported_policies_hash == update_notification_policies_hash_ &&
+  if (*reported_policies_hash == update_notification_policies_hash_ &&
       !compliance_since_update_timing_reported_) {
     UpdateComplianceSinceUpdateTiming(now - update_notification_time_);
     compliance_since_update_timing_reported_ = true;

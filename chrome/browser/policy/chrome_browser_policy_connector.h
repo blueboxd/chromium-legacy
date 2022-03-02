@@ -19,12 +19,13 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/policy_service.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "components/policy/core/browser/android/policy_cache_updater_android.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/device_settings_lacros.h"
+#include "components/policy/core/common/policy_loader_lacros.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 class PrefService;
@@ -117,6 +118,10 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
 
   // The device settings used in Lacros.
   crosapi::mojom::DeviceSettings* GetDeviceSettings() const;
+
+  PolicyLoaderLacros* device_account_policy_loader() {
+    return device_account_policy_loader_;
+  }
 #endif
 
  protected:
@@ -164,9 +169,9 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
       machine_level_user_cloud_policy_manager_;
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   std::unique_ptr<android::PolicyCacheUpdater> policy_cache_updater_;
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   // Owned by base class.
   raw_ptr<ConfigurationPolicyProvider> platform_provider_ = nullptr;
@@ -176,6 +181,8 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   std::unique_ptr<DeviceSettingsLacros> device_settings_ = nullptr;
+  // Owned by |platform_provider_|.
+  PolicyLoaderLacros* device_account_policy_loader_ = nullptr;
 #endif
 
   // Holds a callback to |ChromeBrowserCloudManagementController::Init| so that

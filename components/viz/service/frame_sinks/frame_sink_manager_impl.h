@@ -53,6 +53,7 @@ class FrameSinkBundleImpl;
 class HintSessionFactory;
 class OutputSurfaceProvider;
 class SharedBitmapManager;
+class GmbVideoFramePoolContextProvider;
 
 // FrameSinkManagerImpl manages BeginFrame hierarchy. This is the implementation
 // detail for FrameSinkManagerImpl.
@@ -67,7 +68,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     InitParams();
     explicit InitParams(
         SharedBitmapManager* shared_bitmap_manager,
-        OutputSurfaceProvider* output_surface_provider = nullptr);
+        OutputSurfaceProvider* output_surface_provider = nullptr,
+        GmbVideoFramePoolContextProvider* gmb_context_provider = nullptr);
     InitParams(InitParams&& other);
     ~InitParams();
     InitParams& operator=(InitParams&& other);
@@ -76,6 +78,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
     absl::optional<uint32_t> activation_deadline_in_frames =
         kDefaultActivationDeadlineInFrames;
     raw_ptr<OutputSurfaceProvider> output_surface_provider = nullptr;
+    raw_ptr<GmbVideoFramePoolContextProvider> gmb_context_provider = nullptr;
     uint32_t restart_id = BeginFrameSource::kNotRestartableId;
     bool run_all_compositor_stages_before_draw = false;
     bool log_capture_pipeline_in_webrtc = false;
@@ -139,10 +142,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void EvictSurfaces(const std::vector<SurfaceId>& surface_ids) override;
   void RequestCopyOfOutput(const SurfaceId& surface_id,
                            std::unique_ptr<CopyOutputRequest> request) override;
-  void SetHitTestAsyncQueriedDebugRegions(
-      const FrameSinkId& root_frame_sink_id,
-      const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue)
-      override;
   void CacheBackBuffer(uint32_t cache_id,
                        const FrameSinkId& root_frame_sink_id) override;
   void EvictBackBuffer(uint32_t cache_id,
@@ -330,6 +329,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   // Provides an output surface for CreateRootCompositorFrameSink().
   const raw_ptr<OutputSurfaceProvider> output_surface_provider_;
+
+  const raw_ptr<GmbVideoFramePoolContextProvider> gmb_context_provider_;
 
   SurfaceManager surface_manager_;
 

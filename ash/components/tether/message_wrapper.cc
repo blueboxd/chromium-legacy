@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -89,31 +89,30 @@ std::unique_ptr<MessageWrapper> MessageWrapper::FromRawMessage(
     return nullptr;
   }
 
-  int message_type;
-  if (!json_dictionary->GetInteger(kJsonTypeKey, &message_type)) {
+  absl::optional<int> message_type = json_dictionary->FindIntKey(kJsonTypeKey);
+  if (!message_type)
     return nullptr;
-  }
 
-  std::string encoded_message;
-  if (!json_dictionary->GetString(kJsonDataKey, &encoded_message)) {
+  const std::string* encoded_message =
+      json_dictionary->FindStringKey(kJsonDataKey);
+  if (!encoded_message)
     return nullptr;
-  }
 
   std::string decoded_message;
-  if (!base::Base64UrlDecode(encoded_message,
+  if (!base::Base64UrlDecode(*encoded_message,
                              base::Base64UrlDecodePolicy::REQUIRE_PADDING,
                              &decoded_message)) {
     return nullptr;
   }
 
   std::unique_ptr<google::protobuf::MessageLite> proto = DecodedMessageToProto(
-      static_cast<MessageType>(message_type), decoded_message);
+      static_cast<MessageType>(*message_type), decoded_message);
   if (!proto) {
     return nullptr;
   }
 
   return base::WrapUnique(new MessageWrapper(
-      static_cast<MessageType>(message_type), std::move(proto)));
+      static_cast<MessageType>(*message_type), std::move(proto)));
 }
 
 MessageWrapper::MessageWrapper(const ConnectTetheringRequest& request)
@@ -176,4 +175,4 @@ std::string MessageWrapper::ToRawMessage() const {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

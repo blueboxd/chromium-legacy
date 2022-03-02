@@ -520,6 +520,11 @@ UIWindow* GetAnyKeyWindow() {
       [ChromeEarlGreyAppInterface waitForWebStateContainingElement:selector]);
 }
 
+- (void)waitForWebStateNotContainingElement:(ElementSelector*)selector {
+  EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface
+      waitForWebStateNotContainingElement:selector]);
+}
+
 - (void)waitForMainTabCount:(NSUInteger)count {
   __block NSUInteger actualCount = [ChromeEarlGreyAppInterface mainTabCount];
   NSString* conditionName = [NSString
@@ -681,16 +686,11 @@ UIWindow* GetAnyKeyWindow() {
 - (void)triggerRestoreViaTabGridRemoveAllUndo {
   [ChromeEarlGrey showTabSwitcher];
   GREYWaitForAppToIdle(@"App failed to idle");
-  if ([self isTabGridBulkActionsEnabled]) {
-    [ChromeEarlGrey
-        waitForAndTapButton:grey_allOf(chrome_test_util::TabGridEditButton(),
-                                       grey_sufficientlyVisible(), nil)];
-    [ChromeEarlGrey
-        waitForAndTapButton:chrome_test_util::TabGridEditMenuCloseAllButton()];
-  } else {
-    [ChromeEarlGrey
-        waitForAndTapButton:chrome_test_util::TabGridCloseAllButton()];
-  }
+  [ChromeEarlGrey
+      waitForAndTapButton:grey_allOf(chrome_test_util::TabGridEditButton(),
+                                     grey_sufficientlyVisible(), nil)];
+  [ChromeEarlGrey
+      waitForAndTapButton:chrome_test_util::TabGridEditMenuCloseAllButton()];
   [ChromeEarlGrey
       waitForAndTapButton:chrome_test_util::TabGridUndoCloseAllButton()];
   [ChromeEarlGrey waitForAndTapButton:chrome_test_util::TabGridDoneButton()];
@@ -901,11 +901,11 @@ UIWindow* GetAnyKeyWindow() {
       screenPositionOfScreenWithNumber:windowNumber];
 }
 
-- (NSUInteger)windowCount WARN_UNUSED_RESULT {
+- (NSUInteger)windowCount [[nodiscard]] {
   return [ChromeEarlGreyAppInterface windowCount];
 }
 
-- (NSUInteger)foregroundWindowCount WARN_UNUSED_RESULT {
+- (NSUInteger)foregroundWindowCount [[nodiscard]] {
   return [ChromeEarlGreyAppInterface foregroundWindowCount];
 }
 
@@ -1221,8 +1221,12 @@ UIWindow* GetAnyKeyWindow() {
   return [ChromeEarlGreyAppInterface isContextMenuActionsRefreshEnabled];
 }
 
-- (BOOL)isTabGridBulkActionsEnabled {
-  return [ChromeEarlGreyAppInterface isTabGridBulkActionsEnabled];
+- (BOOL)isContextMenuInWebViewEnabled {
+  return [ChromeEarlGreyAppInterface isContextMenuInWebViewEnabled];
+}
+
+- (BOOL)isNewOverflowMenuEnabled {
+  return [ChromeEarlGreyAppInterface isNewOverflowMenuEnabled];
 }
 
 #pragma mark - ScopedBlockPopupsPref

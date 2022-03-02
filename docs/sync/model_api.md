@@ -81,7 +81,7 @@ to add one (e.g. a GUID, though be wary as they have the potential to conflict).
 While the hash gets written to disk as part of the metadata, the tag itself is
 never persisted locally.
 
-[EntityData]: https://cs.chromium.org/chromium/src/components/sync/engine/entity_data.h
+[EntityData]: https://cs.chromium.org/chromium/src/components/sync/protocol/entity_data.h
 
 ## Storage
 
@@ -261,7 +261,7 @@ the next client restart.
     [`kModelTypeInfoMap`][info_map].
 *   Add it to the [proto value conversions][conversions] files.
 *   Register a [`ModelTypeController`][ModelTypeController] for your type in
-    [`ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers`][CreateCommonDataTypeControllers] or platform-specific equivalent in
+    [`SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers`][CreateCommonDataTypeControllers] or platform-specific equivalent in
     [`ChromeSyncClient::CreateDataTypeControllers`][CreateDataTypeControllers].
 *   Add your KeyedService dependency to
     [`SyncServiceFactory`][SyncServiceFactory].
@@ -281,7 +281,7 @@ the next client restart.
 [info_map]: https://cs.chromium.org/search/?q="kModelTypeInfoMap%5B%5D"+file:model_type.cc
 [conversions]: https://cs.chromium.org/chromium/src/components/sync/protocol/proto_value_conversions.h
 [ModelTypeController]: https://cs.chromium.org/chromium/src/components/sync/driver/model_type_controller.h
-[CreateCommonDataTypeControllers]: https://cs.chromium.org/search/?q="ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers"
+[CreateCommonDataTypeControllers]: https://cs.chromium.org/search/?q="SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers"
 [CreateDataTypeControllers]: https://cs.chromium.org/search/?q="ChromeSyncClient::CreateDataTypeControllers"
 [SyncServiceFactory]: https://cs.chromium.org/search/?q=:SyncServiceFactory%5C(%5C)
 [NigoriSpecifics]: https://cs.chromium.org/chromium/src/components/sync/protocol/nigori_specifics.proto

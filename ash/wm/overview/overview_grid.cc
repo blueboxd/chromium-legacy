@@ -17,6 +17,7 @@
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/system/toast_catalog.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -40,6 +41,7 @@
 #include "ash/wm/desks/templates/desks_templates_name_view.h"
 #include "ash/wm/desks/templates/desks_templates_presenter.h"
 #include "ash/wm/desks/templates/desks_templates_util.h"
+#include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/drop_target_view.h"
@@ -114,6 +116,13 @@ constexpr int kMinimumItemsForNewLayout = 6;
 
 constexpr int kTabletModeOverviewItemTopPaddingDp = 16;
 
+// The threshold for expanding desks bar while dragging the window. When the
+// length between the center point of the window being dragged and the center
+// point of the `zero_state_new_desk_button_` is smaller than
+// `kExpandDesksBarThreshold`, desks bar will be transformed from zero state to
+// expanded state to help user dropping the dragged window on the new desk.
+constexpr int kExpandDesksBarThreshold = 130;
+
 // Wait a while before unpausing the occlusion tracker after a scroll has
 // completed as the user may start another scroll.
 constexpr base::TimeDelta kOcclusionUnpauseDurationForScroll =
@@ -126,7 +135,6 @@ constexpr base::TimeDelta kOcclusionUnpauseDurationForRotation =
 // that is visible on all desks to another desk.
 constexpr char kMoveVisibleOnAllDesksWindowToastId[] =
     "ash.wm.overview.move_visible_on_all_desks_window_toast";
-constexpr int kToastDurationMs = 2500;
 
 // Histogram names for overview enter/exit smoothness in clamshell,
 // tablet mode and splitview.
@@ -341,20 +349,6 @@ bool ShouldExcludeItemFromGridLayout(
     OverviewItem* item,
     const base::flat_set<OverviewItem*>& ignored_items) {
   return item->animating_to_close() || ignored_items.contains(item);
-}
-
-// Apply the property that makes windows visible in the desk mini view,
-// recursively. Windows that have been updated are added to the vector.
-void SetForceVisibleInMiniView(
-    aura::Window* window,
-    std::vector<aura::Window*>* out_updated_windows) {
-  if (!window->GetProperty(kForceVisibleInMiniViewKey)) {
-    window->SetProperty(kForceVisibleInMiniViewKey, true);
-    out_updated_windows->push_back(window);
-  }
-
-  for (aura::Window* child : window->children())
-    SetForceVisibleInMiniView(child, out_updated_windows);
 }
 
 }  // namespace
@@ -756,6 +750,14 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
         /*account_for_hotseat=*/true);
     SetBoundsAndUpdatePositions(grid_bounds, ignored_items, /*animate=*/true);
   }
+}
+
+void OverviewGrid::RemoveAllItemsForDesksTemplatesLaunch() {
+  for (auto& item : window_list_) {
+    item->RestoreWindow(/*reset_tranform=*/true,
+                        /*was_desks_templates_grid_showing=*/true);
+  }
+  window_list_.clear();
 }
 
 void OverviewGrid::AddDropTargetForDraggingFromThisGrid(
@@ -1428,10 +1430,11 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
   if (dragged_window_is_visible_on_all_desks) {
     // Show toast since items that are visible on all desks should not be able
     // to be unassigned during overview.
-    Shell::Get()->toast_manager()->Show(ToastData(
-        kMoveVisibleOnAllDesksWindowToastId,
-        l10n_util::GetStringUTF16(IDS_ASH_OVERVIEW_VISIBLE_ON_ALL_DESKS_TOAST),
-        kToastDurationMs, absl::nullopt));
+    Shell::Get()->toast_manager()->Show(
+        ToastData(kMoveVisibleOnAllDesksWindowToastId,
+                  ToastCatalogName::kMoveVisibleOnAllDesksWindow,
+                  l10n_util::GetStringUTF16(
+                      IDS_ASH_OVERVIEW_VISIBLE_ON_ALL_DESKS_TOAST)));
     return false;
   }
 
@@ -1468,10 +1471,25 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
       DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
 }
 
-void OverviewGrid::MaybeExpandDesksBarView() {
+void OverviewGrid::MaybeExpandDesksBarView(const gfx::PointF& screen_location) {
   if (desks_bar_view_ && desks_bar_view_->IsZeroState()) {
-    desks_bar_view_->UpdateNewMiniViews(/*initializing_bar_view=*/false,
-                                        /*expanding_bar_view=*/true);
+    if ((gfx::ToRoundedPoint(screen_location) -
+         desks_bar_view_->zero_state_new_desk_button()
+             ->GetBoundsInScreen()
+             .CenterPoint())
+            .LengthSquared() <=
+        kExpandDesksBarThreshold * kExpandDesksBarThreshold) {
+      desks_bar_view_->UpdateNewMiniViews(/*initializing_bar_view=*/false,
+                                          /*expanding_bar_view=*/true);
+    }
+  }
+}
+
+void OverviewGrid::MaybeShrinkDesksBarView() {
+  if (desks_bar_view_ && !desks_bar_view_->IsZeroState() &&
+      !IsShowingDesksTemplatesGrid() &&
+      desks_bar_view_->mini_views().size() == 1) {
+    desks_bar_view_->SwitchToZeroState();
   }
 }
 
@@ -1681,28 +1699,10 @@ void OverviewGrid::ShowDesksTemplatesGrid(bool was_zero_state) {
   if (!desks_templates_grid_widget_) {
     desks_templates_grid_widget_ =
         DesksTemplatesGridView::CreateDesksTemplatesGridWidget(root_window_);
-    desks_templates_grid_view_ = desks_templates_grid_widget_->SetContentsView(
-        std::make_unique<DesksTemplatesGridView>());
+    desks_templates_grid_view_ = static_cast<DesksTemplatesGridView*>(
+        desks_templates_grid_widget_->GetContentsView());
   }
 
-  // Before showing the grid, we need to hide the overview items. However, we
-  // don't want to affect the desk preview. To do this, we temporarily set a
-  // window property that will keep them visible.
-  if (DeskMiniView* desk_mini_view = desks_bar_view_->FindMiniViewForDesk(
-          DesksController::Get()->GetTargetActiveDesk())) {
-    std::vector<aura::Window*> updated_windows;
-    SetForceVisibleInMiniView(desk_mini_view->GetDeskContainer(),
-                              &updated_windows);
-
-    // This makes the desk preview pick up on the window property change.
-    desk_mini_view->desk_preview()->RecreateDeskContentsMirrorLayers();
-
-    // Remove the property that was temporarily applied.
-    for (aura::Window* window : updated_windows)
-      window->ClearProperty(kForceVisibleInMiniViewKey);
-  }
-
-  // We can now hide the overview mode items.
   for (auto& overview_mode_item : window_list_)
     overview_mode_item->HideForDesksTemplatesGrid();
 
@@ -1711,7 +1711,7 @@ void OverviewGrid::ShowDesksTemplatesGrid(bool was_zero_state) {
   // Fade in the widget from its current opacity.
   // TODO(crbug.com/1277160): Consider adding animate flag to determine whether
   // to disable animations.
-  PerformFadeInDesksTemplatesGridView(desks_templates_grid_widget_->GetLayer());
+  PerformFadeInLayer(desks_templates_grid_widget_->GetLayer());
 
   UpdateSaveDeskAsTemplateButton();
 
@@ -1723,24 +1723,44 @@ void OverviewGrid::ShowDesksTemplatesGrid(bool was_zero_state) {
 }
 
 void OverviewGrid::HideDesksTemplatesGrid(bool exit_overview) {
-  // Un-hide the overview mode items.
-  for (auto& overview_mode_item : window_list_)
-    overview_mode_item->RevertHideForDesksTemplatesGrid();
+  if (!desks_templates_grid_widget_)
+    return;
 
-  if (exit_overview) {
-    desks_templates_grid_widget_->CloseNow();
+  auto* grid_layer = desks_templates_grid_widget_->GetLayer();
+  const bool already_hiding_grid = grid_layer->GetAnimator()->is_animating() &&
+                                   grid_layer->GetTargetOpacity() == 0.f;
+  if (already_hiding_grid)
+    return;
+
+  if (exit_overview && overview_session_->enter_exit_overview_type() ==
+                           OverviewEnterExitType::kImmediateExit) {
+    // Since we're immediately exiting, we don't need to animate anything and
+    // can let the `desks_templates_grid_widget_` handle its own destruction.
     return;
   }
 
-  desks_templates_grid_widget_->Hide();
+  if (exit_overview) {
+    // Un-hide the overview mode items.
+    for (auto& overview_mode_item : window_list_)
+      overview_mode_item->RevertHideForDesksTemplatesGrid();
 
-  // Activate the overview focus window to match the behavior of entering
-  // overview mode in the beginning. Otherwise there are cases where some
-  // overview windows are not able to be focused and activated.
-  wm::ActivateWindow(overview_session_->GetOverviewFocusWindow());
+    // Disable the `desks_templates_grid_widget_`'s event targeting so it can't
+    // get any events during the animation.
+    desks_templates_grid_widget_->GetNativeWindow()->SetEventTargetingPolicy(
+        aura::EventTargetingPolicy::kNone);
 
-  desks_bar_view_->UpdateButtonsForDesksTemplatesGrid();
-  desks_bar_view_->OnDesksTemplatesGridHidden();
+    FadeOutWidgetFromOverview(
+        std::move(desks_templates_grid_widget_),
+        OVERVIEW_ANIMATION_EXIT_OVERVIEW_MODE_DESKS_TEMPLATES_GRID_FADE_OUT);
+    return;
+  }
+
+  // Fade out the `desks_templates_grid_widget_` and then when its animation is
+  // done fade in the supporting widgets and revert the overview item hides.
+  PerformFadeOutLayer(
+      desks_templates_grid_widget_->GetLayer(),
+      base::BindOnce(&OverviewGrid::OnDesksTemplatesGridFadedOut,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool OverviewGrid::IsShowingDesksTemplatesGrid() const {
@@ -1809,15 +1829,22 @@ void OverviewGrid::UpdateSaveDeskAsTemplateButton() {
   // Do not create or show the save desk as template button if there are no
   // windows in this grid, during a window drag or in tablet mode, or the desks
   // templates grid is visible.
-  const bool visible =
+  const bool target_visible =
       !window_list_.empty() &&
       !overview_session_->GetCurrentDraggedOverviewItem() &&
       !Shell::Get()->tablet_mode_controller()->InTabletMode() &&
       !IsShowingDesksTemplatesGrid();
+  if (target_visible == IsSaveDeskAsTemplateButtonVisible())
+    return;
 
-  if (!visible) {
-    if (save_desk_as_template_widget_)
-      save_desk_as_template_widget_->Hide();
+  if (!target_visible) {
+    if (save_desk_as_template_widget_) {
+      PerformFadeOutLayer(
+          save_desk_as_template_widget_->GetLayer(),
+          base::BindOnce(&OverviewGrid::OnSaveDeskAsTemplateButtonFadedOut,
+                         weak_ptr_factory_.GetWeakPtr()));
+    }
+    overview_session_->UpdateAccessibilityFocus();
     return;
   }
 
@@ -1825,12 +1852,13 @@ void OverviewGrid::UpdateSaveDeskAsTemplateButton() {
     save_desk_as_template_widget_ = SaveDeskAsTemplateWidget(root_window_);
     save_desk_as_template_widget_->SetContentsView(std::make_unique<PillButton>(
         base::BindRepeating(&OverviewGrid::OnSaveDeskAsTemplateButtonPressed,
-                            base::Unretained(this)),
+                            weak_ptr_factory_.GetWeakPtr()),
         l10n_util::GetStringUTF16(
             IDS_ASH_DESKS_TEMPLATES_SAVE_DESK_AS_TEMPLATE_BUTTON),
         PillButton::Type::kIcon, &kSaveDeskAsTemplateIcon));
   }
   save_desk_as_template_widget_->Show();
+  PerformFadeInLayer(save_desk_as_template_widget_->GetLayer());
 
   // Disable the create templates button if the current number of templates has
   // reached the max or the current desk has only unsupported apps.
@@ -1853,6 +1881,16 @@ void OverviewGrid::UpdateSaveDeskAsTemplateButton() {
       overview_item_bounds.x(),
       overview_item_bounds.y() - kSaveDeskAsTemplateOverviewItemSpacingDp,
       preferred_size.width(), preferred_size.height()));
+
+  overview_session_->UpdateAccessibilityFocus();
+}
+
+bool OverviewGrid::IsSaveDeskAsTemplateButtonVisible() const {
+  // The widget may be visible but in the process of fading away. We treat that
+  // as not visible.
+  return save_desk_as_template_widget_ &&
+         save_desk_as_template_widget_->IsVisible() &&
+         save_desk_as_template_widget_->GetLayer()->GetTargetOpacity() == 1.f;
 }
 
 void OverviewGrid::OnSplitViewStateChanged(
@@ -2296,6 +2334,26 @@ void OverviewGrid::UpdateFrameThrottling() {
 
 void OverviewGrid::OnSaveDeskAsTemplateButtonPressed() {
   DesksTemplatesPresenter::Get()->MaybeSaveActiveDeskAsTemplate();
+}
+
+void OverviewGrid::OnDesksTemplatesGridFadedOut() {
+  for (auto& overview_mode_item : window_list_)
+    overview_mode_item->RevertHideForDesksTemplatesGrid();
+
+  desks_templates_grid_widget_->Hide();
+
+  // Activate the overview focus window to match the behavior of entering
+  // overview mode in the beginning. Otherwise there are cases where some
+  // overview windows are not able to be focused and activated.
+  wm::ActivateWindow(overview_session_->GetOverviewFocusWindow());
+
+  desks_bar_view_->UpdateButtonsForDesksTemplatesGrid();
+  desks_bar_view_->OnDesksTemplatesGridHidden();
+  UpdateSaveDeskAsTemplateButton();
+}
+
+void OverviewGrid::OnSaveDeskAsTemplateButtonFadedOut() {
+  save_desk_as_template_widget_->Hide();
 }
 
 int OverviewGrid::GetDesksBarHeight() const {

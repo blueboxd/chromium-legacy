@@ -23,7 +23,6 @@
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
@@ -75,12 +74,12 @@ namespace web_app {
 
 namespace {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 // The sub-directory of the extensions directory in which to scan for external
 // web apps (as opposed to external extensions or external ARC apps).
 const base::FilePath::CharType kWebAppsSubDirectory[] =
     FILE_PATH_LITERAL("web_apps");
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 bool g_skip_startup_for_testing_ = false;
 bool g_bypass_offline_manifest_requirement_for_testing_ = false;
@@ -196,7 +195,7 @@ absl::optional<std::string> GetDisableReason(
 
   // Remove if device is tablet and app should be disabled.
   if (options.disable_if_tablet_form_factor &&
-      chromeos::switches::IsTabletFormFactor()) {
+      ash::switches::IsTabletFormFactor()) {
     return options.install_url.spec() + " disabled because device is tablet.";
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -257,7 +256,7 @@ absl::optional<std::string> GetDisableReason(
     }
   }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS)
   // Remove if it's a default app and the apps to replace are not installed and
   // default extension apps are not performing new installation.
   if (options.gate_on_feature && !options.uninstall_and_replace.empty() &&
@@ -285,7 +284,7 @@ absl::optional<std::string> GetDisableReason(
       }
     }
   }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
   // Remove if any apps to replace were previously uninstalled.
   for (const AppId& app_id : options.uninstall_and_replace) {
@@ -325,7 +324,7 @@ std::string GetConfigDirectoryFromCommandLine() {
 std::string GetExtraConfigSubdirectory() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      chromeos::switches::kExtraWebAppsDir);
+      ash::switches::kExtraWebAppsDir);
 #else
   return std::string();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -526,12 +525,12 @@ void PreinstalledWebAppManager::PostProcessConfigs(
 
     options.require_manifest = true;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
     // On Chrome OS the "quick launch bar" is the shelf pinned apps.
     // This is configured in `GetDefaultPinnedAppsForFormFactor()` instead of
     // here to ensure a specific order is deployed.
     options.add_to_quick_launch_bar = false;
-#else   // defined(OS_CHROMEOS)
+#else   // BUILDFLAG(IS_CHROMEOS)
     if (!g_bypass_offline_manifest_requirement_for_testing_) {
       // Non-Chrome OS platforms are not permitted to fetch the web app install
       // URLs during start up.
@@ -546,7 +545,7 @@ void PreinstalledWebAppManager::PostProcessConfigs(
     options.add_to_management = false;
     options.add_to_desktop = false;
     options.add_to_quick_launch_bar = false;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
   }
 
   // TODO(crbug.com/1175196): Move this constant into some shared constants.h
@@ -602,7 +601,7 @@ void PreinstalledWebAppManager::Synchronize(
     std::vector<ExternalInstallOptions> desired_apps_install_options) {
   DCHECK(externally_managed_app_manager_);
 
-  std::map<GURL, std::vector<AppId>> desired_uninstalls;
+  std::map<InstallUrl, std::vector<AppId>> desired_uninstalls;
   for (const auto& entry : desired_apps_install_options) {
     if (!entry.uninstall_and_replace.empty())
       desired_uninstalls.emplace(entry.install_url,
@@ -618,9 +617,10 @@ void PreinstalledWebAppManager::Synchronize(
 
 void PreinstalledWebAppManager::OnExternalWebAppsSynchronized(
     ExternallyManagedAppManager::SynchronizeCallback callback,
-    std::map<GURL, std::vector<AppId>> desired_uninstalls,
-    std::map<GURL, ExternallyManagedAppManager::InstallResult> install_results,
-    std::map<GURL, bool> uninstall_results) {
+    std::map<InstallUrl, std::vector<AppId>> desired_uninstalls,
+    std::map<InstallUrl, ExternallyManagedAppManager::InstallResult>
+        install_results,
+    std::map<InstallUrl, bool> uninstall_results) {
   // Note that we are storing the Chrome version (milestone number) instead of a
   // "has synchronised" bool in order to do version update specific logic.
   profile_->GetPrefs()->SetString(
@@ -653,7 +653,7 @@ void PreinstalledWebAppManager::OnExternalWebAppsSynchronized(
     if (iter == desired_uninstalls.end())
       continue;
 
-    for (const auto& replace_id : iter->second) {
+    for (const AppId& replace_id : iter->second) {
       // We mark the app as migrated to a web app as long as the
       // installation was successful, even if the previous app was not
       // installed. This ensures we properly re-install apps if the
@@ -675,7 +675,7 @@ void PreinstalledWebAppManager::OnExternalWebAppsSynchronized(
 
         ++app_to_replace_still_installed_count;
 
-        if (!extensions::IsExtensionDefaultInstalled(profile_, replace_id))
+        if (extensions::IsExtensionDefaultInstalled(profile_, replace_id))
           ++app_to_replace_still_default_installed_count;
 
         if (ui_manager_->CanAddAppToQuickLaunchBar()) {
@@ -715,8 +715,9 @@ void PreinstalledWebAppManager::OnExternalWebAppsSynchronized(
 }
 
 void PreinstalledWebAppManager::OnStartUpTaskCompleted(
-    std::map<GURL, ExternallyManagedAppManager::InstallResult> install_results,
-    std::map<GURL, bool> uninstall_results) {
+    std::map<InstallUrl, ExternallyManagedAppManager::InstallResult>
+        install_results,
+    std::map<InstallUrl, bool> uninstall_results) {
   if (debug_info_) {
     debug_info_->is_start_up_task_complete = true;
     debug_info_->install_results = std::move(install_results);
@@ -729,14 +730,14 @@ base::FilePath PreinstalledWebAppManager::GetConfigDir() {
   if (!command_line_directory.empty())
     return base::FilePath::FromUTF8Unsafe(command_line_directory);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
     // As of mid 2018, only Chrome OS has default/external web apps, and
     // chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS is only defined for OS_LINUX,
     // which includes OS_CHROMEOS.
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Exclude sign-in and lock screen profiles.
-  if (!chromeos::ProfileHelper::IsRegularProfile(profile_)) {
+  if (!ash::ProfileHelper::IsRegularProfile(profile_)) {
     return {};
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -756,7 +757,7 @@ base::FilePath PreinstalledWebAppManager::GetConfigDir() {
   }
 
   LOG(ERROR) << "base::PathService::Get failed";
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   return {};
 }

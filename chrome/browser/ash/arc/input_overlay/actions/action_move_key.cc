@@ -80,8 +80,10 @@ bool ActionMoveKey::ParseFromJson(const base::Value& value) {
 }
 
 bool ActionMoveKey::RewriteEvent(const ui::Event& origin,
+                                 const gfx::RectF& content_bounds,
+                                 const bool is_mouse_locked,
                                  std::list<ui::TouchEvent>& touch_events,
-                                 const gfx::RectF& content_bounds) {
+                                 bool& keep_original_event) {
   if (!origin.IsKeyEvent())
     return false;
   LogEvent(origin);

@@ -2,11 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+import '//resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import '//resources/cr_elements/shared_vars_css.m.js';
+import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '../../settings_shared_css.js';
+import '//resources/cr_components/chromeos/localized_link/localized_link.js';
+
+import {assert, assertNotReached} from '//resources/js/assert.m.js';
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {loadTimeData} from '//resources/js/load_time_data.m.js';
+import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.js';
+import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {StatusAction, SyncBrowserProxyImpl} from '../../people_page/sync_browser_proxy.js';
+import {Route, Router} from '../../router.js';
+import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
+import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../metrics_recorder.m.js';
+import {routes} from '../os_route.m.js';
+import {RouteObserverBehavior} from '../route_observer_behavior.js';
+
+import {OsSyncBrowserProxy, OsSyncBrowserProxyImpl, OsSyncPrefs} from './os_sync_browser_proxy.m.js';
+
 
 /**
  * Names of the individual data type properties to be cached from
- * settings.OsSyncPrefs when the user checks 'Sync All'.
+ * OsSyncPrefs when the user checks 'Sync All'.
  * @type {!Array<string>}
  */
 const SyncPrefsIndividualDataTypes = [
@@ -24,12 +44,13 @@ const SyncPrefsIndividualDataTypes = [
  * 'os-sync-controls' contains all OS sync data type controls.
  */
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'os-sync-controls',
 
   behaviors: [
     DeepLinkingBehavior,
     I18nBehavior,
-    settings.RouteObserverBehavior,
+    RouteObserverBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -44,7 +65,7 @@ Polymer({
     /**
      * Injected sync system status. Undefined until the parent component injects
      * the value.
-     * @type {settings.SyncStatus|undefined}
+     * @type {SyncStatus|undefined}
      */
     syncStatus: Object,
 
@@ -67,17 +88,10 @@ Polymer({
     profileEmail: String,
 
     /**
-     * Whether the OS sync feature is enabled. This object does not directly
-     * manipulate prefs so we can defer turning on OS sync until the user
-     * navigates away from the page.
-     */
-    osSyncFeatureEnabled: Boolean,
-
-    /**
      * The current OS sync preferences. Cached so we can restore individual
      * toggle state when turning "sync everything" on and off, without affecting
      * the underlying chrome prefs.
-     * @type {settings.OsSyncPrefs|undefined}
+     * @type {OsSyncPrefs|undefined}
      */
     osSyncPrefs: Object,
 
@@ -85,8 +99,7 @@ Polymer({
     areDataTypeTogglesDisabled_: {
       type: Boolean,
       value: true,
-      computed: `computeDataTypeTogglesDisabled_(osSyncFeatureEnabled,
-          osSyncPrefs.syncAllOsTypes)`,
+      computed: `computeDataTypeTogglesDisabled_(osSyncPrefs.syncAllOsTypes)`,
     },
 
     /**
@@ -97,17 +110,9 @@ Polymer({
       type: Object,
       value: () => new Set([chromeos.settings.mojom.Setting.kSplitSyncOnOff]),
     },
-
-    /** @private */
-    syncConsentOptionalEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('syncConsentOptionalEnabled');
-      },
-    },
   },
 
-  /** @private {?settings.OsSyncBrowserProxy} */
+  /** @private {?OsSyncBrowserProxy} */
   browserProxy_: null,
 
   /**
@@ -119,7 +124,7 @@ Polymer({
 
   /** @override */
   created() {
-    this.browserProxy_ = settings.OsSyncBrowserProxyImpl.getInstance();
+    this.browserProxy_ = OsSyncBrowserProxyImpl.getInstance();
   },
 
   /** @override */
@@ -129,17 +134,17 @@ Polymer({
   },
 
   /**
-   * settings.RouteObserverBehavior
-   * @param {!settings.Route|undefined} newRoute
-   * @param {!settings.Route|undefined} oldRoute
+   * RouteObserverBehavior
+   * @param {!Route|undefined} newRoute
+   * @param {!Route|undefined} oldRoute
    * @protected
    */
   currentRouteChanged(newRoute, oldRoute) {
-    if (newRoute === settings.routes.OS_SYNC) {
+    if (newRoute === routes.OS_SYNC) {
       this.browserProxy_.didNavigateToOsSyncPage();
       this.attemptDeepLink();
     }
-    if (oldRoute === settings.routes.OS_SYNC) {
+    if (oldRoute === routes.OS_SYNC) {
       this.browserProxy_.didNavigateAwayFromOsSyncPage();
     }
   },
@@ -164,20 +169,9 @@ Polymer({
     if (!this.syncStatus) {
       return '';
     }
-    return this.osSyncFeatureEnabled && !this.syncStatus.hasError ?
+    return !this.syncStatus.hasError ?
         this.i18n('syncingTo', this.profileEmail) :
         this.profileEmail;
-  },
-
-  /**
-   * @return {string}
-   * @private
-   */
-  getSyncOnOffButtonLabel_() {
-    if (!this.osSyncFeatureEnabled) {
-      return this.i18n('osSyncTurnOn');
-    }
-    return this.i18n('osSyncTurnOff');
   },
 
   /**
@@ -199,7 +193,7 @@ Polymer({
     if (this.syncStatus.hasUnrecoverableError) {
       return 'sync-problem';
     }
-    if (this.syncStatus.statusAction === settings.StatusAction.REAUTHENTICATE) {
+    if (this.syncStatus.statusAction === StatusAction.REAUTHENTICATE) {
       return 'sync-paused';
     }
     return 'sync-problem';
@@ -226,31 +220,13 @@ Polymer({
    * Handler for when the sync preferences are updated.
    * @private
    */
-  handleOsSyncPrefsChanged_(osSyncFeatureEnabled, osSyncPrefs) {
-    assert(osSyncFeatureEnabled || this.syncConsentOptionalEnabled_);
-    this.osSyncFeatureEnabled = osSyncFeatureEnabled;
+  handleOsSyncPrefsChanged_(osSyncPrefs) {
     this.osSyncPrefs = osSyncPrefs;
-
-    // If the feature is disabled the checkboxes appear toggled off, regardless
-    // of the underlying chrome pref.
-    if (!this.osSyncFeatureEnabled) {
-      this.set('osSyncPrefs.syncAllOsTypes', false);
-      for (const dataType of SyncPrefsIndividualDataTypes) {
-        this.set(['osSyncPrefs', dataType], false);
-      }
-    }
 
     // If apps are not registered or synced, force wallpaper off.
     if (!this.osSyncPrefs.osAppsRegistered || !this.osSyncPrefs.osAppsSynced) {
       this.set('osSyncPrefs.wallpaperEnabled', false);
     }
-  },
-
-  /** @private */
-  onSyncOnOffButtonClick_() {
-    assert(this.syncConsentOptionalEnabled_);
-    this.browserProxy_.setOsSyncFeatureEnabled(!this.osSyncFeatureEnabled);
-    settings.recordSettingChange();
   },
 
   /**
@@ -314,8 +290,7 @@ Polymer({
    * @private
    */
   computeDataTypeTogglesDisabled_() {
-    return !this.osSyncFeatureEnabled ||
-        (this.osSyncPrefs !== undefined && this.osSyncPrefs.syncAllOsTypes);
+    return this.osSyncPrefs !== undefined && this.osSyncPrefs.syncAllOsTypes;
   },
 
   /**
@@ -338,4 +313,3 @@ Polymer({
         !this.osSyncPrefs.osAppsSynced;
   },
 });
-})();

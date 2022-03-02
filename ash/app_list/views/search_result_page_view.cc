@@ -232,6 +232,8 @@ void SearchResultPageView::InitializeContainers(
     AppListViewDelegate* view_delegate,
     AppListMainView* app_list_main_view,
     SearchBoxView* search_box_view) {
+  DCHECK(view_delegate);
+  view_delegate_ = view_delegate;
   dialog_controller_ = std::make_unique<SearchResultPageDialogController>(this);
 
   if (features::IsProductivityLauncherEnabled()) {
@@ -253,7 +255,8 @@ void SearchResultPageView::InitializeContainers(
     search_result_list_view_ =
         AddSearchResultContainerView(std::make_unique<SearchResultListView>(
             app_list_main_view, view_delegate, dialog_controller_.get(),
-            SearchResultView::SearchResultViewType::kClassic, absl::nullopt));
+            SearchResultView::SearchResultViewType::kClassic,
+            /*animates_result_updates=*/false, absl::nullopt));
 
     search_box_view->SetResultSelectionController(
         result_selection_controller());
@@ -472,6 +475,10 @@ void SearchResultPageView::OnSearchResultContainerResultsChanging() {
 }
 
 void SearchResultPageView::OnSearchResultContainerResultsChanged() {
+  // Skip updates during shutdown.
+  if (!view_delegate_->HasValidProfile())
+    return;
+
   // Result selection should be handled by |productivity_launcher_search_page_|.
   DCHECK(!features::IsProductivityLauncherEnabled());
   DCHECK(!result_container_views_.empty());

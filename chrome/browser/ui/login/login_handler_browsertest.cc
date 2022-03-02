@@ -5,10 +5,10 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/ignore_result.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1632,7 +1632,7 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
 // the omnibox.
 
 // Fails occasionally on Mac. http://crbug.com/852703
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_CancelLoginInterstitialOnRedirect \
   DISABLED_CancelLoginInterstitialOnRedirect
 #else
@@ -2110,7 +2110,7 @@ IN_PROC_BROWSER_TEST_P(LoginPromptBrowserTest,
 }
 
 // Tests that basic proxy auth works as expected, for HTTPS pages.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // TODO(https://crbug.com/1000446): Re-enable this test.
 #define MAYBE_ProxyAuthHTTPS DISABLED_ProxyAuthHTTPS
 #else
@@ -2429,10 +2429,10 @@ IN_PROC_BROWSER_TEST_P(LoginPromptPrerenderBrowserTest,
   const GURL kAuthIFrameUrl = embedded_test_server()->GetURL(kAuthBasicPage);
   content::RenderFrameHost* prerender_rfh =
       prerender_helper().GetPrerenderedMainFrameHost(host_id);
-  ignore_result(ExecJs(prerender_rfh,
-                       "var i = document.createElement('iframe'); i.src = '" +
-                           kAuthIFrameUrl.spec() +
-                           "'; document.body.appendChild(i);"));
+  std::ignore =
+      ExecJs(prerender_rfh,
+             "var i = document.createElement('iframe'); i.src = '" +
+                 kAuthIFrameUrl.spec() + "'; document.body.appendChild(i);");
 
   // The prerender should be destroyed.
   host_observer.WaitForDestroyed();
@@ -2474,8 +2474,8 @@ IN_PROC_BROWSER_TEST_P(LoginPromptPrerenderBrowserTest,
         imgElement.src = '/auth-basic/favicon.gif';
         document.body.appendChild(imgElement);
   )";
-  ignore_result(ExecJs(prerender_helper().GetPrerenderedMainFrameHost(host_id),
-                       fetch_subresource_script));
+  std::ignore = ExecJs(prerender_helper().GetPrerenderedMainFrameHost(host_id),
+                       fetch_subresource_script);
 
   // The prerender should be destroyed.
   host_observer.WaitForDestroyed();

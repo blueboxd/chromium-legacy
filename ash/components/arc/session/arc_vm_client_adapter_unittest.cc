@@ -38,6 +38,7 @@
 #include "base/posix/safe_strerror.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/current_thread.h"
@@ -109,16 +110,18 @@ std::string GenerateAbstractAddress() {
                         base::GUID::GenerateRandomV4().AsLowercaseString());
 }
 
-// TODO(yusukes): Remove this once crosvm becomes 64 bit binary on ARM.
-void VerifyVmMemorySize(const vm_tools::concierge::StartArcVmRequest& request,
-                        uint32_t vm_ram_mib) {
-  if (sizeof(uintptr_t) == 4) {
-    // We don't set memory_mib on 32 bit devices, so that we fall back to the
-    // original sizing logic in concierge.
-    EXPECT_EQ(request.memory_mib(), 0u);
-  } else {
-    EXPECT_EQ(request.memory_mib(), vm_ram_mib);
+// Determines whether the list of parameters in the given request contains
+// at least one parameter that starts with the prefix provided
+bool HasParameterWithPrefix(
+    const vm_tools::concierge::StartArcVmRequest& request,
+    const base::StringPiece& prefix) {
+  const auto& results = request.params();
+  bool prefix_found = false;
+  for (auto i = results.begin(); i != results.end() && !prefix_found; ++i) {
+    if (base::StartsWith(*i, prefix))
+      prefix_found = true;
   }
+  return prefix_found;
 }
 
 // A debugd client that can fail to start Concierge.
@@ -1972,7 +1975,7 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeDisabled) {
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
   auto request = GetTestConciergeClient()->start_arc_vm_request();
-  VerifyVmMemorySize(request, 0u);
+  EXPECT_EQ(request.memory_mib(), 0u);
 }
 
 // Test that StartArcVmRequest has `memory_mib == system memory` when
@@ -1989,7 +1992,7 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledBig) {
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
   auto request = GetTestConciergeClient()->start_arc_vm_request();
-  VerifyVmMemorySize(request, total_mib);
+  EXPECT_EQ(request.memory_mib(), total_mib);
 }
 
 // Test that StartArcVmRequest has `memory_mib == system memory - 1024` when
@@ -2006,7 +2009,7 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledSmall) {
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
   auto request = GetTestConciergeClient()->start_arc_vm_request();
-  VerifyVmMemorySize(request, total_mib - 1024);
+  EXPECT_EQ(request.memory_mib(), total_mib - 1024);
 }
 
 // Test that StartArcVmRequest has memory_mib unset when kVmMemorySize is
@@ -2024,7 +2027,7 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledLow) {
   auto request = GetTestConciergeClient()->start_arc_vm_request();
   // The 1024 max_mib is below the 2048 MiB safety cut-off, so we expect
   // memory_mib to be unset.
-  VerifyVmMemorySize(request, 0u);
+  EXPECT_EQ(request.memory_mib(), 0u);
 }
 
 // Test that StartArcVmRequest has `memory_mib == 2049` when kVmMemorySize is
@@ -2040,7 +2043,7 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledMax) {
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
   auto request = GetTestConciergeClient()->start_arc_vm_request();
-  VerifyVmMemorySize(request, 2049u);
+  EXPECT_EQ(request.memory_mib(), 2049u);
 }
 
 // Test that StartArcVmRequest has no memory_mib field when getting system
@@ -2063,7 +2066,35 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledNoSystemMemoryInfo) {
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
   auto request = GetTestConciergeClient()->start_arc_vm_request();
-  VerifyVmMemorySize(request, 0u);
+  EXPECT_EQ(request.memory_mib(), 0u);
+}
+
+// Test that StartArcVmRequest::memory_mib is limited to k32bitVmRamMaxMib when
+// crosvm is a 32-bit process.
+// TODO(yusukes): Remove this once crosvm becomes 64 bit binary on ARM.
+TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledOn32Bit) {
+  class TestDelegate : public ArcVmClientAdapterDelegate {
+    bool GetSystemMemoryInfo(base::SystemMemoryInfoKB* info) override {
+      // Return a value larger than k32bitVmRamMaxMib to verify that the VM
+      // memory size is actually limited.
+      info->total = (k32bitVmRamMaxMib + 1000) * 1024;
+      return true;
+    }
+    bool IsCrosvm32bit() override { return true; }
+  };
+  SetArcVmClientAdapterDelegateForTesting(adapter(),
+                                          std::make_unique<TestDelegate>());
+
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["shift_mib"] = "0";
+  feature_list.InitAndEnableFeatureWithParameters(kVmMemorySize, params);
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  auto request = GetTestConciergeClient()->start_arc_vm_request();
+
+  EXPECT_EQ(request.memory_mib(), k32bitVmRamMaxMib);
 }
 
 // Test that the correct BalloonPolicyOptions are set on StartArcVmRequest when
@@ -2191,6 +2222,119 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_EnableArcNearbyShare_Disabled) {
   EXPECT_FALSE(boot_notification_server()->received_data().empty());
   EXPECT_TRUE(base::Contains(boot_notification_server()->received_data(),
                              "ro.boot.enable_arc_nearby_share=0"));
+}
+
+// Test that StartArcVmRequest has no androidboot.arcvm.logd.size field
+// when kLogdConfig is disabled.
+TEST_F(ArcVmClientAdapterTest, ArcVmLogdSizeDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(kLogdConfig);
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_FALSE(HasParameterWithPrefix(request, "androidboot.arcvm.logd.size="));
+}
+
+// Test that StartArcVmRequest has no androidboot.arcvm.logd.size field
+// kLogdConfig is enabled with an invalid size
+TEST_F(ArcVmClientAdapterTest, ArcVmLogdSizeEnabledInvalid) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["size"] = "333";  // Invalid size.
+  feature_list.InitAndEnableFeatureWithParameters(kLogdConfig, params);
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_FALSE(HasParameterWithPrefix(request, "androidboot.arcvm.logd.size="));
+}
+
+// Test that StartArcVmRequest has correct androidboot.arcvm.logd.size field
+// kLogdConfig is enabled with a good size, case 1
+TEST_F(ArcVmClientAdapterTest, ArcVmLogdSizeEnabledValid1) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["size"] = "256";
+  feature_list.InitAndEnableFeatureWithParameters(kLogdConfig, params);
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(
+      base::Contains(request.params(), "androidboot.arcvm.logd.size=256K"));
+}
+
+// Test that StartArcVmRequest has correct androidboot.arcvm.logd.size field
+// kLogdConfig is enabled with a good size, case 2
+TEST_F(ArcVmClientAdapterTest, ArcVmLogdSizeEnabledValid2) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["size"] = "512";
+  feature_list.InitAndEnableFeatureWithParameters(kLogdConfig, params);
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(
+      base::Contains(request.params(), "androidboot.arcvm.logd.size=512K"));
+}
+
+// Test that StartArcVmRequest has correct androidboot.arcvm.logd.size field
+// kLogdConfig is enabled with a good size, case 3
+TEST_F(ArcVmClientAdapterTest, ArcVmLogdSizeEnabledValid3) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["size"] = "1024";
+  feature_list.InitAndEnableFeatureWithParameters(kLogdConfig, params);
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(
+      base::Contains(request.params(), "androidboot.arcvm.logd.size=1M"));
+}
+
+// Test that StartArcVmRequest has no matching command line flag
+// when kVmMemoryPSIReports is enabled.
+TEST_F(ArcVmClientAdapterTest, ArcVmMemoryPSIReportsDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(kVmMemoryPSIReports);
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_FALSE(HasParameterWithPrefix(
+      request, "androidboot.arcvm_metrics_mem_psi_period="));
+}
+
+// Test that StartArcVmRequest has correct  command line flag
+// when kVmMemoryPSIReports is enabled.
+TEST_F(ArcVmClientAdapterTest, ArcVmMemoryPSIReportsEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  base::FieldTrialParams params;
+  params["period"] = "300";
+  feature_list.InitAndEnableFeatureWithParameters(kVmMemoryPSIReports, params);
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(base::Contains(request.params(),
+                             "androidboot.arcvm_metrics_mem_psi_period=300"));
 }
 
 struct DalvikMemoryProfileTestParam {

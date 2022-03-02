@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Дозволи колачиња</translation>
 <translation id="2228071138934252756">За да овозможите <ph name="APP_NAME" /> да пристапува до вашата камера, вклучете ја дозволата за камерата и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">Само еднаш</translation>
+<translation id="2253414712144136228">Отстранете <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">Прашај кога некој сајт сака да открива уреди со Bluetooth во близина (се препорачува)</translation>
 <translation id="2315043854645842844">Оперативниот систем не поддржува избор на сертификат од страна на клиентот.</translation>
 <translation id="2359808026110333948">Продолжи</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Прикажи ги информациите</translation>
 <translation id="3123473560110926937">Блокирано на некои сајтови</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> складирани податоци</translation>
+<translation id="3203366800380907218">Од интернет</translation>
 <translation id="321187648315454507">За да овозможите <ph name="APP_NAME" /> да ви испраќа известувања, вклучете ја дозволата за известувања и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3277252321222022663">Дозволете сајтовите да пристапуваат до сензорите (препорачано)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">Блокирано</translation>
 <translation id="5689516760719285838">Локација</translation>
 <translation id="5690795753582697420">Камерата е исклучена во поставките за Android</translation>
-<translation id="5710871682236653961">Прашај пред да дозволиш сајтовите да испраќаат и примаат информации при допир на NFC-уреди (се препорачува)</translation>
 <translation id="5719847187258001597">Ова ќе ги избрише сите податоци и колачиња складирани од сајтот <ph name="ORIGIN" /> или од неговата апликација на почетниот екран.</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> е блокирана</translation>
 <translation id="5804241973901381774">Дозволи</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">Дозволено за тековниот пребарувач</translation>
 <translation id="7053983685419859001">Блокирај</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Избрана е 1}one{Избрана е #}other{Избрани се #}}</translation>
-<translation id="7070090581017165256">За сајтов</translation>
 <translation id="7087918508125750058">Избрани ставки: <ph name="ITEM_COUNT" />. Достапни се опции во горниот дел од екранот</translation>
 <translation id="7141896414559753902">Блокирај го прикажувањето скокачки прозорци и пренасочувања на сајтовите (се препорачува)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Сајтот го користи микрофонот</translation>
 <translation id="7561196759112975576">Секогаш</translation>
-<translation id="7572498721684305250">Блокирај ги испраќањето и примањето информации при допир на NFC-уреди</translation>
 <translation id="757524316907819857">Блокирај го пуштањето заштитени содржини од страна на сајтовите</translation>
 <translation id="7649070708921625228">Помош</translation>
 <translation id="7658239707568436148">Откажи</translation>

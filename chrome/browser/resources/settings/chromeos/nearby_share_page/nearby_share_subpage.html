@@ -63,7 +63,7 @@
       }
 
       .enabled-toggle-on {
-        color: var(--cros-toggle-color);
+        color: var(--cros-text-color-prominent);
         font-weight: 500;
       }
 
@@ -224,8 +224,7 @@
         </div>
         <cr-toggle
             id="fastInitiationNotificationToggle"
-            aria-labelledby="fastInitiationNotificationRowTitle"
-            aria-describedby="fastInitiationNotificationRowDescription"
+            aria-label="$i18n{fastInitiationNotificationToggleAriaLabel}"
             checked="[[isFastInitiationNotificationEnabled_(
                 settings.fastInitiationNotificationState)]]"
             on-change="onFastInitiationNotificationToggledByUser_"

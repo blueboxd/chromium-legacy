@@ -19,7 +19,6 @@ class Notification;
 namespace views {
 class BoxLayout;
 class FlexLayoutView;
-class ImageButton;
 class LabelButton;
 class View;
 }  // namespace views
@@ -28,6 +27,7 @@ namespace ash {
 
 class RoundedImageView;
 class AshNotificationExpandButton;
+class IconButton;
 
 // Customized NotificationView for notification on ChromeOS. This view is used
 // to displays all current types of notification on ChromeOS (web, basic, image,
@@ -53,6 +53,9 @@ class ASH_EXPORT AshNotificationView
 
   // Toggle the expand state of the notification.
   void ToggleExpand();
+
+  // Called when a child notificaiton's preferred size changes.
+  void GroupedNotificationsPreferredSizeChanged();
 
   // Gets the animation duration for a recent bounds change. Called after
   // `PreferredSizeChanged()`, so the current state is the target state.
@@ -96,6 +99,28 @@ class ASH_EXPORT AshNotificationView
   int GetLargeImageViewMaxWidth() const override;
   void ToggleInlineSettings(const ui::Event& event) override;
   void ActionButtonPressed(size_t index, const ui::Event& event) override;
+
+  // View containing all grouped notifications, propagates size changes
+  // to the parent notification view.
+  class GroupedNotificationsContainer : public views::BoxLayoutView {
+   public:
+    GroupedNotificationsContainer() = default;
+    GroupedNotificationsContainer(const GroupedNotificationsContainer&) =
+        delete;
+    GroupedNotificationsContainer& operator=(
+        const GroupedNotificationsContainer&) = delete;
+    void ChildPreferredSizeChanged(views::View* view) override;
+    void SetParentNotificationView(
+        AshNotificationView* parent_notification_view);
+
+   private:
+    AshNotificationView* parent_notification_view_ = nullptr;
+  };
+  BEGIN_VIEW_BUILDER(/*no export*/,
+                     GroupedNotificationsContainer,
+                     views::BoxLayoutView)
+  VIEW_BUILDER_PROPERTY(AshNotificationView*, ParentNotificationView)
+  END_VIEW_BUILDER
 
  private:
   friend class AshNotificationViewTest;
@@ -160,25 +185,43 @@ class ASH_EXPORT AshNotificationView
   // Update the color and icon for `app_icon_view_`.
   void UpdateAppIconView();
 
+  // Calculate the color used for the app icon and action buttons.
+  SkColor CalculateIconAndButtonsColor();
+
+  // Update the color of icon and buttons.
+  void UpdateIconAndButtonsColor();
+
   // AshNotificationView will animate its expand/collapse in the parent's
   // ChildPreferredSizeChange(). Child views are animated here.
   void PerformExpandCollapseAnimation();
 
+  // Expand/collapse animation for large image within `image_container_view()`.
+  void PerformLargeImageAnimation();
+
+  // Animations when toggle inline settings.
+  void PerformToggleInlineSettingsAnimation(bool should_show_inline_settings);
+
+  // Calculate vertical space available on screen for the
+  // grouped_notifications_scroll_view_
+  int CalculateMaxHeightForGroupedNotifications();
+
   // Owned by views hierarchy.
+  views::View* main_view_ = nullptr;
+  views::View* main_right_view_ = nullptr;
   RoundedImageView* app_icon_view_ = nullptr;
   AshNotificationExpandButton* expand_button_ = nullptr;
   views::FlexLayoutView* expand_button_container_ = nullptr;
   views::View* control_buttons_container_ = nullptr;
   views::View* left_content_ = nullptr;
   views::Label* message_view_in_expanded_state_ = nullptr;
+  views::ScrollView* grouped_notifications_scroll_view_ = nullptr;
   views::View* grouped_notifications_container_ = nullptr;
   views::View* collapsed_summary_view_ = nullptr;
   views::View* control_buttons_view_ = nullptr;
-  views::View* main_view_ = nullptr;
   views::LabelButton* turn_off_notifications_button_ = nullptr;
   views::LabelButton* inline_settings_cancel_button_ = nullptr;
   views::View* snooze_button_spacer_ = nullptr;
-  views::ImageButton* snooze_button_ = nullptr;
+  IconButton* snooze_button_ = nullptr;
 
   // These views below are dynamically created inside view hierarchy.
   NotificationTitleRow* title_row_ = nullptr;
@@ -210,5 +253,8 @@ class ASH_EXPORT AshNotificationView
 };
 
 }  // namespace ash
+
+DEFINE_VIEW_BUILDER(/* no export */,
+                    ash::AshNotificationView::GroupedNotificationsContainer)
 
 #endif  // ASH_SYSTEM_MESSAGE_CENTER_ASH_NOTIFICATION_VIEW_H_

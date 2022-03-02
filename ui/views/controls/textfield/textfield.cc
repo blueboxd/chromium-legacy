@@ -485,7 +485,7 @@ void Textfield::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
 void Textfield::ShowVirtualKeyboardIfEnabled() {
   // GetInputMethod() may return nullptr in tests.
   if (GetEnabled() && !GetReadOnly() && GetInputMethod())
-    GetInputMethod()->ShowVirtualKeyboardIfEnabled();
+    GetInputMethod()->SetVirtualKeyboardVisibilityIfEnabled(true);
 }
 
 bool Textfield::IsIMEComposing() const {
@@ -1838,8 +1838,7 @@ void Textfield::ExecuteTextEditCommand(ui::TextEditCommand command) {
   OnBeforeUserAction();
 
   gfx::SelectionModel selection_model = GetSelectionModel();
-  bool text_changed, cursor_changed;
-  std::tie(text_changed, cursor_changed) = DoExecuteTextEditCommand(command);
+  auto [text_changed, cursor_changed] = DoExecuteTextEditCommand(command);
 
   cursor_changed |= (GetSelectionModel() != selection_model);
   if (cursor_changed && HasSelection())
@@ -1866,7 +1865,7 @@ Textfield::EditCommandResult Textfield::DoExecuteTextEditCommand(
     case ui::TextEditCommand::DELETE_TO_END_OF_LINE:
     case ui::TextEditCommand::DELETE_TO_END_OF_PARAGRAPH:
       add_to_kill_buffer = text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD;
-      FALLTHROUGH;
+      [[fallthrough]];
     case ui::TextEditCommand::DELETE_WORD_BACKWARD:
     case ui::TextEditCommand::DELETE_WORD_FORWARD:
       if (HasSelection())

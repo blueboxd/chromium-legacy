@@ -5,7 +5,6 @@
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -45,7 +44,7 @@ Robustness ConvertRobustness(const std::string& robustness) {
   return Robustness::INVALID;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 bool IsHardwareSecurityEnabledForKeySystem(const std::string& key_system) {
   return (key_system == kWidevineKeySystem &&
           base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) ||
@@ -53,7 +52,7 @@ bool IsHardwareSecurityEnabledForKeySystem(const std::string& key_system) {
           base::FeatureList::IsEnabled(
               media::kHardwareSecureDecryptionExperiment));
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace
 
@@ -85,13 +84,13 @@ std::string WidevineKeySystemProperties::GetBaseKeySystemName() const {
 
 bool WidevineKeySystemProperties::IsSupportedKeySystem(
     const std::string& key_system) const {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (key_system == kWidevineExperimentKeySystem &&
       base::FeatureList::IsEnabled(
           media::kHardwareSecureDecryptionExperiment)) {
     return true;
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   return key_system == kWidevineKeySystem;
 }
@@ -169,10 +168,10 @@ EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(
     return EmeConfigRule::NOT_SUPPORTED;
   }
 
-  bool hw_secure_codecs_required =
+  [[maybe_unused]] bool hw_secure_codecs_required =
       hw_secure_requirement && *hw_secure_requirement;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // Hardware security requires HWDRM or remote attestation, both of these
   // require an identifier.
   if (robustness >= Robustness::HW_SECURE_CRYPTO || hw_secure_codecs_required) {
@@ -198,11 +197,11 @@ EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(
       max_robustness == Robustness::HW_SECURE_ALL) {
     return EmeConfigRule::IDENTIFIER_RECOMMENDED;
   }
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
   // On Android, require hardware secure codecs for SW_SECURE_DECODE and above.
   if (robustness >= Robustness::SW_SECURE_DECODE || hw_secure_codecs_required)
     return EmeConfigRule::HW_SECURE_CODECS_REQUIRED;
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   // On Windows, hardware security uses MediaFoundation-based CDM which requires
   // identifier and persistent state.
   if (robustness >= Robustness::HW_SECURE_CRYPTO || hw_secure_codecs_required) {
@@ -216,9 +215,7 @@ EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(
   // above.
   if (robustness >= Robustness::HW_SECURE_CRYPTO)
     return EmeConfigRule::HW_SECURE_CODECS_REQUIRED;
-
-  ALLOW_UNUSED_LOCAL(hw_secure_codecs_required);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   return EmeConfigRule::SUPPORTED;
 }

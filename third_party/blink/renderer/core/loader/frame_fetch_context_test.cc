@@ -90,7 +90,6 @@ class FrameFetchContextMockLocalFrameClient : public EmptyLocalFrameClient {
                void(const ResourceRequest&, const ResourceResponse&));
   MOCK_METHOD0(UserAgent, String());
   MOCK_METHOD0(MayUseClientLoFiForImageRequests, bool());
-  MOCK_CONST_METHOD0(GetPreviewsStateForFrame, PreviewsState());
 };
 
 class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
@@ -109,6 +108,9 @@ class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
     return policy_;
   }
 
+  LoadPolicy GetLoadPolicyForWebTransportConnect(const WebURL&) override {
+    return policy_;
+  }
   void ReportDisallowedLoad() override { ++*filtered_load_counter_; }
 
   bool ShouldLogToConsole() override { return false; }
@@ -619,7 +621,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemorySecureTransport) {
   // Without a permissions policy header, the client hints should be sent only
   // to the first party origins. Device-memory is a legacy hint that's sent on
   // Android regardless of Permissions Policy delegation.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory", true,
                "4");
 #else
@@ -1084,7 +1086,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorSomeHintsPermissionsPolicy) {
                "4");
   // Device-memory is a legacy hint that's sent on Android regardless of
   // Permissions Policy delegation.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   ExpectHeader("https://www.someother-example.com/1.gif", "Device-Memory", true,
                "4");
 #else
@@ -1101,7 +1103,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorSomeHintsPermissionsPolicy) {
   ExpectHeader("https://www.example.net/1.gif", "ect", false, "");
   // DPR is a legacy hint that's sent on Android regardless of Permissions
   // Policy delegation.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   ExpectHeader("https://www.example.net/1.gif", "DPR", true, "1");
 #else
   ExpectHeader("https://www.example.net/1.gif", "DPR", false, "");

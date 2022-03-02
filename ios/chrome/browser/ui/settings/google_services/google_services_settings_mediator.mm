@@ -27,7 +27,6 @@
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
@@ -36,6 +35,7 @@
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_switch_item.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -158,7 +158,7 @@ bool GetStatusForSigninPolicy() {
 // The item related to the switch for the automatic password leak detection
 // setting.
 @property(nonatomic, strong, null_resettable)
-    SettingsSwitchItem* passwordLeakCheckItem;
+    TableViewSwitchItem* passwordLeakCheckItem;
 
 // All the items for the non-personalized section.
 @property(nonatomic, strong, readonly) ItemArray nonPersonalizedItems;
@@ -237,13 +237,12 @@ bool GetStatusForSigninPolicy() {
                         textStringID:
                             IDS_IOS_GOOGLE_SERVICES_SETTINGS_ALLOW_SIGNIN_TEXT
                       detailStringID:
-                          IDS_IOS_GOOGLE_SERVICES_SETTINGS_ALLOW_SIGNIN_DETAIL
-                            dataType:0];
+                          IDS_IOS_GOOGLE_SERVICES_SETTINGS_ALLOW_SIGNIN_DETAIL];
   }
   // Disables "Allow Chrome Sign-in" switch with a disclosure that the
   // setting has been disabled by the organization.
   return [self
-      TableViewInfoButtonItemType:AllowChromeSigninItemType
+      tableViewInfoButtonItemType:AllowChromeSigninItemType
                      textStringID:
                          IDS_IOS_GOOGLE_SERVICES_SETTINGS_ALLOW_SIGNIN_TEXT
                    detailStringID:
@@ -358,7 +357,7 @@ bool GetStatusForSigninPolicy() {
     if (self.userPrefService->IsManagedPreference(
             prefs::kSearchSuggestEnabled)) {
       TableViewInfoButtonItem* autocompleteItem = [self
-          TableViewInfoButtonItemType:AutocompleteSearchesAndURLsManagedItemType
+          tableViewInfoButtonItemType:AutocompleteSearchesAndURLsManagedItemType
                          textStringID:
                              IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT
                        detailStringID:
@@ -372,14 +371,13 @@ bool GetStatusForSigninPolicy() {
                     textStringID:
                         IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT
                   detailStringID:
-                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL
-                        dataType:0];
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL];
       [items addObject:autocompleteItem];
     }
     if (self.userPrefService->IsManagedPreference(
             prefs::kSafeBrowsingEnabled)) {
       TableViewInfoButtonItem* safeBrowsingManagedItem = [self
-          TableViewInfoButtonItemType:AutocompleteSearchesAndURLsManagedItemType
+          tableViewInfoButtonItemType:AutocompleteSearchesAndURLsManagedItemType
                          textStringID:
                              IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_TEXT
                        detailStringID:
@@ -393,8 +391,7 @@ bool GetStatusForSigninPolicy() {
                     textStringID:
                         IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_TEXT
                   detailStringID:
-                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_DETAIL
-                        dataType:0];
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_DETAIL];
       safeBrowsingItem.accessibilityIdentifier =
           kSafeBrowsingItemAccessibilityIdentifier;
       [items addObject:safeBrowsingItem];
@@ -403,7 +400,7 @@ bool GetStatusForSigninPolicy() {
     if (self.localPrefService->IsManagedPreference(
             metrics::prefs::kMetricsReportingEnabled)) {
       TableViewInfoButtonItem* improveChromeItem = [self
-          TableViewInfoButtonItemType:ImproveChromeManagedItemType
+          tableViewInfoButtonItemType:ImproveChromeManagedItemType
                          textStringID:
                              IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_TEXT
                        detailStringID:
@@ -417,14 +414,13 @@ bool GetStatusForSigninPolicy() {
                     textStringID:
                         IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_TEXT
                   detailStringID:
-                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL
-                        dataType:0];
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL];
       [items addObject:improveChromeItem];
     }
     if (self.userPrefService->IsManagedPreference(
             unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled)) {
       TableViewInfoButtonItem* betterSearchAndBrowsingItem = [self
-          TableViewInfoButtonItemType:BetterSearchAndBrowsingManagedItemType
+          tableViewInfoButtonItemType:BetterSearchAndBrowsingManagedItemType
                          textStringID:
                              IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_TEXT
                        detailStringID:
@@ -440,8 +436,7 @@ bool GetStatusForSigninPolicy() {
                     textStringID:
                         IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_TEXT
                   detailStringID:
-                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL
-                        dataType:0];
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL];
       betterSearchAndBrowsingItem.accessibilityIdentifier =
           kBetterSearchAndBrowsingItemAccessibilityID;
       [items addObject:betterSearchAndBrowsingItem];
@@ -450,7 +445,7 @@ bool GetStatusForSigninPolicy() {
       if (self.userPrefService->IsManagedPreference(
               prefs::kTrackPricesOnTabsEnabled)) {
         TableViewInfoButtonItem* trackPricesOnTabsItem = [self
-            TableViewInfoButtonItemType:TrackPricesOnTabsItemType
+            tableViewInfoButtonItemType:TrackPricesOnTabsItemType
                            textStringID:IDS_IOS_TRACK_PRICES_ON_TABS
                          detailStringID:IDS_IOS_TRACK_PRICES_ON_TABS_DESCRIPTION
                                  status:self.trackPricesOnTabsPreference
@@ -462,8 +457,7 @@ bool GetStatusForSigninPolicy() {
         SyncSwitchItem* trackPricesOnTabsItem = [self
             switchItemWithItemType:TrackPricesOnTabsItemType
                       textStringID:IDS_IOS_TRACK_PRICES_ON_TABS
-                    detailStringID:IDS_IOS_TRACK_PRICES_ON_TABS_DESCRIPTION
-                          dataType:0];
+                    detailStringID:IDS_IOS_TRACK_PRICES_ON_TABS_DESCRIPTION];
         trackPricesOnTabsItem.accessibilityIdentifier =
             kTrackPricesOnTabsItemAccessibilityID;
         [items addObject:trackPricesOnTabsItem];
@@ -475,9 +469,9 @@ bool GetStatusForSigninPolicy() {
   return _nonPersonalizedItems;
 }
 
-- (SettingsSwitchItem*)passwordLeakCheckItem {
+- (TableViewSwitchItem*)passwordLeakCheckItem {
   if (!_passwordLeakCheckItem) {
-    SettingsSwitchItem* passwordLeakCheckItem = [[SettingsSwitchItem alloc]
+    TableViewSwitchItem* passwordLeakCheckItem = [[TableViewSwitchItem alloc]
         initWithType:PasswordLeakCheckSwitchItemType];
     passwordLeakCheckItem.text =
         l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SWITCH);
@@ -492,21 +486,20 @@ bool GetStatusForSigninPolicy() {
 
 #pragma mark - Private
 
-// Creates a SyncSwitchItem instance.
+// Creates an item with a switch toggle.
 - (SyncSwitchItem*)switchItemWithItemType:(NSInteger)itemType
                              textStringID:(int)textStringID
-                           detailStringID:(int)detailStringID
-                                 dataType:(NSInteger)dataType {
+                           detailStringID:(int)detailStringID {
   SyncSwitchItem* switchItem = [[SyncSwitchItem alloc] initWithType:itemType];
   switchItem.text = GetNSString(textStringID);
   if (detailStringID)
     switchItem.detailText = GetNSString(detailStringID);
-  switchItem.dataType = dataType;
   return switchItem;
 }
 
-// Create a TableViewInfoButtonItem instance.
-- (TableViewInfoButtonItem*)TableViewInfoButtonItemType:(NSInteger)itemType
+// Create a TableViewInfoButtonItem instance used for items that the user is
+// not allowed to switch on or off (enterprise reason for example).
+- (TableViewInfoButtonItem*)tableViewInfoButtonItemType:(NSInteger)itemType
                                            textStringID:(int)textStringID
                                          detailStringID:(int)detailStringID
                                                  status:(BOOL)status

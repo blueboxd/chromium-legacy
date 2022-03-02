@@ -22,6 +22,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/mock_web_contents_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -82,14 +83,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BackForwardCacheFlush) {
 // Tests that |RenderFrameHost::ForEachRenderFrameHost| and
 // |WebContents::ForEachRenderFrameHost| behave correctly with bfcached
 // RenderFrameHosts.
-#if defined(OS_MAC)
-// Flaky: https://crbug.com/1263536
-#define MAYBE_ForEachRenderFrameHost DISABLED_ForEachRenderFrameHost
-#else
-#define MAYBE_ForEachRenderFrameHost ForEachRenderFrameHost
-#endif
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       MAYBE_ForEachRenderFrameHost) {
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, ForEachRenderFrameHost) {
+  // There are sometimes unexpected messages from a renderer to the browser,
+  // which caused test flakiness on macOS.
+  // TODO(crbug.com/1263536): Fix the test flakiness.
+  DoNotFailForUnexpectedMessagesWhileCached();
+
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c),d)"));
@@ -329,8 +328,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ExpectRestored(FROM_HERE);
 }
 
+// Disabled due to flakiness on Linux and Mac https://crbug.com/1287467
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+#define MAYBE_ProxiesAreStoredAndRestored DISABLED_ProxiesAreStoredAndRestored
+#else
+#define MAYBE_ProxiesAreStoredAndRestored ProxiesAreStoredAndRestored
+#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DISABLED_ProxiesAreStoredAndRestored) {
+                       MAYBE_ProxiesAreStoredAndRestored) {
   // This test makes assumption about where iframe processes live.
   if (!AreAllSitesIsolatedForTesting())
     return;
@@ -542,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // Disable the BackForwardCache.
   web_contents()->GetController().GetBackForwardCache().DisableForTesting(
-      BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+      BackForwardCacheImpl::TEST_REQUIRES_NO_CACHING);
 
   // Navigate to a page that would normally be cacheable.
   EXPECT_TRUE(NavigateToURL(
@@ -790,11 +795,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, EvictPageWithInfiniteLoop) {
 //
 // When the eviction occurs, the in flight NavigationRequest to the cached
 // document should be reissued (cancelled and replaced by a normal navigation).
-//
-// Flaky on most platforms (see crbug.com/1136683)
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheBrowserTest,
-    DISABLED_ReissuesNavigationIfEvictedDuringNavigation_BeforeResponse) {
+    ReissuesNavigationIfEvictedDuringNavigation_BeforeResponse) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -1963,7 +1966,7 @@ class BackForwardCacheDisabledThroughCommandLineBrowserTest
     BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisableBackForwardCache);
     EnableFeatureAndSetParams(blink::features::kLoadingTasksUnfreezable,
-                              "max_buffered_bytes", "1000");
+                              "max_buffered_bytes_per_process", "1000");
   }
 };
 
@@ -2092,7 +2095,7 @@ IN_PROC_BROWSER_TEST_F(
   // to A2 is in flight. Ensure that we do not try to restart it as it should
   // be superseded by a navigation to A1.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  EXPECT_EQ(url_a1, web_contents()->GetURL());
+  EXPECT_EQ(url_a1, web_contents()->GetLastCommittedURL());
 }
 
 namespace {
@@ -2148,7 +2151,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_EQ(rfh_a, current_frame_host());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        ChildImportanceTestForBackForwardCachedPagesTest) {
   web_contents()->SetPrimaryMainFrameImportance(
@@ -3404,7 +3407,16 @@ IN_PROC_BROWSER_TEST_F(
   // 2) Navigate to B, and inject a blank subframe just before it commits.
   {
     InjectCreateChildFrame injector(shell()->web_contents(), url_b);
-    ASSERT_TRUE(NavigateToURL(shell(), url_b));
+
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+    shell()->LoadURL(url_b);
+    navigation_observer.Wait();
+    // We cannot use NavigateToURL which will automatically wait for particular
+    // url in the navigation above because running a nested message loop in the
+    // injector confuses TestNavigationObserver by changing the order of
+    // notifications.
+    EXPECT_EQ(url_b, shell()->web_contents()->GetLastCommittedURL());
+
     EXPECT_TRUE(injector.was_called());
   }
 

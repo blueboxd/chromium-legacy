@@ -58,7 +58,6 @@
     "args": ["--enable-threaded-compositing",
              "--enable-blink-features=OffMainThreadCSSPaint",
              "--enable-gpu-rasterization",
-             "--enable-oop-rasterization",
              "--enable-accelerated-2d-canvas",
              "--disable-features=CanvasOopRasterization"]
   },
@@ -103,15 +102,6 @@
       "fast/dom"
     ],
     "args": ["--enable-features=V8OffThreadFinalization,SmallScriptStreaming,SharedArrayBuffer"]
-  },
-  {
-    "prefix": "consume-code-cache-off-thread",
-    "bases": [
-      "external/wpt/html/semantics/scripting-1",
-      "external/wpt/workers/modules",
-      "external/wpt/worklets"
-    ],
-    "args": ["--enable-features=ConsumeCodeCacheOffThread"]
   },
   {
     "prefix": "exotic-color-space",
@@ -211,9 +201,9 @@
     "args": ["--enable-blink-features=FractionalScrollOffsets"]
   },
   {
-    "prefix": "font-access-persistent",
+    "prefix": "font-access",
     "bases": ["external/wpt/font-access"],
-    "args": ["--enable-features=FontAccess,FontAccessPersistent"]
+    "args": ["--enable-features=FontAccess"]
   },
   {
     "prefix": "compute-pressure",
@@ -418,11 +408,6 @@
     "args": ["--autoplay-policy=document-user-activation-required"]
   },
   {
-    "prefix": "sxg-subresource-disabled",
-    "bases": ["http/tests/loading/sxg/sxg-subresource-origin-trial.https.html"],
-    "args": ["--disable-blink-features=SignedExchangeSubresourcePrefetch"]
-  },
-  {
     "prefix": "wbn-from-network",
     "bases": ["external/wpt/web-bundle"],
     "args": ["--enable-features=WebBundlesFromNetwork"]
@@ -442,8 +427,8 @@
               "external/wpt/workers",
               "external/wpt/xhr",
               "fast/workers",
-              "http/tests/inspector-protocol/fetch",
-              "http/tests/inspector-protocol/network",
+              "http/tests/devtools",
+              "http/tests/inspector-protocol",
               "http/tests/origin_trials",
               "http/tests/workers",
               "inspector-protocol/worker"],
@@ -462,7 +447,8 @@
   },
   {
     "prefix": "direct-sockets",
-    "bases": ["external/wpt/raw-sockets"],
+    "bases": ["external/wpt/direct-sockets",
+    	      "wpt_internal/direct-sockets"],
     "args": ["--enable-features=DirectSockets"]
   },
   {
@@ -492,15 +478,6 @@
     "bases": ["http/tests/devtools/wasm-isolated-code-cache"],
     "args": ["--disable-features=WebAssemblyBaseline",
              "--site-per-process"]
-  },
-  {
-    "prefix": "wasm-module-sharing-enabled-not-site-per-process",
-    "bases": [
-      "external/wpt/wasm/serialization/module/window-domain-success.sub.html",
-      "external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html"
-    ],
-    "args": ["--cross-origin-webassembly-module-sharing-allowed",
-             "--disable-site-isolation-trials"]
   },
   {
     "prefix": "wasm-csp",
@@ -832,7 +809,6 @@
     "bases": [ "fast/canvas" ],
     "args": [ "--enable-features=CanvasOopRasterization",
               "--enable-accelerated-2d-canvas",
-              "--enable-oop-rasterization",
               "--enable-gpu-rasterization" ]
   },
   {
@@ -959,6 +935,7 @@
               "accessibility/virtual-node-repair-document.html",
               "external/wpt/accessibility/crashtests/aria-hidden-with-select.html",
               "external/wpt/accessibility/crashtests/aria-owns-destroyed-by-content-replacement.html",
+              "external/wpt/accessibility/crashtests/aria-owns-reparent.html",
               "external/wpt/accessibility/crashtests/content-visibility-generated-content-removal.html",
               "external/wpt/accessibility/crashtests/included-descendant-dom-removal.html",
               "external/wpt/accessibility/crashtests/included-descendant-layout-removal.html",
@@ -978,14 +955,10 @@
     "args": ["--enable-fake-no-alloc-direct-call-for-testing"]
   },
   {
-    "prefix": "webid",
-    "bases": ["wpt_internal/webid"],
-    "args": ["--enable-features=WebID"]
-  },
-  {
     "prefix": "document-transition",
     "bases": ["wpt_internal/document-transition"],
     "args": ["--enable-blink-features=DocumentTransition",
+             "--enable-features=DocumentTransitionRenderer",
              "--enable-threaded-compositing",
              "--enable-gpu-rasterization"]
   },
@@ -1012,16 +985,6 @@
     "args": ["--enable-blink-features=VirtualKeyboard"]
   },
   {
-    "prefix": "async-load-data-url-fonts",
-    "bases": [
-      "fast/css/fontface-methods.html",
-      "fast/css/fontfaceset-download-error.html",
-      "fast/css/fontfaceset-multiple-families.html",
-      "fast/css/unused-data-url-fontface.html"
-    ],
-    "args": [ "--disable-features=SyncLoadDataUrlFonts" ]
-  },
-  {
     "prefix": "parakeet",
     "bases": ["external/wpt/parakeet"],
     "args": ["--enable-features=InterestGroupStorage,AdInterestGroupAPI,Parakeet"]
@@ -1029,7 +992,8 @@
   {
     "prefix": "fledge",
     "bases": [
-      "http/tests/inspector-protocol/target/auto-attach-auction-worklet.js"
+      "http/tests/inspector-protocol/target/auto-attach-auction-worklet.js",
+      "http/tests/inspector-protocol/storage/interest-groups.js"
     ],
     "args": [
       "--enable-features=InterestGroupStorage,AdInterestGroupAPI,Fledge,FencedFrames:implementation_type/shadow_dom"
@@ -1065,11 +1029,19 @@
   {
     "prefix": "fenced-frame-mparch",
     "bases": [
-      "fenced_frame",
+      "http/tests/fenced_frame",
       "wpt_internal/fenced_frame",
       "http/tests/inspector-protocol/fenced-frame"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/mparch,Prerender2"]
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch,Prerender2,PartitionedCookies"]
+  },
+  {
+    "prefix": "fenced-frame-shadow-dom",
+    "bases": [
+      "http/tests/fenced_frame",
+      "wpt_internal/fenced_frame"
+    ],
+    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,Prerender2,PartitionedCookies"]
   },
   {
     "prefix": "fenced-frame-shadow-dom",

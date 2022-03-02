@@ -69,15 +69,18 @@ class QuotaInternalsProxy
   void DidGetGlobalUsage(blink::mojom::StorageType type,
                          int64_t usage,
                          int64_t unlimited_usage);
+  void DidGetStorageKeys(blink::mojom::StorageType type,
+                         const std::set<blink::StorageKey>& storage_keys);
   void DidDumpQuotaTable(const QuotaTableEntries& entries);
   void DidDumpBucketTable(const BucketTableEntries& entries);
   void DidGetHostUsage(const std::string& host,
                        blink::mojom::StorageType type,
                        int64_t usage,
                        blink::mojom::UsageBreakdownPtr usage_breakdown);
+  void DidGetStatistics(
+      const base::flat_map<std::string, std::string>& statistics);
 
   // Helper. Called on IO Thread.
-  void RequestPerOriginInfo(blink::mojom::StorageType type);
   void VisitHost(const std::string& host, blink::mojom::StorageType type);
   void GetHostUsage(const std::string& host, blink::mojom::StorageType type);
 

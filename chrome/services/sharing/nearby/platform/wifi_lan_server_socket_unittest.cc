@@ -6,13 +6,15 @@
 
 #include <memory>
 
+#include "ash/services/nearby/public/cpp/fake_firewall_hole.h"
+#include "ash/services/nearby/public/cpp/fake_tcp_connected_socket.h"
+#include "ash/services/nearby/public/cpp/fake_tcp_server_socket.h"
+#include "ash/services/nearby/public/mojom/firewall_hole.mojom.h"
 #include "base/run_loop.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/services/sharing/nearby/platform/fake_tcp_connected_socket.h"
-#include "chrome/services/sharing/nearby/platform/fake_tcp_server_socket.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -44,16 +46,23 @@ class WifiLanServerSocketTest : public testing::Test {
   WifiLanServerSocketTest& operator=(const WifiLanServerSocketTest&) = delete;
 
   void SetUp() override {
-    auto fake_tcp_server_socket = std::make_unique<FakeTcpServerSocket>();
+    auto fake_tcp_server_socket =
+        std::make_unique<ash::nearby::FakeTcpServerSocket>();
     fake_tcp_server_socket_ = fake_tcp_server_socket.get();
     mojo::PendingRemote<network::mojom::TCPServerSocket> tcp_server_socket;
     tcp_server_socket_self_owned_receiver_ref_ = mojo::MakeSelfOwnedReceiver(
         std::move(fake_tcp_server_socket),
         tcp_server_socket.InitWithNewPipeAndPassReceiver());
 
+    mojo::PendingRemote<sharing::mojom::FirewallHole> firewall_hole;
+    firewall_hole_self_owned_receiver_ref_ = mojo::MakeSelfOwnedReceiver(
+        std::make_unique<ash::nearby::FakeFirewallHole>(),
+        firewall_hole.InitWithNewPipeAndPassReceiver());
+
     wifi_lan_server_socket_ = std::make_unique<WifiLanServerSocket>(
         WifiLanServerSocket::ServerSocketParameters(
-            kLocalAddress, std::move(tcp_server_socket)));
+            kLocalAddress, std::move(tcp_server_socket),
+            std::move(firewall_hole)));
   }
 
   void TearDown() override { wifi_lan_server_socket_.reset(); }
@@ -102,9 +111,11 @@ class WifiLanServerSocketTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   size_t num_running_accept_calls_ = 0;
   base::OnceClosure on_accept_calls_finished_;
-  FakeTcpServerSocket* fake_tcp_server_socket_;
+  ash::nearby::FakeTcpServerSocket* fake_tcp_server_socket_;
   mojo::SelfOwnedReceiverRef<network::mojom::TCPServerSocket>
       tcp_server_socket_self_owned_receiver_ref_;
+  mojo::SelfOwnedReceiverRef<sharing::mojom::FirewallHole>
+      firewall_hole_self_owned_receiver_ref_;
   std::unique_ptr<WifiLanServerSocket> wifi_lan_server_socket_;
 };
 
@@ -235,7 +246,8 @@ TEST_F(WifiLanServerSocketTest, Destroy_WhileWaitingForAccept) {
   run_loop.Run();
 }
 
-TEST_F(WifiLanServerSocketTest, Disconnect_WhileWaitingForAccept) {
+TEST_F(WifiLanServerSocketTest,
+       Disconnect_WhileWaitingForAccept_TcpServerSocket) {
   const size_t kNumThreads = 3;
   base::RunLoop run_loop;
   CallAcceptFromThreads(
@@ -247,6 +259,21 @@ TEST_F(WifiLanServerSocketTest, Disconnect_WhileWaitingForAccept) {
   // Destroying the TCPServerSocket receiver will trigger the remote's
   // disconnect handler, which will close the WifiLanServerSocket.
   tcp_server_socket_self_owned_receiver_ref_->Close();
+  run_loop.Run();
+}
+
+TEST_F(WifiLanServerSocketTest, Disconnect_WhileWaitingForAccept_FirewallHole) {
+  const size_t kNumThreads = 3;
+  base::RunLoop run_loop;
+  CallAcceptFromThreads(
+      kNumThreads,
+      /*expected_num_accept_calls_sent_to_tcp_socket=*/kNumThreads,
+      /*expected_success=*/false,
+      /*on_accept_calls_finished=*/run_loop.QuitClosure());
+
+  // Destroying the FirewallHole receiver will trigger the remote's
+  // disconnect handler, which will close the WifiLanServerSocket.
+  firewall_hole_self_owned_receiver_ref_->Close();
   run_loop.Run();
 }
 

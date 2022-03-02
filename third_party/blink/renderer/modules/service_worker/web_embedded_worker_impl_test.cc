@@ -140,9 +140,6 @@ class FakeWebServiceWorkerFetchContext final
     return {};
   }
   void SetIsOfflineMode(bool is_offline_mode) override {}
-  mojom::SubresourceLoaderUpdater* GetSubresourceLoaderUpdater() override {
-    return nullptr;
-  }
 
  private:
   FakeWebURLLoaderFactory fake_web_url_loader_factory_;
@@ -215,7 +212,6 @@ class MockServiceWorkerContextClient final
             KURL("https://example.com"), std::move(service_worker_object_host),
             service_worker_object.InitWithNewEndpointAndPassReceiver()),
         mojom::blink::FetchHandlerExistence::EXISTS,
-        /*subresource_loader_factories=*/nullptr,
         /*reporting_observer_receiver=*/mojo::NullReceiver());
 
     // To make the other side callable.

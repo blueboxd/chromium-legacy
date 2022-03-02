@@ -171,14 +171,64 @@ HighlightPseudoStyleWithOriginatingInheritance(
   return element->CachedStyleForPseudoElement(pseudo, pseudo_argument);
 }
 
+// Paired cascade: when we encounter any highlight colors, we make all other
+// highlight color properties default to initial, rather than the UA default.
+// https://drafts.csswg.org/css-pseudo-4/#highlight-cascade
+bool UseUaHighlightColors(PseudoId pseudo, const ComputedStyle& pseudo_style) {
+  // TODO(crbug.com/1024156): spec issue: should we limit this to ::selection?
+  // TODO(crbug.com/1024156): https://github.com/w3c/csswg-drafts/issues/6386
+  // NOTE: to limit this to ::selection without breaking our default highlight
+  // colors for ::target-text, we would need to split HasAuthorHighlightColors
+  // into bits for foreground and background, or impl ::target-text defaults
+  // as a UA stylesheet rule of MarkText on Mark (as recommended by the spec).
+  return !pseudo_style.HasAuthorHighlightColors();
+}
+
+Color HighlightColor(const Document& document,
+                     const ComputedStyle& style,
+                     Node* node,
+                     PseudoId pseudo,
+                     const CSSProperty& color_property,
+                     PaintFlags paint_flags,
+                     const AtomicString& pseudo_argument = g_null_atom) {
+  if (pseudo == kPseudoIdSelection) {
+    // If the element is unselectable, or we are only painting the selection,
+    // don't override the foreground color with the selection foreground color.
+    if ((node && !style.IsSelectable()) ||
+        (paint_flags & PaintFlag::kSelectionDragImageOnly)) {
+      return style.VisitedDependentColor(color_property);
+    }
+  }
+
+  scoped_refptr<const ComputedStyle> pseudo_style =
+      HighlightPaintingUtils::HighlightPseudoStyle(node, style, pseudo,
+                                                   pseudo_argument);
+
+  mojom::blink::ColorScheme color_scheme = style.UsedColorScheme();
+  if (pseudo_style && (!RuntimeEnabledFeatures::HighlightInheritanceEnabled() ||
+                       !UseUaHighlightColors(pseudo, *pseudo_style))) {
+    if (!document.InForcedColorsMode() ||
+        pseudo_style->ForcedColorAdjust() != EForcedColorAdjust::kAuto) {
+      return pseudo_style->VisitedDependentColor(color_property);
+    }
+    color_scheme = pseudo_style->UsedColorScheme();
+  }
+
+  if (document.InForcedColorsMode())
+    return ForcedSystemForegroundColor(pseudo, color_scheme);
+  return HighlightThemeForegroundColor(document, style, color_property, pseudo);
+}
+
+}  // anonymous namespace
+
 // Returns highlight styles for the given node, inheriting through the “tree” of
 // highlight pseudo styles mirroring the originating element tree. None of the
 // returned styles are influenced by originating elements or pseudo-elements.
-scoped_refptr<const ComputedStyle> HighlightPseudoStyle(
+scoped_refptr<const ComputedStyle> HighlightPaintingUtils::HighlightPseudoStyle(
     Node* node,
     const ComputedStyle& style,
     PseudoId pseudo,
-    const AtomicString& pseudo_argument = g_null_atom) {
+    const AtomicString& pseudo_argument) {
   if (!RuntimeEnabledFeatures::HighlightInheritanceEnabled()) {
     return HighlightPseudoStyleWithOriginatingInheritance(node, pseudo,
                                                           pseudo_argument);
@@ -203,55 +253,6 @@ scoped_refptr<const ComputedStyle> HighlightPseudoStyle(
       return nullptr;
   }
 }
-
-// Paired cascade: when we encounter any highlight colors, we make all other
-// highlight color properties default to initial, rather than the UA default.
-// https://drafts.csswg.org/css-pseudo-4/#highlight-cascade
-bool UseUaHighlightColors(PseudoId pseudo, const ComputedStyle& pseudo_style) {
-  // TODO(crbug.com/1024156): spec issue: should we limit this to ::selection?
-  // TODO(crbug.com/1024156): https://github.com/w3c/csswg-drafts/issues/6386
-  // NOTE: to limit this to ::selection without breaking our default highlight
-  // colors for ::target-text, we would need to split HasAuthorHighlightColors
-  // into bits for foreground and background, or impl ::target-text defaults
-  // as a UA stylesheet rule of MarkText on Mark (as recommended by the spec).
-  return !pseudo_style.HasAuthorHighlightColors();
-}
-
-Color HighlightColor(const Document& document,
-                     const ComputedStyle& style,
-                     Node* node,
-                     PseudoId pseudo,
-                     const CSSProperty& color_property,
-                     const GlobalPaintFlags global_paint_flags,
-                     const AtomicString& pseudo_argument = g_null_atom) {
-  if (pseudo == kPseudoIdSelection) {
-    // If the element is unselectable, or we are only painting the selection,
-    // don't override the foreground color with the selection foreground color.
-    if ((node && !style.IsSelectable()) ||
-        (global_paint_flags & kGlobalPaintSelectionDragImageOnly)) {
-      return style.VisitedDependentColor(color_property);
-    }
-  }
-
-  scoped_refptr<const ComputedStyle> pseudo_style =
-      HighlightPseudoStyle(node, style, pseudo, pseudo_argument);
-
-  mojom::blink::ColorScheme color_scheme = style.UsedColorScheme();
-  if (pseudo_style && (!RuntimeEnabledFeatures::HighlightInheritanceEnabled() ||
-                       !UseUaHighlightColors(pseudo, *pseudo_style))) {
-    if (!document.InForcedColorsMode() ||
-        pseudo_style->ForcedColorAdjust() != EForcedColorAdjust::kAuto) {
-      return pseudo_style->VisitedDependentColor(color_property);
-    }
-    color_scheme = pseudo_style->UsedColorScheme();
-  }
-
-  if (document.InForcedColorsMode())
-    return ForcedSystemForegroundColor(pseudo, color_scheme);
-  return HighlightThemeForegroundColor(document, style, color_property, pseudo);
-}
-
-}  // anonymous namespace
 
 Color HighlightPaintingUtils::HighlightBackgroundColor(
     const Document& document,
@@ -321,10 +322,10 @@ Color HighlightPaintingUtils::HighlightForegroundColor(
     const ComputedStyle& style,
     Node* node,
     PseudoId pseudo,
-    const GlobalPaintFlags global_paint_flags,
+    PaintFlags paint_flags,
     const AtomicString& pseudo_argument) {
   return HighlightColor(document, style, node, pseudo,
-                        GetCSSPropertyWebkitTextFillColor(), global_paint_flags,
+                        GetCSSPropertyWebkitTextFillColor(), paint_flags,
                         pseudo_argument);
 }
 
@@ -333,10 +334,11 @@ Color HighlightPaintingUtils::HighlightEmphasisMarkColor(
     const ComputedStyle& style,
     Node* node,
     PseudoId pseudo,
-    const GlobalPaintFlags global_paint_flags) {
+    PaintFlags paint_flags,
+    const AtomicString& pseudo_argument) {
   return HighlightColor(document, style, node, pseudo,
-                        GetCSSPropertyWebkitTextEmphasisColor(),
-                        global_paint_flags);
+                        GetCSSPropertyTextEmphasisColor(), paint_flags,
+                        pseudo_argument);
 }
 
 TextPaintStyle HighlightPaintingUtils::HighlightPaintingStyle(
@@ -349,7 +351,7 @@ TextPaintStyle HighlightPaintingUtils::HighlightPaintingStyle(
     const AtomicString& pseudo_argument) {
   TextPaintStyle highlight_style = text_style;
   bool uses_text_as_clip = paint_info.phase == PaintPhase::kTextClip;
-  const GlobalPaintFlags global_paint_flags = paint_info.GetGlobalPaintFlags();
+  const PaintFlags paint_flags = paint_info.GetPaintFlags();
 
   // Each highlight overlay’s shadows are completely independent of any shadows
   // specified on the originating element (or the other highlight overlays).
@@ -357,9 +359,9 @@ TextPaintStyle HighlightPaintingUtils::HighlightPaintingStyle(
 
   if (!uses_text_as_clip) {
     highlight_style.fill_color = HighlightForegroundColor(
-        document, style, node, pseudo, global_paint_flags, pseudo_argument);
+        document, style, node, pseudo, paint_flags, pseudo_argument);
     highlight_style.emphasis_mark_color = HighlightEmphasisMarkColor(
-        document, style, node, pseudo, global_paint_flags);
+        document, style, node, pseudo, paint_flags, pseudo_argument);
   }
 
   if (scoped_refptr<const ComputedStyle> pseudo_style =

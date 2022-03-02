@@ -1,0 +1,18 @@
+<style include="trusted-style common-style">
+  :host {
+    overflow: hidden;
+  }
+
+  iron-list {
+    height: 100%;
+    width: 100%;
+  }
+</style>
+<iron-list id="grid" items="[[album_]]" as="photo" grid>
+  <template>
+    <wallpaper-grid-item
+      class="photo"
+      tabindex$="[[tabIndex]]">
+    </wallpaper-grid-item>
+  </template>
+</iron-list>

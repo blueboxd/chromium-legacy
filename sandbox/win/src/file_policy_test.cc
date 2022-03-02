@@ -48,8 +48,9 @@ SBOX_TESTS_COMMAND int File_Create(int argc, wchar_t** argv) {
     return file1.IsValid() ? SBOX_TEST_FIRST_ERROR : SBOX_TEST_SECOND_ERROR;
 
   } else if (operation == L"Write") {
-    base::win::ScopedHandle file1(CreateFile(
-        argv[1], GENERIC_ALL, kSharing, nullptr, OPEN_EXISTING, 0, nullptr));
+    base::win::ScopedHandle file1(
+        CreateFile(argv[1], GENERIC_READ | GENERIC_WRITE | GENERIC_EXECUTE,
+                   kSharing, nullptr, OPEN_EXISTING, 0, nullptr));
     base::win::ScopedHandle file2(
         CreateFile(argv[1], GENERIC_READ | FILE_WRITE_DATA, kSharing, nullptr,
                    OPEN_EXISTING, 0, nullptr));
@@ -273,9 +274,7 @@ SBOX_TESTS_COMMAND int File_CopyFile(int argc, wchar_t** argv) {
 
 TEST(FilePolicyTest, DenyNtCreateCalc) {
   TestRunner runner;
-  EXPECT_TRUE(
-      runner.AddRuleSys32(TargetPolicy::FILES_ALLOW_DIR_ANY, L"calc.exe"));
-
+  EXPECT_TRUE(runner.AddRuleSys32(TargetPolicy::FILES_ALLOW_ANY, L"calc.txt"));
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"File_CreateSys32 calc.exe"));
 
   runner.SetTestState(BEFORE_REVERT);
@@ -529,18 +528,6 @@ TEST(FilePolicyTest, TestRename) {
   ::DeleteFile(temp_file_name8);
 }
 
-TEST(FilePolicyTest, OpenSys32FilesDenyBecauseOfDir) {
-  TestRunner runner;
-  EXPECT_TRUE(
-      runner.AddRuleSys32(TargetPolicy::FILES_ALLOW_DIR_ANY, L"notepad.exe"));
-
-  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"File_Win32Create notepad.exe"));
-
-  runner.SetTestState(BEFORE_REVERT);
-  EXPECT_EQ(SBOX_TEST_SUCCEEDED,
-            runner.RunTest(L"File_Win32Create notepad.exe"));
-}
-
 TEST(FilePolicyTest, OpenSys32FilesAllowNotepad) {
   TestRunner runner;
   EXPECT_TRUE(
@@ -566,7 +553,7 @@ TEST(FilePolicyTest, FileGetDiskSpace) {
   // Add an 'allow' rule in the windows\system32 such that GetDiskFreeSpaceEx
   // succeeds (it does an NtOpenFile) but windows\system32\notepad.exe is
   // denied since there is no wild card in the rule.
-  EXPECT_TRUE(runner.AddRuleSys32(TargetPolicy::FILES_ALLOW_DIR_ANY, L""));
+  EXPECT_TRUE(runner.AddRuleSys32(TargetPolicy::FILES_ALLOW_READONLY, L""));
   runner.SetTestState(BEFORE_REVERT);
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"File_GetDiskSpace"));
 
@@ -593,7 +580,7 @@ TEST(FilePolicyTest, TestReparsePoint) {
   std::wstring temp_file_title = subfolder.substr(subfolder.rfind(L"\\") + 1);
   std::wstring temp_file = subfolder + L"\\file_" + temp_file_title;
 
-  HANDLE file = ::CreateFile(temp_file.c_str(), FILE_ALL_ACCESS,
+  HANDLE file = ::CreateFile(temp_file.c_str(), FILE_WRITE_DATA,
                              FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
                              CREATE_ALWAYS, 0, nullptr);
   ASSERT_TRUE(INVALID_HANDLE_VALUE != file);
@@ -602,7 +589,7 @@ TEST(FilePolicyTest, TestReparsePoint) {
   // Create a temporary file in the temp directory.
   std::wstring temp_dir = temp_directory;
   std::wstring temp_file_in_temp = temp_dir + L"file_" + temp_file_title;
-  file = ::CreateFile(temp_file_in_temp.c_str(), FILE_ALL_ACCESS,
+  file = ::CreateFile(temp_file_in_temp.c_str(), FILE_WRITE_DATA,
                       FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
                       CREATE_ALWAYS, 0, nullptr);
   ASSERT_TRUE(INVALID_HANDLE_VALUE != file);
@@ -624,7 +611,7 @@ TEST(FilePolicyTest, TestReparsePoint) {
 
   // Replace the subfolder by a reparse point to %temp%.
   ::DeleteFile(temp_file.c_str());
-  HANDLE dir = ::CreateFile(subfolder.c_str(), FILE_ALL_ACCESS,
+  HANDLE dir = ::CreateFile(subfolder.c_str(), FILE_WRITE_DATA,
                             FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
                             OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   EXPECT_TRUE(INVALID_HANDLE_VALUE != dir);
@@ -639,7 +626,7 @@ TEST(FilePolicyTest, TestReparsePoint) {
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command_write.c_str()));
 
   // Remove the reparse point.
-  dir = ::CreateFile(subfolder.c_str(), FILE_ALL_ACCESS,
+  dir = ::CreateFile(subfolder.c_str(), FILE_WRITE_DATA,
                      FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
                      FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
                      nullptr);

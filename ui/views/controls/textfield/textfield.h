@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -236,6 +235,9 @@ class VIEWS_EXPORT Textfield : public View,
     placeholder_font_list_ = font_list;
   }
 
+  int placeholder_text_draw_flags() const {
+    return placeholder_text_draw_flags_;
+  }
   void set_placeholder_text_draw_flags(int flags) {
     placeholder_text_draw_flags_ = flags;
   }
@@ -468,8 +470,8 @@ class VIEWS_EXPORT Textfield : public View,
       bool is_composition_committed) override;
 #endif
 
-  base::CallbackListSubscription AddTextChangedCallback(
-      views::PropertyChangedCallback callback) WARN_UNUSED_RESULT;
+  [[nodiscard]] base::CallbackListSubscription AddTextChangedCallback(
+      views::PropertyChangedCallback callback);
 
  protected:
   TextfieldModel* textfield_model() { return model_.get(); }

@@ -3,10 +3,6 @@
     --cr-dialog-width: 416px;
   }
 
-  #cancelButton {
-    margin-inline-end: 12px;
-  }
-
   [slot='button-container'] {
     display: flex;
     justify-content: flex-end;
@@ -32,44 +28,20 @@
   }
 </style>
 <template is="dom-if"
-    if="[[shouldShowDevicePrepDialog_(dialogState)]]"
-    restamp>
-  <cr-dialog id="devicePrepDialog" show-on-attach
-    on-close="closeDialog_">
-  <div slot="title" class="firmware-dialog-title-font">
-    [[i18n('prepareDevice')]]
-  </div>
-  <div slot="body" class="firmware-dialog-body-font">
-    <div id="updateInstructions" hidden$="[[!update.updateModeInstructions]]">
-      [[update.updateModeInstructions]]
-    </div>
-  </div>
-  <div slot="button-container">
-    <cr-button id="cancelButton" on-click="closeDialog_">
-      [[i18n('cancelButton')]]
-    </cr-button>
-    <cr-button class="action-button"
-        id="nextButton"
-        on-click="startUpdate_">
-      [[i18n('nextButton')]]
-    </cr-button>
-  </div>
-  </cr-dialog>
-</template>
-<template is="dom-if" if="[[shouldShowUpdateDialog_(dialogState)]]" restamp>
+    if="[[shouldShowUpdateDialog_(installationProgress.*)]]" restamp>
   <cr-dialog id="updateDialog" show-on-attach
       on-close="closeDialog_">
     <div slot="title" id="updateDialogTitle" class="firmware-dialog-title-font">
-      [[computeUpdateDialogTitle_(dialogState)]]
+      [[dialogContent.title]]
     </div>
     <div slot="body" class="firmware-dialog-body-font">
-      <div>
-        [[computeUpdateDialogBodyText_(dialogState)]]
+      <div id="updateDialogBody">
+        [[dialogContent.body]]
       </div>
     </div>
-    <div slot="footer" hidden$="[[!isUpdateInProgress_(dialogState)]]">
+    <div slot="footer" hidden$="[[!shouldShowProgressBar_(installationProgress.state)]]">
       <label id="progress" class="firmware-dialog-installing-font">
-        [[computeProgressText_(installationProgress.percentage)]]
+        [[dialogContent.footer]]
       </label>
       <paper-progress id="updateProgressBar"
           value="[[computePercentageValue_(installationProgress.percentage)]]"
@@ -77,7 +49,7 @@
       </paper-progress>
     </div>
     <div slot="button-container"
-        hidden$="[[isUpdateInProgress_(dialogState)]]">
+        hidden$="[[!isUpdateDone_(installationProgress.state)]]">
       <cr-button class="action-button"
           on-click="closeDialog_"
           id="updateDoneButton">

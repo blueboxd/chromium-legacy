@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_DESKTOP_CAPTURE_ACCESS_HANDLER_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_DESKTOP_CAPTURE_ACCESS_HANDLER_H_
 
-#include <list>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/containers/flat_map.h"
@@ -18,6 +18,7 @@
 #include "chrome/browser/media/webrtc/desktop_media_picker_factory.h"
 #include "chrome/browser/tab_contents/web_contents_collection.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "content/public/browser/media_stream_request.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace aura {
@@ -27,6 +28,10 @@ class Window;
 
 namespace extensions {
 class Extension;
+}
+
+namespace contents {
+class WebContents;
 }
 
 // MediaAccessHandler for DesktopCapture API requests that originate from
@@ -69,42 +74,31 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
 
   void ProcessScreenCaptureAccessRequest(
       content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      content::MediaResponseCallback callback,
-      const extensions::Extension* extension);
-
-  // Returns whether desktop capture is always approved for |extension|.
-  // Currently component extensions and some external extensions are default
-  // approved.
-  static bool IsDefaultApproved(const extensions::Extension* extension);
-
-  // Returns whether desktop capture is always approved for |url|.
-  // Currently chrome://feedback/ is default approved.
-  static bool IsDefaultApproved(const GURL& url);
-
-  // Returns whether the request is approved or not. Some extensions do not
-  // require user approval, because they provide their own user approval UI. For
-  // others, shows a message box and asks for user approval.
-  static bool IsRequestApproved(content::WebContents* web_contents,
-                                const content::MediaStreamRequest& request,
-                                const extensions::Extension* extension);
+      const extensions::Extension* extension,
+      std::unique_ptr<PendingAccessRequest> pending_request);
 
   // WebContentsCollection::Observer:
   void WebContentsDestroyed(content::WebContents* web_contents) override;
 
   // Methods for handling source change request, e.g. bringing up the picker to
   // select a new source within the current desktop sharing session.
-  void ProcessChangeSourceRequest(content::WebContents* web_contents,
-                                  const content::MediaStreamRequest& request,
-                                  content::MediaResponseCallback callback,
-                                  const extensions::Extension* extension);
+  void ProcessChangeSourceRequest(
+      content::WebContents* web_contents,
+      std::unique_ptr<PendingAccessRequest> pending_request);
   void ProcessQueuedAccessRequest(const RequestsQueue& queue,
                                   content::WebContents* web_contents);
   void OnPickerDialogResults(content::WebContents* web_contents,
+                             const std::u16string& application_title,
                              content::DesktopMediaID source);
   void DeletePendingAccessRequest(int render_process_id,
                                   int render_frame_id,
                                   int page_request_id);
+
+  // Helper method to finalize processing an approved request.
+  void AcceptRequest(content::WebContents* web_contents,
+                     std::unique_ptr<PendingAccessRequest> pending_request,
+                     const content::DesktopMediaID& media_id,
+                     bool capture_audio);
 
   std::unique_ptr<DesktopMediaPickerFactory> picker_factory_;
   bool display_notification_;
@@ -113,6 +107,14 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
   WebContentsCollection web_contents_collection_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Called back after checking Data Leak Prevention (DLP) restrictions.
+  void OnDlpRestrictionChecked(
+      base::WeakPtr<content::WebContents> web_contents,
+      std::unique_ptr<PendingAccessRequest> pending_request,
+      const content::DesktopMediaID& media_id,
+      bool capture_audio,
+      bool is_dlp_allowed);
+
   aura::Window* primary_root_window_for_testing_ = nullptr;
 #endif
 };

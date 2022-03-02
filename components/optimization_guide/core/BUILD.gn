@@ -32,14 +32,68 @@ static_library("entities") {
   ]
 }
 
+static_library("model_executor") {
+  sources = [
+    "execution_status.cc",
+    "execution_status.h",
+    "model_enums.h",
+    "model_executor.h",
+    "model_info.cc",
+    "model_info.h",
+    "model_util.cc",
+    "model_util.h",
+  ]
+  if (build_with_tflite_lib) {
+    sources += [
+      "base_model_executor.h",
+      "base_model_executor_helpers.h",
+      "bert_model_executor.cc",
+      "bert_model_executor.h",
+      "tflite_model_executor.h",
+    ]
+  }
+
+  public_deps = [
+    "//components/optimization_guide:machine_learning_tflite_buildflags",
+    "//third_party/re2",
+  ]
+  if (build_with_tflite_lib) {
+    public_deps += [
+      "//components/optimization_guide/core:machine_learning",
+      "//third_party/abseil-cpp:absl",
+      "//third_party/tflite",
+      "//third_party/tflite:tflite_public_headers",
+      "//third_party/tflite_support",
+      "//third_party/tflite_support:tflite_support_proto",
+    ]
+  }
+  deps = [
+    "//base",
+    "//components/optimization_guide/proto:optimization_guide_proto",
+    "//net",
+    "//url",
+  ]
+}
+
+if (build_with_tflite_lib) {
+  static_library("machine_learning") {
+    sources = [
+      "tflite_op_resolver.cc",
+      "tflite_op_resolver.h",
+    ]
+    deps = [
+      "//third_party/tflite",
+      "//third_party/tflite:tflite_public_headers",
+    ]
+  }
+}
+
 static_library("core") {
   sources = [
     "command_line_top_host_provider.cc",
     "command_line_top_host_provider.h",
     "decision_tree_prediction_model.cc",
     "decision_tree_prediction_model.h",
-    "execution_status.cc",
-    "execution_status.h",
     "hint_cache.cc",
     "hint_cache.h",
     "hints_component_info.h",
@@ -54,12 +108,11 @@ static_library("core") {
     "hints_processing_util.cc",
     "hints_processing_util.h",
     "insertion_ordered_set.h",
+    "local_page_entities_metadata_provider.cc",
+    "local_page_entities_metadata_provider.h",
     "memory_hint.cc",
     "memory_hint.h",
-    "model_executor.h",
     "model_handler.h",
-    "model_info.cc",
-    "model_info.h",
     "noisy_metrics_recorder.cc",
     "noisy_metrics_recorder.h",
     "optimization_filter.cc",
@@ -108,10 +161,6 @@ static_library("core") {
   ]
   if (build_with_tflite_lib) {
     sources += [
-      "base_model_executor.h",
-      "base_model_executor_helpers.h",
-      "bert_model_executor.cc",
-      "bert_model_executor.h",
       "bert_model_handler.cc",
       "bert_model_handler.h",
       "model_validator.cc",
@@ -123,12 +172,20 @@ static_library("core") {
       "page_topics_model_executor.h",
       "page_visibility_model_executor.cc",
       "page_visibility_model_executor.h",
-      "tflite_model_executor.h",
     ]
+    if (build_with_internal_optimization_guide) {
+      sources += [
+        "entity_annotator_native_library.cc",
+        "entity_annotator_native_library.h",
+        "page_entities_model_executor_impl.cc",
+        "page_entities_model_executor_impl.h",
+      ]
+    }
   }
 
   public_deps = [
     ":entities",
+    ":model_executor",
     "//components/optimization_guide:machine_learning_tflite_buildflags",
     "//third_party/re2",
   ]
@@ -146,7 +203,6 @@ static_library("core") {
   deps = [
     ":bloomfilter",
     "//base",
-    "//components/data_reduction_proxy/core/browser",
     "//components/leveldb_proto",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/prefs",
@@ -161,17 +217,9 @@ static_library("core") {
     "//ui/base:base",
     "//url:url",
   ]
-}
-
-if (build_with_tflite_lib) {
-  static_library("machine_learning") {
-    sources = [
-      "tflite_op_resolver.cc",
-      "tflite_op_resolver.h",
-    ]
-    deps = [
-      "//third_party/tflite",
-      "//third_party/tflite:tflite_public_headers",
+  if (build_with_tflite_lib && build_with_internal_optimization_guide) {
+    data_deps = [
+      "//components/optimization_guide/internal:optimization_guide_internal",
     ]
   }
 }
@@ -251,6 +299,7 @@ source_set("unit_tests") {
     "hints_manager_unittest.cc",
     "hints_processing_util_unittest.cc",
     "insertion_ordered_set_unittest.cc",
+    "local_page_entities_metadata_provider_unittest.cc",
     "model_handler_unittest.cc",
     "noisy_metrics_recorder_unittest.cc",
     "optimization_filter_unittest.cc",
@@ -277,6 +326,12 @@ source_set("unit_tests") {
       "page_visibility_model_executor_unittest.cc",
       "tflite_model_executor_unittest.cc",
     ]
+    if (build_with_internal_optimization_guide) {
+      sources += [
+        "entity_annotator_native_library_unittest.cc",
+        "page_entities_model_executor_impl_unittest.cc",
+      ]
+    }
   }
 
   deps = [
@@ -286,8 +341,6 @@ source_set("unit_tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
-    "//components/data_reduction_proxy/core/browser",
-    "//components/data_reduction_proxy/core/common",
     "//components/leveldb_proto:test_support",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/prefs:test_support",
@@ -317,5 +370,19 @@ if (is_android) {
   java_cpp_enum("optimization_guide_generated_enums") {
     sources = [ "optimization_guide_decision.h" ]
     visibility = [ "//chrome/browser/optimization_guide/android:*" ]
+  }
+}
+
+if (is_mac && build_with_internal_optimization_guide) {
+  # We need to copy the optimization guide shared library so that the
+  # bundle_data dependencies have a "copy" target type. Otherwise for
+  # "shared_library" target types it will try to link things into
+  # Chromium Framework when we want to keep it separate instead.
+  copy("optimization_guide_internal_library_copy") {
+    sources = [ "$root_out_dir/liboptimization_guide_internal.dylib" ]
+    outputs = [ "$root_out_dir/og_intermediates/{{source_file_part}}" ]
+    deps = [
+      "//components/optimization_guide/internal:optimization_guide_internal",
+    ]
   }
 }

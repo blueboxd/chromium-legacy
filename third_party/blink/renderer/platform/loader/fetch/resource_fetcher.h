@@ -250,8 +250,9 @@ class PLATFORM_EXPORT ResourceFetcher
 
   enum IsImageSet { kImageNotImageSet, kImageIsImageSet };
 
-  WARN_UNUSED_RESULT static mojom::blink::RequestContextType
-      DetermineRequestContext(ResourceType, IsImageSet);
+  [[nodiscard]] static mojom::blink::RequestContextType DetermineRequestContext(
+      ResourceType,
+      IsImageSet);
 
   static network::mojom::RequestDestination DetermineRequestDestination(
       ResourceType);
@@ -353,7 +354,7 @@ class PLATFORM_EXPORT ResourceFetcher
                                       ResourceClient*);
 
   Resource* MatchPreload(const FetchParameters& params, ResourceType);
-  void PrintPreloadWarning(Resource*, Resource::MatchStatus);
+  void PrintPreloadMismatch(Resource*, Resource::MatchStatus);
   void InsertAsPreloadIfNecessary(Resource*,
                                   const FetchParameters& params,
                                   ResourceType);

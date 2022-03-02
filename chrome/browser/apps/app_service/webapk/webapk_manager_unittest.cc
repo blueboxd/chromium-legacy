@@ -12,10 +12,10 @@
 #include "ash/constants/ash_features.h"
 #include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
+#include "chrome/browser/apps/app_service/publishers/arc_apps.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_install_queue.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_install_task.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_metrics.h"
@@ -40,8 +40,8 @@ constexpr char kTestShareTextParam[] = "share_text";
 constexpr char kTestWebApkPackageName[] = "org.chromium.webapk.some_package";
 const std::u16string kTestAppTitle = u"Test App";
 
-std::unique_ptr<WebApplicationInfo> BuildDefaultWebAppInfo() {
-  auto app_info = std::make_unique<WebApplicationInfo>();
+std::unique_ptr<WebAppInstallInfo> BuildDefaultWebAppInfo() {
+  auto app_info = std::make_unique<WebAppInstallInfo>();
   app_info->start_url = GURL(kTestAppUrl);
   app_info->scope = GURL(kTestAppUrl);
   app_info->title = kTestAppTitle;
@@ -71,14 +71,6 @@ class WebApkManagerTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-    // Disable the WebAPKs feature so that App Service does not start a
-    // WebApkManager which interferes with the test.
-    // TODO(crbug.com/1234279): Reuse the WebApkManager from App Service
-    // instead.
-    scoped_feature_list_.InitAndDisableFeature(ash::features::kWebApkGenerator);
-
-    arc_test_.SetUp(&profile_);
-
     auto* const provider = web_app::FakeWebAppProvider::Get(&profile_);
     provider->SkipAwaitingExtensionSystem();
     web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
@@ -89,7 +81,8 @@ class WebApkManagerTest : public testing::Test {
   void StartWebApkManager() {
     app_service_test_.SetUp(&profile_);
     app_service_test_.FlushMojoCalls();
-    webapk_manager_ = std::make_unique<apps::WebApkManager>(profile());
+    // This starts the ArcApps publisher, which owns the WebApkManager.
+    arc_test_.SetUp(&profile_);
   }
 
   void AssertNoPendingInstalls() {
@@ -107,20 +100,19 @@ class WebApkManagerTest : public testing::Test {
 
   TestingProfile* profile() { return &profile_; }
   apps::AppServiceTest* app_service_test() { return &app_service_test_; }
-  apps::WebApkManager* webapk_manager() { return webapk_manager_.get(); }
+  apps::WebApkManager* webapk_manager() {
+    return apps::ArcApps::Get(profile())->GetWebApkManagerForTesting();
+  }
   ArcAppTest* arc_test() { return &arc_test_; }
   apps::AppServiceProxyBase* app_service_proxy() {
     return apps::AppServiceProxyFactory::GetForProfile(profile());
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   ArcAppTest arc_test_;
   apps::AppServiceTest app_service_test_;
-
-  std::unique_ptr<apps::WebApkManager> webapk_manager_;
 };
 
 TEST_F(WebApkManagerTest, InstallsWebApkOnStartup) {
@@ -153,7 +145,7 @@ TEST_F(WebApkManagerTest, InstallWebApkAfterStartup) {
 
 // Does not install web apps without a Share Target definition.
 TEST_F(WebApkManagerTest, NoShareTarget) {
-  auto app_info = std::make_unique<WebApplicationInfo>();
+  auto app_info = std::make_unique<WebAppInstallInfo>();
   app_info->start_url = GURL(kTestAppUrl);
   app_info->title = kTestAppTitle;
   auto app_id = web_app::test::InstallWebApp(profile(), std::move(app_info));
@@ -188,7 +180,7 @@ TEST_F(WebApkManagerTest, IgnoresAlreadyInstalledWebApkOnStartup) {
 }
 
 TEST_F(WebApkManagerTest, RemovesIneligibleWebApkOnStartup) {
-  auto app_info = std::make_unique<WebApplicationInfo>();
+  auto app_info = std::make_unique<WebAppInstallInfo>();
   app_info->start_url = GURL(kTestAppUrl);
   app_info->title = kTestAppTitle;
   auto app_id = web_app::test::InstallWebApp(profile(), std::move(app_info));
@@ -313,9 +305,10 @@ TEST_F(WebApkManagerTest, RemovesWebApksWhenPolicyDisabled) {
   auto app_id =
       web_app::test::InstallWebApp(profile(), BuildDefaultWebAppInfo());
   apps::webapk_prefs::AddWebApk(profile(), app_id, kTestWebApkPackageName);
-  arc_test()->app_instance()->SendRefreshPackageList({});
 
   StartWebApkManager();
+  arc_test()->app_instance()->SendRefreshPackageList({});
+
   profile()->GetPrefs()->SetBoolean(
       apps::webapk_prefs::kGeneratedWebApksEnabled, false);
 

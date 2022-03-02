@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/login/auth/auth_status_consumer.h"
+#include "ash/components/login/auth/challenge_response_key.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -20,9 +22,9 @@
 #include "chrome/browser/ash/login/ui/oobe_ui_dialog_delegate.h"
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chromeos/login/auth/auth_status_consumer.h"
-#include "chromeos/login/auth/challenge_response_key.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/user_activity/user_activity_detector.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
@@ -44,7 +46,8 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
                              public LoginScreenClientImpl::Delegate,
                              public AuthStatusConsumer,
                              public OobeUI::Observer,
-                             public views::ViewObserver {
+                             public views::ViewObserver,
+                             public ui::UserActivityObserver {
  public:
   explicit LoginDisplayHostMojo(DisplayedScreen displayed_screen);
 
@@ -86,7 +89,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
   void ShowOsInstallScreen() override;
   void ShowGuestTosScreen() override;
-  void HideOobeDialog() override;
+  void HideOobeDialog(bool saml_video_timeout = false) override;
   void SetShelfButtonsEnabled(bool enabled) override;
   void UpdateOobeDialogState(OobeDialogState state) override;
   void OnCancelPasswordChangedFlow() override;
@@ -182,6 +185,9 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // login timer has expired for a focused user.
   void MaybeUpdateOfflineLoginLinkVisibility(const AccountId& account_id);
 
+  // ui::UserActivityObserver:
+  void OnUserActivity(const ui::Event* event) override;
+
   // State associated with a pending authentication attempt.
   struct AuthState {
     AuthState(AccountId account_id, base::OnceCallback<void(bool)> callback);
@@ -238,6 +244,9 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   base::ScopedObservation<views::View, views::ViewObserver> scoped_observation_{
       this};
+
+  base::ScopedObservation<ui::UserActivityDetector, ui::UserActivityObserver>
+      scoped_activity_observation_{this};
 
   base::ObserverList<LoginDisplayHost::Observer> observers_;
 

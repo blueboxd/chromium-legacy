@@ -24,6 +24,7 @@
 #include "chrome/browser/ash/file_manager/prefs_migration_uma.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/extensions/extension_keeplist_ash.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -112,7 +113,7 @@ struct ComparePinInfo {
 // This is required because tablet form factor devices do not sync app
 // positions and pin preferences.
 const std::string GetShelfDefaultPinLayoutPref() {
-  if (chromeos::switches::IsTabletFormFactor())
+  if (ash::switches::IsTabletFormFactor())
     return prefs::kShelfDefaultPinLayoutRollsForTabletFormFactor;
 
   return prefs::kShelfDefaultPinLayoutRolls;
@@ -129,7 +130,7 @@ bool IsSafeToApplyDefaultPinLayout(Profile* profile) {
     return true;
 
   // Tablet form-factor devices do not have position sync.
-  if (chromeos::switches::IsTabletFormFactor())
+  if (ash::switches::IsTabletFormFactor())
     return true;
 
   const syncer::SyncUserSettings* settings = sync_service->GetUserSettings();
@@ -138,8 +139,7 @@ bool IsSafeToApplyDefaultPinLayout(Profile* profile) {
   // apps is likely override it. There is a case when App sync is disabled and
   // in last case local cache is available immediately.
   if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
-    if (settings->IsOsSyncFeatureEnabled() &&
-        settings->GetSelectedOsTypes().Has(UserSelectableOsType::kOsApps) &&
+    if (settings->GetSelectedOsTypes().Has(UserSelectableOsType::kOsApps) &&
         !app_list::AppListSyncableServiceFactory::GetForProfile(profile)
              ->IsSyncing()) {
       return false;
@@ -156,8 +156,7 @@ bool IsSafeToApplyDefaultPinLayout(Profile* profile) {
   // If shelf pin layout rolls preference is not started yet then we cannot say
   // if we rolled layout or not.
   if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
-    if (settings->IsOsSyncFeatureEnabled() &&
-        settings->GetSelectedOsTypes().Has(
+    if (settings->GetSelectedOsTypes().Has(
             UserSelectableOsType::kOsPreferences) &&
         !PrefServiceSyncableFromProfile(profile)->AreOsPrefsSyncing()) {
       return false;
@@ -224,7 +223,8 @@ std::vector<std::string> ChromeShelfPrefs::GetAppsPinnedByPolicy(
   for (const auto& policy_dict_entry : policy_apps->GetList()) {
     const std::string* policy_entry =
         policy_dict_entry.is_dict()
-            ? policy_dict_entry.FindStringKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey)
+            ? policy_dict_entry.FindStringKey(
+                  ChromeShelfPrefs::kPinnedAppsPrefAppIDKey)
             : nullptr;
 
     if (!policy_entry) {
@@ -407,7 +407,7 @@ std::vector<ash::ShelfID> ChromeShelfPrefs::GetPinnedAppsFromSync(
   // is pinned. Lacros doesn't support multi-signin, so only add the icon for
   // the primary user.
   if (crosapi::browser_util::IsLacrosEnabled() &&
-      chromeos::ProfileHelper::IsPrimaryProfile(profile_)) {
+      ash::ProfileHelper::IsPrimaryProfile(profile_)) {
     syncer::StringOrdinal lacros_position =
         syncable_service->GetPinPosition(extension_misc::kLacrosAppId);
     if (!lacros_position.IsValid()) {
@@ -658,7 +658,7 @@ bool ChromeShelfPrefs::IsAshExtensionApp(const std::string& app_id) {
 }
 
 bool ChromeShelfPrefs::IsAshKeepListApp(const std::string& app_id) {
-  return apps::ExtensionAppRunsInAsh(app_id);
+  return extensions::ExtensionAppRunsInAsh(app_id);
 }
 
 std::string ChromeShelfPrefs::GetShelfId(const std::string& sync_id) {
@@ -672,7 +672,7 @@ std::string ChromeShelfPrefs::GetShelfId(const std::string& sync_id) {
   // If this app is on the ash keep list, immediately return it. Even if there's
   // a lacros chrome app that matches this id, we still want to use the ash
   // version.
-  if (apps::ExtensionAppRunsInAsh(sync_id))
+  if (extensions::ExtensionAppRunsInAsh(sync_id))
     return sync_id;
 
   std::string transformed_app_id = kLacrosChromeAppPrefix + sync_id;

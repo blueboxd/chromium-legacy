@@ -8,6 +8,9 @@ namespace policy {
 
 namespace features {
 
+const base::Feature kDefaultChromeAppsMigration{
+    "EnableDefaultAppsMigration", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kPolicyBlocklistThrottleRequiresPoliciesLoaded{
     "PolicyBlocklistThrottleRequiresPoliciesLoaded",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -31,6 +34,10 @@ const base::Feature kChromeManagementPageAndroid{
 
 const base::Feature kEnableUserCloudSigninRestrictionPolicyFetcher{
     "UserCloudSigninRestrictionPolicyFetcher",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kActivateMetricsReportingEnabledPolicyAndroid{
+    "ActivateMetricsReportingEnabledPolicyAndroid",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features

@@ -49,6 +49,27 @@
       "use_remoteexec": true
     }
   },
+  "Comparison Windows": {
+    "goma": {
+      "dcheck_always_on": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "use_goma": true
+    },
+    "reclient": {
+      "dcheck_always_on": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "use_rbe": true,
+      "use_remoteexec": true
+    }
+  },
   "Libfuzzer Upload Chrome OS ASan": {
     "gn_args": {
       "archive_seed_corpus": false,
@@ -211,7 +232,8 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "Mac Builder (reclient compare)": {
@@ -241,11 +263,13 @@
   "Mac Builder Next": {
     "gn_args": {
       "dcheck_always_on": false,
+      "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
+      "target_cpu": "arm64",
       "use_goma": true
     }
   },
@@ -493,6 +517,17 @@
       "use_goma": true
     }
   },
+  "fuchsia-fyi-x64-asan": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_asan": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_lsan": true,
+      "target_os": "fuchsia",
+      "use_goma": true
+    }
+  },
   "fuchsia-fyi-x64-dbg": {
     "gn_args": {
       "is_component_build": true,
@@ -511,6 +546,19 @@
       "use_goma": true
     }
   },
+  "fuchsia-fyi-x64-wst": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "fuchsia_additional_boot_images": [
+        "//third_party/fuchsia-sdk/images/qemu-x64-release/"
+      ],
+      "fuchsia_browser_type": "chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "target_os": "fuchsia",
+      "use_goma": true
+    }
+  },
   "ios-asan": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -519,28 +567,10 @@
       "is_asan": true,
       "is_component_build": false,
       "is_debug": false,
-      "is_p2p_enabled": false,
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
       "use_goma": true
-    }
-  },
-  "ios-catalyst": {
-    "gn_args": {
-      "enable_dsyms": false,
-      "enable_remoting": false,
-      "ios_set_attributes_for_xcode_project_generation": false,
-      "is_component_build": false,
-      "is_debug": true,
-      "is_p2p_enabled": false,
-      "symbol_level": 1,
-      "target_cpu": "x64",
-      "target_environment": "catalyst",
-      "target_os": "ios",
-      "use_goma": true,
-      "use_libfuzzer": true,
-      "use_lld": false
     }
   },
   "ios-reclient": {
@@ -563,7 +593,6 @@
       "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
-      "is_p2p_enabled": false,
       "symbol_level": 1,
       "target_cpu": "x64",
       "target_os": "ios",
@@ -577,7 +606,6 @@
       "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
-      "is_p2p_enabled": false,
       "symbol_level": 1,
       "target_cpu": "x64",
       "target_environment": "simulator",
@@ -618,7 +646,6 @@
       "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
-      "is_p2p_enabled": false,
       "symbol_level": 1,
       "target_cpu": "x64",
       "target_environment": "simulator",
@@ -632,7 +659,6 @@
       "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
-      "is_p2p_enabled": false,
       "symbol_level": 1,
       "target_cpu": "x64",
       "target_environment": "simulator",
@@ -647,7 +673,6 @@
       "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
-      "is_p2p_enabled": false,
       "symbol_level": 1,
       "target_cpu": "x64",
       "target_environment": "simulator",
@@ -661,7 +686,6 @@
       "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
-      "is_p2p_enabled": false,
       "symbol_level": 1,
       "target_cpu": "arm64",
       "target_environment": "simulator",
@@ -675,7 +699,6 @@
       "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
-      "is_p2p_enabled": false,
       "symbol_level": 1,
       "target_cpu": "x64",
       "target_environment": "simulator",
@@ -691,7 +714,6 @@
       "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": false,
-      "is_p2p_enabled": false,
       "target_cpu": "arm64",
       "target_environment": "device",
       "target_os": "ios",
@@ -704,7 +726,6 @@
       "ios_set_attributes_for_xcode_project_generation": false,
       "is_component_build": false,
       "is_debug": true,
-      "is_p2p_enabled": false,
       "symbol_level": 1,
       "target_cpu": "x64",
       "target_environment": "simulator",
@@ -759,7 +780,8 @@
       "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-ash-chromium-builder-fyi-rel": {
@@ -816,7 +838,8 @@
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-blink-v8-oilpan": {
@@ -1029,15 +1052,6 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "mac-arm64-on-arm64-rel": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "target_cpu": "arm64",
       "use_goma": true
     }
   },

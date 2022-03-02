@@ -227,4 +227,50 @@ bool StructTraits<arc::mojom::VideoFrameLayoutDataView,
   return true;
 }
 
+// static
+arc::mojom::DecoderStatus
+EnumTraits<arc::mojom::DecoderStatus, media::DecoderStatus>::ToMojom(
+    media::DecoderStatus input) {
+  switch (input.code()) {
+    case media::DecoderStatus::Codes::kOk:
+      return arc::mojom::DecoderStatus::OK;
+    case media::DecoderStatus::Codes::kAborted:
+      return arc::mojom::DecoderStatus::ABORTED;
+    case media::DecoderStatus::Codes::kFailed:
+      return arc::mojom::DecoderStatus::FAILED;
+    case media::DecoderStatus::Codes::kFailedToCreateDecoder:
+      return arc::mojom::DecoderStatus::CREATION_FAILED;
+    case media::DecoderStatus::Codes::kInvalidArgument:
+      return arc::mojom::DecoderStatus::INVALID_ARGUMENT;
+    default:
+      NOTREACHED() << "unknown status: " << static_cast<int>(input.code());
+      return arc::mojom::DecoderStatus::INVALID_ARGUMENT;
+  }
+}
+
+// static
+bool EnumTraits<arc::mojom::DecoderStatus, media::DecoderStatus>::FromMojom(
+    arc::mojom::DecoderStatus input,
+    media::DecoderStatus* output) {
+  switch (input) {
+    case arc::mojom::DecoderStatus::OK:
+      *output = media::DecoderStatus::Codes::kOk;
+      return true;
+    case arc::mojom::DecoderStatus::ABORTED:
+      *output = media::DecoderStatus::Codes::kAborted;
+      return true;
+    case arc::mojom::DecoderStatus::FAILED:
+      *output = media::DecoderStatus::Codes::kFailed;
+      return true;
+    case arc::mojom::DecoderStatus::CREATION_FAILED:
+      *output = media::DecoderStatus::Codes::kFailedToCreateDecoder;
+      return true;
+    case arc::mojom::DecoderStatus::INVALID_ARGUMENT:
+      *output = media::DecoderStatus::Codes::kInvalidArgument;
+      return true;
+  }
+  NOTREACHED() << "unknown status: " << static_cast<int>(input);
+  return false;
+}
+
 }  // namespace mojo

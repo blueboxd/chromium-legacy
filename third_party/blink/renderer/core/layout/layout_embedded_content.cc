@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/embedded_content_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -93,32 +92,10 @@ EmbeddedContentView* LayoutEmbeddedContent::GetEmbeddedContentView() const {
 
 PaintLayerType LayoutEmbeddedContent::LayerTypeRequired() const {
   NOT_DESTROYED();
-  if (AdditionalCompositingReasons())
-    return kNormalPaintLayer;
-
   PaintLayerType type = LayoutReplaced::LayerTypeRequired();
   if (type != kNoPaintLayer)
     return type;
-
-  // We can't check layout_view->Layer()->GetCompositingReasons() here because
-  // we're only in style update, so haven't run compositing update yet.
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    if (LayoutView* child_layout_view = ChildLayoutView()) {
-      if (child_layout_view->AdditionalCompositingReasons())
-        return kNormalPaintLayer;
-    }
-  }
-
   return kForcedPaintLayer;
-}
-
-bool LayoutEmbeddedContent::ContentDocumentContainsGraphicsLayer() const {
-  NOT_DESTROYED();
-  if (PaintLayerCompositor* inner_compositor =
-          PaintLayerCompositor::FrameContentsCompositor(*this)) {
-    return inner_compositor->StaleInCompositingMode();
-  }
-  return false;
 }
 
 bool LayoutEmbeddedContent::NodeAtPointOverEmbeddedContentView(
@@ -132,11 +109,19 @@ bool LayoutEmbeddedContent::NodeAtPointOverEmbeddedContentView(
                                             accumulated_offset, action);
 
   // Check to see if we are really over the EmbeddedContentView itself (and not
-  // just in the border/padding area).
+  // just in the border/padding area or the resizer area).
   if ((inside || hit_test_location.IsRectBasedTest()) && !had_result &&
       result.InnerNode() == GetNode()) {
-    result.SetIsOverEmbeddedContentView(
-        PhysicalContentBoxRect().Contains(result.LocalPoint()));
+    bool is_over_content_view =
+        PhysicalContentBoxRect().Contains(result.LocalPoint());
+    if (is_over_content_view) {
+      if (const auto* scrollable_area = GetScrollableArea()) {
+        if (scrollable_area->IsLocalPointInResizeControl(
+                ToRoundedPoint(result.LocalPoint()), kResizerForPointer))
+          is_over_content_view = false;
+      }
+    }
+    result.SetIsOverEmbeddedContentView(is_over_content_view);
   }
   return inside;
 }
@@ -225,20 +210,6 @@ bool LayoutEmbeddedContent::NodeAtPoint(
 
   return NodeAtPointOverEmbeddedContentView(result, hit_test_location,
                                             accumulated_offset, action);
-}
-
-CompositingReasons LayoutEmbeddedContent::AdditionalCompositingReasons() const {
-  NOT_DESTROYED();
-  WebPluginContainerImpl* plugin_view = Plugin();
-  if (plugin_view && plugin_view->CcLayer())
-    return CompositingReason::kPlugin;
-  if (auto* element = GetFrameOwnerElement()) {
-    if (Frame* content_frame = element->ContentFrame()) {
-      if (content_frame->IsRemoteFrame())
-        return CompositingReason::kIFrame;
-    }
-  }
-  return CompositingReason::kNone;
 }
 
 void LayoutEmbeddedContent::StyleDidChange(StyleDifference diff,
@@ -360,14 +331,14 @@ void LayoutEmbeddedContent::UpdateGeometry(
   PhysicalRect replaced_rect = ReplacedContentRect();
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  gfx::PointF(),
-                                 FloatQuad(FloatRect(replaced_rect)));
+                                 gfx::QuadF(gfx::RectF(replaced_rect)));
   MapLocalToAncestor(nullptr, transform_state, 0);
   transform_state.Flatten();
   PhysicalOffset absolute_location =
       PhysicalOffset::FromPointFRound(transform_state.LastPlanarPoint());
   PhysicalRect absolute_replaced_rect = replaced_rect;
   absolute_replaced_rect.Move(absolute_location);
-  FloatRect absolute_bounding_box =
+  gfx::RectF absolute_bounding_box =
       transform_state.LastPlanarQuad().BoundingBox();
   gfx::Rect frame_rect(gfx::Point(),
                        ToPixelSnappedRect(absolute_replaced_rect).size());

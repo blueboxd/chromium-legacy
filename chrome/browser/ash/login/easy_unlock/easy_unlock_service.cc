@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/login/auth/user_context.h"
 #include "ash/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "ash/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "ash/components/proximity_auth/proximity_auth_system.h"
@@ -41,7 +42,6 @@
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -67,6 +67,20 @@ void RecordAuthResultFailure(
     SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(failure_reason);
   else if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_SIGNIN)
     SmartLockMetricsRecorder::RecordAuthResultSignInFailure(failure_reason);
+}
+
+void SetAuthTypeIfChanged(
+    proximity_auth::ScreenlockBridge::LockHandler* lock_handler,
+    const AccountId& account_id,
+    proximity_auth::mojom::AuthType auth_type,
+    const std::u16string& auth_value) {
+  DCHECK(lock_handler);
+  const proximity_auth::mojom::AuthType existing_auth_type =
+      lock_handler->GetAuthType(account_id);
+  if (auth_type == existing_auth_type)
+    return;
+
+  lock_handler->SetAuthType(account_id, auth_type, auth_value);
 }
 
 }  // namespace
@@ -226,7 +240,7 @@ bool EasyUnlockService::GetPersistedHardlockState(
   if (!local_state)
     return false;
 
-  const base::DictionaryValue* dict =
+  const base::Value* dict =
       local_state->GetDictionary(prefs::kEasyUnlockHardlockState);
   if (!dict)
     return false;
@@ -258,36 +272,35 @@ void EasyUnlockService::UpdateSmartLockState(SmartLockState state) {
     if (smart_lock_state_ && state == smart_lock_state_.value())
       return;
 
-    if (!proximity_auth::ScreenlockBridge::Get()->IsLocked())
-      return;
-
-    proximity_auth::ScreenlockBridge::Get()->lock_handler()->SetSmartLockState(
-        GetAccountId(), state);
     smart_lock_state_ = state;
 
-    // TODO(https://crbug.com/1233614): Eventually we would like to remove
-    // auth_type.mojom where AuthType lives, but this will require further
-    // investigation. This logic was copied from
-    // SmartLockStateHandler::UpdateScreenlockAuthType.
-    // Do not override online signin.
-    const proximity_auth::mojom::AuthType existing_auth_type =
-        proximity_auth::ScreenlockBridge::Get()->lock_handler()->GetAuthType(
-            GetAccountId());
-    if (existing_auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN)
-      return;
+    if (proximity_auth::ScreenlockBridge::Get()->IsLocked()) {
+      auto* lock_handler =
+          proximity_auth::ScreenlockBridge::Get()->lock_handler();
+      DCHECK(lock_handler);
 
-    if (smart_lock_state_ == SmartLockState::kPhoneAuthenticated) {
-      if (existing_auth_type != proximity_auth::mojom::AuthType::USER_CLICK) {
-        proximity_auth::ScreenlockBridge::Get()->lock_handler()->SetAuthType(
-            GetAccountId(), proximity_auth::mojom::AuthType::USER_CLICK,
-            l10n_util::GetStringUTF16(
-                IDS_EASY_UNLOCK_SCREENLOCK_USER_POD_AUTH_VALUE));
+      lock_handler->SetSmartLockState(GetAccountId(), state);
+
+      // TODO(https://crbug.com/1233614): Eventually we would like to remove
+      // auth_type.mojom where AuthType lives, but this will require further
+      // investigation. This logic was copied from
+      // SmartLockStateHandler::UpdateScreenlockAuthType.
+      // Do not override online signin.
+      if (lock_handler->GetAuthType(GetAccountId()) !=
+          proximity_auth::mojom::AuthType::ONLINE_SIGN_IN) {
+        if (smart_lock_state_ == SmartLockState::kPhoneAuthenticated) {
+          SetAuthTypeIfChanged(
+              lock_handler, GetAccountId(),
+              proximity_auth::mojom::AuthType::USER_CLICK,
+              l10n_util::GetStringUTF16(
+                  IDS_EASY_UNLOCK_SCREENLOCK_USER_POD_AUTH_VALUE));
+        } else {
+          SetAuthTypeIfChanged(
+              lock_handler, GetAccountId(),
+              proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
+              std::u16string());
+        }
       }
-    } else if (existing_auth_type !=
-               proximity_auth::mojom::AuthType::OFFLINE_PASSWORD) {
-      proximity_auth::ScreenlockBridge::Get()->lock_handler()->SetAuthType(
-          GetAccountId(), proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
-          std::u16string());
     }
 
     if (state != SmartLockState::kPhoneAuthenticated && auth_attempt_) {
@@ -549,8 +562,7 @@ void EasyUnlockService::SetHardlockStateForUser(
   }
 
   DictionaryPrefUpdate update(local_state, prefs::kEasyUnlockHardlockState);
-  update->SetKey(account_id.GetUserEmail(),
-                 base::Value(static_cast<int>(state)));
+  update->SetIntKey(account_id.GetUserEmail(), static_cast<int>(state));
 
   if (GetAccountId() == account_id)
     SetSmartLockHardlockedState(state);

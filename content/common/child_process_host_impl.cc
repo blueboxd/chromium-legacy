@@ -5,6 +5,7 @@
 #include "content/common/child_process_host_impl.h"
 
 #include <limits>
+#include <tuple>
 
 #include "base/atomic_sequence_num.h"
 #include "base/clang_profiling_buildflags.h"
@@ -12,7 +13,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/hash/hash.h"
-#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -39,12 +39,12 @@
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include "base/linux_util.h"
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
 #include "base/mac/foundation_util.h"
 #include "content/common/mac_helpers.h"
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 namespace {
 
@@ -71,7 +71,7 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
   child_path = base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
       switches::kBrowserSubprocessPath);
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // Use /proc/self/exe rather than our known binary path so updates
   // can't swap out the binary from underneath us.
   if (child_path.empty() && flags & CHILD_ALLOW_SELF)
@@ -83,7 +83,7 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
   if (child_path.empty())
     base::PathService::Get(CHILD_PROCESS_EXE, &child_path);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   std::string child_base_name = child_path.BaseName().value();
 
   if (flags != CHILD_NORMAL && base::mac::AmIBundled()) {
@@ -112,7 +112,7 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
                      .Append("MacOS")
                      .Append(child_base_name);
   }
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 
   return child_path;
 }
@@ -123,7 +123,7 @@ ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate,
   if (ipc_mode_ == IpcMode::kLegacy) {
     // In legacy mode, we only have an IPC Channel. Bind ChildProcess to a
     // disconnected pipe so it quietly discards messages.
-    ignore_result(child_process_.BindNewPipeAndPassReceiver());
+    std::ignore = child_process_.BindNewPipeAndPassReceiver();
     channel_ = IPC::ChannelMojo::Create(
         mojo_invitation_->AttachMessagePipe(
             kChildProcessReceiverAttachmentName),

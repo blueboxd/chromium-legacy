@@ -49,8 +49,10 @@ class AppSearchProvider : public SearchProvider {
 
   // SearchProvider overrides:
   void Start(const std::u16string& query) override;
+  void StartZeroState() override;
   void ViewClosing() override;
-  ash::AppListSearchResultType ResultType() override;
+  ash::AppListSearchResultType ResultType() const override;
+  bool ShouldBlockZeroState() const override;
 
   // Refreshes apps and updates results inline
   void RefreshAppsAndUpdateResults();
@@ -70,8 +72,11 @@ class AppSearchProvider : public SearchProvider {
 
  private:
   void UpdateResults();
+
+  // Updates the zero-state app recommendations ("recent apps").
   void UpdateRecommendedResults(
       const base::flat_map<std::string, uint16_t>& id_to_app_list_index);
+
   void UpdateQueriedResults();
 
   // Publishes either the queried results or recommendation.
@@ -85,7 +90,6 @@ class AppSearchProvider : public SearchProvider {
   // zero state recommendation latency.
   void MaybeRecordQueryLatencyHistogram(bool is_queried_search);
 
-  Profile* profile_;
   AppListControllerDelegate* const list_controller_;
   std::u16string query_;
   base::TimeTicks query_start_time_;
@@ -98,6 +102,8 @@ class AppSearchProvider : public SearchProvider {
       nullptr;
   base::WeakPtrFactory<AppSearchProvider> refresh_apps_factory_{this};
   base::WeakPtrFactory<AppSearchProvider> update_results_factory_{this};
+
+  base::WeakPtrFactory<AppSearchProvider> weak_ptr_factory_{this};
 };
 
 }  // namespace app_list

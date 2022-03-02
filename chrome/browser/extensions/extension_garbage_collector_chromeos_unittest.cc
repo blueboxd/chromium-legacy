@@ -67,7 +67,7 @@ class ExtensionGarbageCollectorChromeOSUnitTest
 
     GetFakeUserManager()->AddUser(user_manager::StubAccountId());
     GetFakeUserManager()->LoginUser(user_manager::StubAccountId());
-    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+    ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
         GetFakeUserManager()->GetActiveUser(), profile_.get());
   }
 
@@ -90,7 +90,8 @@ class ExtensionGarbageCollectorChromeOSUnitTest
                                   const std::string& version,
                                   const std::string& users_string,
                                   const base::FilePath& path) {
-    DictionaryPrefUpdate shared_extensions(testing_local_state_.Get(),
+    DictionaryPrefUpdateDeprecated shared_extensions(
+        testing_local_state_.Get(),
         ExtensionAssetsManagerChromeOS::kSharedExtensions);
 
     base::DictionaryValue* extension_info_weak = NULL;
@@ -182,12 +183,13 @@ TEST_F(ExtensionGarbageCollectorChromeOSUnitTest, SharedExtensions) {
 
   EXPECT_TRUE(base::PathExists(path_id2_1));
 
-  const base::DictionaryValue* shared_extensions = testing_local_state_.Get()->
-      GetDictionary(ExtensionAssetsManagerChromeOS::kSharedExtensions);
+  const base::Value* shared_extensions =
+      testing_local_state_.Get()->GetDictionary(
+          ExtensionAssetsManagerChromeOS::kSharedExtensions);
   ASSERT_TRUE(shared_extensions);
 
-  EXPECT_FALSE(shared_extensions->HasKey(kExtensionId1));
-  EXPECT_TRUE(shared_extensions->HasKey(kExtensionId2));
+  EXPECT_FALSE(shared_extensions->FindKey(kExtensionId1));
+  EXPECT_TRUE(shared_extensions->FindKey(kExtensionId2));
 }
 
 }  // namespace extensions

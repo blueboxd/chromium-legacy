@@ -7,10 +7,11 @@
 
 #include <winerror.h>
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <string>
 
+#include "base/containers/span.h"
+#include "base/hash/hash.h"
 #include "base/process/process_iterator.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_handle.h"
@@ -20,6 +21,17 @@
 namespace base {
 class FilePath;
 }
+
+// Specialization for std::hash so that IID values can be stored in an
+// associative container.
+template <>
+struct std::hash<IID> {
+  size_t operator()(const IID& iid) const {
+    static_assert(sizeof(iid) == 16, "IID storage must be contiguous.");
+    return base::FastHash(base::span<const uint8_t>(
+        reinterpret_cast<const uint8_t*>(&iid), sizeof(iid)));
+  }
+};
 
 namespace updater {
 
@@ -159,16 +171,6 @@ std::wstring GetServiceName(bool is_internal_service);
 // "{ProductName} {InternalService/Service} {UpdaterVersion}".
 // For instance: "ChromiumUpdater InternalService 92.0.0.1".
 std::wstring GetServiceDisplayName(bool is_internal_service);
-
-// Returns the versioned task name in the following format:
-// "{ProductName}Task{System/User}{UpdaterVersion}".
-// For instance: "ChromiumUpdaterTaskSystem92.0.0.1".
-std::wstring GetTaskName(UpdaterScope scope);
-
-// Returns the versioned task display name in the following format:
-// "{ProductName} Task {System/User} {UpdaterVersion}".
-// For instance: "ChromiumUpdater Task System 92.0.0.1".
-std::wstring GetTaskDisplayName(UpdaterScope scope);
 
 // Returns `KEY_WOW64_32KEY | access`. All registry access under the Updater key
 // should use `Wow6432(access)` as the `REGSAM`.

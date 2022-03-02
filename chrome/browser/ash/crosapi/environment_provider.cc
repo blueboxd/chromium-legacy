@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/account_manager_core/account.h"
@@ -30,7 +31,7 @@ mojom::SessionType EnvironmentProvider::GetSessionType() {
   const user_manager::User* const user =
       user_manager::UserManager::Get()->GetPrimaryUser();
   const Profile* const profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+      ash::ProfileHelper::Get()->GetProfileByUser(user);
   if (profile->IsGuestSession()) {
     return mojom::SessionType::kGuestSession;
   }
@@ -73,7 +74,7 @@ mojom::DefaultPathsPtr EnvironmentProvider::GetDefaultPaths() {
   // support multi-signin.
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetPrimaryUser();
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
 
   default_paths->user_nss_database =
       crypto::GetSoftwareNSSDBPath(profile->GetPath());
@@ -91,6 +92,10 @@ mojom::DefaultPathsPtr EnvironmentProvider::GetDefaultPaths() {
         integration_service->IsMounted()) {
       default_paths->drivefs = integration_service->GetMountPointPath();
     }
+    default_paths->android_files =
+        base::FilePath(file_manager::util::kAndroidFilesPath);
+    default_paths->linux_files =
+        file_manager::util::GetCrostiniMountDirectory(profile);
   } else {
     // On developer linux workstations the above functions do path mangling to
     // support multi-signin which gets undone later in ash-specific code. This
@@ -99,7 +104,14 @@ mojom::DefaultPathsPtr EnvironmentProvider::GetDefaultPaths() {
     default_paths->documents = home.Append("Documents");
     default_paths->downloads = home.Append("Downloads");
     default_paths->drivefs = home.Append("Drive");
+    default_paths->android_files = home.Append("Android");
+    default_paths->linux_files = home.Append("Crostini");
   }
+
+  // CrosDisksClient already has a convention for its removable media directory
+  // when running on Linux workstations.
+  default_paths->removable_media =
+      chromeos::CrosDisksClient::GetRemovableDiskMountPoint();
 
   return default_paths;
 }

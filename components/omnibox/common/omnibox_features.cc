@@ -9,28 +9,28 @@
 namespace omnibox {
 
 constexpr auto enabled_by_default_desktop_only =
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     base::FEATURE_DISABLED_BY_DEFAULT;
 #else
     base::FEATURE_ENABLED_BY_DEFAULT;
 #endif
 
 constexpr auto enabled_by_default_android_only =
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     base::FEATURE_ENABLED_BY_DEFAULT;
 #else
     base::FEATURE_DISABLED_BY_DEFAULT;
 #endif
 
 constexpr auto enabled_by_default_desktop_android =
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
     base::FEATURE_DISABLED_BY_DEFAULT;
 #else
     base::FEATURE_ENABLED_BY_DEFAULT;
 #endif
 
 constexpr auto enabled_by_default_desktop_ios =
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     base::FEATURE_DISABLED_BY_DEFAULT;
 #else
     base::FEATURE_ENABLED_BY_DEFAULT;
@@ -38,7 +38,7 @@ constexpr auto enabled_by_default_desktop_ios =
 
 // Comment out this macro since it is currently not being used in this file.
 // const auto enabled_by_default_android_ios =
-// #if defined(OS_ANDROID) || defined(OS_IOS)
+// #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 //     base::FEATURE_ENABLED_BY_DEFAULT;
 // #else
 //     base::FEATURE_DISABLED_BY_DEFAULT;
@@ -210,7 +210,14 @@ const base::Feature kShortBookmarkSuggestionsByTotalInputLength{
 // enabled, they preserve up to 3 additional chars. See `GetShortcutText()` in
 // shortcuts_backend.cc for details.
 const base::Feature kPreserveLongerShortcutsText{
-    "OmniboxPreserveLongerShortcutsText", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxPreserveLongerShortcutsText", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If disabled, shortcuts to the same stripped destination URL are scored
+// independently, and only the highest scored shortcut is kept. If enabled,
+// duplicate shortcuts are given an aggregate score, as if they had been a
+// single shortcut.
+const base::Feature kAggregateShortcuts{"OmniboxAggregateShortcuts",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, inputs may match bookmark paths. These path matches won't
 // contribute to scoring. E.g. 'planets jupiter' can suggest a bookmark titled
@@ -265,6 +272,10 @@ const base::Feature kNtpRealboxSuggestionAnswers{
 const base::Feature kNtpRealboxTailSuggest{"NtpRealboxTailSuggest",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to enable URL suggestions for inputs that may contain typos.
+const base::Feature kOmniboxFuzzyUrlSuggestions{
+    "OmniboxFuzzyUrlSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to enable the first batch of Pedals on Android. The Pedals,
 // which will be enabled on Android, should be already enabled on desktop.
 const base::Feature kOmniboxPedalsAndroidBatch1{
@@ -290,10 +301,6 @@ const base::Feature kOmniboxPedalsBatch3NonEnglish{
 const base::Feature kOmniboxPedalsTranslationConsole{
     "OmniboxPedalsTranslationConsole", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to enable the keyword search button.
-const base::Feature kOmniboxKeywordSearchButton{
-    "OmniboxKeywordSearchButton", enabled_by_default_desktop_only};
-
 // If enabled, uses WebUI to render the omnibox suggestions popup, similar to
 // how the NTP "realbox" is implemented.
 const base::Feature kWebUIOmniboxPopup{"WebUIOmniboxPopup",
@@ -314,6 +321,11 @@ const base::Feature kKeywordSpaceTriggeringSetting{
 // that have been used or manually added/modified by the user.
 const base::Feature kActiveSearchEngines{"OmniboxActiveSearchEngines",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, adds a "starter pack" of @history, @bookmarks, and @settings
+// scopes to Site Search/Keyword Mode.
+const base::Feature kSiteSearchStarterPack{"OmniboxSiteSearchStarterPack",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Experiment to introduce new security indicators for HTTPS.
 const base::Feature kUpdatedConnectionSecurityIndicators{

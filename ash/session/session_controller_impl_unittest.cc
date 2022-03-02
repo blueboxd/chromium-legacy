@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -146,6 +147,49 @@ class SessionControllerImplTest : public testing::Test {
  private:
   std::unique_ptr<SessionControllerImpl> controller_;
   TestSessionObserver observer_;
+};
+
+class SessionControllerImplWithShellTest : public AshTestBase {
+ public:
+  SessionControllerImplWithShellTest() = default;
+
+  SessionControllerImplWithShellTest(
+      const SessionControllerImplWithShellTest&) = delete;
+  SessionControllerImplWithShellTest& operator=(
+      const SessionControllerImplWithShellTest&) = delete;
+
+  ~SessionControllerImplWithShellTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    AshTestBase::SetUp();
+    controller()->AddObserver(&observer_);
+  }
+
+  void TearDown() override {
+    controller()->RemoveObserver(&observer_);
+    window_.reset();
+    AshTestBase::TearDown();
+  }
+
+  void CreateFullscreenWindow() {
+    window_ = CreateTestWindow();
+    window_->SetProperty(aura::client::kShowStateKey,
+                         ui::SHOW_STATE_FULLSCREEN);
+    window_state_ = WindowState::Get(window_.get());
+  }
+
+  SessionControllerImpl* controller() {
+    return Shell::Get()->session_controller();
+  }
+  const TestSessionObserver* observer() const { return &observer_; }
+
+ protected:
+  WindowState* window_state_ = nullptr;
+
+ private:
+  TestSessionObserver observer_;
+  std::unique_ptr<aura::Window> window_;
 };
 
 // Tests that the simple session info is reflected properly.
@@ -796,6 +840,16 @@ TEST_F(SessionControllerImplUnblockTest, ActiveWindowAfterUnblocking) {
   // |widget| should now be active as SessionControllerImpl no longer is
   // blocking windows from becoming active.
   EXPECT_TRUE(widget->IsActive());
+}
+
+TEST_F(SessionControllerImplWithShellTest, ExitFullscreenBeforeLock) {
+  CreateFullscreenWindow();
+  EXPECT_TRUE(window_state_->IsFullscreen());
+
+  base::RunLoop run_loop;
+  Shell::Get()->session_controller()->PrepareForLock(run_loop.QuitClosure());
+
+  EXPECT_FALSE(window_state_->IsFullscreen());
 }
 
 }  // namespace

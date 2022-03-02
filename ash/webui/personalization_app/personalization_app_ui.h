@@ -13,12 +13,17 @@
 
 namespace ash {
 
-class PersonalizationAppUiDelegate;
+class PersonalizationAppThemeProvider;
+class PersonalizationAppWallpaperProvider;
+class PersonalizationAppUserProvider;
 
 class PersonalizationAppUI : public ui::MojoWebUIController {
  public:
-  PersonalizationAppUI(content::WebUI* web_ui,
-                       std::unique_ptr<PersonalizationAppUiDelegate> delegate);
+  PersonalizationAppUI(
+      content::WebUI* web_ui,
+      std::unique_ptr<PersonalizationAppThemeProvider> theme_provider,
+      std::unique_ptr<PersonalizationAppUserProvider> user_provider,
+      std::unique_ptr<PersonalizationAppWallpaperProvider> wallpaper_provider);
 
   PersonalizationAppUI(const PersonalizationAppUI&) = delete;
   PersonalizationAppUI& operator=(const PersonalizationAppUI&) = delete;
@@ -26,11 +31,20 @@ class PersonalizationAppUI : public ui::MojoWebUIController {
   ~PersonalizationAppUI() override;
 
   void BindInterface(
+      mojo::PendingReceiver<personalization_app::mojom::ThemeProvider>
+          receiver);
+
+  void BindInterface(
+      mojo::PendingReceiver<personalization_app::mojom::UserProvider> receiver);
+
+  void BindInterface(
       mojo::PendingReceiver<personalization_app::mojom::WallpaperProvider>
           receiver);
 
  private:
-  std::unique_ptr<PersonalizationAppUiDelegate> delegate_;
+  std::unique_ptr<PersonalizationAppThemeProvider> theme_provider_;
+  std::unique_ptr<PersonalizationAppUserProvider> user_provider_;
+  std::unique_ptr<PersonalizationAppWallpaperProvider> wallpaper_provider_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 };

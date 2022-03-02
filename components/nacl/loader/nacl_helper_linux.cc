@@ -24,7 +24,9 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/files/scoped_file.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
@@ -44,6 +46,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
+#include "third_party/cros_system_api/switches/chrome_switches.h"
 
 namespace {
 
@@ -52,19 +55,88 @@ struct NaClLoaderSystemInfo {
   long number_of_cores;
 };
 
+#if BUILDFLAG(IS_CHROMEOS)
+std::string GetCommandLineFeatureFlagChoice(
+    const base::CommandLine* command_line,
+    std::string feature_flag) {
+  std::string encoded =
+      command_line->GetSwitchValueNative(chromeos::switches::kFeatureFlags);
+  if (encoded.empty()) {
+    return "";
+  }
+
+  auto flags_list = base::JSONReader::Read(encoded);
+  if (!flags_list) {
+    LOG(WARNING) << "Failed to parse feature flags configuration";
+    return "";
+  }
+
+  for (const auto& flag : flags_list.value().GetList()) {
+    if (!flag.is_string())
+      continue;
+    std::string flag_string = flag.GetString();
+    if (flag_string.rfind(feature_flag) != std::string::npos)
+      // For option x, this has the form "feature-flag-name@x". Return "x".
+      return flag_string.substr(feature_flag.size() + 1);
+  }
+  return "";
+}
+
+void AddVerboseLoggingInNaclSwitch(base::CommandLine* command_line) {
+  if (command_line->HasSwitch(switches::kVerboseLoggingInNacl))
+    // Flag is already present, nothing to do here.
+    return;
+
+  std::string option = GetCommandLineFeatureFlagChoice(
+      command_line, switches::kVerboseLoggingInNacl);
+
+  // This needs to be kept in sync with the order of choices for
+  // kVerboseLoggingInNacl in chrome/browser/about_flags.cc
+  if (option == "")
+    return;
+  if (option == "1")
+    return command_line->AppendSwitchASCII(
+        switches::kVerboseLoggingInNacl,
+        switches::kVerboseLoggingInNaclChoiceLow);
+  if (option == "2")
+    return command_line->AppendSwitchASCII(
+        switches::kVerboseLoggingInNacl,
+        switches::kVerboseLoggingInNaclChoiceMedium);
+  if (option == "3")
+    return command_line->AppendSwitchASCII(
+        switches::kVerboseLoggingInNacl,
+        switches::kVerboseLoggingInNaclChoiceHigh);
+  if (option == "4")
+    return command_line->AppendSwitchASCII(
+        switches::kVerboseLoggingInNacl,
+        switches::kVerboseLoggingInNaclChoiceHighest);
+  if (option == "5")
+    return command_line->AppendSwitchASCII(
+        switches::kVerboseLoggingInNacl,
+        switches::kVerboseLoggingInNaclChoiceDisabled);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 // The child must mimic the behavior of zygote_main_linux.cc on the child
 // side of the fork. See zygote_main_linux.cc:HandleForkRequest from
 //   if (!child) {
 void BecomeNaClLoader(base::ScopedFD browser_fd,
                       const NaClLoaderSystemInfo& system_info,
-                      bool uses_nonsfi_mode,
                       nacl::NaClSandbox* nacl_sandbox) {
   DCHECK(nacl_sandbox);
   VLOG(1) << "NaCl loader: setting up IPC descriptor";
   // Close or shutdown IPC channels that we don't need anymore.
   PCHECK(0 == IGNORE_EINTR(close(kNaClZygoteDescriptor)));
 
-  CHECK(!uses_nonsfi_mode);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+#if BUILDFLAG(IS_CHROMEOS)
+  AddVerboseLoggingInNaclSwitch(command_line);
+#endif
+  if (command_line->HasSwitch(switches::kVerboseLoggingInNacl)) {
+    base::Environment::Create()->SetVar(
+        "NACLVERBOSITY",
+        command_line->GetSwitchValueASCII(switches::kVerboseLoggingInNacl));
+  }
 
   // Always ignore SIGPIPE, for consistency with other Chrome processes and
   // because some IPC code, such as sync_socket_posix.cc, requires this.
@@ -73,7 +145,7 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
 
   // Finish layer-1 sandbox initialization and initialize the layer-2 sandbox.
   CHECK(!nacl_sandbox->HasOpenDirectory());
-  nacl_sandbox->InitializeLayerTwoSandbox(uses_nonsfi_mode);
+  nacl_sandbox->InitializeLayerTwoSandbox();
   nacl_sandbox->SealLayerOneSandbox();
   nacl_sandbox->CheckSandboxingStateWithPolicy();
 
@@ -84,7 +156,6 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
   mojo::core::Init();
 
   base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
-  CHECK(!uses_nonsfi_mode);
   NaClListener listener;
   listener.set_prereserved_sandbox_size(system_info.prereserved_sandbox_size);
   listener.set_number_of_cores(system_info.number_of_cores);
@@ -96,7 +167,6 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
 // Start the NaCl loader in a child created by the NaCl loader Zygote.
 void ChildNaClLoaderInit(std::vector<base::ScopedFD> child_fds,
                          const NaClLoaderSystemInfo& system_info,
-                         bool uses_nonsfi_mode,
                          nacl::NaClSandbox* nacl_sandbox,
                          const std::string& channel_id) {
   DCHECK(child_fds.size() >
@@ -112,8 +182,7 @@ void ChildNaClLoaderInit(std::vector<base::ScopedFD> child_fds,
       std::move(child_fds[content::ZygoteForkDelegate::kBrowserFDIndex]));
   child_fds.clear();
 
-  BecomeNaClLoader(std::move(browser_fd), system_info, uses_nonsfi_mode,
-                   nacl_sandbox);
+  BecomeNaClLoader(std::move(browser_fd), system_info, nacl_sandbox);
   _exit(1);
 }
 
@@ -125,12 +194,6 @@ bool HandleForkRequest(std::vector<base::ScopedFD> child_fds,
                        nacl::NaClSandbox* nacl_sandbox,
                        base::PickleIterator* input_iter,
                        base::Pickle* output_pickle) {
-  bool uses_nonsfi_mode;
-  if (!input_iter->ReadBool(&uses_nonsfi_mode)) {
-    LOG(ERROR) << "Could not read uses_nonsfi_mode status";
-    return false;
-  }
-
   std::string channel_id;
   if (!input_iter->ReadString(&channel_id)) {
     LOG(ERROR) << "Could not read channel_id string";
@@ -157,8 +220,8 @@ bool HandleForkRequest(std::vector<base::ScopedFD> child_fds,
   }
 
   if (child_pid == 0) {
-    ChildNaClLoaderInit(std::move(child_fds), system_info, uses_nonsfi_mode,
-                        nacl_sandbox, channel_id);
+    ChildNaClLoaderInit(std::move(child_fds), system_info, nacl_sandbox,
+                        channel_id);
     NOTREACHED();
   }
 
@@ -296,9 +359,6 @@ static const char kNaClHelperRDebug[] = "r_debug";
 // dynamic linker's structure into the address provided by the option.
 // Hereafter, if someone attaches a debugger (or examines a core dump),
 // the debugger will find all the symbols in the normal way.
-//
-// Non-SFI mode does not use nacl_helper_bootstrap, so it doesn't need to
-// process the --r_debug option.
 static void CheckRDebug(char* argv0) {
   std::string r_debug_switch_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(

@@ -42,7 +42,7 @@ function setupFakeShimlessRmaService_() {
 
   service.setAsyncOperationDelayMs(500);
 
-  service.setAbortRmaResult(RmadErrorCode.kOk);
+  service.setAbortRmaResult(RmadErrorCode.kRmaNotRequired);
 
   service.automaticallyTriggerHardwareVerificationStatusObservation();
 
@@ -74,6 +74,7 @@ function setupFakeShimlessRmaService_() {
   service.setGetOriginalSkuResult(1);
   service.setGetWhiteLabelListResult(fakeDeviceWhiteLabels);
   service.setGetOriginalWhiteLabelResult(1);
+  service.setGetOriginalDramPartNumberResult('dram# 0123');
 
   service.setGetCalibrationSetupInstructionsResult(
       CalibrationSetupInstruction.kCalibrationInstructionPlaceLidOnFlatSurface);

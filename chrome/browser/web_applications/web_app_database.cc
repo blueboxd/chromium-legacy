@@ -19,10 +19,10 @@
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
@@ -33,6 +33,7 @@
 #include "components/sync/model/model_error.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/capture_links.mojom.h"
+#include "third_party/blink/public/mojom/manifest/handle_links.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -94,13 +95,40 @@ WebAppProto::CaptureLinks CaptureLinksToProto(
   switch (capture_links) {
     case blink::mojom::CaptureLinks::kUndefined:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case blink::mojom::CaptureLinks::kNone:
       return WebAppProto_CaptureLinks_NONE;
     case blink::mojom::CaptureLinks::kNewClient:
       return WebAppProto_CaptureLinks_NEW_CLIENT;
     case blink::mojom::CaptureLinks::kExistingClientNavigate:
       return WebAppProto_CaptureLinks_EXISTING_CLIENT_NAVIGATE;
+  }
+}
+
+blink::mojom::HandleLinks ProtoToHandleLinks(
+    WebAppProto::HandleLinks handle_links) {
+  switch (handle_links) {
+    case WebAppProto_HandleLinks_AUTO:
+      return blink::mojom::HandleLinks::kAuto;
+    case WebAppProto_HandleLinks_PREFERRED:
+      return blink::mojom::HandleLinks::kPreferred;
+    case WebAppProto_HandleLinks_NOT_PREFERRED:
+      return blink::mojom::HandleLinks::kNotPreferred;
+  }
+}
+
+WebAppProto::HandleLinks HandleLinksToProto(
+    blink::mojom::HandleLinks handle_links) {
+  switch (handle_links) {
+    case blink::mojom::HandleLinks::kUndefined:
+      NOTREACHED();
+      [[fallthrough]];
+    case blink::mojom::HandleLinks::kAuto:
+      return WebAppProto_HandleLinks_AUTO;
+    case blink::mojom::HandleLinks::kPreferred:
+      return WebAppProto_HandleLinks_PREFERRED;
+    case blink::mojom::HandleLinks::kNotPreferred:
+      return WebAppProto_HandleLinks_NOT_PREFERRED;
   }
 }
 
@@ -338,6 +366,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
         chromeos_data.show_in_management);
     mutable_chromeos_data->set_is_disabled(chromeos_data.is_disabled);
     mutable_chromeos_data->set_oem_installed(chromeos_data.oem_installed);
+    mutable_chromeos_data->set_handles_file_open_intents(
+        chromeos_data.handles_file_open_intents);
   }
 
   if (web_app.client_data().system_web_app_data.has_value()) {
@@ -513,6 +543,11 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   else
     local_data->clear_capture_links();
 
+  if (web_app.handle_links() != blink::mojom::HandleLinks::kUndefined)
+    local_data->set_handle_links(HandleLinksToProto(web_app.handle_links()));
+  else
+    local_data->clear_handle_links();
+
   if (!web_app.manifest_url().is_empty())
     local_data->set_manifest_url(web_app.manifest_url().spec());
 
@@ -648,6 +683,8 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
         chromeos_data_proto.show_in_management();
     chromeos_data->is_disabled = chromeos_data_proto.is_disabled();
     chromeos_data->oem_installed = chromeos_data_proto.oem_installed();
+    chromeos_data->handles_file_open_intents =
+        chromeos_data_proto.handles_file_open_intents();
     web_app->SetWebAppChromeOsData(std::move(chromeos_data));
   }
 
@@ -996,6 +1033,11 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   else
     web_app->SetCaptureLinks(blink::mojom::CaptureLinks::kUndefined);
 
+  if (local_data.has_handle_links())
+    web_app->SetHandleLinks(ProtoToHandleLinks(local_data.handle_links()));
+  else
+    web_app->SetHandleLinks(blink::mojom::HandleLinks::kUndefined);
+
   if (local_data.has_manifest_url()) {
     GURL manifest_url(local_data.manifest_url());
     if (manifest_url.is_empty() || !manifest_url.is_valid()) {
@@ -1184,7 +1226,7 @@ WebAppProto::DisplayMode ToWebAppProtoDisplayMode(DisplayMode display_mode) {
       return WebAppProto::MINIMAL_UI;
     case DisplayMode::kUndefined:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case DisplayMode::kStandalone:
       return WebAppProto::STANDALONE;
     case DisplayMode::kFullscreen:

@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
+#include "base/task/common/task_annotator.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -826,27 +827,27 @@ TEST_F(FrameSchedulerImplTest, PauseAndResume) {
 }
 
 TEST_F(FrameSchedulerImplTest, PauseAndResumeForCooperativeScheduling) {
-  EXPECT_TRUE(LoadingTaskQueue()->GetTaskQueue()->IsQueueEnabled());
-  EXPECT_TRUE(ThrottleableTaskQueue()->GetTaskQueue()->IsQueueEnabled());
-  EXPECT_TRUE(DeferrableTaskQueue()->GetTaskQueue()->IsQueueEnabled());
-  EXPECT_TRUE(PausableTaskQueue()->GetTaskQueue()->IsQueueEnabled());
-  EXPECT_TRUE(UnpausableTaskQueue()->GetTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(LoadingTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(ThrottleableTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(DeferrableTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(PausableTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(UnpausableTaskQueue()->IsQueueEnabled());
 
   frame_scheduler_->SetPreemptedForCooperativeScheduling(
       FrameOrWorkerScheduler::Preempted(true));
-  EXPECT_FALSE(LoadingTaskQueue()->GetTaskQueue()->IsQueueEnabled());
-  EXPECT_FALSE(ThrottleableTaskQueue()->GetTaskQueue()->IsQueueEnabled());
-  EXPECT_FALSE(DeferrableTaskQueue()->GetTaskQueue()->IsQueueEnabled());
-  EXPECT_FALSE(PausableTaskQueue()->GetTaskQueue()->IsQueueEnabled());
-  EXPECT_FALSE(UnpausableTaskQueue()->GetTaskQueue()->IsQueueEnabled());
+  EXPECT_FALSE(LoadingTaskQueue()->IsQueueEnabled());
+  EXPECT_FALSE(ThrottleableTaskQueue()->IsQueueEnabled());
+  EXPECT_FALSE(DeferrableTaskQueue()->IsQueueEnabled());
+  EXPECT_FALSE(PausableTaskQueue()->IsQueueEnabled());
+  EXPECT_FALSE(UnpausableTaskQueue()->IsQueueEnabled());
 
   frame_scheduler_->SetPreemptedForCooperativeScheduling(
       FrameOrWorkerScheduler::Preempted(false));
-  EXPECT_TRUE(LoadingTaskQueue()->GetTaskQueue()->IsQueueEnabled());
-  EXPECT_TRUE(ThrottleableTaskQueue()->GetTaskQueue()->IsQueueEnabled());
-  EXPECT_TRUE(DeferrableTaskQueue()->GetTaskQueue()->IsQueueEnabled());
-  EXPECT_TRUE(PausableTaskQueue()->GetTaskQueue()->IsQueueEnabled());
-  EXPECT_TRUE(UnpausableTaskQueue()->GetTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(LoadingTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(ThrottleableTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(DeferrableTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(PausableTaskQueue()->IsQueueEnabled());
+  EXPECT_TRUE(UnpausableTaskQueue()->IsQueueEnabled());
 }
 
 namespace {
@@ -1085,9 +1086,9 @@ class FrameSchedulerImplTestWithUnfreezableLoading
 TEST_F(FrameSchedulerImplTestWithUnfreezableLoading,
        LoadingTasksKeepRunningWhenFrozen) {
   int counter = 0;
-  UnfreezableLoadingTaskQueue()->GetTaskQueue()->task_runner()->PostTask(
+  UnfreezableLoadingTaskQueue()->GetTaskRunnerWithDefaultTaskType()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
-  LoadingTaskQueue()->GetTaskQueue()->task_runner()->PostTask(
+  LoadingTaskQueue()->GetTaskRunnerWithDefaultTaskType()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
 
   page_scheduler_->SetPageVisible(false);
@@ -3639,16 +3640,13 @@ class DeprioritizeDOMTimerTest : public FrameSchedulerImplTest {
       TaskQueue::QueuePriority expected_priority) {
     EXPECT_EQ(
         JavaScriptTimerNormalThrottleableTaskQueueForFrame(frame_scheduler)
-            ->GetTaskQueue()
             ->GetQueuePriority(),
         expected_priority);
     EXPECT_EQ(
         JavaScriptTimerIntensivelyThrottleableTaskQueueForFrame(frame_scheduler)
-            ->GetTaskQueue()
             ->GetQueuePriority(),
         expected_priority);
     EXPECT_EQ(JavaScriptTimerNonThrottleableTaskQueueForFrame(frame_scheduler)
-                  ->GetTaskQueue()
                   ->GetQueuePriority(),
               expected_priority);
   }
@@ -3886,15 +3884,15 @@ class FrameSchedulerImplThrottleForegroundTimersEnabledTest
     : public FrameSchedulerImplTest {
  public:
   FrameSchedulerImplThrottleForegroundTimersEnabledTest()
-      : FrameSchedulerImplTest({kThrottleForegroundTimers}, {}) {}
+      : FrameSchedulerImplTest({features::kThrottleForegroundTimers}, {}) {}
 };
 
 TEST_F(FrameSchedulerImplThrottleForegroundTimersEnabledTest,
        ForegroundPageTimerThrottling) {
   page_scheduler_->SetPageVisible(true);
 
-  // Snap the time to a multiple of 1 second.
-  FastForwardToAlignedTime(base::Seconds(1));
+  // Snap the time to a multiple of 32ms.
+  FastForwardToAlignedTime(base::Milliseconds(32));
   const base::TimeTicks start = base::TimeTicks::Now();
 
   std::vector<base::TimeTicks> run_times;
@@ -3912,10 +3910,10 @@ TEST_F(FrameSchedulerImplThrottleForegroundTimersEnabledTest,
   task_environment_.FastForwardBy(base::Seconds(5));
 
   EXPECT_THAT(run_times,
-              testing::ElementsAre(start, start + base::Milliseconds(100),
-                                   start + base::Milliseconds(100),
-                                   start + base::Milliseconds(200),
-                                   start + base::Milliseconds(200)));
+              testing::ElementsAre(start, start + base::Milliseconds(64),
+                                   start + base::Milliseconds(128),
+                                   start + base::Milliseconds(160),
+                                   start + base::Milliseconds(224)));
 }
 
 // Make sure the normal throttling (1 wake up per second) is applied when the
@@ -3950,12 +3948,12 @@ TEST_F(FrameSchedulerImplThrottleForegroundTimersEnabledTest,
 }
 
 TEST_F(FrameSchedulerImplThrottleForegroundTimersEnabledTest,
-       HiddenAudiblePageimerThrottling) {
+       HiddenAudiblePageTimerThrottling) {
   page_scheduler_->SetPageVisible(false);
   page_scheduler_->AudioStateChanged(/*is_audio_playing=*/true);
 
-  // Snap the time to a multiple of 1 second.
-  FastForwardToAlignedTime(base::Seconds(1));
+  // Snap the time to a multiple of 32ms.
+  FastForwardToAlignedTime(base::Milliseconds(32));
   const base::TimeTicks start = base::TimeTicks::Now();
 
   std::vector<base::TimeTicks> run_times;
@@ -3973,10 +3971,10 @@ TEST_F(FrameSchedulerImplThrottleForegroundTimersEnabledTest,
   task_environment_.FastForwardBy(base::Seconds(5));
 
   EXPECT_THAT(run_times,
-              testing::ElementsAre(start, start + base::Milliseconds(100),
-                                   start + base::Milliseconds(100),
-                                   start + base::Milliseconds(200),
-                                   start + base::Milliseconds(200)));
+              testing::ElementsAre(start, start + base::Milliseconds(64),
+                                   start + base::Milliseconds(128),
+                                   start + base::Milliseconds(160),
+                                   start + base::Milliseconds(224)));
 }
 
 TEST_F(FrameSchedulerImplThrottleForegroundTimersEnabledTest,
@@ -3992,8 +3990,8 @@ TEST_F(FrameSchedulerImplThrottleForegroundTimersEnabledTest,
           TaskType::kJavascriptTimerDelayedLowNesting);
 
   cross_origin_frame_scheduler->SetFrameVisible(true);
-  // Snap the time to a multiple of 1 second.
-  FastForwardToAlignedTime(base::Seconds(1));
+  // Snap the time to a multiple of 32ms.
+  FastForwardToAlignedTime(base::Milliseconds(32));
   const base::TimeTicks start = base::TimeTicks::Now();
 
   std::vector<base::TimeTicks> run_times;
@@ -4007,10 +4005,10 @@ TEST_F(FrameSchedulerImplThrottleForegroundTimersEnabledTest,
   task_environment_.FastForwardBy(base::Seconds(5));
 
   EXPECT_THAT(run_times,
-              testing::ElementsAre(start, start + base::Milliseconds(100),
-                                   start + base::Milliseconds(100),
-                                   start + base::Milliseconds(200),
-                                   start + base::Milliseconds(200)));
+              testing::ElementsAre(start, start + base::Milliseconds(64),
+                                   start + base::Milliseconds(128),
+                                   start + base::Milliseconds(160),
+                                   start + base::Milliseconds(224)));
 }
 
 TEST_F(FrameSchedulerImplThrottleForegroundTimersEnabledTest,

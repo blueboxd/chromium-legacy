@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
-#include "base/compiler_specific.h"
 #include "base/debug/crash_logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -45,6 +44,7 @@
 #include "content/public/browser/peak_gpu_memory_tracker.h"
 #include "content/public/browser/prerender_trigger_type.h"
 #include "content/public/browser/render_process_host_observer.h"
+#include "content/public/browser/weak_document_ptr.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -59,7 +59,6 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom-forward.h"
@@ -67,7 +66,7 @@
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "url/origin.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #include "content/browser/android/navigation_handle_proxy.h"
 #endif
@@ -111,6 +110,7 @@ class CONTENT_EXPORT NavigationRequest
       public NavigationURLLoaderDelegate,
       public NavigationThrottleRunner::Delegate,
       public CommitDeferringConditionRunner::Delegate,
+      public FencedFrameURLMapping::MappingResultObserver,
       private RenderProcessHostObserver,
       private network::mojom::CookieAccessObserver {
  public:
@@ -290,7 +290,7 @@ class CONTENT_EXPORT NavigationRequest
   bool IsInPrimaryMainFrame() const override;
   bool IsInPrerenderedMainFrame() override;
   bool IsPrerenderedPageActivation() override;
-  NavigatingFrameType GetNavigatingFrameType() const override;
+  FrameType GetNavigatingFrameType() const override;
   bool IsRendererInitiated() override;
   bool IsSameOrigin() override;
   bool WasServerRedirect() override;
@@ -361,6 +361,7 @@ class CONTENT_EXPORT NavigationRequest
   void RegisterSubresourceOverride(
       blink::mojom::TransferrableURLLoaderPtr transferrable_loader) override;
   GlobalRenderFrameHostId GetPreviousRenderFrameHostId() override;
+  int GetExpectedRenderProcessHostId() override;
   bool IsServedFromBackForwardCache() override;
   void SetIsOverridingUserAgent(bool override_ua) override;
   void SetSilentlyIgnoreErrors() override;
@@ -479,10 +480,7 @@ class CONTENT_EXPORT NavigationRequest
   // redirects. |post_redirect_process| is the renderer process that should
   // handle the navigation following the redirect if it can be handled by an
   // existing RenderProcessHost. Otherwise, it should be null.
-  // |web_exposed_isolation_info| is the new isolation info extracted from the
-  // redirect response.
-  void UpdateSiteInfo(const WebExposedIsolationInfo& web_exposed_isolation_info,
-                      RenderProcessHost* post_redirect_process);
+  void UpdateSiteInfo(RenderProcessHost* post_redirect_process);
 
   int nav_entry_id() const { return nav_entry_id_; }
 
@@ -568,7 +566,7 @@ class CONTENT_EXPORT NavigationRequest
     return navigation_type_;
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Returns a reference to |navigation_handle_| Java counterpart. It is used
   // by Java WebContentsObservers.
   base::android::ScopedJavaGlobalRef<jobject> java_navigation_handle() {
@@ -612,6 +610,10 @@ class CONTENT_EXPORT NavigationRequest
   // can be non-OK before commit and also in cases that didn't result in the
   // navigation being committed (e.g. canceled navigations).
   virtual bool DidEncounterError() const;
+
+  void set_begin_navigation_callback_for_testing(base::OnceClosure callback) {
+    begin_navigation_callback_for_testing_ = std::move(callback);
+  }
 
   void set_complete_callback_for_testing(
       ThrottleChecksFinishedCallback callback) {
@@ -733,8 +735,9 @@ class CONTENT_EXPORT NavigationRequest
   // Take all cookie observers associated with this navigation.
   // Typically this is called when navigation commits to move these observers to
   // the committed document.
-  std::vector<mojo::PendingReceiver<network::mojom::CookieAccessObserver>>
-  TakeCookieObservers() WARN_UNUSED_RESULT;
+  [[nodiscard]] std::vector<
+      mojo::PendingReceiver<network::mojom::CookieAccessObserver>>
+  TakeCookieObservers();
 
   // Returns the coop status information relevant to the current navigation.
   CrossOriginOpenerPolicyStatus& coop_status() { return coop_status_; }
@@ -809,10 +812,6 @@ class CONTENT_EXPORT NavigationRequest
   //          NavigationThrottle.
   bool NeedsUrlLoader();
 
-  network::CrossOriginEmbedderPolicy cross_origin_embedder_policy() const {
-    return cross_origin_embedder_policy_;
-  }
-
   network::mojom::PrivateNetworkRequestPolicy private_network_request_policy()
       const {
     return private_network_request_policy_;
@@ -874,6 +873,10 @@ class CONTENT_EXPORT NavigationRequest
   // potentially compromised renderer when using this method.
   void AddDeferredConsoleMessage(blink::mojom::ConsoleMessageLevel level,
                                  std::string message);
+
+  bool is_deferred_on_fenced_frame_url_mapping_for_testing() const {
+    return is_deferred_on_fenced_frame_url_mapping_;
+  }
 
   base::WeakPtr<NavigationRequest> GetWeakPtr();
 
@@ -967,7 +970,22 @@ class CONTENT_EXPORT NavigationRequest
       CommitDeferringCondition::NavigationType navigation_type,
       absl::optional<int> candidate_prerender_frame_tree_node_id);
 
-  // Called from BeginNavigation() or OnPrerenderingActivationChecksComplete().
+  // Get the `FencedFrameURLMapping` associated with the current page.
+  FencedFrameURLMapping& GetFencedFrameURLMap();
+
+  // True if this is a fenced frame navigation to an urn:uuid.
+  bool NeedFencedFrameURLMapping();
+
+  // FencedFrameURLMapping::MappingResultObserver implementation.
+  // Called from `FencedFrameURLMapping` when the mapping decision is made, and
+  // resume the deferred navigation.
+  void OnFencedFrameURLMappingComplete(
+      absl::optional<GURL> mapped_url,
+      absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
+          pending_ad_components_map) override;
+
+  // Called from BeginNavigation(), OnPrerenderingActivationChecksComplete(),
+  // or OnFencedFrameURLMappingComplete().
   void BeginNavigationImpl();
 
   // Checks if the response requests an isolated origin via the
@@ -1251,12 +1269,8 @@ class CONTENT_EXPORT NavigationRequest
   // no live process that can be used. In that case, a suitable renderer process
   // will be created at commit time.
   //
-  // |web_exposed_isolation_info| is the new isolation info extracted from the
-  // redirect response.
-  void WillRedirectRequest(
-      const GURL& new_referrer_url,
-      const WebExposedIsolationInfo& web_exposed_isolation_info,
-      RenderProcessHost* post_redirect_process);
+  void WillRedirectRequest(const GURL& new_referrer_url,
+                           RenderProcessHost* post_redirect_process);
 
   // Called when the URLRequest will fail.
   void WillFailRequest();
@@ -1285,8 +1299,7 @@ class CONTENT_EXPORT NavigationRequest
 
   // Helper function that computes the SiteInfo for |common_params_.url|.
   // Note: |site_info_| should only be updated with the result of this function.
-  SiteInfo GetSiteInfoForCommonParamsURL(
-      const WebExposedIsolationInfo& cross_origin_isolated_origin_status);
+  SiteInfo GetSiteInfoForCommonParamsURL();
 
   // Updates the state of the navigation handle after encountering a server
   // redirect.
@@ -1341,6 +1354,19 @@ class CONTENT_EXPORT NavigationRequest
   void ForceEnableOriginTrials(const std::vector<std::string>& trials) override;
 
   void CreateCoepReporter(StoragePartition* storage_partition);
+
+  // [spec]: https://html.spec.whatwg.org/C/#obtain-an-embedder-policy
+  //
+  // Returns the CrossOriginEmbedderPolicy for the document, which is inherited
+  // or retrieved from response headers.
+  network::CrossOriginEmbedderPolicy ComputeCrossOriginEmbedderPolicy();
+
+  // [spec]:
+  // https://html.spec.whatwg.org/C/#check-a-navigation-response's-adherence-to-its-embedder-policy
+  //
+  // Return whether the response's COEP is compatible with its parent's COEP. It
+  // also sends COEP reports if needed.
+  bool CheckResponseAdherenceToCoep(const GURL& url);
 
   absl::optional<network::mojom::BlockedByResponseReason> EnforceCOEP();
 
@@ -1450,7 +1476,17 @@ class CONTENT_EXPORT NavigationRequest
 
   // Computes the web-exposed isolation information based on `coop_status_` and
   // current `frame_tree_node_` info.
-  WebExposedIsolationInfo ComputeWebExposedIsolationInfo();
+  // If the return result is nullopt, it means that the WebExposedIsolationInfo
+  // is not relevant or unknown. This can happen for example when we do not have
+  // a network response yet, or when going to an "about:blank" page.
+  absl::optional<WebExposedIsolationInfo> ComputeWebExposedIsolationInfo();
+
+  // Assign an invalid frame tree node id to `prerender_frame_tree_node_id_`.
+  // Called as soon as when we are certain that this navigation won't activate a
+  // prerendered page. This is needed because `IsPrerenderedPageActivation()`,
+  // which may be called at any point after BeginNavigation(), will assume that
+  // 'prerender_frame_tree_node_id_' has an value assigned.
+  void MaybeAssignInvalidPrerenderFrameTreeNodeId();
 
   // Never null. The pointee node owns this navigation request instance.
   FrameTreeNode* const frame_tree_node_;
@@ -1498,7 +1534,7 @@ class CONTENT_EXPORT NavigationRequest
 
   std::unique_ptr<NavigationURLLoader> loader_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // For each C++ NavigationHandle, there is a Java counterpart. It is the JNI
   // bridge in between the two.
   std::unique_ptr<NavigationHandleProxy> navigation_handle_proxy_;
@@ -1683,6 +1719,9 @@ class CONTENT_EXPORT NavigationRequest
   // If set, starting the navigation will immediately result in an error page
   // with this html as content and |net_error| as the network error.
   std::string post_commit_error_page_html_;
+
+  // This test-only callback will be run when BeginNavigation() is called.
+  base::OnceClosure begin_navigation_callback_for_testing_;
 
   // This test-only callback will be run when all throttle checks have been
   // performed. If the callback returns true, On*ChecksComplete functions are
@@ -1871,6 +1910,12 @@ class CONTENT_EXPORT NavigationRequest
   // running.
   bool is_potentially_prerendered_page_activation_for_testing_ = false;
 
+  // Set to true before the fenced frame url mapping. Reset to false when the
+  // mapping finishes. If the initial mapping state of the urn:uuid is pending,
+  // the mapping will finish asynchronously; otherwise, the mapping will finish
+  // synchronously.
+  bool is_deferred_on_fenced_frame_url_mapping_ = false;
+
   // The root frame tree node id of the prerendered page. This will be a valid
   // FrameTreeNode id when this navigation will activate a prerendered page.
   // For all other navigations this will be
@@ -1911,7 +1956,6 @@ class CONTENT_EXPORT NavigationRequest
   // TODO(ahemery, titouan): Move some elements to the policy container or
   // rework inheritance.
   // https://crbug.com/1154729
-  network::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
   network::mojom::PrivateNetworkRequestPolicy private_network_request_policy_ =
       network::mojom::PrivateNetworkRequestPolicy::kWarn;
 
@@ -1924,9 +1968,9 @@ class CONTENT_EXPORT NavigationRequest
   // NavigationRequest.
   std::vector<ConsoleMessage> console_messages_;
 
-  // The `commit_navigation_sent_counter` of the initiator RenderFrameHost at
-  // the time when this NavigationRequest was created.
-  int initiator_commit_navigation_sent_counter_ = -1;
+  // The initiator RenderFrameHost, if the same document is present as when this
+  // NavigationRequest was created.
+  WeakDocumentPtr initiator_document_;
 
   // Indicates that this navigation is for PDF content in a renderer.
   bool is_pdf_ = false;

@@ -62,7 +62,7 @@ var tests = [
         request: {
           initiator: getServerURL('a.com'),
           method: 'GET',
-          frameId: 4,
+          frameId: mparchEnabled ? 5 : 4,
           parentFrameId: 0,
           type: 'sub_frame',
           tabId: tab.id,
@@ -89,13 +89,65 @@ var tests = [
         request: {
           initiator: getServerURL('a.com'),
           method: 'GET',
-          frameId: mparchEnabled ? 6 : 5,
+          frameId: mparchEnabled ? 7 : 5,
           parentFrameId: 0,
           type: 'sub_frame',
           tabId: tab.id,
           url: fencedFrameUrl
         },
         rule: {ruleId: 4, rulesetId: 'rules'}
+      };
+      verifyExpectedRuleInfo(expectedRuleInfo);
+      chrome.test.succeed();
+    });
+  },
+
+  // Uses rule 5 to allow a subresource inside the fenced frame.
+  function testAllowResourceRule() {
+    resetMatchedRules();
+
+    const baseUrl = getServerURL('a.com') +
+      '/extensions/api_test/declarative_net_request/fenced_frames/';
+    const url = baseUrl + 'resource1.html';
+    const matchedImageUrl = baseUrl + 'icon1.png';
+    navigateTab(url, (tab) => {
+      const expectedRuleInfo = {
+        request: {
+          initiator: getServerURL('a.com'),
+          method: 'GET',
+          frameId: mparchEnabled ? 9 : 6,
+          parentFrameId: 0,
+          type: 'image',
+          tabId: tab.id,
+          url: matchedImageUrl
+        },
+        rule: { ruleId: 5, rulesetId: 'rules' }
+      };
+      verifyExpectedRuleInfo(expectedRuleInfo);
+      chrome.test.succeed();
+    });
+  },
+
+  // Uses rule 6 to block a subresource inside the fenced frame.
+  function testBlockResourceRule() {
+    resetMatchedRules();
+
+    const baseUrl = getServerURL('a.com') +
+      '/extensions/api_test/declarative_net_request/fenced_frames/';
+    const url = baseUrl + 'resource2.html';
+    const matchedImageUrl = baseUrl + 'icon2.png';
+    navigateTab(url, (tab) => {
+      const expectedRuleInfo = {
+        request: {
+          initiator: getServerURL('a.com'),
+          method: 'GET',
+          frameId: mparchEnabled ? 11 : 7,
+          parentFrameId: 0,
+          type: 'image',
+          tabId: tab.id,
+          url: matchedImageUrl
+        },
+        rule: { ruleId: 6, rulesetId: 'rules' }
       };
       verifyExpectedRuleInfo(expectedRuleInfo);
       chrome.test.succeed();

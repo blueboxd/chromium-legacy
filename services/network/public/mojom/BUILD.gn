@@ -736,6 +736,7 @@ mojom("cookies_mojom") {
   sources = [
     "cookie_access_observer.mojom",
     "cookie_manager.mojom",
+    "cookie_partition_key.mojom",
     "restricted_cookie_manager.mojom",
     "site_for_cookies.mojom",
   ]
@@ -807,6 +808,14 @@ mojom("cookies_mojom") {
         {
           mojom = "network.mojom.CookieOptions"
           cpp = "::net::CookieOptions"
+        },
+        {
+          mojom = "network.mojom.CookiePartitionKey"
+          cpp = "::net::CookiePartitionKey"
+        },
+        {
+          mojom = "network.mojom.CookiePartitionKeyCollection"
+          cpp = "::net::CookiePartitionKeyCollection"
         },
         {
           mojom = "network.mojom.CookiePartitionKeyCollection"
@@ -954,12 +963,6 @@ mojom("mojom") {
     }
   }
 
-  # This is only needed on desktop linux, but the defines make this difficult
-  # because IS_CHROMECAST is not available in build/build_config.h.
-  if (is_linux || is_chromeos_lacros) {
-    enabled_features += [ "needs_crypt_config" ]
-  }
-
   # Typemaps which apply to both Blink and non-Blink bindings.
   shared_cpp_typemaps = []
 
@@ -970,6 +973,10 @@ mojom("mojom") {
         {
           mojom = "network.mojom.DnsConfigOverrides"
           cpp = "::net::DnsConfigOverrides"
+        },
+        {
+          mojom = "network.mojom.DnsOverHttpsServer"
+          cpp = "::net::DnsOverHttpsServerConfig"
         },
         {
           mojom = "network.mojom.DnsQueryType"

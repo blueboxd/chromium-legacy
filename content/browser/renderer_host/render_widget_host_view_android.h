@@ -15,7 +15,6 @@
 #include "base/android/jni_android.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
-#include "base/compiler_specific.h"
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
@@ -108,8 +107,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       base::RepeatingCallback<SurfaceIdChangedCallbackType>;
   using SurfaceIdChangedCallbackList =
       base::RepeatingCallbackList<SurfaceIdChangedCallbackType>;
-  base::CallbackListSubscription SubscribeToSurfaceIdChanges(
-      const SurfaceIdChangedCallback& callback) WARN_UNUSED_RESULT;
+  [[nodiscard]] base::CallbackListSubscription SubscribeToSurfaceIdChanges(
+      const SurfaceIdChangedCallback& callback);
 
   // Called by DelegatedFrameHostClientAndroid
   void OnSurfaceIdChanged();
@@ -167,14 +166,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   blink::mojom::PointerLockResult ChangeMouseLock(
       bool request_unadjusted_movement) override;
   void UnlockMouse() override;
+  void ClearFallbackSurfaceForCommitPending() override;
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
   void SetIsInVR(bool is_in_vr) override;
   bool IsInVR() const override;
   void DidOverscroll(const ui::DidOverscrollParams& params) override;
   void DidStopFlinging() override;
-  void OnInterstitialPageAttached() override;
-  void OnInterstitialPageGoingAway() override;
   bool CanSynchronizeVisualProperties() override;
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;

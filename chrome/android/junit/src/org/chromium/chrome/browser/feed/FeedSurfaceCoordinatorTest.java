@@ -75,12 +75,10 @@ import org.chromium.ui.base.WindowAndroid;
 /**
  * Tests for {@link FeedSurfaceCoordinator}.
  *
- * EnhancedProtectionPromoCard does not need to be disabled. Its value just need to be set.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features.DisableFeatures({ChromeFeatureList.ENHANCED_PROTECTION_PROMO_CARD,
-        ChromeFeatureList.WEB_FEED, ChromeFeatureList.INTEREST_FEED_V2_AUTOPLAY,
+@Features.DisableFeatures({ChromeFeatureList.WEB_FEED, ChromeFeatureList.INTEREST_FEED_V2_AUTOPLAY,
         ChromeFeatureList.FEED_INTERACTIVE_REFRESH, ChromeFeatureList.FEED_BACK_TO_TOP})
 @Features.EnableFeatures({ChromeFeatureList.FEED_RELIABILITY_LOGGING})
 public class FeedSurfaceCoordinatorTest {
@@ -335,6 +333,20 @@ public class FeedSurfaceCoordinatorTest {
     public void testLogUiStarting() {
         verify(mLaunchReliabilityLogger, times(1))
                 .logUiStarting(SURFACE_TYPE, SURFACE_CREATION_TIME_NS);
+    }
+
+    @Test
+    public void testSetupHeaders_feedOn() {
+        mCoordinator.setupHeaders(true);
+        // Item count contains: feed header only
+        assertEquals(1, mContentManagerCaptor.getValue().getItemCount());
+    }
+
+    @Test
+    public void testSetupHeaders_feedOff() {
+        mCoordinator.setupHeaders(false);
+        // Item count contains: nothing, since ntp header is null
+        assertEquals(0, mContentManagerCaptor.getValue().getItemCount());
     }
 
     private boolean hasStreamBound() {

@@ -297,7 +297,7 @@ public class ChromeProvidedSharingOptionsProvider {
         mOrderedFirstPartyOptions.add(createCopyFirstPartyOption());
         mOrderedFirstPartyOptions.add(createCopyTextFirstPartyOption());
         mOrderedFirstPartyOptions.add(createSendTabToSelfFirstPartyOption());
-        if (!mTabProvider.get().getWebContents().isIncognito()) {
+        if (!mTabProvider.get().isIncognito()) {
             mOrderedFirstPartyOptions.add(createQrCodeFirstPartyOption());
         }
         if (UserPrefs.get(Profile.getLastUsedRegularProfile()).getBoolean(Pref.PRINTING_ENABLED)) {
@@ -498,7 +498,7 @@ public class ChromeProvidedSharingOptionsProvider {
                             mActivity, mShareParams.getFileUris().get(0), (bitmap) -> {
                                 SaveBitmapDelegate saveBitmapDelegate = new SaveBitmapDelegate(
                                         mActivity, bitmap, R.string.save_image_filename_prefix,
-                                        null, mTabProvider.get().getWindowAndroid());
+                                        null, mShareParams.getWindow());
                                 saveBitmapDelegate.save();
                             });
                 })

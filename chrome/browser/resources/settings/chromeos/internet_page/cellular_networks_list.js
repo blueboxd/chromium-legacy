@@ -11,6 +11,7 @@ import '//resources/cr_components/chromeos/cellular_setup/cellular_eid_dialog.m.
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import '//resources/cr_elements/cr_icons_css.m.js';
 import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
+import '//resources/cr_elements/policy/cr_policy_indicator.m.js';
 import '//resources/cr_elements/shared_style_css.m.js';
 import '//resources/cr_elements/shared_vars_css.m.js';
 import '../os_settings_icons_css.m.js';
@@ -231,7 +232,7 @@ Polymer({
   created() {
     this.networkConfig_ =
         MojoInterfaceProviderImpl.getInstance().getMojoServiceRemote();
-    this.fetchESimPendingProfileList_();
+    this.fetchEuiccAndESimPendingProfileList_();
   },
 
   /** @override */
@@ -257,7 +258,7 @@ Polymer({
    * ESimManagerListenerBehavior override
    */
   onAvailableEuiccListChanged() {
-    this.fetchESimPendingProfileList_();
+    this.fetchEuiccAndESimPendingProfileList_();
   },
 
   /**
@@ -281,12 +282,21 @@ Polymer({
   },
 
   /** @private */
-  fetchESimPendingProfileList_() {
+  fetchEuiccAndESimPendingProfileList_() {
     getEuicc().then(euicc => {
       if (!euicc) {
         return;
       }
       this.euicc_ = euicc;
+
+      // Restricting managed cellular network should not show pending eSIM
+      // profiles.
+      if (this.isESimPolicyEnabled_ && this.globalPolicy &&
+          this.globalPolicy.allowOnlyPolicyCellularNetworks) {
+        this.eSimPendingProfileItems_ = [];
+        return;
+      }
+
       this.fetchESimPendingProfileListForEuicc_(euicc);
     });
   },
@@ -500,19 +510,45 @@ Polymer({
 
   /**
    * @param {!OncMojo.DeviceStateProperties|undefined} cellularDeviceState
+   * @return {boolean}
+   * @private
+   */
+  shouldShowAddESimButton_(cellularDeviceState) {
+    assert(!!this.euicc_);
+    return this.deviceIsEnabled_(cellularDeviceState);
+  },
+
+  /**
+   * Return true if the add cellular button should be disabled.
+   * @param {!OncMojo.DeviceStateProperties|undefined} cellularDeviceState
    * @param {!chromeos.networkConfig.mojom.GlobalPolicy} globalPolicy
    * @return {boolean}
    * @private
    */
-  showAddESimButton_(cellularDeviceState, globalPolicy) {
-    assert(!!this.euicc_);
-    if (!this.deviceIsEnabled_(cellularDeviceState)) {
-      return false;
-    }
-    if (!this.isESimPolicyEnabled_ || !globalPolicy) {
+  isAddESimButtonDisabled_(cellularDeviceState, globalPolicy) {
+    if (this.isDeviceInhibited_) {
       return true;
     }
-    return !globalPolicy.allowOnlyPolicyCellularNetworks;
+    if (!this.deviceIsEnabled_(cellularDeviceState)) {
+      return true;
+    }
+    if (!this.isESimPolicyEnabled_ || !globalPolicy) {
+      return false;
+    }
+    return globalPolicy.allowOnlyPolicyCellularNetworks;
+  },
+
+  /**
+   * Return true if the policy indicator that next to the add cellular button
+   * should be shown. This policy icon indicates the reason of disabling the
+   * add cellular button.
+   * @param {!chromeos.networkConfig.mojom.GlobalPolicy} globalPolicy
+   * @return {boolean}
+   * @private
+   */
+  shouldShowAddESimPolicyIcon_(globalPolicy) {
+    return this.isESimPolicyEnabled_ && globalPolicy &&
+        globalPolicy.allowOnlyPolicyCellularNetworks;
   },
 
   /**
@@ -576,8 +612,7 @@ Polymer({
       case mojom.kRefreshingProfileList:
         return this.i18n('cellularNetworRefreshingProfileListProfile');
       case mojom.kResettingEuiccMemory:
-        // TODO(crbug.com/1231305) Fix string when finalized.
-        return this.i18n('cellularNetworkRemovingProfile');
+        return this.i18n('cellularNetworkResettingESim');
     }
 
     return '';

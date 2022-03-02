@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
@@ -59,6 +60,7 @@
 #include "google_apis/gaia/core_account_id.h"
 #include "media/base/media_switches.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "skia/ext/skia_utils_base.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -77,6 +79,7 @@ using content::WebContents;
 namespace {
 
 constexpr char kPrevNavigationTimePrefName[] = "NewTabPage.PrevNavigationTime";
+constexpr char kSignedOutNtpModulesSwitch[] = "signed-out-ntp-modules";
 
 content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   content::WebUIDataSource* source =
@@ -106,7 +109,8 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
                      base::FeatureList::IsEnabled(ntp_features::kNtpLogo));
   source->AddBoolean(
       "middleSlotPromoEnabled",
-      base::FeatureList::IsEnabled(ntp_features::kNtpMiddleSlotPromo));
+      base::FeatureList::IsEnabled(ntp_features::kNtpMiddleSlotPromo) &&
+          profile->GetPrefs()->GetBoolean(prefs::kNtpPromoVisible));
   source->AddBoolean(
       "modulesDragAndDropEnabled",
       base::FeatureList::IsEnabled(ntp_features::kNtpModulesDragAndDrop));
@@ -227,6 +231,16 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesDriveInfo", IDS_NTP_MODULES_DRIVE_INFO},
       {"modulesDummyTitle", IDS_NTP_MODULES_DUMMY_TITLE},
       {"modulesDummy2Title", IDS_NTP_MODULES_DUMMY2_TITLE},
+      {"modulesDummy3Title", IDS_NTP_MODULES_DUMMY2_TITLE},
+      {"modulesDummy4Title", IDS_NTP_MODULES_DUMMY2_TITLE},
+      {"modulesDummy5Title", IDS_NTP_MODULES_DUMMY2_TITLE},
+      {"modulesDummy6Title", IDS_NTP_MODULES_DUMMY2_TITLE},
+      {"modulesDummy7Title", IDS_NTP_MODULES_DUMMY2_TITLE},
+      {"modulesDummy8Title", IDS_NTP_MODULES_DUMMY2_TITLE},
+      {"modulesDummy9Title", IDS_NTP_MODULES_DUMMY2_TITLE},
+      {"modulesDummy10Title", IDS_NTP_MODULES_DUMMY2_TITLE},
+      {"modulesDummy11Title", IDS_NTP_MODULES_DUMMY2_TITLE},
+      {"modulesDummy12Title", IDS_NTP_MODULES_DUMMY2_TITLE},
       {"modulesKaleidoscopeTitle", IDS_NTP_MODULES_KALEIDOSCOPE_TITLE},
       {"modulesPhotosInfo", IDS_NTP_MODULES_PHOTOS_INFO},
       {"modulesPhotosSentence", IDS_NTP_MODULES_PHOTOS_MEMORIES_TITLE},
@@ -287,6 +301,11 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   };
   source->AddLocalizedStrings(kStrings);
 
+#if !defined(OFFICIAL_BUILD)
+  source->AddBoolean(
+      "dummyModulesEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kNtpDummyModules));
+#endif
   source->AddBoolean(
       "recipeTasksModuleEnabled",
       base::FeatureList::IsEnabled(ntp_features::kNtpRecipeTasksModule));
@@ -420,6 +439,7 @@ void NewTabPageUI::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterTimePref(kPrevNavigationTimePrefName, base::Time());
   registry->RegisterBooleanPref(ntp_prefs::kNtpUseMostVisitedTiles, false);
   registry->RegisterBooleanPref(ntp_prefs::kNtpShortcutsVisible, true);
+  registry->RegisterBooleanPref(prefs::kNtpPromoVisible, true);
 }
 
 // static
@@ -581,11 +601,8 @@ void NewTabPageUI::OnThemeChanged() {
   auto background_color =
       ThemeService::GetThemeProviderForProfile(profile_).GetColor(
           ThemeProperties::COLOR_NTP_BACKGROUND);
-  update->SetString(
-      "backgroundColor",
-      base::StringPrintf("#%02X%02X%02X", SkColorGetR(background_color),
-                         SkColorGetG(background_color),
-                         SkColorGetB(background_color)));
+  update->SetString("backgroundColor",
+                    skia::SkColorToHexString(background_color));
   content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
                                    std::move(update));
 }
@@ -666,11 +683,14 @@ void NewTabPageUI::OnLoad() {
   update->SetDoubleKey("navigationStartTime",
                        navigation_start_time_.ToJsTime());
   // Only enable modules if account credentials are available as most modules
-  // won't have data to render otherwise.
-
+  // won't have data to render otherwise. We can override this behavior with the
+  // "--signed-out-ntp-modules" command line switch, e.g. to allow modules in
+  // perf tests, which do not support sign-in.
   update->SetBoolKey("modulesEnabled",
                      base::FeatureList::IsEnabled(ntp_features::kModules) &&
-                         HasCredentials(profile_));
+                         (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              kSignedOutNtpModulesSwitch) ||
+                          HasCredentials(profile_)));
   update->SetBoolKey("driveModuleEnabled",
                      NewTabPageUI::IsDriveModuleEnabled(profile_));
   content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,

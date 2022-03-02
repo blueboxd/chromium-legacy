@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ReadLaterUI is a Mojo WebUI controller and therefore needs mojo defined to
-// finish running its tests.
-import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
-
+import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://read-later.top-chrome/side_panel/bookmarks_list.js';
 
 import {BookmarkFolderElement, FOLDER_OPEN_CHANGED_EVENT} from 'chrome://read-later.top-chrome/side_panel/bookmark_folder.js';
@@ -287,6 +284,7 @@ suite('SidePanelBookmarksListTest', () => {
   test('CutsCopyPastesBookmark', async () => {
     const folderElement = getFolderElements(bookmarksList)[0]!;
     const bookmarkElement = getBookmarkElements(folderElement)[0]!;
+    bookmarkElement.focus();
 
     bookmarkElement.dispatchEvent(new KeyboardEvent(
         'keydown', {key: 'x', ctrlKey: true, bubbles: true, composed: true}));

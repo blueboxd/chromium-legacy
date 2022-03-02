@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/containers/flat_map.h"
+#include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/capture_access_handler_base.h"
 #include "chrome/browser/media/media_access_handler.h"
@@ -82,12 +84,11 @@ class DisplayMediaAccessHandler : public CaptureAccessHandlerBase,
   void RejectRequest(content::WebContents* web_contents,
                      blink::mojom::MediaStreamRequestResult result);
 
-  // Processes the first queued access request for |web_contents|
-  // according to |request_result|. Calls ProcessQueuedAccessRequest if there
-  // are more requests left in the queue.
-  void FinalizeResult(content::WebContents* web_contents,
-                      const content::DesktopMediaID& media_id,
-                      blink::mojom::MediaStreamRequestResult request_result);
+  // Helper to finalize processing the first queued request for |web_contents|,
+  // after all checks have been performed. Calls ProcessQueuedAccessRequest() if
+  // there are more requests left in the queue.
+  void AcceptRequest(content::WebContents* web_contents,
+                     const content::DesktopMediaID& media_id);
 
   // Called back after the user chooses one of the possible desktop media
   // sources for the request that's currently being processed. If no |media_id|
@@ -95,12 +96,12 @@ class DisplayMediaAccessHandler : public CaptureAccessHandlerBase,
   void OnDisplaySurfaceSelected(content::WebContents* web_contents,
                                 content::DesktopMediaID media_id);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   // Called back after checking Data Leak Prevention (DLP) restrictions.
-  void OnDlpRestrictionChecked(content::WebContents* web_contents,
+  void OnDlpRestrictionChecked(base::WeakPtr<content::WebContents> web_contents,
                                const content::DesktopMediaID& media_id,
                                bool is_dlp_allowed);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   void DeletePendingAccessRequest(int render_process_id,
                                   int render_frame_id,

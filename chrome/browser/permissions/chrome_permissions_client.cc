@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/feature_list.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
@@ -45,7 +46,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/origin.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
@@ -69,7 +70,7 @@
 
 namespace {
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 bool ShouldUseQuietUI(content::WebContents* web_contents,
                       ContentSettingsType type) {
   auto* manager =
@@ -188,7 +189,7 @@ void ChromePermissionsClient::AreSitesImportant(
   }
 }
 
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
 // Some Google-affiliated domains are not allowed to delete cookies for
 // supervised accounts.
 bool ChromePermissionsClient::IsCookieDeletionDisabled(
@@ -361,37 +362,13 @@ bool ChromePermissionsClient::DoOriginsMatchNewTabPage(
              GURL(chrome::kChromeUINewTabPageURL).DeprecatedGetOriginAsURL();
 }
 
-#if defined(OS_ANDROID)
-bool ChromePermissionsClient::IsPermissionControlledByDse(
-    content::BrowserContext* browser_context,
-    ContentSettingsType type,
-    const url::Origin& origin) {
-  SearchPermissionsService* search_helper =
-      SearchPermissionsService::Factory::GetForBrowserContext(browser_context);
-  return search_helper &&
-         search_helper->IsPermissionControlledByDSE(type, origin);
-}
-
+#if BUILDFLAG(IS_ANDROID)
 bool ChromePermissionsClient::IsDseOrigin(
     content::BrowserContext* browser_context,
     const url::Origin& origin) {
   SearchPermissionsService* search_helper =
       SearchPermissionsService::Factory::GetForBrowserContext(browser_context);
   return search_helper && search_helper->IsDseOrigin(origin);
-}
-
-bool ChromePermissionsClient::ResetPermissionIfControlledByDse(
-    content::BrowserContext* browser_context,
-    ContentSettingsType type,
-    const url::Origin& origin) {
-  SearchPermissionsService* search_helper =
-      SearchPermissionsService::Factory::GetForBrowserContext(browser_context);
-  if (search_helper &&
-      search_helper->IsPermissionControlledByDSE(type, origin)) {
-    search_helper->ResetDSEPermission(type);
-    return true;
-  }
-  return false;
 }
 
 infobars::InfoBarManager* ChromePermissionsClient::GetInfoBarManager(

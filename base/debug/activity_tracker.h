@@ -20,6 +20,7 @@
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -29,9 +30,12 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
+
+#if DCHECK_IS_ON()
+#include "base/threading/platform_thread_ref.h"
+#endif
 
 namespace base {
 
@@ -916,7 +920,7 @@ class BASE_EXPORT GlobalActivityTracker {
       int stack_depth,
       int64_t process_id);
 
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
   // Like above but internally creates an allocator around a disk file with
   // the specified |size| at the given |file_path|. Any existing file will be
   // overwritten. The |id| and |name| are arbitrary and stored in the allocator
@@ -926,7 +930,7 @@ class BASE_EXPORT GlobalActivityTracker {
                              uint64_t id,
                              StringPiece name,
                              int stack_depth);
-#endif  // !defined(OS_NACL)
+#endif  // !BUILDFLAG(IS_NACL)
 
   // Like above but internally creates an allocator using local heap memory of
   // the specified size. This is used primarily for unit tests. The |process_id|
@@ -1373,7 +1377,7 @@ class BASE_EXPORT ScopedThreadJoinActivity
 };
 
 // Some systems don't have base::Process
-#if !defined(OS_NACL) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_IOS)
 class BASE_EXPORT ScopedProcessWaitActivity
     : public GlobalActivityTracker::ScopedThreadActivity {
  public:

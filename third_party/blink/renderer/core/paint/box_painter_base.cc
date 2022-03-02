@@ -698,7 +698,7 @@ inline bool PaintFastBottomLayer(const Document* document,
           geometry.TileSize().height < image_rect.height())
         return false;
 
-      // Use FastAndLossyFromFloatRect when converting the image border rect.
+      // Use FastAndLossyFromRectF when converting the image border rect.
       // At this point it should have been derived from a snapped rectangle, so
       // the conversion from float should be as precise as it can be.
       const PhysicalRect dest_rect =
@@ -784,22 +784,18 @@ FloatRoundedRect BackgroundRoundedRectAdjustedForBleedAvoidance(
     }
   }
 
-  FloatRectOutsets insets(
-      -fractional_inset *
-          edges[static_cast<unsigned>(BoxSide::kTop)].UsedWidth(),
-      -fractional_inset *
-          edges[static_cast<unsigned>(BoxSide::kRight)].UsedWidth(),
-      -fractional_inset *
-          edges[static_cast<unsigned>(BoxSide::kBottom)].UsedWidth(),
-      -fractional_inset *
-          edges[static_cast<unsigned>(BoxSide::kLeft)].UsedWidth());
-
+  auto insets =
+      gfx::InsetsF()
+          .set_left(edges[static_cast<unsigned>(BoxSide::kLeft)].UsedWidth())
+          .set_right(edges[static_cast<unsigned>(BoxSide::kRight)].UsedWidth())
+          .set_top(edges[static_cast<unsigned>(BoxSide::kTop)].UsedWidth())
+          .set_bottom(
+              edges[static_cast<unsigned>(BoxSide::kBottom)].UsedWidth());
+  insets.Scale(fractional_inset);
   gfx::RectF inset_rect = background_rounded_rect.Rect();
-  inset_rect.Outset(insets.Left(), insets.Top(), insets.Right(),
-                    insets.Bottom());
+  inset_rect.Inset(insets);
   FloatRoundedRect::Radii inset_radii(background_rounded_rect.GetRadii());
-  inset_radii.Shrink(-insets.Top(), -insets.Bottom(), -insets.Left(),
-                     -insets.Right());
+  inset_radii.Shrink(insets);
   return FloatRoundedRect(inset_rect, inset_radii);
 }
 
@@ -834,7 +830,7 @@ FloatRoundedRect RoundedBorderRectForClip(
   }
 
   // Clip to the padding or content boxes as necessary.
-  // Use FastAndLossyFromFloatRect because we know it has been pixel snapped.
+  // Use FastAndLossyFromRectF because we know it has been pixel snapped.
   PhysicalRect border_rect = PhysicalRect::FastAndLossyFromRectF(border.Rect());
   if (bg_layer.Clip() == EFillBox::kContent) {
     border = RoundedBorderGeometry::PixelSnappedRoundedBorderWithOutsets(
@@ -940,7 +936,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
 
   const FillLayerInfo fill_layer_info =
       GetFillLayerInfo(color, bg_layer, bleed_avoidance,
-                       IsPaintingBackgroundInContentsSpace(paint_info));
+                       paint_info.IsPaintingBackgroundInContentsSpace());
   // If we're not actually going to paint anything, abort early.
   if (!fill_layer_info.should_paint_image &&
       !fill_layer_info.should_paint_color)
@@ -957,8 +953,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
   SkBlendMode composite_op = SkBlendMode::kSrcOver;
   absl::optional<ScopedInterpolationQuality> interpolation_quality_context;
   if (fill_layer_info.should_paint_image) {
-    geometry.Calculate(paint_info.PaintContainer(), paint_info.phase, bg_layer,
-                       scrolled_paint_rect);
+    geometry.Calculate(paint_info, bg_layer, scrolled_paint_rect);
     image = fill_layer_info.image->GetImage(
         geometry.ImageClient(), geometry.ImageDocument(),
         geometry.ImageStyle(style_), gfx::SizeF(geometry.TileSize()));

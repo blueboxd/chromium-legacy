@@ -113,9 +113,9 @@ const char kCheckerboardAreaRatio[] = "CheckerboardedContentAreaRatio";
 const char kMissingTiles[] = "NumMissingTiles";
 
 bool LayerSubtreeHasCopyRequest(Layer* layer) {
-  LayerTreeHost* host = layer->layer_tree_host();
+  const LayerTreeHost* host = layer->layer_tree_host();
   int index = layer->effect_tree_index();
-  auto* node = host->property_trees()->effect_tree.Node(index);
+  const auto* node = host->property_trees()->effect_tree.Node(index);
   return node->subtree_has_copy_request;
 }
 
@@ -288,7 +288,7 @@ class LayerTreeHostTestRequestedMainFrame : public LayerTreeHostTest {
       case 0:
         ADD_FAILURE()
             << "Case 0 is the initial commit used to send the test here";
-        FALLTHROUGH;
+        [[fallthrough]];
       case 1:
         layer_tree_host()->SetNeedsAnimate();
         break;
@@ -2068,7 +2068,9 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
 
   void WillCommit(const CommitState&) override {
     root_effect_tree_index_ =
-        layer_tree_host()->root_layer()->effect_tree_index();
+        const_cast<const LayerTreeHost*>(layer_tree_host())
+            ->root_layer()
+            ->effect_tree_index();
   }
 
   void DidCommit() override {
@@ -2967,7 +2969,7 @@ class LayerTreeHostTestViewportRectChangeBlockedMainThread
 };
 
 // TODO(crbug.com/1223226): Disabled on Chrome OS due to flakiness.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS)
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostTestViewportRectChangeBlockedMainThread);
 #endif
@@ -3620,9 +3622,10 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest,
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     if (!sent_gesture_) {
-      host_impl->GetInputHandler().PinchGestureBegin();
+      host_impl->GetInputHandler().PinchGestureBegin(
+          gfx::Point(100, 100), ui::ScrollInputType::kWheel);
       host_impl->GetInputHandler().PinchGestureUpdate(2, gfx::Point(100, 100));
-      host_impl->GetInputHandler().PinchGestureEnd(gfx::Point(100, 100), true);
+      host_impl->GetInputHandler().PinchGestureEnd(gfx::Point(100, 100));
       sent_gesture_ = true;
     }
   }
@@ -4345,7 +4348,7 @@ class OnDrawLayerTreeFrameSink : public TestLayerTreeFrameSink {
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const viz::RendererSettings& renderer_settings,
       const viz::DebugRendererSettings* const debug_settings,
-      base::SingleThreadTaskRunner* task_runner,
+      TaskRunnerProvider* task_runner_provider,
       bool synchronous_composite,
       double refresh_rate,
       base::RepeatingClosure invalidate_callback)
@@ -4354,7 +4357,7 @@ class OnDrawLayerTreeFrameSink : public TestLayerTreeFrameSink {
                                gpu_memory_buffer_manager,
                                renderer_settings,
                                debug_settings,
-                               task_runner,
+                               task_runner_provider,
                                synchronous_composite,
                                false /* disable_display_vsync */,
                                refresh_rate),
@@ -4394,7 +4397,7 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
     auto frame_sink = std::make_unique<OnDrawLayerTreeFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         gpu_memory_buffer_manager(), renderer_settings, &debug_settings_,
-        ImplThreadTaskRunner(), false /* synchronous_composite */, refresh_rate,
+        task_runner_provider(), false /* synchronous_composite */, refresh_rate,
         std::move(on_draw_callback));
     layer_tree_frame_sink_ = frame_sink.get();
     return std::move(frame_sink);
@@ -4436,7 +4439,7 @@ class LayerTreeHostTestSynchronousCompositorActivateWithoutDraw
     auto frame_sink = std::make_unique<OnDrawLayerTreeFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         gpu_memory_buffer_manager(), renderer_settings, &debug_settings_,
-        ImplThreadTaskRunner(),
+        task_runner_provider(),
         /*synchronous_composite=*/false, refresh_rate,
         /*invalidate_callback=*/base::DoNothing());
     return std::move(frame_sink);
@@ -6093,7 +6096,7 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
 
   void VerifyOverscroll(const gfx::Vector2dF& stretch_amount,
                         const gfx::Transform& transform) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     gfx::Vector2dF scale = transform.Scale2d();
     // On android, overscroll stretches the content. We don't assert the amount
     // of stretch but there should be some stretch for overscroll and no stretch
@@ -6106,11 +6109,11 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
       EXPECT_EQ(1.f, scale.y());
     else
       EXPECT_GT(scale.y(), 1.f);
-#else   // defined(OS_ANDROID)
+#else   // BUILDFLAG(IS_ANDROID)
     gfx::Transform expected_draw_transform;
     expected_draw_transform.Translate(-stretch_amount);
     EXPECT_EQ(expected_draw_transform, transform);
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
@@ -7272,7 +7275,7 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
     return std::make_unique<TestLayerTreeFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         gpu_memory_buffer_manager(), renderer_settings, &debug_settings_,
-        ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync,
+        task_runner_provider(), synchronous_composite, disable_display_vsync,
         refresh_rate);
   }
 
@@ -7525,23 +7528,23 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     switch (frame_) {
       case 2:
         // Pinch zoom in.
-        host_impl->GetInputHandler().PinchGestureBegin();
+        host_impl->GetInputHandler().PinchGestureBegin(
+            gfx::Point(100, 100), ui::ScrollInputType::kWheel);
         host_impl->GetInputHandler().PinchGestureUpdate(1.5f,
                                                         gfx::Point(100, 100));
-        host_impl->GetInputHandler().PinchGestureEnd(gfx::Point(100, 100),
-                                                     true);
+        host_impl->GetInputHandler().PinchGestureEnd(gfx::Point(100, 100));
         break;
       case 3:
         // Pinch zoom back to 1.f but don't end it.
-        host_impl->GetInputHandler().PinchGestureBegin();
+        host_impl->GetInputHandler().PinchGestureBegin(
+            gfx::Point(100, 100), ui::ScrollInputType::kWheel);
         host_impl->GetInputHandler().PinchGestureUpdate(1.f / 1.5f,
                                                         gfx::Point(100, 100));
         break;
       case 4:
         // End the pinch, but delay tile production.
         playback_allowed_event_.Reset();
-        host_impl->GetInputHandler().PinchGestureEnd(gfx::Point(100, 100),
-                                                     true);
+        host_impl->GetInputHandler().PinchGestureEnd(gfx::Point(100, 100));
         break;
       case 5:
         // Let tiles complete.
@@ -7588,7 +7591,7 @@ class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
     viz::TestGLES2Interface* gl =
         display_context_provider->UnboundTestContextGL();
     gl->set_support_sync_query(true);
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     gl->set_support_texture_rectangle(true);
 #endif
     display_context_provider->BindToCurrentThread();
@@ -7802,11 +7805,11 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
         // Delay tile production.
         playback_allowed_event_.Reset();
         // Pinch zoom in to cause new tiles to be required.
-        host_impl->GetInputHandler().PinchGestureBegin();
+        host_impl->GetInputHandler().PinchGestureBegin(
+            gfx::Point(100, 100), ui::ScrollInputType::kWheel);
         host_impl->GetInputHandler().PinchGestureUpdate(1.5f,
                                                         gfx::Point(100, 100));
-        host_impl->GetInputHandler().PinchGestureEnd(gfx::Point(100, 100),
-                                                     true);
+        host_impl->GetInputHandler().PinchGestureEnd(gfx::Point(100, 100));
         ++step_;
         break;
       case 2:
@@ -7979,7 +7982,18 @@ class LayerTreeHostTestNoTasksBetweenWillAndDidCommit
  public:
   LayerTreeHostTestNoTasksBetweenWillAndDidCommit() : did_commit_(false) {}
 
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+  void BeginTest() override {
+    // The entire purpose of Non-Blocking Commit is to allow the main thread to
+    // continue doing work while commit is running on the impl thread, making
+    // this test obsolete.
+    if (base::FeatureList::IsEnabled(features::kNonBlockingCommit) &&
+        layer_tree_host()->IsThreaded()) {
+      DidCommit();
+      EndTest();
+    } else {
+      PostSetNeedsCommitToMainThread();
+    }
+  }
 
   void WillCommit(const CommitState&) override {
     MainThreadTaskRunner()->PostTask(
@@ -8982,7 +8996,8 @@ class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
 
     // We have an active tree. Start a pinch gesture so we start recording
     // stats.
-    impl->GetInputHandler().PinchGestureBegin();
+    impl->GetInputHandler().PinchGestureBegin(
+        gfx::Point(100, 100), ui::ScrollInputType::kTouchscreen);
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
@@ -8991,7 +9006,7 @@ class LayerTreeHostTestCheckerboardUkm : public LayerTreeHostTest {
 
     // We just drew a frame, stats for it should have been recorded. End the
     // gesture so they are flushed to the recorder.
-    impl->GetInputHandler().PinchGestureEnd(gfx::Point(50, 50), false);
+    impl->GetInputHandler().PinchGestureEnd(gfx::Point(50, 50));
 
     // RenewTreePriority will run when the smoothness expiration timer fires.
     // Synthetically do it here so the UkmManager is notified.
@@ -9556,12 +9571,12 @@ class LayerTreeHostTestEventsMetrics : public LayerTreeHostTest {
     tick_clock.Advance(base::Microseconds(10));
     base::TimeTicks event_time = tick_clock.NowTicks();
     tick_clock.Advance(base::Microseconds(10));
-    std::unique_ptr<EventMetrics> metrics = EventMetrics::CreateForTesting(
-        ui::ET_GESTURE_SCROLL_UPDATE,
-        EventMetrics::GestureParams(ui::ScrollInputType::kWheel,
-                                    /*scroll_is_inertial=*/false,
-                                    EventMetrics::ScrollUpdateType::kContinued),
-        event_time, &tick_clock);
+    std::unique_ptr<EventMetrics> metrics =
+        ScrollUpdateEventMetrics::CreateForTesting(
+            ui::ET_GESTURE_SCROLL_UPDATE, ui::ScrollInputType::kWheel,
+            /*is_inertial=*/false,
+            ScrollUpdateEventMetrics::ScrollUpdateType::kContinued,
+            /*delta=*/10.0f, event_time, &tick_clock);
     DCHECK_NE(metrics, nullptr);
     {
       tick_clock.Advance(base::Microseconds(10));

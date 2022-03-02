@@ -587,7 +587,7 @@ TEST_F(PageInfoBubbleViewOffTheRecordTest, ResetBlockedInIncognitoPermission) {
   // Show state label for user managed permission, indicating that permission
   // is in the default ask state now. Autoblocked permission doesn't change.
   EXPECT_FALSE(api_->GetStateLabelAt(0));
-  EXPECT_EQ(u"Can ask to open and place windows on your screens",
+  EXPECT_EQ(u"Can ask to use info about your screens",
             api_->GetStateLabelAt(1)->GetText());
 
   // In the ask state, the toggle is in the off state, indicating that
@@ -887,7 +887,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicySerialPorts) {
 // Test that updating the number of cookies used by the current page doesn't add
 // any extra views to Page Info.
 TEST_F(PageInfoBubbleViewTest, UpdatingSiteDataRetainsLayout) {
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_VR)
   constexpr size_t kExpectedChildren = 6;
 #else
   constexpr size_t kExpectedChildren = 5;

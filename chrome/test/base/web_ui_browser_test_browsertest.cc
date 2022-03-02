@@ -31,7 +31,7 @@ const GURL& DummyUrl() {
 }  // namespace
 
 // According to the interface for EXPECT_FATAL_FAILURE
-// (https://github.com/google/googletest/blob/master/docs/advanced.md#catching-failures)
+// (https://github.com/google/googletest/blob/main/docs/advanced.md#catching-failures)
 // the statement must be statically available. Therefore, we make a static
 // global s_test_ which should point to |this| for the duration of the test run
 // and be cleared afterward.
@@ -163,9 +163,8 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
 
     // Starts the test in |list_value|[0] with the runAsync wrapper.
     void HandleStartAsyncTest(const base::ListValue* list_value) {
-      const base::Value* test_name;
-      ASSERT_TRUE(list_value->Get(0, &test_name));
-      web_ui()->CallJavascriptFunctionUnsafe("runAsync", *test_name);
+      const base::Value& test_name = list_value->GetList()[0];
+      web_ui()->CallJavascriptFunctionUnsafe("runAsync", test_name);
     }
   };
 

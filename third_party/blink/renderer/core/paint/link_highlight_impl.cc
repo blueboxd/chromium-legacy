@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/fragment_data_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -56,7 +55,6 @@
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
 #include "third_party/blink/renderer/platform/animation/compositor_target_property.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
@@ -166,8 +164,8 @@ LinkHighlightImpl::LinkHighlightFragment::PaintContentsToDisplayList() {
   cc::PaintCanvas* canvas =
       recorder.beginRecording(record_bounds.width(), record_bounds.height());
 
-  PaintFlags flags;
-  flags.setStyle(PaintFlags::kFill_Style);
+  cc::PaintFlags flags;
+  flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
   flags.setColor(color_.Rgb());
   canvas->drawPath(path_.GetSkPath(), flags);

@@ -861,11 +861,11 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
     // 10 seconds, abort payment.
     update_payment_details_timer_.StartOneShot(base::Seconds(10), FROM_HERE);
     details_promise.Then(
-        MakeGarbageCollected<NewScriptFunction>(
+        MakeGarbageCollected<ScriptFunction>(
             script_state,
             MakeGarbageCollected<UpdatePaymentDetailsFunction>(
                 this, UpdatePaymentDetailsFunction::ResolveType::kFulfill)),
-        MakeGarbageCollected<NewScriptFunction>(
+        MakeGarbageCollected<ScriptFunction>(
             script_state,
             MakeGarbageCollected<UpdatePaymentDetailsFunction>(
                 this, UpdatePaymentDetailsFunction::ResolveType::kReject)));
@@ -1618,14 +1618,14 @@ void PaymentRequest::OnHasEnrolledInstrument(
     case HasEnrolledInstrumentQueryResult::WARNING_HAS_ENROLLED_INSTRUMENT:
       WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext(),
                                               kHasEnrolledInstrumentDebugName);
-      FALLTHROUGH;
+      [[fallthrough]];
     case HasEnrolledInstrumentQueryResult::HAS_ENROLLED_INSTRUMENT:
       has_enrolled_instrument_resolver_->Resolve(true);
       break;
     case HasEnrolledInstrumentQueryResult::WARNING_HAS_NO_ENROLLED_INSTRUMENT:
       WarnIgnoringQueryQuotaForCanMakePayment(*GetExecutionContext(),
                                               kHasEnrolledInstrumentDebugName);
-      FALLTHROUGH;
+      [[fallthrough]];
     case HasEnrolledInstrumentQueryResult::HAS_NO_ENROLLED_INSTRUMENT:
       has_enrolled_instrument_resolver_->Resolve(false);
       break;

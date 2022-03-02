@@ -100,6 +100,12 @@ void LoggedInSpokenFeedbackTest::SendKeyPressWithControl(ui::KeyboardCode key) {
       nullptr, key, true, false, false, false)));
 }
 
+void LoggedInSpokenFeedbackTest::SendKeyPressWithControlAndAlt(
+    ui::KeyboardCode key) {
+  ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      nullptr, key, true, false, true, false)));
+}
+
 void LoggedInSpokenFeedbackTest::SendKeyPressWithShift(ui::KeyboardCode key) {
   ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
       nullptr, key, false, true, false, false)));
@@ -856,7 +862,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxStickyMode) {
 // depends on more of the UI events stack and sticky mode invocation has a
 // timing element to it.
 // Consistently failing on ChromiumOS MSan and ASan. http://crbug.com/1182542
-#if defined(OS_CHROMEOS) && \
+#if BUILDFLAG(IS_CHROMEOS) && \
     (defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER))
 #define MAYBE_ChromeVoxStickyModeRawKeys DISABLED_ChromeVoxStickyModeRawKeys
 #else
@@ -1373,11 +1379,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DarkenScreenConfirmation) {
   sm_.ExpectSpeech("Turn off screen?");
   sm_.ExpectSpeech("Dialog");
   sm_.ExpectSpeech(
-      "This improves privacy by turning off your screen so it isn’t visible to "
-      "others.");
-  sm_.ExpectSpeech(
-      "You can always turn the screen back on by pressing Search plus "
-      "Brightness up.");
+      "Turn off screen? This improves privacy by turning off your screen so it "
+      "isn’t visible to others. You can always turn the screen back on by "
+      "pressing Search plus Brightness up. Cancel Continue");
   sm_.ExpectSpeech("Continue");
   sm_.ExpectSpeech("default");
   sm_.ExpectSpeech("Button");
@@ -1488,6 +1492,38 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ClipboardCopySpeech) {
   sm_.Call([this]() { SendKeyPressWithSearchAndControl(ui::VKEY_C); });
   sm_.ExpectSpeech("copy Foo.");
 
+  sm_.Replay();
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, KeyboardShortcutViewer) {
+  EnableChromeVox();
+  SendKeyPressWithControlAndAlt(ui::VKEY_OEM_2 /* forward slash */);
+  sm_.ExpectSpeech("Shortcuts, window");
+
+  // Move through all tabs; make a few expectations along the way.
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeech("Popular Shortcuts, tab");
+  sm_.ExpectSpeech("1 of 6");
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeech("Accessibility, tab");
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeech("Popular Shortcuts");
+  sm_.ExpectSpeech("Tab");
+
+  // Moving forward again should dive into the list of shortcuts for the
+  // category.
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
+  sm_.ExpectSpeech("Copy selected content to the clipboard, Ctrl plus c");
+  sm_.ExpectSpeech("List item");
+  sm_.ExpectSpeech("1 of 21");
+  sm_.ExpectSpeech("Popular Shortcuts");
+  sm_.ExpectSpeech("Tab");
+  sm_.ExpectSpeech("List");
+  sm_.ExpectSpeech("with 21 items");
   sm_.Replay();
 }
 
@@ -1616,10 +1652,7 @@ IN_PROC_BROWSER_TEST_F(SigninToUserProfileSwitchTest, DISABLED_LoginAsNewUser) {
         nullptr, ui::VKEY_ESCAPE, false, false, false, false));
   });
 
-  std::string button_title = features::IsSyncConsentOptionalEnabled()
-                                 ? "Got it"
-                                 : "Accept and continue";
-  sm_.ExpectSpeech(button_title);
+  sm_.ExpectSpeech("Accept and continue");
 
   // Check that profile switched to the active user.
   sm_.Call([]() {

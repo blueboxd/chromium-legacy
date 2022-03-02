@@ -33,16 +33,17 @@
 #include <initializer_list>
 #include <limits>
 #include <memory>
+#include <tuple>
 
 #include "base/callback_helpers.h"
 #include "base/cxx17_backports.h"
-#include "base/ignore_result.h"
 #include "base/strings/stringprintf.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/paint_recorder.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/scroll_node.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -169,7 +170,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
@@ -188,7 +188,6 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/blob/testing/fake_blob.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
@@ -1000,7 +999,7 @@ TEST_F(WebFrameTest, CapabilityDelegationMessageEventTest) {
       "window.frames[0].postMessage('0', {targetOrigin: '*'});");
   String post_message_w_payment_request(
       "window.frames[0].postMessage("
-      "'1', {targetOrigin: '*', delegate: 'paymentrequest'});");
+      "'1', {targetOrigin: '*', delegate: 'payment'});");
 
   // The delegation info is not passed through a postMessage that is sent
   // without either user activation or the delegation option.
@@ -3420,7 +3419,7 @@ TEST_F(WebFrameTest, CanOverrideScaleLimits) {
 }
 
 // Android doesn't have scrollbars on the main LocalFrameView
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_F(WebFrameTest, DISABLED_updateOverlayScrollbarLayers)
 #else
 TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
@@ -5150,8 +5149,7 @@ TEST_F(WebFrameTest, FindInPageMatchRects) {
   int rects_version = main_frame->GetFindInPage()->FindMatchMarkersVersion();
 
   for (int result_index = 0; result_index < kNumResults; ++result_index) {
-    FloatRect result_rect =
-        static_cast<FloatRect>(web_match_rects[result_index]);
+    const gfx::RectF& result_rect = web_match_rects[result_index];
 
     // Select the match by the center of its rect.
     EXPECT_EQ(main_frame->EnsureTextFinder().SelectNearestFindMatch(
@@ -5170,8 +5168,8 @@ TEST_F(WebFrameTest, FindInPageMatchRects) {
     // CSS transforms.
     gfx::RectF active_match =
         main_frame->GetFindInPage()->ActiveFindMatchRect();
-    EXPECT_EQ(ToEnclosingRect(FloatRect(active_match)),
-              ToEnclosingRect(result_rect));
+    EXPECT_EQ(gfx::ToEnclosingRect(active_match),
+              gfx::ToEnclosingRect(result_rect));
 
     // The rects version should not have changed.
     EXPECT_EQ(main_frame->GetFindInPage()->FindMatchMarkersVersion(),
@@ -6312,7 +6310,7 @@ TEST_F(WebFrameTest, DISABLED_PositionForPointTest) {
   EXPECT_EQ(64, ComputeOffset(layout_object, 1000, 1000));
 }
 
-#if !defined(OS_MAC) && !defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
 TEST_F(WebFrameTest, SelectRangeStaysHorizontallyAlignedWhenMoved) {
   RegisterMockedHttpURLLoad("move_caret.html");
 
@@ -6426,7 +6424,7 @@ class CompositedSelectionBoundsTest
     ASSERT_EQ(selection.end, cc::LayerSelectionBound());
   }
 
-  void RunTest(const char* test_file) {
+  void RunTest(const char* test_file, bool selection_is_caret = false) {
     RegisterMockedHttpURLLoad(test_file);
     web_view_helper_.GetWebView()->MainFrameWidget()->SetFocus(true);
     frame_test_helpers::LoadFrame(
@@ -6448,39 +6446,39 @@ class CompositedSelectionBoundsTest
     v8::Local<v8::Context> context =
         v8::Isolate::GetCurrent()->GetCurrentContext();
 
-    const int start_edge_start_in_layer_x = expected_result.Get(context, 1)
-                                                .ToLocalChecked()
-                                                .As<v8::Int32>()
-                                                ->Value();
-    const int start_edge_start_in_layer_y = expected_result.Get(context, 2)
-                                                .ToLocalChecked()
-                                                .As<v8::Int32>()
-                                                ->Value();
-    const int start_edge_end_in_layer_x = expected_result.Get(context, 3)
-                                              .ToLocalChecked()
-                                              .As<v8::Int32>()
-                                              ->Value();
-    const int start_edge_end_in_layer_y = expected_result.Get(context, 4)
-                                              .ToLocalChecked()
-                                              .As<v8::Int32>()
-                                              ->Value();
+    int start_edge_start_in_layer_x = expected_result.Get(context, 1)
+                                          .ToLocalChecked()
+                                          .As<v8::Int32>()
+                                          ->Value();
+    int start_edge_start_in_layer_y = expected_result.Get(context, 2)
+                                          .ToLocalChecked()
+                                          .As<v8::Int32>()
+                                          ->Value();
+    int start_edge_end_in_layer_x = expected_result.Get(context, 3)
+                                        .ToLocalChecked()
+                                        .As<v8::Int32>()
+                                        ->Value();
+    int start_edge_end_in_layer_y = expected_result.Get(context, 4)
+                                        .ToLocalChecked()
+                                        .As<v8::Int32>()
+                                        ->Value();
 
-    const int end_edge_start_in_layer_x = expected_result.Get(context, 6)
-                                              .ToLocalChecked()
-                                              .As<v8::Int32>()
-                                              ->Value();
-    const int end_edge_start_in_layer_y = expected_result.Get(context, 7)
-                                              .ToLocalChecked()
-                                              .As<v8::Int32>()
-                                              ->Value();
-    const int end_edge_end_in_layer_x = expected_result.Get(context, 8)
-                                            .ToLocalChecked()
-                                            .As<v8::Int32>()
-                                            ->Value();
-    const int end_edge_end_in_layer_y = expected_result.Get(context, 9)
-                                            .ToLocalChecked()
-                                            .As<v8::Int32>()
-                                            ->Value();
+    int end_edge_start_in_layer_x = expected_result.Get(context, 6)
+                                        .ToLocalChecked()
+                                        .As<v8::Int32>()
+                                        ->Value();
+    int end_edge_start_in_layer_y = expected_result.Get(context, 7)
+                                        .ToLocalChecked()
+                                        .As<v8::Int32>()
+                                        ->Value();
+    int end_edge_end_in_layer_x = expected_result.Get(context, 8)
+                                      .ToLocalChecked()
+                                      .As<v8::Int32>()
+                                      ->Value();
+    int end_edge_end_in_layer_y = expected_result.Get(context, 9)
+                                      .ToLocalChecked()
+                                      .As<v8::Int32>()
+                                      ->Value();
 
     gfx::PointF hit_point;
 
@@ -6531,9 +6529,21 @@ class CompositedSelectionBoundsTest
         v8::Isolate::GetCurrent(),
         expected_result.Get(context, 0).ToLocalChecked());
     ASSERT_TRUE(layer_owner_node_for_start);
-    int id = LayerIdFromNode(layer_tree_host->root_layer(),
-                             layer_owner_node_for_start);
-    EXPECT_EQ(selection.start.layer_id, id);
+    int start_layer_id = LayerIdFromNode(layer_tree_host->root_layer(),
+                                         layer_owner_node_for_start);
+    if (selection_is_caret) {
+      // The selection data are recorded on the caret layer which is the next
+      // layer for the current test cases.
+      start_layer_id++;
+      EXPECT_EQ("Caret",
+                layer_tree_host->LayerById(start_layer_id)->DebugName());
+      // The locations are relative to the caret layer.
+      start_edge_end_in_layer_x -= start_edge_start_in_layer_x;
+      start_edge_end_in_layer_y -= start_edge_start_in_layer_y;
+      start_edge_start_in_layer_x = 0;
+      start_edge_start_in_layer_y = 0;
+    }
+    EXPECT_EQ(start_layer_id, selection.start.layer_id);
 
     EXPECT_NEAR(start_edge_start_in_layer_x, selection.start.edge_start.x(), 1);
     EXPECT_NEAR(start_edge_start_in_layer_y, selection.start.edge_start.y(), 1);
@@ -6543,9 +6553,21 @@ class CompositedSelectionBoundsTest
         v8::Isolate::GetCurrent(),
         expected_result.Get(context, 5).ToLocalChecked());
     ASSERT_TRUE(layer_owner_node_for_end);
-    id = LayerIdFromNode(layer_tree_host->root_layer(),
-                         layer_owner_node_for_end);
-    EXPECT_EQ(selection.end.layer_id, id);
+    int end_layer_id = LayerIdFromNode(layer_tree_host->root_layer(),
+                                       layer_owner_node_for_end);
+    if (selection_is_caret) {
+      // The selection data are recorded on the caret layer which is the next
+      // layer for the current test cases.
+      end_layer_id++;
+      EXPECT_EQ(start_layer_id, end_layer_id);
+      // The locations are relative to the caret layer.
+      end_edge_end_in_layer_x -= end_edge_start_in_layer_x;
+      end_edge_end_in_layer_y -= end_edge_start_in_layer_y;
+      end_edge_start_in_layer_x = 0;
+      end_edge_start_in_layer_y = 0;
+    }
+    EXPECT_EQ(end_layer_id, selection.end.layer_id);
+
     EXPECT_NEAR(end_edge_start_in_layer_x, selection.end.edge_start.x(), 1);
     EXPECT_NEAR(end_edge_start_in_layer_y, selection.end.edge_start.y(), 1);
     EXPECT_NEAR(end_edge_end_in_layer_x, selection.end.edge_end.x(), 1);
@@ -6593,35 +6615,23 @@ class CompositedSelectionBoundsTest
     RunTest(test_file);
   }
 
-  static GraphicsLayer* GetExpectedLayerForSelection(blink::Node* node) {
-    CompositedLayerMapping* clm = node->GetLayoutObject()
-                                      ->EnclosingLayer()
-                                      ->EnclosingLayerForPaintInvalidation()
-                                      ->GetCompositedLayerMapping();
-
-    // If the Node is a scroller, the selection will be relative to its
-    // scrolling contents layer.
-    return clm->ScrollingContentsLayer() ? clm->ScrollingContentsLayer()
-                                         : clm->MainGraphicsLayer();
+  void RunTestWithCaret(const char* test_file) {
+    RunTest(test_file, /*selection_is_caret*/ true);
   }
 
   static int LayerIdFromNode(const cc::Layer* root_layer, blink::Node* node) {
-    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      return GetExpectedLayerForSelection(node)->CcLayer().id();
+    Vector<const cc::Layer*> layers;
+    if (node->IsDocumentNode()) {
+      layers = CcLayersByName(root_layer,
+                              "Scrolling background of LayoutView #document");
     } else {
-      Vector<const cc::Layer*> layers;
-      if (node->IsDocumentNode()) {
-        layers = CcLayersByName(root_layer,
-                                "Scrolling background of LayoutView #document");
-      } else {
-        DCHECK(node->IsElementNode());
-        layers = CcLayersByDOMElementId(root_layer,
-                                        To<Element>(node)->GetIdAttribute());
-      }
-
-      EXPECT_EQ(layers.size(), 1u);
-      return layers[0]->id();
+      DCHECK(node->IsElementNode());
+      layers = CcLayersByDOMElementId(root_layer,
+                                      To<Element>(node)->GetIdAttribute());
     }
+
+    EXPECT_EQ(layers.size(), 1u);
+    return layers[0]->id();
   }
 
   frame_test_helpers::WebViewHelper web_view_helper_;
@@ -6668,10 +6678,10 @@ TEST_F(CompositedSelectionBoundsTest, Iframe) {
 }
 TEST_F(CompositedSelectionBoundsTest, Editable) {
   web_view_helper_.GetWebView()->GetSettings()->SetDefaultFontSize(16);
-  RunTest("composited_selection_bounds_editable.html");
+  RunTestWithCaret("composited_selection_bounds_editable.html");
 }
 TEST_F(CompositedSelectionBoundsTest, EditableDiv) {
-  RunTest("composited_selection_bounds_editable_div.html");
+  RunTestWithCaret("composited_selection_bounds_editable_div.html");
 }
 TEST_F(CompositedSelectionBoundsTest, SVGBasic) {
   RunTest("composited_selection_bounds_svg_basic.html");
@@ -6679,8 +6689,8 @@ TEST_F(CompositedSelectionBoundsTest, SVGBasic) {
 TEST_F(CompositedSelectionBoundsTest, SVGTextWithFragments) {
   RunTest("composited_selection_bounds_svg_text_with_fragments.html");
 }
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(CompositedSelectionBoundsTest, Input) {
   web_view_helper_.GetWebView()->GetSettings()->SetDefaultFontSize(16);
   RunTest("composited_selection_bounds_input.html");
@@ -8704,9 +8714,7 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
 
   const cc::Layer* root_layer = layer_tree_host->root_layer();
   const char* view_background_layer_name =
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
-          ? "Scrolling background of LayoutView #document"
-          : "Scrolling Contents Layer";
+      "Scrolling background of LayoutView #document";
   EXPECT_EQ(1u, CcLayersByName(root_layer, view_background_layer_name).size());
   EXPECT_EQ(1u, CcLayersByDOMElementId(root_layer, "other").size());
   // "spinner" is a composited element in the shadow DOM of the video element.
@@ -8804,9 +8812,7 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
 
   const cc::Layer* root_layer = layer_tree_host->root_layer();
   const char* view_background_layer_name =
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
-          ? "Scrolling background of LayoutView #document"
-          : "Scrolling Contents Layer";
+      "Scrolling background of LayoutView #document";
   EXPECT_EQ(1u, CcLayersByName(root_layer, view_background_layer_name).size());
   EXPECT_EQ(1u, CcLayersByDOMElementId(root_layer, "other").size());
   // The overlay is not composited when it's not in full screen.
@@ -9078,7 +9084,7 @@ TEST_F(WebFrameTest, NodeImageTestFloatLeft) {
 }
 
 // Crashes on Android: http://crbug.com/403804
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_F(WebFrameTest, DISABLED_PrintingBasic)
 #else
 TEST_F(WebFrameTest, PrintingBasic)
@@ -9285,7 +9291,7 @@ TEST_F(WebFrameSwapTest, SwapMainFrameWithPageScaleReset) {
   MainFrame()->Swap(remote_frame);
 
   mojo::AssociatedRemote<mojom::blink::RemoteMainFrameHost> main_frame_host;
-  ignore_result(main_frame_host.BindNewEndpointAndPassDedicatedReceiver());
+  std::ignore = main_frame_host.BindNewEndpointAndPassDedicatedReceiver();
   WebView()->DidAttachRemoteMainFrame(
       main_frame_host.Unbind(),
       mojo::AssociatedRemote<mojom::blink::RemoteMainFrame>()
@@ -12247,13 +12253,13 @@ TEST_F(WebFrameSimTest, FindInPageSelectNextMatch) {
       frame->EnsureTextFinder().FindMatchRects();
   ASSERT_EQ(2ul, web_match_rects.size());
 
-  FloatRect result_rect = static_cast<FloatRect>(web_match_rects[0]);
+  gfx::RectF result_rect = web_match_rects[0];
   frame->EnsureTextFinder().SelectNearestFindMatch(result_rect.CenterPoint(),
                                                    nullptr);
 
   EXPECT_TRUE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
       box1_rect));
-  result_rect = static_cast<FloatRect>(web_match_rects[1]);
+  result_rect = web_match_rects[1];
   frame->EnsureTextFinder().SelectNearestFindMatch(result_rect.CenterPoint(),
                                                    nullptr);
 
@@ -13186,7 +13192,7 @@ TEST_F(WebFrameTest, ShowVirtualKeyboardOnElementFocus) {
 
   RunPendingTasks();
   // Verify that the right WidgetHost has been notified.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   EXPECT_EQ(0u, widget_host.VirtualKeyboardRequestCount());
 #else
   EXPECT_LT(0u, widget_host.VirtualKeyboardRequestCount());
@@ -13448,7 +13454,7 @@ static void TestFramePrinting(WebLocalFrameImpl* frame) {
   gfx::Size page_size(500, 500);
   print_params.print_content_area.set_size(page_size);
   EXPECT_EQ(1u, frame->PrintBegin(print_params, WebNode()));
-  PaintRecorder recorder;
+  cc::PaintRecorder recorder;
   frame->PrintPagesForTesting(recorder.beginRecording(SkRect::MakeEmpty()),
                               page_size, page_size);
   frame->PrintEnd();
@@ -13526,7 +13532,7 @@ TEST_F(WebFrameTest, FirstLetterHasDOMNodeIdWhenPrinting) {
   print_params.print_content_area.set_size(page_size);
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   EXPECT_EQ(1u, frame->PrintBegin(print_params, WebNode()));
-  PaintRecorder recorder;
+  cc::PaintRecorder recorder;
   frame->PrintPagesForTesting(recorder.beginRecording(SkRect::MakeEmpty()),
                               page_size, page_size);
   frame->PrintEnd();

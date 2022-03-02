@@ -25,6 +25,7 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/continue_section_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/folder_background_view.h"
 #include "ash/app_list/views/folder_header_view.h"
@@ -49,6 +50,7 @@
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/test/test_app_list_color_provider.h"
 #include "ash/search_box/search_box_constants.h"
+#include "ash/style/ash_color_provider.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -73,7 +75,6 @@
 
 namespace ash {
 namespace test {
-
 namespace {
 
 constexpr int kInitialItems = 34;
@@ -168,23 +169,14 @@ class TestStartPageSearchResult : public TestSearchResult {
   ~TestStartPageSearchResult() override = default;
 };
 
-class AppListViewTest : public views::ViewsTestBase,
-                        public testing::WithParamInterface<bool> {
+class AppListViewTest : public views::ViewsTestBase {
  public:
   AppListViewTest() = default;
-
   AppListViewTest(const AppListViewTest&) = delete;
   AppListViewTest& operator=(const AppListViewTest&) = delete;
-
   ~AppListViewTest() override = default;
 
   void SetUp() override {
-    if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
-      // Setup right to left environment if necessary.
-      is_rtl_ = GetParam();
-      if (is_rtl_)
-        base::i18n::SetICUDefaultLocale("he");
-    }
     views::ViewsTestBase::SetUp();
     zero_duration_mode_ =
         std::make_unique<ui::ScopedAnimationDurationScaleMode>(
@@ -417,13 +409,13 @@ class AppListViewTest : public views::ViewsTestBase,
     }
   }
 
-  // Restores the locale to default when destructor is called.
-  base::test::ScopedRestoreICUDefaultLocale restore_locale_;
-
   // Sets animation durations to zero.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
-  TestAppListColorProvider color_provider_;  // Needed by AppListView.
+  TestAppListColorProvider app_list_color_provider_;  // Needed by AppListView.
+
+  // Needed by ProductivityLauncher AppsContainerView::ContinueContainer.
+  AshColorProvider ash_color_provider_;
 
   AppListView* view_ = nullptr;  // Owned by native widget.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
@@ -431,11 +423,35 @@ class AppListViewTest : public views::ViewsTestBase,
 
   // Used by AppListFolderView::UpdatePreferredBounds.
   keyboard::KeyboardUIController keyboard_ui_controller_;
-
-  bool is_rtl_ = false;
 };
 
-INSTANTIATE_TEST_SUITE_P(Rtl, AppListViewTest, ::testing::Bool());
+// Tests for the legacy "peeking" clamshell launcher. These can be deleted when
+// ProductivityLauncher is the default.
+class AppListViewPeekingTest : public AppListViewTest {
+ public:
+  AppListViewPeekingTest() {
+    feature_list_.InitAndDisableFeature(features::kProductivityLauncher);
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests for tablet mode. Parameterized by ProductivityLauncher.
+class AppListViewTabletTest : public AppListViewTest,
+                              public testing::WithParamInterface<bool> {
+ public:
+  AppListViewTabletTest() {
+    const bool enable_productivity_launcher = GetParam();
+    feature_list_.InitWithFeatureState(features::kProductivityLauncher,
+                                       enable_productivity_launcher);
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(ProductivityLauncher,
+                         AppListViewTabletTest,
+                         testing::Bool());
 
 // Tests app list view layout for different screen sizes.
 class AppListViewScalableLayoutTest : public AppListViewTest {
@@ -461,6 +477,7 @@ class AppListViewScalableLayoutTest : public AppListViewTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// Tests of focus, optionally parameterized by RTL.
 class AppListViewFocusTest : public views::ViewsTestBase,
                              public testing::WithParamInterface<bool> {
  public:
@@ -488,6 +505,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     view_->InitView(GetContext());
     Show();
     test_api_ = std::make_unique<AppsGridViewTestApi>(apps_grid_view());
+    // May be null for ProductivityLauncher, which does not use chips.
     suggestions_container_ = contents_view()
                                  ->apps_container_view()
                                  ->suggestion_chip_container_view_for_test();
@@ -507,7 +525,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     AppListFolderItem* folder_item =
         model->CreateAndPopulateFolderWithApps(kItemNumInFolder);
     model->PopulateApps(kAppListItemNum);
-    suggestions_container()->Update();
+    if (suggestions_container_)
+      suggestions_container_->Update();
     EXPECT_EQ(static_cast<size_t>(kAppListItemNum + 1),
               model->top_level_item_list()->item_count());
     EXPECT_EQ(folder_item->id(),
@@ -579,6 +598,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
         result->set_display_type(data.first);
         result->set_display_score(display_score);
         result->set_title(u"Test");
+        result->set_best_match(true);
         results->Add(std::move(result));
       }
     }
@@ -623,6 +643,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     result->set_display_type(ash::SearchResultDisplayType::kList);
     result->set_display_score(score);
     result->set_title(ASCIIToUTF16(title));
+    result->set_best_match(true);
     GetSearchModel()->results()->Add(std::move(result));
     RunPendingMessages();
   }
@@ -807,6 +828,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   }
 
   std::vector<views::View*> GetAllSuggestions() {
+    // ProductivityLauncher does not use suggestion chips.
+    DCHECK(!features::IsProductivityLauncherEnabled());
     const auto& children = suggestions_container()->children();
     std::vector<views::View*> suggestions;
     std::copy_if(children.cbegin(), children.cend(),
@@ -832,10 +855,12 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
-  TestAppListColorProvider color_provider_;  // Needed by AppListView.
+  TestAppListColorProvider app_list_color_provider_;  // Needed by AppListView.
+  AshColorProvider ash_color_provider_;  // Needed by ProductivityLauncher.
   AppListView* view_ = nullptr;  // Owned by native widget.
-  SearchResultContainerView* suggestions_container_ =
-      nullptr;                                    // Owned by view hierarchy.
+  // Owned by view hierarchy. May be null for ProductivityLauncher, which does
+  // not use suggestion chips.
+  SearchResultContainerView* suggestions_container_ = nullptr;
   ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by view hierarchy.
 
   std::unique_ptr<AppListTestViewDelegate> delegate_;
@@ -847,9 +872,20 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   keyboard::KeyboardUIController keyboard_ui_controller_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All, AppListViewFocusTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Rtl, AppListViewFocusTest, testing::Bool());
 
-}  // namespace
+// Tests for the legacy "peeking" clamshell launcher. These can be deleted when
+// ProductivityLauncher is the default.
+class AppListViewPeekingFocusTest : public AppListViewFocusTest {
+ public:
+  AppListViewPeekingFocusTest() {
+    feature_list_.InitAndDisableFeature(features::kProductivityLauncher);
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(Rtl, AppListViewPeekingFocusTest, testing::Bool());
 
 // Tests that the initial focus is on search box.
 TEST_F(AppListViewFocusTest, InitialFocus) {
@@ -857,7 +893,7 @@ TEST_F(AppListViewFocusTest, InitialFocus) {
 }
 
 // Tests the linear focus traversal in PEEKING state.
-TEST_P(AppListViewFocusTest, LinearFocusTraversalInPeekingState) {
+TEST_P(AppListViewPeekingFocusTest, LinearFocusTraversalInPeekingState) {
   Show();
   SetAppListState(ash::AppListViewState::kPeeking);
 
@@ -887,6 +923,11 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInPeekingState) {
 
 // Tests the linear focus traversal in FULLSCREEN_ALL_APPS state.
 TEST_P(AppListViewFocusTest, LinearFocusTraversalInFullscreenAllAppsState) {
+  // TODO(https://crbug.com/1284992): Fix for ProductivityLauncher, which
+  // does not use suggestion chips.
+  if (features::IsProductivityLauncherEnabled())
+    return;
+
   Show();
   SetAppListState(ash::AppListViewState::kFullscreenAllApps);
 
@@ -918,7 +959,7 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFullscreenAllAppsState) {
 }
 
 // Tests focus traversal in HALF state with opened search box using |VKEY_TAB|.
-TEST_F(AppListViewFocusTest, TabFocusTraversalInHalfState) {
+TEST_F(AppListViewPeekingFocusTest, TabFocusTraversalInHalfState) {
   Show();
 
   // Type something in search box to transition to HALF state and populate
@@ -972,7 +1013,7 @@ TEST_F(AppListViewFocusTest, TabFocusTraversalInHalfState) {
 // *   search box text is cleared
 // *   search box gets focus, but it's not active
 // *   subsequent tab keys move focus to app list folder view.
-TEST_F(AppListViewFocusTest, CloseButtonClearsSearchOnEnter) {
+TEST_F(AppListViewPeekingFocusTest, CloseButtonClearsSearchOnEnter) {
   Show();
 
   // Type something in search box to transition to HALF state and populate
@@ -1016,7 +1057,7 @@ TEST_F(AppListViewFocusTest, CloseButtonClearsSearchOnEnter) {
 
 // Tests focus traversal in HALF state with opened search box using |VKEY_LEFT|
 // and |VKEY_RIGHT|.
-TEST_P(AppListViewFocusTest, LeftRightFocusTraversalInHalfState) {
+TEST_P(AppListViewPeekingFocusTest, LeftRightFocusTraversalInHalfState) {
   Show();
 
   // Type something in search box to transition to HALF state and populate
@@ -1101,24 +1142,42 @@ TEST_F(AppListViewFocusTest, OpeningFolderRemovesOtherViewsFromAccessibility) {
 
   // Note: For fullscreen app list, the search box is part of the focus cycle
   // when a folder is open.
+  // ProductivityLauncher uses recent apps and continue section.
+  auto* recent_apps_view = apps_container_view->GetRecentApps();
+  auto* continue_section_view = apps_container_view->GetContinueSection();
+  // Non-ProductivityLauncher uses suggestion chips.
   auto* suggestion_chip_container =
       apps_container_view->suggestion_chip_container_view_for_test();
-  EXPECT_TRUE(suggestion_chip_container->GetViewAccessibility().IsIgnored());
-  EXPECT_TRUE(suggestion_chip_container->GetViewAccessibility().IsLeaf());
+  if (features::IsProductivityLauncherEnabled()) {
+    EXPECT_TRUE(recent_apps_view->GetViewAccessibility().IsIgnored());
+    EXPECT_TRUE(recent_apps_view->GetViewAccessibility().IsLeaf());
+    EXPECT_TRUE(continue_section_view->GetViewAccessibility().IsIgnored());
+    EXPECT_TRUE(continue_section_view->GetViewAccessibility().IsLeaf());
+  } else {
+    EXPECT_TRUE(suggestion_chip_container->GetViewAccessibility().IsIgnored());
+    EXPECT_TRUE(suggestion_chip_container->GetViewAccessibility().IsLeaf());
+  }
   EXPECT_TRUE(apps_grid_view()->GetViewAccessibility().IsIgnored());
   EXPECT_TRUE(apps_grid_view()->GetViewAccessibility().IsLeaf());
 
   // Close the folder.
   SimulateKeyPress(ui::VKEY_ESCAPE, false);
 
-  EXPECT_FALSE(suggestion_chip_container->GetViewAccessibility().IsIgnored());
-  EXPECT_FALSE(suggestion_chip_container->GetViewAccessibility().IsLeaf());
+  if (features::IsProductivityLauncherEnabled()) {
+    EXPECT_FALSE(recent_apps_view->GetViewAccessibility().IsIgnored());
+    EXPECT_FALSE(recent_apps_view->GetViewAccessibility().IsLeaf());
+    EXPECT_FALSE(continue_section_view->GetViewAccessibility().IsIgnored());
+    EXPECT_FALSE(continue_section_view->GetViewAccessibility().IsLeaf());
+  } else {
+    EXPECT_FALSE(suggestion_chip_container->GetViewAccessibility().IsIgnored());
+    EXPECT_FALSE(suggestion_chip_container->GetViewAccessibility().IsLeaf());
+  }
   EXPECT_FALSE(apps_grid_view()->GetViewAccessibility().IsIgnored());
   EXPECT_FALSE(apps_grid_view()->GetViewAccessibility().IsLeaf());
 }
 
 // Tests the vertical focus traversal by in PEEKING state.
-TEST_P(AppListViewFocusTest, VerticalFocusTraversalInPeekingState) {
+TEST_P(AppListViewPeekingFocusTest, VerticalFocusTraversalInPeekingState) {
   Show();
   SetAppListState(ash::AppListViewState::kPeeking);
 
@@ -1144,6 +1203,11 @@ TEST_P(AppListViewFocusTest, VerticalFocusTraversalInPeekingState) {
 
 // Tests the vertical focus traversal in FULLSCREEN_ALL_APPS state.
 TEST_P(AppListViewFocusTest, VerticalFocusTraversalInFullscreenAllAppsState) {
+  // TODO(https://crbug.com/1284992): Fix for ProductivityLauncher, which
+  // does not use suggestion chips.
+  if (features::IsProductivityLauncherEnabled())
+    return;
+
   Show();
   SetAppListState(ash::AppListViewState::kFullscreenAllApps);
 
@@ -1176,7 +1240,7 @@ TEST_P(AppListViewFocusTest, VerticalFocusTraversalInFullscreenAllAppsState) {
 }
 
 // Tests the vertical focus traversal in HALF state with opened search box.
-TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
+TEST_F(AppListViewPeekingFocusTest, VerticalFocusTraversalInHalfState) {
   Show();
 
   // Type something in search box to transition to HALF state and populate
@@ -1258,8 +1322,9 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFirstPageOfFolder) {
 }
 
 // Tests the vertical focus traversal in FULLSCREEN_ALL_APPS state in the second
-// page within folder.
-TEST_F(AppListViewFocusTest, VerticalFocusTraversalInSecondPageOfFolder) {
+// page within folder. ProductivityLauncher does not use pages for folders.
+TEST_F(AppListViewPeekingFocusTest,
+       VerticalFocusTraversalInSecondPageOfFolder) {
   Show();
 
   // Transition to FULLSCREEN_ALL_APPS state and open the folder.
@@ -1306,7 +1371,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInSecondPageOfFolder) {
 
 // Tests that the focus is set back onto search box after all state transitions
 // besides those going to/from an activated folder.
-TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
+TEST_F(AppListViewPeekingFocusTest, FocusResetAfterStateTransition) {
   Show();
 
   // Type something in search box to transition to HALF state and populate
@@ -1363,6 +1428,11 @@ TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
 // Tests that key event which is not handled by focused view will be redirected
 // to search box when search box view is active (but not focused).
 TEST_F(AppListViewFocusTest, RedirectFocusToSearchBox) {
+  // TODO(https://crbug.com/1284992): Fix for ProductivityLauncher, which
+  // does not support this behavior and also does not use suggestion chips.
+  if (features::IsProductivityLauncherEnabled())
+    return;
+
   Show();
 
   // Set focus to first suggestion app and type a character.
@@ -1459,7 +1529,7 @@ TEST_F(AppListViewFocusTest, CtrlASelectsAllTextInSearchbox) {
 // Tests that the first search result's view is selected after search results
 // are updated when the focus is on search box.
 // crbug.com/1242053: flaky on chromeos
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_FirstResultSelectedAfterSearchResultsUpdated \
   DISABLED_FirstResultSelectedAfterSearchResultsUpdated
 #else
@@ -1552,8 +1622,10 @@ TEST_F(AppListViewFocusTest, HittingEnterWhenFocusOnSearchBox) {
 TEST_F(AppListViewFocusTest, SetFocusOnSearchboxWhenActivated) {
   Show();
 
-  // Set focus to the first suggestion app.
-  GetAllSuggestions()[0]->RequestFocus();
+  // Press tab several times to move focus out of the search box.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  SimulateKeyPress(ui::VKEY_TAB, false);
   EXPECT_FALSE(search_box_view()->search_box()->HasFocus());
 
   // Activate the search box.
@@ -1704,7 +1776,7 @@ TEST_F(AppListViewFocusTest, SelectionGoesIntoFolderIfSelected) {
 }
 
 // Tests that opening the app list opens in peeking mode by default.
-TEST_F(AppListViewTest, ShowPeekingByDefault) {
+TEST_F(AppListViewPeekingTest, ShowPeekingByDefault) {
   Initialize(false /*is_tablet_mode*/);
 
   Show();
@@ -1712,9 +1784,9 @@ TEST_F(AppListViewTest, ShowPeekingByDefault) {
   ASSERT_EQ(ash::AppListViewState::kPeeking, view_->app_list_state());
 }
 
-TEST_F(AppListViewTest, RecordFolderMetrics_ZeroFolders) {
+TEST_P(AppListViewTabletTest, RecordFolderMetrics_ZeroFolders) {
   base::HistogramTester histogram;
-  Initialize(/*is_tablet_mode=*/false);
+  Initialize(/*is_tablet_mode=*/true);
   delegate_->GetTestModel()->PopulateApps(2);
   Show();
 
@@ -1726,9 +1798,9 @@ TEST_F(AppListViewTest, RecordFolderMetrics_ZeroFolders) {
                    "Apps.AppsInFolders.FullscreenAppListEnabled", 0));
 }
 
-TEST_F(AppListViewTest, RecordFolderMetrics_OneRegularFolder) {
+TEST_P(AppListViewTabletTest, RecordFolderMetrics_OneRegularFolder) {
   base::HistogramTester histogram;
-  Initialize(/*is_tablet_mode=*/false);
+  Initialize(/*is_tablet_mode=*/true);
   delegate_->GetTestModel()->CreateAndPopulateFolderWithApps(2);
   Show();
 
@@ -1740,9 +1812,9 @@ TEST_F(AppListViewTest, RecordFolderMetrics_OneRegularFolder) {
                    "Apps.AppsInFolders.FullscreenAppListEnabled", 2));
 }
 
-TEST_F(AppListViewTest, RecordFolderMetrics_OemFolder) {
+TEST_P(AppListViewTabletTest, RecordFolderMetrics_OemFolder) {
   base::HistogramTester histogram;
-  Initialize(/*is_tablet_mode=*/false);
+  Initialize(/*is_tablet_mode=*/true);
   delegate_->GetTestModel()->CreateSingleItemFolder(kOemFolderId, "item_id");
   Show();
 
@@ -1755,9 +1827,9 @@ TEST_F(AppListViewTest, RecordFolderMetrics_OemFolder) {
                    "Apps.AppsInFolders.FullscreenAppListEnabled", 0));
 }
 
-TEST_F(AppListViewTest, RecordFolderMetrics_LinuxAppsFolder) {
+TEST_P(AppListViewTabletTest, RecordFolderMetrics_LinuxAppsFolder) {
   base::HistogramTester histogram;
-  Initialize(/*is_tablet_mode=*/false);
+  Initialize(/*is_tablet_mode=*/true);
   delegate_->GetTestModel()->CreateSingleItemFolder(kCrostiniFolderId,
                                                     "item_id");
   Show();
@@ -1773,8 +1845,9 @@ TEST_F(AppListViewTest, RecordFolderMetrics_LinuxAppsFolder) {
 
 // Tests that in side shelf mode, the app list opens in fullscreen by default
 // and verifies that the top rounded corners of the app list background are
-// hidden (see https://crbug.com/920082).
-TEST_F(AppListViewTest, ShowFullscreenWhenInSideShelfMode) {
+// hidden (see https://crbug.com/920082). ProductivityLauncher does not change
+// shelf corners.
+TEST_F(AppListViewPeekingTest, ShowFullscreenWhenInSideShelfMode) {
   Initialize(false /*is_tablet_mode*/);
 
   Show(true /*is_side_shelf*/);
@@ -1797,7 +1870,7 @@ TEST_F(AppListViewTest, ShowFullscreenWhenInTabletMode) {
 }
 
 // Tests that setting empty text in the search box does not change the state.
-TEST_F(AppListViewTest, EmptySearchTextStillPeeking) {
+TEST_F(AppListViewPeekingTest, EmptySearchTextStillPeeking) {
   Initialize(false /*is_tablet_mode*/);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
@@ -1808,12 +1881,13 @@ TEST_F(AppListViewTest, EmptySearchTextStillPeeking) {
   ASSERT_EQ(ash::AppListViewState::kPeeking, view_->app_list_state());
 }
 
-TEST_F(AppListViewTest, UpwardMouseWheelScrollTransitionsToFullscreen) {
+TEST_F(AppListViewPeekingTest, UpwardMouseWheelScrollTransitionsToFullscreen) {
   base::HistogramTester histogram_tester;
 
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
+  EXPECT_EQ(AppListViewState::kPeeking, view_->app_list_state());
 
   view_->HandleScroll(gfx::Point(0, 0), gfx::Vector2d(0, 30),
                       ui::ET_MOUSEWHEEL);
@@ -1843,7 +1917,8 @@ TEST_F(AppListViewTest, UpwardMouseWheelScrollTransitionsToFullscreen) {
   ASSERT_EQ(1, delegate_->dismiss_count());
 }
 
-TEST_F(AppListViewTest, DownwardMouseWheelScrollDismissesPeekingLauncher) {
+TEST_F(AppListViewPeekingTest,
+       DownwardMouseWheelScrollDismissesPeekingLauncher) {
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
@@ -1856,11 +1931,12 @@ TEST_F(AppListViewTest, DownwardMouseWheelScrollDismissesPeekingLauncher) {
   EXPECT_EQ(1, delegate_->dismiss_count());
 }
 
-TEST_F(AppListViewTest, UpwardGestureScrollTransitionsToFullscreen) {
+TEST_F(AppListViewPeekingTest, UpwardGestureScrollTransitionsToFullscreen) {
   base::HistogramTester histogram_tester;
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
+  EXPECT_EQ(AppListViewState::kPeeking, view_->app_list_state());
 
   view_->HandleScroll(gfx::Point(0, 0), gfx::Vector2d(0, 30), ui::ET_SCROLL);
 
@@ -1871,7 +1947,7 @@ TEST_F(AppListViewTest, UpwardGestureScrollTransitionsToFullscreen) {
       "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 0);
 }
 
-TEST_F(AppListViewTest, DownwardGestureScrollDismissesPeekingLauncher) {
+TEST_F(AppListViewPeekingTest, DownwardGestureScrollDismissesPeekingLauncher) {
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
@@ -1884,7 +1960,7 @@ TEST_F(AppListViewTest, DownwardGestureScrollDismissesPeekingLauncher) {
 }
 
 // Tests that typing text after opening transitions from peeking to half.
-TEST_F(AppListViewTest, TypingPeekingToHalf) {
+TEST_F(AppListViewPeekingTest, TypingPeekingToHalf) {
   Initialize(false /*is_tablet_mode*/);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
@@ -1899,7 +1975,7 @@ TEST_F(AppListViewTest, TypingPeekingToHalf) {
 }
 
 // Tests that typing when in fullscreen changes the state to fullscreen search.
-TEST_F(AppListViewTest, TypingFullscreenToFullscreenSearch) {
+TEST_F(AppListViewPeekingTest, TypingFullscreenToFullscreenSearch) {
   Initialize(false /*is_tablet_mode*/);
   Show();
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
@@ -1931,7 +2007,7 @@ TEST_F(AppListViewTest, TypingTabletModeFullscreenSearch) {
 }
 
 // Tests that pressing escape when in peeking closes the app list.
-TEST_F(AppListViewTest, EscapeKeyPeekingToClosed) {
+TEST_F(AppListViewPeekingTest, EscapeKeyPeekingToClosed) {
   Initialize(false /*is_tablet_mode*/);
 
   Show();
@@ -1941,7 +2017,7 @@ TEST_F(AppListViewTest, EscapeKeyPeekingToClosed) {
 }
 
 // Tests that pressing escape when in half screen changes the state to peeking.
-TEST_F(AppListViewTest, EscapeKeyHalfToPeeking) {
+TEST_F(AppListViewPeekingTest, EscapeKeyHalfToPeeking) {
   Initialize(false /*is_tablet_mode*/);
 
   Show();
@@ -1952,7 +2028,7 @@ TEST_F(AppListViewTest, EscapeKeyHalfToPeeking) {
 }
 
 // Tests that pressing escape when in fullscreen changes the state to closed.
-TEST_F(AppListViewTest, EscapeKeyFullscreenToClosed) {
+TEST_F(AppListViewPeekingTest, EscapeKeyFullscreenToClosed) {
   Initialize(false /*is_tablet_mode*/);
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
@@ -1963,20 +2039,20 @@ TEST_F(AppListViewTest, EscapeKeyFullscreenToClosed) {
 }
 
 // Tests that pressing escape when in fullscreen side-shelf closes the app list.
-TEST_F(AppListViewTest, EscapeKeySideShelfFullscreenToClosed) {
+TEST_F(AppListViewPeekingTest, EscapeKeySideShelfFullscreenToClosed) {
   // Put into fullscreen by using side-shelf.
   Initialize(false /*is_tablet_mode*/);
 
-  Show();
+  Show(/*is_side_shelf=*/true);
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
   ASSERT_EQ(1, delegate_->dismiss_count());
 }
 
 // Tests that pressing escape when in tablet mode keeps app list in fullscreen.
-TEST_F(AppListViewTest, EscapeKeyTabletModeStayFullscreen) {
+TEST_P(AppListViewTabletTest, EscapeKeyTabletModeStayFullscreen) {
   // Put into fullscreen by using tablet mode.
-  Initialize(true /*is_tablet_mode*/);
+  Initialize(/*is_tablet_mode=*/true);
 
   Show();
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -1985,7 +2061,7 @@ TEST_F(AppListViewTest, EscapeKeyTabletModeStayFullscreen) {
 }
 
 // Tests that pressing escape when in fullscreen search changes to fullscreen.
-TEST_F(AppListViewTest, EscapeKeyFullscreenSearchToFullscreen) {
+TEST_F(AppListViewPeekingTest, EscapeKeyFullscreenSearchToFullscreen) {
   Initialize(false /*is_tablet_mode*/);
   Show();
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
@@ -1997,7 +2073,7 @@ TEST_F(AppListViewTest, EscapeKeyFullscreenSearchToFullscreen) {
 }
 
 // Tests that pressing escape when in sideshelf search changes to fullscreen.
-TEST_F(AppListViewTest, EscapeKeySideShelfSearchToFullscreen) {
+TEST_F(AppListViewPeekingTest, EscapeKeySideShelfSearchToFullscreen) {
   // Put into fullscreen using side-shelf.
   Initialize(false /*is_tablet_mode*/);
 
@@ -2010,7 +2086,7 @@ TEST_F(AppListViewTest, EscapeKeySideShelfSearchToFullscreen) {
 
 // Tests that in fullscreen, the app list has multiple pages with enough apps.
 TEST_F(AppListViewTest, PopulateAppsCreatesAnotherPage) {
-  Initialize(false /*is_tablet_mode*/);
+  Initialize(/*is_tablet_mode=*/true);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
 
   Show();
@@ -2031,7 +2107,7 @@ TEST_F(AppListViewTest, EscapeKeyTabletModeSearchToFullscreen) {
 }
 
 // Tests that opening in peeking mode sets the correct height.
-TEST_P(AppListViewTest, OpenInPeekingCorrectHeight) {
+TEST_F(AppListViewPeekingTest, OpenInPeekingCorrectHeight) {
   Initialize(false /*is_tablet_mode*/);
 
   Show();
@@ -2040,8 +2116,8 @@ TEST_P(AppListViewTest, OpenInPeekingCorrectHeight) {
             view_->GetCurrentAppListHeight());
 }
 
-// Tests that opening in peeking mode sets the correct height.
-TEST_F(AppListViewTest, OpenInFullscreenCorrectHeight) {
+// Tests that opening in fullscreen mode sets the correct height.
+TEST_F(AppListViewPeekingTest, OpenInFullscreenCorrectHeight) {
   Initialize(false /*is_tablet_mode*/);
 
   Show();
@@ -2052,7 +2128,7 @@ TEST_F(AppListViewTest, OpenInFullscreenCorrectHeight) {
 
 // Tests that AppListView::SetState succeeds when the state has been set to
 // CLOSED.
-TEST_F(AppListViewTest, SetStateFailsWhenClosing) {
+TEST_F(AppListViewPeekingTest, SetStateFailsWhenClosing) {
   Initialize(false /*is_tablet_mode*/);
   Show();
   view_->SetState(ash::AppListViewState::kClosed);
@@ -2062,7 +2138,7 @@ TEST_F(AppListViewTest, SetStateFailsWhenClosing) {
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 }
 
-TEST_F(AppListViewTest, AppsGridViewVisibilityOnReopening) {
+TEST_F(AppListViewPeekingTest, AppsGridViewVisibilityOnReopening) {
   Initialize(false /*is_tablet_mode*/);
   Show();
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
@@ -2079,7 +2155,7 @@ TEST_F(AppListViewTest, AppsGridViewVisibilityOnReopening) {
   EXPECT_TRUE(IsViewVisibleOnScreen(apps_grid_view()));
 }
 
-TEST_F(AppListViewTest, AppsGridViewExpandHintingOnReopening) {
+TEST_F(AppListViewPeekingTest, AppsGridViewExpandHintingOnReopening) {
   ui::ScopedAnimationDurationScaleMode non_zero_duration(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   Initialize(false /*is_tablet_mode*/);
@@ -2101,7 +2177,7 @@ TEST_F(AppListViewTest, AppsGridViewExpandHintingOnReopening) {
 
 // Tests that going into a folder view, then setting the AppListState to PEEKING
 // hides the folder view.
-TEST_F(AppListViewTest, FolderViewToPeeking) {
+TEST_F(AppListViewPeekingTest, FolderViewToPeeking) {
   Initialize(false /*is_tablet_mode*/);
   AppListTestModel* model = delegate_->GetTestModel();
   model->PopulateApps(kInitialItems);
@@ -2129,8 +2205,8 @@ TEST_F(AppListViewTest, FolderViewToPeeking) {
 }
 
 // Tests that a tap or click in an empty region of the AppsGridView closes the
-// AppList.
-TEST_F(AppListViewTest, TapAndClickWithinAppsGridView) {
+// AppList. ProductivityLauncher does not have this behavior.
+TEST_F(AppListViewPeekingTest, TapAndClickWithinAppsGridView) {
   Initialize(false /*is_tablet_mode*/);
   // Populate the AppList with a small number of apps so there is an empty
   // region to click.
@@ -2174,7 +2250,7 @@ TEST_F(AppListViewTest, TapAndClickWithinAppsGridView) {
 }
 
 // Tests that search box should not become a rectangle during drag.
-TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
+TEST_F(AppListViewPeekingTest, SearchBoxCornerRadiusDuringDragging) {
   base::HistogramTester histogram_tester;
   Initialize(false /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
@@ -2244,9 +2320,33 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
 }
 
 // Tests displaying the app list and performs a standard set of checks on its
-// top level views. Then closes the window.
-TEST_F(AppListViewTest, DisplayTest) {
-  Initialize(false /*is_tablet_mode*/);
+// top level views.
+TEST_F(AppListViewPeekingTest, DisplayTest) {
+  Initialize(/*is_tablet_mode=*/false);
+  EXPECT_EQ(-1, GetPaginationModel()->total_pages());
+  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+
+  Show();
+
+  // |view_| bounds equal to the root window's size.
+  EXPECT_EQ("800x600", view_->bounds().size().ToString());
+
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+  EXPECT_EQ(0, GetPaginationModel()->selected_page());
+
+  // Checks on the main view.
+  AppListMainView* main_view = view_->app_list_main_view();
+  EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
+  EXPECT_NO_FATAL_FAILURE(CheckView(main_view->contents_view()));
+
+  ash::AppListState expected = ash::AppListState::kStateApps;
+  EXPECT_TRUE(main_view->contents_view()->IsStateActive(expected));
+  EXPECT_EQ(expected, delegate_->GetCurrentAppListPage());
+}
+
+// As above above, but tests tablet mode with and without ProductivityLauncher.
+TEST_P(AppListViewTabletTest, DisplayTest) {
+  Initialize(/*is_tablet_mode=*/true);
   EXPECT_EQ(-1, GetPaginationModel()->total_pages());
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
 
@@ -2269,11 +2369,12 @@ TEST_F(AppListViewTest, DisplayTest) {
 }
 
 // Tests switching rapidly between multiple pages of the launcher.
+// TODO(https://crbug.com/1280300): Fix or skip for ProductivityLauncher.
 TEST_F(AppListViewTest, PageSwitchingAnimationTest) {
   ui::ScopedAnimationDurationScaleMode non_zero_duration(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  Initialize(false /*is_tablet_mode*/);
+  Initialize(/*is_tablet_mode=*/false);
   Show();
   AppListMainView* main_view = view_->app_list_main_view();
   // Checks on the main view.
@@ -2427,7 +2528,7 @@ TEST_F(AppListViewTest, DISABLED_BackTest) {
 }
 
 // Tests that a context menu can be shown between app icons in tablet mode.
-TEST_F(AppListViewTest, ShowContextMenuBetweenAppsInTabletMode) {
+TEST_P(AppListViewTabletTest, ShowContextMenuBetweenAppsInTabletMode) {
   Initialize(true /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
@@ -2458,7 +2559,7 @@ TEST_F(AppListViewTest, ShowContextMenuBetweenAppsInTabletMode) {
 }
 
 // Tests that context menus are not shown between app icons in clamshell mode.
-TEST_F(AppListViewTest, DontShowContextMenuBetweenAppsInClamshellMode) {
+TEST_F(AppListViewPeekingTest, DontShowContextMenuBetweenAppsInClamshellMode) {
   Initialize(false /* disable tablet mode */);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
@@ -2588,7 +2689,7 @@ TEST_F(AppListViewTest, InitialPageResetClamshellModeTest) {
 
 // Tests that, in tablet mode, the current app list page doesn't immediately
 // reset to the initial page when app list is closed and re-opened.
-TEST_F(AppListViewTest, PagePersistanceTabletModeTest) {
+TEST_P(AppListViewTabletTest, PagePersistanceTabletModeTest) {
   Initialize(true /*is_tablet_mode*/);
 
   AppListTestModel* model = delegate_->GetTestModel();
@@ -2611,12 +2712,9 @@ TEST_F(AppListViewTest, PagePersistanceTabletModeTest) {
 }
 
 // Tests selecting search result to show embedded Assistant UI.
-TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {app_list_features::kEnableAssistantSearch}, {});
-  ASSERT_TRUE(app_list_features::IsAssistantSearchEnabled());
-
+// TODO(https://crbug.com/1280300): Figure out if ProductivityLauncher needs a
+// version of this test. ProductivityLauncherSearchView has its own test suite.
+TEST_F(AppListViewPeekingFocusTest, ShowEmbeddedAssistantUI) {
   Show();
 
   // Initially the search box is inactive, hitting Enter to activate it.
@@ -2647,7 +2745,7 @@ TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
 
 // Tests that the correct contents is visible in the contents_view upon
 // reshowing. See b/142069648 for the details.
-TEST_F(AppListViewTest, AppsGridVisibilityOnResetForShow) {
+TEST_F(AppListViewPeekingTest, AppsGridVisibilityOnResetForShow) {
   Initialize(true /*is_tablet_mode*/);
   Show();
 
@@ -2686,7 +2784,7 @@ TEST_F(AppListViewTest, EscapeKeyInEmbeddedAssistantUIReturnsToAppList) {
 
 // Tests that pressing escape in embedded Assistant UI returns to peeking
 // if the Assistant UI was launched from half screen.
-TEST_F(AppListViewTest, EscapeKeyInEmbeddedAssistantUIReturnsToPeeking) {
+TEST_F(AppListViewPeekingTest, EscapeKeyInEmbeddedAssistantUIReturnsToPeeking) {
   Initialize(false /*is_tablet_mode*/);
   Show();
 
@@ -2705,7 +2803,7 @@ TEST_F(AppListViewTest, EscapeKeyInEmbeddedAssistantUIReturnsToPeeking) {
 
 // Tests that clicking empty region in AppListview when showing Assistant UI
 // should go back to peeking state.
-TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
+TEST_F(AppListViewPeekingTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
   Initialize(false /*is_tablet_mode*/);
   Show();
 
@@ -2734,7 +2832,8 @@ TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
 }
 
 // Tests that expand arrow is not visible when showing embedded Assistant UI.
-TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
+// ProductivityLauncher does not have an expand arrow.
+TEST_F(AppListViewPeekingTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
   Initialize(false /*is_tablet_mode*/);
   Show();
 
@@ -2748,9 +2847,10 @@ TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
             contents_view()->expand_arrow_view()->layer()->GetTargetOpacity());
 }
 
-// Tests the expand arrow view opacity updtes correctly when transitioning
-// between various app list view states.
-TEST_F(AppListViewTest, ExpandArrowViewVisibilityTest) {
+// Tests the expand arrow view opacity updates correctly when transitioning
+// between various app list view states. ProductivityLauncher does not have an
+// expand arrow.
+TEST_F(AppListViewPeekingTest, ExpandArrowViewVisibilityTest) {
   Initialize(false /*is_tablet_mode*/);
   Show();
 
@@ -2778,9 +2878,11 @@ TEST_F(AppListViewTest, ExpandArrowViewVisibilityTest) {
   ASSERT_EQ(contents_view()->expand_arrow_view()->layer()->opacity(), 1.0f);
 }
 
-// Tests the expand arrow view opacity updtes correctly when transitioning
+// Tests the expand arrow view opacity updates correctly when transitioning
 // between various app list view states with app list state animations enabled.
-TEST_F(AppListViewTest, ExpandArrowViewVisibilityWithStateAnimationsTest) {
+// ProductivityLauncher does not have an expand arrow.
+TEST_F(AppListViewPeekingTest,
+       ExpandArrowViewVisibilityWithStateAnimationsTest) {
   Initialize(false /*is_tablet_mode*/);
   Show();
 
@@ -2815,7 +2917,8 @@ TEST_F(AppListViewTest, ExpandArrowViewVisibilityWithStateAnimationsTest) {
 }
 
 // Tests that search box is not visible when showing embedded Assistant UI.
-TEST_F(AppListViewTest, SearchBoxViewNotVisibleInEmbeddedAssistantUI) {
+// ProductivityLauncher has tests for this in AppListBubbleViewTest.
+TEST_F(AppListViewPeekingTest, SearchBoxViewNotVisibleInEmbeddedAssistantUI) {
   Initialize(false /*is_tablet_mode*/);
   Show();
 
@@ -2828,8 +2931,8 @@ TEST_F(AppListViewTest, SearchBoxViewNotVisibleInEmbeddedAssistantUI) {
 }
 
 // Tests that the expand arrow cannot be seen when opening the app list with
-// side shelf enabled.
-TEST_F(AppListViewTest, ExpandArrowNotVisibleWithSideShelf) {
+// side shelf enabled. ProductivityLauncher does not have an expand arrow.
+TEST_F(AppListViewPeekingTest, ExpandArrowNotVisibleWithSideShelf) {
   Initialize(false /*is_tablet_mode*/);
 
   Show(true /*is_side_shelf*/);
@@ -3070,8 +3173,8 @@ TEST_F(AppListViewScalableLayoutTest, AppListViewLayoutAfterConfigChange) {
 }
 
 // Tests that page switching in folder doesn't record AppListPageSwitcherSource
-// metric.
-TEST_F(AppListViewFocusTest, PageSwitchingNotRecordingMetric) {
+// metric. ProductivityLauncher does not use pages in folders.
+TEST_F(AppListViewPeekingFocusTest, PageSwitchingNotRecordingMetric) {
   base::HistogramTester histogram_tester;
   Show();
 
@@ -3095,5 +3198,6 @@ TEST_F(AppListViewFocusTest, PageSwitchingNotRecordingMetric) {
   histogram_tester.ExpectTotalCount("Apps.AppListPageSwitcherSource", 0);
 }
 
+}  // namespace
 }  // namespace test
 }  // namespace ash

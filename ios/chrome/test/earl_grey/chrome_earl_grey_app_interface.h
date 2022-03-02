@@ -85,16 +85,16 @@
 + (void)closeTabAtIndex:(NSUInteger)index;
 
 // Returns YES if the browser is in incognito mode, and NO otherwise.
-+ (BOOL)isIncognitoMode WARN_UNUSED_RESULT;
++ (BOOL)isIncognitoMode [[nodiscard]];
 
 // Returns the number of open non-incognito tabs.
-+ (NSUInteger)mainTabCount WARN_UNUSED_RESULT;
++ (NSUInteger)mainTabCount [[nodiscard]];
 
 // Returns the number of open incognito tabs.
-+ (NSUInteger)incognitoTabCount WARN_UNUSED_RESULT;
++ (NSUInteger)incognitoTabCount [[nodiscard]];
 
 // Returns the number of open browsers.
-+ (NSUInteger)browserCount WARN_UNUSED_RESULT;
++ (NSUInteger)browserCount [[nodiscard]];
 
 // Simulates a backgrounding.
 // If not succeed returns an NSError indicating  why the
@@ -105,7 +105,7 @@
 + (void)saveSessionImmediately;
 
 // Returns the number of main (non-incognito) tabs currently evicted.
-+ (NSUInteger)evictedMainTabCount WARN_UNUSED_RESULT;
++ (NSUInteger)evictedMainTabCount [[nodiscard]];
 
 // Evicts the tabs associated with the non-current browser mode.
 + (void)evictOtherBrowserTabs;
@@ -126,6 +126,9 @@
 // Simulates opening http://www.example.com/ from another application.
 // Returns the opened URL.
 + (NSURL*)simulateExternalAppURLOpening;
+
+// Simulates opening a custom |URL| from another application.
++ (void)simulateExternalAppURLOpeningWithURL:(NSURL*)URL;
 
 // Simulates opening the add account sign-in flow from the web.
 + (void)simulateAddAccountFromWeb;
@@ -182,10 +185,10 @@
 
 // Returns the number of windows, including background and disconnected or
 // archived windows.
-+ (NSUInteger)windowCount WARN_UNUSED_RESULT;
++ (NSUInteger)windowCount [[nodiscard]];
 
 // Returns the number of foreground (visible on screen) windows.
-+ (NSUInteger)foregroundWindowCount WARN_UNUSED_RESULT;
++ (NSUInteger)foregroundWindowCount [[nodiscard]];
 
 // Closes all but one window, including all non-foreground windows.
 + (void)closeAllExtraWindows;
@@ -210,7 +213,7 @@
 + (void)startLoadingURL:(NSString*)spec inWindowWithNumber:(int)windowNumber;
 
 // Returns YES if the current WebState in window with given number is loading.
-+ (BOOL)isLoadingInWindowWithNumber:(int)windowNumber WARN_UNUSED_RESULT;
++ (BOOL)isLoadingInWindowWithNumber:(int)windowNumber [[nodiscard]];
 
 // If the current WebState in window with given number is HTML content, will
 // wait until the window ID is injected. Returns YES if the injection is
@@ -245,6 +248,10 @@
 // If not succeed returns an NSError indicating  why the operation failed,
 // otherwise nil.
 + (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector;
+
+// Waits for the current web state to no longer contain an element matching
+// |selector|. On failure, returns an NSError, otherwise nil.
++ (NSError*)waitForWebStateNotContainingElement:(ElementSelector*)selector;
 
 // Waits for the current web state's frames to contain |text|.
 // If not succeed returns an NSError indicating  why the operation failed,
@@ -462,7 +469,7 @@
 
 // Verifies that all interactive elements on screen (or at least one of their
 // descendants) are accessible.
-+ (NSError*)verifyAccessibilityForCurrentScreen WARN_UNUSED_RESULT;
++ (NSError*)verifyAccessibilityForCurrentScreen [[nodiscard]];
 
 #pragma mark - Check features (EG2)
 
@@ -471,7 +478,7 @@
 // must query Chrome for the state.
 
 // Returns YES if BlockNewTabPagePendingLoad feature is enabled.
-+ (BOOL)isBlockNewTabPagePendingLoadEnabled WARN_UNUSED_RESULT;
++ (BOOL)isBlockNewTabPagePendingLoadEnabled [[nodiscard]];
 
 // Returns YES if |variationID| is enabled.
 + (BOOL)isVariationEnabled:(int)variationID;
@@ -480,16 +487,16 @@
 + (BOOL)isTriggerVariationEnabled:(int)variationID;
 
 // Returns YES if UKM feature is enabled.
-+ (BOOL)isUKMEnabled WARN_UNUSED_RESULT;
++ (BOOL)isUKMEnabled [[nodiscard]];
 
 // Returns YES if kSynthesizedRestoreSessionEnabled feature is enabled.
-+ (BOOL)isSynthesizedRestoreSessionEnabled WARN_UNUSED_RESULT;
++ (BOOL)isSynthesizedRestoreSessionEnabled [[nodiscard]];
 
 // Returns YES if kTestFeature is enabled.
 + (BOOL)isTestFeatureEnabled;
 
 // Returns YES if DemographicMetricsReporting feature is enabled.
-+ (BOOL)isDemographicMetricsReportingEnabled WARN_UNUSED_RESULT;
++ (BOOL)isDemographicMetricsReportingEnabled [[nodiscard]];
 
 // Returns YES if the |launchSwitch| is found in host app launch switches.
 + (BOOL)appHasLaunchSwitch:(NSString*)launchSwitch;
@@ -497,10 +504,10 @@
 // Returns YES if custom WebKit frameworks were properly loaded, rather than
 // system frameworks. Always returns YES if the app was not requested to run
 // with custom WebKit frameworks.
-+ (BOOL)isCustomWebKitLoadedIfRequested WARN_UNUSED_RESULT;
++ (BOOL)isCustomWebKitLoadedIfRequested [[nodiscard]];
 
 // Returns whether the mobile version of the websites are requested by default.
-+ (BOOL)isMobileModeByDefault WARN_UNUSED_RESULT;
++ (BOOL)isMobileModeByDefault [[nodiscard]];
 
 // Returns whether the app is configured to, and running in an environment which
 // can, open multiple windows.
@@ -509,8 +516,11 @@
 // Returns whether the ContextMenuActionsRefresh feature is enabled.
 + (BOOL)isContextMenuActionsRefreshEnabled;
 
-// Returns whether the TabGridBulkActions feature is enabled.
-+ (BOOL)isTabGridBulkActionsEnabled;
+// Returns whether the new ContextMenu for web content feature is enabled.
++ (BOOL)isContextMenuInWebViewEnabled;
+
+// Returns whether the NewOverflowMenu feature is enabled.
++ (BOOL)isNewOverflowMenuEnabled;
 
 #pragma mark - Popup Blocking
 

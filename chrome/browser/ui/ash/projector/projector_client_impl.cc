@@ -37,10 +37,6 @@ inline const std::string& GetLocale() {
   return g_browser_process->GetApplicationLocale();
 }
 
-bool ShouldUseWebSpeechFallback() {
-  return !base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption);
-}
-
 }  // namespace
 
 // static
@@ -67,8 +63,7 @@ void ProjectorClientImpl::StartSpeechRecognition() {
   // has been informed that recognition is available.
   // TODO(crbug.com/1165437): Dynamically determine language code.
   DCHECK(OnDeviceSpeechRecognizer::IsOnDeviceSpeechRecognizerAvailable(
-             GetLocale()) ||
-         ShouldUseWebSpeechFallback());
+      GetLocale()));
 
   DCHECK_EQ(speech_recognizer_.get(), nullptr);
   recognizer_status_ = SPEECH_RECOGNIZER_OFF;
@@ -79,8 +74,7 @@ void ProjectorClientImpl::StartSpeechRecognition() {
 }
 
 void ProjectorClientImpl::StopSpeechRecognition() {
-  speech_recognizer_.reset();
-  recognizer_status_ = SPEECH_RECOGNIZER_OFF;
+  speech_recognizer_->Stop();
 }
 
 void ProjectorClientImpl::ShowSelfieCam() {
@@ -120,6 +114,12 @@ void ProjectorClientImpl::OnSpeechRecognitionStateChanged(
   }
 
   recognizer_status_ = new_state;
+}
+
+void ProjectorClientImpl::OnSpeechRecognitionStopped() {
+  speech_recognizer_.reset();
+  recognizer_status_ = SPEECH_RECOGNIZER_OFF;
+  controller_->OnSpeechRecognitionStopped();
 }
 
 bool ProjectorClientImpl::GetDriveFsMountPointPath(
@@ -174,6 +174,7 @@ void ProjectorClientImpl::MinimizeProjectorApp() const {
 }
 
 void ProjectorClientImpl::OnNewScreencastPreconditionChanged(
-    bool can_start) const {
-  ash::ProjectorAppClient::Get()->OnNewScreencastPreconditionChanged(can_start);
+    const ash::NewScreencastPrecondition& precondition) const {
+  ash::ProjectorAppClient::Get()->OnNewScreencastPreconditionChanged(
+      precondition);
 }

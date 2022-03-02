@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -60,9 +61,9 @@
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 #include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "ui/gfx/geometry/point3_f.h"
 
 namespace blink {
 
@@ -294,6 +295,7 @@ void XRSession::MetricsReporter::ReportFeatureUsed(
     case XRSessionFeature::DEPTH:
     case XRSessionFeature::IMAGE_TRACKING:
     case XRSessionFeature::HAND_INPUT:
+    case XRSessionFeature::SECONDARY_VIEWS:
       // Not recording metrics for these features currently.
       break;
   }
@@ -357,7 +359,7 @@ XRSession::XRSession(
   UpdateVisibilityState();
 
   // Clamp to a reasonable min/max size for the default framebuffer scale.
-  default_framebuffer_scale_ =
+  recommended_framebuffer_scale_ =
       base::clamp(device_config->default_framebuffer_scale,
                   kMinDefaultFramebufferScale, kMaxDefaultFramebufferScale);
 
@@ -819,14 +821,14 @@ ScriptPromise XRSession::requestHitTestSource(
 
   device::mojom::blink::XRRayPtr ray_mojo = device::mojom::blink::XRRay::New();
 
-  ray_mojo->origin = ToGfxPoint3F(origin_from_ray.MapPoint({0, 0, 0}));
+  ray_mojo->origin = origin_from_ray.MapPoint({0, 0, 0});
 
   // Zero out the translation of origin_from_ray matrix to correctly map a 3D
   // vector.
   origin_from_ray.Translate3d(-origin_from_ray.M41(), -origin_from_ray.M42(),
                               -origin_from_ray.M43());
 
-  ray_mojo->direction = ToGfxVector3dF(origin_from_ray.MapPoint({0, 0, -1}));
+  ray_mojo->direction = origin_from_ray.MapPoint({0, 0, -1}).OffsetFromOrigin();
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -1360,40 +1362,44 @@ void XRSession::HandleShutdown() {
 
 double XRSession::NativeFramebufferScale() const {
   if (immersive()) {
-    DCHECK(default_framebuffer_scale_);
+    DCHECK(recommended_framebuffer_scale_);
 
-    // Return the inverse of the default scale, since that's what we'll need to
-    // multiply the default size by to get back to the native size.
-    return 1.0 / default_framebuffer_scale_;
+    // Return the inverse of the recommended scale, since that's what we'll need
+    // to multiply the recommended size by to get back to the native size.
+    return 1.0 / recommended_framebuffer_scale_;
   }
   return 1.0;
 }
 
-DoubleSize XRSession::DefaultFramebufferSize() const {
+double XRSession::RecommendedFramebufferScale() const {
+  return recommended_framebuffer_scale_;
+}
+
+gfx::SizeF XRSession::RecommendedFramebufferSize() const {
   if (!immersive()) {
-    return OutputCanvasSize();
+    return gfx::SizeF(OutputCanvasSize());
   }
 
-  double scale = default_framebuffer_scale_;
-  double width = 0;
-  double height = 0;
+  float scale = recommended_framebuffer_scale_;
+  float width = 0;
+  float height = 0;
 
   // For the moment, concatenate all the views into a big strip.
   // Won't scale well for displays that use more than a stereo pair.
   for (const auto& view : pending_views_) {
     width += view->viewport.width();
-    height = std::max(height, static_cast<double>(view->viewport.height()));
+    height = std::max<float>(height, view->viewport.height());
   }
 
-  return DoubleSize(width * scale, height * scale);
+  return gfx::SizeF(width * scale, height * scale);
 }
 
-DoubleSize XRSession::OutputCanvasSize() const {
+gfx::Size XRSession::OutputCanvasSize() const {
   if (!render_state_->output_canvas()) {
-    return DoubleSize();
+    return gfx::Size();
   }
 
-  return DoubleSize(output_width_, output_height_);
+  return gfx::Size(output_width_, output_height_);
 }
 
 void XRSession::OnFocusChanged() {
@@ -2223,6 +2229,10 @@ const HeapVector<Member<XRViewData>>& XRSession::views() {
         views_.clear();
         views_.resize(pending_views_.size());
         create_views = true;
+
+        if (render_state_->baseLayer()) {
+          render_state_->baseLayer()->OnResize();
+        }
       }
 
       for (wtf_size_t i = 0; !create_views && i < pending_views_.size(); ++i) {
@@ -2244,7 +2254,8 @@ const HeapVector<Member<XRViewData>>& XRSession::views() {
     } else {
       if (views_.IsEmpty()) {
         views_.emplace_back(MakeGarbageCollected<XRViewData>(
-            device::mojom::blink::XREye::kNone));
+            device::mojom::blink::XREye::kNone,
+            gfx::Rect(0, 0, output_width_, output_height_)));
       }
 
       float aspect = 1.0f;

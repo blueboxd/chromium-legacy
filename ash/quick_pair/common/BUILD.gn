@@ -23,6 +23,8 @@ component("common") {
     "fast_pair/fast_pair_decoder.h",
     "fast_pair/fast_pair_feature_usage_metrics_logger.cc",
     "fast_pair/fast_pair_feature_usage_metrics_logger.h",
+    "fast_pair/fast_pair_http_result.cc",
+    "fast_pair/fast_pair_http_result.h",
     "fast_pair/fast_pair_metrics.cc",
     "fast_pair/fast_pair_metrics.h",
     "fast_pair/fast_pair_service_data_creator.cc",
@@ -40,10 +42,16 @@ component("common") {
   ]
 
   deps = [
+    "//ash/constants:constants",
     "//ash/services/quick_pair/public/mojom",
     "//base",
     "//chromeos/components/feature_usage",
+    "//components/prefs",
+    "//device/bluetooth",
     "//device/bluetooth/public/cpp",
+    "//net",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
   ]
 }
 
@@ -78,8 +86,13 @@ source_set("unit_tests") {
 
   deps = [
     ":common",
+    ":test_support",
+    "//ash/constants:constants",
     "//base/test:test_support",
     "//chromeos/components/feature_usage",
+    "//components/prefs:test_support",
+    "//device/bluetooth",
+    "//device/bluetooth:mocks",
     "//testing/gtest",
   ]
 }

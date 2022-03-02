@@ -12,13 +12,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/display/screen.h"
 
-std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForEcheApp() {
-  std::unique_ptr<WebApplicationInfo> info =
-      std::make_unique<WebApplicationInfo>();
+std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForEcheApp() {
+  std::unique_ptr<WebAppInstallInfo> info =
+      std::make_unique<WebAppInstallInfo>();
   info->start_url = GURL(ash::eche_app::kChromeUIEcheAppURL);
   info->scope = GURL(ash::eche_app::kChromeUIEcheAppURL);
   // |title| should come from a resource string, but this is the Eche app, and
@@ -59,7 +59,7 @@ EcheSystemAppDelegate::EcheSystemAppDelegate(Profile* profile)
                                     GURL("chrome://eche-app"),
                                     profile) {}
 
-std::unique_ptr<WebApplicationInfo> EcheSystemAppDelegate::GetWebAppInfo()
+std::unique_ptr<WebAppInstallInfo> EcheSystemAppDelegate::GetWebAppInfo()
     const {
   return CreateWebAppInfoForEcheApp();
 }

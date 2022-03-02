@@ -95,7 +95,7 @@ std::string GetUserLastInputMethodId(const AccountId& account_id) {
 
   // Try to use old values.
   PrefService* const local_state = g_browser_process->local_state();
-  const base::DictionaryValue* users_last_input_methods =
+  const base::Value* users_last_input_methods =
       local_state->GetDictionary(::prefs::kUsersLastInputMethod);
 
   if (!users_last_input_methods) {
@@ -187,12 +187,16 @@ std::vector<LocaleItem> FromListValueToLocaleItem(
       continue;
 
     LocaleItem locale_item;
-    dictionary->GetString("value", &locale_item.language_code);
-    dictionary->GetString("title", &locale_item.title);
-    std::string group_name;
-    dictionary->GetString("optionGroupName", &group_name);
-    if (!group_name.empty())
-      locale_item.group_name = group_name;
+    const std::string* language_code = dictionary->FindStringKey("value");
+    if (language_code)
+      locale_item.language_code = *language_code;
+    const std::string* title = dictionary->FindStringKey("title");
+    if (title)
+      locale_item.title = *title;
+    const std::string* group_name =
+        dictionary->FindStringKey("optionGroupName");
+    if (group_name && !group_name->empty())
+      locale_item.group_name = *group_name;
     result.push_back(std::move(locale_item));
   }
   return result;

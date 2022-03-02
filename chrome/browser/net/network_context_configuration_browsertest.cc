@@ -33,6 +33,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -101,7 +102,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -149,9 +150,16 @@ const NetworkContextType kNetworkContextTypes[] = {
     NetworkContextType::kOnDiskAppWithIncognitoProfile,
 };
 
+enum class ForceDiskCache {
+  kDontForce,
+  kForceEnable,
+  kForceDisable,
+};
+
 struct TestCase {
   NetworkServiceState network_service_state;
   NetworkContextType network_context_type;
+  ForceDiskCache force_disk_cache;
 };
 
 // Waits for the network connection type to be the specified value.
@@ -222,6 +230,12 @@ class NetworkContextConfigurationBrowserTest
     // the test server here.
     EXPECT_TRUE(embedded_test_server()->InitializeAndListen());
     EXPECT_TRUE(https_server()->InitializeAndListen());
+
+    if (GetParam().force_disk_cache == ForceDiskCache::kForceEnable) {
+      feature_list_.InitAndEnableFeature(features::kDisableHttpDiskCache);
+    } else if (GetParam().force_disk_cache == ForceDiskCache::kForceDisable) {
+      feature_list_.InitAndDisableFeature(features::kDisableHttpDiskCache);
+    }
   }
 
   // Returns a cacheable response (10 hours) that is some random text.
@@ -547,10 +561,10 @@ class NetworkContextConfigurationBrowserTest
   // |header_value_out| to the value of the specified response header. Returns
   // false if the request fails. If non-null, uses |request| to make the
   // request, after setting its |url| value.
-  bool FetchHeaderEcho(const std::string& header_name,
-                       std::string* header_value_out,
-                       std::unique_ptr<network::ResourceRequest> request =
-                           nullptr) WARN_UNUSED_RESULT {
+  [[nodiscard]] bool FetchHeaderEcho(
+      const std::string& header_name,
+      std::string* header_value_out,
+      std::unique_ptr<network::ResourceRequest> request = nullptr) {
     if (!request)
       request = std::make_unique<network::ResourceRequest>();
     request->url = embedded_test_server()->GetURL(
@@ -1079,7 +1093,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
   simple_loader_helper.WaitForCallback();
 
   // The request should only succeed if there is an on-disk cache.
-  if (GetHttpCacheType() != StorageType::kDisk) {
+  if (GetHttpCacheType() != StorageType::kDisk ||
+      base::FeatureList::IsEnabled(features::kDisableHttpDiskCache)) {
     EXPECT_FALSE(simple_loader_helper.response_body());
   } else {
     DCHECK_NE(GetParam().network_service_state,
@@ -1276,7 +1291,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 }
 
 // Disabled due to flakiness. See crbug.com/1189031.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_UserAgentAndLanguagePrefs DISABLED_UserAgentAndLanguagePrefs
 #else
 #define MAYBE_UserAgentAndLanguagePrefs UserAgentAndLanguagePrefs
@@ -1454,7 +1469,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookiesEnabled) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // TODO(https://crbug.com/880496): Fix and reenable test.
   if (base::mac::IsOS10_11())
     return;
@@ -1482,7 +1497,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 }
 
 // Disabled due to flakiness. See https://crbug.com/1126755.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_PRE_ThirdPartyCookiesBlocked DISABLED_PRE_ThirdPartyCookiesBlocked
 #define MAYBE_ThirdPartyCookiesBlocked DISABLED_ThirdPartyCookiesBlocked
 #else
@@ -1908,8 +1923,14 @@ class NetworkContextConfigurationProxySettingsBrowserTest
   std::unordered_set<std::string> observed_request_urls_;
 };
 
+// Test failure on macOS: crbug.com/1287934
+#if defined(OS_MAC)
+#define MAYBE_MaxConnectionsPerProxy DISABLED_MaxConnectionsPerProxy
+#else
+#define MAYBE_MaxConnectionsPerProxy MaxConnectionsPerProxy
+#endif
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationProxySettingsBrowserTest,
-                       MaxConnectionsPerProxy) {
+                       MAYBE_MaxConnectionsPerProxy) {
   RunMaxConnectionsPerProxyTest();
 }
 
@@ -1947,9 +1968,15 @@ class NetworkContextConfigurationManagedProxySettingsBrowserTest
   }
 };
 
+// crbug.com/1288780: flaky on Mac.
+#if defined(OS_MAC)
+#define MAYBE_MaxConnectionsPerProxy DISABLED_MaxConnectionsPerProxy
+#else
+#define MAYBE_MaxConnectionsPerProxy MaxConnectionsPerProxy
+#endif
 IN_PROC_BROWSER_TEST_P(
     NetworkContextConfigurationManagedProxySettingsBrowserTest,
-    MaxConnectionsPerProxy) {
+    MAYBE_MaxConnectionsPerProxy) {
   RunMaxConnectionsPerProxyTest();
 }
 
@@ -2160,24 +2187,29 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationReportingAndNelBrowserTest,
 // Instantiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is enabled, "/1" if it's
 // enabled and restarted.
-#define TEST_CASES(network_context_type)                           \
-  TestCase({NetworkServiceState::kEnabled, network_context_type}), \
-      TestCase({NetworkServiceState::kRestarted, network_context_type})
+#define TEST_CASES(network_context_type, force_disk_cache)              \
+  TestCase({NetworkServiceState::kEnabled, network_context_type,        \
+            force_disk_cache}),                                         \
+      TestCase({NetworkServiceState::kRestarted, network_context_type,  \
+               force_disk_cache})
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #define INSTANTIATE_EXTENSION_TESTS(TestFixture)                        \
   INSTANTIATE_TEST_SUITE_P(                                             \
       OnDiskApp, TestFixture,                                           \
-      ::testing::Values(TEST_CASES(NetworkContextType::kOnDiskApp)));   \
+      ::testing::Values(TEST_CASES(NetworkContextType::kOnDiskApp,      \
+                                   ForceDiskCache::kDontForce)));       \
                                                                         \
   INSTANTIATE_TEST_SUITE_P(                                             \
       InMemoryApp, TestFixture,                                         \
-      ::testing::Values(TEST_CASES(NetworkContextType::kInMemoryApp))); \
+      ::testing::Values(TEST_CASES(NetworkContextType::kInMemoryApp,    \
+                                   ForceDiskCache::kDontForce)));       \
                                                                         \
   INSTANTIATE_TEST_SUITE_P(                                             \
       OnDiskAppWithIncognitoProfile, TestFixture,                       \
       ::testing::Values(                                                \
-          TEST_CASES(NetworkContextType::kOnDiskAppWithIncognitoProfile)));
+          TEST_CASES(NetworkContextType::kOnDiskAppWithIncognitoProfile,\
+                     ForceDiskCache::kDontForce)));
 #else  // !BUILDFLAG(ENABLE_EXTENSIONS)
 #define INSTANTIATE_EXTENSION_TESTS(TestFixture)
 #endif  // !BUILDFLAG(ENABLE_EXTENSIONS)
@@ -2186,19 +2218,27 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationReportingAndNelBrowserTest,
   INSTANTIATE_EXTENSION_TESTS(TestFixture)                               \
   INSTANTIATE_TEST_SUITE_P(                                              \
       SystemNetworkContext, TestFixture,                                 \
-      ::testing::Values(TEST_CASES(NetworkContextType::kSystem)));       \
+      ::testing::Values(TEST_CASES(NetworkContextType::kSystem,          \
+                                   ForceDiskCache::kDontForce)));        \
                                                                          \
   INSTANTIATE_TEST_SUITE_P(                                              \
       SafeBrowsingNetworkContext, TestFixture,                           \
-      ::testing::Values(TEST_CASES(NetworkContextType::kSafeBrowsing))); \
+      ::testing::Values(TEST_CASES(NetworkContextType::kSafeBrowsing,    \
+                                   ForceDiskCache::kDontForce)));        \
                                                                          \
   INSTANTIATE_TEST_SUITE_P(                                              \
       ProfileMainNetworkContext, TestFixture,                            \
-      ::testing::Values(TEST_CASES(NetworkContextType::kProfile)));      \
+      ::testing::Values(TEST_CASES(NetworkContextType::kProfile,         \
+                                   ForceDiskCache::kDontForce),          \
+                        TEST_CASES(NetworkContextType::kProfile,         \
+                                   ForceDiskCache::kForceEnable),        \
+                        TEST_CASES(NetworkContextType::kProfile,         \
+                                   ForceDiskCache::kForceDisable)));     \
                                                                          \
   INSTANTIATE_TEST_SUITE_P(                                              \
       IncognitoProfileMainNetworkContext, TestFixture,                   \
-      ::testing::Values(TEST_CASES(NetworkContextType::kIncognitoProfile)))
+      ::testing::Values(TEST_CASES(NetworkContextType::kIncognitoProfile,\
+                                   ForceDiskCache::kDontForce)))
 
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(NetworkContextConfigurationBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(

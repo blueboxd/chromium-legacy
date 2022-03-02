@@ -131,10 +131,9 @@ class COMPONENT_EXPORT(CHROMEOS_MLSERVICE) FakeServiceConnectionImpl
       override;
 
   // mojom::Model:
+  void REMOVED_0(mojo::PendingReceiver<mojom::GraphExecutor> receiver,
+                 mojom::Model::REMOVED_0Callback callback) override;
   void CreateGraphExecutor(
-      mojo::PendingReceiver<mojom::GraphExecutor> receiver,
-      mojom::Model::CreateGraphExecutorCallback callback) override;
-  void CreateGraphExecutorWithOptions(
       mojom::GraphExecutorOptionsPtr options,
       mojo::PendingReceiver<mojom::GraphExecutor> receiver,
       mojom::Model::CreateGraphExecutorCallback callback) override;
@@ -280,6 +279,7 @@ class COMPONENT_EXPORT(CHROMEOS_MLSERVICE) FakeServiceConnectionImpl
       mojo::PendingReceiver<mojom::Model> receiver,
       mojom::MachineLearningService::LoadFlatBufferModelCallback callback);
   void HandleCreateGraphExecutorCall(
+      mojom::GraphExecutorOptionsPtr options,
       mojo::PendingReceiver<mojom::GraphExecutor> receiver,
       mojom::Model::CreateGraphExecutorCallback callback);
   void HandleExecuteCall(mojom::GraphExecutor::ExecuteCallback callback);

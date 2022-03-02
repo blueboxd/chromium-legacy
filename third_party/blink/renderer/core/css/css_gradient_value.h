@@ -63,8 +63,8 @@ struct CSSGradientColorStop {
   DISALLOW_NEW();
 
   bool operator==(const CSSGradientColorStop& other) const {
-    return DataEquivalent(color_, other.color_) &&
-           DataEquivalent(offset_, other.offset_);
+    return base::ValuesEquivalent(color_, other.color_) &&
+           base::ValuesEquivalent(offset_, other.offset_);
   }
 
   bool IsHint() const {
@@ -179,6 +179,8 @@ class CSSLinearGradientValue final : public CSSGradientValue {
   CSSLinearGradientValue* ComputedCSSValue(const ComputedStyle&,
                                            bool allow_visited_style) const;
 
+  bool IsUsingCurrentColor() const;
+
   void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
@@ -277,6 +279,8 @@ class CORE_EXPORT CSSRadialGradientValue final : public CSSGradientValue {
   CSSRadialGradientValue* ComputedCSSValue(const ComputedStyle&,
                                            bool allow_visited_style) const;
 
+  bool IsUsingCurrentColor() const;
+
   void TraceAfterDispatch(blink::Visitor*) const;
 
  private:
@@ -322,6 +326,8 @@ class CSSConicGradientValue final : public CSSGradientValue {
 
   CSSConicGradientValue* ComputedCSSValue(const ComputedStyle&,
                                           bool allow_visited_style) const;
+
+  bool IsUsingCurrentColor() const;
 
   void TraceAfterDispatch(blink::Visitor*) const;
 

@@ -77,7 +77,7 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
                       bool user_gesture,
                       bool* was_blocked) override;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   bool ShouldBlockMediaRequest(const GURL& url) override;
 #endif
 
@@ -88,9 +88,6 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
                                   blink::mojom::MediaStreamType type) override;
-  void AdjustPreviewsStateForNavigation(
-      content::WebContents* web_contents,
-      blink::PreviewsState* previews_state) override;
   bool ShouldAllowLazyLoad() override;
 
  private:

@@ -21,10 +21,13 @@
 #include "mojo/public/cpp/system/functions.h"
 #include "net/base/features.h"
 #include "net/base/isolation_info.h"
+#include "net/base/network_isolation_key.h"
+#include "net/base/schemeful_site.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_partition_key.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/cookies/cookie_util.h"
@@ -234,7 +237,9 @@ class RestrictedCookieManagerTest
     : public testing::TestWithParam<mojom::RestrictedCookieManagerRole> {
  public:
   RestrictedCookieManagerTest()
-      : cookie_monster_(nullptr, nullptr /* netlog */),
+      : cookie_monster_(/*store=*/nullptr,
+                        /*net_log=*/nullptr,
+                        kFirstPartySetsEnabled),
         isolation_info_(kDefaultIsolationInfo),
         service_(std::make_unique<RestrictedCookieManager>(
             GetParam(),
@@ -242,7 +247,8 @@ class RestrictedCookieManagerTest
             cookie_settings_,
             kDefaultOrigin,
             isolation_info_,
-            recording_client_.GetRemote())),
+            recording_client_.GetRemote(),
+            kFirstPartySetsEnabled)),
         receiver_(service_.get(),
                   service_remote_.BindNewPipeAndPassReceiver()) {
     sync_service_ =
@@ -366,6 +372,7 @@ class RestrictedCookieManagerTest
                                  kDefaultOrigin,
                                  kDefaultOrigin,
                                  net::SiteForCookies());
+  const bool kFirstPartySetsEnabled = true;
 
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
@@ -384,9 +391,8 @@ class RestrictedCookieManagerTest
 class SamePartyEnabledRestrictedCookieManagerTest
     : public RestrictedCookieManagerTest {
  public:
-  SamePartyEnabledRestrictedCookieManagerTest() {
-    feature_list_.InitAndEnableFeature(net::features::kFirstPartySets);
-
+  SamePartyEnabledRestrictedCookieManagerTest()
+      : first_party_sets_(/*enabled=*/true) {
     first_party_sets_.SetManuallySpecifiedSet(
         "https://example.com,https://member1.com");
     auto cookie_access_delegate = std::make_unique<CookieAccessDelegateImpl>(
@@ -1993,6 +1999,43 @@ TEST_P(PartitionedCookiesRestrictedCookieManagerTest,
     second_listener->WaitForChange();
     ASSERT_THAT(listener->observed_changes(), testing::SizeIs(0));
   }
+}
+
+TEST_P(PartitionedCookiesRestrictedCookieManagerTest, PartitionKeyWithNonce) {
+  const GURL kCookieURL("https://example.com");
+  const GURL kTopFrameURL("https://foo.com");
+  const net::SiteForCookies kSiteForCookies =
+      net::SiteForCookies::FromUrl(kTopFrameURL);
+  const url::Origin kTopFrameOrigin = url::Origin::Create(kTopFrameURL);
+  const base::UnguessableToken kNonce = base::UnguessableToken::Create();
+  const absl::optional<std::set<net::SchemefulSite>> kPartyContextEmpty =
+      std::set<net::SchemefulSite>();
+  const net::IsolationInfo kIsolationInfo = net::IsolationInfo::Create(
+      net::IsolationInfo::RequestType::kMainFrame, kTopFrameOrigin,
+      kTopFrameOrigin, kSiteForCookies, kPartyContextEmpty, &kNonce);
+
+  service_->OverrideIsolationInfoForTesting(kIsolationInfo);
+  EXPECT_TRUE(sync_service_->SetCanonicalCookie(
+      *net::CanonicalCookie::Create(
+          kCookieURL, "__Host-foo=bar; Secure; SameSite=None; Path=/;",
+          base::Time::Now(), absl::nullopt /* server_time */,
+          net::CookiePartitionKey::FromScript()),
+      kCookieURL, kSiteForCookies, kTopFrameOrigin));
+
+  auto options = mojom::CookieManagerGetOptions::New();
+  options->name = "";
+  options->match_type = mojom::CookieMatchType::STARTS_WITH;
+
+  net::CookieList cookies = sync_service_->GetAllForUrl(
+      kCookieURL, kSiteForCookies, kTopFrameOrigin, std::move(options));
+  ASSERT_EQ(1u, cookies.size());
+  EXPECT_TRUE(cookies[0].IsPartitioned());
+  EXPECT_EQ(
+      cookies[0].PartitionKey().value(),
+      net::CookiePartitionKey::FromNetworkIsolationKey(
+          net::NetworkIsolationKey(net::SchemefulSite(kTopFrameURL),
+                                   net::SchemefulSite(kTopFrameURL), &kNonce)));
+  EXPECT_EQ("__Host-foo", cookies[0].Name());
 }
 
 INSTANTIATE_TEST_SUITE_P(

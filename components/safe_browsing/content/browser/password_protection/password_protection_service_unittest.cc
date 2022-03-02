@@ -24,8 +24,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/content/browser/password_protection/mock_password_protection_service.h"
@@ -463,30 +465,25 @@ class PasswordProtectionServiceBaseTest
 
   void CacheInvalidVerdict(ReusedPasswordAccountType password_type) {
     GURL invalid_hostname("http://invalid.com");
-    std::unique_ptr<base::DictionaryValue> verdict_dictionary =
-        base::DictionaryValue::From(content_setting_map_->GetWebsiteSetting(
-            invalid_hostname, GURL(), ContentSettingsType::PASSWORD_PROTECTION,
-            nullptr));
+    base::Value verdict_dictionary = content_setting_map_->GetWebsiteSetting(
+        invalid_hostname, GURL(), ContentSettingsType::PASSWORD_PROTECTION,
+        nullptr);
 
-    if (!verdict_dictionary)
-      verdict_dictionary = std::make_unique<base::DictionaryValue>();
+    if (!verdict_dictionary.is_dict())
+      verdict_dictionary = base::Value(base::Value::Type::DICTIONARY);
 
-    std::unique_ptr<base::DictionaryValue> invalid_verdict_entry =
-        std::make_unique<base::DictionaryValue>();
-    invalid_verdict_entry->SetString("invalid", "invalid_string");
+    base::Value invalid_verdict_entry(base::Value::Type::DICTIONARY);
+    invalid_verdict_entry.SetStringKey("invalid", "invalid_string");
 
-    std::unique_ptr<base::DictionaryValue> invalid_cache_expression_entry =
-        std::make_unique<base::DictionaryValue>();
-    invalid_cache_expression_entry->SetKey(
-        "invalid_cache_expression",
-        base::Value::FromUniquePtrValue(std::move(invalid_verdict_entry)));
-    verdict_dictionary->SetKey(
+    base::Value invalid_cache_expression_entry(base::Value::Type::DICTIONARY);
+    invalid_cache_expression_entry.SetKey("invalid_cache_expression",
+                                          std::move(invalid_verdict_entry));
+    verdict_dictionary.SetKey(
         base::NumberToString(static_cast<std::underlying_type_t<PasswordType>>(
             password_protection_service_
                 ->ConvertReusedPasswordAccountTypeToPasswordType(
                     password_type))),
-        base::Value::FromUniquePtrValue(
-            std::move(invalid_cache_expression_entry)));
+        std::move(invalid_cache_expression_entry));
     content_setting_map_->SetWebsiteSettingDefaultScope(
         invalid_hostname, GURL(), ContentSettingsType::PASSWORD_PROTECTION,
         std::move(verdict_dictionary));
@@ -512,7 +509,7 @@ class PasswordProtectionServiceBaseTest
   }
 
 // Visual features are not supported on Android.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   void VerifyContentAreaSizeCollection(
       const LoginReputationClientRequest& request) {
     bool should_report_content_size =
@@ -934,7 +931,7 @@ TEST_P(PasswordProtectionServiceBaseTest, TestNoRequestSentForAllowlistedURL) {
 }
 
 // crbug.com/1010007: crashes on win
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_TestNoRequestSentIfVerdictAlreadyCached \
   DISABLED_TestNoRequestSentIfVerdictAlreadyCached
 #else
@@ -1235,7 +1232,7 @@ TEST_P(PasswordProtectionServiceBaseTest, VerifyPasswordOnFocusRequestProto) {
   EXPECT_EQ(true, actual_request->frames(1).has_password_field());
   ASSERT_EQ(1, actual_request->frames(1).forms_size());
   EXPECT_EQ(kFormActionUrl, actual_request->frames(1).forms(0).action_url());
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   VerifyContentAreaSizeCollection(*actual_request);
 #endif
 }
@@ -1292,7 +1289,7 @@ TEST_P(PasswordProtectionServiceBaseTest,
   const auto& reuse_event = actual_request->password_reuse_event();
   EXPECT_TRUE(reuse_event.is_chrome_signin_password());
   EXPECT_EQ(0, reuse_event.domains_matching_password_size());
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   VerifyContentAreaSizeCollection(*actual_request);
 #endif
 }
@@ -1332,7 +1329,7 @@ TEST_P(PasswordProtectionServiceBaseTest,
   } else {
     EXPECT_EQ(0, reuse_event.domains_matching_password_size());
   }
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   VerifyContentAreaSizeCollection(*actual_request);
 #endif
 }
@@ -1391,7 +1388,7 @@ TEST_P(PasswordProtectionServiceBaseTest, VerifyShouldShowModalWarning) {
     reused_password_account_type.set_is_account_syncing(false);
 // Currently password reuse warnings are only supported for saved passwords on
 // Android.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
 #else
     EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
@@ -1429,13 +1426,13 @@ TEST_P(PasswordProtectionServiceBaseTest, VerifyShouldShowModalWarning) {
     reused_password_account_type.set_is_account_syncing(true);
 // If kPasswordProtectionForSignedInUsers is disabled, then GMAIL password
 // reuse warnings are only supported on desktop platforms.
-#if defined(OS_ANDROID)
-  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
+#if BUILDFLAG(IS_ANDROID)
+    EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
 #else
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
 #endif
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      reused_password_account_type, LoginReputationClientResponse::PHISHING));
+        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+        reused_password_account_type, LoginReputationClientResponse::PHISHING));
   }
 
   // For a GSUITE account, don't show warning if password protection is set to
@@ -1460,7 +1457,7 @@ TEST_P(PasswordProtectionServiceBaseTest, VerifyShouldShowModalWarning) {
           reused_password_account_type));
 // Currently password reuse warnings are only supported for saved passwords on
 // Android.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
 #else
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
@@ -1471,7 +1468,7 @@ TEST_P(PasswordProtectionServiceBaseTest, VerifyShouldShowModalWarning) {
   // Modal dialog warning is also shown on LOW_REPUTATION verdict.
 // Currently password reuse warnings are only supported for saved passwords on
 // Android.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
 #else
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
@@ -1498,7 +1495,7 @@ TEST_P(PasswordProtectionServiceBaseTest, VerifyShouldShowModalWarning) {
       .WillRepeatedly(Return(PHISHING_REUSE));
 // Currently password reuse warnings are only supported for saved passwords on
 // Android.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
 #else
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
@@ -1543,7 +1540,7 @@ TEST_P(PasswordProtectionServiceBaseTest,
 
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::PRIMARY_ACCOUNT_PASSWORD));
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::OTHER_GAIA_PASSWORD));
 #else
@@ -1581,7 +1578,7 @@ TEST_P(PasswordProtectionServiceBaseTest, TestPingsForAboutBlank) {
 }
 
 // DOM features and visual features are not supported on Android.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 TEST_P(PasswordProtectionServiceBaseTest,
        TestVisualFeaturesPopulatedInOnFocusPing) {
   LoginReputationClientResponse expected_response =

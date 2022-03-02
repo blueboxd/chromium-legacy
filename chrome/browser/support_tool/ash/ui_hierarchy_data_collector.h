@@ -9,8 +9,12 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/support_tool/data_collector.h"
+#include "components/feedback/pii_types.h"
+#include "components/feedback/redaction_tool.h"
 
 struct UIHierarchyData {
   UIHierarchyData(std::vector<std::string> window_titles, std::string data);
@@ -34,6 +38,10 @@ class UiHierarchyDataCollector : public DataCollector {
   UiHierarchyDataCollector();
   ~UiHierarchyDataCollector() override;
 
+  // Removes UI hierarchy window titles from `data` and returns the redacted
+  // version of `data`. Public for testing.
+  static std::string RemoveWindowTitles(const std::string& ui_hierarchy_data);
+
   // Overrides from DataCollector.
   std::string GetName() const override;
 
@@ -42,14 +50,27 @@ class UiHierarchyDataCollector : public DataCollector {
   const PIIMap& GetDetectedPII() override;
 
   void CollectDataAndDetectPII(
-      DataCollectorDoneCallback on_data_collected_callback) override;
+      DataCollectorDoneCallback on_data_collected_callback,
+      scoped_refptr<base::SequencedTaskRunner> task_runner_for_redaction_tool,
+      scoped_refptr<feedback::RedactionToolContainer> redaction_tool_container)
+      override;
 
   void ExportCollectedDataWithPII(
-      std::set<PIIType> pii_types_to_keep,
+      std::set<feedback::PIIType> pii_types_to_keep,
       base::FilePath target_directory,
+      scoped_refptr<base::SequencedTaskRunner> task_runner_for_redaction_tool,
+      scoped_refptr<feedback::RedactionToolContainer> redaction_tool_container,
       DataCollectorDoneCallback on_exported_callback) override;
 
  private:
+  // Creates a "ui_hierarchy" file under `target_directory` and writes
+  // `ui_hierarchy_data` into this file. Tries to scrub PII sensitive data in
+  // `ui_hierarchy_data` when writing to it except the data under PII categories
+  // in `pii_types_to_keep`.
+  static bool WriteOutputFile(std::string ui_hierarchy_data,
+                              base::FilePath target_directory,
+                              std::set<feedback::PIIType> pii_types_to_keep);
+
   // Runs `on_exported_callback` when the data export is done. Returns an error
   // to the callback if `success` is false.
   void OnDataExportDone(DataCollectorDoneCallback on_exported_callback,

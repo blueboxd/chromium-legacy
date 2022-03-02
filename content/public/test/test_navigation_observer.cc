@@ -285,6 +285,7 @@ void TestNavigationObserver::OnDidFinishNavigation(
                               : NAVIGATION_TYPE_UNKNOWN;
   last_nav_entry_id_ =
       NavigationRequest::From(navigation_handle)->nav_entry_id();
+  last_source_site_instance_ = navigation_handle->GetSourceSiteInstance();
 
   // Allow extending classes to fetch data available via navigation_handle.
   NavigationOfInterestDidFinish(navigation_handle);
@@ -320,7 +321,7 @@ bool TestNavigationObserver::DoesNavigationMatchExpectedInitialUrl(
 
   // Find the real URL being navigated to (e.g. stripping the "view-source:"
   // prefix if necessary).
-  GURL expected_url = navigation_request->GetOriginalRequestURL();
+  GURL expected_url = *expected_initial_url_;
   BrowserContext* browser_context = navigation_request->frame_tree_node()
                                         ->navigator()
                                         .controller()

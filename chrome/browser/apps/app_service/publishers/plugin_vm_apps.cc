@@ -26,6 +26,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/permission_utils.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -79,6 +80,7 @@ void SetShowInAppManagement(apps::mojom::App* app, bool installed) {
                                       : apps::mojom::OptionalBool::kFalse;
 }
 
+// TODO(crbug.com/1253250): Remove and use CreatePermissions.
 void PopulatePermissions(apps::mojom::App* app, Profile* profile) {
   for (const PermissionInfo& info : permission_infos) {
     auto permission = apps::mojom::Permission::New();
@@ -91,15 +93,30 @@ void PopulatePermissions(apps::mojom::App* app, Profile* profile) {
   }
 }
 
+apps::Permissions CreatePermissions(Profile* profile) {
+  apps::Permissions permissions;
+  for (const PermissionInfo& info : permission_infos) {
+    permissions.push_back(std::make_unique<apps::Permission>(
+        apps::ConvertMojomPermissionTypeToPermissionType(info.permission),
+        std::make_unique<apps::PermissionValue>(
+            profile->GetPrefs()->GetBoolean(info.pref_name)),
+        /*is_managed=*/false));
+  }
+  return permissions;
+}
+
 std::unique_ptr<apps::App> CreatePluginVmApp(Profile* profile, bool allowed) {
   std::unique_ptr<apps::App> app = apps::AppPublisher::MakeApp(
       apps::AppType::kPluginVm, plugin_vm::kPluginVmShelfAppId,
       allowed ? apps::Readiness::kReady : apps::Readiness::kDisabledByPolicy,
-      l10n_util::GetStringUTF8(IDS_PLUGIN_VM_APP_NAME));
+      l10n_util::GetStringUTF8(IDS_PLUGIN_VM_APP_NAME),
+      apps::InstallReason::kUser, apps::InstallSource::kUnknown);
 
   app->icon_key =
       apps::IconKey(apps::IconKey::kDoesNotChangeOverTime,
                     IDR_LOGO_PLUGIN_VM_DEFAULT_192, apps::IconEffects::kNone);
+
+  app->permissions = CreatePermissions(profile);
 
   // TODO(crbug.com/1253250): Add other fields for the App struct.
   return app;
@@ -135,7 +152,7 @@ PluginVmApps::PluginVmApps(AppServiceProxy* proxy)
   // `PluginVmFeatures::Get()->IsAllowed()` here because we still let the user
   // uninstall Plugin VM when it isn't allowed for some other reasons (e.g.
   // policy).
-  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile_)) {
+  if (!ash::ProfileHelper::IsPrimaryProfile(profile_)) {
     return;
   }
 
@@ -361,14 +378,17 @@ std::unique_ptr<App> PluginVmApps::CreateApp(
   DCHECK_EQ(registration.VmType(), guest_os::GuestOsRegistryService::VmType::
                                        ApplicationList_VmType_PLUGIN_VM);
 
-  std::unique_ptr<App> app =
-      AppPublisher::MakeApp(AppType::kPluginVm, registration.app_id(),
-                            Readiness::kReady, registration.Name());
+  std::unique_ptr<App> app = AppPublisher::MakeApp(
+      AppType::kPluginVm, registration.app_id(), Readiness::kReady,
+      registration.Name(), InstallReason::kUser, apps::InstallSource::kUnknown);
 
   if (generate_new_icon_key) {
     app->icon_key = std::move(
         *icon_key_factory_.CreateIconKey(IconEffects::kCrOsStandardIcon));
   }
+
+  app->last_launch_time = registration.LastLaunchTime();
+  app->install_time = registration.InstallTime();
 
   // TODO(crbug.com/1253250): Add other fields for the App struct.
   return app;
@@ -425,11 +445,16 @@ void PluginVmApps::OnPluginVmConfiguredChanged() {
 }
 
 void PluginVmApps::OnPermissionChanged() {
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = apps::mojom::AppType::kPluginVm;
-  app->app_id = plugin_vm::kPluginVmShelfAppId;
-  PopulatePermissions(app.get(), profile_);
-  PublisherBase::Publish(std::move(app), subscribers_);
+  apps::mojom::AppPtr mojom_app = apps::mojom::App::New();
+  mojom_app->app_type = apps::mojom::AppType::kPluginVm;
+  mojom_app->app_id = plugin_vm::kPluginVmShelfAppId;
+  PopulatePermissions(mojom_app.get(), profile_);
+  PublisherBase::Publish(std::move(mojom_app), subscribers_);
+
+  std::unique_ptr<App> app =
+      std::make_unique<App>(AppType::kPluginVm, plugin_vm::kPluginVmShelfAppId);
+  app->permissions = CreatePermissions(profile_);
+  AppPublisher::Publish(std::move(app));
 }
 
 }  // namespace apps

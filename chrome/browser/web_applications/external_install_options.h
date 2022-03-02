@@ -12,15 +12,15 @@
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace web_app {
 
-using WebApplicationInfoFactory =
-    base::RepeatingCallback<std::unique_ptr<WebApplicationInfo>()>;
+using WebAppInstallInfoFactory =
+    base::RepeatingCallback<std::unique_ptr<WebAppInstallInfo>()>;
 
 enum class ExternalInstallSource;
 
@@ -45,10 +45,13 @@ struct ExternalInstallOptions {
   // their manifest.
   absl::optional<std::string> fallback_app_name;
 
-  // App name in case a placeholder needs to be installed.
-  // placeholder_name takes precedent over fallback_app_name in case both are
+  // App name that replaces the app's real name.
+  // override_name takes precedent over fallback_app_name in case both are
   // present.
-  absl::optional<std::string> placeholder_name;
+  absl::optional<std::string> override_name;
+
+  // URL of an icon that replaces the app's real icons.
+  absl::optional<GURL> override_icon_url;
 
   // If true, a shortcut is added to the Applications folder on macOS, and Start
   // Menu on Linux and Windows and launcher on Chrome OS. If false, we skip
@@ -176,9 +179,9 @@ struct ExternalInstallOptions {
   // |service_worker_registration_url| will not be loaded.
   bool only_use_app_info_factory = false;
 
-  // A factory callback that returns a unique_ptr<WebApplicationInfo> to be used
+  // A factory callback that returns a unique_ptr<WebAppInstallInfo> to be used
   // as the app's installation metadata.
-  WebApplicationInfoFactory app_info_factory;
+  WebAppInstallInfoFactory app_info_factory;
 
   // The type of SystemWebApp, if this app is a System Web App.
   absl::optional<SystemAppType> system_app_type = absl::nullopt;
@@ -190,6 +193,9 @@ struct ExternalInstallOptions {
   // Whether this should be installed on devices without a touch screen with
   // stylus support.
   bool disable_if_touchscreen_with_stylus_not_supported = false;
+
+  // Whether the app should show up in file-open intent and picking surfaces.
+  bool handles_file_open_intents = false;
 };
 
 WebAppInstallParams ConvertExternalInstallOptionsToParams(

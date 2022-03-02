@@ -5,6 +5,7 @@
 module ash.personalization_app.mojom;
 
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "url/mojom/url.mojom";
 
 // This should be kept in sync with |ash::WallpaperLayout|
@@ -61,6 +62,32 @@ struct WallpaperCollection {
     url.mojom.Url? preview;
 };
 
+// Encapsulates metadata for a Google Photos album, which is itself displayed in
+// the UI and from which a user may select a photo as their wallpaper.
+struct GooglePhotosAlbum {
+    // Unique identifier for this album.
+    string id;
+
+    // User-generated album title to be displayed.
+    string title;
+
+    // Number of photos stored within this album.
+    int32 photo_count;
+
+    // URL to the bytes of the album's displayed cover photo.
+    url.mojom.Url preview;
+};
+
+// Represents the server-provided response to a Google Photos albums request.
+struct FetchGooglePhotosAlbumsResponse {
+    // List of non-empty Google Photos albums (absent on error).
+    array<GooglePhotosAlbum>? albums;
+
+    // Token that allows the client to fetch more albums not returned in the
+    // current query (absent if the last of the albums was returned).
+    string? resume_token;
+};
+
 // Represents a single image that can be set as user wallpaper.
 struct WallpaperImage {
     // URL of the image file to be displayed in the UI.
@@ -110,7 +137,8 @@ interface WallpaperObserver {
 
 // Provides APIs to retrieve Wallpaper information. This API is exposed only to
 // the Personalization App (chrome://personalization). It is a mojom wrapper for
-// APIs found in |backdrop_wallpaper.proto|.
+// APIs found in |backdrop_wallpaper.proto| and |WallpaperController| APIs to
+// change the user's wallpaper in Ash.
 interface WallpaperProvider {
     // Called to force the browser window to make the native views transparent
     // so that the user can see wallpaper in fullscreen on their desktop. Safe
@@ -124,12 +152,20 @@ interface WallpaperProvider {
 
     // Fetch a list of WallpaperImage objects from the Backdrop API that can be
     // set as the user's wallpaper. |images| will be null on error.
-    FetchImagesForCollection(string collection_id) => (
-        array<WallpaperImage>? images);
+    FetchImagesForCollection(string collection_id) =>
+        (array<WallpaperImage>? images);
+
+    // Fetch the number of albums the user has created in Google Photos. Albums
+    // with no photo assets will not be returned. On error, |response.albums|
+    // will be absent. |response.resume_token| will be absent unless there are
+    // more results to fetch; |resume_token| will be absent unless this is a
+    // follow-up query to one that indicated there were more results to fetch.
+    FetchGooglePhotosAlbums(string? resume_token) =>
+        (FetchGooglePhotosAlbumsResponse response);
 
     // Fetch the number of photos the user has stored in Google Photos. |count|
     // will be -1 on failure.
-    FetchGooglePhotosCount() => (int64 count);
+    FetchGooglePhotosCount() => (int32 count);
 
     // Fetch a list of FilePath objects from the local file system. |images|
     // will be null on failure.
@@ -175,4 +211,66 @@ interface WallpaperProvider {
     // Cancels the wallpaper preview and reverts to the user wallpaper. Must be
     // called in preview mode.
     CancelPreviewWallpaper();
+};
+
+// Receives information whenever there are theme related changes such as color
+// mode.
+interface ThemeObserver {
+  // Triggered by |ColorModeObserver::OnColorModeChanged|. Retrieves information
+  // whether dark mode is enabled
+  OnColorModeChanged(bool dark_mode_enabled);
+};
+
+// Provides APIs to expose theme settings such dark/light color mode.
+interface ThemeProvider {
+  // Binds a listener to start receiving updates on color mode changes.
+  SetThemeObserver(pending_remote<ThemeObserver> observer);
+
+  // Disables or enables dark color mode.
+  SetColorModePref(bool dark_mode_enabled);
+};
+
+// Contains information about the current user.
+struct UserInfo {
+  // The display email of the user.
+  string email;
+
+  // The display name of the user.
+  string name;
+};
+
+// Receives updated user image when it is changed for the current user.
+interface UserImageObserver {
+  // Triggered by |UserManager::Observer::OnUserImageChanged|.
+  OnUserImageChanged(url.mojom.Url image);
+};
+
+// A default user image stored on the device that can be set as the user's
+// device avatar image.
+struct DefaultUserImage {
+  // A user image is identified by an index.
+  int32 index;
+
+  // The title of the image to display to the user.
+  mojo_base.mojom.String16 title;
+
+  // A url to display the image. Typically |chrome://theme/IDR_LOGIN_DEFAULT_X|.
+  url.mojom.Url url;
+};
+
+// Provides APIs to view information about the current user. This API is exposed
+// only to the Personalization App (chrome://personalization), and is
+// implemented by |PersonalizationAppUserProviderImpl| in chrome.
+interface UserProvider {
+  // Binds an observer for the current user's device image.
+  SetUserImageObserver(pending_remote<UserImageObserver> observer);
+
+  // Return information about the current user.
+  GetUserInfo() => (UserInfo user_info);
+
+  // Returns an array of default user images to choose from.
+  GetDefaultUserImages() => (array<DefaultUserImage> default_user_images);
+
+  // Select one of the default images from the provided default user images.
+  SelectDefaultImage(int32 index);
 };

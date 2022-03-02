@@ -34,6 +34,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -127,6 +128,7 @@ void SearchBoxView::OnTabletModeChanged(bool started) {
   // Search box accessible name may change depending on tablet mode state.
   UpdatePlaceholderTextAndAccessibleName();
   UpdateSearchBoxBorder();
+  UpdateBackgroundColor(GetBackgroundColorForState(current_app_list_state_));
 }
 
 void SearchBoxView::ResetForShow() {
@@ -216,8 +218,9 @@ void SearchBoxView::UpdateModel(bool initiated_by_user) {
 void SearchBoxView::UpdateSearchIcon() {
   const bool search_engine_is_google =
       AppListModelProvider::Get()->search_model()->search_engine_is_google();
-  const gfx::VectorIcon& google_icon =
-      is_search_box_active() ? kGoogleColorIcon : kGoogleBlackIcon;
+  const gfx::VectorIcon& google_icon = is_search_box_active()
+                                           ? vector_icons::kGoogleColorIcon
+                                           : kGoogleBlackIcon;
   const gfx::VectorIcon& icon =
       search_engine_is_google ? google_icon : kSearchEngineNotGoogleIcon;
   SetSearchIconImage(
@@ -442,14 +445,16 @@ void SearchBoxView::UpdateLayout(AppListState target_state,
       gfx::Insets(0, horizontal_spacing, 0, horizontal_right_padding));
   box_layout()->set_between_child_spacing(horizontal_spacing);
   InvalidateLayout();
-  current_app_list_state_ = target_state;
+  UpdateBackground(target_state);
 }
 
 int SearchBoxView::GetSearchBoxBorderCornerRadiusForState(
     AppListState state) const {
   if (state == AppListState::kStateSearchResults && app_list_view_ &&
       !app_list_view_->is_in_drag()) {
-    return kSearchBoxBorderCornerRadiusSearchResult;
+    return features::IsProductivityLauncherEnabled()
+               ? kExpandedSearchBoxCornerRadiusForProductivityLauncher
+               : kSearchBoxBorderCornerRadiusSearchResult;
   }
   return kSearchBoxBorderCornerRadius;
 }

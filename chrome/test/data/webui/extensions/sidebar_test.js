@@ -7,7 +7,7 @@ import {navigation, Page} from 'chrome://extensions/extensions.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {eventToPromise} from '../test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {testVisible} from './test_util.js';
 
@@ -27,6 +27,7 @@ suite(extension_sidebar_tests.suiteName, function() {
   setup(function() {
     document.body.innerHTML = '';
     sidebar = document.createElement('extensions-sidebar');
+    sidebar.enableEnhancedSiteControls = false;
     document.body.appendChild(sidebar);
   });
 
@@ -67,8 +68,16 @@ suite(extension_sidebar_tests.suiteName, function() {
       function(done) {
         const boundTestVisible = testVisible.bind(null, sidebar);
         boundTestVisible('#sections-extensions', true);
+
+        // The site permissions link should not be visible if
+        // enableEnhancedSiteControls is set to false.
+        boundTestVisible('#sections-site-permissions', false);
         boundTestVisible('#sections-shortcuts', true);
         boundTestVisible('#more-extensions', true);
+
+        sidebar.enableEnhancedSiteControls = true;
+        flush();
+        boundTestVisible('#sections-site-permissions', true);
 
         let currentPage;
         navigation.addListener(newPage => {
@@ -80,6 +89,9 @@ suite(extension_sidebar_tests.suiteName, function() {
 
         sidebar.shadowRoot.querySelector('#sections-extensions').click();
         expectDeepEquals(currentPage, {page: Page.LIST});
+
+        sidebar.shadowRoot.querySelector('#sections-site-permissions').click();
+        expectDeepEquals(currentPage, {page: Page.SITE_PERMISSIONS});
 
         // Clicking on the link for the current page should close the dialog.
         sidebar.addEventListener('close-drawer', () => done());

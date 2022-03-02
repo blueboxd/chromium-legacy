@@ -61,6 +61,7 @@ export class Resolution {
 export enum MimeType {
   GIF = 'image/gif',
   JPEG = 'image/jpeg',
+  JSON = 'application/json',
   MP4 = 'video/mp4',
   PDF = 'application/pdf',
 }
@@ -173,6 +174,10 @@ export interface ImageBlob {
   resolution: Resolution;
 }
 
+// The key-value pair of the entries in metadata are stored as key-value of an
+// |Object| type
+export type Metadata = Record<string, unknown>;
+
 export interface PerfInformation {
   hasError?: boolean;
   resolution?: Resolution;
@@ -183,6 +188,38 @@ export interface PerfEntry {
   event: PerfEvent;
   duration: number;
   perfInfo?: PerfInformation;
+}
+
+/**
+ * A proxy to get preview video or stream with notification of when the video
+ * stream is expired.
+ */
+export class PreviewVideo {
+  private expired = false;
+
+  constructor(
+      readonly video: HTMLVideoElement, readonly onExpired: Promise<void>) {
+    (async () => {
+      await this.onExpired;
+      this.expired = true;
+    })();
+  }
+
+  getStream(): MediaStream {
+    return this.video.srcObject as MediaStream;
+  }
+
+  getVideoTrack(): MediaStreamTrack {
+    return this.getStream().getVideoTracks()[0];
+  }
+
+  getVideoSettings(): MediaTrackSettings {
+    return this.getVideoTrack().getSettings();
+  }
+
+  isExpired(): boolean {
+    return this.expired;
+  }
 }
 
 /**

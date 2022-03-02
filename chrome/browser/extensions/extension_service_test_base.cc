@@ -53,6 +53,7 @@
 #include "extensions/common/extensions_client.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
 #endif
 
@@ -153,7 +154,12 @@ ExtensionServiceTestBase::ExtensionServiceTestBase(
 ExtensionServiceTestBase::~ExtensionServiceTestBase() {
   // Why? Because |profile_| has to be destroyed before |at_exit_manager_|, but
   // is declared above it in the class definition since it's protected.
+  // TODO(1269752): Since we're getting rid of at_exit_manager_, perhaps
+  // we don't need this call?
   profile_.reset();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::KioskAppManager::ResetForTesting();
+#endif
 }
 
 ExtensionServiceTestBase::ExtensionServiceInitParams
@@ -250,7 +256,7 @@ void ExtensionServiceTestBase::
 }
 
 size_t ExtensionServiceTestBase::GetPrefKeyCount() {
-  const base::DictionaryValue* dict =
+  const base::Value* dict =
       profile()->GetPrefs()->GetDictionary(pref_names::kExtensions);
   if (!dict) {
     ADD_FAILURE();
@@ -272,8 +278,8 @@ testing::AssertionResult ExtensionServiceTestBase::ValidateBooleanPref(
                                        expected_val ? "true" : "false");
 
   PrefService* prefs = profile()->GetPrefs();
-  const base::DictionaryValue* dict =
-      prefs->GetDictionary(pref_names::kExtensions);
+  const base::DictionaryValue* dict = &base::Value::AsDictionaryValue(
+      *prefs->GetDictionary(pref_names::kExtensions));
   if (!dict) {
     return testing::AssertionFailure()
         << "extension.settings does not exist " << msg;
@@ -306,8 +312,8 @@ void ExtensionServiceTestBase::ValidateIntegerPref(
       base::NumberToString(expected_val).c_str());
 
   PrefService* prefs = profile()->GetPrefs();
-  const base::DictionaryValue* dict =
-      prefs->GetDictionary(pref_names::kExtensions);
+  const base::DictionaryValue* dict = &base::Value::AsDictionaryValue(
+      *prefs->GetDictionary(pref_names::kExtensions));
   ASSERT_TRUE(dict != NULL) << msg;
   const base::DictionaryValue* pref = NULL;
   ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
@@ -323,8 +329,8 @@ void ExtensionServiceTestBase::ValidateStringPref(
                                        extension_id.c_str(), pref_path.c_str(),
                                        expected_val.c_str());
 
-  const base::DictionaryValue* dict =
-      profile()->GetPrefs()->GetDictionary(pref_names::kExtensions);
+  const base::DictionaryValue* dict = &base::Value::AsDictionaryValue(
+      *profile()->GetPrefs()->GetDictionary(pref_names::kExtensions));
   ASSERT_TRUE(dict != NULL) << msg;
   const base::DictionaryValue* pref = NULL;
   std::string manifest_path = extension_id + ".manifest";

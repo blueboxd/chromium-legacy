@@ -13,7 +13,7 @@
 
 namespace app_list {
 
-// Interface for all kinds of rankers. These are ultiamtely owned and called by
+// Interface for all kinds of rankers. Primarily owned and called by
 // SearchController.
 class Ranker {
  public:
@@ -55,6 +55,10 @@ class Ranker {
 
   // Called each time a user removes a result.
   virtual void Remove(ChromeSearchResult* result);
+
+  // Called via callback within SearchControllerImplNew when the burn-in period
+  // has elapsed and before the at-burn-in publish occurs.
+  virtual void OnBurnInPeriodElapsed();
 };
 
 }  // namespace app_list

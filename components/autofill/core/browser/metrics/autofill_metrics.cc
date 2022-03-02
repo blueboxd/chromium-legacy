@@ -523,7 +523,7 @@ const char* GetQualityMetricTypeSuffix(
   switch (metric_type) {
     default:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case AutofillMetrics::TYPE_SUBMISSION:
       return "";
     case AutofillMetrics::TYPE_NO_SUBMISSION:
@@ -2297,6 +2297,11 @@ void AutofillMetrics::LogNumberOfAddressesDeletedForDisuse(
 // static
 void AutofillMetrics::LogAddressSuggestionsCount(size_t num_suggestions) {
   UMA_HISTOGRAM_COUNTS_1M("Autofill.AddressSuggestionsCount", num_suggestions);
+}
+
+// static
+void AutofillMetrics::LogSuggestionClick(SuggestionClickResult value) {
+  base::UmaHistogramEnumeration("Autofill.SuggestionClick", value);
 }
 
 // static

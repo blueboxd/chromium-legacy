@@ -172,7 +172,8 @@ void NeuralStylusPalmDetectionFilter::Filter(
     auto stroke_it = strokes_.find(tracking_id);
 
     if (stroke_it == strokes_.end()) {
-      LOG(DFATAL) << "No stroke found, continue.";
+      // TODO(crbug.com/1256926): Work out why this is hit on long presses.
+      DVLOG(1) << "No stroke found, continue.";
       continue;
     }
 
@@ -220,8 +221,9 @@ void NeuralStylusPalmDetectionFilter::Filter(
       is_palm_.set(slot, IsHeuristicPalmStroke(stroke));
       continue;
     }
-    is_palm_.set(slot, DetectSpuriousStroke(ExtractFeatures(tracking_id),
-                                            tracking_id, 0.0));
+    is_palm_.set(slot,
+                 DetectSpuriousStroke(ExtractFeatures(tracking_id), tracking_id,
+                                      model_->config().output_threshold));
     if (is_palm_.test(slot)) {
       shared_palm_state_->latest_palm_touch_time = time;
     }

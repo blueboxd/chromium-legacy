@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/component_export.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -17,7 +19,7 @@
 
 namespace certificate_transparency {
 
-struct OperatorHistoryEntry {
+struct COMPONENT_EXPORT(CERTIFICATE_TRANSPARENCY) OperatorHistoryEntry {
   // Name of the current operator for the log.
   std::string current_operator_;
   // Vector of previous operators (if any) for the log, represented as pairs of
@@ -37,7 +39,8 @@ struct OperatorHistoryEntry {
 // for the set of known, qualified logs - either through a reliable binary
 // updating mechanism or through out-of-band delivery. See
 // //net/docs/certificate-transparency.md for more details.
-class ChromeCTPolicyEnforcer : public net::CTPolicyEnforcer {
+class COMPONENT_EXPORT(CERTIFICATE_TRANSPARENCY) ChromeCTPolicyEnforcer
+    : public net::CTPolicyEnforcer {
  public:
   // |logs| is a list of Certificate Transparency logs.  Data about each log is
   // needed to apply Chrome's policies. |disqualified_logs| is a map of log ID
@@ -93,6 +96,10 @@ class ChromeCTPolicyEnforcer : public net::CTPolicyEnforcer {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ChromeCTPolicyEnforcerTest,
+                           IsLogDisqualifiedTimestamp);
+  FRIEND_TEST_ALL_PREFIXES(ChromeCTPolicyEnforcerTest,
+                           IsLogDisqualifiedReturnsFalseOnUnknownLog);
   // Returns true if the log identified by |log_id| (the SHA-256 hash of the
   // log's DER-encoded SPKI) has been disqualified, and sets
   // |*disqualification_date| to the date of disqualification. Any SCTs that

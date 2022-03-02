@@ -122,6 +122,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kIntensiveWakeUpThrottling;
 BLINK_COMMON_EXPORT extern const char
     kIntensiveWakeUpThrottling_GracePeriodSeconds_Name[];
+BLINK_COMMON_EXPORT extern const base::Feature kThrottleForegroundTimers;
 
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 BLINK_COMMON_EXPORT extern const base::Feature kWebRtcH264WithOpenH264FFmpeg;
@@ -137,7 +138,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kStorageAccessAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kTextFragmentAnchor;
 BLINK_COMMON_EXPORT extern const base::Feature kCssSelectorFragmentAnchor;
 BLINK_COMMON_EXPORT extern const base::Feature kFontAccess;
-BLINK_COMMON_EXPORT extern const base::Feature kFontAccessPersistent;
 BLINK_COMMON_EXPORT extern const base::Feature kComputePressure;
 BLINK_COMMON_EXPORT extern const base::Feature kFileHandlingAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kFileHandlingIcons;
@@ -165,7 +165,7 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<ForceDarkInversionMethod>
 BLINK_COMMON_EXPORT extern const base::FeatureParam<ForceDarkImageBehavior>
     kForceDarkImageBehaviorParam;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
-    kForceDarkTextLightnessThresholdParam;
+    kForceDarkForegroundLightnessThresholdParam;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kForceDarkBackgroundLightnessThresholdParam;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<
@@ -190,10 +190,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 BLINK_COMMON_EXPORT extern const base::Feature kBackfaceVisibilityInterop;
 
-BLINK_COMMON_EXPORT extern const base::Feature kSubresourceRedirect;
-
-BLINK_COMMON_EXPORT extern const base::Feature kSubresourceRedirectSrcVideo;
-
 BLINK_COMMON_EXPORT extern const base::Feature kSetLowPriorityForBeacon;
 
 BLINK_COMMON_EXPORT extern const base::Feature kCacheStorageCodeCacheHintHeader;
@@ -209,6 +205,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kLowLatencyWebGLSwapChain;
 BLINK_COMMON_EXPORT extern const base::Feature kDawn2dCanvas;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebviewAccelerateSmallCanvases;
+
+BLINK_COMMON_EXPORT extern const base::Feature kSoftwareCanvas2DOnReadback;
 
 BLINK_COMMON_EXPORT extern const base::Feature kDiscardCodeCacheAfterFirstUse;
 
@@ -298,6 +296,8 @@ extern const char
     kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[];
 
 BLINK_COMMON_EXPORT extern const base::Feature kCompressParkableStrings;
+BLINK_COMMON_EXPORT bool ParkableStringsUseSnappy();
+BLINK_COMMON_EXPORT extern const base::Feature kUseSnappyForParkableStrings;
 BLINK_COMMON_EXPORT bool IsParkableStringsToDiskEnabled();
 BLINK_COMMON_EXPORT extern const base::Feature kDelayFirstParkingOfStrings;
 
@@ -464,9 +464,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kDesktopPWAsSubApps;
 // inspector issue anyway.
 BLINK_COMMON_EXPORT extern const base::Feature kCORSErrorsIssueOnly;
 
-// Synchronously load web fonts inlined as data urls. See crbug.com/1236283
-BLINK_COMMON_EXPORT extern const base::Feature kSyncLoadDataUrlFonts;
-
 // Makes Persistent quota the same as Temporary quota.
 BLINK_COMMON_EXPORT
 extern const base::Feature kPersistentQuotaIsTemporaryQuota;
@@ -503,6 +500,14 @@ extern const base::FeatureParam<base::TimeDelta> kHttpRttThreshold;
 // `kDelayLowPriorityRequestsAccordingToNetworkState` is enabled.
 BLINK_COMMON_EXPORT
 extern const base::FeatureParam<double> kCostReductionOfMultiplexedRequests;
+
+// If enabled, the major version number returned by Chrome will be locked at
+// 99. The minor version number returned by Chrome will be forced to the
+// value of the major version number. The purpose of this
+// feature is a back up plan for if the major version moving from
+// two to three digits breaks unexpected things.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kForceMajorVersionInMinorPositionInUserAgent;
 
 // If enabled, the minor version number returned by Chrome will be forced to
 // 100.  This feature is only applicable for M96-M99 and will be removed after
@@ -581,6 +586,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kPrefetchAndroidFonts;
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kLazyInitializeTimeZoneController;
+
+BLINK_COMMON_EXPORT extern const base::Feature kCompositedCaret;
 
 }  // namespace features
 }  // namespace blink

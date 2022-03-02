@@ -20,12 +20,12 @@
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/test/browser_test.h"
@@ -77,7 +77,7 @@ class TwoClientWebAppsBMOSyncTest : public WebAppsSyncTestBase {
   AppId InstallDummyAppAndWaitForSync(const GURL& url,
                                       Profile* profile1,
                                       Profile* profile2) {
-    WebApplicationInfo info = WebApplicationInfo();
+    WebAppInstallInfo info = WebAppInstallInfo();
     info.title = base::UTF8ToUTF16(url.spec());
     info.start_url = url;
     AppId dummy_app_id = InstallApp(info, profile1);
@@ -123,12 +123,12 @@ class TwoClientWebAppsBMOSyncTest : public WebAppsSyncTestBase {
     return app_id;
   }
 
-  AppId InstallApp(const WebApplicationInfo& info, Profile* profile) {
+  AppId InstallApp(const WebAppInstallInfo& info, Profile* profile) {
     return InstallApp(info, profile,
                       webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON);
   }
 
-  AppId InstallApp(const WebApplicationInfo& info,
+  AppId InstallApp(const WebAppInstallInfo& info,
                    Profile* profile,
                    webapps::WebappInstallSource source) {
     DCHECK(info.start_url.is_valid());
@@ -139,7 +139,7 @@ class TwoClientWebAppsBMOSyncTest : public WebAppsSyncTestBase {
     WebAppProvider::GetForTest(profile)
         ->install_manager()
         .InstallWebAppFromInfo(
-            std::make_unique<WebApplicationInfo>(info),
+            std::make_unique<WebAppInstallInfo>(info),
             /*overwrite_existing_manifest_fields=*/true,
             ForInstallableSite::kYes, source,
             base::BindLambdaForTesting(
@@ -215,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
 IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
                        SyncDoubleInstallationDifferentNames) {
   ASSERT_TRUE(SetupClients());
-  WebApplicationInfo info;
+  WebAppInstallInfo info;
   info.title = u"Test name";
   info.start_url = GURL("http://www.chromium.org/path");
 
@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
 }
 
 // Flaky, see crbug.com/1126404.
-#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_SyncDoubleInstallationDifferentUserDisplayMode \
   DISABLED_SyncDoubleInstallationDifferentUserDisplayMode
 #else
@@ -256,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
   ASSERT_TRUE(SetupClients());
   ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
 
-  WebApplicationInfo info;
+  WebAppInstallInfo info;
   info.title = u"Test name";
   info.start_url = GURL("http://www.chromium.org/path");
   info.user_display_mode = DisplayMode::kStandalone;
@@ -319,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, DisplayMode) {
 
 // Although the logic is allowed to be racy, the profiles should still end up
 // with the same web app ids.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Flaky on windows, https://crbug.com/1111533
 #define MAYBE_DoubleInstallWithUninstall DISABLED_DoubleInstallWithUninstall
 #else
@@ -535,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, AppSortingFixCollisions) {
 }
 
 // Flaky on Linux TSan (crbug.com/1108172).
-#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
     defined(THREAD_SANITIZER)
 #define MAYBE_UninstallSynced DISABLED_UninstallSynced
 #else
@@ -614,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, NoShortcutsCreatedOnSync) {
   EXPECT_EQ(
       1u, GetOsIntegrationManager(GetProfile(0)).num_create_shortcuts_calls());
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  auto last_options =
+  absl::optional<InstallOsHooksOptions> last_options =
       GetOsIntegrationManager(GetProfile(1)).get_last_install_options();
   EXPECT_TRUE(last_options.has_value());
   OsHooksOptions expected_os_hook_requests;

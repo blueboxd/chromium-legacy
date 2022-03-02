@@ -14,6 +14,7 @@
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/trace_event/base_tracing.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace sequence_manager {
@@ -232,7 +233,7 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
   sequence_->RemoveAllCanceledDelayedTasksFromFront(&lazy_now);
   TimeTicks next_task_time = sequence_->GetNextTaskTime(&lazy_now);
   // The OnSystemIdle callback allows the TimeDomains to advance virtual time
-  // in which case we now have immediate word to do.
+  // in which case we now have immediate work to do.
   if (next_task_time.is_null() || sequence_->OnSystemIdle()) {
     // The next task needs to run immediately, post a continuation if
     // another thread didn't get there first.
@@ -336,17 +337,17 @@ MessagePump* ThreadControllerImpl::GetBoundMessagePump() const {
   return nullptr;
 }
 
-#if defined(OS_IOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_ANDROID)
 void ThreadControllerImpl::AttachToMessagePump() {
   NOTREACHED();
 }
-#endif  // OS_IOS || OS_ANDROID
+#endif  // BUILDFLAG(IS_IOS) || BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 void ThreadControllerImpl::DetachFromMessagePump() {
   NOTREACHED();
 }
-#endif  // OS_IOS
+#endif  // BUILDFLAG(IS_IOS)
 
 void ThreadControllerImpl::PrioritizeYieldingToNative(base::TimeTicks) {
   NOTREACHED();

@@ -25,7 +25,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/string_resource.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "v8/include/v8.h"
 
@@ -36,7 +36,7 @@ namespace {
 // Web platform tests test ReadableStream more thoroughly from scripts.
 class ReadableStreamTest : public testing::Test {
  public:
-  ReadableStreamTest() {}
+  ReadableStreamTest() = default;
 
   absl::optional<String> ReadAll(V8TestingScope& scope,
                                  ReadableStream* stream) {
@@ -552,7 +552,7 @@ TEST_F(ReadableStreamTest, GarbageCollectJavaScriptUnderlyingSource) {
 TEST_F(ReadableStreamTest, GarbageCollectCPlusPlusUnderlyingSource) {
   class NoopUnderlyingSource : public UnderlyingSourceBase {
    public:
-    NoopUnderlyingSource(ScriptState* script_state)
+    explicit NoopUnderlyingSource(ScriptState* script_state)
         : UnderlyingSourceBase(script_state) {}
   };
 

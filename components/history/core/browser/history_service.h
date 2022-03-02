@@ -113,7 +113,7 @@ class HistoryService : public KeyedService {
   // Returns true if the backend has finished loading.
   bool backend_loaded() const { return backend_loaded_; }
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
   // Causes the history backend to commit any in-progress transactions. Called
   // when the application is being backgrounded.
   void HandleBackgrounding();
@@ -359,7 +359,7 @@ class HistoryService : public KeyedService {
   // time range [`begin_time`, `end_time`). If the given host has not been
   // visited in the given time range, the callback will be called with a null
   // base::Time.
-  base::CancelableTaskTracker::TaskId GetLastVisitToHost(
+  virtual base::CancelableTaskTracker::TaskId GetLastVisitToHost(
       const std::string& host,
       base::Time begin_time,
       base::Time end_time,
@@ -587,8 +587,8 @@ class HistoryService : public KeyedService {
   // Add a callback to the list. The callback will remain registered until the
   // returned subscription is destroyed. The subscription must be destroyed
   // before HistoryService is destroyed.
-  base::CallbackListSubscription AddFaviconsChangedCallback(
-      const FaviconsChangedCallback& callback) WARN_UNUSED_RESULT;
+  [[nodiscard]] base::CallbackListSubscription AddFaviconsChangedCallback(
+      const FaviconsChangedCallback& callback);
 
   // Testing -------------------------------------------------------------------
 

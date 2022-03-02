@@ -23,9 +23,11 @@
 
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "build/build_config.h"
 #include "client/annotation.h"
 #include "client/annotation_list.h"
 #include "client/crash_report_database.h"
+#include "client/crashpad_info.h"
 #include "client/simulate_crash.h"
 #include "gtest/gtest.h"
 #include "snapshot/annotation_snapshot.h"
@@ -49,7 +51,7 @@
 #include "util/posix/signals.h"
 #include "util/thread/thread.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include <android/set_abort_message.h>
 #include "dlfcn_internal.h"
 
@@ -73,12 +75,13 @@ struct StartHandlerForSelfTestOptions {
   bool set_first_chance_handler;
   bool crash_non_main_thread;
   bool client_uses_signals;
+  bool gather_indirectly_referenced_memory;
   CrashType crash_type;
 };
 
 class StartHandlerForSelfTest
     : public testing::TestWithParam<
-          std::tuple<bool, bool, bool, bool, CrashType>> {
+          std::tuple<bool, bool, bool, bool, bool, CrashType>> {
  public:
   StartHandlerForSelfTest() = default;
 
@@ -88,10 +91,14 @@ class StartHandlerForSelfTest
   ~StartHandlerForSelfTest() = default;
 
   void SetUp() override {
+    // MSAN requires that padding bytes have been initialized for structs that
+    // are written to files.
+    memset(&options_, 0, sizeof(options_));
     std::tie(options_.start_handler_at_crash,
              options_.set_first_chance_handler,
              options_.crash_non_main_thread,
              options_.client_uses_signals,
+             options_.gather_indirectly_referenced_memory,
              options_.crash_type) = GetParam();
   }
 
@@ -134,7 +141,7 @@ constexpr char kTestAnnotationValue[] = "value_of_annotation";
 constexpr char kTestAttachmentName[] = "test_attachment";
 constexpr char kTestAttachmentContent[] = "attachment_content";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 constexpr char kTestAbortMessage[] = "test abort message";
 #endif
 
@@ -147,7 +154,8 @@ void ValidateAttachment(const CrashReportDatabase::UploadReport* report) {
             0);
 }
 
-void ValidateExtraMemory(const ProcessSnapshotMinidump& minidump) {
+void ValidateExtraMemory(const StartHandlerForSelfTestOptions& options,
+                         const ProcessSnapshotMinidump& minidump) {
   // Verify that if we have an exception, then the code around the instruction
   // pointer is included in the extra memory.
   const ExceptionSnapshot* exception = minidump.Exception();
@@ -164,14 +172,15 @@ void ValidateExtraMemory(const ProcessSnapshotMinidump& minidump) {
       break;
     }
   }
-  EXPECT_TRUE(pc_found);
+  EXPECT_EQ(pc_found, options.gather_indirectly_referenced_memory);
 }
 
-void ValidateDump(const CrashReportDatabase::UploadReport* report) {
+void ValidateDump(const StartHandlerForSelfTestOptions& options,
+                  const CrashReportDatabase::UploadReport* report) {
   ProcessSnapshotMinidump minidump_snapshot;
   ASSERT_TRUE(minidump_snapshot.Initialize(report->Reader()));
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // This part of the test requires Q. The API level on Q devices will be 28
   // until the API is finalized, so we can't check API level yet. For now, test
   // for the presence of a libc symbol which was introduced in Q.
@@ -184,7 +193,7 @@ void ValidateDump(const CrashReportDatabase::UploadReport* report) {
 #endif
   ValidateAttachment(report);
 
-  ValidateExtraMemory(minidump_snapshot);
+  ValidateExtraMemory(options, minidump_snapshot);
 
   for (const ModuleSnapshot* module : minidump_snapshot.Modules()) {
     for (const AnnotationSnapshot& annotation : module->AnnotationObjects()) {
@@ -330,6 +339,11 @@ CRASHPAD_CHILD_TEST_MAIN(StartHandlerForSelfTestChild) {
         client_handler, SA_ONSTACK, &old_actions));
   }
 
+  if (options.gather_indirectly_referenced_memory) {
+    CrashpadInfo::GetCrashpadInfo()->set_gather_indirectly_referenced_memory(
+        TriState::kEnabled, 1024 * 1024 * 4);
+  }
+
   base::FilePath handler_path = TestPaths::Executable().DirName().Append(
       FILE_PATH_LITERAL("crashpad_handler"));
 
@@ -350,7 +364,7 @@ CRASHPAD_CHILD_TEST_MAIN(StartHandlerForSelfTestChild) {
     return EXIT_FAILURE;
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (android_set_abort_message) {
     android_set_abort_message(kTestAbortMessage);
   }
@@ -442,7 +456,7 @@ class StartHandlerForSelfInChildTest : public MultiprocessExec {
     std::unique_ptr<const CrashReportDatabase::UploadReport> report;
     ASSERT_EQ(database->GetReportForUploading(reports[0].uuid, &report),
               CrashReportDatabase::kNoError);
-    ValidateDump(report.get());
+    ValidateDump(options_, report.get());
   }
 
   StartHandlerForSelfTestOptions options_;
@@ -468,6 +482,7 @@ INSTANTIATE_TEST_SUITE_P(
     StartHandlerForSelfTestSuite,
     StartHandlerForSelfTest,
     testing::Combine(testing::Bool(),
+                     testing::Bool(),
                      testing::Bool(),
                      testing::Bool(),
                      testing::Bool(),

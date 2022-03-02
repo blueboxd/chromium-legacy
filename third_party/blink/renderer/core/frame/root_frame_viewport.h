@@ -91,7 +91,6 @@ class CORE_EXPORT RootFrameViewport final
   bool UserInputScrollable(ScrollbarOrientation) const override;
   bool ShouldPlaceVerticalScrollbarOnLeft() const override;
   void ScrollControlWasSetNeedsPaintInvalidation() override;
-  cc::Layer* LayerForScrolling() const override;
   cc::Layer* LayerForHorizontalScrollbar() const override;
   cc::Layer* LayerForVerticalScrollbar() const override;
   cc::Layer* LayerForScrollCorner() const override;
@@ -115,9 +114,9 @@ class CORE_EXPORT RootFrameViewport final
   mojom::blink::ColorScheme UsedColorScheme() const override;
   void ClearScrollableArea() override;
   LayoutBox* GetLayoutBox() const override;
-  FloatQuad LocalToVisibleContentQuad(const FloatQuad&,
-                                      const LayoutObject*,
-                                      unsigned = 0) const final;
+  gfx::QuadF LocalToVisibleContentQuad(const gfx::QuadF&,
+                                       const LayoutObject*,
+                                       unsigned = 0) const final;
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final;
   ScrollbarTheme& GetPageScrollbarTheme() const override;
 

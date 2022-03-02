@@ -143,6 +143,7 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_scoped_page_pauser.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -160,18 +161,18 @@
 #include "ui/display/display_switches.h"
 #include "v8/include/v8-extension.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include <cpu-features.h>
 #include "content/renderer/media/android/stream_texture_factory.h"
 #include "media/base/android/media_codec_util.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
 #include "content/renderer/theme_helper_mac.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <objbase.h>
 #include <windows.h>
 #include "content/renderer/media/win/dcomp_texture_factory.h"
@@ -186,7 +187,7 @@
 #include "mojo/public/cpp/bindings/message_dumper.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include <malloc/malloc.h>
 #else
 #include <malloc.h>
@@ -592,7 +593,7 @@ void RenderThreadImpl::Init() {
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // On Mac and Android Java UI, the select popups are rendered by the browser.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // When UseCommonSelectPopup is enabled, the internal popup menu should be
   // used.
   if (!features::IsUseCommonSelectPopupEnabled())
@@ -670,9 +671,9 @@ void RenderThreadImpl::Init() {
   } else if (command_line.HasSwitch(switches::kEnableLCDText)) {
     is_lcd_text_enabled_ = true;
   } else {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     is_lcd_text_enabled_ = false;
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
     is_lcd_text_enabled_ = IsSubpixelAntialiasingAvailable();
 #else
     is_lcd_text_enabled_ = true;
@@ -701,7 +702,7 @@ void RenderThreadImpl::Init() {
   DCHECK(parsed_num_raster_threads) << string_value;
   DCHECK_GT(num_raster_threads, 0);
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   categorized_worker_pool_->SetBackgroundingCallback(
       main_thread_scheduler_->DefaultTaskRunner(),
       base::BindOnce(
@@ -724,7 +725,7 @@ void RenderThreadImpl::Init() {
   base::DiscardableMemoryAllocator::SetInstance(
       discardable_memory_allocator_.get());
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(
           blink::features::kBlinkCompositorUseDisplayThreadPriority)) {
     render_message_filter()->SetThreadPriority(
@@ -738,7 +739,8 @@ void RenderThreadImpl::Init() {
     BindHostReceiver(compositing_mode_reporter_.BindNewPipeAndPassReceiver());
 
     compositing_mode_reporter_->AddCompositingModeWatcher(
-        compositing_mode_watcher_receiver_.BindNewPipeAndPassRemote());
+        compositing_mode_watcher_receiver_.BindNewPipeAndPassRemote(
+            main_thread_scheduler_->CompositorTaskRunner()));
   }
 
   variations_observer_ = std::make_unique<VariationsRenderThreadObserver>();
@@ -1057,45 +1059,44 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 
   const bool enable_video_decode_accelerator =
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
       base::FeatureList::IsEnabled(media::kVaapiVideoDecodeLinux) &&
 #else
       !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode) &&
-#endif  // defined(OS_LINUX)
+#endif  // BUILDFLAG(IS_LINUX)
       (gpu_channel_host->gpu_feature_info()
            .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] ==
        gpu::kGpuFeatureStatusEnabled);
 
   const bool enable_video_encode_accelerator =
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
       base::FeatureList::IsEnabled(media::kVaapiVideoEncodeLinux) &&
 #else
       !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoEncode) &&
-#endif  // defined(OS_LINUX)
+#endif  // BUILDFLAG(IS_LINUX)
       (gpu_channel_host->gpu_feature_info()
            .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE] ==
        gpu::kGpuFeatureStatusEnabled);
 
   const bool enable_gpu_memory_buffers =
       !is_gpu_compositing_disabled_ &&
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
       !cmd_line->HasSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
 #else
       cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames);
-#endif  // defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS) ||
-        // defined(OS_WIN)
+#endif
   const bool enable_media_stream_gpu_memory_buffers =
       enable_gpu_memory_buffers &&
       base::FeatureList::IsEnabled(
           features::kWebRtcUseGpuMemoryBufferVideoFrames);
   bool enable_video_gpu_memory_buffers = enable_gpu_memory_buffers;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   enable_video_gpu_memory_buffers =
       enable_video_gpu_memory_buffers &&
       (cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames) ||
        gpu_channel_host->gpu_info().overlay_info.supports_overlays);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   mojo::PendingRemote<media::mojom::InterfaceFactory> interface_factory;
   BindHostReceiver(interface_factory.InitWithNewPipeAndPassReceiver());
@@ -1217,7 +1218,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
   return shared_main_thread_contexts_;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 scoped_refptr<StreamTextureFactory> RenderThreadImpl::GetStreamTexureFactory() {
   DCHECK(IsMainThread());
   if (!stream_texture_factory_ || stream_texture_factory_->IsLost()) {
@@ -1234,9 +1235,9 @@ scoped_refptr<StreamTextureFactory> RenderThreadImpl::GetStreamTexureFactory() {
 bool RenderThreadImpl::EnableStreamTextureCopy() {
   return GetContentClient()->UsingSynchronousCompositing();
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 scoped_refptr<DCOMPTextureFactory> RenderThreadImpl::GetDCOMPTextureFactory() {
   DCHECK(IsMainThread());
   if (!dcomp_texture_factory_.get() || dcomp_texture_factory_->IsLost()) {
@@ -1250,7 +1251,7 @@ scoped_refptr<DCOMPTextureFactory> RenderThreadImpl::GetDCOMPTextureFactory() {
   }
   return dcomp_texture_factory_;
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 base::WaitableEvent* RenderThreadImpl::GetShutdownEvent() {
   return ChildProcess::current()->GetShutDownEvent();
@@ -1672,7 +1673,7 @@ void RenderThreadImpl::OnNetworkQualityChanged(
 }
 
 void RenderThreadImpl::SetWebKitSharedTimersSuspended(bool suspend) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (suspend) {
     main_thread_scheduler_->PauseTimersForAndroidWebView();
   } else {
@@ -1706,7 +1707,7 @@ void RenderThreadImpl::SetCorsExemptHeaderList(
 
 void RenderThreadImpl::UpdateScrollbarTheme(
     mojom::UpdateScrollbarThemeParamsPtr params) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   blink::WebScrollbarTheme::UpdateScrollbarsWithNSDefaults(
       params->has_initial_button_delay
           ? absl::make_optional(params->initial_button_delay)
@@ -1727,7 +1728,7 @@ void RenderThreadImpl::OnSystemColorsChanged(
     int32_t aqua_color_variant,
     const std::string& highlight_text_color,
     const std::string& highlight_color) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   if (!IsSingleProcess()) {
     // The purpose of this function is to send an IPC to the renderer notifying
     // it that the browser received an NSNotificationCenter notification, which
@@ -1747,10 +1748,26 @@ void RenderThreadImpl::OnSystemColorsChanged(
 
 void RenderThreadImpl::UpdateSystemColorInfo(
     mojom::UpdateSystemColorInfoParamsPtr params) {
+  if (blink_platform_impl_->ThemeEngine()->UpdateColorProviders(
+          params->light_colors, params->dark_colors)) {
+    // Notify blink that the global ColorProvider instances for this renderer
+    // have changed. These color providers are only used to paint native
+    // controls and only require us to invalidate paint for local frames in this
+    // renderer.
+    blink::ColorProvidersChanged();
+  }
+
   bool did_system_color_info_change =
       ui::NativeTheme::GetInstanceForWeb()->UpdateSystemColorInfo(
           params->is_dark_mode, params->forced_colors, params->colors);
+
   if (did_system_color_info_change) {
+    // Notify blink of system color info changes. These give blink the
+    // opportunity to update internal state to reflect the NativeTheme's color
+    // scheme. These will also prompt blink to invalidate and recalculate styles
+    // for elements that rely on system colors, such as those leveraging the
+    // forced colors media feature. These can affect CSS styles and thus require
+    // action beyond simply invalidating paint on local frames.
     blink::SystemColorsChanged();
     blink::ColorSchemeChanged();
   }
@@ -1791,7 +1808,7 @@ RenderThreadImpl::GetMediaThreadTaskRunner() {
   DCHECK(main_thread_runner()->BelongsToCurrentThread());
   if (!media_thread_) {
     media_thread_ = std::make_unique<base::Thread>("Media");
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
     // Start IO thread on Fuchsia to make that thread usable for FIDL.
     base::Thread::Options options(base::MessagePumpType::IO, 0);
 #else

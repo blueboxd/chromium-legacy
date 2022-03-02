@@ -59,8 +59,11 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
 
  private:
   friend class ProfilePickerHandlerTest;
+  friend class ProfilePickerHandlerInUserProfileTest;
   friend class ProfilePickerCreationFlowBrowserTest;
   friend class StartupBrowserCreatorPickerInfobarTest;
+  FRIEND_TEST_ALL_PREFIXES(ProfilePickerHandlerInUserProfileTest,
+                           HandleExtendedAccountInformation);
   FRIEND_TEST_ALL_PREFIXES(ProfilePickerCreationFlowBrowserTest,
                            CloseBrowserBeforeCreatingNewProfile);
   FRIEND_TEST_ALL_PREFIXES(
@@ -100,8 +103,7 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
                                    profiles::ProfileCategoryStats result);
   void OnSwitchToProfileComplete(bool new_profile,
                                  bool open_settings,
-                                 Profile* profile,
-                                 Profile::CreateStatus profile_create_status);
+                                 Profile* profile);
   void OnProfileCreated(absl::optional<SkColor> profile_color,
                         bool create_shortcut,
                         Profile* profile,
@@ -182,6 +184,11 @@ class ProfilePickerHandler : public content::WebUIMessageHandler,
   // Creation time of the handler, to measure performance on startup. Only set
   // when the picker is shown on startup.
   base::TimeTicks creation_time_on_startup_;
+
+  // Time when the user picked a profile to open, to measure browser startup
+  // performance. Only set when the picker is shown on startup.
+  base::TimeTicks profile_picked_time_on_startup_;
+
   bool main_view_initialized_ = false;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

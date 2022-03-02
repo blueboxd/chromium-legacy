@@ -356,6 +356,9 @@ int KeywordScoreForSufficientlyCompleteMatch();
 // Returns true if the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
 
+// Returns true if the fuzzy URL suggestions feature is enabled.
+bool IsFuzzyUrlSuggestionsEnabled();
+
 // Returns true if the first batch of Pedals on Android is enabled.
 bool IsPedalsAndroidBatch1Enabled();
 
@@ -373,10 +376,6 @@ bool IsPedalsBatch3NonEnglishEnabled();
 // Returns true if the Pedals synonyms should be loaded from the translation
 // console.
 bool IsPedalsTranslationConsoleEnabled();
-
-// Returns true if the keyword button and suggestion button row features are
-// enabled.
-bool IsKeywordSearchButtonEnabled();
 
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
@@ -401,6 +400,10 @@ bool ShouldDisableCGIParamMatching();
 // If true, enables a third category on the manage search engines page for
 // active search engines.
 bool IsActiveSearchEnginesEnabled();
+
+// If true, enables a "starter pack" of @history, @bookmarks, and @settings
+// scopes for Site Search.
+bool IsSiteSearchStarterPackEnabled();
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
@@ -552,9 +555,20 @@ extern const base::FeatureParam<int>
     kShortBookmarkSuggestionsByTotalInputLengthThreshold;
 
 // Zero Suggest
+// Indicates whether the user is in the counterfactual group in the experiment
+// for prefetching zero prefix suggestions on the NTP. Users in the
+// counterfactual group issue a follow-up non-cacheable request if the response
+// is loaded from the HTTP cache in order to determine HTTP cache validity.
+// This param is tied to omnibox::kZeroSuggestPrefetching and is to be used when
+// a valid HTTP cache duration is provided via kZeroSuggestCacheDurationSec.
+extern const base::FeatureParam<bool> kZeroSuggestCacheCounterfactual;
 // Specifies the HTTP cache duration for the zero prefix suggest responses. If
 // the provided value is a positive number, the cache duration will be sent as a
-// query string parameter in the zero suggest requests.
+// query string parameter in the zero suggest requests and relayed back in the
+// response cache control headers.
+// This param is tied to omnibox::kZeroSuggestPrefetching which controls
+// prefetching and theoretically works with any caching mechanism. If no valid
+// HTTP cache duration is provided the existing caching mechanism is used.
 extern const base::FeatureParam<int> kZeroSuggestCacheDurationSec;
 
 // New params should be inserted above this comment and formatted as:

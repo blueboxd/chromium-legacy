@@ -25,7 +25,6 @@
 <translation id="1104084341931202936">Показване на настройките за достъпност</translation>
 <translation id="1104621072296271835">Устройствата ви работят още по-добре заедно</translation>
 <translation id="1111781754511998498">Проектор</translation>
-<translation id="1119348796022671382">Тематичният цветови режим придава лек оттенък на интерфейса с помощта на цветове, извлечени от тапета ви.</translation>
 <translation id="112308213915226829">Автоматично скриване на лавицата</translation>
 <translation id="1142002900084379065">Скорошни снимки</translation>
 <translation id="1148499908455722006">Отваряне на диалогов прозорец с информация за <ph name="USER_NAME" /></translation>
@@ -54,6 +53,10 @@
 <translation id="1247519845643687288">Скорошни приложения</translation>
 <translation id="1252999807265626933">Зарежда се от <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">„What's the weather?“ („Какво е времето?“)</translation>
+<translation id="1262870540683925850"><ph name="START_TIME" /> до 
+        <ph name="END_TIME" />,
+        <ph name="TIME_ZONE" />,
+        <ph name="EVENT_SUMMARY" />. За още подробности в Google Календар изберете събитието.</translation>
 <translation id="1266097335951928626">Стартиране на камерата за селфи</translation>
 <translation id="1267032506238418139">Промяна на клавишната комбинация</translation>
 <translation id="1269405891096105529">Периферното устройство не се поддържа в режим на гост</translation>
@@ -110,11 +113,9 @@
 <translation id="1570871743947603115">Превключване на Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">да осъществява достъп до цялата ви активност в тази сесия;</translation>
 <translation id="1611993646327628135">Вкл.</translation>
-<translation id="1615402009686901181">Заснемането на екрана, когато се вижда поверително съдържание, е деактивирано чрез администраторско правило</translation>
 <translation id="1632985212731562677">Функцията „Достъп с превключване“ може да бъде деактивирана в „Настройки &gt; Достъпност“.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> устройства</translation>
 <translation id="1654477262762802994">Стартиране на гласова заявка</translation>
-<translation id="1667964833127753507">При режима за неутрални цветове не се извличат цветовете от тапета, а се използва набор от неутрални светли или тъмни нюанси.</translation>
 <translation id="1677472565718498478">Оставащо време: <ph name="TIME" /></translation>
 <translation id="1677507110654891115">Функцията „<ph name="FEATURE_NAME" />“ не е свързана.</translation>
 <translation id="1698080062160024910">Таймер за <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
@@ -124,6 +125,7 @@
 <translation id="1715874602234207">F</translation>
 <translation id="1719094688023114093">Функцията „Надписи на живо“ е включена.</translation>
 <translation id="1720011244392820496">Включване на функцията за синхронизиране на Wi-Fi</translation>
+<translation id="1736898441010944794">Устройството <ph name="NAME" /> е видимо за устройства с Bluetooth.</translation>
 <translation id="1743570585616704562">Не е разпознато</translation>
 <translation id="1746730358044914197">Методите на въвеждане са конфигурирани от администратора ви.</translation>
 <translation id="1747827819627189109">Екранната клавиатура е активирана</translation>
@@ -133,6 +135,7 @@
 <translation id="1768366657309696705">Клавишната комбинация <ph name="LAUNCHER_KEY_NAME" /> + точка се промени. За да използвате клавиша Insert, натиснете клавиша <ph name="LAUNCHER_KEY_NAME" /> + Shift + Backspace.</translation>
 <translation id="1770726142253415363">Преместено на ред <ph name="ROW_NUMBER" />, колона <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="1771761307086386028">Превъртане надясно</translation>
+<translation id="1774796056689732716">Календар, текущата дата е <ph name="CURRENT_MONTH_YEAR" />, а понастоящем е избрана <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">Изкл.</translation>
 <translation id="1804572139604454141">Записът завърши, тъй като мястото на диска е критично малко</translation>
 <translation id="181103072419391116">Сила на сигнала <ph name="SIGNAL_STRENGTH" />, управлява се от администратора ви</translation>
@@ -362,7 +365,6 @@
 <translation id="3441920967307853524"><ph name="RECEIVED_BYTES" />/<ph name="TOTAL_BYTES" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
 <translation id="3445925074670675829">USB-C устройство</translation>
-<translation id="3454224730401036106">Връзката ви бе прехвърлена към по-сигурна мрежа</translation>
 <translation id="3465223694362104965">След последното ви влизане в профила на това устройство към него е свързана друга клавиатура. Преди да я използвате, проверете дали й имате доверие.</translation>
 <translation id="3465356146291925647">Управлява се от администратора ви</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
@@ -407,7 +409,6 @@
 <translation id="3640092422335864171">Запазване на <ph name="NAME" /></translation>
 <translation id="3649505501900178324">Просрочена актуализация</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> – управляван потребител</translation>
-<translation id="3665889125180354336">Записване от микрофона</translation>
 <translation id="3680908746918359504">Изчистване на всички маркери</translation>
 <translation id="36813544980941320">Wi-Fi мрежите ще бъдат споделяни между телефона и устройството ви <ph name="DEVICE_NAME" /></translation>
 <translation id="3694122362646626770">Уебсайтове</translation>
@@ -474,7 +475,6 @@
 <translation id="412298498316631026">прозорец</translation>
 <translation id="4129129681837227511">За да виждате известия на заключения екран, отключете устройството и променете настройката</translation>
 <translation id="4146833061457621061">„Play music“ („Пусни музика“)</translation>
-<translation id="4157822100366708405">Настройки за тъмната тема</translation>
 <translation id="4173958948577803258">чт</translation>
 <translation id="4177913004758410636">{0,plural, =1{Актуализирайте устройството в рамките на 1 ден}other{Актуализирайте устройството в рамките на # дни}}</translation>
 <translation id="4181841719683918333">Езици</translation>
@@ -624,6 +624,8 @@
 <translation id="5075554201838155866">Стартиране на надписите</translation>
 <translation id="5078796286268621944">Неправилен ПИН</translation>
 <translation id="5083553833479578423">Отключете още функции на Асистент.</translation>
+<translation id="5090752371472782287">Предаване към устройство от <ph name="MANAGER" /></translation>
+<translation id="5106223312672646208">Персонализиране</translation>
 <translation id="5117590920725113268">Показване на следващия месец</translation>
 <translation id="5136175204352732067">Свързана е различна клавиатура</translation>
 <translation id="5147567197700016471">Отключено</translation>
@@ -632,6 +634,7 @@
 <translation id="5168181903108465623">Налице са устройства Cast</translation>
 <translation id="5170568018924773124">Показване в папката</translation>
 <translation id="5176318573511391780">Записване на част от екрана</translation>
+<translation id="5198413532174090167"><ph name="NUMBER" /> събития на <ph name="DATE" /></translation>
 <translation id="5198715732953550718">Приложението <ph name="MOVED_APP_NAME" /> бе комбинирано със <ph name="IN_PLACE_APP" /> и бе създадена нова папка.</translation>
 <translation id="5206028654245650022"><ph name="APP_NAME" />, <ph name="NOTIFICATION_TITLE" />: <ph name="MESSAGE" />, <ph name="PHONE_NAME" /></translation>
 <translation id="5206057955438543357">{NUM_NOTIFICATIONS,plural, =1{Още 1 известие}other{Още # известия}}</translation>
@@ -668,6 +671,7 @@
 <translation id="5426063383988017631">Менюто за настройки е затворено</translation>
 <translation id="5428899915242071344">Стартиране на избирането</translation>
 <translation id="5430931332414098647">Незабавен тетъринг</translation>
+<translation id="5431318178759467895">Цветно</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="5433020815079095860">Аудиовход</translation>
 <translation id="544691375626129091">Всички налични потребители вече са добавени към тази сесия.</translation>
@@ -765,7 +769,6 @@
 <translation id="6059276912018042191">Скорошни раздели на Chrome</translation>
 <translation id="6062360702481658777">Ще излезете автоматично след <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6073451960410192870">Спиране на записа</translation>
-<translation id="607652042414456612">Компютърът ви е откриваем за устройства с Bluetooth наблизо и ще се показва като „<ph name="NAME" />“ с адрес <ph name="ADDRESS" /></translation>
 <translation id="6114505516289286752">Файловете за говор на <ph name="LANGUAGE" /> бяха изтеглени</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Потвърждаване на изтеглянето на <ph name="FILENAME" /></translation>
@@ -804,6 +807,7 @@
 <translation id="643147933154517414">Всичко е готово</translation>
 <translation id="6431865393913628856">Записване на екрана</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> се предава към „<ph name="RECEIVER_NAME" />“</translation>
+<translation id="6447111710783417522"><ph name="NUMBER" /> събитие на <ph name="DATE" /></translation>
 <translation id="6452181791372256707">Отхвърляне</translation>
 <translation id="6453179446719226835">Езикът е променен</translation>
 <translation id="6459472438155181876">Екранът се разширява на „<ph name="DISPLAY_NAME" />“</translation>
@@ -830,6 +834,7 @@
 <translation id="6578407462441924264">Без име</translation>
 <translation id="6585808820553845416">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6593850935013518327"><ph name="PRIMARY_TEXT" />, <ph name="SECONDARY_TEXT" /></translation>
+<translation id="6602800870584047641">Връзката ви бе прехвърлена към по-сигурна мрежа</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, сила на сигнала <ph name="SIGNAL_STRENGTH" />, управлява се от администратора ви</translation>
 <translation id="6612802754306526077">Избран е режимът за записване на екрана</translation>
 <translation id="6614169507485700968">Екранът за поверителност е включен</translation>
@@ -867,6 +872,7 @@
 <translation id="6811454077060061666">Google Диск за компютри не е налице</translation>
 <translation id="6818242057446442178">Придвижване назад с една дума</translation>
 <translation id="6820676911989879663">Време е за почивка!</translation>
+<translation id="6827049576281411231">Затваряне на панела за събития</translation>
 <translation id="6836499262298959512">Опасен файл</translation>
 <translation id="6837064795450991317">Скриване на лентата с работни кътове</translation>
 <translation id="6852052252232534364">Кликнете за активиране</translation>
@@ -874,6 +880,7 @@
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{Остава една цифра}other{Остават # цифри}}</translation>
 <translation id="6867938213751067702">Изтеглянето на <ph name="FILENAME" /> е на пауза</translation>
 <translation id="6878400149835617132">Прекият път е изключен</translation>
+<translation id="6884665277231944629">Към днешната дата</translation>
 <translation id="6886172995547742638">Възможно е вашият <ph name="DEVICE_TYPE" /> да работи с намалена производителност. Използвайте сертифициран захранващ адаптер с USB-C и мощност от <ph name="PREFERRED_MINIMUM_POWER" /> W или повече.</translation>
 <translation id="688631446150864480">Натиснете клавиша със стрелка за надолу, за да превключите прозорците</translation>
 <translation id="6896758677409633944">Копиране</translation>
@@ -940,7 +947,6 @@
 <translation id="7378594059915113390">Контроли за мултимедия</translation>
 <translation id="7378889811480108604">Режимът за запазване на батерията е изключен</translation>
 <translation id="7392563512730092880">Винаги можете да настроите функцията по-късно от „Настройки“.</translation>
-<translation id="7398254312354928459">Преминахте към друга мрежа</translation>
 <translation id="7405710164030118432">За да отключите устройството, въведете кода си за достъп на родител от Family Link</translation>
 <translation id="7406608787870898861">Завършете настройването на мобилната си мрежа</translation>
 <translation id="740790383907119240">Преки пътища в приложението</translation>
@@ -960,15 +966,18 @@
 <translation id="7497767806359279797">Избор на език и клавиатура</translation>
 <translation id="7509246181739783082">Потвърждаване на самоличността ви</translation>
 <translation id="7513622367902644023">Избран е режимът за екранна снимка</translation>
+<translation id="7513922695575567867">Календар, седмицата на <ph name="DATE" />, понастоящем е избрана датата <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">Изтегляне</translation>
 <translation id="7526573455193969409">Мрежата може да е под наблюдение</translation>
 <translation id="7536035074519304529">IP адрес: <ph name="ADDRESS" /></translation>
+<translation id="7544300628205093162">Фоновото осветление на клавиатурата е включено</translation>
 <translation id="7548434653388805669">Време е за сън</translation>
 <translation id="7551643184018910560">Фиксиране в лавицата</translation>
 <translation id="7561982940498449837">Затваряне на менюто</translation>
 <translation id="7564874036684306347">Преместването на прозорци към друг работен плот може да предизвика неочаквано поведение. Последващите известия, прозорци и диалогови прозорци може да бъдат разделени между работните плотове.</translation>
 <translation id="7569509451529460200">Активирахте функцията за брайлово писмо и ChromeVox</translation>
 <translation id="7569983096843329377">черно</translation>
+<translation id="757941033127302446">Влезли сте в профила си</translation>
 <translation id="7579778809502851308">Заснемане на екрана</translation>
 <translation id="7590883480672980941">Настройки за въвеждане</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
@@ -976,7 +985,6 @@
 <translation id="7600875258240007829">Преглед на всички известия</translation>
 <translation id="7607002721634913082">На пауза</translation>
 <translation id="7610198039767537854">Преглед на <ph name="DEVICE_TYPE" /> на скорошните снимки от филмовата ролка на телефона ви</translation>
-<translation id="7618774594543487847">Неутрален</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7631906263969450674">Маркер</translation>
 <translation id="7633755430369750696">Показване на настройките на „Споделяне наблизо“.</translation>
@@ -993,6 +1001,8 @@
 <translation id="7720410380936703141">НОВ ОПИТ</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 известие}other{# известия}}</translation>
 <translation id="7724603315864178912">Изрязване</translation>
+<translation id="7734209118399753735"><ph name="EVENT_SUMMARY" />,
+        <ph name="TIME_RANGE" /></translation>
 <translation id="7745560842763881396">Показване на приложенията в лавицата</translation>
 <translation id="7749443890790263709">Достигнат е максималният брой работни кътове.</translation>
 <translation id="7749640678855296659">Понастоящем микрофонът ви е изключен</translation>
@@ -1010,6 +1020,7 @@
 <translation id="7860671499921112077">Прекарайте три пръста нагоре, за да влезете в общия преглед</translation>
 <translation id="7866482334467279021">включено</translation>
 <translation id="7868900307798234037">Отключване с отпечатък</translation>
+<translation id="7872195908557044066">Администраторът ви нулира електронната ви SIM карта. Изчакайте няколко минути.</translation>
 <translation id="7872786842639831132">Изкл.</translation>
 <translation id="7875575368831396199">Изглежда, че функцията за Bluetooth на <ph name="DEVICE_TYPE" /> е изключена. Включете я, за да използвате Phone Hub.</translation>
 <translation id="7877557217297072640">{0,plural, =0{Връщане на устройството към предишна версия сега}=1{Връщане на устройството към предишна версия в рамките на 1 секунда}other{Връщане на устройството към предишна версия в рамките на # секунди}}</translation>
@@ -1043,6 +1054,8 @@
 <translation id="8035152190676905274">Писалка</translation>
 <translation id="8036504271468642248">Предишно изречение</translation>
 <translation id="8042893070933512245">Отваряне на менюто с настройки за достъпност</translation>
+<translation id="8042925093898452104">Затваряне на подробната информация</translation>
+<translation id="8044457332620420407">Фоновото осветление на клавиатурата е изключено</translation>
 <translation id="8048123526339889627">Настройки за Bluetooth</translation>
 <translation id="8051716679295756675">Вече съществува шаблон с името „<ph name="DESK_TEMPLATE_NAME" />“</translation>
 <translation id="8052898407431791827">Копирано в буферната памет</translation>
@@ -1113,6 +1126,7 @@
 <translation id="8513108775083588393">Автоматично</translation>
 <translation id="851458219935658693">Показват се прозорците от текущия работен кът, активиран е бутон за избор</translation>
 <translation id="8517041960877371778">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен.</translation>
+<translation id="8551588720239073785">Настройки за дата и час</translation>
 <translation id="8553395910833293175">Вече е прехвърлено във всички работни кътове.</translation>
 <translation id="856298576161209842"><ph name="MANAGER" /> препоръчва да актуализирате устройството си <ph name="DEVICE_TYPE" /></translation>
 <translation id="8563862697512465947">Настройки за известия</translation>
@@ -1132,7 +1146,6 @@
 <translation id="8660331759611631213">Square root of 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, сила на сигнала <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Показване на списъка с мрежи. <ph name="STATE_TEXT" /></translation>
-<translation id="8668052347555487755">Цветови режим</translation>
 <translation id="8676770494376880701">Свързано е зарядно устройство с малка мощност</translation>
 <translation id="8683506306463609433">Проследяването на ефективността е активно</translation>
 <translation id="8685326675965865247">Търсете в устройството, приложенията, настройките и мрежата. Използвайте клавишите със стрелки, за да се придвижвате в приложенията.</translation>
@@ -1166,7 +1179,6 @@
 <translation id="8896630965521842259">Шаблонът „<ph name="DESK_TEMPLATE_NAME" />“ ще бъде изтрит за постоянно</translation>
 <translation id="890616557918890486">Промяна на източника</translation>
 <translation id="8909138438987180327">Батерията е на <ph name="PERCENTAGE" /> процента.</translation>
-<translation id="8913384980486163186">Тематичен (по подразбиране)</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Асистент не поддържа този език.</translation>
 <translation id="8926951137623668982">Лавицата е винаги скрита</translation>
@@ -1183,7 +1195,6 @@
 <translation id="9024331582947483881">цял екран</translation>
 <translation id="9047624247355796468">Отваряне на настройките за <ph name="NETWORK_NAME" /></translation>
 <translation id="9059834730836941392">Свиване на известието</translation>
-<translation id="9063800855227801443">Не е възможно заснемане на поверително съдържание</translation>
 <translation id="9065203028668620118">Редактиране</translation>
 <translation id="9070640332319875144">Настройки на Асистент</translation>
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> до изразходването на батерията.</translation>

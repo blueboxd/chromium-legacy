@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_and_raster_invalidation_test.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -206,7 +205,7 @@ class BrowserControlsSimTest : public SimTest {
 // Disable these tests on Mac OSX until further investigation.
 // Local build on Mac is OK but the bot fails. This is not an issue as
 // Browser Controls are currently only used on Android.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE(test) DISABLED_##test
 #else
 #define MAYBE(test) test

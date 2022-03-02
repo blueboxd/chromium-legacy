@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Zezwalaj na pliki cookie</translation>
 <translation id="2228071138934252756">Aby zezwolić aplikacji <ph name="APP_NAME" /> na dostęp do aparatu, musisz go też włączyć w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">Tylko raz</translation>
+<translation id="2253414712144136228">Usuń <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">Pytaj, gdy strona chce wykryć urządzenia Bluetooth w pobliżu (zalecane)</translation>
 <translation id="2315043854645842844">Wybieranie certyfikatu klienta nie jest obsługiwane przez ten system operacyjny.</translation>
 <translation id="2359808026110333948">Dalej</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Pokaż informacje</translation>
 <translation id="3123473560110926937">Blokowane na niektórych stronach</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> zapisanych danych</translation>
+<translation id="3203366800380907218">Z sieci</translation>
 <translation id="321187648315454507">Aby zezwolić aplikacji <ph name="APP_NAME" /> na wysyłanie do Ciebie powiadomień, musisz je też włączyć w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3277252321222022663">Zezwalaj stronom na dostęp do czujników (zalecane)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">Zablokowane</translation>
 <translation id="5689516760719285838">Lokalizacja</translation>
 <translation id="5690795753582697420">Kamera jest wyłączona w ustawieniach Androida</translation>
-<translation id="5710871682236653961">Pytaj, zanim zezwolisz stronom na wysyłanie i odbieranie informacji po dotknięciu urządzeń z funkcją NFC (zalecane)</translation>
 <translation id="5719847187258001597">Spowoduje to usunięcie wszystkich danych i plików cookie zapisanych przez stronę <ph name="ORIGIN" /> lub jej aplikację na ekranie głównym.</translation>
 <translation id="5771720122942595109">Zablokowane: <ph name="PERMISSION_1" /></translation>
 <translation id="5804241973901381774">Uprawnienia</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">Zezwolono na dostęp obecnej wyszukiwarce</translation>
 <translation id="7053983685419859001">Blokuj</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Wybrano 1}few{Wybrano #}many{Wybrano #}other{Wybrano #}}</translation>
-<translation id="7070090581017165256">O tej witrynie</translation>
 <translation id="7087918508125750058">Wybrano <ph name="ITEM_COUNT" />. Opcje dostępne na górze ekranu</translation>
 <translation id="7141896414559753902">Blokuj wyskakujące okienka i przekierowania na stronach (zalecane)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Strona używa mikrofonu</translation>
 <translation id="7561196759112975576">Zawsze</translation>
-<translation id="7572498721684305250">Nie zezwalaj stronom na wysyłanie i odbieranie informacji po dotknięciu urządzeń z funkcją NFC</translation>
 <translation id="757524316907819857">Blokuj odtwarzanie treści chronionej na stronach</translation>
 <translation id="7649070708921625228">Pomoc</translation>
 <translation id="7658239707568436148">Anuluj</translation>

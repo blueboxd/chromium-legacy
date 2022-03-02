@@ -31,7 +31,8 @@ enum class ValidationResult {
   kFeatureAggregationNotFound = 7,
   kFeatureTensorLengthInvalid = 8,
   kFeatureNameHashDoesNotMatchName = 9,
-  kMaxValue = kFeatureNameHashDoesNotMatchName,
+  kVersionNotSupported = 10,
+  kMaxValue = kVersionNotSupported,
 };
 
 // Whether the given SegmentInfo and its metadata is valid to be used for the
@@ -83,6 +84,9 @@ SignalKey::Kind SignalTypeToSignalKind(proto::SignalType signal_type);
 int ConvertToDiscreteScore(const std::string& mapping_key,
                            float input_score,
                            const proto::SegmentationModelMetadata& metadata);
+
+std::string SegmetationModelMetadataToString(
+    const proto::SegmentationModelMetadata& model_metadata);
 
 }  // namespace metadata_utils
 }  // namespace segmentation_platform

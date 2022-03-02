@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/tab_groups/tab_groups_util.h"
-#include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
@@ -68,32 +67,6 @@ using extensions::mojom::APIPermissionID;
 namespace extensions {
 
 namespace {
-
-// |error_message| can optionally be passed in and will be set with an
-// appropriate message if the window cannot be found by id.
-Browser* GetBrowserInProfileWithId(Profile* profile,
-                                   const int window_id,
-                                   bool match_incognito_profile,
-                                   std::string* error_message) {
-  Profile* incognito_profile =
-      match_incognito_profile
-          ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/false)
-          : nullptr;
-  for (auto* browser : *BrowserList::GetInstance()) {
-    if ((browser->profile() == profile ||
-         browser->profile() == incognito_profile) &&
-        ExtensionTabUtil::GetWindowId(browser) == window_id &&
-        browser->window()) {
-      return browser;
-    }
-  }
-
-  if (error_message)
-    *error_message = ErrorUtils::FormatErrorMessage(
-        tabs_constants::kWindowNotFoundError, base::NumberToString(window_id));
-
-  return nullptr;
-}
 
 Browser* CreateBrowser(Profile* profile, bool user_gesture) {
   if (Browser::GetCreationStatusForProfile(profile) !=
@@ -370,6 +343,32 @@ Browser* ExtensionTabUtil::GetBrowserFromWindowID(
         Profile::FromBrowserContext(details.function()->browser_context()),
         window_id, details.function()->include_incognito_information(), error);
   }
+}
+
+Browser* ExtensionTabUtil::GetBrowserInProfileWithId(
+    Profile* profile,
+    int window_id,
+    bool also_match_incognito_profile,
+    std::string* error_message) {
+  Profile* incognito_profile =
+      also_match_incognito_profile
+          ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/false)
+          : nullptr;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if ((browser->profile() == profile ||
+         browser->profile() == incognito_profile) &&
+        ExtensionTabUtil::GetWindowId(browser) == window_id &&
+        browser->window()) {
+      return browser;
+    }
+  }
+
+  if (error_message) {
+    *error_message = ErrorUtils::FormatErrorMessage(
+        tabs_constants::kWindowNotFoundError, base::NumberToString(window_id));
+  }
+
+  return nullptr;
 }
 
 int ExtensionTabUtil::GetWindowId(const Browser* browser) {

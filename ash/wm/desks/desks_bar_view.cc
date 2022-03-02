@@ -17,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/utility/haptics_util.h"
 #include "ash/wm/desks/desk_drag_proxy.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_mini_view_animations.h"
@@ -43,6 +44,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/haptic_touchpad_effects.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/event_observer.h"
 #include "ui/events/types/event_type.h"
@@ -537,7 +539,7 @@ void DesksBarView::HandleLongPressEvent(DeskMiniView* mini_view,
   // Initialize and start drag.
   gfx::PointF location = event.target()->GetScreenLocationF(event);
   InitDragDesk(mini_view, location);
-  StartDragDesk(mini_view, location);
+  StartDragDesk(mini_view, location, event.IsMouseEvent());
 }
 
 void DesksBarView::HandleDragEvent(DeskMiniView* mini_view,
@@ -553,7 +555,7 @@ void DesksBarView::HandleDragEvent(DeskMiniView* mini_view,
   // continue drag.
   switch (drag_proxy_->state()) {
     case DeskDragProxy::State::kInitialized:
-      StartDragDesk(mini_view, location);
+      StartDragDesk(mini_view, location, event.IsMouseEvent());
       break;
     case DeskDragProxy::State::kStarted:
       ContinueDragDesk(mini_view, location);
@@ -606,7 +608,8 @@ void DesksBarView::InitDragDesk(DeskMiniView* mini_view,
 }
 
 void DesksBarView::StartDragDesk(DeskMiniView* mini_view,
-                                 const gfx::PointF& location_in_screen) {
+                                 const gfx::PointF& location_in_screen,
+                                 bool is_mouse_dragging) {
   DCHECK(drag_view_);
   DCHECK(drag_proxy_);
   DCHECK_EQ(mini_view, drag_view_);
@@ -620,6 +623,13 @@ void DesksBarView::StartDragDesk(DeskMiniView* mini_view,
   drag_proxy_->InitAndScaleAndMoveToX(location_in_screen.x());
 
   Shell::Get()->cursor_manager()->SetCursor(ui::mojom::CursorType::kGrabbing);
+
+  // Fire a haptic event if necessary.
+  if (is_mouse_dragging) {
+    haptics_util::PlayHapticTouchpadEffect(
+        ui::HapticTouchpadEffect::kTick,
+        ui::HapticTouchpadEffectStrength::kMedium);
+  }
 }
 
 void DesksBarView::ContinueDragDesk(DeskMiniView* mini_view,
@@ -980,6 +990,28 @@ DeskMiniView* DesksBarView::FindMiniViewForDesk(const Desk* desk) const {
   return nullptr;
 }
 
+void DesksBarView::SwitchToZeroState() {
+  // Hiding the button immediately instead of the ends of the animation while
+  // switching from expanded state to zero state.
+  if (vertical_dots_button_)
+    vertical_dots_button_->SetVisible(false);
+
+  // In zero state, if the only desk is being dragged, we should end dragging.
+  // Because the dragged desk's mini view is removed, the mouse released or
+  // gesture ended events cannot be received. |drag_view_| will keep the stale
+  // reference of removed mini view and |drag_proxy_| will not be reset.
+  if (drag_view_)
+    EndDragDesk(drag_view_, /*end_by_user=*/false);
+
+  std::vector<DeskMiniView*> removed_mini_views = mini_views_;
+  mini_views_.clear();
+
+  // Keep current layout until the animation is completed since the animation
+  // for going back to zero state is based on the expanded bar's current
+  // layout.
+  PerformExpandedStateToZeroStateMiniViewAnimation(this, removed_mini_views);
+}
+
 int DesksBarView::DetermineMoveIndex(int location_screen_x) const {
   const int views_size = static_cast<int>(mini_views_.size());
 
@@ -1176,28 +1208,6 @@ void DesksBarView::OnDesksTemplatesButtonPressed() {
   // TODO(sammiequon): The button might be changed to be a toggle and this
   // callback will need to be updated to reflect that.
   overview_grid_->overview_session()->ShowDesksTemplatesGrids(IsZeroState());
-}
-
-void DesksBarView::SwitchToZeroState() {
-  // Hiding the button immediately instead of the ends of the animation while
-  // switching from expanded state to zero state.
-  if (vertical_dots_button_)
-    vertical_dots_button_->SetVisible(false);
-
-  // In zero state, if the only desk is being dragged, we should end dragging.
-  // Because the dragged desk's mini view is removed, the mouse released or
-  // gesture ended events cannot be received. |drag_view_| will keep the stale
-  // reference of removed mini view and |drag_proxy_| will not be reset.
-  if (drag_view_)
-    EndDragDesk(drag_view_, /*end_by_user=*/false);
-
-  std::vector<DeskMiniView*> removed_mini_views = mini_views_;
-  mini_views_.clear();
-
-  // Keep current layout until the animation is completed since the animation
-  // for going back to zero state is based on the expanded bar's current
-  // layout.
-  PerformExpandedStateToZeroStateMiniViewAnimation(this, removed_mini_views);
 }
 
 void DesksBarView::OnContentsScrolled() {

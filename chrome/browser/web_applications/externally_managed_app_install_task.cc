@@ -19,11 +19,11 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_installation_utils.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/installable/installable_params.h"
@@ -110,7 +110,7 @@ void ExternallyManagedAppInstallTask::OnUrlLoaded(
   }
 
   if (install_options_.install_placeholder) {
-    InstallPlaceholder(std::move(retry_on_failure));
+    InstallPlaceholder(web_contents, std::move(retry_on_failure));
     return;
   }
 
@@ -218,13 +218,15 @@ void ExternallyManagedAppInstallTask::ContinueWebAppInstall(
 }
 
 void ExternallyManagedAppInstallTask::InstallPlaceholder(
+    content::WebContents* web_contents,
     ResultCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   absl::optional<AppId> app_id =
       externally_installed_app_prefs_.LookupPlaceholderAppId(
           install_options_.install_url);
-  if (app_id.has_value() && registrar_->IsInstalled(app_id.value())) {
+  if (app_id.has_value() && registrar_->IsInstalled(app_id.value()) &&
+      !install_options_.force_reinstall) {
     // No need to install a placeholder app again.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -234,13 +236,62 @@ void ExternallyManagedAppInstallTask::InstallPlaceholder(
     return;
   }
 
-  WebApplicationInfo web_app_info;
+  if (install_options_.override_icon_url) {
+    web_contents->DownloadImage(
+        install_options_.override_icon_url.value(),
+        /*is_favicon, whether to not sent/accept cookies*/ true, gfx::Size(),
+        /*max_bitmap_size, 0=unlimited*/ 0,
+        /*bypass_cache*/ false,
+        base::BindOnce(&ExternallyManagedAppInstallTask::OnCustomIconFetched,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    return;
+  }
+
+  FinalizePlaceholderInstall(std::move(callback), absl::nullopt);
+}
+
+void ExternallyManagedAppInstallTask::OnCustomIconFetched(
+    ResultCallback callback,
+    int id,
+    int http_status_code,
+    const GURL& image_url,
+    const std::vector<SkBitmap>& bitmaps,
+    const std::vector<gfx::Size>& sizes) {
+  if (bitmaps.size() > 0) {
+    FinalizePlaceholderInstall(std::move(callback), bitmaps);
+  } else {
+    FinalizePlaceholderInstall(std::move(callback), absl::nullopt);
+  }
+}
+
+void ExternallyManagedAppInstallTask::FinalizePlaceholderInstall(
+    ResultCallback callback,
+    absl::optional<std::reference_wrapper<const std::vector<SkBitmap>>>
+        bitmaps) {
+  WebAppInstallInfo web_app_info;
+
+#if defined(CHROMEOS)
   web_app_info.title =
-      install_options_.placeholder_name
-          ? base::UTF8ToUTF16(install_options_.placeholder_name.value())
+      install_options_.override_name
+          ? base::UTF8ToUTF16(install_options_.override_name.value())
           : install_options_.fallback_app_name
                 ? base::UTF8ToUTF16(install_options_.fallback_app_name.value())
                 : base::UTF8ToUTF16(install_options_.install_url.spec());
+
+  if (bitmaps) {
+    IconsMap icons_map;
+    icons_map.emplace(GURL(install_options_.override_icon_url.value()),
+                      bitmaps.value());
+    PopulateProductIcons(&web_app_info, &icons_map);
+  }
+
+#else   // defined(CHROMEOS)
+  web_app_info.title =
+      install_options_.fallback_app_name
+          ? base::UTF8ToUTF16(install_options_.fallback_app_name.value())
+          : base::UTF8ToUTF16(install_options_.install_url.spec());
+#endif  // defined(CHROMEOS)
+
   web_app_info.start_url = install_options_.install_url;
 
   web_app_info.user_display_mode = install_options_.user_display_mode;
@@ -248,7 +299,9 @@ void ExternallyManagedAppInstallTask::InstallPlaceholder(
   WebAppInstallFinalizer::FinalizeOptions options;
   options.install_source = ConvertExternalInstallSourceToInstallSource(
       install_options_.install_source);
-  options.overwrite_existing_manifest_fields = false;
+  // Overwrite fields if we are doing a forced reinstall, because some
+  // values (custom name or icon) might have changed.
+  options.overwrite_existing_manifest_fields = install_options_.force_reinstall;
 
   install_finalizer_->FinalizeInstall(
       web_app_info, options,
@@ -310,8 +363,8 @@ void ExternallyManagedAppInstallTask::OnWebAppInstalled(
   const WebApp* web_app = registrar_->GetAppById(app_id);
   options.os_hooks[OsHookType::kUninstallationViaOsSettings] =
       web_app->CanUserUninstallWebApp();
-#if defined(OS_WIN) || defined(OS_MAC) || \
-    (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
+    (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
   options.os_hooks[OsHookType::kUrlHandlers] = true;
 #else
   options.os_hooks[OsHookType::kUrlHandlers] = false;

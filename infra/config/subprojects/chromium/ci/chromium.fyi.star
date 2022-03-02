@@ -38,6 +38,7 @@ consoles.console_view(
             "network",
             "viz",
             "win10",
+            "win11",
             "win32",
             "paeverywhere",
             "backuprefptr",
@@ -86,7 +87,10 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "viz",
     ),
+    goma_backend = None,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -185,6 +189,24 @@ ci.builder(
 )
 
 ci.builder(
+    name = "fuchsia-fyi-x64-asan",
+    console_view_entry = [
+        consoles.console_view_entry(
+            category = "fuchsia|x64",
+            short_name = "asan",
+        ),
+        consoles.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.fuchsia",
+            category = "fyi",
+            short_name = "asan",
+        ),
+    ],
+    notifies = ["cr-fuchsia"],
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.builder(
     name = "fuchsia-fyi-x64-dbg",
     console_view_entry = [
         consoles.console_view_entry(
@@ -221,6 +243,24 @@ ci.builder(
 )
 
 ci.builder(
+    name = "fuchsia-fyi-x64-wst",
+    console_view_entry = [
+        consoles.console_view_entry(
+            category = "fuchsia|x64",
+            short_name = "wst",
+        ),
+        consoles.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.fuchsia",
+            category = "fyi",
+            short_name = "wst",
+        ),
+    ],
+    notifies = ["cr-fuchsia"],
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.builder(
     name = "lacros-amd64-generic-rel-fyi",
     console_view_entry = consoles.console_view_entry(
         category = "lacros",
@@ -237,6 +277,9 @@ ci.builder(
     ),
     notifies = ["annotator-rel"],
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -313,6 +356,9 @@ ci.builder(
     ),
     notifies = ["linux-blink-fyi-bots"],
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -560,6 +606,23 @@ ci.builder(
     reclient_instance = rbe_instance.DEFAULT,
     reclient_jobs = 250,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.builder(
+    name = "Comparison Windows",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "win",
+        short_name = "re",
+    ),
+    cores = 32,
+    goma_jobs = 250,
+    executable = "recipe:reclient_goma_comparison",
+    execution_timeout = 6 * time.hour,
+    reclient_cache_silo = "Comparison Windows - cache siloed",
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = 250,
+    os = os.WINDOWS_DEFAULT,
 )
 
 ci.builder(
@@ -926,16 +989,6 @@ fyi_ios_builder(
     ),
 )
 fyi_ios_builder(
-    name = "ios-catalyst",
-    console_view_entry = [
-        consoles.console_view_entry(
-            category = "iOS",
-            short_name = "ctl",
-        ),
-    ],
-    os = os.MAC_11,
-)
-fyi_ios_builder(
     name = "ios-reclient",
     console_view_entry = consoles.console_view_entry(
         category = "iOS",
@@ -1089,9 +1142,10 @@ ci.builder(
 )
 
 ci.builder(
-    name = "Win10 Tests x64 20h2",
+    name = "Win11 Tests x64",
+    builderless = True,
     console_view_entry = consoles.console_view_entry(
-        category = "win10|20h2",
+        category = "win11",
     ),
     goma_backend = None,
     main_console_view = None,

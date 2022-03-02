@@ -14,13 +14,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-// Picture width of the branding.
-constexpr CGFloat kLogoWidth = 180;
-
-}  // namespace
-
 @implementation PasswordBreachViewController
 
 #pragma mark - Public

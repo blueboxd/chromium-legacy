@@ -17,6 +17,7 @@ import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.gpu.config.GpuFeatures;
 import org.chromium.gpu.config.GpuSwitches;
 import org.chromium.services.network.NetworkServiceFeatures;
+import org.chromium.webrtc_overrides.WebRtcOverridesFeatures;
 
 /**
  * List of experimental features/flags supported for user devices. Add features/flags to this list
@@ -165,6 +166,10 @@ public final class ProductionSupportedFlagList {
                     "Fixes memory leaks in the renderer- and browser-form caches."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_USE_UNASSOCIATED_LISTED_ELEMENTS,
                     "Caches unowned listed elements in the document."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_PARSING_PATTERN_PROVIDER,
+                    "Enables Autofill to use its new method to retrieve parsing patterns."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_PAGE_LANGUAGE_DETECTION,
+                    "Enables Autofill to retrieve the page language for form parsing."),
             Flag.baseFeature(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE,
                     "When enabled, merchant bound virtual cards will be offered in the keyboard "
                             + "accessory."),
@@ -205,6 +210,9 @@ public final class ProductionSupportedFlagList {
                     "Force the Chrome major version number to 100 in the User-Agent string."),
             Flag.baseFeature(BlinkFeatures.FORCE_MINOR_VERSION100_IN_USER_AGENT,
                     "Force the Chrome minor version number to 100 in the User-Agent string."),
+            Flag.baseFeature(BlinkFeatures.FORCE_MAJOR_VERSION_IN_MINOR_POSITION_IN_USER_AGENT,
+                    "Force the Chrome major version number to 99 and put the major version"
+                            + " number in the minor version position in the User-Agent string."),
             Flag.baseFeature(NetworkServiceFeatures.URL_LOADER_SYNC_CLIENT,
                     "Optimizes communication between URLLoader and CorsURLLoader."),
             Flag.baseFeature(BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
@@ -226,7 +234,7 @@ public final class ProductionSupportedFlagList {
                     "Enables prefetching Android fonts on renderer startup."),
             Flag.baseFeature(AwFeatures.WEBVIEW_LEGACY_TLS_SUPPORT,
                     "Whether legacy TLS versions (TLS 1.0/1.1) conections are allowed."),
-            Flag.baseFeature(BlinkFeatures.INITIAL_NAVIGATION_ENTRY,
-                    "Enables creation of initial NavigationEntries on WebContents creation."),
+            Flag.baseFeature(WebRtcOverridesFeatures.WEB_RTC_METRONOME_TASK_QUEUE,
+                    "Enables more efficient scheduling of work in WebRTC."),
     };
 }

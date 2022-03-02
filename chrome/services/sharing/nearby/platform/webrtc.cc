@@ -5,12 +5,12 @@
 #include "chrome/services/sharing/nearby/platform/webrtc.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/services/nearby/public/mojom/webrtc_signaling_messenger.mojom-shared.h"
 #include "base/task/thread_pool.h"
 #include "chrome/services/sharing/webrtc/ipc_network_manager.h"
 #include "chrome/services/sharing/webrtc/ipc_packet_socket_factory.h"
 #include "chrome/services/sharing/webrtc/mdns_responder_adapter.h"
 #include "chrome/services/sharing/webrtc/p2p_port_allocator.h"
-#include "chromeos/services/nearby/public/mojom/webrtc_signaling_messenger.mojom-shared.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -496,6 +496,8 @@ void WebRtcMedium::OnIceServersFetched(
   }
 
   webrtc::PeerConnectionInterface::RTCConfiguration rtc_config;
+  // Use the spec-compliant SDP semantics.
+  rtc_config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
   // Add |ice_servers| into the rtc_config.servers.
   for (const auto& ice_server : ice_servers) {
     webrtc::PeerConnectionInterface::IceServer ice_turn_server;

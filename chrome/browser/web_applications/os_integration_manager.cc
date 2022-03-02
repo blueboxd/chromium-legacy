@@ -31,11 +31,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "chrome/browser/web_applications/app_shim_registry_mac.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
@@ -44,6 +44,21 @@ bool g_suppress_os_hooks_for_testing_ = false;
 }  // namespace
 
 namespace web_app {
+
+OsIntegrationManager::ScopedSuppressForTesting::ScopedSuppressForTesting()
+    :
+// Creating OS hooks on ChromeOS doesn't write files to disk, so it's
+// unnecessary to suppress and it provides better crash coverage.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+      scope_(&g_suppress_os_hooks_for_testing_, true)
+#else
+      scope_(&g_suppress_os_hooks_for_testing_, false)
+#endif
+{
+}
+
+OsIntegrationManager::ScopedSuppressForTesting::~ScopedSuppressForTesting() =
+    default;
 
 // This barrier is designed to accumulate errors from calls to OS hook
 // operations, and call the completion callback when all OS hook operations
@@ -122,7 +137,7 @@ void OsIntegrationManager::Start() {
 
   registrar_observation_.Observe(registrar_.get());
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Ensure that all installed apps are included in the AppShimRegistry when the
   // profile is loaded. This is redundant, because apps are registered when they
   // are installed. It is necessary, however, because app registration was added
@@ -143,7 +158,7 @@ void OsIntegrationManager::Start() {
 void OsIntegrationManager::InstallOsHooks(
     const AppId& app_id,
     InstallOsHooksCallback callback,
-    std::unique_ptr<WebApplicationInfo> web_app_info,
+    std::unique_ptr<WebAppInstallInfo> web_app_info,
     InstallOsHooksOptions options) {
   if (g_suppress_os_hooks_for_testing_) {
     OsHooksErrors os_hooks_errors;
@@ -165,7 +180,7 @@ void OsIntegrationManager::InstallOsHooks(
       &OsIntegrationManager::OnShortcutsCreated, weak_ptr_factory_.GetWeakPtr(),
       app_id, std::move(web_app_info), options, barrier);
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // This has to happen before creating shortcuts on Mac because the shortcut
   // creation step uses the file type associations which are marked for enabling
   // by `RegisterFileHandlers()`.
@@ -257,7 +272,7 @@ void OsIntegrationManager::UpdateOsHooks(
     const AppId& app_id,
     base::StringPiece old_name,
     FileHandlerUpdateAction file_handlers_need_os_update,
-    const WebApplicationInfo& web_app_info,
+    const WebAppInstallInfo& web_app_info,
     UpdateOsHooksCallback callback) {
   if (g_suppress_os_hooks_for_testing_) {
     OsHooksErrors os_hooks_errors;
@@ -272,8 +287,7 @@ void OsIntegrationManager::UpdateOsHooks(
 
   UpdateFileHandlers(app_id, file_handlers_need_os_update,
                      base::BindOnce(barrier->CreateBarrierCallbackForType(
-                                        OsHookType::kFileHandlers),
-                                    Result::kOk));
+                         OsHookType::kFileHandlers)));
   UpdateShortcuts(app_id, old_name,
                   base::BindOnce(barrier->CreateBarrierCallbackForType(
                                      OsHookType::kShortcuts),
@@ -313,7 +327,7 @@ bool OsIntegrationManager::IsFileHandlingAPIAvailable(const AppId& app_id) {
 }
 
 const apps::FileHandlers* OsIntegrationManager::GetEnabledFileHandlers(
-    const AppId& app_id) {
+    const AppId& app_id) const {
   DCHECK(file_handler_manager_);
   return file_handler_manager_->GetEnabledFileHandlers(app_id);
 }
@@ -385,18 +399,6 @@ OsIntegrationManager::protocol_handler_manager_for_testing() {
   return *protocol_handler_manager_;
 }
 
-ScopedOsHooksSuppress OsIntegrationManager::ScopedSuppressOsHooksForTesting() {
-// Creating OS hooks on ChromeOS doesn't write files to disk, so it's
-// unnecessary to suppress and it provides better crash coverage.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  return std::make_unique<base::AutoReset<bool>>(
-      &g_suppress_os_hooks_for_testing_, true);
-#else
-  return std::make_unique<base::AutoReset<bool>>(
-      &g_suppress_os_hooks_for_testing_, false);
-#endif
-}
-
 FakeOsIntegrationManager* OsIntegrationManager::AsTestOsIntegrationManager() {
   return nullptr;
 }
@@ -427,12 +429,12 @@ void OsIntegrationManager::RegisterProtocolHandlers(const AppId& app_id,
   // Disable protocol handler unregistration on Win7 due to bad interactions
   // between preinstalled app scenarios and the need for elevation to unregister
   // protocol handlers on that platform. See crbug.com/1224327 for context.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (base::win::GetVersion() == base::win::Version::WIN7) {
     std::move(callback).Run(Result::kOk);
     return;
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   if (!protocol_handler_manager_) {
     std::move(callback).Run(Result::kOk);
@@ -496,7 +498,7 @@ void OsIntegrationManager::RegisterRunOnOsLogin(
 
 void OsIntegrationManager::MacAppShimOnAppInstalledForProfile(
     const AppId& app_id) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   AppShimRegistry::Get()->OnAppInstalledForProfile(app_id, profile_->GetPath());
 #endif
 }
@@ -562,12 +564,12 @@ void OsIntegrationManager::UnregisterProtocolHandlers(const AppId& app_id,
   // Disable protocol handler unregistration on Win7 due to bad interactions
   // between preinstalled app scenarios and the need for elevation to unregister
   // protocol handlers on that platform. See crbug.com/1224327 for context.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (base::win::GetVersion() == base::win::Version::WIN7) {
     std::move(callback).Run(Result::kOk);
     return;
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   if (!protocol_handler_manager_) {
     std::move(callback).Run(Result::kOk);
@@ -600,7 +602,7 @@ void OsIntegrationManager::UpdateShortcuts(const AppId& app_id,
 
 void OsIntegrationManager::UpdateShortcutsMenu(
     const AppId& app_id,
-    const WebApplicationInfo& web_app_info) {
+    const WebAppInstallInfo& web_app_info) {
   DCHECK(shortcut_manager_);
   if (web_app_info.shortcuts_menu_item_infos.empty()) {
     shortcut_manager_->UnregisterShortcutsMenuWithOs(app_id);
@@ -623,18 +625,17 @@ void OsIntegrationManager::UpdateUrlHandlers(
 void OsIntegrationManager::UpdateFileHandlers(
     const AppId& app_id,
     FileHandlerUpdateAction file_handlers_need_os_update,
-    base::OnceClosure finished_callback) {
-  if (!IsFileHandlingAPIAvailable(app_id) ||
-      file_handlers_need_os_update == FileHandlerUpdateAction::kNoUpdate) {
-    std::move(finished_callback).Run();
+    ResultCallback finished_callback) {
+  if (file_handlers_need_os_update == FileHandlerUpdateAction::kNoUpdate) {
+    std::move(finished_callback).Run(Result::kOk);
     return;
   }
 
-  // Convert `finished_callback` to a format that takes a Result.
-  auto finished_callback_with_Result =
-      base::BindOnce([](base::OnceClosure finished_callback,
-                        Result result) { std::move(finished_callback).Run(); },
-                     std::move(finished_callback));
+  if (file_handlers_need_os_update == FileHandlerUpdateAction::kUpdate &&
+      !IsFileHandlingAPIAvailable(app_id)) {
+    std::move(finished_callback).Run(Result::kOk);
+    return;
+  }
 
   ResultCallback callback_after_removal;
   if (file_handlers_need_os_update == FileHandlerUpdateAction::kUpdate) {
@@ -652,11 +653,10 @@ void OsIntegrationManager::UpdateFileHandlers(
           os_integration_manager->RegisterFileHandlers(
               app_id, std::move(finished_callback));
         },
-        weak_ptr_factory_.GetWeakPtr(), app_id,
-        std::move(finished_callback_with_Result));
+        weak_ptr_factory_.GetWeakPtr(), app_id, std::move(finished_callback));
   } else {
     DCHECK_EQ(file_handlers_need_os_update, FileHandlerUpdateAction::kRemove);
-    callback_after_removal = std::move(finished_callback_with_Result);
+    callback_after_removal = std::move(finished_callback);
   }
 
   // Update file handlers via complete uninstallation, then potential
@@ -676,18 +676,18 @@ void OsIntegrationManager::UpdateProtocolHandlers(
   // Disable protocol handler unregistration on Win7 due to bad interactions
   // between preinstalled app scenarios and the need for elevation to unregister
   // protocol handlers on that platform. See crbug.com/1224327 for context.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (base::win::GetVersion() == base::win::Version::WIN7) {
     std::move(callback).Run();
     return;
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   auto shortcuts_callback = base::BindOnce(
       &OsIntegrationManager::OnShortcutsUpdatedForProtocolHandlers,
       weak_ptr_factory_.GetWeakPtr(), app_id, std::move(callback));
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
   // Windows handles protocol registration through the registry. For other
   // OS's we also need to regenerate the shortcut file before we call into
   // the OS. Since `UpdateProtocolHandlers` function is also called in
@@ -747,7 +747,7 @@ std::unique_ptr<ShortcutInfo> OsIntegrationManager::BuildShortcutInfo(
 
 void OsIntegrationManager::OnShortcutsCreated(
     const AppId& app_id,
-    std::unique_ptr<WebApplicationInfo> web_app_info,
+    std::unique_ptr<WebAppInstallInfo> web_app_info,
     InstallOsHooksOptions options,
     scoped_refptr<OsHooksBarrier> barrier,
     bool shortcuts_created) {
@@ -759,7 +759,7 @@ void OsIntegrationManager::OnShortcutsCreated(
   if (shortcut_creation_failure)
     barrier->OnError(OsHookType::kShortcuts);
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   // This step happens before shortcut creation on Mac.
   if (options.os_hooks[OsHookType::kFileHandlers]) {
     RegisterFileHandlers(app_id, barrier->CreateBarrierCallbackForType(
@@ -813,7 +813,7 @@ void OsIntegrationManager::OnShortcutsCreated(
 void OsIntegrationManager::OnShortcutsDeleted(const AppId& app_id,
                                               ResultCallback callback,
                                               Result result) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   bool delete_multi_profile_shortcuts =
       AppShimRegistry::Get()->OnAppUninstalledForProfile(app_id,
                                                          profile_->GetPath());

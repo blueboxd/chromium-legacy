@@ -12,6 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/attribution_reporting/attribution_host_utils.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
@@ -271,12 +272,20 @@ void AttributionHost::RegisterConversion(
 
   // Only allow conversion registration on secure pages with a secure conversion
   // redirects.
-  if (!network::IsOriginPotentiallyTrustworthy(conversion_origin) ||
-      !network::IsOriginPotentiallyTrustworthy(conversion->reporting_origin) ||
-      !network::IsOriginPotentiallyTrustworthy(main_frame_origin)) {
+  if (!network::IsOriginPotentiallyTrustworthy(conversion_origin)) {
     mojo::ReportBadMessage(
-        "blink.mojom.ConversionHost can only be used in secure contexts with a "
-        "secure conversion registration origin.");
+        "blink.mojom.ConversionHost can only be used in secure contexts.");
+        return;
+  }
+  if (!network::IsOriginPotentiallyTrustworthy(conversion->reporting_origin)) {
+    mojo::ReportBadMessage("blink.mojom.ConversionHost can only be used with "
+        "a secure conversion registration origin.");
+        return;
+  }
+  if (!network::IsOriginPotentiallyTrustworthy(main_frame_origin)) {
+    mojo::ReportBadMessage(
+        "blink.mojom.ConversionHost can only be used with a secure top-level "
+        "frame.");
     return;
   }
 
@@ -290,11 +299,10 @@ void AttributionHost::RegisterConversion(
   if (!allowed)
     return;
 
-  net::SchemefulSite conversion_destination(main_frame_origin);
+  const AttributionPolicy& policy = attribution_manager->GetAttributionPolicy();
 
-  if (!attribution_manager->GetAttributionPolicy().IsTriggerDataInRange(
-          conversion->conversion_data,
-          StorableSource::SourceType::kNavigation)) {
+  if (!policy.IsTriggerDataInRange(conversion->conversion_data,
+                                   StorableSource::SourceType::kNavigation)) {
     devtools_instrumentation::ReportAttributionReportingIssue(
         render_frame_host,
         devtools_instrumentation::AttributionReportingIssueType::
@@ -303,9 +311,8 @@ void AttributionHost::RegisterConversion(
         base::NumberToString(conversion->conversion_data));
   }
 
-  if (!attribution_manager->GetAttributionPolicy().IsTriggerDataInRange(
-          conversion->event_source_trigger_data,
-          StorableSource::SourceType::kEvent)) {
+  if (!policy.IsTriggerDataInRange(conversion->event_source_trigger_data,
+                                   StorableSource::SourceType::kEvent)) {
     devtools_instrumentation::ReportAttributionReportingIssue(
         render_frame_host,
         devtools_instrumentation::AttributionReportingIssueType::
@@ -314,13 +321,14 @@ void AttributionHost::RegisterConversion(
         base::NumberToString(conversion->event_source_trigger_data));
   }
 
+  net::SchemefulSite conversion_destination(main_frame_origin);
+
   StorableTrigger storable_conversion(
-      attribution_manager->GetAttributionPolicy().SanitizeTriggerData(
-          conversion->conversion_data, StorableSource::SourceType::kNavigation),
-      conversion_destination, conversion->reporting_origin,
-      attribution_manager->GetAttributionPolicy().SanitizeTriggerData(
-          conversion->event_source_trigger_data,
-          StorableSource::SourceType::kEvent),
+      policy.SanitizeTriggerData(conversion->conversion_data,
+                                 StorableSource::SourceType::kNavigation),
+      std::move(conversion_destination), conversion->reporting_origin,
+      policy.SanitizeTriggerData(conversion->event_source_trigger_data,
+                                 StorableSource::SourceType::kEvent),
       conversion->priority,
       conversion->dedup_key.is_null()
           ? absl::nullopt

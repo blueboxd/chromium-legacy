@@ -21,15 +21,15 @@
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>  // Needed for STATUS_* codes
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "components/metrics/system_memory_stats_recorder.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/application_status_listener.h"
 #endif
 
@@ -49,7 +49,7 @@ enum RendererType {
 // Converts an exit code into something that can be inserted into our
 // histograms (which expect non-negative numbers less than MAX_INT).
 int MapCrashExitCodeForHistogram(int exit_code) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Since |abs(STATUS_GUARD_PAGE_VIOLATION) == MAX_INT| it causes problems in
   // histograms.cc. Solve this by remapping it to a smaller value, which
   // hopefully doesn't conflict with other codes.
@@ -130,12 +130,6 @@ void StabilityMetricsHelper::ProvideStabilityMetrics(
         prefs::kStabilityExtensionRendererFailedLaunchCount, 0);
   }
 
-  count = local_state_->GetInteger(prefs::kStabilityRendererHangCount);
-  if (count) {
-    stability_proto->set_renderer_hang_count(count);
-    local_state_->SetInteger(prefs::kStabilityRendererHangCount, 0);
-  }
-
   count =
       local_state_->GetInteger(prefs::kStabilityExtensionRendererLaunchCount);
   if (count) {
@@ -155,7 +149,6 @@ void StabilityMetricsHelper::ClearSavedStabilityMetrics() {
   local_state_->SetInteger(prefs::kStabilityPageLoadCount, 0);
   local_state_->SetInteger(prefs::kStabilityRendererCrashCount, 0);
   local_state_->SetInteger(prefs::kStabilityRendererFailedLaunchCount, 0);
-  local_state_->SetInteger(prefs::kStabilityRendererHangCount, 0);
   local_state_->SetInteger(prefs::kStabilityRendererLaunchCount, 0);
 }
 
@@ -172,7 +165,6 @@ void StabilityMetricsHelper::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kStabilityPageLoadCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityRendererFailedLaunchCount, 0);
-  registry->RegisterIntegerPref(prefs::kStabilityRendererHangCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityRendererLaunchCount, 0);
 }
 
@@ -199,6 +191,28 @@ void StabilityMetricsHelper::BrowserUtilityProcessCrashed(
   base::UmaHistogramSparse("ChildProcess.Crashed.UtilityProcessHash", hash);
   base::UmaHistogramSparse("ChildProcess.Crashed.UtilityProcessExitCode",
                            exit_code);
+  RecordStabilityEvent(StabilityEventType::kUtilityCrash);
+}
+
+void StabilityMetricsHelper::BrowserUtilityProcessLaunchFailed(
+    const std::string& metrics_name,
+    int launch_error_code
+#if BUILDFLAG(IS_WIN)
+    ,
+    DWORD last_error
+#endif
+) {
+  uint32_t hash = variations::HashName(metrics_name);
+  base::UmaHistogramSparse("ChildProcess.LaunchFailed.UtilityProcessHash",
+                           hash);
+  base::UmaHistogramSparse("ChildProcess.LaunchFailed.UtilityProcessErrorCode",
+                           launch_error_code);
+#if BUILDFLAG(IS_WIN)
+  base::UmaHistogramSparse("ChildProcess.LaunchFailed.WinLastError",
+                           last_error);
+#endif
+  // TODO(wfh): Decide if this utility process launch failure should also
+  // trigger a Stability Event.
 }
 
 void StabilityMetricsHelper::BrowserChildProcessCrashed() {
@@ -245,12 +259,12 @@ void StabilityMetricsHelper::LogRendererCrash(bool was_extension_process,
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
       RecordChildKills(histogram_type);
       break;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     case base::TERMINATION_STATUS_OOM_PROTECTED:
       // TODO(wfh): Check if this should be a Kill or a Crash on Android.
       break;
 #endif
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
       RecordChildKills(histogram_type);
       base::UmaHistogramExactLinear("BrowserRenderProcessHost.ChildKills.OOM",
@@ -275,7 +289,7 @@ void StabilityMetricsHelper::LogRendererCrash(bool was_extension_process,
           "BrowserRenderProcessHost.ChildLaunchFailureCodes", exit_code);
       LogRendererLaunchFailed(was_extension_process);
       break;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     case base::TERMINATION_STATUS_INTEGRITY_FAILURE:
       base::UmaHistogramEnumeration(
           "BrowserRenderProcessHost.ChildCodeIntegrityFailures", histogram_type,
@@ -297,6 +311,12 @@ void StabilityMetricsHelper::LogRendererLaunched(bool was_extension_process) {
                    : prefs::kStabilityRendererLaunchCount;
   RecordStabilityEvent(metric);
   IncrementPrefValue(pref);
+
+  // TODO(crbug/1283745): Remove the scheduled write if it does not improve the
+  // renderer launch ratio on Android WebView.
+#if BUILDFLAG(IS_ANDROID)
+  local_state_->CommitPendingWrite();
+#endif
 }
 
 void StabilityMetricsHelper::LogRendererLaunchFailed(
@@ -309,11 +329,6 @@ void StabilityMetricsHelper::LogRendererLaunchFailed(
                    : prefs::kStabilityRendererFailedLaunchCount;
   RecordStabilityEvent(metric);
   IncrementPrefValue(pref);
-  // TODO(crbug/1278145): Remove the scheduled write if it doesn't help resolve
-  // the discrepancy.
-  // Schedule a Local State write to help diagnose a discrepancy with
-  // Stability.Counts.
-  local_state_->CommitPendingWrite();
 }
 
 void StabilityMetricsHelper::IncrementPrefValue(const char* path) {
@@ -322,7 +337,7 @@ void StabilityMetricsHelper::IncrementPrefValue(const char* path) {
 }
 
 void StabilityMetricsHelper::LogRendererHang() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   base::android::ApplicationState app_state =
       base::android::ApplicationStatusListener::GetState();
   bool is_foreground =
@@ -334,8 +349,6 @@ void StabilityMetricsHelper::LogRendererHang() {
   base::UmaHistogramMemoryMB(
       "ChildProcess.HungRendererAvailableMemoryMB",
       base::SysInfo::AmountOfAvailablePhysicalMemory() / 1024 / 1024);
-  IncrementPrefValue(prefs::kStabilityRendererHangCount);
-  RecordStabilityEvent(StabilityEventType::kRendererHang);
 }
 
 // static

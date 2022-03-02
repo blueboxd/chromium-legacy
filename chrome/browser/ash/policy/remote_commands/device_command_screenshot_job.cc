@@ -82,7 +82,7 @@ class DeviceCommandScreenshotJob::Payload
 DeviceCommandScreenshotJob::Payload::Payload(ResultCode result_code) {
   base::DictionaryValue root_dict;
   if (result_code != SUCCESS)
-    root_dict.SetInteger(kResultFieldName, result_code);
+    root_dict.SetIntKey(kResultFieldName, result_code);
   base::JSONWriter::Write(root_dict, &payload_);
 }
 
@@ -137,10 +137,10 @@ bool DeviceCommandScreenshotJob::ParseCommandPayload(
   base::DictionaryValue* payload = nullptr;
   if (!root->GetAsDictionary(&payload))
     return false;
-  std::string upload_url;
-  if (!payload->GetString(kUploadUrlFieldName, &upload_url))
+  const std::string* upload_url = payload->FindStringKey(kUploadUrlFieldName);
+  if (!upload_url)
     return false;
-  upload_url_ = GURL(upload_url);
+  upload_url_ = GURL(*upload_url);
   return true;
 }
 

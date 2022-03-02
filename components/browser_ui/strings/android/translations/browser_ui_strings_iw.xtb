@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">‏אישור קובצי cookie</translation>
 <translation id="2228071138934252756">‏כדי לאפשר ל-<ph name="APP_NAME" /> לגשת אל המצלמה, צריך להפעיל אותה גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">פעם אחת בלבד</translation>
+<translation id="2253414712144136228">הסרה של <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">‏המערכת מבקשת אישור כשאתר רוצה לאתר התקני Bluetooth קרובים (מומלץ)</translation>
 <translation id="2315043854645842844">מערכת ההפעלה אינה תומכת בבחירת אישור בצד הלקוח.</translation>
 <translation id="2359808026110333948">המשך</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">הצגת פרטים</translation>
 <translation id="3123473560110926937">חסומות בחלק מהאתרים</translation>
 <translation id="3198916472715691905">נתונים מאוחסנים בנפח <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3203366800380907218">מהאינטרנט</translation>
 <translation id="321187648315454507">‏כדי לאפשר ל-<ph name="APP_NAME" /> לשלוח לך התראות, צריך להפעיל אותן גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">מיקרופון</translation>
 <translation id="3277252321222022663">התרת גישה של אתרים אל החיישנים (מומלץ)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">חסום</translation>
 <translation id="5689516760719285838">מיקום</translation>
 <translation id="5690795753582697420">‏המצלמה מושבתת בהגדרות Android</translation>
-<translation id="5710871682236653961">‏הצגת שאלה לפני מתן הרשאה לאתרים לשלוח ולקבל מידע כשמקישים על מכשירי NFC (מומלץ)</translation>
 <translation id="5719847187258001597">‏הפעולה הזאת תמחק את כל הנתונים ואת קובצי ה-cookie שנשמרו במסך הבית על ידי האתר <ph name="ORIGIN" /> או האפליקציה שלו.</translation>
 <translation id="5771720122942595109">חסומה: <ph name="PERMISSION_1" /></translation>
 <translation id="5804241973901381774">הרשאות</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">מופעל למנוע החיפוש הנוכחי</translation>
 <translation id="7053983685419859001">חסימה</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{נבחר אחד}two{נבחרו #}many{נבחרו #}other{נבחרו #}}</translation>
-<translation id="7070090581017165256">מידע על האתר הזה</translation>
 <translation id="7087918508125750058">נבחרו <ph name="ITEM_COUNT" />. האפשרויות מוצגות בחלק העליון של המסך</translation>
 <translation id="7141896414559753902">חסימה של חלונות קופצים והפניות אוטומטיות באתרים (מומלץ)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">אתר כלשהו משתמש במיקרופון שלך</translation>
 <translation id="7561196759112975576">תמיד</translation>
-<translation id="7572498721684305250">‏חסימת האפשרות של אתרים לשלוח ולקבל מידע כשמקישים על מכשירי NFC</translation>
 <translation id="757524316907819857">חסימה של הפעלת תוכן מוגן על-ידי אתרים</translation>
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7658239707568436148">ביטול</translation>

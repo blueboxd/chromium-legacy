@@ -63,9 +63,10 @@ class ScrollCornerView : public View {
 
   void OnPaint(gfx::Canvas* canvas) override {
     ui::NativeTheme::ExtraParams ignored;
-    GetNativeTheme()->Paint(
-        canvas->sk_canvas(), ui::NativeTheme::kScrollbarCorner,
-        ui::NativeTheme::kNormal, GetLocalBounds(), ignored);
+    GetNativeTheme()->Paint(canvas->sk_canvas(), GetColorProvider(),
+                            ui::NativeTheme::kScrollbarCorner,
+                            ui::NativeTheme::kNormal, GetLocalBounds(),
+                            ignored);
   }
 };
 
@@ -300,6 +301,10 @@ void ScrollView::SetHeaderImpl(std::unique_ptr<View> a_header) {
 
 void ScrollView::SetHeader(std::nullptr_t) {
   SetHeaderImpl(nullptr);
+}
+
+void ScrollView::SetPreferredViewportMargins(const gfx::Insets& margins) {
+  preferred_viewport_margins_ = margins;
 }
 
 void ScrollView::SetBackgroundColor(const absl::optional<SkColor>& color) {
@@ -921,22 +926,26 @@ void ScrollView::ScrollContentsRegionToBeVisible(const gfx::Rect& rect) {
     return;
   }
 
+  gfx::Rect contents_region = rect;
+  contents_region.Inset(-preferred_viewport_margins_);
+
   // Figure out the maximums for this scroll view.
   const int contents_max_x =
       std::max(contents_viewport_->width(), contents_->width());
   const int contents_max_y =
       std::max(contents_viewport_->height(), contents_->height());
 
-  int x = base::clamp(rect.x(), 0, contents_max_x);
-  int y = base::clamp(rect.y(), 0, contents_max_y);
+  int x = base::clamp(contents_region.x(), 0, contents_max_x);
+  int y = base::clamp(contents_region.y(), 0, contents_max_y);
 
   // Figure out how far and down the rectangle will go taking width
   // and height into account.  This will be "clipped" by the viewport.
   const int max_x = std::min(
-      contents_max_x, x + std::min(rect.width(), contents_viewport_->width()));
-  const int max_y =
-      std::min(contents_max_y,
-               y + std::min(rect.height(), contents_viewport_->height()));
+      contents_max_x,
+      x + std::min(contents_region.width(), contents_viewport_->width()));
+  const int max_y = std::min(
+      contents_max_y,
+      y + std::min(contents_region.height(), contents_viewport_->height()));
 
   // See if the rect is already visible. Note the width is (max_x - x)
   // and the height is (max_y - y) to take into account the clipping of

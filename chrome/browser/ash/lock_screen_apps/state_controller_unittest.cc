@@ -542,7 +542,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
     DictionaryPrefUpdate dict_update(
         profile()->GetPrefs(), prefs::kNoteTakingAppsLockScreenToastShown);
-    dict_update->SetBoolean(app_id, true);
+    dict_update->SetBoolKey(app_id, true);
   }
 
   // Helper method to move state controller to the specified state.

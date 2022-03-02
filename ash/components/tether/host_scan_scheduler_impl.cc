@@ -19,7 +19,7 @@
 #include "chromeos/network/network_type_pattern.h"
 #include "components/session_manager/core/session_manager.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -83,7 +83,7 @@ HostScanSchedulerImpl::~HostScanSchedulerImpl() {
 
 void HostScanSchedulerImpl::AttemptScanIfOffline() {
   const chromeos::NetworkTypePattern network_type_pattern =
-      chromeos::switches::ShouldTetherHostScansIgnoreWiredConnections()
+      switches::ShouldTetherHostScansIgnoreWiredConnections()
           ? chromeos::NetworkTypePattern::Wireless()
           : chromeos::NetworkTypePattern::Default();
   const chromeos::NetworkState* first_network =
@@ -211,4 +211,4 @@ void HostScanSchedulerImpl::LogHostScanBatchMetric() {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

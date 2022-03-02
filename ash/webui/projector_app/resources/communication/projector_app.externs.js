@@ -311,6 +311,13 @@ projectorApp.ClientDelegate.prototype.setUserPref = function(
     userPref, value) {};
 
 /**
+ * Opens the Chrome feedback dialog. If not successful, the promise will be
+ * rejected with an error string.
+ * @return {!Promise}
+ */
+projectorApp.ClientDelegate.prototype.openFeedbackDialog = function() {};
+
+/**
  * The client Api for interacting with the Projector app instance.
  * @record
  * @struct
@@ -346,6 +353,11 @@ projectorApp.AppApi.prototype.setClientDelegate = function(clientDelegate) {};
  */
 projectorApp.AppApi.prototype.onSodaInstallProgressUpdated = function(
     progress) {};
+
+/**
+ * Notifies the Projector App when SODA download and installation is complete.
+ */
+projectorApp.AppApi.prototype.onSodaInstalled = function() {};
 
 /**
  * Notifies the Projector App when there is a SODA installation error.

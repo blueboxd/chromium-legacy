@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
@@ -496,13 +497,17 @@ void WindowPerformance::ReportEventTimings(
     }
 
     if (!first_input_timing_) {
-      if (entry->name() == "pointerdown") {
+      if (entry->name() == event_type_names::kPointerdown) {
         first_pointer_down_event_timing_ =
             PerformanceEventTiming::CreateFirstInputTiming(entry);
-      } else if (entry->name() == "pointerup") {
+      } else if (entry->name() == event_type_names::kPointerup) {
         DispatchFirstInputTiming(first_pointer_down_event_timing_);
-      } else if (entry->name() == "click" || entry->name() == "keydown" ||
-                 entry->name() == "mousedown") {
+      } else if (entry->name() == event_type_names::kPointercancel) {
+        first_pointer_down_event_timing_.Clear();
+      } else if ((entry->name() == event_type_names::kMousedown ||
+                  entry->name() == event_type_names::kClick ||
+                  entry->name() == event_type_names::kKeydown) &&
+                 !first_pointer_down_event_timing_) {
         DispatchFirstInputTiming(
             PerformanceEventTiming::CreateFirstInputTiming(entry));
       }
@@ -669,6 +674,9 @@ void WindowPerformance::OnLargestContentfulPaintUpdated(
   if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
     NotifyObserversOfEntry(*entry);
   AddLargestContentfulPaint(entry);
+  if (HTMLImageElement* image_element = DynamicTo<HTMLImageElement>(element)) {
+    image_element->SetIsLCPElement();
+  }
 }
 
 void WindowPerformance::OnPaintFinished() {

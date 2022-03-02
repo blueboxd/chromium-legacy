@@ -36,15 +36,12 @@ class ChromeCaptureModeDelegate : public ash::CaptureModeDelegate {
   void ShowScreenCaptureItemInFolder(const base::FilePath& file_path) override;
   void OpenScreenshotInImageEditor(const base::FilePath& file_path) override;
   bool Uses24HourFormat() const override;
-  bool IsCaptureModeInitRestrictedByDlp() const override;
   void CheckCaptureModeInitRestrictionByDlp(
       ash::OnCaptureModeDlpRestrictionChecked callback) override;
   void CheckCaptureOperationRestrictionByDlp(
       const aura::Window* window,
       const gfx::Rect& bounds,
       ash::OnCaptureModeDlpRestrictionChecked callback) override;
-  bool IsCaptureAllowedByDlp(const aura::Window* window,
-                             const gfx::Rect& bounds) const override;
   bool IsCaptureAllowedByPolicy() const override;
   void StartObservingRestrictedContent(
       const aura::Window* window,
@@ -52,6 +49,8 @@ class ChromeCaptureModeDelegate : public ash::CaptureModeDelegate {
       base::OnceClosure stop_callback) override;
   void StopObservingRestrictedContent(
       ash::OnCaptureModeDlpRestrictionChecked callback) override;
+  void OnCaptureImageAttempted(const aura::Window* window,
+                               const gfx::Rect& bounds) override;
   mojo::Remote<recording::mojom::RecordingService> LaunchRecordingService()
       override;
   void BindAudioStreamFactory(

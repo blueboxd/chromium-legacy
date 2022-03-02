@@ -58,6 +58,7 @@ extern const base::Feature kDisableCGIParamMatching;
 extern const base::Feature kShortBookmarkSuggestions;
 extern const base::Feature kShortBookmarkSuggestionsByTotalInputLength;
 extern const base::Feature kPreserveLongerShortcutsText;
+extern const base::Feature kAggregateShortcuts;
 extern const base::Feature kBookmarkPaths;
 
 // Document provider
@@ -73,12 +74,12 @@ extern const base::Feature kRichAutocompletion;
 extern const base::Feature kNtpRealboxPedals;
 extern const base::Feature kNtpRealboxSuggestionAnswers;
 extern const base::Feature kNtpRealboxTailSuggest;
+extern const base::Feature kOmniboxFuzzyUrlSuggestions;
 extern const base::Feature kOmniboxPedalsAndroidBatch1;
 extern const base::Feature kOmniboxPedalsBatch2NonEnglish;
 extern const base::Feature kOmniboxPedalsBatch3;
 extern const base::Feature kOmniboxPedalsBatch3NonEnglish;
 extern const base::Feature kOmniboxPedalsTranslationConsole;
-extern const base::Feature kOmniboxKeywordSearchButton;
 extern const base::Feature kWebUIOmniboxPopup;
 
 // Omnibox UI - these affect the UI or function of the location bar (not the
@@ -89,6 +90,7 @@ extern const base::Feature kOmniboxAssistantVoiceSearch;
 // page
 extern const base::Feature kKeywordSpaceTriggeringSetting;
 extern const base::Feature kActiveSearchEngines;
+extern const base::Feature kSiteSearchStarterPack;
 
 // Experiment to introduce new security indicators for HTTPS.
 extern const base::Feature kUpdatedConnectionSecurityIndicators;

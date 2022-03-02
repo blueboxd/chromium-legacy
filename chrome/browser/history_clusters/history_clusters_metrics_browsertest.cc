@@ -83,8 +83,15 @@ IN_PROC_BROWSER_TEST_F(HistoryClustersMetricsBrowserTest,
   EXPECT_EQ(0u, entries.size());
 }
 
+// Flaky on Win, Linux and Mac. http://crbug.com/1282122
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+#define MAYBE_DirectNavigationNoInteraction \
+  DISABLED_DirectNavigationNoInteraction
+#else
+#define MAYBE_DirectNavigationNoInteraction DirectNavigationNoInteraction
+#endif
 IN_PROC_BROWSER_TEST_F(HistoryClustersMetricsBrowserTest,
-                       DirectNavigationNoInteraction) {
+                       MAYBE_DirectNavigationNoInteraction) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   EXPECT_TRUE(ui_test_utils::NavigateToURL(
@@ -107,8 +114,14 @@ IN_PROC_BROWSER_TEST_F(HistoryClustersMetricsBrowserTest,
   histogram_tester.ExpectTotalCount("History.Clusters.Actions.NumQueries", 0);
 }
 
+// TODO(crbug.com/1282087): Flaky on Linux, Windows and Mac.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#define MAYBE_DirectNavigationWithQuery DISABLED_DirectNavigationWithQuery
+#else
+#define MAYBE_DirectNavigationWithQuery DirectNavigationWithQuery
+#endif
 IN_PROC_BROWSER_TEST_F(HistoryClustersMetricsBrowserTest,
-                       DirectNavigationWithQuery) {
+                       MAYBE_DirectNavigationWithQuery) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
 
@@ -151,8 +164,10 @@ IN_PROC_BROWSER_TEST_F(HistoryClustersMetricsBrowserTest,
                                       1);
 }
 
-// Disabled on Windows and ChromeOS due to flakes: crbug.com/1263465.
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+// Disabled on Windows, ChromeOS, and Linux due to flakes: crbug.com/1263465.
+// Disabled on Mac due to flakes: crbug.com/1288805.
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_MAC)
 #define MAYBE_DirectNavigationWithToggleToBasic \
   DISABLED_DirectNavigationWithToggleToBasic
 #else

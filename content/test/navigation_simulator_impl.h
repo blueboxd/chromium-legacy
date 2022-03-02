@@ -83,6 +83,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetInitiatorFrame(RenderFrameHost* initiator_frame_host) override;
   void SetTransition(ui::PageTransition transition) override;
   void SetHasUserGesture(bool has_user_gesture) override;
+  void SetNavigationInputStart(base::TimeTicks navigation_input_start) override;
   void SetReloadType(ReloadType reload_type) override;
   void SetMethod(const std::string& method) override;
   void SetIsFormSubmission(bool is_form_submission) override;
@@ -219,6 +220,10 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       bool has_potentially_trustworthy_unique_origin) {
     has_potentially_trustworthy_unique_origin_ =
         has_potentially_trustworthy_unique_origin;
+  }
+
+  void set_supports_loading_mode_header(std::string value) {
+    supports_loading_mode_header_ = value;
   }
 
  private:
@@ -360,6 +365,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   ReloadType reload_type_ = ReloadType::NONE;
   int session_history_offset_ = 0;
   bool has_user_gesture_ = true;
+  base::TimeTicks navigation_input_start_;
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker_receiver_;
   std::string contents_mime_type_;
@@ -413,6 +419,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   bool was_aborted_prior_to_ready_to_commit_ = false;
 
   bool early_hints_preload_link_header_received_ = false;
+
+  std::string supports_loading_mode_header_;
 
   absl::optional<bool> was_prerendered_page_activation_;
 

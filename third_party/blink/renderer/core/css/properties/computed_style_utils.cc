@@ -1052,15 +1052,15 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
   CSSValue* east_asian_value = ValueForFontVariantEastAsian(style);
   // FIXME: Use DataEquivalent<CSSValue>(...) once http://crbug.com/729447 is
   // resolved.
-  if (!DataEquivalent(ligatures_value,
-                      static_cast<CSSValue*>(
-                          CSSIdentifierValue::Create(CSSValueID::kNormal))) ||
-      !DataEquivalent(numeric_value,
-                      static_cast<CSSValue*>(
-                          CSSIdentifierValue::Create(CSSValueID::kNormal))) ||
-      !DataEquivalent(east_asian_value,
-                      static_cast<CSSValue*>(
-                          CSSIdentifierValue::Create(CSSValueID::kNormal))))
+  if (!base::ValuesEquivalent(ligatures_value,
+                              static_cast<CSSValue*>(CSSIdentifierValue::Create(
+                                  CSSValueID::kNormal))) ||
+      !base::ValuesEquivalent(numeric_value,
+                              static_cast<CSSValue*>(CSSIdentifierValue::Create(
+                                  CSSValueID::kNormal))) ||
+      !base::ValuesEquivalent(east_asian_value,
+                              static_cast<CSSValue*>(CSSIdentifierValue::Create(
+                                  CSSValueID::kNormal))))
     return nullptr;
 
   if (!ValueForFontStretchAsKeyword(style))
@@ -1440,7 +1440,7 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
   };
 
   if (auto_repeat_track_sizes.IsEmpty()) {
-    if (!RuntimeEnabledFeatures::LayoutNGGridEnabled()) {
+    if (!RuntimeEnabledFeatures::LayoutNGEnabled()) {
       // If it's legacy grid or there's no repeat(), just add all the line names
       // and track sizes.
       PopulateGridTrackList(list, collector, track_sizes, getTrackSize);
@@ -1554,21 +1554,21 @@ static bool IsSVGObjectWithWidthAndHeight(const LayoutObject& layout_object) {
           IsA<SVGRectElement>(layout_object.GetNode()));
 }
 
-FloatSize ComputedStyleUtils::UsedBoxSize(const LayoutObject& layout_object) {
+gfx::SizeF ComputedStyleUtils::UsedBoxSize(const LayoutObject& layout_object) {
   if (layout_object.IsSVGChild() &&
       IsSVGObjectWithWidthAndHeight(layout_object)) {
-    FloatSize size(layout_object.ObjectBoundingBox().size());
+    gfx::SizeF size = layout_object.ObjectBoundingBox().size();
     // The object bounding box does not have zoom applied. Multiply with zoom
     // here since we'll divide by it when we produce the CSS value.
     size.Scale(layout_object.StyleRef().EffectiveZoom());
     return size;
   }
   if (!layout_object.IsBox())
-    return FloatSize();
+    return gfx::SizeF();
   const auto& box = To<LayoutBox>(layout_object);
-  return FloatSize(box.StyleRef().BoxSizing() == EBoxSizing::kBorderBox
-                       ? box.BorderBoxRect().Size()
-                       : box.ComputedCSSContentBoxRect().Size());
+  return gfx::SizeF(box.StyleRef().BoxSizing() == EBoxSizing::kBorderBox
+                        ? box.BorderBoxRect().Size()
+                        : box.ComputedCSSContentBoxRect().Size());
 }
 
 CSSValue* ComputedStyleUtils::RenderTextDecorationFlagsToCSSValue(
@@ -2746,9 +2746,11 @@ CSSValueList* ComputedStyleUtils::ValuesForSidesShorthand(
   if (!top_value || !right_value || !bottom_value || !left_value)
     return nullptr;
 
-  bool show_left = !DataEquivalent(right_value, left_value);
-  bool show_bottom = !DataEquivalent(top_value, bottom_value) || show_left;
-  bool show_right = !DataEquivalent(top_value, right_value) || show_bottom;
+  bool show_left = !base::ValuesEquivalent(right_value, left_value);
+  bool show_bottom =
+      !base::ValuesEquivalent(top_value, bottom_value) || show_left;
+  bool show_right =
+      !base::ValuesEquivalent(top_value, right_value) || show_bottom;
 
   list->Append(*top_value);
   if (show_right)

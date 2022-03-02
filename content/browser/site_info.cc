@@ -276,7 +276,7 @@ SiteInfo SiteInfo::CreateInternal(const IsolationContext& isolation_context,
 
   if (url_info.url.SchemeIs(kChromeErrorScheme)) {
     // Error pages should never be cross origin isolated.
-    DCHECK(!url_info.web_exposed_isolation_info.is_isolated());
+    DCHECK(!url_info.IsIsolated());
     return CreateForErrorPage(storage_partition_config.value());
   }
   // We should only set |requires_origin_keyed_process| if we are actually
@@ -308,9 +308,23 @@ SiteInfo SiteInfo::CreateInternal(const IsolationContext& isolation_context,
   bool does_site_request_dedicated_process_for_coop =
       url_info.requests_coop_isolation();
 
+  // Note: Well-formed UrlInfos can arrive here with null
+  // WebExposedIsolationInfo. One example is, going through the process model
+  // prior to having received response headers that determine the final
+  // WebExposedIsolationInfo, and creating a new speculative SiteInstance. In
+  // these cases we consider the SiteInfo to be non-isolated.
+  //
+  // Sometimes SiteInfos are built from UrlInfos for the purpose of using
+  // SiteInfo comparisons. Sometimes we only want to compare some attributes and
+  // do not care about WebExposedIsolationInfo. These cases should not rely on
+  // the default WebExposedIsolationInfo value. Callers should specify why it is
+  // appropriate to disregard WebExposedIsolationInfo and override it manually
+  // to what they expect the other value to be.
   return SiteInfo(site_url, lock_url, requires_origin_keyed_process,
                   storage_partition_config.value(),
-                  url_info.web_exposed_isolation_info, false /* is_guest */,
+                  url_info.web_exposed_isolation_info.value_or(
+                      WebExposedIsolationInfo::CreateNonIsolated()),
+                  false /* is_guest */,
                   does_site_request_dedicated_process_for_coop, is_jitless,
                   url_info.is_pdf);
 }
@@ -616,8 +630,7 @@ bool SiteInfo::ShouldLockProcessToSite(
   }
 
   // Allow the embedder to prevent process locking so that multiple sites
-  // can share a process. For example, this is how Chrome allows ordinary
-  // extensions to share a process.
+  // can share a process.
   if (!GetContentClient()->browser()->ShouldLockProcessToSite(browser_context,
                                                               site_url_)) {
     return false;

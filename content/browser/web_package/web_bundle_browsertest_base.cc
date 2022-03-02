@@ -18,9 +18,9 @@
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/http_response.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/content_uri_utils.h"
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
 namespace content {
 namespace web_bundle_browsertest_utils {
@@ -33,7 +33,7 @@ base::FilePath GetTestDataPath(base::StringPiece file) {
       .AppendASCII(file);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void CopyFileAndGetContentUri(const base::FilePath& file,
                               GURL* content_uri,
                               base::FilePath* new_file_path) {
@@ -54,7 +54,7 @@ void CopyFileAndGetContentUri(const base::FilePath& file,
     *new_file_path = temp_file;
   *content_uri = GURL(base::GetContentUriFromFilePath(temp_file).value());
 }
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
 std::string ExecuteAndGetString(const ToRenderFrameHost& adapter,
                                 const std::string& script) {
@@ -1074,7 +1074,7 @@ void RunIframeNavigationTest(
   // back navigation will recreate the page. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(web_contents,
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   NavigateAndWaitForTitle(
       web_contents, web_bundle_url,
       get_url_for_bundle.Run(url_origin.Resolve("/top-page/")), "Ready");
@@ -1264,7 +1264,7 @@ void RunIframeSameDocumentNavigationTest(
   // back navigation will recreate the page. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(web_contents,
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   NavigateAndWaitForTitle(
       web_contents, web_bundle_url,
       get_url_for_bundle.Run(url_origin.Resolve("/top-page/")), "Ready");

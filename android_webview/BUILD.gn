@@ -7,6 +7,7 @@ import("//android_webview/system_webview_bundle.gni")
 import("//android_webview/variables.gni")
 import("//android_webview/webview_repack_locales.gni")
 import("//build/android/resource_sizes.gni")
+import("//build/config/android/channel.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
@@ -793,6 +794,7 @@ android_library("common_java") {
     "//services/network/public:features_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/blink/public/common:common_java",
+    "//third_party/webrtc_overrides:webrtc_overrides_java",
   ]
   srcjar_deps = [
     ":common_java_features_srcjar",
@@ -895,6 +897,13 @@ repack("repack_pack") {
   if (webview_includes_weblayer) {
     sources += [ "$root_gen_dir/weblayer/weblayer_resources.pak" ]
     deps += [ "//weblayer:resources" ]
+
+    # These resources are primarily useful for developers. To avoid increasing
+    # the size of WebView they are only included in non-stable channels.
+    if (android_channel != "stable") {
+      sources += [ "$root_gen_dir/content/dev_ui_content_resources.pak" ]
+      deps += [ "//content:dev_ui_content_resources" ]
+    }
   }
 }
 
@@ -943,13 +952,12 @@ if (android_64bit_target_cpu && !skip_secondary_abi_for_cq) {
     if (use_v8_context_snapshot) {
       renaming_sources += [ "$root_out_dir/v8_context_snapshot_32.bin" ]
       renaming_destinations += [ "v8_context_snapshot_$arch_suffix.bin" ]
-    }
-    if (!use_v8_context_snapshot || include_both_v8_snapshots) {
+    } else {
       _secondary_abi_out_dir =
           get_label_info("//v8($android_secondary_abi_toolchain)",
                          "root_out_dir")
-      renaming_sources += [ "$_secondary_abi_out_dir/snapshot_blob.bin" ]
-      renaming_destinations += [ "snapshot_blob_$arch_suffix.bin" ]
+      renaming_sources = [ "$_secondary_abi_out_dir/snapshot_blob.bin" ]
+      renaming_destinations = [ "snapshot_blob_$arch_suffix.bin" ]
     }
     disable_compression = true
     deps = [
@@ -963,8 +971,7 @@ android_assets("webview_primary_abi_assets") {
   deps = []
   if (use_v8_context_snapshot) {
     deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-  }
-  if (!use_v8_context_snapshot || include_both_v8_snapshots) {
+  } else {
     deps += [ "//v8:v8_external_startup_data_assets" ]
   }
 }
@@ -973,8 +980,7 @@ android_assets("monochrome_webview_primary_abi_assets") {
   deps = [ "//third_party/icu:icu_assets" ]
   if (use_v8_context_snapshot) {
     deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
-  }
-  if (!use_v8_context_snapshot || include_both_v8_snapshots) {
+  } else {
     deps += [ "//v8:v8_external_startup_data_assets" ]
   }
 }

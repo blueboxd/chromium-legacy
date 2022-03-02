@@ -236,6 +236,54 @@ void OsDiagnosticsRunCpuCacheRoutineFunction::RunIfAllowed() {
       params->request.length_seconds, std::move(cb));
 }
 
+// OsDiagnosticsRunCpuFloatingPointAccuracyRoutineFunction ---------------------
+
+OsDiagnosticsRunCpuFloatingPointAccuracyRoutineFunction::
+    OsDiagnosticsRunCpuFloatingPointAccuracyRoutineFunction() = default;
+OsDiagnosticsRunCpuFloatingPointAccuracyRoutineFunction::
+    ~OsDiagnosticsRunCpuFloatingPointAccuracyRoutineFunction() = default;
+
+void OsDiagnosticsRunCpuFloatingPointAccuracyRoutineFunction::RunIfAllowed() {
+  std::unique_ptr<
+      api::os_diagnostics::RunCpuFloatingPointAccuracyRoutine::Params>
+      params(api::os_diagnostics::RunCpuFloatingPointAccuracyRoutine::Params::
+                 Create(args()));
+  if (!params) {
+    SetBadMessage();
+    Respond(BadMessage());
+    return;
+  }
+
+  auto cb =
+      base::BindOnce(&DiagnosticsApiRunRoutineFunctionBase::OnResult, this);
+
+  remote_diagnostics_service_->RunFloatingPointAccuracyRoutine(
+      params->request.length_seconds, std::move(cb));
+}
+
+// OsDiagnosticsRunCpuPrimeSearchRoutineFunction -------------------------------
+
+OsDiagnosticsRunCpuPrimeSearchRoutineFunction::
+    OsDiagnosticsRunCpuPrimeSearchRoutineFunction() = default;
+OsDiagnosticsRunCpuPrimeSearchRoutineFunction::
+    ~OsDiagnosticsRunCpuPrimeSearchRoutineFunction() = default;
+
+void OsDiagnosticsRunCpuPrimeSearchRoutineFunction::RunIfAllowed() {
+  std::unique_ptr<api::os_diagnostics::RunCpuPrimeSearchRoutine::Params> params(
+      api::os_diagnostics::RunCpuPrimeSearchRoutine::Params::Create(args()));
+  if (!params) {
+    SetBadMessage();
+    Respond(BadMessage());
+    return;
+  }
+
+  auto cb =
+      base::BindOnce(&DiagnosticsApiRunRoutineFunctionBase::OnResult, this);
+
+  remote_diagnostics_service_->RunPrimeSearchRoutine(
+      params->request.length_seconds, std::move(cb));
+}
+
 // OsDiagnosticsRunCpuStressRoutineFunction ------------------------------------
 
 OsDiagnosticsRunCpuStressRoutineFunction::

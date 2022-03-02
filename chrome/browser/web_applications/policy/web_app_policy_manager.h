@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager_observer.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -83,7 +84,7 @@ class WebAppPolicyManager {
   // Checks if UI mode of disabled web apps is hidden.
   bool IsDisabledAppsModeHidden() const;
 
-  RunOnOsLoginPolicy GetUrlRunOnOsLoginPolicy(absl::optional<GURL> url) const;
+  RunOnOsLoginPolicy GetUrlRunOnOsLoginPolicy(const AppId& app_id) const;
 
   void AddObserver(WebAppPolicyManagerObserver* observer);
   void RemoveObserver(WebAppPolicyManagerObserver* observer);
@@ -95,7 +96,7 @@ class WebAppPolicyManager {
 
   // Changes the manifest to conform to the WebAppInstallForceList policy.
   void MaybeOverrideManifest(content::RenderFrameHost* frame_host,
-                             blink::mojom::ManifestPtr& manifest);
+                             blink::mojom::ManifestPtr& manifest) const;
 
  private:
   friend class WebAppPolicyManagerTest;
@@ -106,7 +107,7 @@ class WebAppPolicyManager {
     WebAppSetting& operator=(const WebAppSetting&) = default;
     ~WebAppSetting() = default;
 
-    bool Parse(const base::DictionaryValue* dict, bool for_default_settings);
+    bool Parse(const base::Value& dict, bool for_default_settings);
     void ResetSettings();
 
     RunOnOsLoginPolicy run_on_os_login_policy;
@@ -120,7 +121,7 @@ class WebAppPolicyManager {
     ~CustomManifestValues();
 
     void SetName(const std::string& utf8_name);
-    void SetIcon(const std::string& icon_url);
+    void SetIcon(const GURL& icon_gurl);
 
     absl::optional<std::u16string> name;
     absl::optional<std::vector<blink::Manifest::ImageResource>> icons;
@@ -135,6 +136,11 @@ class WebAppPolicyManager {
           install_results,
       std::map<GURL, bool> uninstall_results);
   void ApplyPolicySettings();
+
+  void OverrideManifest(const GURL& custom_values_key,
+                        blink::mojom::ManifestPtr& manifest) const;
+  RunOnOsLoginPolicy GetUrlRunOnOsLoginPolicyByUnhashedAppId(
+      const std::string& unhashed_app_id) const;
 
   // Parses install options from a Value, which represents one entry of the
   // kWepAppInstallForceList. If the value contains a custom_name or
@@ -175,11 +181,13 @@ class WebAppPolicyManager {
   bool is_refreshing_ = false;
   bool needs_refresh_ = false;
 
-  base::flat_map<GURL, WebAppSetting> settings_by_url_;
+  base::flat_map<std::string, WebAppSetting> settings_by_url_;
   base::flat_map<GURL, CustomManifestValues> custom_manifest_values_by_url_;
   std::unique_ptr<WebAppSetting> default_settings_;
   base::ObserverList<WebAppPolicyManagerObserver, /*check_empty=*/true>
       observers_;
+
+  ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
   base::WeakPtrFactory<WebAppPolicyManager> weak_ptr_factory_{this};
 };

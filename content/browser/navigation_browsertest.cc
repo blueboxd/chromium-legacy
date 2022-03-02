@@ -88,7 +88,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -571,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   EXPECT_EQ(true, EvalJs(web_contents(), "clickViewSourceLink();"));
   console_observer.Wait();
   // Original page shouldn't navigate away.
-  EXPECT_EQ(kUrl, web_contents()->GetURL());
+  EXPECT_EQ(kUrl, web_contents()->GetLastCommittedURL());
   EXPECT_FALSE(shell()
                    ->web_contents()
                    ->GetController()
@@ -595,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   EXPECT_EQ(true, EvalJs(web_contents(), "clickGoogleChromeLink();"));
   console_observer.Wait();
   // Original page shouldn't navigate away.
-  EXPECT_EQ(kUrl, web_contents()->GetURL());
+  EXPECT_EQ(kUrl, web_contents()->GetLastCommittedURL());
 }
 
 // Ensure that closing a page by running its beforeunload handler doesn't hang
@@ -1559,113 +1558,6 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   EXPECT_FALSE(navigation.was_successful());
 }
 
-namespace {
-
-// Checks whether the given urls are requested, and that GetPreviewsState()
-// returns the appropriate value when the Previews are set.
-class PreviewsStateContentBrowserClient : public ContentBrowserClient {
- public:
-  explicit PreviewsStateContentBrowserClient(const GURL& main_frame_url)
-      : main_frame_url_(main_frame_url),
-        main_frame_url_seen_(false),
-        previews_state_(blink::PreviewsTypes::PREVIEWS_OFF),
-        determine_allowed_previews_called_(false),
-        determine_committed_previews_called_(false) {}
-
-  PreviewsStateContentBrowserClient(const PreviewsStateContentBrowserClient&) =
-      delete;
-  PreviewsStateContentBrowserClient& operator=(
-      const PreviewsStateContentBrowserClient&) = delete;
-
-  ~PreviewsStateContentBrowserClient() override {}
-
-  blink::PreviewsState DetermineAllowedPreviews(
-      blink::PreviewsState initial_state,
-      content::NavigationHandle* navigation_handle,
-      const GURL& current_navigation_url) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    EXPECT_FALSE(determine_allowed_previews_called_);
-    determine_allowed_previews_called_ = true;
-    main_frame_url_seen_ = true;
-    EXPECT_EQ(main_frame_url_, current_navigation_url);
-    return previews_state_;
-  }
-
-  blink::PreviewsState DetermineCommittedPreviews(
-      blink::PreviewsState initial_state,
-      content::NavigationHandle* navigation_handle,
-      const net::HttpResponseHeaders* response_headers) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    EXPECT_EQ(previews_state_, initial_state);
-    determine_committed_previews_called_ = true;
-    return initial_state;
-  }
-
-  void SetClient() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    content::SetBrowserClientForTesting(this);
-  }
-
-  void Reset(blink::PreviewsState previews_state) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    main_frame_url_seen_ = false;
-    previews_state_ = previews_state;
-    determine_allowed_previews_called_ = false;
-  }
-
-  void CheckResourcesRequested() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    EXPECT_TRUE(determine_allowed_previews_called_);
-    EXPECT_TRUE(determine_committed_previews_called_);
-    EXPECT_TRUE(main_frame_url_seen_);
-  }
-
- private:
-  const GURL main_frame_url_;
-
-  bool main_frame_url_seen_;
-  blink::PreviewsState previews_state_;
-  bool determine_allowed_previews_called_;
-  bool determine_committed_previews_called_;
-};
-
-}  // namespace
-
-class PreviewsStateBrowserTest : public ContentBrowserTest {
- public:
-  ~PreviewsStateBrowserTest() override {}
-
- protected:
-  void SetUpOnMainThread() override {
-    ContentBrowserTest::SetUpOnMainThread();
-
-    ASSERT_TRUE(embedded_test_server()->Start());
-
-    client_ = std::make_unique<PreviewsStateContentBrowserClient>(
-        embedded_test_server()->GetURL("/title1.html"));
-
-    client_->SetClient();
-  }
-
-  void Reset(blink::PreviewsState previews_state) {
-    client_->Reset(previews_state);
-  }
-
-  void CheckResourcesRequested() { client_->CheckResourcesRequested(); }
-
- private:
-  std::unique_ptr<PreviewsStateContentBrowserClient> client_;
-};
-
-// Test that navigating calls GetPreviewsState returning PREVIEWS_OFF.
-IN_PROC_BROWSER_TEST_F(PreviewsStateBrowserTest, ShouldEnablePreviewsOff) {
-  // Navigate with No Previews.
-  NavigateToURLBlockUntilNavigationsComplete(
-      shell(), embedded_test_server()->GetURL("/title1.html"), 1);
-  CheckResourcesRequested();
-}
-
 // Ensure the renderer process doesn't send too many IPC to the browser process
 // when history.pushState() and history.back() are called in a loop.
 // Failing to do so causes the browser to become unresponsive.
@@ -2385,7 +2277,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
   // See BackForwardCacheBrowserTest.RestoreWhilePendingCommit which covers the
   // same scenario for back-forward cache.
   web_contents()->GetController().GetBackForwardCache().DisableForTesting(
-      BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+      BackForwardCacheImpl::TEST_REQUIRES_NO_CACHING);
 
   using Response = net::test_server::ControllableHttpResponse;
   Response response_A1(embedded_test_server(), "/A");
@@ -4052,7 +3944,7 @@ IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
   // so that the document policy to force-load-at-top will run. This will not
   // happen if the document is back-forward cached, so we need to disable it.
   DisableBackForwardCacheForTesting(web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // Load the document with document policy force-load-at-top
   shell()->LoadURL(url);
@@ -4508,7 +4400,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   manager_1.WaitForNavigationFinished();
   manager_2.WaitForNavigationFinished();
 
-  EXPECT_EQ(popup_contents->GetURL(), "about:blank");
+  EXPECT_EQ(popup_contents->GetLastCommittedURL(), "about:blank");
 }
 
 class NetworkIsolationSplitCacheAppendIframeOrigin
@@ -5249,13 +5141,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
   WaitForLoadStop(popup);
 
   // Verify that we are at the initial empty document.
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_EQ(1, popup->GetController().GetEntryCount());
-    EXPECT_TRUE(
-        popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
-  } else {
-    EXPECT_EQ(0, popup->GetController().GetEntryCount());
-  }
+  EXPECT_EQ(1, popup->GetController().GetEntryCount());
+  EXPECT_TRUE(popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
   EXPECT_TRUE(
       popup->GetPrimaryFrameTree().root()->is_on_initial_empty_document());
 
@@ -5282,10 +5169,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
 
   // Verify that we are at the synchronously committed about:blank document.
   EXPECT_EQ(1, popup->GetController().GetEntryCount());
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_TRUE(
-        popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
-  }
+  EXPECT_TRUE(popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
   EXPECT_TRUE(
       popup->GetPrimaryFrameTree().root()->is_on_initial_empty_document());
 
@@ -5590,7 +5474,7 @@ class NavigationBrowserTestWithPerformanceManager
 
 // TODO(crbug.com/1233836, crbug.com/1238886): Test is flaky on Mac 11, Linux
 // and ChromeOS.
-#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_BeginNewNavigationAfterCommitNavigationInMainFrame \
   DISABLED_BeginNewNavigationAfterCommitNavigationInMainFrame
 #else
@@ -5653,8 +5537,17 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(final_url, web_contents->GetLastCommittedURL());
 }
 
+// TODO(crbug.com/1233836): Test is flaky on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_BeginNewNavigationAfterCommitNavigationInSubFrame \
+  DISABLED_BeginNewNavigationAfterCommitNavigationInSubFrame
+#else
+#define MAYBE_BeginNewNavigationAfterCommitNavigationInSubFrame \
+  BeginNewNavigationAfterCommitNavigationInSubFrame
+#endif
+
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTestWithPerformanceManager,
-                       BeginNewNavigationAfterCommitNavigationInSubFrame) {
+                       MAYBE_BeginNewNavigationAfterCommitNavigationInSubFrame) {
   if (!AreAllSitesIsolatedForTesting())
     return;
 
@@ -5826,12 +5719,12 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestWithPerformanceManager,
 // new NavigationRequest, because it was trying to access the current
 // RenderFrameHost's PolicyContainerHost, which had not been set up yet by
 // RenderFrameHostImpl::DidNavigate.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Flaky on Android: https://crbug.com/1222320.
 #define MAYBE_Bug1210234 DISABLED_Bug1210234
 #else
 #define MAYBE_Bug1210234 Bug1210234
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, MAYBE_Bug1210234) {
   class NavigationWebContentsDelegate : public WebContentsDelegate {
    public:
@@ -5897,6 +5790,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
   EXPECT_EQ(iframe_url_1, child->current_url());
   EXPECT_FALSE(child->anonymous());
   EXPECT_FALSE(child->current_frame_host()->anonymous());
+  EXPECT_EQ(false, EvalJs(child->current_frame_host(), "window.anonymous"));
 
   // Changes to the iframe 'anonymous' attribute are propagated to the
   // FrameTreeNode. The RenderFrameHost, however, is updated only on navigation.
@@ -5905,6 +5799,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
              "document.getElementById('test_iframe').anonymous = true;"));
   EXPECT_TRUE(child->anonymous());
   EXPECT_FALSE(child->current_frame_host()->anonymous());
+  EXPECT_EQ(false, EvalJs(child->current_frame_host(), "window.anonymous"));
 
   // Create a grandchild iframe.
   EXPECT_TRUE(ExecJs(
@@ -5921,6 +5816,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
   // RenderFrameHost is not anonymous.
   EXPECT_FALSE(grandchild->anonymous());
   EXPECT_FALSE(grandchild->current_frame_host()->anonymous());
+  EXPECT_EQ(false,
+            EvalJs(grandchild->current_frame_host(), "window.anonymous"));
 
   // Navigate the child iframe same-document. This does not change anything.
   EXPECT_TRUE(ExecJs(main_frame(),
@@ -5930,6 +5827,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
   WaitForLoadStop(web_contents());
   EXPECT_TRUE(child->anonymous());
   EXPECT_FALSE(child->current_frame_host()->anonymous());
+  EXPECT_EQ(false, EvalJs(child->current_frame_host(), "window.anonymous"));
 
   // Now navigate the child iframe cross-document.
   EXPECT_TRUE(ExecJs(
@@ -5938,6 +5836,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
   WaitForLoadStop(web_contents());
   EXPECT_TRUE(child->anonymous());
   EXPECT_TRUE(child->current_frame_host()->anonymous());
+  EXPECT_EQ(true, EvalJs(child->current_frame_host(), "window.anonymous"));
   // An anonymous document has a storage key with a nonce.
   EXPECT_TRUE(child->current_frame_host()->storage_key().nonce().has_value());
   base::UnguessableToken anonymous_nonce =
@@ -5958,6 +5857,10 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
   // document is anonymous.
   EXPECT_FALSE(grandchild->anonymous());
   EXPECT_TRUE(grandchild->current_frame_host()->anonymous());
+  // TODO(https://crbug.com/1251084): Fill navigation_params->anonymous for the
+  // initial empty document.
+  EXPECT_EQ(false,
+            EvalJs(grandchild->current_frame_host(), "window.anonymous"));
 
   // The storage key's nonce is the same for all anonymous documents in the same
   // page.
@@ -5971,6 +5874,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
                        iframe_url_2)));
   WaitForLoadStop(web_contents());
   EXPECT_TRUE(grandchild->current_frame_host()->anonymous());
+  EXPECT_EQ(true, EvalJs(grandchild->current_frame_host(), "window.anonymous"));
 
   // The storage key's nonce is still the same.
   EXPECT_TRUE(child->current_frame_host()->storage_key().nonce().has_value());
@@ -5984,6 +5888,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
              "document.getElementById('test_iframe').anonymous = false;"));
   EXPECT_FALSE(child->anonymous());
   EXPECT_TRUE(child->current_frame_host()->anonymous());
+  EXPECT_EQ(true, EvalJs(child->current_frame_host(), "window.anonymous"));
   EXPECT_TRUE(child->current_frame_host()->storage_key().nonce().has_value());
   EXPECT_EQ(anonymous_nonce,
             child->current_frame_host()->storage_key().nonce().value());
@@ -6000,6 +5905,10 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
   FrameTreeNode* grandchild2 = child->child_at(1);
   EXPECT_FALSE(grandchild2->anonymous());
   EXPECT_TRUE(grandchild2->current_frame_host()->anonymous());
+  // TODO(https://crbug.com/1251084): Fill navigation_params->anonymous for the
+  // initial empty document.
+  EXPECT_EQ(false,
+            EvalJs(grandchild2->current_frame_host(), "window.anonymous"));
   EXPECT_TRUE(
       grandchild2->current_frame_host()->storage_key().nonce().has_value());
   EXPECT_EQ(anonymous_nonce,
@@ -6014,6 +5923,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
   WaitForLoadStop(web_contents());
   EXPECT_FALSE(child->anonymous());
   EXPECT_FALSE(child->current_frame_host()->anonymous());
+  EXPECT_EQ(false, EvalJs(child->current_frame_host(), "window.anonymous"));
   EXPECT_FALSE(child->current_frame_host()->storage_key().nonce().has_value());
 
   // Now navigate the whole page away.
@@ -6028,6 +5938,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestAnonymousIframe,
   EXPECT_EQ(iframe_url_b, child_b->current_url());
   EXPECT_TRUE(child_b->anonymous());
   EXPECT_TRUE(child_b->current_frame_host()->anonymous());
+  EXPECT_EQ(true, EvalJs(child_b->current_frame_host(), "window.anonymous"));
 
   EXPECT_TRUE(child_b->current_frame_host()->storage_key().nonce().has_value());
   base::UnguessableToken anonymous_nonce_b =

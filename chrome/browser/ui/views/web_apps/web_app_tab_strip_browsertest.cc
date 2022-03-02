@@ -20,11 +20,11 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
@@ -66,7 +66,7 @@ class WebAppTabStripBrowserTest : public InProcessBrowserTest {
     Profile* profile = browser()->profile();
     GURL start_url = embedded_test_server()->GetURL(kAppPath);
 
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->title = u"Test app";
@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, PopOutTabOnInstall) {
         /*dialog_callback=*/
         base::BindLambdaForTesting(
             [](content::WebContents*,
-               std::unique_ptr<WebApplicationInfo> web_app_info,
+               std::unique_ptr<WebAppInstallInfo> web_app_info,
                ForInstallableSite,
                WebAppInstallationAcceptanceCallback acceptance_callback) {
               web_app_info->user_display_mode = DisplayMode::kTabbed;
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, PopOutTabOnInstall) {
 }
 
 // TODO(crbug.com/897314) Enabled tab strip for web apps on non-Chrome OS.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
                        ActiveTabColorIsBackgroundColor) {
@@ -194,7 +194,8 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
 
   // Expect manifest background color prior to page loading.
   {
-    ASSERT_FALSE(app.web_contents->IsDocumentOnLoadCompletedInMainFrame());
+    ASSERT_FALSE(
+        app.web_contents->IsDocumentOnLoadCompletedInPrimaryMainFrame());
     EXPECT_EQ(app.browser->app_controller()->GetBackgroundColor().value(),
               kAppBackgroundColor);
     EXPECT_EQ(GetTabColor(app.browser_view), kAppBackgroundColor);
@@ -234,6 +235,6 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest,
   }
 }
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace web_app

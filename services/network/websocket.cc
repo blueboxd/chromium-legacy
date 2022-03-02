@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,7 +16,6 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/feature_list.h"
-#include "base/ignore_result.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
@@ -57,7 +57,7 @@ constexpr uint64_t kSmallMessageThreshhold = 1 << 16;
 
 // The capacity of the data pipe to use for received messages, in bytes. Optimal
 // value depends on the platform.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 constexpr uint32_t kReceiveDataPipeCapacity = 1 << 16;
 #else
 // |2^n - delta| is better than 2^n on Linux. See crrev.com/c/1792208.
@@ -453,7 +453,7 @@ WebSocket::WebSocket(
       throttling_profile_id_(throttling_profile_id) {
   DCHECK(handshake_client_);
   // |delay| should be zero if this connection is not throttled.
-  DCHECK(pending_connection_tracker.has_value() || delay.is_zero());
+  DCHECK(pending_connection_tracker_.has_value() || delay.is_zero());
   if (auth_handler_) {
     // Make sure the request dies if |auth_handler_| has an error, otherwise
     // requests can hang.
@@ -521,7 +521,7 @@ void WebSocket::SendMessage(mojom::WebSocketMessageType type,
 
 void WebSocket::StartReceiving() {
   DCHECK(pending_data_frames_.empty());
-  ignore_result(channel_->ReadFrames());
+  std::ignore = channel_->ReadFrames();
 }
 
 void WebSocket::StartClosingHandshake(uint16_t code,
@@ -539,7 +539,7 @@ void WebSocket::StartClosingHandshake(uint16_t code,
         std::make_unique<CloseInfo>(code, reason);
     return;
   }
-  ignore_result(channel_->StartClosingHandshake(code, reason));
+  std::ignore = channel_->StartClosingHandshake(code, reason);
 }
 
 bool WebSocket::AllowCookies(const GURL& url) const {
@@ -693,7 +693,7 @@ void WebSocket::SendPendingDataFrames(InterruptionReason resume_reason) {
     pending_data_frames_.pop();
   }
   if (resuming_after_interruption) {
-    ignore_result(channel_->ReadFrames());
+    std::ignore = channel_->ReadFrames();
   }
 }
 
@@ -776,8 +776,8 @@ void WebSocket::ReadAndSendFromDataPipe(InterruptionReason resume_reason) {
   if (pending_start_closing_handshake_) {
     std::unique_ptr<CloseInfo> close_info =
         std::move(pending_start_closing_handshake_);
-    ignore_result(
-        channel_->StartClosingHandshake(close_info->code, close_info->reason));
+    std::ignore =
+        channel_->StartClosingHandshake(close_info->code, close_info->reason);
   }
 }
 

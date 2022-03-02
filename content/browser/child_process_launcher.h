@@ -25,8 +25,12 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_proto.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "content/public/browser/android/child_process_importance.h"
+#endif
+
+#if BUILDFLAG(IS_WIN)
+#include "base/win/windows_types.h"
 #endif
 
 namespace base {
@@ -58,7 +62,7 @@ enum LaunchResultCode {
   LAUNCH_RESULT_CODE_LAST_CODE
 };
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 static_assert(static_cast<int>(LAUNCH_RESULT_START) >
                   static_cast<int>(sandbox::SBOX_ERROR_LAST),
               "LaunchResultCode must not overlap with sandbox::ResultCode");
@@ -71,7 +75,7 @@ struct ChildProcessLauncherPriority {
                                unsigned int frame_depth,
                                bool intersects_viewport,
                                bool boost_for_pending_views
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
                                ,
                                ChildProcessImportance importance
 #endif
@@ -82,7 +86,7 @@ struct ChildProcessLauncherPriority {
         frame_depth(frame_depth),
         intersects_viewport(intersects_viewport),
         boost_for_pending_views(boost_for_pending_views)
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
         ,
         importance(importance)
 #endif
@@ -137,7 +141,7 @@ struct ChildProcessLauncherPriority {
   // during navigation).
   bool boost_for_pending_views;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   ChildProcessImportance importance;
 #endif
 };
@@ -155,7 +159,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
 
     virtual void OnProcessLaunchFailed(int error_code) {}
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // Whether the process can use pre-warmed up connection.
     virtual bool CanUseWarmUpConnection();
 #endif
@@ -232,7 +236,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // previous  client.
   Client* ReplaceClientForTest(Client* client);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Dumps the stack of the child process without crashing it.
   void DumpProcessStack();
 #endif
@@ -241,6 +245,9 @@ class CONTENT_EXPORT ChildProcessLauncher {
 
   // Notifies the client about the result of the operation.
   void Notify(internal::ChildProcessLauncherHelper::Process process,
+#if BUILDFLAG(IS_WIN)
+              DWORD last_error,
+#endif
               int error_code);
 
   raw_ptr<Client> client_;

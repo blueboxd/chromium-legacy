@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_refptr.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -27,8 +28,8 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -47,7 +48,7 @@
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/touchscreen_device.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
@@ -86,7 +87,7 @@ base::FilePath GetDataFilePath(const base::FilePath& relative_path,
   return path;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 void ExpectInitialManifestFieldsFromBasicWebApp(
     const WebAppIconManager& icon_manager,
     const WebApp* web_app,
@@ -125,7 +126,7 @@ void ExpectInitialManifestFieldsFromBasicWebApp(
   // User preferences:
   EXPECT_EQ(web_app->user_display_mode(), DisplayMode::kStandalone);
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace
 
@@ -273,7 +274,7 @@ class PreinstalledWebAppManagerBrowserTest
 
  private:
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
-  ScopedOsHooksSuppress os_hooks_suppress_;
+  OsIntegrationManager::ScopedSuppressForTesting os_hooks_suppress_;
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -598,7 +599,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest,
 
 // The offline manifest JSON config functionality is only available on Chrome
 // OS.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 
 // Check that offline fallback installs work offline.
 IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest,
@@ -994,7 +995,7 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest,
       GenerateAppId(/*manifest_id=*/absl::nullopt, preinstalled_app_start_url);
 
   // Install user app.
-  auto web_application_info = std::make_unique<WebApplicationInfo>();
+  auto web_application_info = std::make_unique<WebAppInstallInfo>();
   web_application_info->start_url = user_app_start_url;
   web_application_info->title = u"Test user app";
   AppId user_app_id =
@@ -1091,6 +1092,6 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest,
   }
 }
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace web_app

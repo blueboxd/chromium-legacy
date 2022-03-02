@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/profiler/thread_profiler.h"
 #include "chrome/common/profiler/thread_profiler_configuration.h"
@@ -22,10 +23,6 @@
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/sandbox_type.h"
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
-#include "chrome/utility/printing_handler.h"
-#endif
-
 namespace {
 
 base::LazyInstance<ChromeContentUtilityClient::NetworkBinderCreationCallback>::
@@ -33,15 +30,13 @@ base::LazyInstance<ChromeContentUtilityClient::NetworkBinderCreationCallback>::
 
 }  // namespace
 
-ChromeContentUtilityClient::ChromeContentUtilityClient()
-    : utility_process_running_elevated_(false) {
-}
+ChromeContentUtilityClient::ChromeContentUtilityClient() = default;
 
 ChromeContentUtilityClient::~ChromeContentUtilityClient() = default;
 
 void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
     mojo::BinderMap* binders) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   auto& cmd_line = *base::CommandLine::ForCurrentProcess();
   auto sandbox_type = sandbox::policy::SandboxTypeFromCommandLine(cmd_line);
   utility_process_running_elevated_ =

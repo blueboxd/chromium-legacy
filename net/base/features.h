@@ -34,6 +34,10 @@ NET_EXPORT extern const base::Feature kAvoidH2Reprioritization;
 // origin requests are restricted to contain at most the source origin.
 NET_EXPORT extern const base::Feature kCapReferrerToOriginOnCrossOrigin;
 
+// When enabled, ParsedCookie will allow the domain attribute to be the
+// empty string.
+NET_EXPORT extern const base::Feature kCookieDomainAttributeEmptyString;
+
 // Support for altering the parameters used for DNS transaction timeout. See
 // ResolveContext::SecureTransactionTimeout().
 NET_EXPORT extern const base::Feature kDnsTransactionDynamicTimeouts;
@@ -269,19 +273,19 @@ NET_EXPORT extern const base::Feature kSameSiteDefaultChecksMethodRigorously;
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 // When enabled, use the builtin cert verifier instead of the platform verifier.
 NET_EXPORT extern const base::Feature kCertVerifierBuiltinFeature;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 NET_EXPORT extern const base::FeatureParam<int> kCertVerifierBuiltinImpl;
 NET_EXPORT extern const base::FeatureParam<int> kCertVerifierBuiltinCacheSize;
-#endif /* defined(OS_MAC) */
+#endif /* BUILDFLAG(IS_MAC) */
 #endif /* BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED) */
 
 #if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 NET_EXPORT extern const base::Feature kCertDualVerificationTrialFeature;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 NET_EXPORT extern const base::FeatureParam<int> kCertDualVerificationTrialImpl;
 NET_EXPORT extern const base::FeatureParam<int>
     kCertDualVerificationTrialCacheSize;
-#endif /* defined(OS_MAC) */
+#endif /* BUILDFLAG(IS_MAC) */
 #endif /* BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED) */
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
@@ -331,13 +335,6 @@ NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
 NET_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kTimeoutTcpConnectAttemptMax;
 
-// Enables usage of First Party Sets to determine cookie availability.
-NET_EXPORT extern const base::Feature kFirstPartySets;
-
-// Controls whether the client is considered a dogfooder for the FirstPartySets
-// feature.
-NET_EXPORT extern const base::FeatureParam<bool> kFirstPartySetsIsDogfooder;
-
 #if BUILDFLAG(ENABLE_REPORTING)
 // When enabled this feature will allow a new Reporting-Endpoints header to
 // configure reporting endpoints for report delivery. This is used to support
@@ -345,14 +342,14 @@ NET_EXPORT extern const base::FeatureParam<bool> kFirstPartySetsIsDogfooder;
 NET_EXPORT extern const base::Feature kDocumentReporting;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 // When enabled, UDPSocketPosix increments the global counter of bytes received
 // every time bytes are received, instead of using a timer to batch updates.
 // This should reduce the number of wake ups and improve battery consumption.
 // TODO(https://crbug.com/1189805): Cleanup the feature after verifying that it
 // doesn't negatively affect performance.
 NET_EXPORT extern const base::Feature kUdpSocketPosixAlwaysUpdateBytesReceived;
-#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
 // When this feature is enabled, redirected requests will be considered
 // cross-site for the purpose of SameSite cookies if any redirect hop was
@@ -381,13 +378,20 @@ NET_EXPORT extern const base::Feature kPartitionedCookies;
 // feature flag, assuming no breakage occurs with it enabled.
 NET_EXPORT extern const base::Feature kExtraCookieValidityChecks;
 
-// When enabled, the client will opt in to the V2 component format for the
-// First-Party Sets component.
-NET_EXPORT extern const base::Feature kFirstPartySetsV2ComponentFormat;
-
 // Enable recording UMAs for network activities which can wake-up radio on
 // Android.
 NET_EXPORT extern const base::Feature kRecordRadioWakeupTrigger;
+
+// When enabled, the size of read buffer in WebSocket is changed dynamically
+// according to the type of traffic, and a small read buffer size can be set for
+// performance tests.
+NET_EXPORT extern const base::Feature kSwitchWebSocketReadBufferSize;
+NET_EXPORT extern const base::FeatureParam<int> kSmallReadBufferSize;
+
+// When enabled, the rolling average window in WebSocket can be changed for
+// performance tests.
+NET_EXPORT extern const base::Feature kSwitchWebSocketThroughputWindow;
+NET_EXPORT extern const base::FeatureParam<int> kRollingAverageWindow;
 
 }  // namespace features
 }  // namespace net

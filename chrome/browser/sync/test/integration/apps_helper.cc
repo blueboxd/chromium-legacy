@@ -73,8 +73,8 @@ bool HasSameApps(Profile* profile1, Profile* profile2) {
 }
 
 bool AllProfilesHaveSameApps() {
-  const auto& profiles = test()->GetAllProfiles();
-  for (auto* profile : profiles) {
+  const std::vector<Profile*>& profiles = test()->GetAllProfiles();
+  for (Profile* profile : profiles) {
     if (profile != profiles.front() &&
         !HasSameApps(profiles.front(), profile)) {
       DVLOG(1) << "Profiles apps do not match.";
@@ -97,7 +97,7 @@ std::string InstallPlatformApp(Profile* profile, int index) {
 
 std::string InstallHostedAppForAllProfiles(int index) {
   std::string extension_id;
-  for (auto* profile : test()->GetAllProfiles()) {
+  for (Profile* profile : test()->GetAllProfiles()) {
     extension_id = InstallHostedApp(profile, index);
   }
   return extension_id;
@@ -189,20 +189,22 @@ void FixNTPOrdinalCollisions(Profile* profile) {
 }
 
 void AwaitWebAppQuiescence(std::vector<Profile*> profiles) {
-  for (auto* profile : profiles) {
-    auto install_observer = SetupSyncInstallObserverForProfile(profile);
+  for (Profile* profile : profiles) {
+    std::unique_ptr<web_app::WebAppTestInstallObserver> install_observer =
+        SetupSyncInstallObserverForProfile(profile);
     // This actually waits for all observed apps to be installed.
     if (install_observer)
       install_observer->Wait();
 
-    auto uninstall_observer = SetupSyncUninstallObserverForProfile(profile);
+    std::unique_ptr<web_app::WebAppTestUninstallObserver> uninstall_observer =
+        SetupSyncUninstallObserverForProfile(profile);
     // This actually waits for all observed apps to be installed.
     if (uninstall_observer) {
       uninstall_observer->Wait();
     }
   }
 
-  for (auto* profile : profiles) {
+  for (Profile* profile : profiles) {
     // Only checks that there is no app in sync install state in the registry.
     // Do not use |GetEnqueuedInstallAppIdsForTesting| because the task only
     // gets removed from the queue on WebAppInstallTask::OnOsHooksCreated that
@@ -222,13 +224,13 @@ void AwaitWebAppQuiescence(std::vector<Profile*> profiles) {
   }
 }
 
-web_app::AppId InstallWebApp(Profile* profile, const WebApplicationInfo& info) {
+web_app::AppId InstallWebApp(Profile* profile, const WebAppInstallInfo& info) {
   DCHECK(info.start_url.is_valid());
   base::RunLoop run_loop;
   web_app::AppId app_id;
   auto* provider = web_app::WebAppProvider::GetForTest(profile);
   provider->install_manager().InstallWebAppFromInfo(
-      std::make_unique<WebApplicationInfo>(info),
+      std::make_unique<WebAppInstallInfo>(info),
       /*overwrite_existing_manifest_fields=*/true,
       web_app::ForInstallableSite::kYes,
       webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,

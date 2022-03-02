@@ -32,6 +32,8 @@ void TestSystemTrayClient::ShowSetTimeDialog() {}
 
 void TestSystemTrayClient::ShowDisplaySettings() {}
 
+void TestSystemTrayClient::ShowDarkModeSettings() {}
+
 void TestSystemTrayClient::ShowStorageSettings() {}
 
 void TestSystemTrayClient::ShowPowerSettings() {}
@@ -94,9 +96,15 @@ void TestSystemTrayClient::ShowMultiDeviceSetup() {
   show_multi_device_setup_count_++;
 }
 
+void TestSystemTrayClient::ShowFirmwareUpdate() {
+  show_firmware_update_count_++;
+}
+
 void TestSystemTrayClient::RequestRestartForUpdate() {}
 
 void TestSystemTrayClient::SetLocaleAndExit(
     const std::string& locale_iso_code) {}
+
+void TestSystemTrayClient::ShowAccessCodeCastingDialog() {}
 
 }  // namespace ash

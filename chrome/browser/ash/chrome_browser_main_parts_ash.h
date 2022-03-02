@@ -11,12 +11,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/ash/external_metrics.h"
 // TODO(https://crbug.com/1164001): remove and use forward declaration.
-#include "chrome/browser/ash/net/bluetooth_pref_state_observer.h"
-// TODO(https://crbug.com/1164001): remove and use forward declaration.
-#include "chrome/browser/ash/net/network_pref_state_observer.h"
-// TODO(https://crbug.com/1164001): remove and use forward declaration.
-#include "chrome/browser/ash/net/network_throttling_observer.h"
-// TODO(https://crbug.com/1164001): remove and use forward declaration.
 #include "chrome/browser/ash/network_change_manager_client.h"
 #include "chrome/browser/ash/pcie_peripheral/ash_usb_detector.h"
 // TODO(https://crbug.com/1164001): remove and use forward declaration.
@@ -31,6 +25,7 @@ class AssistantBrowserDelegateImpl;
 class AssistantStateClient;
 class ChromeKeyboardControllerClient;
 class ImageDownloaderImpl;
+class QuickAnswersController;
 
 namespace arc {
 namespace data_snapshotd {
@@ -53,7 +48,6 @@ class CrosapiManager;
 
 namespace crostini {
 class CrostiniUnsupportedActionNotifier;
-class CrosvmMetrics;
 }  // namespace crostini
 
 namespace lock_screen_apps {
@@ -67,20 +61,23 @@ class LockToSingleUserManager;
 namespace ash {
 class AccessibilityEventRewriterDelegateImpl;
 class ArcKioskAppManager;
+class BluetoothPrefStateObserver;
 class BulkPrintersCalculatorFactory;
 class CrosUsbDetector;
 class DebugdNotificationHandler;
 class DemoModeResourcesRemover;
 class EventRewriterDelegateImpl;
 class FirmwareUpdateManager;
+class FwupdDownloadClientImpl;
 class GnubbyNotification;
 class IdleActionWarningObserver;
 class LoginScreenExtensionsLifetimeManager;
 class LoginScreenExtensionsStorageCleaner;
 class LowDiskNotification;
+class NetworkPrefStateObserver;
+class NetworkThrottlingObserver;
 class PowerMetricsReporter;
 class PSIMemoryMetrics;
-class QuickAnswersController;
 class RendererFreezer;
 class SessionTerminationManager;
 class ShortcutMappingPrefService;
@@ -141,7 +138,7 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
 
   // Stages called from PreMainMessageLoopRun.
   void PreProfileInit() override;
-  void PostProfileInit() override;
+  void PostProfileInit(Profile* profile, bool is_initial_profile) override;
   void PreBrowserStart() override;
   void PostBrowserStart() override;
 
@@ -163,7 +160,7 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<NetworkThrottlingObserver> network_throttling_observer_;
   std::unique_ptr<NetworkChangeManagerClient> network_change_manager_client_;
   std::unique_ptr<DebugdNotificationHandler> debugd_notification_handler_;
-  std::unique_ptr<ash::QuickAnswersController> quick_answers_controller_;
+  std::unique_ptr<QuickAnswersController> quick_answers_controller_;
 
   std::unique_ptr<internal::DBusServices> dbus_services_;
 
@@ -213,7 +210,6 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
       auto_screen_brightness_controller_;
 
   std::unique_ptr<DemoModeResourcesRemover> demo_mode_resources_remover_;
-  std::unique_ptr<crostini::CrosvmMetrics> crosvm_metrics_;
 
   std::unique_ptr<AshUsbDetector> ash_usb_detector_;
   std::unique_ptr<CrosUsbDetector> cros_usb_detector_;
@@ -228,6 +224,8 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<BulkPrintersCalculatorFactory>
       bulk_printers_calculator_factory_;
+
+  std::unique_ptr<FwupdDownloadClientImpl> fwupd_download_client_;
 
   std::unique_ptr<SessionTerminationManager> session_termination_manager_;
 

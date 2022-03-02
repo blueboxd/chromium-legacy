@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
@@ -66,8 +65,7 @@ void BoxPainter::PaintBoxDecorationBackground(
   const DisplayItemClient* background_client = nullptr;
   absl::optional<ScopedBoxContentsPaintState> contents_paint_state;
   bool painting_background_in_contents_space =
-      BoxDecorationData::IsPaintingBackgroundInContentsSpace(paint_info,
-                                                             layout_box_);
+      paint_info.IsPaintingBackgroundInContentsSpace();
   gfx::Rect visual_rect;
   if (painting_background_in_contents_space) {
     // For the case where we are painting the background in the contents space,
@@ -107,27 +105,10 @@ void BoxPainter::PaintBoxDecorationBackground(
   RecordHitTestData(paint_info, paint_rect, *background_client);
   RecordRegionCaptureData(paint_info, paint_rect, *background_client);
 
-  bool needs_scroll_hit_test = true;
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // Pre-CompositeAfterPaint, there is no need to emit scroll hit test
-    // display items for composited scrollers because these display items are
-    // only used to create non-fast scrollable regions for non-composited
-    // scrollers. With CompositeAfterPaint, we always paint the scroll hit
-    // test display items but ignore the non-fast region if the scroll was
-    // composited in PaintArtifactCompositor::UpdateNonFastScrollableRegions.
-    if (layout_box_.HasLayer() &&
-        layout_box_.Layer()->GetCompositedLayerMapping() &&
-        layout_box_.Layer()
-            ->GetCompositedLayerMapping()
-            ->ScrollingContentsLayer()) {
-      needs_scroll_hit_test = false;
-    }
-  }
-
   // Record the scroll hit test after the non-scrolling background so
   // background squashing is not affected. Hit test order would be equivalent
   // if this were immediately before the non-scrolling background.
-  if (!painting_background_in_contents_space && needs_scroll_hit_test)
+  if (!painting_background_in_contents_space)
     RecordScrollHitTestData(paint_info, *background_client);
 }
 
@@ -274,8 +255,7 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
 void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
                                    const PhysicalRect& paint_rect,
                                    const DisplayItemClient& background_client) {
-  if (BoxDecorationData::IsPaintingBackgroundInContentsSpace(paint_info,
-                                                             layout_box_) &&
+  if (paint_info.IsPaintingBackgroundInContentsSpace() &&
       layout_box_.EffectiveAllowedTouchAction() == TouchAction::kAuto &&
       !layout_box_.InsideBlockingWheelEventHandler()) {
     return;
@@ -283,7 +263,7 @@ void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
 
   // Hit test data are only needed for compositing. This flag is used for for
   // printing and drag images which do not need hit testing.
-  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+  if (paint_info.ShouldOmitCompositingInfo())
     return;
 
   // If an object is not visible, it does not participate in hit testing.
@@ -318,7 +298,7 @@ void BoxPainter::RecordScrollHitTestData(
     const DisplayItemClient& background_client) {
   // Scroll hit test data are only needed for compositing. This flag is used for
   // printing and drag images which do not need hit testing.
-  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+  if (paint_info.ShouldOmitCompositingInfo())
     return;
 
   // If an object is not visible, it does not scroll.

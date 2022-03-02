@@ -288,7 +288,7 @@ base::ListValue GetSafeBrowsingPreferencesList(PrefService* prefs) {
 
 base::ListValue GetSafeBrowsingPoliciesList(PrefService* prefs) {
   base::ListValue preferences_list;
-  const base::ListValue* allowlist_domains =
+  const base::Value* allowlist_domains =
       prefs->GetList(prefs::kSafeBrowsingAllowlistDomains);
   std::vector<std::string> domain_list;
   CanonicalizeDomainList(*allowlist_domains, &domain_list);
@@ -321,13 +321,13 @@ base::ListValue GetSafeBrowsingPoliciesList(PrefService* prefs) {
 void GetSafeBrowsingAllowlistDomainsPref(
     const PrefService& prefs,
     std::vector<std::string>* out_canonicalized_domain_list) {
-  const base::ListValue* pref_value =
+  const base::Value* pref_value =
       prefs.GetList(prefs::kSafeBrowsingAllowlistDomains);
   CanonicalizeDomainList(*pref_value, out_canonicalized_domain_list);
 }
 
 void CanonicalizeDomainList(
-    const base::ListValue& raw_domain_list,
+    const base::Value& raw_domain_list,
     std::vector<std::string>* out_canonicalized_domain_list) {
   out_canonicalized_domain_list->clear();
   for (auto it = raw_domain_list.GetList().begin();
@@ -344,7 +344,7 @@ void CanonicalizeDomainList(
 bool IsURLAllowlistedByPolicy(const GURL& url, const PrefService& pref) {
   if (!pref.HasPrefPath(prefs::kSafeBrowsingAllowlistDomains))
     return false;
-  const base::ListValue* allowlist =
+  const base::Value* allowlist =
       pref.GetList(prefs::kSafeBrowsingAllowlistDomains);
   for (const base::Value& value : allowlist->GetList()) {
     if (url.DomainIs(value.GetString()))
@@ -355,7 +355,7 @@ bool IsURLAllowlistedByPolicy(const GURL& url, const PrefService& pref) {
 
 std::vector<std::string> GetURLAllowlistByPolicy(PrefService* pref_service) {
   std::vector<std::string> allowlist_domains;
-  const base::ListValue* allowlist =
+  const base::Value* allowlist =
       pref_service->GetList(prefs::kSafeBrowsingAllowlistDomains);
   for (const base::Value& value : allowlist->GetList()) {
     allowlist_domains.push_back(value.GetString());
@@ -374,7 +374,7 @@ bool MatchesEnterpriseAllowlist(const PrefService& pref,
 
 void GetPasswordProtectionLoginURLsPref(const PrefService& prefs,
                                         std::vector<GURL>* out_login_url_list) {
-  const base::ListValue* pref_value =
+  const base::Value* pref_value =
       prefs.GetList(prefs::kPasswordProtectionLoginURLs);
   out_login_url_list->clear();
   for (const base::Value& value : pref_value->GetList()) {

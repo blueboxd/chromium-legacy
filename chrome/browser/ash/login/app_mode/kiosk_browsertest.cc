@@ -2875,7 +2875,7 @@ class KioskAutoLaunchViewsTest : public OobeBaseTest,
     DictionaryPrefUpdate dict_update(prefs,
                                      KioskAppManager::kKioskDictionaryName);
     // The AutoLoginState is taken from KioskAppManager::AutoLoginState.
-    dict_update->SetInteger(
+    dict_update->SetIntKey(
         KioskAppManager::kKeyAutoLoginState,
         static_cast<int>(KioskAppManager::AutoLoginState::kRequested));
   }

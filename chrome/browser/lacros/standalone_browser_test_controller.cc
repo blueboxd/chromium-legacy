@@ -7,9 +7,9 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 
@@ -41,7 +41,7 @@ void StandaloneBrowserTestController::InstallWebApp(
     const std::string& start_url,
     apps::mojom::WindowMode window_mode,
     InstallWebAppCallback callback) {
-  auto info = std::make_unique<WebApplicationInfo>();
+  auto info = std::make_unique<WebAppInstallInfo>();
   info->title = u"Test Web App";
   info->start_url = GURL(start_url);
   info->display_mode = WindowModeToDisplayMode(window_mode);

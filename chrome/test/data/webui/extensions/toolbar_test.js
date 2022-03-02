@@ -7,7 +7,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS, isMac} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {eventToPromise} from '../test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {TestService} from './test_service.js';
 import {createExtensionInfo, testVisible} from './test_util.js';
@@ -37,7 +37,7 @@ suite(extension_toolbar_tests.suiteName, function() {
     document.body.appendChild(toolbar);
     toolbar.inDevMode = false;
     toolbar.devModeControlledByPolicy = false;
-    toolbar.isSupervised = false;
+    toolbar.isChildAccount = false;
     if (isChromeOS) {
       toolbar.kioskEnabled = false;
     }
@@ -88,8 +88,8 @@ suite(extension_toolbar_tests.suiteName, function() {
     flush();
     assertFalse(toggle.disabled);
 
-    // Test that the dev-mode toggle is disabled when the user is supervised.
-    toolbar.set('isSupervised', true);
+    // Test that the dev-mode toggle is disabled for child account users.
+    toolbar.set('isChildAccount', true);
     flush();
     assertTrue(toggle.disabled);
   });

@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -41,10 +42,12 @@
 #include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/dns_alias_utility.h"
+#include "net/dns/dns_util.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/host_resolver_results.h"
+#include "net/dns/public/dns_query_type.h"
 #include "net/dns/public/host_resolver_source.h"
 #include "net/dns/public/mdns_listener_update_type.h"
 #include "net/dns/public/resolve_error_info.h"
@@ -55,7 +58,7 @@
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/scheme_host_port.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "net/base/winsock_init.h"
 #endif
 
@@ -213,10 +216,9 @@ class MockHostResolverBase::RequestImpl
     return *nullopt_result;
   }
 
-  const absl::optional<std::vector<std::string>>& GetDnsAliasResults()
-      const override {
+  const std::set<std::string>* GetDnsAliasResults() const override {
     DCHECK(complete_);
-    return sanitized_dns_alias_results_;
+    return base::OptionalOrNullptr(fixed_up_dns_alias_results_);
   }
 
   net::ResolveErrorInfo GetResolveErrorInfo() const override {
@@ -264,8 +266,9 @@ class MockHostResolverBase::RequestImpl
 
     SetError(OK);
 
-    sanitized_dns_alias_results_ =
-        dns_alias_utility::SanitizeDnsAliases(address_results_->dns_aliases());
+    fixed_up_dns_alias_results_ = dns_alias_utility::FixUpDnsAliases(
+        std::set<std::string>(address_results_->dns_aliases().begin(),
+                              address_results_->dns_aliases().end()));
     staleness_ = std::move(staleness);
 
     endpoint_results_ = AddressListToEndpointResults(address_results_.value());
@@ -338,10 +341,10 @@ class MockHostResolverBase::RequestImpl
     // is default.
     AddressList corrected;
     for (const IPEndPoint& endpoint : list.endpoints()) {
-      if (IsAddressType(parameters_.dns_query_type) &&
-          (parameters_.dns_query_type == DnsQueryType::UNSPECIFIED ||
-           HostResolver::DnsQueryTypeToAddressFamily(
-               parameters_.dns_query_type) == endpoint.GetFamily())) {
+      DCHECK_NE(endpoint.GetFamily(), ADDRESS_FAMILY_UNSPECIFIED);
+      if (parameters_.dns_query_type == DnsQueryType::UNSPECIFIED ||
+          parameters_.dns_query_type ==
+              AddressFamilyToDnsQueryType(endpoint.GetFamily())) {
         if (endpoint.port() == 0) {
           corrected.push_back(
               IPEndPoint(endpoint.address(), GetPort(request_endpoint_)));
@@ -367,7 +370,7 @@ class MockHostResolverBase::RequestImpl
 
   absl::optional<AddressList> address_results_;
   absl::optional<std::vector<HostResolverEndpointResult>> endpoint_results_;
-  absl::optional<std::vector<std::string>> sanitized_dns_alias_results_;
+  absl::optional<std::set<std::string>> fixed_up_dns_alias_results_;
   absl::optional<HostCache::EntryStaleness> staleness_;
   ResolveErrorInfo resolve_error_info_;
 
@@ -505,7 +508,7 @@ MockHostResolverBase::RuleResolver::operator=(RuleResolver&&) = default;
 const MockHostResolverBase::RuleResolver::RuleResult&
 MockHostResolverBase::RuleResolver::Resolve(
     const absl::variant<url::SchemeHostPort, HostPortPair>& request_endpoint,
-    DnsQueryType request_type,
+    DnsQueryTypeSet request_types,
     HostResolverSource request_source) const {
   for (const auto& rule : rules_) {
     const RuleKey& key = rule.first;
@@ -520,7 +523,10 @@ MockHostResolverBase::RuleResolver::Resolve(
       continue;
     }
 
-    if (key.query_type.has_value() && request_type != key.query_type.value()) {
+    DCHECK(!key.query_type.has_value() ||
+           key.query_type.value() != DnsQueryType::UNSPECIFIED);
+    if (key.query_type.has_value() &&
+        !request_types.Has(key.query_type.value())) {
       continue;
     }
 
@@ -634,6 +640,17 @@ void MockHostResolverBase::RuleResolver::AddIPLiteralRuleWithDnsAliases(
   CHECK_EQ(ParseAddressList(ip_literal, dns_aliases, &results), OK);
 
   AddRule(hostname_pattern, std::move(results));
+}
+
+void MockHostResolverBase::RuleResolver::AddIPLiteralRuleWithDnsAliases(
+    base::StringPiece hostname_pattern,
+    base::StringPiece ip_literal,
+    std::set<std::string> dns_aliases) {
+  std::vector<std::string> aliases_vector;
+  base::ranges::move(dns_aliases, std::back_inserter(aliases_vector));
+
+  AddIPLiteralRuleWithDnsAliases(hostname_pattern, ip_literal,
+                                 std::move(aliases_vector));
 }
 
 void MockHostResolverBase::RuleResolver::AddSimulatedFailure(
@@ -939,10 +956,13 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
 
   IPAddress ip_address;
   if (ip_address.AssignFromIPLiteral(GetHostname(endpoint))) {
+    const DnsQueryType desired_address_query =
+        AddressFamilyToDnsQueryType(GetAddressFamily(ip_address));
+    DCHECK_NE(desired_address_query, DnsQueryType::UNSPECIFIED);
+
     // This matches the behavior HostResolverImpl.
     if (dns_query_type != DnsQueryType::UNSPECIFIED &&
-        dns_query_type !=
-            AddressFamilyToDnsQueryType(GetAddressFamily(ip_address))) {
+        dns_query_type != desired_address_query) {
       return ERR_NAME_NOT_RESOLVED;
     }
 
@@ -984,7 +1004,7 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
       rv = cache_result->second.error();
       if (rv == OK) {
         *addresses = AddressList::CopyWithPort(
-            cache_result->second.addresses().value(), GetPort(endpoint));
+            cache_result->second.legacy_addresses().value(), GetPort(endpoint));
         *out_stale_info = std::move(stale_info);
       }
 
@@ -1112,7 +1132,7 @@ RuleBasedHostResolverProc::Rule::Rule(ResolverType resolver_type,
       replacement(replacement),
       dns_aliases(std::move(dns_aliases)),
       latency_ms(latency_ms) {
-  DCHECK(dns_aliases != std::vector<std::string>({""}));
+  DCHECK(this->dns_aliases != std::vector<std::string>({""}));
 }
 
 RuleBasedHostResolverProc::Rule::Rule(const Rule& other) = default;
@@ -1300,7 +1320,7 @@ int RuleBasedHostResolverProc::Resolve(const std::string& host,
           return ERR_DNS_NAME_HTTPS_ONLY;
         }
         case Rule::kResolverTypeSystem:
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
           EnsureWinsockInit();
 #endif
           return SystemHostResolverCall(effective_host, address_family,
@@ -1422,8 +1442,7 @@ class HangingHostResolver::RequestImpl
     IMMEDIATE_CRASH();
   }
 
-  const absl::optional<std::vector<std::string>>& GetDnsAliasResults()
-      const override {
+  const std::set<std::string>* GetDnsAliasResults() const override {
     IMMEDIATE_CRASH();
   }
 

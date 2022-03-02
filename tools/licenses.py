@@ -129,6 +129,8 @@ ADDITIONAL_PATHS = (
     os.path.join('testing', 'gmock'),
     os.path.join('testing', 'gtest'),
     os.path.join('third_party', 'boringssl', 'src', 'third_party', 'fiat'),
+    os.path.join('third_party', 'devtools-frontend', 'src', 'front_end',
+                 'third_party'),
     os.path.join('tools', 'gyp'),
     os.path.join('tools', 'page_cycler', 'acid3'),
     os.path.join('url', 'third_party', 'mozilla'),
@@ -622,14 +624,15 @@ def FindThirdPartyDeps(gn_out_dir, gn_target, target_os):
       if isinstance(gn_deps, bytes):
         gn_deps = gn_deps.decode("utf-8")
   except:
-    print("""
-    ############################################################################
+    if sys.platform == 'win32':
+      print("""
+      ############################################################################
 
-    This is known issue, please report the failure to https://crbug.com/1208393.
+      This is known issue, please report the failure to https://crbug.com/1208393.
 
-    ############################################################################
-    """)
-    subprocess.check_call(['tasklist.exe'])
+      ############################################################################
+      """)
+      subprocess.check_call(['tasklist.exe'])
     raise
 
   return GetThirdPartyDepsFromGNDepsOutput(gn_deps, target_os)

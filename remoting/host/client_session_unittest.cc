@@ -600,11 +600,11 @@ TEST_F(ClientSessionTest, LocalInputTest) {
 
   connection_->input_stub()->InjectMouseEvent(MakeMouseMoveEvent(100, 101));
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
   // The OS echoes the injected event back.
   client_session_->OnLocalPointerMoved(webrtc::DesktopVector(100, 101),
                                        ui::ET_MOUSE_MOVED);
-#endif  // !defined(OS_WIN)
+#endif  // !BUILDFLAG(IS_WIN)
 
   // This one should get throught as well.
   connection_->input_stub()->InjectMouseEvent(MakeMouseMoveEvent(200, 201));
@@ -808,35 +808,5 @@ TEST_F(ClientSessionTest, ForwardHostSessionOptions2) {
                    .desktop_capture_options()
                    ->detect_updated_region());
 }
-
-#if defined(OS_WIN)
-TEST_F(ClientSessionTest, ForwardDirectXHostSessionOptions1) {
-  auto session = std::make_unique<protocol::FakeSession>();
-  auto configuration = std::make_unique<jingle_xmpp::XmlElement>(
-      jingle_xmpp::QName(kChromotingXmlNamespace, "host-configuration"));
-  configuration->SetBodyText("DirectX-Capturer:true");
-  session->SetAttachment(0, std::move(configuration));
-  CreateClientSession(std::move(session));
-  ConnectClientSession();
-  ASSERT_TRUE(desktop_environment_factory_->last_desktop_environment()
-                  ->options()
-                  .desktop_capture_options()
-                  ->allow_directx_capturer());
-}
-
-TEST_F(ClientSessionTest, ForwardDirectXHostSessionOptions2) {
-  auto session = std::make_unique<protocol::FakeSession>();
-  auto configuration = std::make_unique<jingle_xmpp::XmlElement>(
-      jingle_xmpp::QName(kChromotingXmlNamespace, "host-configuration"));
-  configuration->SetBodyText("DirectX-Capturer:false");
-  session->SetAttachment(0, std::move(configuration));
-  CreateClientSession(std::move(session));
-  ConnectClientSession();
-  ASSERT_FALSE(desktop_environment_factory_->last_desktop_environment()
-                   ->options()
-                   .desktop_capture_options()
-                   ->allow_directx_capturer());
-}
-#endif
 
 }  // namespace remoting

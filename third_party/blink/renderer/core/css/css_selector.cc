@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
@@ -134,13 +133,13 @@ inline unsigned CSSSelector::SpecificityForOneSelector() const {
         case kPseudoHost:
           if (!SelectorList())
             return kClassLikeSpecificity;
-          FALLTHROUGH;
+          [[fallthrough]];
         case kPseudoHostContext:
           DCHECK(SelectorList()->HasOneSelector());
           return kClassLikeSpecificity + SelectorList()->First()->Specificity();
         case kPseudoNot:
           DCHECK(SelectorList());
-          FALLTHROUGH;
+          [[fallthrough]];
         case kPseudoIs:
           return MaximumSpecificity(SelectorList());
         case kPseudoHas:
@@ -251,6 +250,14 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
       return kPseudoIdSpellingError;
     case kPseudoGrammarError:
       return kPseudoIdGrammarError;
+    case kPseudoTransition:
+      return kPseudoIdTransition;
+    case kPseudoTransitionContainer:
+      return kPseudoIdTransitionContainer;
+    case kPseudoTransitionOldContent:
+      return kPseudoIdTransitionOldContent;
+    case kPseudoTransitionNewContent:
+      return kPseudoIdTransitionNewContent;
     case kPseudoUnknown:
     case kPseudoEmpty:
     case kPseudoFirstChild:
@@ -462,6 +469,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"start", CSSSelector::kPseudoStart},
     {"target", CSSSelector::kPseudoTarget},
     {"target-text", CSSSelector::kPseudoTargetText},
+    {"transition", CSSSelector::kPseudoTransition},
     {"valid", CSSSelector::kPseudoValid},
     {"vertical", CSSSelector::kPseudoVertical},
     {"visited", CSSSelector::kPseudoVisited},
@@ -486,6 +494,9 @@ const static NameToPseudoStruct kPseudoTypeWithArgumentsMap[] = {
     {"nth-of-type", CSSSelector::kPseudoNthOfType},
     {"part", CSSSelector::kPseudoPart},
     {"slotted", CSSSelector::kPseudoSlotted},
+    {"transition-container", CSSSelector::kPseudoTransitionContainer},
+    {"transition-new-content", CSSSelector::kPseudoTransitionNewContent},
+    {"transition-old-content", CSSSelector::kPseudoTransitionOldContent},
     {"where", CSSSelector::kPseudoWhere},
 };
 
@@ -633,7 +644,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
       // but should be PseudoElement like double colon.
       if (match_ == kPseudoClass)
         match_ = kPseudoElement;
-      FALLTHROUGH;
+      [[fallthrough]];
     // For pseudo elements
     case kPseudoBackdrop:
     case kPseudoCue:
@@ -655,6 +666,10 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoHighlight:
     case kPseudoSpellingError:
     case kPseudoGrammarError:
+    case kPseudoTransition:
+    case kPseudoTransitionContainer:
+    case kPseudoTransitionOldContent:
+    case kPseudoTransitionNewContent:
       if (match_ != kPseudoElement)
         pseudo_type_ = kPseudoUnknown;
       break;
@@ -677,7 +692,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
         pseudo_type_ = kPseudoUnknown;
         break;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     // For pseudo classes
     case kPseudoActive:
     case kPseudoAny:
@@ -1040,6 +1055,11 @@ void CSSSelector::SetSelectorList(
     std::unique_ptr<CSSSelectorList> selector_list) {
   CreateRareData();
   data_.rare_data_->selector_list_ = std::move(selector_list);
+}
+
+void CSSSelector::SetContainsPseudoInsideHasPseudoClass() {
+  CreateRareData();
+  data_.rare_data_->bits_.contains_pseudo_inside_has_pseudo_class_ = true;
 }
 
 static bool ValidateSubSelector(const CSSSelector* selector) {

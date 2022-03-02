@@ -38,8 +38,10 @@ class ActionMoveKey : public Action {
   // }
   bool ParseFromJson(const base::Value& value) override;
   bool RewriteEvent(const ui::Event& origin,
+                    const gfx::RectF& content_bounds,
+                    const bool is_mouse_locked,
                     std::list<ui::TouchEvent>& touch_events,
-                    const gfx::RectF& content_bounds) override;
+                    bool& keep_original_event) override;
   gfx::PointF GetUIPosition(const gfx::RectF& content_bounds) override;
   std::unique_ptr<ActionLabel> CreateView(
       const gfx::RectF& content_bounds) override;

@@ -9,8 +9,8 @@
 
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "components/background_sync/background_sync_delegate.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/site_engagement/content/site_engagement_observer.h"
@@ -40,7 +40,7 @@ class BackgroundSyncDelegateImpl
   explicit BackgroundSyncDelegateImpl(Profile* profile);
   ~BackgroundSyncDelegateImpl() override;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   class BackgroundSyncEventKeepAliveImpl
       : public content::BackgroundSyncController::BackgroundSyncEventKeepAlive {
    public:
@@ -69,14 +69,14 @@ class BackgroundSyncDelegateImpl
   void NoteSuspendedPeriodicSyncOrigins(
       std::set<url::Origin> suspended_origins) override;
   int GetSiteEngagementPenalty(const GURL& url) override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void ScheduleBrowserWakeUpWithDelay(
       blink::mojom::BackgroundSyncType sync_type,
       base::TimeDelta delay) override;
   void CancelBrowserWakeup(blink::mojom::BackgroundSyncType sync_type) override;
   bool ShouldDisableBackgroundSync() override;
   bool ShouldDisableAndroidNetworkDetection() override;
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   // SiteEngagementObserver overrides.
   void OnEngagementEvent(

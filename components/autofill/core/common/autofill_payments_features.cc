@@ -40,7 +40,7 @@ const base::Feature kAutofillAutoTriggerManualFallbackForCards{
 // credit cards from Google payments.
 const base::Feature kAutofillCreditCardAuthentication{
   "AutofillCreditCardAuthentication",
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
       // Better Auth project is fully launched on Win/Mac/Clank.
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
@@ -97,6 +97,14 @@ const base::Feature kAutofillEnableStickyManualFallbackForCards{
 // chip in toolbar along with the avatar toolbar button.
 const base::Feature kAutofillEnableToolbarStatusChip{
     "AutofillEnableToolbarStatusChip", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, the user will have the ability to update the virtual card
+// enrollment of a credit card through their chrome browser after certain
+// autofill flows (for example, downstream and upstream), and from the settings
+// page.
+const base::Feature kAutofillEnableUpdateVirtualCardEnrollment{
+    "AutofillEnableUpdateVirtualCardEnrollment",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, the option of using cloud token virtual card will be offered
 // when all requirements are met.
@@ -172,8 +180,8 @@ const base::Feature kAutofillUpstreamAllowAllEmailDomains{
 bool ShouldShowImprovedUserConsentForCreditCardSave() {
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_WIN) || defined(OS_APPLE) || \
-    (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || \
+    (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   // The new user consent UI is fully launched on MacOS, Windows and Linux.
   return true;
 #else

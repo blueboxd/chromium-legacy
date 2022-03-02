@@ -121,7 +121,7 @@ class WelcomeScreenBrowserTest : public OobeBaseTest {
         data_dir_.GetPath().AppendASCII("startup_manifest.json");
     EXPECT_TRUE(base::WriteFile(startup_manifest, kStartupManifestEnglish));
     path_override_ = std::make_unique<base::ScopedPathOverride>(
-        chromeos::FILE_STARTUP_CUSTOMIZATION_MANIFEST, startup_manifest);
+        FILE_STARTUP_CUSTOMIZATION_MANIFEST, startup_manifest);
     return true;
   }
 
@@ -152,7 +152,7 @@ class WelcomeScreenSystemDevModeBrowserTest : public WelcomeScreenBrowserTest {
   // WelcomeScreenBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WelcomeScreenBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kSystemDevMode);
+    command_line->AppendSwitch(chromeos::switches::kSystemDevMode);
   }
 };
 
@@ -699,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenChromeVoxHintTest, CancelHint) {
   ASSERT_TRUE(IdleDetectionCancelledForTesting());
 }
 
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#if BUILDFLAG(IS_CHROMEOS) && !defined(NDEBUG)
 #define MAYBE_ActivateChromeVoxBeforeHint DISABLED_ActivateChromeVoxBeforeHint
 #else
 #define MAYBE_ActivateChromeVoxBeforeHint ActivateChromeVoxBeforeHint
@@ -833,7 +833,7 @@ class WelcomeScreenInternationalChromeVoxHintTest
         data_dir_.GetPath().AppendASCII("startup_manifest.json");
     EXPECT_TRUE(base::WriteFile(startup_manifest, kStartupManifestFrench));
     path_override_ = std::make_unique<base::ScopedPathOverride>(
-        chromeos::FILE_STARTUP_CUSTOMIZATION_MANIFEST, startup_manifest);
+        FILE_STARTUP_CUSTOMIZATION_MANIFEST, startup_manifest);
     return true;
   }
 

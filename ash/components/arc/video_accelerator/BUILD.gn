@@ -16,6 +16,8 @@ if (use_v4l2_codec || use_vaapi) {
       "gpu_arc_video_decoder.h",
       "gpu_arc_video_encode_accelerator.cc",
       "gpu_arc_video_encode_accelerator.h",
+      "gpu_arc_video_frame_pool.cc",
+      "gpu_arc_video_frame_pool.h",
       "gpu_arc_video_protected_buffer_allocator.cc",
       "gpu_arc_video_protected_buffer_allocator.h",
       "oop_arc_video_accelerator_factory.cc",
@@ -55,4 +57,17 @@ source_set("common") {
   if (use_v4l2_codec || use_vaapi) {
     deps += [ "//media/gpu/chromeos:chromeos" ]
   }
+}
+
+source_set("protected_native_pixmap_query_client") {
+  sources = [
+    "protected_native_pixmap_query_client.cc",
+    "protected_native_pixmap_query_client.h",
+  ]
+
+  deps = [
+    "//ash/components/arc/mojom:media",
+    "//components/exo",
+    "//content/public/browser:browser",
+  ]
 }

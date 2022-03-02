@@ -68,7 +68,6 @@ class AttributionManagerImpl;
 class CookieStoreManager;
 class FileSystemAccessEntryFactory;
 class FileSystemAccessManagerImpl;
-class FontAccessContext;
 class FontAccessManagerImpl;
 class GeneratedCodeCacheContext;
 class HostZoomLevelContext;
@@ -128,6 +127,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   void OverrideSharedStorageWorkletHostManagerForTesting(
       std::unique_ptr<SharedStorageWorkletHostManager>
           shared_storage_worklet_host_manager);
+  void OverrideAggregationServiceForTesting(
+      std::unique_ptr<AggregationServiceImpl> aggregation_service);
 
   // Returns the StoragePartitionConfig that represents this StoragePartition.
   const StoragePartitionConfig& GetConfig();
@@ -155,7 +156,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   storage::QuotaManager* GetQuotaManager() override;
   BackgroundSyncContextImpl* GetBackgroundSyncContext() override;
   storage::FileSystemContext* GetFileSystemContext() override;
-  FontAccessContext* GetFontAccessContext() override;
   storage::DatabaseTracker* GetDatabaseTracker() override;
   DOMStorageContextWrapper* GetDOMStorageContext() override;
   storage::mojom::LocalStorageControl* GetLocalStorageControl() override;
@@ -235,11 +235,11 @@ class CONTENT_EXPORT StoragePartitionImpl
   AttributionManagerImpl* GetAttributionManager();
   void SetFontAccessManagerForTesting(
       std::unique_ptr<FontAccessManagerImpl> font_access_manager);
-  FontAccessManagerImpl* GetFontAccessManager();
   InterestGroupManager* GetInterestGroupManager();
   ComputePressureManager* GetComputePressureManager();
   std::string GetPartitionDomain();
   AggregationServiceImpl* GetAggregationService();
+  FontAccessManagerImpl* GetFontAccessManager();
 
   // blink::mojom::DomStorage interface.
   void OpenLocalStorage(
@@ -267,7 +267,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   void OnCanSendDomainReliabilityUpload(
       const GURL& origin,
       OnCanSendDomainReliabilityUploadCallback callback) override;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void OnGenerateHttpNegotiateAuthToken(
       const std::string& server_auth_token,
       bool can_delegate,
@@ -275,7 +275,7 @@ class CONTENT_EXPORT StoragePartitionImpl
       const std::string& spn,
       OnGenerateHttpNegotiateAuthTokenCallback callback) override;
 #endif
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   void OnTrustAnchorUsed() override;
 #endif
   void OnTrustTokenIssuanceDivertedToSystem(
@@ -305,10 +305,12 @@ class CONTENT_EXPORT StoragePartitionImpl
       const scoped_refptr<net::HttpResponseHeaders>& head_headers,
       mojo::PendingRemote<network::mojom::AuthChallengeResponder>
           auth_challenge_responder) override;
-  void OnClearSiteData(const GURL& url,
-                       const std::string& header_value,
-                       int load_flags,
-                       OnClearSiteDataCallback callback) override;
+  void OnClearSiteData(
+      const GURL& url,
+      const std::string& header_value,
+      int load_flags,
+      const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
+      OnClearSiteDataCallback callback) override;
   void OnLoadingStateUpdate(network::mojom::LoadInfoPtr info,
                             OnLoadingStateUpdateCallback callback) override;
   void OnDataUseUpdate(int32_t network_traffic_annotation_id_hash,

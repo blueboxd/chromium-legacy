@@ -50,6 +50,15 @@ using metrics_util::GaiaPasswordHashChange;
 
 class PasswordStoreConsumer;
 
+// Used to notify that unsynced credentials are about to be deleted.
+class UnsyncedCredentialsDeletionNotifier {
+ public:
+  // Should be called from the UI thread.
+  virtual void Notify(std::vector<PasswordForm>) = 0;
+  virtual ~UnsyncedCredentialsDeletionNotifier() = default;
+  virtual base::WeakPtr<UnsyncedCredentialsDeletionNotifier> GetWeakPtr() = 0;
+};
+
 // Partial, cross-platform implementation for storing form passwords.
 // The login request/manipulation API is not threadsafe and must be used
 // from the UI thread.
@@ -57,22 +66,15 @@ class PasswordStoreConsumer;
 // needs to access these methods.
 class PasswordStore : public PasswordStoreInterface {
  public:
-  // Used to notify that unsynced credentials are about to be deleted.
-  class UnsyncedCredentialsDeletionNotifier {
-   public:
-    // Should be called from the UI thread.
-    virtual void Notify(std::vector<PasswordForm>) = 0;
-    virtual ~UnsyncedCredentialsDeletionNotifier() = default;
-    virtual base::WeakPtr<UnsyncedCredentialsDeletionNotifier> GetWeakPtr() = 0;
-  };
-
   explicit PasswordStore(std::unique_ptr<PasswordStoreBackend> backend);
 
   PasswordStore(const PasswordStore&) = delete;
   PasswordStore& operator=(const PasswordStore&) = delete;
 
-  // Always call this too on the UI thread.
-  // TODO(crbug.bom/1218413): Move initialization into the core interface, too.
+  // Always call this too on the UI thread. |sync_enabled_or_disabled_cb| is
+  // invoked in UI thread (or sequence used to invoke Init()) when sync is
+  // enabled or disabled. It is no longer invoked after ShutdownOnUIThread().
+  // TODO(crbug.com/1218413): Move initialization into the core interface, too.
   bool Init(
       PrefService* prefs,
       std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper,
@@ -151,8 +153,17 @@ class PasswordStore : public PasswordStoreInterface {
   // |init_status_|.
   void OnInitCompleted(bool success);
 
-  // Notifies observers that password store data may have been changed.
-  void NotifyLoginsChangedOnMainSequence(PasswordStoreChangeList changes);
+  // Notifies observers that password store data may have been changed. If
+  // available, it forwards the changes to observers. Otherwise, all logins are
+  // requested and forwarded to `NotifyLoginsRetainedOnMainSequence`.
+  void NotifyLoginsChangedOnMainSequence(
+      absl::optional<PasswordStoreChangeList> changes);
+
+  // Notifies observers with all logins remaining after a modifying operation.
+  void NotifyLoginsRetainedOnMainSequence(LoginsResultOrError result);
+
+  // Called when the backend reports that sync has been enabled or disabled.
+  void NotifySyncEnabledOrDisabledOnMainSequence();
 
   // The following methods notify observers that the password store may have
   // been modified via NotifyLoginsChangedOnMainSequence(). Note that there is
@@ -178,6 +189,9 @@ class PasswordStore : public PasswordStoreInterface {
   // TaskRunner for tasks that run on the main sequence (usually the UI thread).
   // TODO(crbug.com/1217071): Move into backend_.
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
+
+  // Closure passed during Init().
+  base::RepeatingClosure sync_enabled_or_disabled_cb_ = base::DoNothing();
 
   // The observers.
   base::ObserverList<Observer, /*check_empty=*/true> observers_;

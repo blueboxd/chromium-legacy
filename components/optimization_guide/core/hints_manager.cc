@@ -50,7 +50,6 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace optimization_guide {
@@ -294,7 +293,6 @@ HintsManager::HintsManager(
     TopHostProvider* top_host_provider,
     TabUrlProvider* tab_url_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    network::NetworkConnectionTracker* network_connection_tracker,
     std::unique_ptr<PushNotificationManager> push_notification_manager)
     : is_off_the_record_(is_off_the_record),
       application_locale_(application_locale),
@@ -308,8 +306,7 @@ HintsManager::HintsManager(
       hints_fetcher_factory_(std::make_unique<HintsFetcherFactory>(
           url_loader_factory,
           features::GetOptimizationGuideServiceGetHintsURL(),
-          pref_service,
-          network_connection_tracker)),
+          pref_service)),
       top_host_provider_(top_host_provider),
       tab_url_provider_(tab_url_provider),
       push_notification_manager_(std::move(push_notification_manager)),
@@ -710,8 +707,12 @@ void HintsManager::OnHintsForActiveTabsFetched(
     const base::flat_set<GURL>& urls_fetched,
     absl::optional<std::unique_ptr<proto::GetHintsResponse>>
         get_hints_response) {
-  if (!get_hints_response)
+  if (!get_hints_response) {
+    if (switches::IsDebugLogsEnabled()) {
+      DVLOG(0) << "OptimizationGuide: OnHintsForActiveTabsFetched failed";
+    }
     return;
+  }
 
   hint_cache_->UpdateFetchedHints(
       std::move(*get_hints_response),
@@ -735,6 +736,10 @@ void HintsManager::OnPageNavigationHintsFetched(
   }
 
   if (!get_hints_response.has_value() || !get_hints_response.value()) {
+    if (switches::IsDebugLogsEnabled()) {
+      DVLOG(0) << "OptimizationGuide: OnPageNavigationHintsFetched failed";
+    }
+
     if (navigation_url) {
       PrepareToInvokeRegisteredCallbacks(*navigation_url);
     }
@@ -748,6 +753,10 @@ void HintsManager::OnPageNavigationHintsFetched(
       base::BindOnce(&HintsManager::OnFetchedPageNavigationHintsStored,
                      weak_ptr_factory_.GetWeakPtr(), navigation_data_weak_ptr,
                      navigation_url, page_navigation_hosts_requested));
+
+  if (switches::IsDebugLogsEnabled()) {
+    DVLOG(0) << "OptimizationGuide: OnPageNavigationHintsFetched complete";
+  }
 }
 
 void HintsManager::OnFetchedActiveTabsHintsStored() {
@@ -1058,6 +1067,10 @@ void HintsManager::OnBatchUpdateHintsFetched(
   CleanUpBatchUpdateHintsFetcher(request_id);
 
   if (!get_hints_response.has_value() || !get_hints_response.value()) {
+    if (switches::IsDebugLogsEnabled()) {
+      DVLOG(0) << "OptimizationGuide: OnBatchUpdateHintsFetched for "
+               << proto::RequestContext_Name(request_context) << " failed";
+    }
     OnBatchUpdateHintsStored(urls_with_pending_callback, optimization_types,
                              callback);
     return;

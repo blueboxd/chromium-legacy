@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
+#include "third_party/blink/renderer/core/html/client_hints_util.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/html_dimension.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -52,7 +53,6 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
-#include "third_party/blink/renderer/core/html/parser/subresource_redirect_origins_preloader.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -60,7 +60,6 @@
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/loader/web_bundle/script_web_bundle_rule.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/core/script_type_names.h"
@@ -403,11 +402,6 @@ class TokenPreloadScanner::StartTagScanner {
     }
     request->SetRenderBlockingBehavior(render_blocking_behavior);
 
-    if (type == ResourceType::kImage &&
-        document_parameters.subresource_redirect_origins_preloader) {
-      document_parameters.subresource_redirect_origins_preloader
-          ->AddImagePreloadRequest(predicted_base_url, url_to_load_);
-    }
     if (type == ResourceType::kImage && Match(tag_impl_, html_names::kImgTag) &&
         IsLazyLoadImageDeferable(document_parameters)) {
       return nullptr;
@@ -971,8 +965,8 @@ static void HandleMetaViewport(
       document_parameters->viewport_meta_zero_values_quirk);
   if (viewport)
     *viewport = description;
-  FloatSize initial_viewport(media_values->DeviceWidth(),
-                             media_values->DeviceHeight());
+  gfx::SizeF initial_viewport(media_values->DeviceWidth(),
+                              media_values->DeviceHeight());
   PageScaleConstraints constraints = description.Resolve(
       initial_viewport, document_parameters->default_viewport_min_width);
   media_values->OverrideViewportDimensions(constraints.layout_size.width(),
@@ -1022,7 +1016,8 @@ void TokenPreloadScanner::HandleMetaNameAttribute(
 
   if (EqualIgnoringASCIICase(name_attribute_value, http_names::kAcceptCH) &&
       RuntimeEnabledFeatures::ClientHintsMetaNameAcceptCHEnabled()) {
-    client_hints_preferences_.UpdateFromMetaTagAcceptCH(
+    UpdateWindowPermissionsPolicyWithDelegationSupportForClientHints(
+        client_hints_preferences_, document_parameters_->local_dom_window,
         content_attribute->Value(), document_url_, nullptr,
         /*is_http_equiv*/ false,
         /*is_preload_or_parser*/ scanner_type_ == ScannerType::kMainDocument);
@@ -1128,7 +1123,9 @@ void TokenPreloadScanner::ScanCommon(
             const typename Token::Attribute* content_attribute =
                 token.GetAttributeItem(html_names::kContentAttr);
             if (content_attribute) {
-              client_hints_preferences_.UpdateFromMetaTagAcceptCH(
+              UpdateWindowPermissionsPolicyWithDelegationSupportForClientHints(
+                  client_hints_preferences_,
+                  document_parameters_->local_dom_window,
                   content_attribute->Value(), document_url_, nullptr,
                   /*is_http_equiv*/ true,
                   /*is_preload_or_parser*/ scanner_type_ ==
@@ -1284,8 +1281,7 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   }
   probe::GetDisabledImageTypes(document->GetExecutionContext(),
                                &disabled_image_types);
-  subresource_redirect_origins_preloader =
-      SubresourceRedirectOriginsPreloader::From(*document);
+  local_dom_window = document->domWindow();
 }
 
 }  // namespace blink

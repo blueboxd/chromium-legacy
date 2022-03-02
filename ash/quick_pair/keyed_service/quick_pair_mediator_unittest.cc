@@ -6,7 +6,9 @@
 
 #include <memory>
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/quick_pair/common/device.h"
+#include "ash/quick_pair/common/mock_quick_pair_browser_delegate.h"
 #include "ash/quick_pair/common/pair_failure.h"
 #include "ash/quick_pair/common/protocol.h"
 #include "ash/quick_pair/feature_status_tracker/fake_feature_status_tracker.h"
@@ -18,7 +20,7 @@
 #include "ash/quick_pair/pairing/mock_pairer_broker.h"
 #include "ash/quick_pair/pairing/pairer_broker.h"
 #include "ash/quick_pair/pairing/retroactive_pairing_detector.h"
-#include "ash/quick_pair/repository/fast_pair_repository.h"
+#include "ash/quick_pair/repository/mock_fast_pair_repository.h"
 #include "ash/quick_pair/scanning/mock_scanner_broker.h"
 #include "ash/quick_pair/scanning/scanner_broker.h"
 #include "ash/quick_pair/ui/mock_ui_broker.h"
@@ -26,6 +28,9 @@
 #include "ash/services/quick_pair/quick_pair_process_manager_impl.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/task_environment.h"
+#include "components/prefs/pref_registry.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -47,6 +52,11 @@ class MediatorTest : public testing::Test {
   void SetUp() override {
     adapter_ =
         base::MakeRefCounted<testing::NiceMock<device::MockBluetoothAdapter>>();
+    ON_CALL(*adapter_, IsPresent()).WillByDefault(testing::Return(true));
+    ON_CALL(*adapter_, GetLowEnergyScanSessionHardwareOffloadingStatus())
+        .WillByDefault(testing::Return(
+            device::BluetoothAdapter::
+                LowEnergyScanSessionHardwareOffloadingStatus::kSupported));
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
 
     std::unique_ptr<FeatureStatusTracker> tracker =
@@ -72,11 +82,21 @@ class MediatorTest : public testing::Test {
     std::unique_ptr<UIBroker> ui_broker = std::make_unique<MockUIBroker>();
     mock_ui_broker_ = static_cast<MockUIBroker*>(ui_broker.get());
 
+    std::unique_ptr<FastPairRepository> fast_pair_repository =
+        std::make_unique<MockFastPairRepository>();
+    mock_fast_pair_repository_ =
+        static_cast<MockFastPairRepository*>(fast_pair_repository.get());
+
+    browser_delegate_ = std::make_unique<MockQuickPairBrowserDelegate>();
+    ON_CALL(*browser_delegate_, GetActivePrefService())
+        .WillByDefault(testing::Return(&pref_service_));
+    pref_service_.registry()->RegisterBooleanPref(ash::prefs::kFastPairEnabled,
+                                                  /*default_value=*/true);
     mediator_ = std::make_unique<Mediator>(
         std::move(tracker), std::move(scanner_broker),
         std::move(retroactive_pairing_detector),
         std::make_unique<FakeMessageStreamLookup>(), std::move(pairer_broker),
-        std::move(ui_broker), std::unique_ptr<FastPairRepository>(),
+        std::move(ui_broker), std::move(fast_pair_repository),
         std::make_unique<QuickPairProcessManagerImpl>());
 
     device_ = base::MakeRefCounted<Device>(kTestMetadataId, kTestAddress,
@@ -91,6 +111,9 @@ class MediatorTest : public testing::Test {
   FakeRetroactivePairingDetector* fake_retroactive_pairing_detector_;
   MockPairerBroker* mock_pairer_broker_;
   MockUIBroker* mock_ui_broker_;
+  MockFastPairRepository* mock_fast_pair_repository_;
+  std::unique_ptr<MockQuickPairBrowserDelegate> browser_delegate_;
+  TestingPrefServiceSimple pref_service_;
   std::unique_ptr<Mediator> mediator_;
   base::test::SingleThreadTaskEnvironment task_environment_;
 };

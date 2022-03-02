@@ -15,6 +15,7 @@
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/client_data_delegate.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
@@ -418,7 +419,7 @@ void CloudPolicyClient::FetchPolicy() {
         fetch_request->set_invalidation_payload(invalidation_payload_);
       }
     }
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
     // Only set browser device identifier for CBCM Chrome cloud policy on
     // desktop.
     if (base::FeatureList::IsEnabled(
@@ -618,16 +619,14 @@ void CloudPolicyClient::UploadChromeDesktopReport(
           base::BindOnce(&CloudPolicyClient::OnReportUploadCompleted,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 
-  em::DeviceManagementRequest* request = config->request();
-  request->set_allocated_chrome_desktop_report_request(
+  config->request()->set_allocated_chrome_desktop_report_request(
       chrome_desktop_report.release());
 
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
 
 void CloudPolicyClient::UploadChromeOsUserReport(
-    std::unique_ptr<enterprise_management::ChromeOsUserReportRequest>
-        chrome_os_user_report,
+    std::unique_ptr<em::ChromeOsUserReportRequest> chrome_os_user_report,
     CloudPolicyClient::StatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
@@ -642,9 +641,30 @@ void CloudPolicyClient::UploadChromeOsUserReport(
           base::BindOnce(&CloudPolicyClient::OnReportUploadCompleted,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 
-  em::DeviceManagementRequest* request = config->request();
-  request->set_allocated_chrome_os_user_report_request(
+  config->request()->set_allocated_chrome_os_user_report_request(
       chrome_os_user_report.release());
+
+  request_jobs_.push_back(service_->CreateJob(std::move(config)));
+}
+
+void CloudPolicyClient::UploadChromeProfileReport(
+    std::unique_ptr<em::ChromeProfileReportRequest> chrome_profile_report,
+    CloudPolicyClient::StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(is_registered());
+  DCHECK(chrome_profile_report);
+
+  std::unique_ptr<DMServerJobConfiguration> config =
+      std::make_unique<DMServerJobConfiguration>(
+          DeviceManagementService::JobConfiguration::TYPE_CHROME_PROFILE_REPORT,
+          this,
+          /*critical=*/false, DMAuth::FromDMToken(dm_token_),
+          /*oauth_token=*/absl::nullopt,
+          base::BindOnce(&CloudPolicyClient::OnReportUploadCompleted,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  config->request()->set_allocated_chrome_profile_report_request(
+      chrome_profile_report.release());
 
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
@@ -1206,6 +1226,12 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
   if (status == DM_STATUS_SUCCESS) {
     const em::DevicePolicyResponse& policy_response =
         response.policy_response();
+    // Log histogram on first device policy fetch response to check the state
+    // keys.
+    if (responses_.empty()) {
+      base::UmaHistogramBoolean("Ash.StateKeysPresent",
+                                !state_keys_to_upload_.empty());
+    }
     responses_.clear();
     for (int i = 0; i < policy_response.responses_size(); ++i) {
       const em::PolicyFetchResponse& fetch_response =

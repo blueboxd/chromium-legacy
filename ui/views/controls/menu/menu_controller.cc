@@ -1100,15 +1100,6 @@ void MenuController::OnDragExited(SubmenuView* source) {
   }
 }
 
-ui::mojom::DragOperation MenuController::OnPerformDrop(
-    SubmenuView* source,
-    const ui::DropTargetEvent& event) {
-  auto drop_cb = GetDropCallback(source, event);
-  ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-  std::move(drop_cb).Run(event, output_drag_op);
-  return output_drag_op;
-}
-
 views::View::DropCallback MenuController::GetDropCallback(
     SubmenuView* source,
     const ui::DropTargetEvent& event) {
@@ -1587,7 +1578,7 @@ bool MenuController::OnKeyPressed(const ui::KeyEvent& event) {
       if (!IsCombobox())
         break;
       // Fallthrough to accept or dismiss combobox menus on F4, like windows.
-      FALLTHROUGH;
+      [[fallthrough]];
     case ui::VKEY_RETURN:
 #if defined(OS_MAC)
     case ui::VKEY_SPACE:

@@ -4,6 +4,8 @@
 
 #include "ash/quick_pair/repository/fast_pair/footprints_fetcher.h"
 
+#include "ash/quick_pair/common/fast_pair/fast_pair_http_result.h"
+#include "ash/quick_pair/common/fast_pair/fast_pair_metrics.h"
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/proto/fastpair.pb.h"
 #include "ash/quick_pair/proto/fastpair_data.pb.h"
@@ -84,8 +86,13 @@ void FootprintsFetcher::GetUserDevices(UserReadDevicesCallback callback) {
 void FootprintsFetcher::OnGetComplete(
     UserReadDevicesCallback callback,
     std::unique_ptr<HttpFetcher> http_fetcher,
-    std::unique_ptr<std::string> response_body) {
-  QP_LOG(VERBOSE) << __func__;
+    std::unique_ptr<std::string> response_body,
+    std::unique_ptr<FastPairHttpResult> http_result) {
+  QP_LOG(VERBOSE) << "FootprintsFetcher::" << __func__ << ": HTTP result: "
+                  << (http_result ? http_result->ToString() : "[null]");
+
+  if (http_result)
+    RecordFootprintsFetcherGetResult(*http_result);
 
   if (!response_body) {
     QP_LOG(WARNING) << __func__ << ": No response.";
@@ -129,8 +136,13 @@ void FootprintsFetcher::AddUserDevice(nearby::fastpair::FastPairInfo info,
 void FootprintsFetcher::OnPostComplete(
     AddDeviceCallback callback,
     std::unique_ptr<HttpFetcher> http_fetcher,
-    std::unique_ptr<std::string> response_body) {
-  QP_LOG(VERBOSE) << __func__;
+    std::unique_ptr<std::string> response_body,
+    std::unique_ptr<FastPairHttpResult> http_result) {
+  QP_LOG(VERBOSE) << "FootprintsFetcher::" << __func__ << ": HTTP result: "
+                  << (http_result ? http_result->ToString() : "[null]");
+
+  if (http_result)
+    RecordFootprintsFetcherPostResult(*http_result);
 
   if (!response_body) {
     QP_LOG(WARNING) << __func__ << ": No response.";
@@ -156,8 +168,13 @@ void FootprintsFetcher::DeleteUserDevice(const std::string& hex_account_key,
 void FootprintsFetcher::OnDeleteComplete(
     DeleteDeviceCallback callback,
     std::unique_ptr<HttpFetcher> http_fetcher,
-    std::unique_ptr<std::string> response_body) {
-  QP_LOG(VERBOSE) << __func__;
+    std::unique_ptr<std::string> response_body,
+    std::unique_ptr<FastPairHttpResult> http_result) {
+  QP_LOG(VERBOSE) << "FootprintsFetcher::" << __func__ << ": HTTP result: "
+                  << (http_result ? http_result->ToString() : "[null]");
+
+  if (http_result)
+    RecordFootprintsFetcherDeleteResult(*http_result);
 
   if (!response_body) {
     QP_LOG(WARNING) << __func__ << ": No response.";

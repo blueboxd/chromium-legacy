@@ -117,7 +117,12 @@ GURL IOSChromeSyncedTabDelegate::GetFaviconURLAtIndex(int i) const {
     return GURL();
   }
   NavigationItem* item = GetPossiblyPendingItemAtIndex(web_state_, i);
-  return (item && item->GetFavicon().valid ? item->GetFavicon().url : GURL());
+  if (!item) {
+    return GURL();
+  }
+
+  const web::FaviconStatus& favicon_status = item->GetFaviconStatus();
+  return favicon_status.valid ? favicon_status.url : GURL();
 }
 
 ui::PageTransition IOSChromeSyncedTabDelegate::GetTransitionAtIndex(
@@ -159,7 +164,7 @@ void IOSChromeSyncedTabDelegate::GetSerializedNavigationAtIndex(
   }
 }
 
-bool IOSChromeSyncedTabDelegate::ProfileIsSupervised() const {
+bool IOSChromeSyncedTabDelegate::ProfileHasChildAccount() const {
   return false;
 }
 

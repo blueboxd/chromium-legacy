@@ -21,6 +21,7 @@
 #include "components/viz/service/display_embedder/output_surface_provider_impl.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/frame_sinks/gmb_video_frame_pool_context_provider_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
@@ -44,12 +45,12 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
       base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority)
           ? base::ThreadPriority::DISPLAY
           : base::ThreadPriority::NORMAL;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   auto thread = std::make_unique<base::android::JavaHandlerThread>(
       kThreadName, thread_priority);
   thread->Start();
   return thread;
-#else  // !defined(OS_ANDROID)
+#else  // !BUILDFLAG(IS_ANDROID)
 
   std::unique_ptr<base::Thread> thread;
   base::Thread::Options thread_options;
@@ -62,12 +63,12 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
   if (!thread)
     thread = std::make_unique<base::Thread>(kThreadName);
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
   // An IO message pump is needed to use FIDL.
   thread_options.message_pump_type = base::MessagePumpType::IO;
 #endif
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // Increase the thread priority to get more reliable values in performance
   // test of macOS.
   thread_options.priority =
@@ -77,7 +78,7 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
           : thread_priority;
 #else
   thread_options.priority = thread_priority;
-#endif  // !defined(OS_APPLE)
+#endif  // !BUILDFLAG(IS_APPLE)
 
   CHECK(thread->StartWithOptions(std::move(thread_options)));
 
@@ -87,7 +88,7 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
       base::BindOnce(&tracing::TracingSamplerProfiler::CreateOnChildThread));
 
   return thread;
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 }  // namespace
@@ -160,14 +161,20 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
   if (task_executor) {
     DCHECK(gpu_service);
     // Create OutputSurfaceProvider usable for GPU + software compositing.
-    auto gpu_memory_buffer_manager =
+    gpu_memory_buffer_manager_ =
         std::make_unique<InProcessGpuMemoryBufferManager>(
             gpu_service->gpu_memory_buffer_factory(),
             gpu_service->sync_point_manager());
     auto* image_factory = gpu_service->gpu_image_factory();
     output_surface_provider_ = std::make_unique<OutputSurfaceProviderImpl>(
         gpu_service, task_executor, gpu_service,
-        std::move(gpu_memory_buffer_manager), image_factory, headless);
+        gpu_memory_buffer_manager_.get(), image_factory, headless);
+
+    // Create video frame pool context provider that will enable the frame sink
+    // manager to create GMB-backed video frames.
+    gmb_video_frame_pool_context_provider_ =
+        std::make_unique<GmbVideoFramePoolContextProviderImpl>(
+            gpu_service, gpu_memory_buffer_manager_.get());
   } else {
     // Create OutputSurfaceProvider usable for software compositing only.
     output_surface_provider_ =
@@ -184,6 +191,8 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
         params->activation_deadline_in_frames;
   }
   init_params.output_surface_provider = output_surface_provider_.get();
+  init_params.gmb_context_provider =
+      gmb_video_frame_pool_context_provider_.get();
   init_params.restart_id = params->restart_id;
   init_params.run_all_compositor_stages_before_draw =
       run_all_compositor_stages_before_draw;
@@ -209,6 +218,7 @@ void VizCompositorThreadRunnerImpl::TearDownOnCompositorThread() {
 
   frame_sink_manager_.reset();
   output_surface_provider_.reset();
+  gpu_memory_buffer_manager_.reset();
   server_shared_bitmap_manager_.reset();
 }
 

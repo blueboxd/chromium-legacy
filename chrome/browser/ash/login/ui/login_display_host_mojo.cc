@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/components/login/auth/user_context.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -19,6 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/ash/certificate_provider/pin_dialog_manager.h"
@@ -45,7 +47,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_fatal_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/common/channel_info.h"
-#include "chromeos/login/auth/user_context.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
@@ -106,7 +107,7 @@ bool AllAllowlistedUsersPresent() {
 
 bool IsLazyWebUILoadingEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::chromeos::switches::kEnableOobeTestAPI)) {
+          switches::kEnableOobeTestAPI)) {
     // Load WebUI for the test API explicitly because it's Web API.
     return false;
   }
@@ -160,6 +161,7 @@ LoginDisplayHostMojo::LoginDisplayHostMojo(DisplayedScreen displayed_screen)
 }
 
 LoginDisplayHostMojo::~LoginDisplayHostMojo() {
+  scoped_activity_observation_.Reset();
   LoginScreenClientImpl::Get()->SetDelegate(nullptr);
   if (!dialog_)
     return;
@@ -398,6 +400,7 @@ void LoginDisplayHostMojo::ShowGaiaDialog(const AccountId& prefilled_account) {
 
 void LoginDisplayHostMojo::ShowOsInstallScreen() {
   StartWizard(OsInstallScreenView::kScreenId);
+  ShowDialog();
 }
 
 void LoginDisplayHostMojo::ShowGuestTosScreen() {
@@ -405,11 +408,12 @@ void LoginDisplayHostMojo::ShowGuestTosScreen() {
   ShowDialog();
 }
 
-void LoginDisplayHostMojo::HideOobeDialog() {
+void LoginDisplayHostMojo::HideOobeDialog(bool saml_video_timeout) {
   DCHECK(dialog_);
 
-  // The dialog can not be hidden if there are no users on the login screen.
-  // Reload it instead.
+  // The dialog can be hidden if there are no users on the login screen only
+  // on camera timeout during SAML login.
+  // TODO(crbug.com/1283052): simplify the logic here.
 
   // As ShowDialogCommon will not reload GAIA upon show for performance reasons,
   // reload it to ensure that no state is persisted between hide and
@@ -419,13 +423,21 @@ void LoginDisplayHostMojo::HideOobeDialog() {
   if (no_users || GetOobeUI()->current_screen() == GaiaView::kScreenId) {
     GaiaScreen* gaia_screen = GetWizardController()->GetScreen<GaiaScreen>();
     gaia_screen->LoadOnline(EmptyAccountId());
-    if (no_users)
+    if (no_users && !saml_video_timeout)
       return;
   }
 
   user_selection_screen_->OnBeforeShow();
   LoadWallpaper(focused_pod_account_id_);
   HideDialog();
+
+  // If the OOBE dialog was hidden due to camera timeout and user isn't using
+  // ChromeVox let user go back to login flow with any action. Otherwise user
+  // can go back to login pressing arrow button.
+  if (saml_video_timeout && !scoped_activity_observation_.IsObserving() &&
+      !AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
+    scoped_activity_observation_.Observe(ui::UserActivityDetector::Get());
+  }
 }
 
 void LoginDisplayHostMojo::SetShelfButtonsEnabled(bool enabled) {
@@ -518,8 +530,7 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithPasswordOrPin(
   DCHECK(user);
   UserContext user_context(*user);
   user_context.SetIsUsingPin(authenticated_by_pin);
-  user_context.SetKey(
-      Key(chromeos::Key::KEY_TYPE_PASSWORD_PLAIN, "" /*salt*/, password));
+  user_context.SetKey(Key(Key::KEY_TYPE_PASSWORD_PLAIN, "" /*salt*/, password));
   user_context.SetPasswordKey(Key(password));
   user_context.SetLoginInputMethodIdUsed(input_method::InputMethodManager::Get()
                                              ->GetActiveIMEState()
@@ -684,6 +695,10 @@ void LoginDisplayHostMojo::EnsureOobeDialogLoaded() {
   dialog_->GetOobeUI()->signin_screen_handler()->SetDelegate(
       login_display_.get());
 
+  // It may happen that LoginDisplayHostMojo::SetUserCount was called before
+  // the dialog_ was created. Set number of users once again here.
+  SetUserCount(user_count_);
+
   views::View* web_dialog_view = dialog_->GetWebDialogView();
   scoped_observation_.Observe(web_dialog_view);
 
@@ -815,6 +830,11 @@ void LoginDisplayHostMojo::MaybeUpdateOfflineLoginLinkVisibility(
   }
 
   ErrorScreen::AllowOfflineLoginPerUser(!offline_limit_expired);
+}
+
+void LoginDisplayHostMojo::OnUserActivity(const ui::Event* event) {
+  scoped_activity_observation_.Reset();
+  ShowGaiaDialog(EmptyAccountId());
 }
 
 }  // namespace ash

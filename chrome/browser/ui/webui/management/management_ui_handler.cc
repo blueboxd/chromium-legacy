@@ -48,8 +48,6 @@
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/policy/handlers/minimum_version_policy_handler.h"
-#include "chrome/browser/ash/policy/networking/policy_cert_service.h"
-#include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/ash/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/ash/policy/status_collector/status_collector.h"
 #include "chrome/browser/ash/policy/uploading/status_uploader.h"
@@ -58,6 +56,8 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
+#include "chrome/browser/policy/networking/policy_cert_service.h"
+#include "chrome/browser/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/ui/webui/management/management_ui_handler_chromeos.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/chromium_strings.h"
@@ -171,6 +171,7 @@ const char kManagementReportAndroidApplications[] =
     "managementReportAndroidApplications";
 const char kManagementReportPrintJobs[] = "managementReportPrintJobs";
 const char kManagementReportLoginLogout[] = "managementReportLoginLogout";
+const char kManagementReportCRDSessions[] = "managementReportCRDSessions";
 const char kManagementReportDlpEvents[] = "managementReportDlpEvents";
 const char kManagementPrinting[] = "managementPrinting";
 const char kManagementCrostini[] = "managementCrostini";
@@ -221,7 +222,8 @@ enum class DeviceReportingType {
   kExtensions,
   kAndroidApplication,
   kDlpEvents,
-  kLoginLogout
+  kLoginLogout,
+  kCRDSessions,
 };
 
 // Corresponds to DeviceReportingType in management_browser_proxy.js
@@ -257,6 +259,8 @@ std::string ToJSDeviceReportingType(const DeviceReportingType& type) {
       return "dlp events";
     case DeviceReportingType::kLoginLogout:
       return "login-logout";
+    case DeviceReportingType::kCRDSessions:
+      return "crd sessions";
     default:
       NOTREACHED() << "Unknown device reporting type";
       return "device";
@@ -537,6 +541,8 @@ const policy::DlpRulesManager* ManagementUIHandler::GetDlpRulesManager() const {
   return policy::DlpRulesManagerFactory::GetForPrimaryProfile();
 }
 
+// If you are adding a privacy note, please also add it to
+// go/chrome-policy-privacy-note-mappings.
 void ManagementUIHandler::AddDeviceReportingInfo(
     base::Value* report_sources,
     const policy::StatusCollector* collector,
@@ -629,6 +635,14 @@ void ManagementUIHandler::AddDeviceReportingInfo(
   if (report_login_logout) {
     AddDeviceReportingElement(report_sources, kManagementReportLoginLogout,
                               DeviceReportingType::kLoginLogout);
+  }
+
+  bool report_crd_sessions = false;
+  chromeos::CrosSettings::Get()->GetBoolean(ash::kReportCRDSessions,
+                                            &report_crd_sessions);
+  if (report_crd_sessions) {
+    AddDeviceReportingElement(report_sources, kManagementReportCRDSessions,
+                              DeviceReportingType::kCRDSessions);
   }
 }
 
@@ -856,7 +870,7 @@ void ManagementUIHandler::AsyncUpdateLogo() {
   if (!url.empty() && GURL(url) != logo_url_) {
     icon_fetcher_ = std::make_unique<BitmapFetcher>(
         GURL(url), this, GetManagementUICustomerLogoAnnotation());
-    icon_fetcher_->Init(std::string(), net::ReferrerPolicy::NEVER_CLEAR,
+    icon_fetcher_->Init(net::ReferrerPolicy::NEVER_CLEAR,
                         network::mojom::CredentialsMode::kOmit);
     auto* profile = Profile::FromWebUI(web_ui());
     icon_fetcher_->Start(profile->GetDefaultStoragePartition()
@@ -935,9 +949,8 @@ void ManagementUIHandler::GetManagementStatus(Profile* profile,
   std::string account_manager = GetAccountManager(profile);
   auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
   auto* primary_profile =
-      primary_user
-          ? chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user)
-          : nullptr;
+      primary_user ? ash::ProfileHelper::Get()->GetProfileByUser(primary_user)
+                   : nullptr;
   const bool primary_user_managed =
       primary_profile ? IsProfileManaged(primary_profile) : false;
 

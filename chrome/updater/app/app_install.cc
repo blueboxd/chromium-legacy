@@ -36,7 +36,7 @@
 
 namespace updater {
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
 namespace {
 
 class SplashScreenImpl : public SplashScreen {
@@ -73,7 +73,7 @@ scoped_refptr<App> MakeAppInstall() {
         return base::MakeRefCounted<AppInstallControllerImpl>();
       }));
 }
-#endif  // !defined(OS_WIN)
+#endif  // !BUILDFLAG(IS_WIN)
 
 AppInstall::AppInstall(SplashScreen::Maker splash_screen_maker,
                        AppInstallController::Maker app_install_controller_maker)
@@ -155,12 +155,12 @@ void AppInstall::WakeCandidate() {
       update_service_internal, base::WrapRefCounted(this)));
 }
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 // TODO(crbug.com/1276114) - implement.
 void AppInstall::WakeCandidateDone() {
   NOTIMPLEMENTED();
 }
-#endif  // OS_LINUX
+#endif  // BUILDFLAG(IS_LINUX)
 
 void AppInstall::RegisterUpdater() {
   RegistrationRequest request;
@@ -171,15 +171,22 @@ void AppInstall::RegisterUpdater() {
   scoped_refptr<UpdateService> update_service =
       CreateUpdateServiceProxy(updater_scope());
   update_service->RegisterApp(
-      request, base::BindOnce(
-                   [](scoped_refptr<UpdateService> /*update_service*/,
-                      scoped_refptr<AppInstall> app_install,
-                      const RegistrationResponse& registration_response) {
-                     VLOG(2) << "Updater registration complete: "
-                             << registration_response.status_code;
-                     app_install->MaybeInstallApp();
-                   },
-                   update_service, base::WrapRefCounted(this)));
+      request,
+      base::BindOnce(
+          [](scoped_refptr<UpdateService> /*update_service*/,
+             scoped_refptr<AppInstall> app_install,
+             const RegistrationResponse& registration_response) {
+            if (registration_response.status_code != kRegistrationSuccess &&
+                registration_response.status_code !=
+                    kRegistrationAlreadyRegistered) {
+              VLOG(2) << "Updater registration failed: "
+                      << registration_response.status_code;
+              app_install->Shutdown(kErrorRegistrationFailed);
+              return;
+            }
+            app_install->MaybeInstallApp();
+          },
+          update_service, base::WrapRefCounted(this)));
 }
 
 void AppInstall::MaybeInstallApp() {

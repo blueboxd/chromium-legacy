@@ -8,7 +8,9 @@
 #include <memory>
 #include <utility>
 
-#if defined(OS_ANDROID)
+#include "build/build_config.h"
+
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/android_hardware_buffer_compat.h"
 #endif
 
@@ -26,7 +28,7 @@
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_types.h"
 #endif
 
@@ -103,10 +105,14 @@ device::mojom::XRViewPtr ValidateXRView(const device::mojom::XRView* view) {
   int kMinSize = 2;
   // DCHECK on debug builds to catch legitimate large sizes, but clamp on
   // release builds to ensure valid state.
-  DCHECK_LT(view->viewport.width(), kMaxSize);
-  DCHECK_LT(view->viewport.height(), kMaxSize);
+  DCHECK_LT(view->viewport.width() + view->viewport.x(), kMaxSize);
+  DCHECK_LT(view->viewport.height() + view->viewport.y(), kMaxSize);
+  DCHECK_GT(view->viewport.width() + view->viewport.x(), kMinSize);
+  DCHECK_GT(view->viewport.height() + view->viewport.y(), kMinSize);
   ret->viewport =
-      gfx::Size(base::clamp(view->viewport.width(), kMinSize, kMaxSize),
+      gfx::Rect(base::clamp(view->viewport.x(), 0, kMaxSize),
+                base::clamp(view->viewport.y(), 0, kMaxSize),
+                base::clamp(view->viewport.width(), kMinSize, kMaxSize),
                 base::clamp(view->viewport.height(), kMinSize, kMaxSize));
   return ret;
 }
@@ -433,7 +439,7 @@ void BrowserXRRuntimeImpl::BeforeRuntimeRemoved() {
   StopImmersiveSession(base::DoNothing());
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 absl::optional<CHROME_LUID> BrowserXRRuntimeImpl::GetLuid() const {
   return device_data_->luid;
 }

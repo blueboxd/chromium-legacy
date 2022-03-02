@@ -8,9 +8,13 @@
 
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_view_delegate.h"
+#include "ash/app_list/views/app_list_toast_view.h"
 #include "ash/public/cpp/app_list/app_list_model_delegate.h"
-#include "ash/style/system_toast_style.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/strcat.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -29,12 +33,34 @@ constexpr char16_t kToastReverseAlphabeticalOrderText[] =
 constexpr char16_t kToastColorOrderText[] = u"by color";
 
 // The text shown on the toast dismiss button.
-constexpr char16_t kToastDismissText[] = u"Redo";
+constexpr char16_t kToastDismissText[] = u"Undo";
+
+const gfx::VectorIcon* GetToastIconForOrder(AppListSortOrder order) {
+  switch (order) {
+    case AppListSortOrder::kNameAlphabetical:
+    case AppListSortOrder::kNameReverseAlphabetical:
+      return &kSortAlphabeticalIcon;
+    case AppListSortOrder::kColor:
+      return &kSortColorIcon;
+    case AppListSortOrder::kCustom:
+      NOTREACHED();
+      return nullptr;
+  }
+}
 
 }  // namespace
 
-AppListReorderUndoContainerView::AppListReorderUndoContainerView() {
-  SetUseDefaultFillLayout(true);
+AppListReorderUndoContainerView::AppListReorderUndoContainerView(
+    bool tablet_mode)
+    : tablet_mode_(tablet_mode) {
+  SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetMainAxisAlignment(views::LayoutAlignment::kCenter)
+      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+      .SetOrientation(views::LayoutOrientation::kHorizontal)
+      .SetDefault(views::kFlexBehaviorKey,
+                  views::FlexSpecification(
+                      views::MinimumFlexSizeRule::kPreferred,
+                      views::MaximumFlexSizeRule::kScaleToMaximum));
 }
 
 AppListReorderUndoContainerView::~AppListReorderUndoContainerView() {
@@ -51,22 +77,29 @@ void AppListReorderUndoContainerView::OnTemporarySortOrderChanged(
   }
 
   const std::u16string toast_text = CalculateToastTextFromOrder(*new_order);
+  const gfx::VectorIcon* toast_icon = GetToastIconForOrder(*new_order);
   if (toast_view_) {
-    toast_view_->SetText(toast_text);
+    toast_view_->SetTitle(toast_text);
+    toast_view_->SetIcon(toast_icon);
     return;
   }
 
-  toast_view_ = AddChildView(std::make_unique<SystemToastStyle>(
-      base::BindRepeating(
-          &AppListReorderUndoContainerView::OnReorderUndoButtonClicked,
-          base::Unretained(this)),
-      toast_text, kToastDismissText,
-      /*is_managed=*/false));
+  // TODO(crbug.com/1277001): Add icon to the toast.
+  toast_view_ = AddChildView(
+      AppListToastView::Builder(toast_text)
+          .SetStyleForTabletMode(tablet_mode_)
+          .SetIcon(toast_icon)
+          .SetButton(
+              kToastDismissText,
+              base::BindRepeating(
+                  &AppListReorderUndoContainerView::OnReorderUndoButtonClicked,
+                  base::Unretained(this)))
+          .Build());
 }
 
 views::LabelButton*
 AppListReorderUndoContainerView::GetToastDismissButtonForTest() {
-  return toast_view_->button();
+  return toast_view_->toast_button();
 }
 
 void AppListReorderUndoContainerView::OnReorderUndoButtonClicked() {

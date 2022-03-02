@@ -1262,14 +1262,12 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     const size_t surface_index = render_surface_list_size - 1 - i;
     RenderSurfaceImpl* render_surface =
         (*frame->render_surface_list)[surface_index];
-    const auto& shared_element_id =
-        render_surface->GetDocumentTransitionSharedElementId();
 
     const bool is_root_surface =
         render_surface->EffectTreeIndex() == EffectTree::kContentsRootNodeId;
     const bool should_draw_into_render_pass =
         is_root_surface || render_surface->contributes_to_drawn_surface() ||
-        render_surface->CopyOfOutputRequired() || shared_element_id.valid();
+        render_surface->CopyOfOutputRequired();
     if (should_draw_into_render_pass)
       frame->render_passes.push_back(render_surface->CreateRenderPass());
   }
@@ -1960,9 +1958,9 @@ float LayerTreeHostImpl::GetSDRWhiteLevel() const {
 
   // The pending tree will has the most recently updated color space, so use it.
   if (pending_tree_)
-    return pending_tree_->display_color_spaces().GetSDRWhiteLevel();
+    return pending_tree_->display_color_spaces().GetSDRMaxLuminanceNits();
   if (active_tree_)
-    return active_tree_->display_color_spaces().GetSDRWhiteLevel();
+    return active_tree_->display_color_spaces().GetSDRMaxLuminanceNits();
   return gfx::ColorSpace::kDefaultSDRWhiteLevel;
 }
 
@@ -2393,7 +2391,7 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
       browser_controls_offset_manager_->TopControlsHeight();
   metadata.top_controls_shown_ratio =
       browser_controls_offset_manager_->TopControlsShownRatio();
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   metadata.bottom_controls_height =
       browser_controls_offset_manager_->BottomControlsHeight();
   metadata.bottom_controls_shown_ratio =
@@ -2444,7 +2442,7 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   }
 
   bool allocate_new_local_surface_id =
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
       last_draw_render_frame_metadata_ &&
       (last_draw_render_frame_metadata_->top_controls_height !=
            metadata.top_controls_height ||
@@ -2478,7 +2476,8 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   return metadata;
 }
 
-bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
+absl::optional<EventMetricsSet> LayerTreeHostImpl::DrawLayers(
+    FrameData* frame) {
   DCHECK(CanDraw());
   DCHECK_EQ(frame->has_no_damage, frame->render_passes.empty());
   ResetRequiresHighResToDraw();
@@ -2492,7 +2491,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoDamage", TRACE_EVENT_SCOPE_THREAD);
     active_tree()->BreakSwapPromises(SwapPromise::SWAP_FAILS);
     active_tree()->ResetAllChangeTracking();
-    return false;
+    return absl::nullopt;
   }
 
   layer_tree_frame_sink_->set_source_frame_number(
@@ -2504,12 +2503,14 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   const viz::BeginFrameId begin_frame_ack_frame_id =
       compositor_frame.metadata.begin_frame_ack.frame_id;
 
-  // Collect |latency_info| information for tracking
-  lag_tracking_manager_.CollectScrollEventsFromFrame(
-      frame_token, compositor_frame.metadata.latency_info);
+  EventMetricsSet events_metrics(
+      active_tree()->TakeEventsMetrics(),
+      events_metrics_manager_.TakeSavedEventsMetrics());
+  lag_tracking_manager_.CollectScrollEventsFromFrame(frame_token,
+                                                     events_metrics);
   layer_tree_frame_sink_->SubmitCompositorFrame(
       std::move(compositor_frame),
-      /*hit_test_data_changed=*/false, debug_state_.show_hit_test_borders);
+      /*hit_test_data_changed=*/false);
 
 #if DCHECK_IS_ON()
   if (!doing_sync_draw_) {
@@ -2577,7 +2578,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     client_->FrameSinksToThrottleUpdated(throttle_decider_.ids());
   }
 
-  return true;
+  return events_metrics;
 }
 
 viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
@@ -3479,10 +3480,10 @@ void LayerTreeHostImpl::OnMemoryPressure(
 
     // TODO(crbug.com/1189208): Unlocking decoded-image-tracker images causes
     // flickering in visible trees if Out-Of-Process rasterization is enabled.
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
   if (use_oop_rasterization() && visible())
     return;
-#endif  // defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_FUCHSIA)
 
   ReleaseTileResources();
   active_tree_->OnPurgeMemory();
@@ -4932,6 +4933,12 @@ void LayerTreeHostImpl::OnCustomPropertyMutated(
                                                  std::move(property_value));
 }
 
+bool LayerTreeHostImpl::RunsOnCurrentThread() const {
+  // If there is no impl thread, then we assume the current thread is ok.
+  return !task_runner_provider_->HasImplThread() ||
+         task_runner_provider_->IsImplThread();
+}
+
 void LayerTreeHostImpl::SetElementBackdropFilterMutated(
     ElementId element_id,
     ElementListType list_type,
@@ -5139,11 +5146,6 @@ void LayerTreeHostImpl::RequestInvalidationForAnimatedImages() {
   // before a new tree is activated.
   bool needs_first_draw_on_activation = true;
   client_->NeedsImplSideInvalidation(needs_first_draw_on_activation);
-}
-
-EventMetricsSet LayerTreeHostImpl::TakeEventsMetrics() {
-  return EventMetricsSet(active_tree()->TakeEventsMetrics(),
-                         events_metrics_manager_.TakeSavedEventsMetrics());
 }
 
 base::WeakPtr<LayerTreeHostImpl> LayerTreeHostImpl::AsWeakPtr() {

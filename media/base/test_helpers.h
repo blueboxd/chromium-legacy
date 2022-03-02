@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
+#include "media/base/decoder_status.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
 #include "media/base/pipeline_status.h"
@@ -234,9 +235,19 @@ bool VerifyFakeVideoBufferForTest(const DecoderBuffer& buffer,
 std::unique_ptr<::testing::StrictMock<MockDemuxerStream>>
 CreateMockDemuxerStream(DemuxerStream::Type type, bool encrypted);
 
-// Compares two media::Status by StatusCode only.
+// Compares two media::Status by StatusCode only.  Also allows the ok helper to
+// match kOk.  It's a special case because we don't know the TypedStatus traits
+// we'll be comparing against until now.
 MATCHER_P(SameStatusCode, status, "") {
-  return arg.code() == status.code();
+  if constexpr (std::is_convertible<
+                    decltype(status),
+                    const internal::OkStatusImplicitConstructionHelper&>::
+                    value) {
+    // Cast to the correct enum type to match whatever we're compared against.
+    return arg.code() == static_cast<decltype(arg.code())>(status);
+  } else {
+    return arg.code() == status.code();
+  }
 }
 
 // Compares an `arg` Status.code() to a test-supplied StatusCode.
@@ -251,7 +262,7 @@ MATCHER(IsOkStatus, "") {
 // True if and only if the Status would be interpreted as an error from a decode
 // callback (not okay, not aborted).
 MATCHER(IsDecodeErrorStatus, "") {
-  return !arg.is_ok() && arg.code() != StatusCode::kAborted;
+  return !arg.is_ok() && arg.code() != DecoderStatus::Codes::kAborted;
 }
 
 // Compares two {Audio|Video}DecoderConfigs

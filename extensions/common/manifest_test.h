@@ -39,10 +39,9 @@ class ManifestTest : public testing::Test {
   class ManifestData {
    public:
     explicit ManifestData(base::StringPiece name);
+    explicit ManifestData(base::Value manifest);
     ManifestData(base::Value manifest, base::StringPiece name);
-
     ManifestData(ManifestData&& other);
-
     ~ManifestData();
 
     const std::string& name() const { return name_; }
@@ -56,7 +55,7 @@ class ManifestTest : public testing::Test {
   };
 
   // Allows the test implementation to override a loaded test manifest's
-  // extension ID. Useful for testing features behind a whitelist.
+  // extension ID. Useful for testing features behind a allowlist.
   virtual std::string GetTestExtensionID() const;
 
   // Returns the path in which to find test manifest data files, for example

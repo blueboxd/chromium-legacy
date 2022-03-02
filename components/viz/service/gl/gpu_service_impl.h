@@ -141,6 +141,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void CreateArcVideoDecodeAccelerator(
       mojo::PendingReceiver<arc::mojom::VideoDecodeAccelerator> vda_receiver)
       override;
+  void CreateArcVideoDecoder(
+      mojo::PendingReceiver<arc::mojom::VideoDecoder> vd_receiver) override;
   void CreateArcVideoEncodeAccelerator(
       mojo::PendingReceiver<arc::mojom::VideoEncodeAccelerator> vea_receiver)
       override;
@@ -159,13 +161,13 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
           jea_receiver) override;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void RegisterDCOMPSurfaceHandle(
       mojo::PlatformHandle surface_handle,
       RegisterDCOMPSurfaceHandleCallback callback) override;
   void UnregisterDCOMPSurfaceHandle(
       const base::UnguessableToken& token) override;
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   void CreateVideoEncodeAcceleratorProvider(
       mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
@@ -202,11 +204,11 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void OnBackgroundCleanup() override;
   void OnBackgrounded() override;
   void OnForegrounded() override;
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level) override;
 #endif
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   void BeginCATransaction() override;
   void CommitCATransaction(CommitCATransactionCallback callback) override;
 #endif
@@ -230,7 +232,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void DidLoseContext(bool offscreen,
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) override;
   void DidUpdateHDRStatus(bool hdr_enabled) override;
 #endif
@@ -245,7 +247,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   bool IsExiting() const override;
   gpu::Scheduler* GetGpuScheduler() override;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void SendCreatedChildWindow(gpu::SurfaceHandle parent_window,
                               gpu::SurfaceHandle child_window) override;
 #endif
@@ -352,7 +354,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   base::ProcessId host_process_id() const { return host_process_id_; }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   void SetHostProcessId(base::ProcessId pid);
 #endif
 
@@ -368,6 +370,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 #if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   void CreateArcVideoDecodeAcceleratorOnMainThread(
       mojo::PendingReceiver<arc::mojom::VideoDecodeAccelerator> vda_receiver);
+  void CreateArcVideoDecoderOnMainThread(
+      mojo::PendingReceiver<arc::mojom::VideoDecoder> vd_receiver);
   void CreateArcVideoEncodeAcceleratorOnMainThread(
       mojo::PendingReceiver<arc::mojom::VideoEncodeAccelerator> vea_receiver);
   void CreateArcVideoProtectedBufferAllocatorOnMainThread(
@@ -392,7 +396,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   // Update overlay info and HDR status on the GPU process and send the updated
   // info back to the browser process if there is a change.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void UpdateOverlayAndHDRInfo();
 #endif
 

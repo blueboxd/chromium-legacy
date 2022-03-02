@@ -35,12 +35,12 @@ class UserInputMonitor;
 }  // namespace media
 
 namespace audio {
-class AudioProcessor;
+class AudioProcessorHandler;
 class DeviceOutputListener;
 class InputStreamActivityMonitor;
 
 // Only do power monitoring for non-mobile platforms to save resources.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 #define AUDIO_POWER_MONITORING
 #endif
 
@@ -192,7 +192,7 @@ class InputController final : public StreamMonitor {
     CAPTURE_STARTUP_RESULT_MAX = CAPTURE_STARTUP_STOPPED_EARLY,
   };
 
-  InputController(EventHandler* handler,
+  InputController(EventHandler* event_handler,
                   SyncWriter* sync_writer,
                   media::UserInputMonitor* user_input_monitor,
                   InputStreamActivityMonitor* activity_monitor,
@@ -252,7 +252,7 @@ class InputController final : public StreamMonitor {
 
   // Contains the InputController::EventHandler which receives state
   // notifications from this class.
-  const raw_ptr<EventHandler> handler_;
+  const raw_ptr<EventHandler> event_handler_;
 
   // Pointer to the audio input stream object.
   // Only used on the audio thread.
@@ -266,7 +266,7 @@ class InputController final : public StreamMonitor {
   double max_volume_ = 0.0;
 
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
-  std::unique_ptr<AudioProcessor> audio_processor_;
+  std::unique_ptr<AudioProcessorHandler> audio_processor_handler_;
 #endif
 
   const raw_ptr<media::UserInputMonitor> user_input_monitor_;

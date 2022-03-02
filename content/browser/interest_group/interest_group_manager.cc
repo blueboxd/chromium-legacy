@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/weak_ptr.h"
@@ -82,17 +81,23 @@ InterestGroupManager::~InterestGroupManager() = default;
 
 void InterestGroupManager::JoinInterestGroup(blink::InterestGroup group,
                                              const GURL& joining_url) {
+  NotifyInterestGroupAccessed(InterestGroupObserverInterface::kJoin,
+                              group.owner.Serialize(), group.name);
   impl_.AsyncCall(&InterestGroupStorage::JoinInterestGroup)
       .WithArgs(std::move(group), std::move(joining_url));
 }
 
 void InterestGroupManager::LeaveInterestGroup(const ::url::Origin& owner,
                                               const std::string& name) {
+  NotifyInterestGroupAccessed(InterestGroupObserverInterface::kLeave,
+                              owner.Serialize(), name);
   impl_.AsyncCall(&InterestGroupStorage::LeaveInterestGroup)
       .WithArgs(owner, name);
 }
 
 void InterestGroupManager::UpdateInterestGroup(blink::InterestGroup group) {
+  NotifyInterestGroupAccessed(InterestGroupObserverInterface::kUpdate,
+                              group.owner.Serialize(), group.name);
   impl_.AsyncCall(&InterestGroupStorage::UpdateInterestGroup)
       .WithArgs(std::move(group));
 }
@@ -109,6 +114,8 @@ void InterestGroupManager::UpdateInterestGroupsOfOwner(
 
 void InterestGroupManager::RecordInterestGroupBid(const ::url::Origin& owner,
                                                   const std::string& name) {
+  NotifyInterestGroupAccessed(InterestGroupObserverInterface::kBid,
+                              owner.Serialize(), name);
   impl_.AsyncCall(&InterestGroupStorage::RecordInterestGroupBid)
       .WithArgs(owner, name);
 }
@@ -116,8 +123,19 @@ void InterestGroupManager::RecordInterestGroupBid(const ::url::Origin& owner,
 void InterestGroupManager::RecordInterestGroupWin(const ::url::Origin& owner,
                                                   const std::string& name,
                                                   const std::string& ad_json) {
+  NotifyInterestGroupAccessed(InterestGroupObserverInterface::kWin,
+                              owner.Serialize(), name);
   impl_.AsyncCall(&InterestGroupStorage::RecordInterestGroupWin)
       .WithArgs(owner, name, std::move(ad_json));
+}
+
+void InterestGroupManager::GetInterestGroup(
+    const url::Origin& owner,
+    const std::string& name,
+    base::OnceCallback<void(absl::optional<StorageInterestGroup>)> callback) {
+  impl_.AsyncCall(&InterestGroupStorage::GetInterestGroup)
+      .WithArgs(owner, name)
+      .Then(std::move(callback));
 }
 
 void InterestGroupManager::GetAllInterestGroupOwners(
@@ -142,6 +160,12 @@ void InterestGroupManager::ClaimInterestGroupsForUpdate(
       .Then(std::move(callback));
 }
 
+void InterestGroupManager::GetAllInterestGroupJoiningOrigins(
+    base::OnceCallback<void(std::vector<url::Origin>)> callback) {
+  impl_.AsyncCall(&InterestGroupStorage::GetAllInterestGroupJoiningOrigins)
+      .Then(std::move(callback));
+}
+
 void InterestGroupManager::DeleteInterestGroupData(
     base::RepeatingCallback<bool(const url::Origin&)> origin_matcher) {
   impl_.AsyncCall(&InterestGroupStorage::DeleteInterestGroupData)
@@ -157,16 +181,15 @@ void InterestGroupManager::GetLastMaintenanceTimeForTesting(
 void InterestGroupManager::DidUpdateInterestGroupsOfOwnerDbLoad(
     url::Origin owner,
     network::mojom::ClientSecurityStatePtr client_security_state,
-    std::vector<StorageInterestGroup> interest_groups) {
+    std::vector<StorageInterestGroup> storage_groups) {
   net::IsolationInfo per_update_isolation_info =
       net::IsolationInfo::CreateTransient();
 
-  for (auto& interest_group : interest_groups) {
-    if (!interest_group.bidding_group->group.update_url)
+  for (auto& storage_group : storage_groups) {
+    if (!storage_group.interest_group.update_url)
       continue;
     auto resource_request = std::make_unique<network::ResourceRequest>();
-    resource_request->url =
-        interest_group.bidding_group->group.update_url.value();
+    resource_request->url = storage_group.interest_group.update_url.value();
     resource_request->redirect_mode = network::mojom::RedirectMode::kError;
     resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
     resource_request->request_initiator = owner;
@@ -187,7 +210,7 @@ void InterestGroupManager::DidUpdateInterestGroupsOfOwnerDbLoad(
             base::BindOnce(
                 &InterestGroupManager::DidUpdateInterestGroupsOfOwnerNetFetch,
                 weak_factory_.GetWeakPtr(), simple_url_loader_it, owner,
-                interest_group.bidding_group->group.name),
+                storage_group.interest_group.name),
             kMaxUpdateSize);
   }
 }
@@ -222,10 +245,9 @@ namespace {
 // Name and owner are optional in `value` (parsed server JSON response), but
 // must match `name` and `owner`, respectively, if either is specified. Returns
 // true if the check passes, and false otherwise.
-WARN_UNUSED_RESULT bool ValidateNameAndOwnerIfPresent(
-    const url::Origin& owner,
-    const std::string& name,
-    const base::Value& value) {
+[[nodiscard]] bool ValidateNameAndOwnerIfPresent(const url::Origin& owner,
+                                                 const std::string& name,
+                                                 const base::Value& value) {
   const std::string* maybe_owner = value.FindStringKey("owner");
   if (maybe_owner && url::Origin::Create(GURL(*maybe_owner)) != owner)
     return false;
@@ -238,7 +260,7 @@ WARN_UNUSED_RESULT bool ValidateNameAndOwnerIfPresent(
 // Copies the trustedBiddingSignals list JSON field into
 // `interest_group_update`, returns true iff the JSON is valid and the copy
 // completed.
-WARN_UNUSED_RESULT bool TryToCopyTrustedBiddingSignalsKeys(
+[[nodiscard]] bool TryToCopyTrustedBiddingSignalsKeys(
     blink::InterestGroup& interest_group_update,
     const base::Value& value) {
   const base::Value* maybe_update_trusted_bidding_signals_keys =
@@ -260,9 +282,8 @@ WARN_UNUSED_RESULT bool TryToCopyTrustedBiddingSignalsKeys(
 
 // Copies the `ads` list  JSON field into `interest_group_update`, returns true
 // iff the JSON is valid and the copy completed.
-WARN_UNUSED_RESULT bool TryToCopyAds(
-    blink::InterestGroup& interest_group_update,
-    const base::Value& value) {
+[[nodiscard]] bool TryToCopyAds(blink::InterestGroup& interest_group_update,
+                                const base::Value& value) {
   const base::Value* maybe_ads = value.FindListKey("ads");
   if (!maybe_ads)
     return true;
@@ -349,6 +370,15 @@ void InterestGroupManager::ReportUpdateFetchFailed(const url::Origin& owner,
                                                    bool net_disconnected) {
   impl_.AsyncCall(&InterestGroupStorage::ReportUpdateFetchFailed)
       .WithArgs(owner, name, net_disconnected);
+}
+
+void InterestGroupManager::NotifyInterestGroupAccessed(
+    InterestGroupObserverInterface::AccessType type,
+    const std::string& owner_origin,
+    const std::string& name) {
+  for (InterestGroupObserverInterface& observer : observers_) {
+    observer.OnInterestGroupAccessed(type, owner_origin, name);
+  }
 }
 
 }  // namespace content

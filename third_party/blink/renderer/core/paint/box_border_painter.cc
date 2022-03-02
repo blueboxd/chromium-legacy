@@ -282,9 +282,9 @@ void DrawBleedAdjustedDRRect(GraphicsContext& context,
       path.addRRect(SkRRect(inner));
       path.setFillType(SkPathFillType::kInverseWinding);
 
-      PaintFlags flags;
+      cc::PaintFlags flags;
       flags.setColor(color.Rgb());
-      flags.setStyle(PaintFlags::kFill_Style);
+      flags.setStyle(cc::PaintFlags::kFill_Style);
       flags.setAntiAlias(true);
       context.DrawPath(path, flags, auto_dark_mode);
 
@@ -298,7 +298,7 @@ void DrawBleedAdjustedDRRect(GraphicsContext& context,
         context.FillDRRect(adjusted_outer, inner, color, auto_dark_mode);
         break;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     default:
       context.FillDRRect(outer, inner, color, auto_dark_mode);
       break;
@@ -620,7 +620,7 @@ void FillQuad(GraphicsContext& context,
   path.lineTo(gfx::PointFToSkPoint(quad[1]));
   path.lineTo(gfx::PointFToSkPoint(quad[2]));
   path.lineTo(gfx::PointFToSkPoint(quad[3]));
-  PaintFlags flags(context.FillFlags());
+  cc::PaintFlags flags(context.FillFlags());
   flags.setAntiAlias(antialias);
   flags.setColor(color.Rgb());
 
@@ -1857,12 +1857,12 @@ void BoxBorderPainter::DrawLineForBoxSide(GraphicsContext& context,
       // https://bugs.webkit.org/show_bug.cgi?id=58608
       if (side == BoxSide::kTop || side == BoxSide::kLeft)
         color = color.Dark();
-      FALLTHROUGH;
+      [[fallthrough]];
     case EBorderStyle::kOutset:
       if (style == EBorderStyle::kOutset &&
           (side == BoxSide::kBottom || side == BoxSide::kRight))
         color = color.Dark();
-      FALLTHROUGH;
+      [[fallthrough]];
     case EBorderStyle::kSolid:
       DrawSolidBoxSide(context, x1, y1, x2, y2, side, color, adjacent_width1,
                        adjacent_width2, antialias, auto_dark_mode);

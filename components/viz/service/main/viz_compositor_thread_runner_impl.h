@@ -12,7 +12,7 @@
 #include "components/viz/service/main/viz_compositor_thread_runner.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/java_handler_thread.h"
 #endif
 
@@ -21,11 +21,13 @@ class Thread;
 }  // namespace base
 
 namespace viz {
-class OutputSurfaceProvider;
 class FrameSinkManagerImpl;
+class GmbVideoFramePoolContextProvider;
+class InProcessGpuMemoryBufferManager;
+class OutputSurfaceProvider;
 class ServerSharedBitmapManager;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 using VizCompositorThreadType = base::android::JavaHandlerThread;
 #else
 using VizCompositorThreadType = base::Thread;
@@ -62,7 +64,10 @@ class VizCompositorThreadRunnerImpl : public VizCompositorThreadRunner {
 
   // Start variables to be accessed only on |task_runner_|.
   std::unique_ptr<ServerSharedBitmapManager> server_shared_bitmap_manager_;
+  std::unique_ptr<InProcessGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<OutputSurfaceProvider> output_surface_provider_;
+  std::unique_ptr<GmbVideoFramePoolContextProvider>
+      gmb_video_frame_pool_context_provider_;
   std::unique_ptr<FrameSinkManagerImpl> frame_sink_manager_;
   // End variables to be accessed only on |task_runner_|.
 

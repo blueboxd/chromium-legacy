@@ -334,7 +334,7 @@ bool ThemeHelper::ShouldUseIncreasedContrastThemeSupplier(
     ui::NativeTheme* native_theme) const {
 // TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
 // complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // On Linux the GTK system theme provides the high contrast colors,
   // so don't use the IncreasedContrastThemeSupplier.
   return false;
@@ -358,10 +358,14 @@ SkColor ThemeHelper::GetDefaultColor(
                     incognito, theme_supplier);
   };
   switch (id) {
-    case TP::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND: {
+    case TP::COLOR_BOOKMARK_TEXT:
+    case TP::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE:
+    case TP::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE:
+      return GetColor(TP::COLOR_TOOLBAR_TEXT, incognito, theme_supplier,
+                      nullptr);
+    case TP::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND:
       return GetColor(TP::COLOR_DOWNLOAD_SHELF, incognito, theme_supplier,
                       nullptr);
-    }
     case TP::COLOR_DOWNLOAD_SHELF_BUTTON_TEXT: {
       const SkColor download_shelf_color =
           GetColor(TP::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND, incognito,
@@ -737,7 +741,7 @@ absl::optional<ThemeHelper::OmniboxColor> ThemeHelper::GetOmniboxColorImpl(
     case TP::COLOR_OMNIBOX_SELECTED_KEYWORD:
       if (dark)
         return {{gfx::kGoogleGrey100, false}};
-      FALLTHROUGH;
+      [[fallthrough]];
     case TP::COLOR_OMNIBOX_RESULTS_URL:
       return url_color(results_bg_hovered_color());
     case TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED:

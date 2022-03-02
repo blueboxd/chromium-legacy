@@ -15,10 +15,16 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/support_tool/data_collector.h"
+#include "components/feedback/pii_types.h"
+#include "components/feedback/redaction_tool.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/re2/src/re2/re2.h"
+#include "third_party/re2/src/re2/stringpiece.h"
 
 UiHierarchyDataCollector::UiHierarchyDataCollector() = default;
 UiHierarchyDataCollector::~UiHierarchyDataCollector() = default;
@@ -40,11 +46,6 @@ UIHierarchyData CollectUiHierarchyData() {
   return UIHierarchyData(window_titles, /*data=*/out.str());
 }
 
-bool WriteOutputFile(std::string data, base::FilePath target_directory) {
-  return base::WriteFile(
-      target_directory.Append(FILE_PATH_LITERAL("ui_hierarchy")), data);
-}
-
 }  // namespace
 
 UIHierarchyData::UIHierarchyData(std::vector<std::string> window_titles,
@@ -54,6 +55,44 @@ UIHierarchyData::UIHierarchyData(std::vector<std::string> window_titles,
 UIHierarchyData::~UIHierarchyData() = default;
 
 UIHierarchyData::UIHierarchyData(UIHierarchyData&& ui_hierarchy_data) = default;
+
+bool UiHierarchyDataCollector::WriteOutputFile(
+    std::string ui_hierarchy_data,
+    base::FilePath target_directory,
+    std::set<feedback::PIIType> pii_types_to_keep) {
+  if (pii_types_to_keep.count(feedback::PIIType::kUIHierarchyWindowTitles) ==
+      0) {
+    ui_hierarchy_data = RemoveWindowTitles(ui_hierarchy_data);
+  }
+  return base::WriteFile(
+      target_directory.Append(FILE_PATH_LITERAL("ui_hierarchy")),
+      ui_hierarchy_data);
+}
+
+std::string UiHierarchyDataCollector::RemoveWindowTitles(
+    const std::string& ui_hierarchy_data) {
+  // `ui_hierarchy_data` stores every component in a new line. Window titles are
+  // stored in "title=<window title>\n" format in `ui_hierarchy_data`.
+  re2::RE2 regex_pattern("(?s)(.*?)title=(?-s)(.+)\\n");
+  re2::StringPiece input(ui_hierarchy_data);
+
+  // `regex_pattern` has two matching groups: first one is for the skipped input
+  // that doesn't contain any window titles and second one is for the matched
+  // window title.
+  re2::StringPiece skipped_part;
+  re2::StringPiece matched_window_title;
+  std::string redacted;
+
+  while (re2::RE2::Consume(&input, regex_pattern, &skipped_part,
+                           &matched_window_title)) {
+    skipped_part.AppendToString(&redacted);
+    redacted += "title=<REDACTED>\n";
+  }
+  // Append the rest of the input to `redacted`. Only the unmatched last part
+  // will be present in the `input` as we're using Consume() function.
+  input.AppendToString(&redacted);
+  return redacted;
+}
 
 std::string UiHierarchyDataCollector::GetName() const {
   return "UI Hierarchy";
@@ -68,24 +107,29 @@ const PIIMap& UiHierarchyDataCollector::GetDetectedPII() {
 }
 
 void UiHierarchyDataCollector::CollectDataAndDetectPII(
-    DataCollectorDoneCallback on_data_collected_callback) {
+    DataCollectorDoneCallback on_data_collected_callback,
+    scoped_refptr<base::SequencedTaskRunner> task_runner_for_redaction_tool,
+    scoped_refptr<feedback::RedactionToolContainer> redaction_tool_container) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UIHierarchyData ui_hierarchy_data = CollectUiHierarchyData();
   InsertIntoPIIMap(ui_hierarchy_data.window_titles);
   data_ = std::move(ui_hierarchy_data.data);
   // `data_` can't be empty.
   DCHECK(!data_.empty());
-  std::move(on_data_collected_callback).Run(/*error_code=*/absl::nullopt);
+  std::move(on_data_collected_callback).Run(/*error=*/absl::nullopt);
 }
 
 void UiHierarchyDataCollector::ExportCollectedDataWithPII(
-    std::set<PIIType> pii_types_to_keep,
+    std::set<feedback::PIIType> pii_types_to_keep,
     base::FilePath target_directory,
+    scoped_refptr<base::SequencedTaskRunner> task_runner_for_redaction_tool,
+    scoped_refptr<feedback::RedactionToolContainer> redaction_tool_container,
     DataCollectorDoneCallback on_exported_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&WriteOutputFile, data_, target_directory),
+      base::BindOnce(&UiHierarchyDataCollector::WriteOutputFile, data_,
+                     target_directory, pii_types_to_keep),
       base::BindOnce(&UiHierarchyDataCollector::OnDataExportDone,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(on_exported_callback)));
@@ -96,15 +140,18 @@ void UiHierarchyDataCollector::OnDataExportDone(
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!success) {
-    std::move(on_exported_callback)
-        .Run(SupportToolError::kUIHierarchyDataCollectorError);
+    SupportToolError error = {SupportToolErrorCode::kDataCollectorError,
+                              "Failed on data export."};
+    std::move(on_exported_callback).Run(error);
     return;
   }
-  std::move(on_exported_callback).Run(/*error_code=*/absl::nullopt);
+  std::move(on_exported_callback).Run(/*error=*/absl::nullopt);
 }
 
 void UiHierarchyDataCollector::InsertIntoPIIMap(
     const std::vector<std::string>& window_titles) {
+  std::set<std::string>& pii_window_titles =
+      pii_map_[feedback::PIIType::kUIHierarchyWindowTitles];
   for (auto const& title : window_titles)
-    pii_map_.emplace(PIIType::kUIHierarchyWindowTitles, title);
+    pii_window_titles.insert(title);
 }

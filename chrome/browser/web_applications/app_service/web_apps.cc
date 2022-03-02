@@ -142,7 +142,8 @@ void WebApps::LoadIcon(const std::string& app_id,
                        int32_t size_hint_in_dip,
                        bool allow_placeholder_icon,
                        apps::LoadIconCallback callback) {
-  publisher_helper().LoadIcon(app_id, icon_key, icon_type, size_hint_in_dip,
+  publisher_helper().LoadIcon(app_id, icon_type, size_hint_in_dip,
+                              static_cast<IconEffects>(icon_key.icon_effects),
                               std::move(callback));
 }
 
@@ -175,11 +176,9 @@ void WebApps::LoadIcon(const std::string& app_id,
     return;
   }
 
-  std::unique_ptr<apps::IconKey> key =
-      apps::ConvertMojomIconKeyToIconKey(icon_key);
   publisher_helper().LoadIcon(
-      app_id, *key, apps::ConvertMojomIconTypeToIconType(icon_type),
-      size_hint_in_dip,
+      app_id, apps::ConvertMojomIconTypeToIconType(icon_type), size_hint_in_dip,
+      static_cast<IconEffects>(icon_key->icon_effects),
       apps::IconValueToMojomIconValueCallback(std::move(callback)));
 }
 
@@ -327,6 +326,11 @@ void WebApps::StartPublishingWebApps(
                      true /* should_notify_initialized */);
 
   subscribers_.Add(std::move(subscriber));
+}
+
+void WebApps::SetWindowMode(const std::string& app_id,
+                            apps::mojom::WindowMode window_mode) {
+  publisher_helper().SetWindowMode(app_id, window_mode);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -515,10 +519,6 @@ void WebApps::ExecuteContextMenuCommand(const std::string& app_id,
   publisher_helper().ExecuteContextMenuCommand(app_id, shortcut_id, display_id);
 }
 
-void WebApps::SetWindowMode(const std::string& app_id,
-                            apps::mojom::WindowMode window_mode) {
-  publisher_helper().SetWindowMode(app_id, window_mode);
-}
 #endif
 
 }  // namespace web_app

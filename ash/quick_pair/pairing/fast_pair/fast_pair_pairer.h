@@ -13,6 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "base/time/time.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -83,7 +84,8 @@ class FastPairPairer : public device::BluetoothDevice::PairingDelegate,
                          absl::optional<PairFailure> failure);
 
   // FastPairDataEncryptor::ParseDecryptedPasskey callback
-  void OnParseDecryptedPasskey(const absl::optional<DecryptedPasskey>& passkey);
+  void OnParseDecryptedPasskey(base::TimeTicks decrypt_start_time,
+                               const absl::optional<DecryptedPasskey>& passkey);
 
   // Creates a 16-byte array of random bytes with a first byte of 0x04 to
   // signal Fast Pair account key, and then writes to the device.
@@ -94,9 +96,16 @@ class FastPairPairer : public device::BluetoothDevice::PairingDelegate,
       std::array<uint8_t, 16> account_key,
       absl::optional<device::BluetoothGattService::GattErrorCode> error);
 
+  void OnGattClientInitializedCallback(absl::optional<PairFailure> failure);
+
+  // Initial timestamps used for metrics.
+  base::TimeTicks ask_confirm_passkey_initial_time_;
+  base::TimeTicks confirm_passkey_initial_time_;
+
   uint32_t expected_passkey_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
   scoped_refptr<Device> device_;
+  std::unique_ptr<FastPairGattServiceClient> fast_pair_gatt_service_client_;
   std::string pairing_device_address_;
   base::OnceCallback<void(scoped_refptr<Device>)> paired_callback_;
   base::OnceCallback<void(scoped_refptr<Device>, PairFailure)>

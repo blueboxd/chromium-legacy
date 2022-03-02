@@ -65,22 +65,13 @@ bool ShouldAutoDisplayUi(
   // picker if Chrome has been chosen by the user as the platform for this URL.
   // TODO(crbug.com/1225828): Handle this for lacros-chrome as well.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::switches::IsTabletFormFactor()) {
+  if (ash::switches::IsTabletFormFactor()) {
     if (ui_auto_display_service->GetLastUsedPlatformForTablets(url) ==
         IntentPickerAutoDisplayPref::Platform::kChrome) {
       return false;
     }
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  // If we only have PWAs in the app list, do not show the intent picker.
-  // Instead just show the omnibox icon. This is to reduce annoyance to users
-  // until "Remember my choice" is available for desktop PWAs.
-  // TODO(crbug.com/826982): show the intent picker when the app registry is
-  // available to persist "Remember my choice" for PWAs.
-  if (!base::FeatureList::IsEnabled(features::kIntentPickerPWAPersistence) &&
-      ContainsOnlyPwasAndMacApps(apps_for_picker)) {
-    return false;
-  }
 
   // If the preferred app is use browser, do not show the intent picker.
   Profile* profile =
@@ -144,14 +135,6 @@ void MaybeShowIntentPickerBubble(content::NavigationHandle* navigation_handle,
                      url));
 }
 
-bool ContainsOnlyPwasAndMacApps(const std::vector<IntentPickerAppInfo>& apps) {
-  return std::all_of(apps.begin(), apps.end(),
-                     [](const IntentPickerAppInfo& app_info) {
-                       return app_info.type == PickerEntryType::kWeb ||
-                              app_info.type == PickerEntryType::kMacOs;
-                     });
-}
-
 void OnIntentPickerClosedChromeOs(
     content::WebContents* web_contents,
     IntentPickerAutoDisplayService* ui_auto_display_service,
@@ -163,7 +146,7 @@ void OnIntentPickerClosedChromeOs(
     bool should_persist) {
 // TODO(crbug.com/1225828): Handle this for lacros-chrome as well.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::switches::IsTabletFormFactor() && should_persist) {
+  if (ash::switches::IsTabletFormFactor() && should_persist) {
     // On devices of tablet form factor, until the user has decided to persist
     // the setting, the browser-side intent picker should always be seen.
     auto platform = IntentPickerAutoDisplayPref::Platform::kNone;
@@ -191,40 +174,48 @@ void OnIntentPickerClosedChromeOs(
   // e.g. due to the tab being closed. Keep count of this scenario so we can
   // stop the UI from showing after 2+ dismissals.
   if (entry_type == PickerEntryType::kUnknown &&
-      close_reason == IntentPickerCloseReason::DIALOG_DEACTIVATED) {
-    if (ui_auto_display_service) {
-      ui_auto_display_service->IncrementCounter(url);
-    }
+      close_reason == IntentPickerCloseReason::DIALOG_DEACTIVATED &&
+      ui_auto_display_service) {
+    ui_auto_display_service->IncrementCounter(url);
   }
 
   if (should_persist) {
-    // TODO(https://crbug.com/853604): Remove this and convert to a DCHECK
-    // after finding out the root cause.
-    if (launch_name.empty()) {
-      base::debug::DumpWithoutCrashing();
-    } else {
-      proxy->AddPreferredApp(launch_name, url);
-    }
+    DCHECK(!launch_name.empty());
+    proxy->AddPreferredApp(launch_name, url);
   }
 
   if (should_launch_app) {
-    if (entry_type == PickerEntryType::kWeb) {
-      web_app::ReparentWebContentsIntoAppBrowser(web_contents, launch_name);
-    } else {
-      // TODO(crbug.com/853604): Distinguish the source from link and omnibox.
-      mojom::LaunchSource launch_source = mojom::LaunchSource::kFromLink;
-      proxy->LaunchAppWithUrl(
-          launch_name,
-          GetEventFlags(mojom::LaunchContainer::kLaunchContainerWindow,
-                        WindowOpenDisposition::NEW_WINDOW,
-                        /*prefer_container=*/true),
-          url, launch_source, apps::MakeWindowInfo(display::kDefaultDisplayId));
-      CloseOrGoBack(web_contents);
-    }
+    LaunchAppFromIntentPickerChromeOs(web_contents, url, launch_name,
+                                      entry_type);
   }
 
   IntentHandlingMetrics::RecordIntentPickerMetrics(entry_type, close_reason,
                                                    should_persist, show_state);
+}
+
+void LaunchAppFromIntentPickerChromeOs(content::WebContents* web_contents,
+                                       const GURL& url,
+                                       const std::string& launch_name,
+                                       PickerEntryType app_type) {
+  DCHECK(!launch_name.empty());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  auto* proxy = AppServiceProxyFactory::GetForProfile(profile);
+
+  if (app_type == PickerEntryType::kWeb) {
+    web_app::ReparentWebContentsIntoAppBrowser(web_contents, launch_name);
+  } else {
+    // TODO(crbug.com/853604): Distinguish the source from link and omnibox.
+    mojom::LaunchSource launch_source = mojom::LaunchSource::kFromLink;
+    proxy->LaunchAppWithUrl(
+        launch_name,
+        GetEventFlags(mojom::LaunchContainer::kLaunchContainerWindow,
+                      WindowOpenDisposition::NEW_WINDOW,
+                      /*prefer_container=*/true),
+        url, launch_source, apps::MakeWindowInfo(display::kDefaultDisplayId));
+    CloseOrGoBack(web_contents);
+  }
 }
 
 }  // namespace apps

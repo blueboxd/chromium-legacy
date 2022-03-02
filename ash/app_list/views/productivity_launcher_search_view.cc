@@ -15,6 +15,7 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_view.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
@@ -87,7 +88,8 @@ ProductivityLauncherSearchView::ProductivityLauncherSearchView(
   auto* answer_card_container =
       scroll_contents->AddChildView(std::make_unique<SearchResultListView>(
           /*main_view=*/nullptr, view_delegate, dialog_controller_,
-          SearchResultView::SearchResultViewType::kAnswerCard, absl::nullopt));
+          SearchResultView::SearchResultViewType::kAnswerCard,
+          /*animates_result_updates=*/true, absl::nullopt));
   answer_card_container->SetListType(
       SearchResultListView::SearchResultListType::kAnswerCard);
   add_result_container(answer_card_container);
@@ -96,7 +98,8 @@ ProductivityLauncherSearchView::ProductivityLauncherSearchView(
   auto* best_match_container =
       scroll_contents->AddChildView(std::make_unique<SearchResultListView>(
           /*main_view=*/nullptr, view_delegate, dialog_controller_,
-          SearchResultView::SearchResultViewType::kDefault, absl::nullopt));
+          SearchResultView::SearchResultViewType::kDefault,
+          /*animated_result_updates=*/true, absl::nullopt));
   best_match_container->SetListType(
       SearchResultListView::SearchResultListType::kBestMatch);
   add_result_container(best_match_container);
@@ -113,7 +116,8 @@ ProductivityLauncherSearchView::ProductivityLauncherSearchView(
     auto* result_container =
         scroll_contents->AddChildView(std::make_unique<SearchResultListView>(
             /*main_view=*/nullptr, view_delegate, dialog_controller_,
-            SearchResultView::SearchResultViewType::kDefault, i));
+            SearchResultView::SearchResultViewType::kDefault,
+            /*animates_result_updates=*/true, i));
     add_result_container(result_container);
   }
 
@@ -144,6 +148,20 @@ void ProductivityLauncherSearchView::OnSearchResultContainerResultsChanged() {
     if (view->UpdateScheduled())
       return;
     result_count += view->num_results();
+  }
+
+  if (features::IsProductivityLauncherAnimationEnabled()) {
+    using AnimationInfo = SearchResultContainerView::ResultsAnimationInfo;
+    AnimationInfo aggregate_animation_info;
+    for (SearchResultContainerView* view : result_container_views_) {
+      absl::optional<AnimationInfo> container_animation_info =
+          view->ScheduleResultAnimations(aggregate_animation_info);
+      DCHECK(container_animation_info);
+      aggregate_animation_info.total_views +=
+          container_animation_info->total_views;
+      aggregate_animation_info.animating_views +=
+          container_animation_info->animating_views;
+    }
   }
 
   last_search_result_count_ = result_count;

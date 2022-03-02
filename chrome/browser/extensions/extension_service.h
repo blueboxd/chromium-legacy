@@ -55,6 +55,10 @@
 #error "Extensions must be enabled"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/extensions/ash_extension_keeplist_manager.h"
+#endif
+
 class BlocklistedExtensionSyncServiceTest;
 class Profile;
 
@@ -465,6 +469,10 @@ class ExtensionService : public ExtensionServiceInterface,
   }
 
   void UninstallMigratedExtensionsForTest() { UninstallMigratedExtensions(); }
+
+  void ProfileMarkedForPermanentDeletionForTest() {
+    OnProfileMarkedForPermanentDeletion(profile_);
+  }
 #endif
 
   void set_browser_terminating_for_test(bool value) {
@@ -743,6 +751,10 @@ class ExtensionService : public ExtensionServiceInterface,
   using InstallGateRegistry =
       std::map<ExtensionPrefs::DelayReason, InstallGate*>;
   InstallGateRegistry install_delayer_registry_;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  AshExtensionKeeplistManager ash_keeplist_manager_;
+#endif
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            DestroyingProfileClearsExtensions);

@@ -48,6 +48,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time_override.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -258,48 +259,47 @@ void RunAllTasksUntilIdle() {
   }
 }
 
-std::unique_ptr<base::DictionaryValue> CreateWallpaperInfoDict(
-    WallpaperInfo info) {
-  auto wallpaper_info_dict = std::make_unique<base::DictionaryValue>();
+base::Value CreateWallpaperInfoDict(WallpaperInfo info) {
+  base::Value wallpaper_info_dict(base::Value::Type::DICTIONARY);
   if (info.asset_id.has_value()) {
-    wallpaper_info_dict->SetString(
+    wallpaper_info_dict.SetStringKey(
         WallpaperControllerImpl::kNewWallpaperAssetIdNodeName,
         base::NumberToString(info.asset_id.value()));
   }
   if (info.unit_id.has_value()) {
-    wallpaper_info_dict->SetStringPath(
+    wallpaper_info_dict.SetStringKey(
         WallpaperControllerImpl::kNewWallpaperUnitIdNodeName,
         base::NumberToString(info.unit_id.value()));
   }
   base::Value online_wallpaper_variant_list(base::Value::Type::LIST);
   for (const auto& variant : info.variants) {
     base::Value online_wallpaper_variant_dict(base::Value::Type::DICTIONARY);
-    online_wallpaper_variant_dict.SetStringPath(
+    online_wallpaper_variant_dict.SetStringKey(
         WallpaperControllerImpl::kNewWallpaperAssetIdNodeName,
         base::NumberToString(variant.asset_id));
-    online_wallpaper_variant_dict.SetStringPath(
+    online_wallpaper_variant_dict.SetStringKey(
         WallpaperControllerImpl::kOnlineWallpaperUrlNodeName,
-        variant.url.spec());
-    online_wallpaper_variant_dict.SetIntPath(
+        variant.raw_url.spec());
+    online_wallpaper_variant_dict.SetIntKey(
         WallpaperControllerImpl::kOnlineWallpaperTypeNodeName,
         static_cast<int>(variant.type));
     online_wallpaper_variant_list.Append(
         std::move(online_wallpaper_variant_dict));
   }
-  wallpaper_info_dict->SetKey(
+  wallpaper_info_dict.SetKey(
       WallpaperControllerImpl::kNewWallpaperVariantListNodeName,
       std::move(online_wallpaper_variant_list));
-  wallpaper_info_dict->SetString(
+  wallpaper_info_dict.SetStringKey(
       WallpaperControllerImpl::kNewWallpaperCollectionIdNodeName,
       info.collection_id);
-  wallpaper_info_dict->SetString(
+  wallpaper_info_dict.SetStringKey(
       WallpaperControllerImpl::kNewWallpaperDateNodeName,
       base::NumberToString(info.date.ToInternalValue()));
-  wallpaper_info_dict->SetString(
+  wallpaper_info_dict.SetStringKey(
       WallpaperControllerImpl::kNewWallpaperLocationNodeName, info.location);
-  wallpaper_info_dict->SetInteger(
+  wallpaper_info_dict.SetIntKey(
       WallpaperControllerImpl::kNewWallpaperLayoutNodeName, info.layout);
-  wallpaper_info_dict->SetInteger(
+  wallpaper_info_dict.SetIntKey(
       WallpaperControllerImpl::kNewWallpaperTypeNodeName,
       static_cast<int>(info.type));
   return wallpaper_info_dict;
@@ -319,21 +319,20 @@ void PutWallpaperInfoInPrefs(AccountId account_id,
                              PrefService* pref_service,
                              const std::string& pref_name) {
   DictionaryPrefUpdate wallpaper_update(pref_service, pref_name);
-  auto wallpaper_info_dict = CreateWallpaperInfoDict(info);
-  wallpaper_update->SetKey(
-      account_id.GetUserEmail(),
-      base::Value::FromUniquePtrValue(std::move(wallpaper_info_dict)));
+  base::Value wallpaper_info_dict = CreateWallpaperInfoDict(info);
+  wallpaper_update->SetKey(account_id.GetUserEmail(),
+                           std::move(wallpaper_info_dict));
 }
 
 void AssertWallpaperInfoInPrefs(const PrefService* pref_service,
                                 const char pref_name[],
                                 AccountId account_id,
                                 WallpaperInfo info) {
-  const base::DictionaryValue* stored_info_dict;
-  pref_service->GetDictionary(pref_name)->GetDictionaryWithoutPathExpansion(
-      account_id.GetUserEmail(), &stored_info_dict);
-  auto expected_info_dict = CreateWallpaperInfoDict(info);
-  EXPECT_EQ(*expected_info_dict.get(), *stored_info_dict);
+  const base::Value* stored_info_dict =
+      pref_service->GetDictionary(pref_name)->FindDictKey(
+          account_id.GetUserEmail());
+  base::Value expected_info_dict = CreateWallpaperInfoDict(info);
+  EXPECT_EQ(expected_info_dict, *stored_info_dict);
 }
 
 WallpaperInfo InfoWithType(WallpaperType type) {
@@ -570,29 +569,29 @@ class WallpaperControllerTestBase : public AshTestBase {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     const base::FilePath small_file =
         default_wallpaper_path.Append(kDefaultSmallWallpaperName);
-    command_line->AppendSwitchASCII(chromeos::switches::kDefaultWallpaperSmall,
+    command_line->AppendSwitchASCII(switches::kDefaultWallpaperSmall,
                                     small_file.value());
     const base::FilePath large_file =
         default_wallpaper_path.Append(kDefaultLargeWallpaperName);
-    command_line->AppendSwitchASCII(chromeos::switches::kDefaultWallpaperLarge,
+    command_line->AppendSwitchASCII(switches::kDefaultWallpaperLarge,
                                     large_file.value());
 
     const base::FilePath guest_small_file =
         default_wallpaper_path.Append(kGuestSmallWallpaperName);
-    command_line->AppendSwitchASCII(chromeos::switches::kGuestWallpaperSmall,
+    command_line->AppendSwitchASCII(switches::kGuestWallpaperSmall,
                                     guest_small_file.value());
     const base::FilePath guest_large_file =
         default_wallpaper_path.Append(kGuestLargeWallpaperName);
-    command_line->AppendSwitchASCII(chromeos::switches::kGuestWallpaperLarge,
+    command_line->AppendSwitchASCII(switches::kGuestWallpaperLarge,
                                     guest_large_file.value());
 
     const base::FilePath child_small_file =
         default_wallpaper_path.Append(kChildSmallWallpaperName);
-    command_line->AppendSwitchASCII(chromeos::switches::kChildWallpaperSmall,
+    command_line->AppendSwitchASCII(switches::kChildWallpaperSmall,
                                     child_small_file.value());
     const base::FilePath child_large_file =
         default_wallpaper_path.Append(kChildLargeWallpaperName);
-    command_line->AppendSwitchASCII(chromeos::switches::kChildWallpaperLarge,
+    command_line->AppendSwitchASCII(switches::kChildWallpaperLarge,
                                     child_large_file.value());
 
     const int kWallpaperSize = 2;
@@ -2030,7 +2029,7 @@ TEST_P(WallpaperControllerTest, ReloadWallpaper) {
   // Show an always-on-top wallpaper.
   const base::FilePath image_path =
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-          chromeos::switches::kGuestWallpaperLarge);
+          switches::kGuestWallpaperLarge);
   CreateDefaultWallpapers();
   SetBypassDecode();
   ClearWallpaperCount();
@@ -2354,9 +2353,8 @@ TEST_P(WallpaperControllerTest, ShouldShowInitialAnimationAfterBoot) {
 
   // Simulate the login screen after system boot.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kFirstExecAfterBoot);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kLoginManager);
+      switches::kFirstExecAfterBoot);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kLoginManager);
   ClearLogin();
 
   // Show the first wallpaper. Verify that the slower animation should be used.
@@ -2390,8 +2388,7 @@ TEST_P(WallpaperControllerTest, ShouldNotShowInitialAnimationAfterSignOut) {
 
   // Simulate the login screen after user sign-out. Verify that the slower
   // animation should never be used.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kLoginManager);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kLoginManager);
   CreateAndSaveWallpapers(account_id_1);
   ClearLogin();
 
@@ -3104,7 +3101,7 @@ TEST_P(WallpaperControllerTest, AlwaysOnTopWallpaper) {
   // Show an always-on-top wallpaper.
   const base::FilePath image_path =
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-          chromeos::switches::kGuestWallpaperLarge);
+          switches::kGuestWallpaperLarge);
   controller_->ShowAlwaysOnTopWallpaper(image_path);
   RunAllTasksUntilIdle();
   EXPECT_EQ(2, GetWallpaperCount());
@@ -3146,11 +3143,11 @@ class WallpaperControllerPrefTest : public AshTestBase,
                                     public testing::WithParamInterface<bool> {
  public:
   WallpaperControllerPrefTest() {
-    base::DictionaryValue property;
-    property.SetInteger("rotation",
-                        static_cast<int>(display::Display::ROTATE_90));
-    property.SetInteger("width", 800);
-    property.SetInteger("height", 600);
+    base::Value property(base::Value::Type::DICTIONARY);
+    property.SetIntKey("rotation",
+                       static_cast<int>(display::Display::ROTATE_90));
+    property.SetIntKey("width", 800);
+    property.SetIntKey("height", 600);
 
     DictionaryPrefUpdate update(local_state(), prefs::kDisplayProperties);
     update.Get()->SetKey("2200000000", std::move(property));
@@ -3250,7 +3247,7 @@ class WallpaperControllerWallpaperWebUiTest
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         {features::kWallpaperWebUI, features::kWallpaperFullScreenPreview,
-         features::kDarkLightMode},
+         chromeos::features::kDarkLightMode},
         {});
     WallpaperControllerTestBase::SetUp();
   }
@@ -3357,6 +3354,16 @@ TEST_F(WallpaperControllerWallpaperWebUiTest, SetWallpaperInfoCustom) {
 }
 
 TEST_F(WallpaperControllerWallpaperWebUiTest, MigrateWallpaperInfo) {
+  WallpaperInfo expected_info = InfoWithType(WallpaperType::kOnline);
+  PutWallpaperInfoInPrefs(account_id_1, expected_info, GetLocalPrefService(),
+                          prefs::kUserWallpaperInfo);
+  SimulateUserLogin(account_id_1);
+  AssertWallpaperInfoInPrefs(GetProfilePrefService(account_id_1),
+                             prefs::kSyncableWallpaperInfo, account_id_1,
+                             expected_info);
+}
+
+TEST_F(WallpaperControllerWallpaperWebUiTest, MigrateWallpaperInfoCustomized) {
   WallpaperInfo expected_info = InfoWithType(WallpaperType::kCustomized);
   PutWallpaperInfoInPrefs(account_id_1, expected_info, GetLocalPrefService(),
                           prefs::kUserWallpaperInfo);

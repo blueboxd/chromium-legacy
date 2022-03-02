@@ -37,6 +37,8 @@ const char kInspectorOpaqueOrigins[] =
     "Permission can't be granted to opaque origins.";
 const char kInspectorPushPermissionError[] =
     "Push Permission without userVisibleOnly:true isn't supported";
+const char kInspectorNoSuchFrameError[] =
+    "Frame with the given id was not found.";
 static constexpr int kInvalidParamsInspectorCode = -32602;
 
 class ScopedIncrementer {
@@ -243,21 +245,21 @@ Status DevToolsClientImpl::SendCommandWithTimeout(
     const std::string& method,
     const base::DictionaryValue& params,
     const Timeout* timeout) {
-  std::unique_ptr<base::DictionaryValue> result;
+  base::Value result;
   return SendCommandInternal(method, params, &result, true, true, 0, timeout);
 }
 
 Status DevToolsClientImpl::SendAsyncCommand(
     const std::string& method,
     const base::DictionaryValue& params) {
-  std::unique_ptr<base::DictionaryValue> result;
+  base::Value result;
   return SendCommandInternal(method, params, &result, false, false, 0, nullptr);
 }
 
 Status DevToolsClientImpl::SendCommandAndGetResult(
     const std::string& method,
     const base::DictionaryValue& params,
-    std::unique_ptr<base::DictionaryValue>* result) {
+    base::Value* result) {
   return SendCommandAndGetResultWithTimeout(method, params, nullptr, result);
 }
 
@@ -265,13 +267,13 @@ Status DevToolsClientImpl::SendCommandAndGetResultWithTimeout(
     const std::string& method,
     const base::DictionaryValue& params,
     const Timeout* timeout,
-    std::unique_ptr<base::DictionaryValue>* result) {
-  std::unique_ptr<base::DictionaryValue> intermediate_result;
+    base::Value* result) {
+  base::Value intermediate_result;
   Status status = SendCommandInternal(method, params, &intermediate_result,
                                       true, true, 0, timeout);
   if (status.IsError())
     return status;
-  if (!intermediate_result)
+  if (!intermediate_result.is_dict())
     return Status(kUnknownError, "inspector response missing result");
   *result = std::move(intermediate_result);
   return Status(kOk);
@@ -353,7 +355,7 @@ DevToolsClient* DevToolsClientImpl::GetRootClient() {
 Status DevToolsClientImpl::SendCommandInternal(
     const std::string& method,
     const base::DictionaryValue& params,
-    std::unique_ptr<base::DictionaryValue>* result,
+    base::Value* result,
     bool expect_response,
     bool wait_for_response,
     const int client_command_id,
@@ -420,10 +422,12 @@ Status DevToolsClientImpl::SendCommandInternal(
       if (!response.result) {
         return internal::ParseInspectorError(response.error);
       }
-      *result = std::move(response.result);
+      *result = std::move(*response.result);
     }
   } else {
     CHECK(!wait_for_response);
+    if (result)
+      *result = base::Value(base::Value::Type::DICTIONARY);
   }
   return Status(kOk);
 }
@@ -663,8 +667,9 @@ bool ParseInspectorMessage(const std::string& message,
   session_id->clear();
   if (message_dict->HasKey("sessionId"))
     message_dict->GetString("sessionId", session_id);
-  int id;
-  if (!message_dict->HasKey("id")) {
+
+  base::Value* id_value = message_dict->FindKey("id");
+  if (!id_value) {
     std::string method;
     if (!message_dict->GetString("method", &method))
       return false;
@@ -678,11 +683,11 @@ bool ParseInspectorMessage(const std::string& message,
     else
       event->params = std::make_unique<base::DictionaryValue>();
     return true;
-  } else if (message_dict->GetInteger("id", &id)) {
+  } else if (id_value->is_int()) {
     base::DictionaryValue* unscoped_error = nullptr;
     base::DictionaryValue* unscoped_result = nullptr;
     *type = kCommandResponseMessageType;
-    command_response->id = id;
+    command_response->id = id_value->GetInt();
     // As per Chromium issue 392577, DevTools does not necessarily return a
     // "result" dictionary for every valid response. In particular,
     // Tracing.start and Tracing.end command responses do not contain one.
@@ -729,6 +734,10 @@ Status ParseInspectorError(const std::string& error_json) {
     } else if (error_message == kInspectorPushPermissionError ||
                error_message == kInspectorOpaqueOrigins) {
       return Status(kInvalidArgument, error_message);
+    } else if (error_message == kInspectorNoSuchFrameError) {
+      // As the server returns the generic error code: SERVER_ERROR = -32000
+      // we have to rely on the error message content.
+      return Status(kNoSuchFrame, error_message);
     }
     absl::optional<int> error_code = error_dict->FindIntPath("code");
     if (error_code == kInvalidParamsInspectorCode)

@@ -130,7 +130,8 @@ DlpPolicyEvent_UserType GetCurrentUserType() {
 }
 
 DlpPolicyEvent CreateDlpPolicyEvent(const std::string& src_pattern,
-                                    DlpRulesManager::Restriction restriction) {
+                                    DlpRulesManager::Restriction restriction,
+                                    DlpRulesManager::Level level) {
   DlpPolicyEvent event;
 
   DlpPolicyEventSource* event_source = new DlpPolicyEventSource;
@@ -141,15 +142,8 @@ DlpPolicyEvent CreateDlpPolicyEvent(const std::string& src_pattern,
       DlpRulesManagerRestriction2DlpEventRestriction(restriction));
   event.set_timestamp_micro(base::Time::Now().ToTimeT());
   event.set_user_type(GetCurrentUserType());
-
-  return event;
-}
-
-DlpPolicyEvent CreateDlpPolicyEvent(const std::string& src_pattern,
-                                    DlpRulesManager::Restriction restriction,
-                                    DlpRulesManager::Level level) {
-  auto event = CreateDlpPolicyEvent(src_pattern, restriction);
   event.set_mode(DlpRulesManagerLevel2DlpEventMode(level));
+
   return event;
 }
 
@@ -184,6 +178,13 @@ DlpPolicyEvent CreateDlpPolicyEvent(const std::string& src_pattern,
     case (DlpRulesManager::Component::kPluginVm):
       event_destination->set_component(
           DlpPolicyEventDestination_Component_PLUGIN_VM);
+      break;
+    case (DlpRulesManager::Component::kUsb):
+      event_destination->set_component(DlpPolicyEventDestination_Component_USB);
+      break;
+    case (DlpRulesManager::Component::kDrive):
+      event_destination->set_component(
+          DlpPolicyEventDestination_Component_DRIVE);
       break;
     case (DlpRulesManager::Component::kUnknownComponent):
       event_destination->set_component(

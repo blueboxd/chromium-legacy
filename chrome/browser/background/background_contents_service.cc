@@ -472,18 +472,17 @@ void BackgroundContentsService::RestartForceInstalledExtensionOnCrash(
 void BackgroundContentsService::LoadBackgroundContentsFromPrefs() {
   if (!prefs_)
     return;
-  const base::DictionaryValue* contents =
+  const base::Value* contents =
       prefs_->GetDictionary(prefs::kRegisteredBackgroundContents);
   if (!contents)
     return;
   extensions::ExtensionRegistry* extension_registry =
       extensions::ExtensionRegistry::Get(profile_);
   DCHECK(extension_registry);
-  for (base::DictionaryValue::Iterator it(*contents); !it.IsAtEnd();
-       it.Advance()) {
+  for (const auto it : contents->DictItems()) {
     // Check to make sure that the parent extension is still enabled.
     const Extension* extension = extension_registry->GetExtensionById(
-        it.key(), extensions::ExtensionRegistry::ENABLED);
+        it.first, extensions::ExtensionRegistry::ENABLED);
     if (!extension) {
       // We should never reach here - it should not be possible for an app
       // to become uninstalled without the associated BackgroundContents being
@@ -491,12 +490,12 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs() {
       // crash before we could save our prefs, or if the user deletes the
       // extension files manually rather than uninstalling it.
       NOTREACHED() << "No extension found for BackgroundContents - id = "
-                   << it.key();
+                   << it.first;
       // Don't cancel out of our loop, just ignore this BackgroundContents and
       // load the next one.
       continue;
     }
-    LoadBackgroundContentsFromDictionary(it.key(), contents);
+    LoadBackgroundContentsFromDictionary(it.first, contents);
   }
 }
 
@@ -537,7 +536,7 @@ void BackgroundContentsService::LoadBackgroundContentsForExtension(
   // Now look in the prefs.
   if (!prefs_)
     return;
-  const base::DictionaryValue* contents =
+  const base::Value* contents =
       prefs_->GetDictionary(prefs::kRegisteredBackgroundContents);
   if (!contents)
     return;
@@ -546,20 +545,20 @@ void BackgroundContentsService::LoadBackgroundContentsForExtension(
 
 void BackgroundContentsService::LoadBackgroundContentsFromDictionary(
     const std::string& extension_id,
-    const base::DictionaryValue* contents) {
+    const base::Value* contents) {
   extensions::ExtensionService* extensions_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   DCHECK(extensions_service);
 
-  const base::DictionaryValue* dict;
-  if (!contents->GetDictionaryWithoutPathExpansion(extension_id, &dict) ||
-      dict == nullptr)
+  const base::Value* dict = contents->FindDictKey(extension_id);
+  if (!dict)
     return;
 
-  std::string frame_name;
-  std::string url;
-  dict->GetString(kUrlKey, &url);
-  dict->GetString(kFrameNameKey, &frame_name);
+  const std::string* maybe_frame_name = dict->FindStringKey(kUrlKey);
+  const std::string* maybe_url = dict->FindStringKey(kFrameNameKey);
+  std::string frame_name = maybe_frame_name ? *maybe_frame_name : std::string();
+  std::string url = maybe_url ? *maybe_url : std::string();
+
   LoadBackgroundContents(GURL(url), frame_name, extension_id);
 }
 
@@ -636,26 +635,25 @@ void BackgroundContentsService::RegisterBackgroundContents(
   // TODO(atwilson): Verify that this is the desired behavior based on developer
   // feedback (http://crbug.com/47118).
   DictionaryPrefUpdate update(prefs_, prefs::kRegisteredBackgroundContents);
-  base::DictionaryValue* pref = update.Get();
+  base::Value* pref = update.Get();
   const std::string& appid = GetParentApplicationId(background_contents);
-  base::DictionaryValue* current;
-  if (pref->GetDictionaryWithoutPathExpansion(appid, &current))
+  if (pref->FindDictKey(appid))
     return;
 
   // No entry for this application yet, so add one.
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString(kUrlKey, background_contents->GetURL().spec());
-  dict->SetString(kFrameNameKey, contents_map_[appid].frame_name);
-  pref->SetKey(appid, base::Value::FromUniquePtrValue(std::move(dict)));
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey(kUrlKey, background_contents->GetURL().spec());
+  dict.SetStringKey(kFrameNameKey, contents_map_[appid].frame_name);
+  pref->SetKey(appid, std::move(dict));
 }
 
 bool BackgroundContentsService::HasRegisteredBackgroundContents(
     const std::string& app_id) {
   if (!prefs_)
     return false;
-  const base::DictionaryValue* contents =
+  const base::Value* contents =
       prefs_->GetDictionary(prefs::kRegisteredBackgroundContents);
-  return contents->HasKey(app_id);
+  return contents->FindKey(app_id);
 }
 
 void BackgroundContentsService::UnregisterBackgroundContents(

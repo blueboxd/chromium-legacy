@@ -85,7 +85,7 @@ bool SiteIsolationPolicy::IsIsolationForOAuthSitesEnabled() {
 
 // static
 bool SiteIsolationPolicy::IsEnterprisePolicyApplicable() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // https://crbug.com/844118: Limiting policy to devices with > 1GB RAM.
   // Using 1077 rather than 1024 because 1) it helps ensure that devices with
   // exactly 1GB of RAM won't get included because of inaccuracies or off-by-one
@@ -114,7 +114,7 @@ bool SiteIsolationPolicy::ShouldDisableSiteIsolationDueToMemoryThreshold(
   //   it doesn't, use a default that's slightly higher than 1GB (see
   //   https://crbug.com/844118).
   int default_memory_threshold_mb;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (site_isolation_mode == content::SiteIsolationMode::kStrictSiteIsolation) {
     default_memory_threshold_mb = 3200;
   } else {
@@ -140,7 +140,7 @@ bool SiteIsolationPolicy::ShouldDisableSiteIsolationDueToMemoryThreshold(
     return base::SysInfo::AmountOfPhysicalMemoryMB() <= memory_threshold_mb;
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (base::SysInfo::AmountOfPhysicalMemoryMB() <=
       default_memory_threshold_mb) {
     return true;
@@ -180,7 +180,7 @@ void SiteIsolationPolicy::PersistUserTriggeredIsolatedOrigin(
   // See https://crbug.com/1172407.
   ListPrefUpdate update(user_prefs::UserPrefs::Get(context),
                         site_isolation::prefs::kUserTriggeredIsolatedOrigins);
-  base::ListValue* list = update.Get();
+  base::Value* list = update.Get();
   base::Value value(origin.Serialize());
   if (!base::Contains(list->GetList(), value))
     list->Append(std::move(value));
@@ -196,7 +196,7 @@ void SiteIsolationPolicy::PersistWebTriggeredIsolatedOrigin(
   DictionaryPrefUpdate update(
       user_prefs::UserPrefs::Get(context),
       site_isolation::prefs::kWebTriggeredIsolatedOrigins);
-  base::DictionaryValue* dict = update.Get();
+  base::Value* dict = update.Get();
 
   // Add the origin.  If it already exists, this will just update the
   // timestamp.
@@ -278,7 +278,7 @@ void SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(
       if (!expired_entries.empty()) {
         DictionaryPrefUpdate update(pref_service,
                                     prefs::kWebTriggeredIsolatedOrigins);
-        base::DictionaryValue* updated_dict = update.Get();
+        base::Value* updated_dict = update.Get();
         for (const auto& entry : expired_entries)
           updated_dict->RemoveKey(entry);
       }

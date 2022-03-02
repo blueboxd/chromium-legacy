@@ -57,11 +57,10 @@ class StartupBrowserCreatorImpl {
   // to full screen.
   static void MaybeToggleFullscreen(Browser* browser);
 
-  // Creates the necessary windows for startup. Returns true on success,
-  // false on failure. |process_startup| indicates whether Chrome is just
-  // starting up or already running and the user wants to launch another
-  // instance.
-  bool Launch(Profile* profile,
+  // Creates the necessary windows for startup. |process_startup| indicates
+  // whether Chrome is just starting up or already running and the user wants to
+  // launch another instance.
+  void Launch(Profile* profile,
               chrome::startup::IsProcessStartup process_startup,
               std::unique_ptr<LaunchModeRecorder> launch_mode_recorder);
 
@@ -99,7 +98,6 @@ class StartupBrowserCreatorImpl {
                            DetermineBrowserOpenBehavior_NotStartup);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
                            DetermineStartupTabs_NewFeaturesPage);
-  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest, ShouldLaunch);
 
   enum class LaunchResult {
     kNormally,
@@ -199,9 +197,6 @@ class StartupBrowserCreatorImpl {
       bool has_create_browser_default,
       bool has_create_browser_switch,
       bool was_mac_login_or_resume);
-
-  // Returns whether or not a browser window should be created/restored.
-  static bool ShouldLaunch(const base::CommandLine& command_line);
 
   // Returns whether `switches::kKioskMode` is set on the command line of
   // the current process. This is a static method to avoid accidentally reading

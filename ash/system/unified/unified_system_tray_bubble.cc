@@ -4,10 +4,12 @@
 
 #include "ash/system/unified/unified_system_tray_bubble.h"
 
+#include "ash/bubble/bubble_constants.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/system/tray/tray_utils.h"
@@ -25,47 +27,6 @@
 
 namespace ash {
 
-namespace {
-
-// Container view of UnifiedSystemTrayView to return fake preferred size for
-// animation optimization. See UnifiedSystemTrayBubble::UpdateTransform().
-// The fake size is specific to the structure of TrayBubbleView, so it is better
-// to keep it separate from UnifiedSystemTrayView.
-class ContainerView : public views::View {
- public:
-  explicit ContainerView(UnifiedSystemTrayView* unified_view)
-      : unified_view_(unified_view) {
-    AddChildView(unified_view);
-  }
-
-  ContainerView(const ContainerView&) = delete;
-  ContainerView& operator=(const ContainerView&) = delete;
-
-  ~ContainerView() override = default;
-
-  // views::View:
-  void Layout() override { unified_view_->SetBoundsRect(GetContentsBounds()); }
-  const char* GetClassName() const override { return "ContainerView"; }
-
-  gfx::Size CalculatePreferredSize() const override {
-    // If transform is used, always return the maximum expanded height.
-    // Otherwise, return the actual height.
-    // Note that transforms are currently only supported when there are not
-    // notifications, so we only consider the system tray height (excluding the
-    // message center) for now.
-    return gfx::Size(kTrayMenuWidth, unified_view_->GetCurrentHeight());
-  }
-
-  void ChildPreferredSizeChanged(views::View* child) override {
-    PreferredSizeChanged();
-  }
-
- private:
-  UnifiedSystemTrayView* const unified_view_;
-};
-
-}  // namespace
-
 UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
     : controller_(std::make_unique<UnifiedSystemTrayController>(tray->model(),
                                                                 this,
@@ -82,7 +43,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect = tray->shelf()->GetSystemTrayAnchorRect();
   init_params.insets = GetTrayBubbleInsets();
-  init_params.corner_radius = kUnifiedTrayCornerRadius;
+  init_params.corner_radius = kBubbleCornerRadius;
   init_params.has_shadow = false;
   init_params.close_on_deactivate = false;
   init_params.reroute_event_handler = true;
@@ -242,7 +203,7 @@ int UnifiedSystemTrayBubble::CalculateMaxHeight() const {
       WorkAreaInsets::ForWindow(tray_->shelf()->GetWindow()->GetRootWindow());
   int free_space_height_above_anchor =
       bottom - work_area->user_work_area_bounds().y();
-  return free_space_height_above_anchor - kUnifiedMenuPadding * 2;
+  return free_space_height_above_anchor - kBubbleMenuPadding * 2;
 }
 
 bool UnifiedSystemTrayBubble::FocusOut(bool reverse) {
@@ -277,6 +238,10 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
                                                 aura::Window* gained_active,
                                                 aura::Window* lost_active) {
   if (!gained_active || !bubble_widget_)
+    return;
+
+  // Check for the CloseBubble() lock.
+  if (!TrayBackgroundView::ShouldCloseBubbleOnWindowActivated())
     return;
 
   // Don't close the bubble if a transient child is gaining or losing
@@ -343,15 +308,6 @@ void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
 
   if (tray_->IsMessageCenterBubbleShown())
     tray_->message_center_bubble()->UpdatePosition();
-}
-
-void UnifiedSystemTrayBubble::OnAnimationFinished() {
-  bubble_widget_->GetNativeWindow()->layer()->SetClipRect(gfx::Rect());
-}
-
-void UnifiedSystemTrayBubble::SetFrameVisible(bool visible) {
-  DCHECK(bubble_widget_);
-  bubble_widget_->non_client_view()->frame_view()->SetVisible(visible);
 }
 
 void UnifiedSystemTrayBubble::NotifyAccessibilityEvent(ax::mojom::Event event,

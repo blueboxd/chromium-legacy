@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -360,7 +361,9 @@ NewTabPageHandler::NewTabPageHandler(
       profile_(profile),
       web_contents_(web_contents),
       ntp_navigation_start_time_(ntp_navigation_start_time),
-      logger_(profile, GURL(chrome::kChromeUINewTabPageURL)),
+      logger_(profile,
+              GURL(chrome::kChromeUINewTabPageURL),
+              ntp_navigation_start_time),
       promo_service_(PromoServiceFactory::GetForProfile(profile)),
       page_{std::move(pending_page)},
       receiver_{this, std::move(pending_page_handler)} {
@@ -624,11 +627,25 @@ void NewTabPageHandler::SetModulesOrder(
 
 void NewTabPageHandler::GetModulesOrder(GetModulesOrderCallback callback) {
   std::vector<std::string> module_ids;
-  const auto* module_ids_value =
-      profile_->GetPrefs()->GetList(prefs::kNtpModulesOrder);
-  for (const auto& id : module_ids_value->GetList()) {
-    module_ids.push_back(id.GetString());
+
+  // First, apply order as set by the last drag&drop interaction.
+  if (base::FeatureList::IsEnabled(ntp_features::kNtpModulesDragAndDrop)) {
+    const auto* module_ids_value =
+        profile_->GetPrefs()->GetList(prefs::kNtpModulesOrder);
+    for (const auto& id : module_ids_value->GetList()) {
+      module_ids.push_back(id.GetString());
+    }
   }
+
+  // Second, append Finch order for modules _not_ ordered by drag&drop.
+  std::vector<std::string> finch_module_ids = ntp_features::GetModulesOrder();
+  std::copy_if(finch_module_ids.begin(), finch_module_ids.end(),
+               std::back_inserter(module_ids),
+               [&module_ids](const std::string& id) {
+                 return std::find(module_ids.begin(), module_ids.end(), id) ==
+                        module_ids.end();
+               });
+
   std::move(callback).Run(std::move(module_ids));
 }
 
@@ -1041,8 +1058,7 @@ void NewTabPageHandler::Fetch(const GURL& url,
             }
           }
         })");
-  auto url_loader_factory = profile_->GetDefaultStoragePartition()
-                                ->GetURLLoaderFactoryForBrowserProcess();
+  auto url_loader_factory = profile_->GetURLLoaderFactory();
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
   auto loader =

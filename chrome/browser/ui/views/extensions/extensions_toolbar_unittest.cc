@@ -7,12 +7,14 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
+#include "ui/views/view_utils.h"
 
 namespace {
 
@@ -53,7 +55,7 @@ ExtensionsToolbarUnitTest::InstallExtensionWithHostPermissions(
     const std::vector<std::string>& host_permissions) {
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder(name)
-          .SetManifestKey("manifest_version", 3)
+          .SetManifestVersion(3)
           .SetManifestKey("host_permissions", ToListValue(host_permissions))
           .SetID(crx_file::id_util::GenerateId(name))
           .Build();
@@ -99,8 +101,42 @@ void ExtensionsToolbarUnitTest::ClickButton(views::Button* button) const {
   button->OnMouseReleased(release_event);
 }
 
+std::vector<ToolbarActionView*>
+ExtensionsToolbarUnitTest::GetPinnedExtensionViews() {
+  std::vector<ToolbarActionView*> result;
+  for (views::View* child : extensions_container()->children()) {
+    // Ensure we don't downcast the ExtensionsToolbarButton.
+    if (views::IsViewClass<ToolbarActionView>(child)) {
+      ToolbarActionView* const action = static_cast<ToolbarActionView*>(child);
+#if BUILDFLAG(IS_MAC)
+      // TODO(crbug.com/1045212): Use IsActionVisibleOnToolbar() because it
+      // queries the underlying model and not GetVisible(), as that relies on an
+      // animation running, which is not reliable in unit tests on Mac.
+      const bool is_visible = extensions_container()->IsActionVisibleOnToolbar(
+          action->view_controller());
+#else
+      const bool is_visible = action->GetVisible();
+#endif
+      if (is_visible)
+        result.push_back(action);
+    }
+  }
+  return result;
+}
+
+std::vector<std::string> ExtensionsToolbarUnitTest::GetPinnedExtensionNames() {
+  std::vector<ToolbarActionView*> views = GetPinnedExtensionViews();
+  std::vector<std::string> result;
+  result.resize(views.size());
+  std::transform(
+      views.begin(), views.end(), result.begin(), [](ToolbarActionView* view) {
+        return base::UTF16ToUTF8(view->view_controller()->GetActionName());
+      });
+  return result;
+}
+
 void ExtensionsToolbarUnitTest::WaitForAnimation() {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // TODO(crbug.com/1045212): we avoid using animations on Mac due to the lack
   // of support in unit tests. Therefore this is a no-op.
 #else

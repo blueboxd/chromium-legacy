@@ -289,14 +289,11 @@ def BuildLibXml2():
   # $ gsutil cp -n -a public-read libxml2-$VER.tar.gz \
   #   gs://chromium-browser-clang/tools
 
-  # TODO(thakis): Use this locally built statically linked libxml2 on all
-  # platforms. fewer dynamic deps, and guaranteed(ish) to have same behavior
-  # across platforms.
-
-  libxml2_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'libxml2-v2.9.12')
+  libxml2_version = 'libxml2-v2.9.12'
+  libxml2_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, libxml2_version)
   if os.path.exists(libxml2_dir):
     RmTree(libxml2_dir)
-  zip_name = 'libxml2-v2.9.12.tar.gz'
+  zip_name = libxml2_version + '.tar.gz'
   DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
   os.chdir(libxml2_dir)
   os.mkdir('build')
@@ -306,12 +303,18 @@ def BuildLibXml2():
 
   # Disable everything except WITH_TREE and WITH_OUTPUT, both needed by LLVM's
   # WindowsManifestMerger.
+  # Also enable WITH_THREADS, else libxml doesn't compile on Linux.
   RunCommand(
       [
           'cmake',
           '-GNinja',
           '-DCMAKE_BUILD_TYPE=Release',
           '-DCMAKE_INSTALL_PREFIX=install',
+          # The mac_arm bot builds a clang arm binary, but currently on an intel
+          # host. If we ever move it to run on an arm mac, this can go. We
+          # could pass this only if args.build_mac_arm, but libxml is small, so
+          # might as well build it universal always for a few years.
+          '-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64',
           '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded',  # /MT to match LLVM.
           '-DBUILD_SHARED_LIBS=OFF',
           '-DLIBXML2_WITH_C14N=OFF',
@@ -340,7 +343,7 @@ def BuildLibXml2():
           '-DLIBXML2_WITH_SCHEMAS=OFF',
           '-DLIBXML2_WITH_SCHEMATRON=OFF',
           '-DLIBXML2_WITH_TESTS=OFF',
-          '-DLIBXML2_WITH_THREADS=OFF',
+          '-DLIBXML2_WITH_THREADS=ON',
           '-DLIBXML2_WITH_THREAD_ALLOC=OFF',
           '-DLIBXML2_WITH_TREE=ON',
           '-DLIBXML2_WITH_VALID=OFF',
@@ -355,7 +358,10 @@ def BuildLibXml2():
   RunCommand(['ninja', 'install'], msvc_arch='x64')
 
   libxml2_include_dir = os.path.join(libxml2_install_dir, 'include', 'libxml2')
-  libxml2_lib = os.path.join(libxml2_install_dir, 'lib', 'libxml2s.lib')
+  if sys.platform == 'win32':
+    libxml2_lib = os.path.join(libxml2_install_dir, 'lib', 'libxml2s.lib')
+  else:
+    libxml2_lib = os.path.join(libxml2_install_dir, 'lib', 'libxml2.a')
   extra_cmake_flags = [
       '-DLLVM_ENABLE_LIBXML2=FORCE_ON',
       '-DLIBXML2_INCLUDE_DIR=' + libxml2_include_dir.replace('\\', '/'),
@@ -704,19 +710,17 @@ def main():
     cxxflags.append('-I' + zlib_dir)
     ldflags.append('-LIBPATH:' + zlib_dir)
 
-    # Statically link libxml2 to make lld-link not require mt.exe
-    libxml_cmake_args, libxml_cflags = BuildLibXml2()
-    base_cmake_args += libxml_cmake_args
-    cflags += libxml_cflags
-    cxxflags += libxml_cflags
-
     # Use rpmalloc. For faster ThinLTO linking.
     rpmalloc_dir = DownloadRPMalloc()
     base_cmake_args.append('-DLLVM_INTEGRATED_CRT_ALLOC=' + rpmalloc_dir)
 
-  if sys.platform != 'win32':
-    # libxml2 is required by the Win manifest merging tool used in cross-builds.
-    base_cmake_args.append('-DLLVM_ENABLE_LIBXML2=FORCE_ON')
+  # Statically link libxml2 to make lld-link not require mt.exe on Windows,
+  # and to make sure lld-link output on other platforms is identical to
+  # lld-link on Windows (for cross-builds).
+  libxml_cmake_args, libxml_cflags = BuildLibXml2()
+  base_cmake_args += libxml_cmake_args
+  cflags += libxml_cflags
+  cxxflags += libxml_cflags
 
   if args.bootstrap:
     print('Building bootstrap compiler')
@@ -995,10 +999,12 @@ def main():
     else:
       cmake_args.append('-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-apple-darwin')
   elif sys.platform.startswith('linux'):
-    cmake_args.extend([
-        '-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-unknown-linux-gnu',
-        '-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON',
-    ])
+    if platform.machine() == 'aarch64':
+      cmake_args.append(
+          '-DLLVM_DEFAULT_TARGET_TRIPLE=aarch64-unknown-linux-gnu')
+    else:
+      cmake_args.append('-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-unknown-linux-gnu')
+    cmake_args.append('-DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON')
   elif sys.platform == 'win32':
     cmake_args.append('-DLLVM_DEFAULT_TARGET_TRIPLE=x86_64-pc-windows-msvc')
 
@@ -1106,10 +1112,6 @@ def main():
           # We don't have an unwinder ready, and don't need it either.
           '--unwindlib=none',
       ]
-
-      if target_arch == 'aarch64':
-        # Use PAC/BTI instructions for AArch64
-        cflags += [ '-mbranch-protection=standard' ]
 
       android_args = base_cmake_args + [
         '-DCMAKE_C_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang'),
@@ -1267,16 +1269,21 @@ def main():
                    fuchsia_args +
                    [COMPILER_RT_DIR])
         profile_a = 'libclang_rt.profile.a'
+        asan_preinit_a = 'libclang_rt.asan-preinit.a'
         asan_so = 'libclang_rt.asan.so'
         ninja_command = ['ninja', profile_a]
         if sys.platform != 'darwin':
           ninja_command.append(asan_so)
+          ninja_command.append(asan_preinit_a)
         RunCommand(ninja_command)
         CopyFile(os.path.join(build_phase2_dir, 'lib', target_spec, profile_a),
                               fuchsia_lib_dst_dir)
         if sys.platform != 'darwin':
           CopyFile(os.path.join(build_phase2_dir, 'lib', target_spec, asan_so),
                    fuchsia_lib_dst_dir)
+          CopyFile(
+              os.path.join(build_phase2_dir, 'lib', target_spec,
+                           asan_preinit_a), fuchsia_lib_dst_dir)
 
   # Run tests.
   if (not args.build_mac_arm and

@@ -169,7 +169,7 @@ static inline bool IsColorPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kBorderInlineEndColor:
     case CSSPropertyID::kBorderInlineStartColor:
     case CSSPropertyID::kColumnRuleColor:
-    case CSSPropertyID::kWebkitTextEmphasisColor:
+    case CSSPropertyID::kTextEmphasisColor:
     case CSSPropertyID::kWebkitTextFillColor:
     case CSSPropertyID::kWebkitTextStrokeColor:
     case CSSPropertyID::kTextDecorationColor:
@@ -843,7 +843,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kHue ||
              value_id == CSSValueID::kSaturation ||
              value_id == CSSValueID::kColor ||
-             value_id == CSSValueID::kLuminosity;
+             value_id == CSSValueID::kLuminosity ||
+             (RuntimeEnabledFeatures::CSSMixBlendModePlusLighterEnabled() &&
+              value_id == CSSValueID::kPlusLighter);
     case CSSPropertyID::kWebkitBoxAlign:
       return value_id == CSSValueID::kStretch ||
              value_id == CSSValueID::kStart || value_id == CSSValueID::kEnd ||
@@ -901,7 +903,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kNowrap || value_id == CSSValueID::kWrap ||
              value_id == CSSValueID::kWrapReverse;
     case CSSPropertyID::kHyphens:
-#if BUILDFLAG(USE_MINIKIN_HYPHENATION) || defined(OS_MAC)
+#if BUILDFLAG(USE_MINIKIN_HYPHENATION) || BUILDFLAG(IS_MAC)
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone ||
              value_id == CSSValueID::kManual;
 #else

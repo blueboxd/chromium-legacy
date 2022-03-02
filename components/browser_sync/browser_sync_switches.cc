@@ -4,14 +4,9 @@
 
 #include "components/browser_sync/browser_sync_switches.h"
 
-namespace switches {
+#include "build/build_config.h"
 
-// Disables syncing one or more sync data types that are on by default.
-// See sync/base/model_type.h for possible types. Types
-// should be comma separated, and follow the naming convention for string
-// representation of model types, e.g.:
-// --disable-synctypes='Typed URLs, Bookmarks, Autofill Profiles'
-const char kDisableSyncTypes[] = "disable-sync-types";
+namespace switches {
 
 // Enabled the local sync backend implemented by the LoopbackServer.
 const char kEnableLocalSyncBackend[] = "enable-local-sync-backend";
@@ -21,10 +16,10 @@ const char kEnableLocalSyncBackend[] = "enable-local-sync-backend";
 // flag is present.
 const char kLocalSyncBackendDir[] = "local-sync-backend-dir";
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const base::Feature kSyncUseSessionsUnregisterDelay{
     "SyncUseSessionsUnregisterDelay", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Enables providing the list of FCM registration tokens in the commit request.
 const base::Feature kSyncUseFCMRegistrationTokensList{

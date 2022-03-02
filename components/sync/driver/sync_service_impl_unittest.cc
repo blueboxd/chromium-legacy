@@ -115,10 +115,8 @@ class SyncServiceImplTest : public ::testing::Test {
 
     // Default includes a regular controller and a transport-mode controller.
     DataTypeController::TypeVector controllers;
-    for (const auto& type_and_transport_mode_support :
+    for (const auto& [type, transport_mode_support] :
          registered_types_and_transport_mode_support) {
-      ModelType type = type_and_transport_mode_support.first;
-      bool transport_mode_support = type_and_transport_mode_support.second;
       auto controller = std::make_unique<FakeDataTypeController>(
           type, transport_mode_support);
       // Hold a raw pointer to directly interact with the controller.
@@ -132,8 +130,9 @@ class SyncServiceImplTest : public ::testing::Test {
     ON_CALL(*sync_client, CreateDataTypeControllers)
         .WillByDefault(Return(ByMove(std::move(controllers))));
 
-    auto init_params = sync_service_impl_bundle_.CreateBasicInitParams(
-        behavior, std::move(sync_client));
+    SyncServiceImpl::InitParams init_params =
+        sync_service_impl_bundle_.CreateBasicInitParams(behavior,
+                                                        std::move(sync_client));
     init_params.policy_service = policy_service;
 
     service_ = std::make_unique<SyncServiceImpl>(std::move(init_params));
@@ -351,7 +350,8 @@ TEST_F(SyncServiceImplTest, SetupInProgress) {
   TestSyncServiceObserver observer;
   service()->AddObserver(&observer);
 
-  auto sync_blocker = service()->GetSetupInProgressHandle();
+  std::unique_ptr<SyncSetupInProgressHandle> sync_blocker =
+      service()->GetSetupInProgressHandle();
   EXPECT_TRUE(observer.setup_in_progress());
   sync_blocker.reset();
   EXPECT_FALSE(observer.setup_in_progress());
@@ -579,7 +579,8 @@ TEST_F(SyncServiceImplTest, SignOutDisablesSyncTransportAndSyncFeature) {
             service()->GetTransportState());
 
   // Sign-out.
-  auto* account_mutator = identity_manager()->GetPrimaryAccountMutator();
+  signin::PrimaryAccountMutator* account_mutator =
+      identity_manager()->GetPrimaryAccountMutator();
   DCHECK(account_mutator) << "Account mutator should only be null on ChromeOS.";
   account_mutator->ClearPrimaryAccount(
       signin_metrics::SIGNOUT_TEST,
@@ -606,7 +607,8 @@ TEST_F(SyncServiceImplTest,
   ASSERT_EQ(0, component_factory()->clear_transport_data_call_count());
 
   // Sign-out.
-  auto* account_mutator = identity_manager()->GetPrimaryAccountMutator();
+  signin::PrimaryAccountMutator* account_mutator =
+      identity_manager()->GetPrimaryAccountMutator();
   DCHECK(account_mutator) << "Account mutator should only be null on ChromeOS.";
   account_mutator->ClearPrimaryAccount(
       signin_metrics::SIGNOUT_TEST,
@@ -789,7 +791,8 @@ TEST_F(SyncServiceImplTest, SignOutRevokeAccessToken) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
 
-  auto* account_mutator = identity_manager()->GetPrimaryAccountMutator();
+  signin::PrimaryAccountMutator* account_mutator =
+      identity_manager()->GetPrimaryAccountMutator();
 
   // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
   DCHECK(account_mutator);
@@ -1130,7 +1133,7 @@ TEST_F(SyncServiceImplTest, ShouldProvideDisableReasonsAfterShutdown) {
   EXPECT_FALSE(service()->GetDisableReasons().Empty());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_F(SyncServiceImplTest, DecoupleFromMasterSyncIfInitializedSignedOut) {
   SyncPrefs sync_prefs(prefs());
   CreateService(SyncServiceImpl::MANUAL_START);
@@ -1148,7 +1151,8 @@ TEST_F(SyncServiceImplTest, DecoupleFromMasterSyncIfSignsOut) {
   ASSERT_FALSE(sync_prefs.GetDecoupledFromAndroidMasterSync());
 
   // Sign-out.
-  auto* account_mutator = identity_manager()->GetPrimaryAccountMutator();
+  signin::PrimaryAccountMutator* account_mutator =
+      identity_manager()->GetPrimaryAccountMutator();
   DCHECK(account_mutator) << "Account mutator should only be null on ChromeOS.";
   account_mutator->ClearPrimaryAccount(
       signin_metrics::SIGNOUT_TEST,
@@ -1157,7 +1161,7 @@ TEST_F(SyncServiceImplTest, DecoupleFromMasterSyncIfSignsOut) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(sync_prefs.GetDecoupledFromAndroidMasterSync());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 TEST_F(SyncServiceImplTestWithSyncInvalidationsServiceCreated,
        ShouldSendDataTypesToSyncInvalidationsService) {
@@ -1214,7 +1218,8 @@ TEST_F(SyncServiceImplTestWithSyncInvalidationsServiceCreated,
   EXPECT_CALL(*sync_invalidations_service(), SetActive(true));
   InitializeForFirstSync();
 
-  auto* account_mutator = identity_manager()->GetPrimaryAccountMutator();
+  signin::PrimaryAccountMutator* account_mutator =
+      identity_manager()->GetPrimaryAccountMutator();
   // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
   DCHECK(account_mutator);
 

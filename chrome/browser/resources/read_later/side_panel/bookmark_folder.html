@@ -27,13 +27,14 @@
     width: 100%;
   }
 
-  .row:not([empty]):hover,
+  :host-context([hover-visible]) .row:not([empty]):hover,
   .row:focus-visible:focus {
     background-color: var(--cr-hover-background-color);
     outline: none;
   }
 
-  .row:not([empty]):active {
+  :host-context([hover-visible]) .row:not([empty]):active,
+  .row:not([empty]):focus-visible:active {
     background-color: var(--cr-active-background-color);
   }
 
@@ -141,7 +142,7 @@
 
   [drop-position='above']::after,
   [drop-position='below']::after {
-    background: var(--google-blue-refresh-500);
+    background: var(--google-blue-500);
     content: '';
     display: block;
     height: 2px;

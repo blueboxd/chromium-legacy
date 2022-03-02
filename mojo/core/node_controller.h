@@ -245,7 +245,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
                    const uint64_t remote_capailities) override;
   void OnBroadcast(const ports::NodeName& from_node,
                    Channel::MessagePtr message) override;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void OnRelayEventMessage(const ports::NodeName& from_node,
                            base::ProcessHandle from_process,
                            const ports::NodeName& destination,
@@ -278,6 +278,10 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
 
   // See |ForceDisconnectProcessForTesting()|.
   void ForceDisconnectProcessForTestingOnIOThread(base::ProcessId process_id);
+
+  // Mark a port that it is about to be merged. This allows us to do a security
+  // check on the incoming port merge that this port was intended to be merged.
+  void RecordPendingPortMerge(const ports::PortRef& port);
 
   // These are safe to access from any thread as long as the Node is alive.
   const ports::NodeName name_;
@@ -357,7 +361,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   // Must only be accessed from the IO thread.
   bool destroy_on_io_thread_shutdown_ = false;
 
-#if !defined(OS_APPLE) && !defined(OS_NACL_SFI) && !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_FUCHSIA)
   // Broker for sync shared buffer creation on behalf of broker clients.
   std::unique_ptr<Broker> broker_;
 #endif

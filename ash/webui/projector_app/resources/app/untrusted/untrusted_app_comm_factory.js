@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PostMessageAPIClient} from 'chrome-untrusted://projector/js/post_message_api_client.m.js';
-import {RequestHandler} from 'chrome-untrusted://projector/js/post_message_api_request_handler.m.js';
+import {PostMessageAPIClient} from '//resources/js/post_message_api_client.m.js';
+import {RequestHandler} from '//resources/js/post_message_api_request_handler.m.js';
 
 import {ProjectorError} from '../../communication/message_types.js';
 
@@ -144,6 +144,15 @@ const CLIENT_DELEGATE = {
     return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
         'setUserPref', [userPref, value]);
   },
+
+  /**
+   * Triggers the opening of the Chrome feedback dialog.
+   * @return {!Promise}
+   */
+  openFeedbackDialog() {
+    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
+        'openFeedbackDialog', []);
+  },
 };
 
 /**
@@ -174,6 +183,9 @@ export class UntrustedAppRequestHandler extends RequestHandler {
       }
 
       getAppElement().onSodaInstallProgressUpdated(args[0]);
+    });
+    this.registerMethod('onSodaInstalled', (args) => {
+      getAppElement().onSodaInstalled();
     });
     this.registerMethod('onSodaInstallError', (args) => {
       getAppElement().onSodaInstallError();

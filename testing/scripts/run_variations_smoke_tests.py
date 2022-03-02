@@ -15,13 +15,21 @@ import sys
 import tempfile
 import time
 import six.moves.urllib.error
+from threading import Thread
 
 import common
+import six
 import variations_seed_access_helper as seed_helper
+from variations_http_test_server import HTTPServer
+from variations_http_test_server import HTTPHandler
+
+if six.PY3:
+  import http
 
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 _SRC_DIR = os.path.join(_THIS_DIR, os.path.pardir, os.path.pardir)
 _WEBDRIVER_PATH = os.path.join(_SRC_DIR, 'third_party', 'webdriver', 'pylib')
+_VARIATIONS_TEST_DATA = 'variations_smoke_test_data'
 
 sys.path.insert(0, _WEBDRIVER_PATH)
 from selenium import webdriver
@@ -42,13 +50,28 @@ _TEST_CASES = [
         'expected_text': 'Success',
     },
     {
-        # TODO(crbug.com/1234165): Make tests hermetic by using a test http
-        # server or WPR.
-        'url': 'https://chromium.org/',
+        'url': 'http://localhost:8000',
         'expected_id': 'sites-chrome-userheader-title',
         'expected_text': 'The Chromium Projects',
     },
 ]
+
+
+def _get_httpd():
+  """Returns a HTTPServer instance."""
+  hostname = "localhost"
+  port = 8000
+  directory = os.path.join(_THIS_DIR, _VARIATIONS_TEST_DATA, "http_server")
+  httpd = None
+  if six.PY3:
+    handler = partial(http.server.SimpleHTTPRequestHandler, directory=directory)
+    httpd = http.server.HTTPServer((hostname, port), handler)
+    httpd.timeout = 0.5
+    httpd.allow_reuse_address = True
+    httpd.server_bind()
+  else:
+    httpd = HTTPServer(directory, (hostname, port))
+  return httpd
 
 
 def _get_platform():
@@ -166,7 +189,7 @@ def _run_tests(*args):
     # Inject the test seed.
     # This is a path as fallback when |seed_helper.load_test_seed_from_file()|
     # can't find one under src root.
-    hardcoded_seed_path = os.path.join(_THIS_DIR, 'variations_smoke_test_data',
+    hardcoded_seed_path = os.path.join(_THIS_DIR, _VARIATIONS_TEST_DATA,
                              'variations_seed_beta_%s.json' % _get_platform())
     seed, signature = seed_helper.load_test_seed_from_file(hardcoded_seed_path)
     if not seed or not signature:
@@ -232,17 +255,42 @@ def _run_tests(*args):
   return 0
 
 
+def _start_local_http_server():
+  """Starts a local http server.
+
+  Returns:
+    A local http.server.HTTPServer.
+  """
+  httpd = _get_httpd()
+  thread = None
+  if six.PY3:
+    address = "http://{}:{}".format(httpd.server_name, httpd.server_port)
+    logging.info("%s is used as local http server.", address)
+    thread = Thread(target=httpd.serve_forever)
+    thread.setDaemon(True)
+  else:
+    thread = Thread(target=httpd.serve_forever)
+    thread.daemon = True
+  thread.start()
+  return httpd
+
+
 def main_run(args):
   """Runs the variations smoke tests."""
   logging.basicConfig(level=logging.INFO)
   parser = argparse.ArgumentParser()
   parser.add_argument('--isolated-script-test-output', type=str)
   args, rest = parser.parse_known_args()
-  rc = _run_tests(*rest)
-  if args.isolated_script_test_output:
-    with open(args.isolated_script_test_output, 'w') as f:
-      common.record_local_script_results('run_variations_smoke_tests', f, [],
-                                         rc == 0)
+
+  httpd = _start_local_http_server()
+  try:
+    rc = _run_tests(*rest)
+    if args.isolated_script_test_output:
+      with open(args.isolated_script_test_output, 'w') as f:
+        common.record_local_script_results('run_variations_smoke_tests', f, [],
+                                           rc == 0)
+  finally:
+    httpd.shutdown()
 
   return rc
 

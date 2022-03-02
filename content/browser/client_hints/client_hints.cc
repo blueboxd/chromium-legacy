@@ -141,7 +141,7 @@ double GetDeviceScaleFactor() {
 
 // Returns the zoom factor for a given |url|.
 double GetZoomFactor(BrowserContext* context, const GURL& url) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On Android, use the default value when the AccessibilityPageZoom
   // feature is not enabled.
   if (!base::FeatureList::IsEnabled(features::kAccessibilityPageZoom))
@@ -270,7 +270,7 @@ void AddViewportWidthHeader(net::HttpRequestHeaders* headers,
   // https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/css/viewportAndroid.css.
   double viewport_width = 980;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On Android, use the default value when the AccessibilityPageZoom
   // feature is not enabled.
   if (!base::FeatureList::IsEnabled(features::kAccessibilityPageZoom)) {
@@ -313,7 +313,7 @@ void AddViewportHeightHeader(net::HttpRequestHeaders* headers,
                                 .GetSizeInPixel()
                                 .height()) /
                            overall_scale_factor;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On Android, the viewport is scaled so the width is 980 and the height
   // maintains the same ratio.
   // TODO(1246208): Improve the usefulness of the viewport client hints for
@@ -324,7 +324,7 @@ void AddViewportHeightHeader(net::HttpRequestHeaders* headers,
                                .width()) /
                           overall_scale_factor;
   viewport_height *= 980.0 / viewport_width;
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
   DCHECK_LT(0, viewport_height);
 
@@ -450,10 +450,6 @@ const std::string SerializeHeaderString(const T& value) {
       .value_or(std::string());
 }
 
-bool IsSameOrigin(const GURL& url1, const GURL& url2) {
-  return url::Origin::Create(url1).IsSameOriginWith(url::Origin::Create(url2));
-}
-
 // Returns true iff the `url` is embedded inside a frame that has the
 // Sec-CH-UA-Reduced client hint and thus, is enrolled in the
 // UserAgentReduction Origin Trial.
@@ -475,7 +471,7 @@ bool IsUserAgentReductionEnabledForEmbeddedFrame(
     // Don't use Sec-CH-UA-Reduced from third-party origins if third-party
     // cookies are blocked, so that we don't reveal any more user data than
     // is allowed by the cookie settings.
-    if (IsSameOrigin(current_url, main_frame_url) ||
+    if (url::IsSameOriginWith(current_url, main_frame_url) ||
         !delegate->AreThirdPartyCookiesBlocked(current_url)) {
       blink::EnabledClientHints current_url_hints;
       delegate->GetAllowedClientHintsFromSource(current_url,
@@ -501,7 +497,6 @@ void RemoveAllClientHintsExceptUaReduced(
     std::vector<WebClientHintsType>* accept_ch,
     GURL* main_frame_url,
     GURL const** third_party_url) {
-  const url::Origin request_origin = url::Origin::Create(url);
   RenderFrameHostImpl* main_frame =
       frame_tree_node->frame_tree()->GetMainFrame();
 
@@ -513,7 +508,7 @@ void RemoveAllClientHintsExceptUaReduced(
     }
   }
 
-  if (!request_origin.IsSameOriginWith(main_frame->GetLastCommittedOrigin())) {
+  if (!main_frame->GetLastCommittedOrigin().IsSameOriginWith(url)) {
     // If third-party cookeis are blocked, we will not persist the
     // Sec-CH-UA-Reduced client hint in a third-party context.
     if (delegate->AreThirdPartyCookiesBlocked(url)) {
@@ -606,6 +601,48 @@ bool IsJavascriptEnabled(FrameTreeNode* frame_tree_node) {
       .javascript_enabled;
 }
 
+// This modifies `data.permissions_policy` to reflect any changes to client hint
+// permissions which may have occurred via the named accept-ch meta tag.
+// The permissions policy the browser side has for the frame was set in stone
+// before HTML parsing began, so any updates must be sent via
+// `container_policy`.
+// TODO(crbug.com/1278127): Replace w/ generic HTML policy modification.
+void UpdateIFramePermissionsPolicyWithDelegationSupportForClientHints(
+    ClientHintsExtendedData& data,
+    const blink::ParsedPermissionsPolicy& container_policy) {
+  if (container_policy.empty() ||
+      !base::FeatureList::IsEnabled(
+          blink::features::kClientHintThirdPartyDelegation)) {
+    return;
+  }
+
+  // For client hints specifically, we need to allow the container policy
+  // to overwrite the parent policy so that permissions policies set in HTML
+  // via an accept-ch meta tag can be respected.
+  blink::ParsedPermissionsPolicy client_hints_container_policy;
+  for (const auto& container_policy_item : container_policy) {
+    const auto& it = blink::GetPolicyFeatureToClientHintMap().find(
+        container_policy_item.feature);
+    if (it != blink::GetPolicyFeatureToClientHintMap().end()) {
+      client_hints_container_policy.push_back(container_policy_item);
+
+      // We need to ensure `blink::EnabledClientHints` is updated where the
+      // main frame now has permission for the given client hints.
+      std::set<url::Origin> origin_set(
+          container_policy_item.allowed_origins.begin(),
+          container_policy_item.allowed_origins.end());
+      if (origin_set.find(url::Origin::Create(data.main_frame_url)) !=
+          origin_set.end()) {
+        for (const auto& hint : it->second) {
+          data.hints.SetIsEnabled(hint, /*should_send*/ true);
+        }
+      }
+    }
+  }
+  data.permissions_policy->OverwriteHeaderPolicyForClientHints(
+      client_hints_container_policy);
+}
+
 // Captures when UpdateNavigationRequestClientUaHeadersImpl() is being called.
 enum class ClientUaHeaderCallType {
   // The call is happening during creation of the NavigationRequest.
@@ -622,7 +659,8 @@ void UpdateNavigationRequestClientUaHeadersImpl(
     bool override_ua,
     FrameTreeNode* frame_tree_node,
     ClientUaHeaderCallType call_type,
-    net::HttpRequestHeaders* headers) {
+    net::HttpRequestHeaders* headers,
+    const blink::ParsedPermissionsPolicy& container_policy) {
   absl::optional<blink::UserAgentMetadata> ua_metadata;
   bool disable_due_to_custom_ua = false;
   if (override_ua) {
@@ -649,6 +687,8 @@ void UpdateNavigationRequestClientUaHeadersImpl(
       ua_metadata = delegate->GetUserAgentMetadata();
 
     ClientHintsExtendedData data(url, frame_tree_node, delegate);
+    UpdateIFramePermissionsPolicyWithDelegationSupportForClientHints(
+        data, container_policy);
 
     // The `Sec-CH-UA` client hint is attached to all outgoing requests. This is
     // (intentionally) different than other client hints.
@@ -756,7 +796,7 @@ void UpdateNavigationRequestClientUaHeaders(
 
   UpdateNavigationRequestClientUaHeadersImpl(
       url, delegate, override_ua, frame_tree_node,
-      ClientUaHeaderCallType::kAfterCreated, headers);
+      ClientUaHeaderCallType::kAfterCreated, headers, {});
 }
 
 namespace {
@@ -770,14 +810,8 @@ void AddRequestClientHintsHeaders(
     FrameTreeNode* frame_tree_node,
     const blink::ParsedPermissionsPolicy& container_policy) {
   ClientHintsExtendedData data(url, frame_tree_node, delegate);
-
-  // If there is a container policy, use the same logic as when a new frame is
-  // committed to combine with the parent policy.
-  if (!container_policy.empty()) {
-    data.permissions_policy = blink::PermissionsPolicy::CreateFromParentPolicy(
-        data.permissions_policy.get(), container_policy,
-        url::Origin::Create(url));
-  }
+  UpdateIFramePermissionsPolicyWithDelegationSupportForClientHints(
+      data, container_policy);
 
   // Add Headers
   if (ShouldAddClientHint(data, WebClientHintsType::kDeviceMemory_DEPRECATED)) {
@@ -819,7 +853,7 @@ void AddRequestClientHintsHeaders(
   if (UserAgentClientHintEnabled()) {
     UpdateNavigationRequestClientUaHeadersImpl(
         url, delegate, is_ua_override_on, frame_tree_node,
-        ClientUaHeaderCallType::kDuringCreation, headers);
+        ClientUaHeaderCallType::kDuringCreation, headers, container_policy);
   }
 
   if (ShouldAddClientHint(data, WebClientHintsType::kPrefersColorScheme)) {

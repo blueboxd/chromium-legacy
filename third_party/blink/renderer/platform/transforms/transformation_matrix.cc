@@ -32,17 +32,18 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "third_party/blink/renderer/platform/geometry/float_box.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/transforms/rotation.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "ui/gfx/geometry/box_f.h"
+#include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/transform.h"
 
 #if defined(ARCH_CPU_X86_64)
@@ -867,8 +868,8 @@ gfx::PointF TransformationMatrix::ProjectPoint(const gfx::PointF& p,
   return gfx::PointF(static_cast<float>(out_x), static_cast<float>(out_y));
 }
 
-FloatQuad TransformationMatrix::ProjectQuad(const FloatQuad& q) const {
-  FloatQuad projected_quad;
+gfx::QuadF TransformationMatrix::ProjectQuad(const gfx::QuadF& q) const {
+  gfx::QuadF projected_quad;
 
   bool clamped1 = false;
   bool clamped2 = false;
@@ -884,7 +885,7 @@ FloatQuad TransformationMatrix::ProjectQuad(const FloatQuad& q) const {
   // visible to the projected surface.
   bool everything_was_clipped = clamped1 && clamped2 && clamped3 && clamped4;
   if (everything_was_clipped)
-    return FloatQuad();
+    return gfx::QuadF();
 
   return projected_quad;
 }
@@ -896,8 +897,8 @@ static float ClampEdgeValue(float f) {
 }
 
 LayoutRect TransformationMatrix::ClampedBoundsOfProjectedQuad(
-    const FloatQuad& q) const {
-  FloatRect mapped_quad_bounds = ProjectQuad(q).BoundingBox();
+    const gfx::QuadF& q) const {
+  gfx::RectF mapped_quad_bounds = ProjectQuad(q).BoundingBox();
 
   float left = ClampEdgeValue(floorf(mapped_quad_bounds.x()));
   float top = ClampEdgeValue(floorf(mapped_quad_bounds.y()));
@@ -921,15 +922,15 @@ LayoutRect TransformationMatrix::ClampedBoundsOfProjectedQuad(
                     LayoutUnit::Clamp(bottom - top));
 }
 
-void TransformationMatrix::TransformBox(FloatBox& box) const {
-  FloatBox bounds;
+void TransformationMatrix::TransformBox(gfx::BoxF& box) const {
+  gfx::BoxF bounds;
   bool first_point = true;
   for (size_t i = 0; i < 2; ++i) {
     for (size_t j = 0; j < 2; ++j) {
       for (size_t k = 0; k < 2; ++k) {
-        FloatPoint3D point(box.x(), box.y(), box.z());
+        gfx::Point3F point(box.x(), box.y(), box.z());
         point +=
-            FloatPoint3D(i * box.width(), j * box.height(), k * box.depth());
+            gfx::Vector3dF(i * box.width(), j * box.height(), k * box.depth());
         point = MapPoint(point);
         if (first_point) {
           bounds.set_origin(point);
@@ -951,32 +952,32 @@ gfx::PointF TransformationMatrix::MapPoint(const gfx::PointF& p) const {
   return InternalMapPoint(p);
 }
 
-FloatPoint3D TransformationMatrix::MapPoint(const FloatPoint3D& p) const {
+gfx::Point3F TransformationMatrix::MapPoint(const gfx::Point3F& p) const {
   if (IsIdentityOrTranslation()) {
-    return FloatPoint3D(p.x() + static_cast<float>(matrix_[3][0]),
-                        p.y() + static_cast<float>(matrix_[3][1]),
-                        p.z() + static_cast<float>(matrix_[3][2]));
+    return p + gfx::Vector3dF(static_cast<float>(matrix_[3][0]),
+                              static_cast<float>(matrix_[3][1]),
+                              static_cast<float>(matrix_[3][2]));
   }
   return InternalMapPoint(p);
 }
 
 gfx::Rect TransformationMatrix::MapRect(const gfx::Rect& rect) const {
-  return ToEnclosingRect(MapRect(FloatRect(rect)));
+  return gfx::ToEnclosingRect(MapRect(gfx::RectF(rect)));
 }
 
 LayoutRect TransformationMatrix::MapRect(const LayoutRect& r) const {
-  return EnclosingLayoutRect(MapRect(FloatRect(r)));
+  return EnclosingLayoutRect(MapRect(gfx::RectF(r)));
 }
 
-FloatRect TransformationMatrix::MapRect(const FloatRect& r) const {
+gfx::RectF TransformationMatrix::MapRect(const gfx::RectF& r) const {
   if (IsIdentityOrTranslation()) {
-    FloatRect mapped_rect(r);
+    gfx::RectF mapped_rect(r);
     mapped_rect.Offset(static_cast<float>(matrix_[3][0]),
                        static_cast<float>(matrix_[3][1]));
     return mapped_rect;
   }
 
-  FloatQuad result;
+  gfx::QuadF result;
 
   float max_x = r.right();
   float max_y = r.bottom();
@@ -988,15 +989,13 @@ FloatRect TransformationMatrix::MapRect(const FloatRect& r) const {
   return result.BoundingBox();
 }
 
-FloatQuad TransformationMatrix::MapQuad(const FloatQuad& q) const {
+gfx::QuadF TransformationMatrix::MapQuad(const gfx::QuadF& q) const {
   if (IsIdentityOrTranslation()) {
-    FloatQuad mapped_quad(q);
-    mapped_quad.Move(static_cast<float>(matrix_[3][0]),
-                     static_cast<float>(matrix_[3][1]));
-    return mapped_quad;
+    return q + gfx::Vector2dF(ClampTo<float>(matrix_[3][0]),
+                              ClampTo<float>(matrix_[3][1]));
   }
 
-  FloatQuad result;
+  gfx::QuadF result;
   result.set_p1(InternalMapPoint(q.p1()));
   result.set_p2(InternalMapPoint(q.p2()));
   result.set_p3(InternalMapPoint(q.p3()));
@@ -1652,8 +1651,8 @@ gfx::PointF TransformationMatrix::InternalMapPoint(
   return gfx::PointF(ClampToFloat(result_x), ClampToFloat(result_y));
 }
 
-FloatPoint3D TransformationMatrix::InternalMapPoint(
-    const FloatPoint3D& source_point) const {
+gfx::Point3F TransformationMatrix::InternalMapPoint(
+    const gfx::Point3F& source_point) const {
   double x = source_point.x();
   double y = source_point.y();
   double z = source_point.z();
@@ -1670,7 +1669,7 @@ FloatPoint3D TransformationMatrix::InternalMapPoint(
     result_y /= w;
     result_z /= w;
   }
-  return FloatPoint3D(ClampToFloat(result_x), ClampToFloat(result_y),
+  return gfx::Point3F(ClampToFloat(result_x), ClampToFloat(result_y),
                       ClampToFloat(result_z));
 }
 

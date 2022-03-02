@@ -57,7 +57,7 @@
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -194,10 +194,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void AddStyleSheetCandidateNode(Node&);
   void RemoveStyleSheetCandidateNode(Node&, ContainerNode& insertion_point);
   void ModifiedStyleSheetCandidateNode(Node&);
-  void AdoptedStyleSheetsWillChange(
-      TreeScope&,
-      const HeapVector<Member<CSSStyleSheet>>& old_sheets,
-      const HeapVector<Member<CSSStyleSheet>>& new_sheets);
+
+  void AdoptedStyleSheetAdded(TreeScope& tree_scope, CSSStyleSheet* sheet);
+  void AdoptedStyleSheetRemoved(TreeScope& tree_scope, CSSStyleSheet* sheet);
+
   void AddedCustomElementDefaultStyles(
       const HeapVector<Member<CSSStyleSheet>>& default_styles);
   void WatchedSelectorsChanged();
@@ -207,7 +207,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   mojom::blink::ColorScheme GetOwnerColorScheme() const {
     return owner_color_scheme_;
   }
-  void InitialViewportChanged();
   void ViewportRulesChanged();
 
   void InjectSheet(const StyleSheetKey&, StyleSheetContents*,
@@ -367,7 +366,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void IdChangedForElement(const AtomicString& old_id,
                            const AtomicString& new_id,
                            Element&);
-  void PseudoStateChangedForElement(CSSSelector::PseudoType, Element&);
+  void PseudoStateChangedForElement(CSSSelector::PseudoType,
+                                    Element&,
+                                    bool invalidate_descendants_or_siblings,
+                                    bool invalidate_ancestors);
   void PartChangedForElement(Element&);
   void ExportpartsChangedForElement(Element&);
 
@@ -479,10 +481,13 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void UpdateStyleAndLayoutTreeForContainer(Element& container,
                                             const LogicalSize&,
                                             LogicalAxes contained_axes);
+  void RecalcStyleForContainerDescendantsInLegacyLayoutTree(Element& container);
   void RecalcStyle();
 
   void ClearEnsuredDescendantStyles(Element& element);
-  void RebuildLayoutTree();
+  enum class RebuildTransitionPseudoTree { kYes, kNo };
+  void RebuildLayoutTree(
+      RebuildTransitionPseudoTree rebuild_transition_pseudo_tree);
   bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
   bool InDOMRemoval() const { return in_dom_removal_; }
   bool InContainerQueryStyleRecalc() const {
@@ -514,8 +519,18 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   Color ForcedBackgroundColor() const { return forced_background_color_; }
   Color ColorAdjustBackgroundColor() const;
 
+  void SetDocumentTransitionTags(const Vector<AtomicString>& tags) {
+    document_transition_tags_ = tags;
+  }
+  const Vector<AtomicString>& DocumentTransitionTags() const {
+    return document_transition_tags_;
+  }
+
   void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
+
+  RuleSet* DefaultDocumentTransitionStyle() const;
+  void InvalidateUADocumentTransitionStyle();
 
  private:
   // FontSelectorClient implementation.
@@ -523,7 +538,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   void LoadVisionDeficiencyFilter();
 
- private:
   bool NeedsActiveStyleSheetUpdate() const {
     return tree_scopes_removed_ || document_scope_dirty_ ||
            dirty_tree_scopes_.size() || user_style_dirty_;
@@ -549,6 +563,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                        MediaValueChange);
   void MediaQueryAffectingValueChanged(HeapHashSet<Member<TextTrack>>&,
                                        MediaValueChange);
+  void EnsureUAStyleForTransitionPseudos();
 
   const RuleFeatureSet& GetRuleFeatureSet() const {
     DCHECK(global_rule_set_);
@@ -644,6 +659,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void PropagateWritingModeAndDirectionToHTMLRoot();
 
   void RecalcStyle(StyleRecalcChange, const StyleRecalcContext&);
+  void RecalcStyleForContainer(Element& container, StyleRecalcChange change);
+
+  void RecalcTransitionPseudoStyle();
 
   // We may need to update whitespaces in the layout tree after a flat tree
   // removal which caused a layout subtree to be detached.
@@ -736,6 +754,12 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   Member<MediaQueryEvaluator> media_query_evaluator_;
   Member<CSSGlobalRuleSet> global_rule_set_;
 
+  // This is the default UA generated style sheet for the ::transition* pseudo
+  // elements. This is tracked by StyleEngine as opposed to
+  // CSSDefaultStyleSheets since it is 1:1 with a Document and can be
+  // dynamically updated.
+  Member<RuleSet> ua_document_transition_style_;
+
   PendingInvalidations pending_invalidations_;
 
   StyleInvalidationRoot style_invalidation_root_;
@@ -814,6 +838,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // subtree is stored here during in_dom_removal_ and is marked for whitespace
   // re-attachment after the removal.
   Member<LayoutObject> parent_for_detached_subtree_;
+
+  // The set of IDs for which ::transition-container pseudo elements are
+  // generated during a DocumentTransition.
+  Vector<AtomicString> document_transition_tags_;
 };
 
 }  // namespace blink

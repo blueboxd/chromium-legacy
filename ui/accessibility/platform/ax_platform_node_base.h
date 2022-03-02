@@ -102,6 +102,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   bool IsDescendantOf(AXPlatformNode* ancestor) const override;
 
   // Helpers.
+  AXPlatformNodeBase* GetPlatformParent() const;
   AXPlatformNodeBase* GetPreviousSibling() const;
   AXPlatformNodeBase* GetNextSibling() const;
   AXPlatformNodeBase* GetFirstChild() const;
@@ -170,6 +171,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   bool GetStringListAttribute(ax::mojom::StringListAttribute attribute,
                               std::vector<std::string>* value) const;
 
+  bool HasHtmlAttribute(const char* attribute) const;
   const base::StringPairs& GetHtmlAttributes() const;
   bool GetHtmlAttribute(const char* attribute, std::string* value) const;
   bool GetHtmlAttribute(const char* attribute, std::u16string* value) const;

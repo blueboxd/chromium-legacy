@@ -36,13 +36,17 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkRRect.h"
+#include "ui/gfx/geometry/insets_f.h"
+#include "ui/gfx/geometry/outsets_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 
-namespace blink {
+namespace gfx {
+class QuadF;
+}
 
-class FloatQuad;
+namespace blink {
 
 // Represents a rect with rounded corners.
 // We don't use gfx::RRect in blink because gfx::RRect is based on SkRRect
@@ -96,17 +100,15 @@ class PLATFORM_EXPORT FloatRoundedRect {
 
     void Scale(float factor);
 
-    void Expand(float top_width,
-                float bottom_width,
-                float left_width,
-                float right_width);
-    void Expand(float size) { Expand(size, size, size, size); }
+    void Expand(const gfx::OutsetsF& outsets);
+    void Expand(float size) { Expand(gfx::OutsetsF(size)); }
 
-    void Shrink(float top_width,
-                float bottom_width,
-                float left_width,
-                float right_width);
-    void Shrink(float size) { Shrink(size, size, size, size); }
+    void Shrink(const gfx::InsetsF& insets);
+    void Shrink(float size) { Shrink(gfx::InsetsF(size)); }
+
+    // Reshapes the corners based on the algorithm in
+    // https://drafts.csswg.org/css-backgrounds-3/#shadow-shape.
+    void Reshape(float inflation);
 
     String ToString() const;
 
@@ -142,6 +144,10 @@ class PLATFORM_EXPORT FloatRoundedRect {
   void Move(const gfx::Vector2dF& offset) { rect_.Offset(offset); }
   void InflateWithRadii(int size);
   void Inflate(float size) { rect_.Outset(size); }
+
+  // Inflates the rect and reshapes the corners based on the algorithm in
+  // https://drafts.csswg.org/css-backgrounds-3/#shadow-shape.
+  void InflateAndReshape(float size);
 
   // expandRadii() does not have any effect on corner radii which have zero
   // width or height. This is because the process of expanding the radius of a
@@ -181,7 +187,7 @@ class PLATFORM_EXPORT FloatRoundedRect {
   // This only works for convex quads.
   // This intersection is edge-inclusive and will return true even if the
   // intersecting area is empty (i.e., the intersection is a line or a point).
-  bool IntersectsQuad(const FloatQuad&) const;
+  bool IntersectsQuad(const gfx::QuadF&) const;
 
   // Whether the radii are constrained in the size of rect().
   bool IsRenderable() const;

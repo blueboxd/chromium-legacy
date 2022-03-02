@@ -87,7 +87,6 @@
 #include "extensions/common/extension_resource.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "ui/accessibility/accessibility_features.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
@@ -201,9 +200,8 @@ std::string AccessibilityPrivateEnumForAction(SelectToSpeakPanelAction action) {
 absl::optional<bool> GetDictationOfflineNudgePrefForLocale(
     Profile* profile,
     const std::string& dictation_locale) {
-  const base::DictionaryValue* offline_nudges =
-      profile->GetPrefs()->GetDictionary(
-          prefs::kAccessibilityDictationLocaleOfflineNudge);
+  const base::Value* offline_nudges = profile->GetPrefs()->GetDictionary(
+      prefs::kAccessibilityDictationLocaleOfflineNudge);
   return offline_nudges->FindBoolPath(dictation_locale);
 }
 
@@ -707,7 +705,7 @@ void AccessibilityManager::OnAccessibilityCommonChanged(
     return;
 
   if (pref_name == ash::prefs::kAccessibilityDictationEnabled &&
-      !::switches::IsExperimentalAccessibilityDictationExtensionEnabled()) {
+      !::features::IsExperimentalAccessibilityDictationExtensionEnabled()) {
     return;
   }
 
@@ -1791,7 +1789,7 @@ bool AccessibilityManager::ToggleDictation() {
   if (!profile_)
     return false;
 
-  if (!::switches::IsExperimentalAccessibilityDictationExtensionEnabled()) {
+  if (!::features::IsExperimentalAccessibilityDictationExtensionEnabled()) {
     if (!dictation_.get())
       dictation_ = std::make_unique<Dictation>(profile_);
 
@@ -1963,7 +1961,7 @@ void AccessibilityManager::SetSwitchAccessKeysForTest(
     const std::set<int>& action_keys,
     const std::string& pref_name) {
   DictionaryPrefUpdate pref_update(profile_->GetPrefs(), pref_name);
-  base::ListValue devices;
+  base::Value devices(base::Value::Type::LIST);
   devices.Append(kSwitchAccessInternalDevice);
   devices.Append(kSwitchAccessUsbDevice);
   devices.Append(kSwitchAccessBluetoothDevice);

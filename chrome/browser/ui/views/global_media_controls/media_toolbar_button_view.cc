@@ -108,8 +108,7 @@ void MediaToolbarButtonView::Enable() {
 
   if (media::IsLiveCaptionFeatureEnabled()) {
     // Live Caption multi language is only enabled when SODA is also enabled.
-    if (base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage) &&
-        base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption)) {
+    if (base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage)) {
       feature_promo_controller_->MaybeShowPromo(
           feature_engagement::kIPHLiveCaptionFeature);
     } else {
@@ -155,9 +154,7 @@ void MediaToolbarButtonView::ButtonPressed() {
   if (MediaDialogView::IsShowing()) {
     MediaDialogView::HideDialog();
   } else {
-    MediaDialogView::ShowDialog(
-        this, service_, browser_->profile(),
-        global_media_controls::GlobalMediaControlsEntryPoint::kToolbarIcon);
+    MediaDialogView::ShowDialogFromToolbar(this, service_, browser_->profile());
     ClosePromoBubble();
 
     for (auto& observer : observers_)

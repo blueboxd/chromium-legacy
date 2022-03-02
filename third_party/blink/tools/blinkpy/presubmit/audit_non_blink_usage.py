@@ -47,6 +47,7 @@ _CONFIG = [
             'base::AutoReset',
             'base::Contains',
             'base::CreateSequencedTaskRunner',
+            'base::ValuesEquivalent',
             'base::Days',
             'base::DefaultTickClock',
             'base::ElapsedTimer',
@@ -303,6 +304,8 @@ _CONFIG = [
             # Chromium geometry types.
             'gfx::Insets',
             'gfx::InsetsF',
+            'gfx::Outsets',
+            'gfx::OutsetsF',
             'gfx::Point',
             'gfx::PointF',
             'gfx::Point3F',
@@ -316,12 +319,15 @@ _CONFIG = [
             'gfx::Transform',
             'gfx::Vector2d',
             'gfx::Vector2dF',
+            'gfx::Vector3dF',
 
             # Chromium geometry operations.
             'cc::MathUtil',
+            'gfx::AngleBetweenVectorsInDegrees',
             'gfx::BoundingRect',
             'gfx::ComputeApproximateMaxScale',
-            'gfx::Determinant',
+            'gfx::CrossProduct',
+            'gfx::DotProduct',
             'gfx::IntersectRects',
             'gfx::MapRect',
             'gfx::PointAtOffsetFromOrigin',
@@ -342,6 +348,7 @@ _CONFIG = [
             'gfx::ScalePoint',
             'gfx::ScaleToRoundedPoint',
             'gfx::ScaleVector2d',
+            'gfx::ScaleVector3d',
             'gfx::SizeFToSkSize',
             'gfx::SizeToSkISize',
             'gfx::SkIPointToPoint',
@@ -451,7 +458,7 @@ _CONFIG = [
 
             # Document transitions
             'cc::DocumentTransitionRequest',
-            'cc::SharedElementLayer',
+            'cc::DocumentTransitionContentLayer',
             'viz::SharedElementResourceId',
 
             # base/types/strong_alias.h
@@ -490,7 +497,6 @@ _CONFIG = [
             'layout_invalidation_reason::.+',
             'media_constraints_impl::.+',
             'media_element_parser_helpers::.+',
-            'mobile_metrics_test_helpers::.+',
             'file_system_access_error::.+',
             'network_utils::.+',
             'origin_trials::.+',
@@ -1627,6 +1633,27 @@ _CONFIG = [
         'allowed': [
             'base::SingleSampleMetric',
             'base::SingleSampleMetricsFactory',
+        ],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/service_worker/navigation_preload_request.cc',
+            'third_party/blink/renderer/modules/service_worker/navigation_preload_request.h',
+        ],
+        'allowed': [
+            'net::ERR_.+',
+            'net::HttpResponseHeaders',
+            'net::OK',
+            'net::RedirectInfo',
+        ],
+    },
+    {
+        # base::Value is used in test-only script execution in worker contexts.
+        'paths': [
+            'third_party/blink/renderer/modules/service_worker/service_worker_global_scope.cc',
+        ],
+        'allowed': [
+            'base::Value',
         ],
     },
 ]

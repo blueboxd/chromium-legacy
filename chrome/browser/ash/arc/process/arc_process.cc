@@ -8,7 +8,6 @@
 
 #include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/mojom/process.mojom.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 
 namespace arc {

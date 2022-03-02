@@ -12,6 +12,7 @@
 #include "extensions/browser/api/bluetooth/bluetooth_api.h"
 #include "extensions/browser/api/bluetooth/bluetooth_private_api.h"
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_event_dispatcher.h"
+#include "extensions/browser/api/content_settings/content_settings_service.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
@@ -44,7 +45,7 @@
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/updater/update_service_factory.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "extensions/browser/api/clipboard/clipboard_api.h"
 #endif
 
@@ -69,13 +70,14 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   AudioAPI::GetFactoryInstance();
   BluetoothAPI::GetFactoryInstance();
   BluetoothPrivateAPI::GetFactoryInstance();
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   ClipboardAPI::GetFactoryInstance();
 #endif
   api::BluetoothSocketEventDispatcher::GetFactoryInstance();
   api::TCPServerSocketEventDispatcher::GetFactoryInstance();
   api::TCPSocketEventDispatcher::GetFactoryInstance();
   api::UDPSocketEventDispatcher::GetFactoryInstance();
+  ContentSettingsService::GetFactoryInstance();
   declarative_net_request::RulesMonitorService::GetFactoryInstance();
   EnsureExtensionURLLoaderFactoryShutdownNotifierFactoryBuilt();
   EventRouterFactory::GetInstance();
@@ -88,8 +90,8 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   HidDeviceManager::GetFactoryInstance();
   IdleManagerFactory::GetInstance();
   ManagementAPI::GetFactoryInstance();
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
-    defined(OS_MAC)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN) || \
+    BUILDFLAG(IS_MAC)
   NetworkingPrivateEventRouterFactory::GetInstance();
 #endif
   PowerAPI::GetFactoryInstance();

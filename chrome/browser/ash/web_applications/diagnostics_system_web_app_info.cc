@@ -11,14 +11,14 @@
 #include "ash/webui/diagnostics_ui/url_constants.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "url/gurl.h"
 
-std::unique_ptr<WebApplicationInfo>
+std::unique_ptr<WebAppInstallInfo>
 CreateWebAppInfoForDiagnosticsSystemWebApp() {
-  std::unique_ptr<WebApplicationInfo> info =
-      std::make_unique<WebApplicationInfo>();
+  std::unique_ptr<WebAppInstallInfo> info =
+      std::make_unique<WebAppInstallInfo>();
   info->start_url = GURL(ash::kChromeUIDiagnosticsAppUrl);
   info->scope = GURL(ash::kChromeUIDiagnosticsAppUrl);
 
@@ -45,8 +45,8 @@ DiagnosticsSystemAppDelegate::DiagnosticsSystemAppDelegate(Profile* profile)
                                     GURL("chrome://diagnostics"),
                                     profile) {}
 
-std::unique_ptr<WebApplicationInfo>
-DiagnosticsSystemAppDelegate::GetWebAppInfo() const {
+std::unique_ptr<WebAppInstallInfo> DiagnosticsSystemAppDelegate::GetWebAppInfo()
+    const {
   return CreateWebAppInfoForDiagnosticsSystemWebApp();
 }
 

@@ -28,15 +28,12 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantOverlayModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantPlaceholdersConfiguration_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantUiController_jni.h"
+#include "chrome/android/features/autofill_assistant/jni_headers_public/AssistantDependencies_jni.h"
 #include "chrome/browser/android/autofill_assistant/client_android.h"
+#include "chrome/browser/android/autofill_assistant/dependencies.h"
 #include "chrome/browser/android/autofill_assistant/generic_ui_root_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
-#include "chrome/browser/android/feedback/screenshot_mode.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
-#include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/bottom_sheet_state.h"
@@ -50,8 +47,6 @@
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/user_data_util.h"
 #include "components/autofill_assistant/browser/user_model.h"
-#include "components/signin/public/identity_manager/account_info.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -67,9 +62,9 @@ using ::base::android::AttachCurrentThread;
 using ::base::android::ConvertUTF8ToJavaString;
 using ::base::android::JavaParamRef;
 using ::base::android::JavaRef;
+using ::base::android::ScopedJavaGlobalRef;
 using ::base::android::ScopedJavaLocalRef;
 using ::base::android::ToJavaArrayOfStrings;
-using ::chrome::android::ScreenshotMode;
 
 namespace autofill_assistant {
 
@@ -86,30 +81,15 @@ std::vector<float> ToFloatVector(const std::vector<RectF>& areas) {
   return flattened;
 }
 
-base::android::ScopedJavaLocalRef<jobject> CreateJavaDateTime(
-    JNIEnv* env,
-    const DateTimeProto& proto) {
-  return Java_AssistantCollectUserDataModel_createAssistantDateTime(
-      env, (int)proto.date().year(), proto.date().month(), proto.date().day(),
-      proto.time().hour(), proto.time().minute(), proto.time().second());
-}
-
-base::android::ScopedJavaLocalRef<jobject> CreateJavaDate(
-    JNIEnv* env,
-    const DateProto& proto) {
-  DateTimeProto date_time;
-  *date_time.mutable_date() = proto;
-  return CreateJavaDateTime(env, date_time);
-}
-
 ScopedJavaLocalRef<jobject> CreateOptionalJavaInfoPopup(
     JNIEnv* env,
     const LoginChoice& login_choice,
-    const ClientSettings& client_settings) {
+    const ClientSettings& client_settings,
+    const base::android::ScopedJavaGlobalRef<jobject> jinfo_page_util) {
   ScopedJavaLocalRef<jobject> jinfo_popup = nullptr;
   if (login_choice.info_popup.has_value()) {
     jinfo_popup = CreateJavaInfoPopup(
-        env, *login_choice.info_popup,
+        env, *login_choice.info_popup, jinfo_page_util,
         GetDisplayStringUTF8(ClientSettingsProto::CLOSE, client_settings));
   }
   return jinfo_popup;
@@ -118,7 +98,8 @@ ScopedJavaLocalRef<jobject> CreateOptionalJavaInfoPopup(
 ScopedJavaLocalRef<jobject> CreateJavaLoginChoice(
     JNIEnv* env,
     const LoginChoice& login_choice,
-    const ClientSettings& client_settings) {
+    const ClientSettings& client_settings,
+    const base::android::ScopedJavaGlobalRef<jobject> jinfo_page_util) {
   return Java_AssistantCollectUserDataModel_createLoginChoice(
       env, ConvertUTF8ToJavaString(env, login_choice.identifier),
       ConvertUTF8ToJavaString(env, login_choice.label),
@@ -126,7 +107,8 @@ ScopedJavaLocalRef<jobject> CreateJavaLoginChoice(
       ConvertNativeOptionalStringToJava(
           env, login_choice.sublabel_accessibility_hint),
       login_choice.preselect_priority,
-      CreateOptionalJavaInfoPopup(env, login_choice, client_settings),
+      CreateOptionalJavaInfoPopup(env, login_choice, client_settings,
+                                  jinfo_page_util),
       ConvertNativeOptionalStringToJava(
           env, login_choice.edit_button_content_description));
 }
@@ -135,7 +117,8 @@ ScopedJavaLocalRef<jobject> CreateJavaLoginChoice(
 ScopedJavaLocalRef<jobject> CreateJavaLoginChoiceList(
     JNIEnv* env,
     const std::vector<LoginChoice>& login_choices,
-    const ClientSettings& client_settings) {
+    const ClientSettings& client_settings,
+    const base::android::ScopedJavaGlobalRef<jobject> jinfo_page_util) {
   auto jlist = Java_AssistantCollectUserDataModel_createLoginChoiceList(env);
   for (const auto& login_choice : login_choices) {
     Java_AssistantCollectUserDataModel_addLoginChoice(
@@ -145,7 +128,8 @@ ScopedJavaLocalRef<jobject> CreateJavaLoginChoiceList(
         ConvertNativeOptionalStringToJava(
             env, login_choice.sublabel_accessibility_hint),
         login_choice.preselect_priority,
-        CreateOptionalJavaInfoPopup(env, login_choice, client_settings),
+        CreateOptionalJavaInfoPopup(env, login_choice, client_settings,
+                                    jinfo_page_util),
         ConvertNativeOptionalStringToJava(
             env, login_choice.edit_button_content_description));
   }
@@ -274,18 +258,17 @@ std::unique_ptr<UiControllerAndroid> UiControllerAndroid::CreateFromWebContents(
     const base::android::JavaRef<jobject>& jdependencies,
     const base::android::JavaRef<jobject>& joverlay_coordinator) {
   JNIEnv* env = AttachCurrentThread();
-  auto jactivity = Java_AutofillAssistantUiController_findAppropriateActivity(
-      env, web_contents->GetJavaWebContents());
-  if (!jactivity) {
+  if (!Java_AutofillAssistantUiController_shouldCreateNewInstance(
+          env, web_contents->GetJavaWebContents(), jdependencies)) {
     return nullptr;
   }
-  return std::make_unique<UiControllerAndroid>(env, jactivity, jdependencies,
+
+  return std::make_unique<UiControllerAndroid>(env, jdependencies,
                                                joverlay_coordinator);
 }
 
 UiControllerAndroid::UiControllerAndroid(
     JNIEnv* env,
-    const base::android::JavaRef<jobject>& jactivity,
     const base::android::JavaRef<jobject>& jdependencies,
     const base::android::JavaRef<jobject>& joverlay_coordinator)
     : overlay_delegate_(this),
@@ -293,12 +276,15 @@ UiControllerAndroid::UiControllerAndroid(
       collect_user_data_delegate_(this),
       form_delegate_(this),
       generic_ui_delegate_(this),
-      bottom_bar_delegate_(this) {
-  java_object_ = Java_AutofillAssistantUiController_create(
-      env, jactivity,
+      bottom_bar_delegate_(this),
+      jstatic_dependencies_(
+          Java_AssistantDependencies_getStaticDependencies(env,
+                                                           jdependencies)) {
+  java_object_ = Java_AutofillAssistantUiController_Constructor(
+      env, reinterpret_cast<intptr_t>(this), jdependencies,
       /* allowTabSwitching= */
       base::FeatureList::IsEnabled(features::kAutofillAssistantChromeEntry),
-      reinterpret_cast<intptr_t>(this), jdependencies, joverlay_coordinator);
+      joverlay_coordinator);
   header_model_ = std::make_unique<AssistantHeaderModel>(
       Java_AssistantModel_getHeaderModel(env, GetModel()));
 
@@ -320,19 +306,26 @@ UiControllerAndroid::UiControllerAndroid(
 
 void UiControllerAndroid::Attach(content::WebContents* web_contents,
                                  ClientAndroid* client,
+                                 ExecutionDelegate* execution_delegate,
                                  UiDelegate* ui_delegate) {
   DCHECK(web_contents);
   DCHECK(client);
   DCHECK(ui_delegate);
+  DCHECK(execution_delegate);
 
   client_ = client;
 
-  // Detach from the current ui_delegate, if one was set previously.
+  // Detach from the current execution_delegate and ui_delegate, if previously
+  // set.
   Detach();
 
   // Attach to the new ui_delegate.
   ui_delegate_ = ui_delegate;
   ui_delegate_->AddObserver(this);
+
+  // Attach to the new execution_delegate.
+  execution_delegate_ = execution_delegate;
+  execution_delegate_->AddObserver(this);
 
   JNIEnv* env = AttachCurrentThread();
   auto java_web_contents = web_contents->GetJavaWebContents();
@@ -342,14 +335,15 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
       env, GetCollectUserDataModel(), java_web_contents);
   Java_AssistantOverlayModel_setWebContents(env, GetOverlayModel(),
                                             java_web_contents);
-  OnClientSettingsChanged(ui_delegate_->GetClientSettings());
+  OnClientSettingsChanged(execution_delegate_->GetClientSettings());
   Java_AssistantModel_setPeekModeDisabled(env, GetModel(), false);
 
-  if (ui_delegate->GetState() != AutofillAssistantState::INACTIVE &&
-      ui_delegate->IsTabSelected()) {
+  if (execution_delegate_->GetState() != AutofillAssistantState::INACTIVE &&
+      execution_delegate_->IsTabSelected()) {
     // The UI was created for an existing Controller.
     RestoreUi();
-  } else if (ui_delegate->GetState() == AutofillAssistantState::INACTIVE) {
+  } else if (execution_delegate_->GetState() ==
+             AutofillAssistantState::INACTIVE) {
     SetVisible(true);
   }
   // The call to set the web contents will, for some edge cases, trigger a call
@@ -364,14 +358,18 @@ void UiControllerAndroid::Detach() {
   if (ui_delegate_) {
     ui_delegate_->RemoveObserver(this);
   }
+  if (execution_delegate_) {
+    execution_delegate_->RemoveObserver(this);
+  }
   ui_delegate_ = nullptr;
+  execution_delegate_ = nullptr;
 }
 
 UiControllerAndroid::~UiControllerAndroid() {
   Java_AutofillAssistantUiController_clearNativePtr(AttachCurrentThread(),
                                                     java_object_);
-  if (ui_delegate_) {
-    ui_delegate_->SetUiShown(false);
+  if (execution_delegate_) {
+    execution_delegate_->SetUiShown(false);
   }
   Detach();
 }
@@ -391,10 +389,11 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
 }
 
 void UiControllerAndroid::SetupForState() {
+  DCHECK(execution_delegate_ != nullptr);
   DCHECK(ui_delegate_ != nullptr);
 
   UpdateActions(ui_delegate_->GetUserActions());
-  AutofillAssistantState state = ui_delegate_->GetState();
+  AutofillAssistantState state = execution_delegate_->GetState();
   bool should_prompt_action_expand_sheet =
       ui_delegate_->ShouldPromptActionExpandSheet();
   switch (state) {
@@ -412,7 +411,8 @@ void UiControllerAndroid::SetupForState() {
       SetOverlayState(OverlayState::PARTIAL);
       SetSpinPoodle(false);
 
-      if (should_prompt_action_expand_sheet && ui_delegate_->IsTabSelected())
+      if (should_prompt_action_expand_sheet &&
+          execution_delegate_->IsTabSelected())
         ShowContentAndExpandBottomSheet();
       return;
 
@@ -431,7 +431,7 @@ void UiControllerAndroid::SetupForState() {
       SetSpinPoodle(false);
 
       // Make sure the user sees the error message.
-      if (ui_delegate_->IsTabSelected())
+      if (execution_delegate_->IsTabSelected())
         ShowContentAndExpandBottomSheet();
       ResetGenericUiControllers();
       return;
@@ -440,8 +440,13 @@ void UiControllerAndroid::SetupForState() {
       SetOverlayState(OverlayState::HIDDEN);
       SetSpinPoodle(false);
 
-      Java_AssistantModel_setVisible(AttachCurrentThread(), GetModel(), false);
-      DestroySelf();
+      if (!execution_delegate_->NeedsUI()) {
+        Java_AssistantModel_setVisible(AttachCurrentThread(), GetModel(),
+                                       false);
+        DestroySelf();
+      } else if (execution_delegate_->IsTabSelected()) {
+        ShowContentAndExpandBottomSheet();
+      }
       return;
 
     case AutofillAssistantState::INACTIVE:
@@ -508,7 +513,7 @@ void UiControllerAndroid::OnCollapseBottomSheet() {
 }
 
 void UiControllerAndroid::OnOverlayColorsChanged(
-    const UiDelegate::OverlayColors& colors) {
+    const ExecutionDelegate::OverlayColors& colors) {
   JNIEnv* env = AttachCurrentThread();
   auto overlay_model = GetOverlayModel();
   Java_AssistantOverlayModel_setBackgroundColor(
@@ -535,8 +540,8 @@ void UiControllerAndroid::OnHeaderFeedbackButtonClicked() {
   // the website's screenshot (COMPOSITOR).
   Java_AutofillAssistantUiController_showFeedback(
       env, java_object_,
-      ConvertUTF8ToJavaString(env, ui_delegate_->GetDebugContext()),
-      ScreenshotMode::DEFAULT);
+      ConvertUTF8ToJavaString(env, client_->GetDebugContext()),
+      /* screenshotMode */ 0);
 }
 
 void UiControllerAndroid::OnViewEvent(const EventHandler::EventKey& key) {
@@ -545,7 +550,7 @@ void UiControllerAndroid::OnViewEvent(const EventHandler::EventKey& key) {
 
 void UiControllerAndroid::OnValueChanged(const std::string& identifier,
                                          const ValueProto& value) {
-  ui_delegate_->GetUserModel()->SetValue(identifier, value);
+  execution_delegate_->GetUserModel()->SetValue(identifier, value);
 }
 
 void UiControllerAndroid::Shutdown(Metrics::DropOutReason reason) {
@@ -595,8 +600,8 @@ void UiControllerAndroid::SnackbarResult(
 void UiControllerAndroid::DestroySelf() {
   // Note: shutdown happens asynchronously (if at all), so calling code after
   // |ShutdownIfNecessary| returns should be ok.
-  if (ui_delegate_)
-    ui_delegate_->ShutdownIfNecessary();
+  if (execution_delegate_)
+    execution_delegate_->ShutdownIfNecessary();
 
   // Destroy self in separate task to avoid UaFs. Obviously, having this method
   // in the first place is a terrible idea. We should refactor. The controller
@@ -620,7 +625,7 @@ void UiControllerAndroid::SetVisible(
 
 void UiControllerAndroid::SetVisible(bool visible) {
   Java_AssistantModel_setVisible(AttachCurrentThread(), GetModel(), visible);
-  DCHECK(ui_delegate_);
+  DCHECK(execution_delegate_);
   if (visible) {
     // Recover possibly state changes missed by OnStateChanged()
     SetupForState();
@@ -628,19 +633,20 @@ void UiControllerAndroid::SetVisible(bool visible) {
     SetOverlayState(OverlayState::HIDDEN);
   }
   bool should_suppress_keyboard =
-      visible && ui_delegate_->ShouldSuppressKeyboard();
-  ui_delegate_->SuppressKeyboard(should_suppress_keyboard);
+      visible && execution_delegate_->ShouldSuppressKeyboard();
+  execution_delegate_->SuppressKeyboard(should_suppress_keyboard);
   OnKeyboardSuppressionStateChanged(should_suppress_keyboard);
-  ui_delegate_->SetUiShown(visible);
+  execution_delegate_->SetUiShown(visible);
 }
 
 void UiControllerAndroid::RestoreUi() {
-  if (ui_delegate_ == nullptr)
+  if (!execution_delegate_ || !ui_delegate_)
     return;
 
   OnStatusMessageChanged(ui_delegate_->GetStatusMessage());
   OnBubbleMessageChanged(ui_delegate_->GetBubbleMessage());
-  OnClientSettingsDisplayStringsChanged(ui_delegate_->GetClientSettings());
+  OnClientSettingsDisplayStringsChanged(
+      execution_delegate_->GetClientSettings());
   OnStepProgressBarConfigurationChanged(
       ui_delegate_->GetStepProgressBarConfiguration());
   OnProgressActiveStepChanged(ui_delegate_->GetProgressActiveStep());
@@ -650,23 +656,24 @@ void UiControllerAndroid::RestoreUi() {
   OnDetailsChanged(ui_delegate_->GetDetails());
   OnUserActionsChanged(ui_delegate_->GetUserActions());
   OnCollectUserDataOptionsChanged(ui_delegate_->GetCollectUserDataOptions());
-  OnUserDataChanged(*ui_delegate_->GetUserData(), UserData::FieldChange::ALL);
+  OnUserDataChanged(*execution_delegate_->GetUserData(),
+                    UserData::FieldChange::ALL);
   OnPersistentGenericUserInterfaceChanged(
       ui_delegate_->GetPersistentGenericUiProto());
   OnGenericUserInterfaceChanged(ui_delegate_->GetGenericUiProto());
 
   std::vector<RectF> area;
-  ui_delegate_->GetTouchableArea(&area);
+  execution_delegate_->GetTouchableArea(&area);
   std::vector<RectF> restricted_area;
-  ui_delegate_->GetRestrictedArea(&restricted_area);
+  execution_delegate_->GetRestrictedArea(&restricted_area);
   RectF visual_viewport;
-  ui_delegate_->GetVisualViewport(&visual_viewport);
+  execution_delegate_->GetVisualViewport(&visual_viewport);
   OnTouchableAreaChanged(visual_viewport, area, restricted_area);
-  OnViewportModeChanged(ui_delegate_->GetViewportMode());
+  OnViewportModeChanged(execution_delegate_->GetViewportMode());
   OnPeekModeChanged(ui_delegate_->GetPeekMode());
   OnFormChanged(ui_delegate_->GetForm(), ui_delegate_->GetFormResult());
-  UiDelegate::OverlayColors colors;
-  ui_delegate_->GetOverlayColors(&colors);
+  ExecutionDelegate::OverlayColors colors;
+  execution_delegate_->GetOverlayColors(&colors);
   OnOverlayColorsChanged(colors);
   OnTtsButtonVisibilityChanged(ui_delegate_->GetTtsButtonVisible());
   OnTtsButtonStateChanged(ui_delegate_->GetTtsButtonState());
@@ -682,24 +689,23 @@ void UiControllerAndroid::OnTabSwitched(
     const base::android::JavaParamRef<jobject>& jcaller,
     jint state,
     jboolean activity_changed) {
-  if (ui_delegate_ == nullptr) {
+  if (!execution_delegate_ || !ui_delegate_)
     return;
-  }
 
   ui_delegate_->SetBottomSheetState(
       ui_controller_android_utils::ToNativeBottomSheetState(state));
-  ui_delegate_->SetTabSelected(false);
+  execution_delegate_->SetTabSelected(false);
 }
 
 void UiControllerAndroid::OnTabSelected(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
-  if (ui_delegate_ == nullptr) {
+  if (execution_delegate_ == nullptr)
     return;
-  }
-  if (!ui_delegate_->IsTabSelected()) {
+
+  if (!execution_delegate_->IsTabSelected()) {
     RestoreUi();
-    ui_delegate_->SetTabSelected(true);
+    execution_delegate_->SetTabSelected(true);
   }
 }
 
@@ -707,6 +713,7 @@ void UiControllerAndroid::OnTabSelected(
 
 void UiControllerAndroid::UpdateActions(
     const std::vector<UserAction>& user_actions) {
+  DCHECK(execution_delegate_);
   DCHECK(ui_delegate_);
 
   JNIEnv* env = AttachCurrentThread();
@@ -805,12 +812,14 @@ void UiControllerAndroid::UpdateActions(
 
   if (!has_close_or_cancel) {
     base::android::ScopedJavaLocalRef<jobject> jcancel_chip;
-    if (ui_delegate_->GetState() == AutofillAssistantState::STOPPED) {
+    if (execution_delegate_->GetState() == AutofillAssistantState::STOPPED ||
+        execution_delegate_->GetState() == AutofillAssistantState::TRACKING) {
       jcancel_chip = Java_AutofillAssistantUiController_createCloseButton(
           env, java_object_, ICON_CLEAR, ConvertUTF8ToJavaString(env, ""),
           /* disabled= */ false, /* sticky= */ true, /* visible=*/true,
           /* content_description= */ nullptr);
-    } else if (ui_delegate_->GetState() != AutofillAssistantState::INACTIVE) {
+    } else if (execution_delegate_->GetState() !=
+               AutofillAssistantState::INACTIVE) {
       jcancel_chip = Java_AutofillAssistantUiController_createCancelButton(
           env, java_object_, ICON_CLEAR, ConvertUTF8ToJavaString(env, ""), -1,
           /* disabled= */ false, /* sticky= */ true, /* visible=*/true,
@@ -873,8 +882,8 @@ void UiControllerAndroid::OnFeedbackButtonClicked(
   // directly stop.
   Java_AutofillAssistantUiController_showFeedback(
       env, java_object_,
-      ConvertUTF8ToJavaString(env, ui_delegate_->GetDebugContext()),
-      ScreenshotMode::COMPOSITOR);
+      ConvertUTF8ToJavaString(env, client_->GetDebugContext()),
+      /* screenshotMode */ 1);
 
   OnUserActionSelected(env, jcaller, index);
 }
@@ -902,13 +911,13 @@ bool UiControllerAndroid::OnBackButtonClicked() {
   }
 
   // For BROWSE state the back button should react in its default way.
-  if (ui_delegate_ != nullptr &&
-      (ui_delegate_->GetState() == AutofillAssistantState::BROWSE)) {
+  if (execution_delegate_ != nullptr &&
+      (execution_delegate_->GetState() == AutofillAssistantState::BROWSE)) {
     return false;
   }
 
-  if (ui_delegate_ == nullptr ||
-      ui_delegate_->GetState() == AutofillAssistantState::STOPPED) {
+  if (execution_delegate_ == nullptr ||
+      execution_delegate_->GetState() == AutofillAssistantState::STOPPED) {
     if (client_->GetWebContents() != nullptr &&
         client_->GetWebContents()->GetController().CanGoBack()) {
       client_->GetWebContents()->GetController().GoBack();
@@ -917,12 +926,12 @@ bool UiControllerAndroid::OnBackButtonClicked() {
     return true;
   }
 
-  // ui_delegate_ must never be nullptr here!
+  // execution_delegate_ must never be nullptr here!
   auto back_button_settings =
-      ui_delegate_->GetClientSettings().back_button_settings;
+      execution_delegate_->GetClientSettings().back_button_settings;
   if (back_button_settings.has_value()) {
-    ui_delegate_->OnStop(back_button_settings->message(),
-                         back_button_settings->undo_label());
+    execution_delegate_->OnStop(back_button_settings->message(),
+                                back_button_settings->undo_label());
   } else {
     CloseOrCancel(-1, Metrics::DropOutReason::BACK_BUTTON_CLICKED);
   }
@@ -936,8 +945,8 @@ void UiControllerAndroid::OnBottomSheetClosedWithSwipe() {
 void UiControllerAndroid::CloseOrCancel(int action_index,
                                         Metrics::DropOutReason dropout_reason) {
   // Close immediately.
-  if (!ui_delegate_ ||
-      ui_delegate_->GetState() == AutofillAssistantState::STOPPED) {
+  if (!execution_delegate_ ||
+      execution_delegate_->GetState() == AutofillAssistantState::STOPPED) {
     DestroySelf();
     return;
   }
@@ -952,11 +961,11 @@ void UiControllerAndroid::CloseOrCancel(int action_index,
   }
 
   // Cancel, with a snackbar to allow UNDO.
-  ShowSnackbar(ui_delegate_->GetClientSettings().cancel_delay,
+  ShowSnackbar(execution_delegate_->GetClientSettings().cancel_delay,
                GetDisplayStringUTF8(ClientSettingsProto::STOPPED,
-                                    ui_delegate_->GetClientSettings()),
+                                    execution_delegate_->GetClientSettings()),
                GetDisplayStringUTF8(ClientSettingsProto::UNDO,
-                                    ui_delegate_->GetClientSettings()),
+                                    execution_delegate_->GetClientSettings()),
                base::BindOnce(&UiControllerAndroid::OnCancel,
                               weak_ptr_factory_.GetWeakPtr(), action_index,
                               dropout_reason));
@@ -1013,14 +1022,14 @@ void UiControllerAndroid::SetOverlayState(OverlayState state) {
   // page if there is no touchable area.
   if (state == OverlayState::PARTIAL) {
     std::vector<RectF> area;
-    ui_delegate_->GetTouchableArea(&area);
+    execution_delegate_->GetTouchableArea(&area);
     if (area.empty()) {
       state = OverlayState::FULL;
     }
   }
   overlay_state_ = state;
 
-  if (ui_delegate_ && ui_delegate_->ShouldShowOverlay()) {
+  if (execution_delegate_ && execution_delegate_->ShouldShowOverlay()) {
     ApplyOverlayState(state);
   }
 }
@@ -1071,16 +1080,16 @@ void UiControllerAndroid::OnTouchableAreaChanged(
 }
 
 void UiControllerAndroid::OnUnexpectedTaps() {
-  if (!ui_delegate_) {
+  if (!execution_delegate_) {
     Shutdown(Metrics::DropOutReason::OVERLAY_STOP);
     return;
   }
 
-  ShowSnackbar(ui_delegate_->GetClientSettings().tap_shutdown_delay,
+  ShowSnackbar(execution_delegate_->GetClientSettings().tap_shutdown_delay,
                GetDisplayStringUTF8(ClientSettingsProto::MAYBE_GIVE_UP,
-                                    ui_delegate_->GetClientSettings()),
+                                    execution_delegate_->GetClientSettings()),
                GetDisplayStringUTF8(ClientSettingsProto::UNDO,
-                                    ui_delegate_->GetClientSettings()),
+                                    execution_delegate_->GetClientSettings()),
                base::BindOnce(&UiControllerAndroid::Shutdown,
                               weak_ptr_factory_.GetWeakPtr(),
                               Metrics::DropOutReason::OVERLAY_STOP));
@@ -1137,50 +1146,6 @@ void UiControllerAndroid::OnFormActionLinkClicked(int link) {
   ui_delegate_->OnFormActionLinkClicked(link);
 }
 
-void UiControllerAndroid::OnDateTimeRangeStartDateChanged(int year,
-                                                          int month,
-                                                          int day) {
-  auto date = absl::make_optional<DateProto>();
-  date->set_year(year);
-  date->set_month(month);
-  date->set_day(day);
-  ui_delegate_->SetDateTimeRangeStartDate(date);
-}
-
-void UiControllerAndroid::OnDateTimeRangeStartDateCleared() {
-  ui_delegate_->SetDateTimeRangeStartDate(absl::nullopt);
-}
-
-void UiControllerAndroid::OnDateTimeRangeStartTimeSlotChanged(int index) {
-  ui_delegate_->SetDateTimeRangeStartTimeSlot(absl::make_optional<int>(index));
-}
-
-void UiControllerAndroid::OnDateTimeRangeStartTimeSlotCleared() {
-  ui_delegate_->SetDateTimeRangeStartTimeSlot(absl::nullopt);
-}
-
-void UiControllerAndroid::OnDateTimeRangeEndDateChanged(int year,
-                                                        int month,
-                                                        int day) {
-  auto date = absl::make_optional<DateProto>();
-  date->set_year(year);
-  date->set_month(month);
-  date->set_day(day);
-  ui_delegate_->SetDateTimeRangeEndDate(date);
-}
-
-void UiControllerAndroid::OnDateTimeRangeEndDateCleared() {
-  ui_delegate_->SetDateTimeRangeEndDate(absl::nullopt);
-}
-
-void UiControllerAndroid::OnDateTimeRangeEndTimeSlotChanged(int index) {
-  ui_delegate_->SetDateTimeRangeEndTimeSlot(absl::make_optional<int>(index));
-}
-
-void UiControllerAndroid::OnDateTimeRangeEndTimeSlotCleared() {
-  ui_delegate_->SetDateTimeRangeEndTimeSlot(absl::nullopt);
-}
-
 void UiControllerAndroid::OnKeyValueChanged(const std::string& key,
                                             const ValueProto& value) {
   ui_delegate_->SetAdditionalValue(key, value);
@@ -1204,6 +1169,10 @@ void UiControllerAndroid::OnInputTextFocusChanged(bool is_text_focused) {
 void UiControllerAndroid::HideKeyboardIfFocusNotOnText() {
   Java_AutofillAssistantUiController_hideKeyboardIfFocusNotOnText(
       AttachCurrentThread(), java_object_);
+}
+
+ScopedJavaGlobalRef<jobject> UiControllerAndroid::GetInfoPageUtil() const {
+  return Dependencies::CreateInfoPageUtil(jstatic_dependencies_);
 }
 
 void UiControllerAndroid::OnCollectUserDataOptionsChanged(
@@ -1271,56 +1240,10 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
       base::android::ToJavaArrayOfStrings(
           env, collect_user_data_options->supported_basic_card_networks));
   if (collect_user_data_options->request_login_choice) {
-    auto jlist =
-        CreateJavaLoginChoiceList(env, collect_user_data_options->login_choices,
-                                  ui_delegate_->GetClientSettings());
+    auto jlist = CreateJavaLoginChoiceList(
+        env, collect_user_data_options->login_choices,
+        execution_delegate_->GetClientSettings(), GetInfoPageUtil());
     Java_AssistantCollectUserDataModel_setLoginChoices(env, jmodel, jlist);
-  }
-  Java_AssistantCollectUserDataModel_setRequestDateRange(
-      env, jmodel, collect_user_data_options->request_date_time_range);
-  if (collect_user_data_options->request_date_time_range) {
-    auto jmin_date = CreateJavaDate(
-        env, collect_user_data_options->date_time_range.min_date());
-    auto jmax_date = CreateJavaDate(
-        env, collect_user_data_options->date_time_range.max_date());
-    std::vector<std::string> time_slots;
-    for (const auto& slot :
-         collect_user_data_options->date_time_range.time_slots()) {
-      time_slots.emplace_back(slot.label());
-    }
-    auto jtime_slots = base::android::ToJavaArrayOfStrings(env, time_slots);
-    Java_AssistantCollectUserDataModel_setDateTimeRangeStartOptions(
-        env, jmodel, jmin_date, jmax_date, jtime_slots);
-    Java_AssistantCollectUserDataModel_setDateTimeRangeEndOptions(
-        env, jmodel, jmin_date, jmax_date, jtime_slots);
-    Java_AssistantCollectUserDataModel_setDateTimeRangeStartDateLabel(
-        env, jmodel,
-        ConvertUTF8ToJavaString(
-            env,
-            collect_user_data_options->date_time_range.start_date_label()));
-    Java_AssistantCollectUserDataModel_setDateTimeRangeStartTimeLabel(
-        env, jmodel,
-        ConvertUTF8ToJavaString(
-            env,
-            collect_user_data_options->date_time_range.start_time_label()));
-    Java_AssistantCollectUserDataModel_setDateTimeRangeEndDateLabel(
-        env, jmodel,
-        ConvertUTF8ToJavaString(
-            env, collect_user_data_options->date_time_range.end_date_label()));
-    Java_AssistantCollectUserDataModel_setDateTimeRangeEndTimeLabel(
-        env, jmodel,
-        ConvertUTF8ToJavaString(
-            env, collect_user_data_options->date_time_range.end_time_label()));
-    Java_AssistantCollectUserDataModel_setDateTimeRangeDateNotSetErrorMessage(
-        env, jmodel,
-        ConvertUTF8ToJavaString(
-            env,
-            collect_user_data_options->date_time_range.date_not_set_error()));
-    Java_AssistantCollectUserDataModel_setDateTimeRangeTimeNotSetErrorMessage(
-        env, jmodel,
-        ConvertUTF8ToJavaString(
-            env,
-            collect_user_data_options->date_time_range.time_not_set_error()));
   }
   Java_AssistantCollectUserDataModel_setTermsRequireReviewText(
       env, jmodel,
@@ -1372,6 +1295,7 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
 void UiControllerAndroid::OnUserDataChanged(
     const UserData& user_data,
     UserData::FieldChange field_change) {
+  DCHECK(execution_delegate_ != nullptr);
   DCHECK(ui_delegate_ != nullptr);
   DCHECK(client_->GetWebContents() != nullptr);
   const CollectUserDataOptions* collect_user_data_options =
@@ -1581,51 +1505,13 @@ void UiControllerAndroid::OnUserDataChanged(
   }
 
   if (field_change == UserData::FieldChange::ALL ||
-      field_change == UserData::FieldChange::DATE_TIME_RANGE_START) {
-    if (user_data.date_time_range_start_date_.has_value()) {
-      Java_AssistantCollectUserDataModel_setDateTimeRangeStartDate(
-          env, jmodel,
-          CreateJavaDate(env, *user_data.date_time_range_start_date_));
-    } else {
-      Java_AssistantCollectUserDataModel_clearDateTimeRangeStartDate(env,
-                                                                     jmodel);
-    }
-
-    if (user_data.date_time_range_start_timeslot_.has_value()) {
-      Java_AssistantCollectUserDataModel_setDateTimeRangeStartTimeSlot(
-          env, jmodel, *user_data.date_time_range_start_timeslot_);
-    } else {
-      Java_AssistantCollectUserDataModel_clearDateTimeRangeStartTimeSlot(
-          env, jmodel);
-    }
-  }
-
-  if (field_change == UserData::FieldChange::ALL ||
-      field_change == UserData::FieldChange::DATE_TIME_RANGE_END) {
-    if (user_data.date_time_range_end_date_.has_value()) {
-      Java_AssistantCollectUserDataModel_setDateTimeRangeEndDate(
-          env, jmodel,
-          CreateJavaDate(env, *user_data.date_time_range_end_date_));
-    } else {
-      Java_AssistantCollectUserDataModel_clearDateTimeRangeEndDate(env, jmodel);
-    }
-
-    if (user_data.date_time_range_end_timeslot_.has_value()) {
-      Java_AssistantCollectUserDataModel_setDateTimeRangeEndTimeSlot(
-          env, jmodel, *user_data.date_time_range_end_timeslot_);
-    } else {
-      Java_AssistantCollectUserDataModel_clearDateTimeRangeEndTimeSlot(env,
-                                                                       jmodel);
-    }
-  }
-
-  if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::LOGIN_CHOICE) {
     ScopedJavaLocalRef<jobject> jselected_login_choice =
         user_data.selected_login_choice() == nullptr
             ? nullptr
             : CreateJavaLoginChoice(env, *user_data.selected_login_choice(),
-                                    ui_delegate_->GetClientSettings());
+                                    execution_delegate_->GetClientSettings(),
+                                    GetInfoPageUtil());
 
     Java_AssistantCollectUserDataModel_setSelectedLoginChoice(
         env, jmodel, jselected_login_choice);
@@ -1739,9 +1625,9 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form,
     Java_AssistantFormModel_setInfoPopup(
         env, GetFormModel(),
         ui_controller_android_utils::CreateJavaInfoPopup(
-            env, form->info_popup(),
+            env, form->info_popup(), GetInfoPageUtil(),
             GetDisplayStringUTF8(ClientSettingsProto::CLOSE,
-                                 ui_delegate_->GetClientSettings())));
+                                 execution_delegate_->GetClientSettings())));
   } else {
     Java_AssistantFormModel_clearInfoPopup(env, GetFormModel());
   }
@@ -1779,7 +1665,7 @@ void UiControllerAndroid::OnClientSettingsChanged(
         env, GetOverlayModel(), jcontext,
         ui_controller_android_utils::CreateJavaDrawable(
             env, jcontext, image.image_drawable(),
-            ui_delegate_->GetUserModel()),
+            execution_delegate_->GetUserModel()),
         image_size, top_margin, bottom_margin,
         ConvertUTF8ToJavaString(env, image.text()),
         ui_controller_android_utils::GetJavaColor(env, image.text_color()),
@@ -1917,7 +1803,6 @@ void UiControllerAndroid::OnDetailsChanged(
 }
 
 // InfoBox related method.
-
 base::android::ScopedJavaLocalRef<jobject>
 UiControllerAndroid::GetInfoBoxModel() {
   return Java_AssistantModel_getInfoBoxModel(AttachCurrentThread(), GetModel());
@@ -1949,11 +1834,11 @@ void UiControllerAndroid::OnFatalError(
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& jmessage,
     int jreason) {
-  if (!ui_delegate_)
+  if (!execution_delegate_)
     return;
-  ui_delegate_->OnFatalError(
+
+  execution_delegate_->OnFatalError(
       base::android::ConvertJavaStringToUTF8(env, jmessage),
-      /*show_feedback_chip=*/false,
       static_cast<Metrics::DropOutReason>(jreason));
 }
 
@@ -1978,9 +1863,18 @@ UiControllerAndroid::CreateGenericUiControllerForProto(
       Java_AutofillAssistantUiController_getContext(env, java_object_);
   return GenericUiRootControllerAndroid::CreateFromProto(
       proto, base::android::ScopedJavaGlobalRef<jobject>(jcontext),
-      generic_ui_delegate_.GetJavaObject(), ui_delegate_->GetEventHandler(),
-      ui_delegate_->GetUserModel(), ui_delegate_->GetBasicInteractions());
+      GetInfoPageUtil(), generic_ui_delegate_.GetJavaObject(),
+      ui_delegate_->GetEventHandler(), execution_delegate_->GetUserModel(),
+      ui_delegate_->GetBasicInteractions());
 }
+
+void UiControllerAndroid::OnError(const std::string& error_message,
+                                  Metrics::DropOutReason reason) {}
+void UiControllerAndroid::OnExecuteScript(const std::string& start_message) {}
+void UiControllerAndroid::OnStart(const TriggerContext& trigger_context) {}
+void UiControllerAndroid::OnStop() {}
+void UiControllerAndroid::OnResetState() {}
+void UiControllerAndroid::OnUiShownChanged(bool shown) {}
 
 base::android::ScopedJavaLocalRef<jobject>
 UiControllerAndroid::GetGenericUiModel() {

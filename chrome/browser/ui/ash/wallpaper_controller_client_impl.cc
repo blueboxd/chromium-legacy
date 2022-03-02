@@ -22,6 +22,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "base/values.h"
@@ -63,7 +64,7 @@
 #include "ui/display/screen.h"
 #include "url/gurl.h"
 
-using chromeos::ProfileHelper;
+using ::ash::ProfileHelper;
 using extension_misc::kWallpaperManagerId;
 using file_manager::VolumeManager;
 using session_manager::SessionManager;
@@ -211,6 +212,34 @@ base::FilePath GetDriveFsWallpaperDir(Profile* profile) {
       .Append(kDriveFsWallpaperDirName);
 }
 
+bool SaveWallpaperToDriveFsIOTaskRunner(
+    const base::FilePath& origin,
+    const base::FilePath& destination_directory) {
+  if (destination_directory.empty())
+    return false;
+
+  if (!base::DirectoryExists(destination_directory) &&
+      !base::CreateDirectory(destination_directory)) {
+    return false;
+  }
+
+  std::string temp_file_name =
+      base::UnguessableToken::Create().ToString().append(
+          kDriveFsTempWallpaperFileName);
+  base::FilePath temp_destination =
+      destination_directory.Append(temp_file_name);
+  if (!base::CopyFile(origin, temp_destination)) {
+    base::DeleteFile(temp_destination);
+    return false;
+  }
+
+  base::FilePath destination =
+      destination_directory.Append(kDriveFsWallpaperFileName);
+  bool success = base::ReplaceFile(temp_destination, destination, nullptr);
+  base::DeleteFile(temp_destination);
+  return success;
+}
+
 }  // namespace
 
 WallpaperControllerClientImpl::WallpaperControllerClientImpl() {
@@ -229,6 +258,10 @@ WallpaperControllerClientImpl::WallpaperControllerClientImpl() {
   // SessionManager might not exist in unit tests.
   if (session_manager)
     session_observation_.Observe(session_manager);
+
+  io_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 WallpaperControllerClientImpl::~WallpaperControllerClientImpl() {
@@ -271,7 +304,7 @@ void WallpaperControllerClientImpl::SetInitialWallpaper() {
 
   // Guest wallpaper should be initialized when guest logs in.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kGuestSession)) {
+          ash::switches::kGuestSession)) {
     return;
   }
 
@@ -480,34 +513,17 @@ bool WallpaperControllerClientImpl::ShouldShowWallpaperSetting() {
   return wallpaper_controller_->ShouldShowWallpaperSetting();
 }
 
-bool WallpaperControllerClientImpl::SaveWallpaperToDriveFs(
+void WallpaperControllerClientImpl::SaveWallpaperToDriveFs(
     const AccountId& account_id,
-    const base::FilePath& origin) {
+    const base::FilePath& origin,
+    base::OnceCallback<void(bool)> wallpaper_saved_callback) {
   Profile* profile = ProfileHelper::Get()->GetProfileByAccountId(account_id);
   base::FilePath destination_directory = GetDriveFsWallpaperDir(profile);
-  if (destination_directory.empty())
-    return false;
-
-  if (!base::DirectoryExists(destination_directory) &&
-      !base::CreateDirectory(destination_directory)) {
-    return false;
-  }
-
-  std::string temp_file_name =
-      base::UnguessableToken::Create().ToString().append(
-          kDriveFsTempWallpaperFileName);
-  base::FilePath temp_destination =
-      destination_directory.Append(temp_file_name);
-  if (!base::CopyFile(origin, temp_destination)) {
-    base::DeleteFile(temp_destination);
-    return false;
-  }
-
-  base::FilePath destination =
-      destination_directory.Append(kDriveFsWallpaperFileName);
-  bool success = base::ReplaceFile(temp_destination, destination, nullptr);
-  base::DeleteFile(temp_destination);
-  return success;
+  io_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&SaveWallpaperToDriveFsIOTaskRunner, origin,
+                     destination_directory),
+      std::move(wallpaper_saved_callback));
 }
 
 base::FilePath WallpaperControllerClientImpl::GetWallpaperPathFromDriveFs(
@@ -538,9 +554,8 @@ bool WallpaperControllerClientImpl::IsWallpaperSyncEnabled(
     return false;
   if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
     // If in client use profile otherwise use GetUserPrefServiceSyncable.
-    return sync_service->GetUserSettings()->IsOsSyncFeatureEnabled() &&
-           profile->GetPrefs()->GetBoolean(
-               chromeos::settings::prefs::kSyncOsWallpaper);
+    return profile->GetPrefs()->GetBoolean(
+        chromeos::settings::prefs::kSyncOsWallpaper);
   }
   return sync_service->CanSyncFeatureStart() &&
          sync_service->GetUserSettings()->GetSelectedTypes().Has(
@@ -712,14 +727,14 @@ void WallpaperControllerClientImpl::FetchDailyRefreshWallpaper(
 void WallpaperControllerClientImpl::FetchImagesForCollection(
     const std::string& collection_id,
     FetchImagesForCollectionCallback callback) {
-  DCHECK(!images_info_fetcher_);
-  images_info_fetcher_ =
+  auto images_info_fetcher =
       std::make_unique<wallpaper_handlers::BackdropImageInfoFetcher>(
           collection_id);
-
-  images_info_fetcher_->Start(
+  auto* images_info_fetcher_ptr = images_info_fetcher.get();
+  images_info_fetcher_ptr->Start(
       base::BindOnce(&WallpaperControllerClientImpl::OnFetchImagesForCollection,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(images_info_fetcher)));
 }
 
 bool WallpaperControllerClientImpl::ShouldShowUserNamesOnLogin() const {
@@ -766,11 +781,11 @@ void WallpaperControllerClientImpl::OnDailyImageInfoFetched(
 
 void WallpaperControllerClientImpl::OnFetchImagesForCollection(
     FetchImagesForCollectionCallback callback,
+    std::unique_ptr<wallpaper_handlers::BackdropImageInfoFetcher> fetcher,
     bool success,
     const std::string& collection_id,
     const std::vector<backdrop::Image>& images) {
   std::move(callback).Run(success, std::move(images));
-  images_info_fetcher_.reset();
 }
 
 void WallpaperControllerClientImpl::ObserveVolumeManagerForAccountId(

@@ -11,12 +11,12 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/intent_constants.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
@@ -32,6 +32,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "ui/webui/resources/cr_components/app_management/app_management.mojom.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/session/connection_holder.h"
@@ -42,12 +43,12 @@ using apps::mojom::OptionalBool;
 
 namespace {
 
-constexpr char const* kAppIdsWithHiddenMoreSettings[] = {
+const char* kAppIdsWithHiddenMoreSettings[] = {
     extensions::kWebStoreAppId,
     extension_misc::kFilesManagerAppId,
 };
 
-constexpr char const* kAppIdsWithHiddenPinToShelf[] = {
+const char* kAppIdsWithHiddenPinToShelf[] = {
     extension_misc::kChromeAppId,
     extension_misc::kLacrosAppId,
 };
@@ -260,6 +261,17 @@ void AppManagementPageHandler::GetOverlappingPreferredApps(
   // apps that overlap.
   app_ids.erase(apps::kUseBrowserForLink);
   std::move(callback).Run(std::move(app_ids).extract());
+}
+
+void AppManagementPageHandler::SetWindowMode(
+    const std::string& app_id,
+    apps::mojom::WindowMode window_mode) {
+#if BUILDFLAG(IS_CHROMEOS)
+  NOTREACHED();
+#else
+  apps::AppServiceProxyFactory::GetForProfile(profile_)->SetWindowMode(
+      app_id, std::move(window_mode));
+#endif
 }
 
 app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(

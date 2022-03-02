@@ -205,13 +205,12 @@ class CompositorFrameReportingControllerTest : public testing::Test {
     breakdown->layout_update = base::Microseconds(7);
     breakdown->compositing_inputs = base::Microseconds(6);
     breakdown->prepaint = base::Microseconds(5);
-    breakdown->compositing_assignments = base::Microseconds(4);
     breakdown->paint = base::Microseconds(3);
     breakdown->composite_commit = base::Microseconds(2);
     breakdown->update_layers = base::Microseconds(1);
 
     // Advance now by the sum of the breakdowns.
-    AdvanceNowByMs(10 + 9 + 8 + 7 + 6 + 5 + 4 + 3 + 2 + 1);
+    AdvanceNowByMs(10 + 9 + 8 + 7 + 6 + 5 + 3 + 2 + 1);
 
     return breakdown;
   }
@@ -236,14 +235,8 @@ class CompositorFrameReportingControllerTest : public testing::Test {
     return test_tick_clock_.NowTicks();
   }
 
-  std::unique_ptr<EventMetrics> CreateEventMetrics(
-      ui::EventType type,
-      absl::optional<EventMetrics::GestureParams> gesture_params =
-          absl::nullopt) {
-    const base::TimeTicks event_time = AdvanceNowByMs(10);
-    AdvanceNowByMs(10);
-    std::unique_ptr<EventMetrics> metrics = EventMetrics::CreateForTesting(
-        type, gesture_params, event_time, &test_tick_clock_);
+  std::unique_ptr<EventMetrics> SetupEventMetrics(
+      std::unique_ptr<EventMetrics> metrics) {
     if (metrics) {
       AdvanceNowByMs(10);
       metrics->SetDispatchStageTimestamp(
@@ -253,6 +246,40 @@ class CompositorFrameReportingControllerTest : public testing::Test {
           EventMetrics::DispatchStage::kRendererCompositorFinished);
     }
     return metrics;
+  }
+
+  std::unique_ptr<EventMetrics> CreateEventMetrics(ui::EventType type) {
+    const base::TimeTicks event_time = AdvanceNowByMs(10);
+    AdvanceNowByMs(10);
+    return SetupEventMetrics(
+        EventMetrics::CreateForTesting(type, event_time, &test_tick_clock_));
+  }
+
+  std::unique_ptr<EventMetrics> CreateScrollBeginEventMetrics() {
+    const base::TimeTicks event_time = AdvanceNowByMs(10);
+    AdvanceNowByMs(10);
+    return SetupEventMetrics(ScrollEventMetrics::CreateForTesting(
+        ui::ET_GESTURE_SCROLL_BEGIN, ui::ScrollInputType::kWheel,
+        /*is_inertial=*/false, event_time, &test_tick_clock_));
+  }
+
+  std::unique_ptr<EventMetrics> CreateScrollUpdateEventMetrics(
+      bool is_inertial,
+      ScrollUpdateEventMetrics::ScrollUpdateType scroll_update_type) {
+    const base::TimeTicks event_time = AdvanceNowByMs(10);
+    AdvanceNowByMs(10);
+    return SetupEventMetrics(ScrollUpdateEventMetrics::CreateForTesting(
+        ui::ET_GESTURE_SCROLL_UPDATE, ui::ScrollInputType::kWheel, is_inertial,
+        scroll_update_type, /*delta=*/10.0f, event_time, &test_tick_clock_));
+  }
+
+  std::unique_ptr<EventMetrics> CreatePinchEventMetrics(
+      ui::EventType type,
+      ui::ScrollInputType input_type) {
+    const base::TimeTicks event_time = AdvanceNowByMs(10);
+    AdvanceNowByMs(10);
+    return SetupEventMetrics(PinchEventMetrics::CreateForTesting(
+        type, input_type, event_time, &test_tick_clock_));
   }
 
   std::vector<base::TimeTicks> GetEventTimestamps(
@@ -993,9 +1020,6 @@ TEST_F(CompositorFrameReportingControllerTest, BlinkBreakdown) {
       "CompositorLatency.SendBeginMainFrameToCommit.Prepaint",
       base::Microseconds(5).InMilliseconds(), 1);
   histogram_tester.ExpectUniqueSample(
-      "CompositorLatency.SendBeginMainFrameToCommit.CompositingAssignments",
-      base::Microseconds(4).InMilliseconds(), 1);
-  histogram_tester.ExpectUniqueSample(
       "CompositorLatency.SendBeginMainFrameToCommit.Paint",
       base::Microseconds(3).InMilliseconds(), 1);
   histogram_tester.ExpectUniqueSample(
@@ -1219,22 +1243,16 @@ TEST_F(CompositorFrameReportingControllerTest,
   const bool kScrollIsInertial = true;
   const bool kScrollIsNotInertial = false;
   std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
-      CreateEventMetrics(
-          ui::ET_GESTURE_SCROLL_BEGIN,
-          EventMetrics::GestureParams(ui::ScrollInputType::kWheel,
-                                      kScrollIsNotInertial)),
-      CreateEventMetrics(ui::ET_GESTURE_SCROLL_UPDATE,
-                         EventMetrics::GestureParams(
-                             ui::ScrollInputType::kWheel, kScrollIsNotInertial,
-                             EventMetrics::ScrollUpdateType::kStarted)),
-      CreateEventMetrics(ui::ET_GESTURE_SCROLL_UPDATE,
-                         EventMetrics::GestureParams(
-                             ui::ScrollInputType::kWheel, kScrollIsNotInertial,
-                             EventMetrics::ScrollUpdateType::kContinued)),
-      CreateEventMetrics(ui::ET_GESTURE_SCROLL_UPDATE,
-                         EventMetrics::GestureParams(
-                             ui::ScrollInputType::kWheel, kScrollIsInertial,
-                             EventMetrics::ScrollUpdateType::kContinued)),
+      CreateScrollBeginEventMetrics(),
+      CreateScrollUpdateEventMetrics(
+          kScrollIsNotInertial,
+          ScrollUpdateEventMetrics::ScrollUpdateType::kStarted),
+      CreateScrollUpdateEventMetrics(
+          kScrollIsNotInertial,
+          ScrollUpdateEventMetrics::ScrollUpdateType::kContinued),
+      CreateScrollUpdateEventMetrics(
+          kScrollIsInertial,
+          ScrollUpdateEventMetrics::ScrollUpdateType::kContinued),
   };
   EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
   EventMetrics::List events_metrics(
@@ -1322,18 +1340,14 @@ TEST_F(CompositorFrameReportingControllerTest,
   base::HistogramTester histogram_tester;
 
   std::unique_ptr<EventMetrics> event_metrics_ptrs[] = {
-      CreateEventMetrics(
-          ui::ET_GESTURE_PINCH_BEGIN,
-          EventMetrics::GestureParams(ui::ScrollInputType::kWheel)),
-      CreateEventMetrics(
-          ui::ET_GESTURE_PINCH_UPDATE,
-          EventMetrics::GestureParams(ui::ScrollInputType::kWheel)),
-      CreateEventMetrics(
-          ui::ET_GESTURE_PINCH_BEGIN,
-          EventMetrics::GestureParams(ui::ScrollInputType::kTouchscreen)),
-      CreateEventMetrics(
-          ui::ET_GESTURE_PINCH_UPDATE,
-          EventMetrics::GestureParams(ui::ScrollInputType::kTouchscreen)),
+      CreatePinchEventMetrics(ui::ET_GESTURE_PINCH_BEGIN,
+                              ui::ScrollInputType::kWheel),
+      CreatePinchEventMetrics(ui::ET_GESTURE_PINCH_UPDATE,
+                              ui::ScrollInputType::kWheel),
+      CreatePinchEventMetrics(ui::ET_GESTURE_PINCH_BEGIN,
+                              ui::ScrollInputType::kTouchscreen),
+      CreatePinchEventMetrics(ui::ET_GESTURE_PINCH_UPDATE,
+                              ui::ScrollInputType::kTouchscreen),
   };
   EXPECT_THAT(event_metrics_ptrs, Each(NotNull()));
   EventMetrics::List events_metrics(

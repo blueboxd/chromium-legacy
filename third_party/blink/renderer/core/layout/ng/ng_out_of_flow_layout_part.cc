@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_placement.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
@@ -112,8 +113,8 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
   // items to be placed in grid areas, which is complex to maintain a cache for.
   const NGBoxStrut border_scrollbar =
       container_builder->Borders() + container_builder->Scrollbar();
-  allow_first_tier_oof_cache_ =
-      border_scrollbar.IsEmpty() && !is_grid_container;
+  allow_first_tier_oof_cache_ = border_scrollbar.IsEmpty() &&
+                                !is_grid_container && !has_block_fragmentation_;
   default_containing_block_info_for_absolute_.writing_direction =
       default_writing_direction_;
   default_containing_block_info_for_fixed_.writing_direction =
@@ -325,6 +326,9 @@ void NGOutOfFlowLayoutPart::HandleFragmentation() {
       has_block_fragmentation_)
     return;
 
+  // Don't use the cache if we are handling fragmentation.
+  allow_first_tier_oof_cache_ = false;
+
   while (container_builder_->HasOutOfFlowFragmentainerDescendants() ||
          container_builder_->HasMulticolsWithPendingOOFs()) {
     HandleMulticolsWithPendingOOFs(container_builder_);
@@ -373,11 +377,13 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
           candidate.Node(), container_style,
           default_writing_direction_.GetWritingMode());
 
+      NGGridPlacement grid_placement(
+          container_style,
+          To<LayoutNGGrid>(container_object)->CachedPlacementData());
+
       return {default_writing_direction_,
               NGGridLayoutAlgorithm::ComputeOutOfFlowItemContainingRect(
-                  container_style,
-                  To<LayoutNGGrid>(container_object)->CachedPlacementData(),
-                  container_builder_->GridLayoutData(),
+                  grid_placement, container_builder_->GridLayoutData(),
                   container_builder_->Borders(),
                   container_builder_->InitialBorderBoxSize(),
                   container_builder_->FragmentsTotalBlockSize(), &grid_item)};
@@ -926,17 +932,27 @@ void NGOutOfFlowLayoutPart::LayoutOOFsInMulticol(
           static_position,
           inline_container,
           /* needs_block_offset_adjustment */ false,
-          NGContainingBlock<LogicalOffset>(containing_block_offset,
-                                           containing_block_rel_offset,
-                                           containing_block_fragment),
-          NGContainingBlock<LogicalOffset>(fixedpos_containing_block_offset,
-                                           fixedpos_containing_block_rel_offset,
-                                           fixedpos_containing_block_fragment)};
+          NGContainingBlock<LogicalOffset>(
+              containing_block_offset, containing_block_rel_offset,
+              containing_block_fragment,
+              descendant.containing_block.is_inside_column_spanner),
+          NGContainingBlock<LogicalOffset>(
+              fixedpos_containing_block_offset,
+              fixedpos_containing_block_rel_offset,
+              fixedpos_containing_block_fragment,
+              descendant.fixedpos_containing_block.is_inside_column_spanner)};
       oof_nodes_to_layout.push_back(node);
     }
     previous_multicol_break_token = break_token;
   }
-  DCHECK(!oof_nodes_to_layout.IsEmpty());
+  // When an OOF's CB is a spanner (or a descendant of a spanner), we will lay
+  // out the OOF at the next fragmentation context root ancestor. As such, we
+  // remove any such OOF nodes from the nearest multicol's list of OOF
+  // descendants during OOF node propagation, which may cause
+  // |oof_nodes_to_layout| to be empty. Return early if this is the case.
+  if (oof_nodes_to_layout.IsEmpty())
+    return;
+
   DCHECK(!limited_multicol_container_builder
               .HasOutOfFlowFragmentainerDescendants());
 
@@ -1082,6 +1098,8 @@ void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
           descendant.containing_block.fragment.get();
       node_to_layout.offset_info.original_offset =
           node_to_layout.offset_info.offset;
+
+      DCHECK(node_to_layout.offset_info.block_estimate);
 
       // Determine in which fragmentainer this OOF element will start its layout
       // and adjust the offset to be relative to that fragmentainer.
@@ -1260,11 +1278,26 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutOOFNode(
       PaintLayerScrollableArea::FreezeScrollbarsRootScope freezer(
           *node_info.node.GetLayoutBox(), freeze_horizontal, freeze_vertical);
 
-      // The offset itself does not need to be recalculated. However, the
-      // |node_dimensions| and |initial_layout_result| may need to be updated,
-      // so recompute the OffsetInfo.
-      offset_info = CalculateOffset(node_info, only_layout,
-                                    /* is_first_run */ false);
+      if (!IsResumingLayout(oof_node_to_layout.break_token)) {
+        // The offset itself does not need to be recalculated. However, the
+        // |node_dimensions| and |initial_layout_result| may need to be updated,
+        // so recompute the OffsetInfo.
+        //
+        // Only do this if we're currently building the first fragment of the
+        // OOF. If we're resuming after a fragmentainer break, we can't update
+        // our intrinsic inline-size. First of all, the intrinsic inline-size
+        // should be the same across all fragments [1], and besides, this
+        // operation would lead to performing a non-fragmented layout pass (to
+        // measure intrinsic block-size; see IntrinsicBlockSizeFunc in
+        // ComputeOutOfFlowBlockDimensions()), which in turn would overwrite the
+        // result of the first fragment entry in LayoutBox without a break
+        // token, causing major confusion everywhere.
+        //
+        // [1] https://drafts.csswg.org/css-break/#varying-size-boxes
+        offset_info = CalculateOffset(node_info, only_layout,
+                                      /* is_first_run */ false);
+      }
+
       layout_result =
           Layout(oof_node_to_layout, fragmentainer_constraint_space);
 
@@ -1713,14 +1746,8 @@ void NGOutOfFlowLayoutPart::ReplaceFragmentainer(
     LogicalOffset offset,
     bool create_new_fragment,
     NGSimplifiedOOFLayoutAlgorithm* algorithm) {
-  const NGBlockNode& node = container_builder_->Node();
-  const auto& fragmentainer = container_builder_->Children()[index];
-  const NGPhysicalBoxFragment& fragment =
-      To<NGPhysicalBoxFragment>(*fragmentainer.fragment.get());
-
   if (create_new_fragment) {
     scoped_refptr<const NGLayoutResult> new_result = algorithm->Layout();
-    node.AddColumnResult(new_result);
     container_builder_->AddChild(
         new_result->PhysicalFragment(), offset,
         /* margin_strut */ nullptr, /* is_self_collapsing */ false,
@@ -1729,7 +1756,6 @@ void NGOutOfFlowLayoutPart::ReplaceFragmentainer(
         /* adjustment_for_oof_propagation */ absl::nullopt);
   } else {
     scoped_refptr<const NGLayoutResult> new_result = algorithm->Layout();
-    node.ReplaceColumnResult(new_result, fragment);
     const NGPhysicalFragment* new_fragment = &new_result->PhysicalFragment();
     container_builder_->ReplaceChild(index, *new_fragment, offset);
 
@@ -1918,16 +1944,61 @@ void NGOutOfFlowLayoutPart::ReplaceFragment(
   LayoutBox& box = *old_fragment.MutableOwnerLayoutBox();
   box.ReplaceLayoutResult(new_result, index);
 
-  // Replace the entry in the parent fragment.
-  const LayoutBlock& containing_block = *box.ContainingBlock();
-  for (const auto& parent_fragment : containing_block.PhysicalFragments()) {
+  // Replace the entry in the parent fragment. Locating the parent fragment
+  // isn't straight-forward if the containing block is a multicol container.
+  LayoutBlock* containing_block = box.ContainingNGBlock();
+
+  // Replace the old fragment with the new one, if it's inside |parent|.
+  auto ReplaceChild = [&new_result, &old_fragment](
+                          const NGPhysicalBoxFragment& parent) -> bool {
     for (NGLink& child_link :
-         parent_fragment.GetMutableChildrenForOutOfFlow().Children()) {
-      if (child_link.fragment == &old_fragment) {
-        child_link.fragment->Release();
-        child_link.fragment = &new_result->PhysicalFragment();
-        child_link.fragment->AddRef();
+         parent.GetMutableChildrenForOutOfFlow().Children()) {
+      if (child_link.fragment != &old_fragment)
+        continue;
+      child_link.fragment->Release();
+      child_link.fragment = &new_result->PhysicalFragment();
+      child_link.fragment->AddRef();
+      return true;
+    }
+    return false;
+  };
+
+  // Replace the old fragment with the new one, if |multicol_child| is a
+  // fragmentainer and has the old fragment as a child.
+  auto ReplaceFragmentainerChild =
+      [ReplaceChild](const NGPhysicalFragment& multicol_child) -> bool {
+    // We're going to replace a child of a fragmentainer. First check if it's a
+    // fragmentainer at all.
+    if (!multicol_child.IsFragmentainerBox())
+      return false;
+    const auto& fragmentainer = To<NGPhysicalBoxFragment>(multicol_child);
+    // Then search and replace inside the fragmentainer.
+    return ReplaceChild(fragmentainer);
+  };
+
+  if (!containing_block->IsFragmentationContextRoot()) {
+    // Simply search inside child fragments of the containing block.
+    DCHECK_NE(containing_block, container_builder_->GetLayoutObject());
+    for (const auto& parent_fragment : containing_block->PhysicalFragments()) {
+      if (ReplaceChild(parent_fragment))
         return;
+    }
+  } else if (containing_block == container_builder_->GetLayoutObject()) {
+    // We're currently laying out |containing_block|, and it's a multicol
+    // container. Search inside fragmentainer children in the builder.
+    for (const NGContainerFragmentBuilder::ChildWithOffset& child :
+         container_builder_->Children()) {
+      if (ReplaceFragmentainerChild(*child.fragment))
+        return;
+    }
+  } else {
+    // |containing_block| has already been laid out, and it's a multicol
+    // container. Search inside fragmentainer children of the fragments
+    // generated for the containing block.
+    for (const auto& multicol : containing_block->PhysicalFragments()) {
+      for (const auto& child : multicol.Children()) {
+        if (ReplaceFragmentainerChild(*child.fragment))
+          return;
       }
     }
   }

@@ -4,14 +4,13 @@
 
 #include "remoting/host/remote_open_url/remote_open_url_constants.h"
 
-#include "base/no_destructor.h"
 #include "build/build_config.h"
 
 namespace remoting {
 
 const char kRemoteOpenUrlDataChannelName[] = "remote-open-url";
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 
 #if defined(OFFICIAL_BUILD)
 const wchar_t kUrlForwarderProgId[] = L"ChromeRemoteDesktopUrlForwarder";

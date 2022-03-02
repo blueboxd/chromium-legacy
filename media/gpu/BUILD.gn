@@ -185,6 +185,7 @@ component("gpu") {
       "windows/d3d11_h264_accelerator.h",
       "windows/d3d11_picture_buffer.cc",
       "windows/d3d11_picture_buffer.h",
+      "windows/d3d11_status.cc",
       "windows/d3d11_status.h",
       "windows/d3d11_texture_selector.cc",
       "windows/d3d11_texture_selector.h",
@@ -209,8 +210,6 @@ component("gpu") {
       "windows/dxva_picture_buffer_win.h",
       "windows/dxva_video_decode_accelerator_win.cc",
       "windows/dxva_video_decode_accelerator_win.h",
-      "windows/hresult_status_debug_device.cc",
-      "windows/hresult_status_debug_device.h",
       "windows/init_guid.cc",
       "windows/media_foundation_video_encode_accelerator_win.cc",
       "windows/media_foundation_video_encode_accelerator_win.h",
@@ -221,7 +220,6 @@ component("gpu") {
     public_deps += [ "//media/base/win:media_foundation_util" ]
     deps += [
       "//gpu/ipc/common:common",
-      "//media/base/win:hresult_status_helper",
       "//media/parsers",
       "//third_party/angle:includes",
       "//ui/display",
@@ -313,6 +311,16 @@ source_set("common") {
     "//ui/gfx/geometry",
   ]
 
+  if (is_win || use_vaapi) {
+    sources += [
+      "vp9_svc_layers.cc",
+      "vp9_svc_layers.h",
+      "vpx_rate_control.cc",
+      "vpx_rate_control.h",
+    ]
+    configs += [ "//third_party/libvpx:libvpx_config" ]
+    deps += [ "//third_party/libvpx:libvpxrc" ]
+  }
   if (use_libgav1_parser) {
     sources += [
       "av1_decoder.cc",
@@ -529,6 +537,10 @@ source_set("unit_tests") {
   if (is_mac) {
     deps += [ "//media/gpu/mac:unit_tests" ]
   }
+
+  if (is_win || use_vaapi) {
+    sources += [ "vp9_svc_layers_unittest.cc" ]
+  }
 }
 
 # TODO(crbug.com/1006266): consider using |use_chromeos_video_acceleration|.
@@ -573,6 +585,7 @@ if (use_v4l2_codec || use_vaapi) {
     data = [ "//media/test/data/" ]
     deps = [
       ":buildflags",
+      ":common",
       "test:frame_file_writer",
       "test:frame_validator",
       "test:helpers",
@@ -590,6 +603,7 @@ if (use_v4l2_codec || use_vaapi) {
     data = [ "//media/test/data/" ]
     deps = [
       ":buildflags",
+      ":common",
       "test:frame_validator",
       "test:helpers",
       "test:test_helpers",

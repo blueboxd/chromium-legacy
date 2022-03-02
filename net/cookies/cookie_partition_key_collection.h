@@ -8,10 +8,11 @@
 #include <vector>
 
 #include "net/base/net_export.h"
-#include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_partition_key.h"
 
 namespace net {
+
+class CookieAccessDelegate;
 
 // A data structure used to represent a collection of cookie partition keys.
 //
@@ -23,7 +24,7 @@ namespace net {
 class NET_EXPORT CookiePartitionKeyCollection {
  public:
   // Creates an empty key collection.
-  explicit CookiePartitionKeyCollection();
+  CookiePartitionKeyCollection();
   CookiePartitionKeyCollection(const CookiePartitionKeyCollection& other);
   CookiePartitionKeyCollection(CookiePartitionKeyCollection&& other);
   // Creates a key collection with a single element.
@@ -81,8 +82,11 @@ class NET_EXPORT CookiePartitionKeyCollection {
     return keys_;
   }
 
+  // Returns true if the collection contains the passed key.
+  bool Contains(const CookiePartitionKey& key) const;
+
  private:
-  explicit CookiePartitionKeyCollection(bool contains_all_keys_);
+  explicit CookiePartitionKeyCollection(bool contains_all_keys);
 
   bool contains_all_keys_ = false;
   // If `contains_all_keys_` is true, `keys_` must be empty.

@@ -88,10 +88,17 @@ void WebStateImpl::RealizedWebState::Init(const CreateParams& params,
     DCHECK(certificate_policy_cache_);
     certificate_policy_cache_->UpdateCertificatePolicyCache(
         web::BrowserState::GetCertificatePolicyCache(params.browser_state));
+
+    // Load the stable identifier. Must not be empty or nil.
+    DCHECK(session_storage.stableIdentifier.length);
+    stable_identifier_ = [session_storage.stableIdentifier copy];
   } else {
     certificate_policy_cache_ =
         std::make_unique<SessionCertificatePolicyCacheImpl>(
             params.browser_state);
+
+    // Generate a random stable identifier. Ensure it is immutable.
+    stable_identifier_ = [[[NSUUID UUID] UUIDString] copy];
   }
 }
 
@@ -371,11 +378,7 @@ UIView* WebStateImpl::RealizedWebState::GetWebViewContainer() {
 UserAgentType WebStateImpl::RealizedWebState::GetUserAgentForNextNavigation(
     const GURL& url) {
   if (user_agent_type_ == UserAgentType::AUTOMATIC) {
-    UIView* container = GetWebViewContainer();
-    if (!container) {
-      container = GetView();
-    }
-    return GetWebClient()->GetDefaultUserAgent(container, url);
+    return GetWebClient()->GetDefaultUserAgent(owner_, url);
   }
   return user_agent_type_;
 }
@@ -469,7 +472,11 @@ void WebStateImpl::RealizedWebState::OnAuthRequired(
 void WebStateImpl::RealizedWebState::WebFrameBecameAvailable(
     std::unique_ptr<WebFrame> frame) {
   WebFrame* frame_ptr = frame.get();
-  GetWebFramesManager().AddFrame(std::move(frame));
+  bool success = GetWebFramesManager().AddFrame(std::move(frame));
+  if (!success) {
+    // Frame was not added, do not notify observers.
+    return;
+  }
 
   for (auto& observer : observers())
     observer.WebFrameDidBecomeAvailable(owner_, frame_ptr);
@@ -555,6 +562,10 @@ BrowserState* WebStateImpl::RealizedWebState::GetBrowserState() const {
   return navigation_manager_->GetBrowserState();
 }
 
+NSString* WebStateImpl::RealizedWebState::GetStableIdentifier() const {
+  return [stable_identifier_ copy];
+}
+
 void WebStateImpl::RealizedWebState::OpenURL(
     const WebState::OpenURLParams& params) {
   DCHECK(Configured());
@@ -574,13 +585,11 @@ void WebStateImpl::RealizedWebState::Stop() {
 CRWSessionStorage* WebStateImpl::RealizedWebState::BuildSessionStorage() {
   [web_controller_ recordStateInHistory];
   if (restored_session_storage_) {
-    // UserData can be updated in an uncommitted WebState. Even
-    // if a WebState hasn't been restored, its opener value may have changed.
-    std::unique_ptr<SerializableUserData> serializable_user_data =
+    // UserData can be updated in an uncommitted WebState. Even if a WebState
+    // hasn't been restored, its opener value may have changed.
+    restored_session_storage_.userData =
         SerializableUserDataManager::FromWebState(owner_)
-            ->CreateSerializableUserData();
-    [restored_session_storage_
-        setSerializableUserData:std::move(serializable_user_data)];
+            ->GetUserDataForSession();
     return restored_session_storage_;
   }
   return SessionStorageBuilder::BuildStorage(*owner_, *navigation_manager_,
@@ -662,6 +671,19 @@ bool WebStateImpl::RealizedWebState::IsCrashed() const {
 
 bool WebStateImpl::RealizedWebState::IsEvicted() const {
   return ![web_controller_ isViewAlive];
+}
+
+const FaviconStatus& WebStateImpl::RealizedWebState::GetFaviconStatus() const {
+  static const FaviconStatus missing_favicon_status;
+  NavigationItem* item = navigation_manager_->GetLastCommittedItem();
+  return item ? item->GetFaviconStatus() : missing_favicon_status;
+}
+
+void WebStateImpl::RealizedWebState::SetFaviconStatus(
+    const FaviconStatus& favicon_status) {
+  NavigationItem* item = navigation_manager_->GetLastCommittedItem();
+  if (item)
+    item->SetFaviconStatus(favicon_status);
 }
 
 const GURL& WebStateImpl::RealizedWebState::GetVisibleURL() const {
@@ -756,6 +778,10 @@ void WebStateImpl::RealizedWebState::CreateFullPagePdf(
       }];
 }
 
+void WebStateImpl::RealizedWebState::CloseMediaPresentations() {
+  [web_controller_ closeMediaPresentations];
+}
+
 void WebStateImpl::RealizedWebState::CloseWebState() {
   if (delegate_) {
     delegate_->CloseWebState(owner_);
@@ -795,6 +821,24 @@ NSData* WebStateImpl::RealizedWebState::SessionStateData() const {
   }
 
   return [web_controller_ sessionStateData];
+}
+
+PermissionState WebStateImpl::RealizedWebState::GetStateForPermission(
+    Permission permission) const {
+  return [web_controller_ stateForPermission:permission];
+}
+
+void WebStateImpl::RealizedWebState::SetStateForPermission(
+    PermissionState state,
+    Permission permission) {
+  [web_controller_ setState:state forPermission:permission];
+}
+
+void WebStateImpl::RealizedWebState::OnStateChangedForPermission(
+    Permission permission) {
+  for (auto& observer : observers()) {
+    observer.PermissionStateChanged(owner_, permission);
+  }
 }
 
 #pragma mark - NavigationManagerDelegate implementation

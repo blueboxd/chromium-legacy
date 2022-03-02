@@ -1603,6 +1603,676 @@ should be able to be added at any place in this file.
   <description>A Chrome OS user manually starts Select To Speak.</description>
 </action>
 
+<action name="Accessibility.CrosSwitchAccess.MenuAction.ActionRecorder">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to open the
+    action recorder submenu.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.Copy">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to copy the
+    selected text.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.Cut">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to cut the
+    selected text.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.Decrement">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to decrement
+    the selected input.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.Dictation">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to dictate into
+    the focused input.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.DisplayBrightnessDown">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to turn down
+    brightness.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.DisplayBrightnessUp">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to turn up
+    brightness.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.DisplayMenu">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to open the
+    display submenu.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.DisplayMirror">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to mirror
+    display.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.DisplayRotate">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to rotate
+    screen.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.DisplayZoomIn">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to zoom in.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.DisplayZoomOut">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to zoom out.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.EndTextSelection">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to stop
+    changing the text selection.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.ExecuteMacro">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to execute the
+    recorded macro.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.Increment">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to increment
+    the selected input.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.ItemScan">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to begin
+    scanning through items on-screen.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.JumpToBeginningOfText">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to move the
+    cursor to the beginning of the text.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.JumpToEndOfText">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to move the
+    cursor to the end of the text.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.Keyboard">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to open the
+    onscreen keyboard.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.LeaveGroup">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to leave the
+    current group.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.LeftClick">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to left click
+    the location targetted by Point Scan.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.MediaFastforward">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to fastforward.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.MediaMenu">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to open the
+    media submenu.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.MediaMute">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to mute the
+    device's volume.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.MediaPlayPause">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to play or
+    pause media.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.MediaRewind">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to rewind
+    media.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.MediaVolumeDown">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to turn volume
+    down.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.MediaVolumeUp">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to turn volume
+    up.
+  </description>
+</action>
+
+<action
+    name="Accessibility.CrosSwitchAccess.MenuAction.MoveBackwardOneCharOfText">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to move the
+    cursor backward one character of text.
+  </description>
+</action>
+
+<action
+    name="Accessibility.CrosSwitchAccess.MenuAction.MoveBackwardOneWordOfText">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to move the
+    cursor backward one word of text.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.MoveCursor">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to start moving
+    the cursor.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.MoveDownOneLineOfText">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to move the
+    cursor down one line of text.
+  </description>
+</action>
+
+<action
+    name="Accessibility.CrosSwitchAccess.MenuAction.MoveForwardOneCharOfText">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to move the
+    cursor forward one character of text.
+  </description>
+</action>
+
+<action
+    name="Accessibility.CrosSwitchAccess.MenuAction.MoveForwardOneWordOfText">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to move the
+    cursor forward one word of text.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.MoveUpOneLineOfText">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to move the
+    cursor up one line of text.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.Paste">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to paste into
+    the text field.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.PointScan">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to start point
+    scanning.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.RightClick">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to right click
+    the location targetted by Point Scan.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.ScrollDown">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to scroll the
+    selected view down.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.ScrollLeft">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to scroll the
+    selected view left.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.ScrollRight">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to scroll the
+    selected view right.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.ScrollUp">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to scroll the
+    selected view up.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.Select">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to activate the
+    currently selected item.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.Settings">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to open the
+    Switch Access settings page.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.Shortcuts">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to open the
+    shortcuts submenu.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.StartRecording">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to start
+    recording a macro.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.StartTextSelection">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to start
+    selecting text.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.StopRecording">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to stop
+    recording a macro.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.SystemDiagnostics">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to open
+    diagnostics.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.SystemHelp">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to open the
+    system help page.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.SystemLauncher">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to jump to the
+    launcher.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.SystemMenu">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to open the
+    system submenu.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.SystemScreenshot">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to take a
+    screenshot.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.SystemStatusBar">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to jump to the
+    status area.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.SystemTaskManager">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to open task
+    manager.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.UserLock">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to locks the
+    device.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.UserMenu">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to open the
+    user submenu.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.UserNextUser">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to go to next
+    user.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.UserPreviousUser">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to go to
+    previous user.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.UserSignOut">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to sign out.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.WebBookmark">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to bookmark a
+    page.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.WebBottomOfPage">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to jump to
+    bottom of page.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.WebClearHistory">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to clear
+    history.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.WebDownloads">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to open
+    downloads.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.WebFindInPage">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to find in
+    page.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.WebMenu">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to open the web
+    submenu.
+  </description>
+</action>
+
+<action name="Accessibility.CrosSwitchAccess.MenuAction.WebTopOfPage">
+  <owner>anastasi@google.com</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>ui/accessibility/OWNERS</owner>
+  <description>
+    Recorded when the user selects the Switch Access menu action to jump to top
+    of page.
+  </description>
+</action>
+
 <action name="Accessibility.NativeApi.DoDefault">
   <owner>aleventhal@chromium.org</owner>
   <owner>dtseng@chromium.org</owner>
@@ -2649,6 +3319,29 @@ should be able to be added at any place in this file.
     Tab state was merged for Android N+ multi-instance while Chrome was running
     (e.g. user exited multi-window mode and focused one of the Chrome
     activities).
+  </description>
+</action>
+
+<action name="Android.MultiInstance.Enter">
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    Recorded when multiple Chrome instances become visible on the screen at the
+    same time (e.g. two Chrome windows running side-by-side in split-screen
+    mode). Only applicable on Android S. For Android R and below, see
+    Android.MultiWindowMode.MultiInstance.Enter.
+  </description>
+</action>
+
+<action name="Android.MultiInstance.Exit">
+  <owner>jinsukkim@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The number of visible, foreground Chrome instances got down below one, which
+    virtually ends the multi-instance 'session'. This can happen when one of the
+    visible instances or both of them in split-screen mode closed or went to the
+    background, or split-screen mode itself exited so that only a single
+    instance remains visible on screen.
   </description>
 </action>
 
@@ -5522,6 +6215,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ContentSuggestions.Feed.InfiniteFeedTriggered">
+  <obsolete>Deprecated with refactored NTP in August 2021.</obsolete>
   <owner>adamta@google.org</owner>
   <owner>sczs@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -9782,8 +10476,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="IOS.DefaultBrowserPromo.NonModal.Accepted">
-  <owner>javierrobles@chromium.org</owner>
   <owner>rkgibson@google.com</owner>
+  <owner>djean@chromium.org</owner>
   <description>
     The user accepted a non modal promo. This will either take them to the
     settings instructions for default browser ot directly into settings. To
@@ -9793,32 +10487,32 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="IOS.DefaultBrowserPromo.NonModal.Appear">
-  <owner>javierrobles@chromium.org</owner>
   <owner>rkgibson@google.com</owner>
+  <owner>djean@chromium.org</owner>
   <description>
     The user triggered a non modal default promo, and it appeared. iOS only.
   </description>
 </action>
 
 <action name="IOS.DefaultBrowserPromo.NonModal.Dismiss">
-  <owner>javierrobles@chromium.org</owner>
   <owner>rkgibson@google.com</owner>
+  <owner>djean@chromium.org</owner>
   <description>
     The user dismissed explicitly a non modal promo. iOS only.
   </description>
 </action>
 
 <action name="IOS.DefaultBrowserPromo.NonModal.Timeout">
-  <owner>javierrobles@chromium.org</owner>
   <owner>rkgibson@google.com</owner>
+  <owner>djean@chromium.org</owner>
   <description>
     A non modal promo timed out and was dismissed. iOS only.
   </description>
 </action>
 
 <action name="IOS.DefaultBrowserPromo.TailoredFullscreen.Accepted">
-  <owner>javierrobles@chromium.org</owner>
   <owner>rkgibson@google.com</owner>
+  <owner>djean@chromium.org</owner>
   <description>
     The user accepted a tailored browser fullscreen promo modal, and was taken
     to the Settings app. iOS only.
@@ -9826,14 +10520,14 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="IOS.DefaultBrowserPromo.TailoredFullscreen.Appear">
-  <owner>javierrobles@chromium.org</owner>
   <owner>rkgibson@google.com</owner>
+  <owner>djean@chromium.org</owner>
   <description>A tailored fullscren promo appeared. iOS only.</description>
 </action>
 
 <action name="IOS.DefaultBrowserPromo.TailoredFullscreen.Dismiss">
-  <owner>javierrobles@chromium.org</owner>
   <owner>rkgibson@google.com</owner>
+  <owner>djean@chromium.org</owner>
   <description>
     The user dismissed a tailored browser fullscreen promo modal. iOS only.
   </description>
@@ -10145,7 +10839,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="IOSOpenByViewIntent">
-  <owner>javierrobles@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <description>
     User opened Chrome through a view intent, basically anything that opens
@@ -10155,7 +10848,6 @@ should be able to be added at any place in this file.
 
 <action name="IOSPasswordsSettingsCloseWithSwipe">
   <owner>djean@chromium.org</owner>
-  <owner>javierrobles@chromium.org</owner>
   <description>
     Reported when Passwords Settings UI was dismissed using swipe down gesture.
     iOS only.
@@ -14758,14 +15450,16 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ManualFallback_Close">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user closed the Manual Fallback view by tapping the keyboard icon.
   </description>
 </action>
 
 <action name="ManualFallback_ClosePopover">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user closed the Manual Fallback Popover view. This happens when the user
     taps outside the popover.
@@ -14773,7 +15467,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ManualFallback_ClosePull">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user closed the Manual Fallback view by pulling. This happens when the
     user pulls enough to the right, similar to &quot;pull to refresh&quot;.
@@ -14781,7 +15476,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ManualFallback_CreditCard_OpenAddPaymentMethod">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on &quot;Add Payment Method...&quot; on the Password Manual
     Fallback view.
@@ -14789,7 +15485,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ManualFallback_CreditCard_OpenManageCreditCard">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on &quot;Manage credit cards&quot; on the Password Manual
     Fallback view.
@@ -14797,50 +15494,58 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ManualFallback_CreditCard_SelectCardholderName">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on a cardholder name in the Credit Card Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_CreditCard_SelectCardNumber">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on a credit card number in the Credit Card Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_CreditCard_SelectExpirationMonth">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on an expiration month in the Credit Card Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_CreditCard_SelectExpirationYear">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on an expiration year in the Credit Card Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_OpenCreditCard">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>The user opened Credit Card Manual Fallback view.</description>
 </action>
 
 <action name="ManualFallback_OpenPassword">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>The user opened the Password Manual Fallback view.</description>
 </action>
 
 <action name="ManualFallback_OpenProfile">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>The user opened the Profile Manual Fallback view.</description>
 </action>
 
 <action name="ManualFallback_Password_OpenManagePassword">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on &quot;Manage passwords&quot; on the Password Manual
     Fallback view.
@@ -14848,7 +15553,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ManualFallback_Password_OpenOtherPassword">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on &quot;Use other password&quot; on the Password Manual
     Fallback view.
@@ -14856,63 +15562,72 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ManualFallback_Password_SelectPassword">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on a password in the Password Manual Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_Password_SelectUsername">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on a username in the Password Manual Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_Profiles_Address1">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on line 1 in the Address Manual Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_Profiles_Address2">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on line 2 in the Address Manual Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_Profiles_City">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on a city in the Address Manual Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_Profiles_Company">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on a company name in the Address Manual Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_Profiles_Country">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on a country in the Address Manual Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_Profiles_EmailAddress">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on an email address in the Address Manual Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_Profiles_OpenManageProfiles">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on &quot;Manage addresses&quot; on the Password Manual
     Fallback view.
@@ -14920,42 +15635,48 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ManualFallback_Profiles_PhoneNumber">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on a phone number in the Address Manual Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_Profiles_SelectFirstName">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on a first name in the Address Manual Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_Profiles_SelectLastName">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on a last name in the Address Manual Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_Profiles_SelectMiddleName">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on a middle name in the Address Manual Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_Profiles_State">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on a state / province in the Address Manual Fallback view.
   </description>
 </action>
 
 <action name="ManualFallback_Profiles_Zip">
-  <owner>javierrobles@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <owner>olivierrobin@chromium.org</owner>
   <description>
     The user tapped on a zip code in the Address Manual Fallback view.
   </description>
@@ -16657,7 +17378,7 @@ should be able to be added at any place in this file.
 
 <action name="MobileLocationBarTapped">
   <owner>stkhapugin@chromium.org</owner>
-  <owner>rkgibson@chromium.org</owner>
+  <owner>rkgibson@google.com</owner>
   <description>
     The user has tapped location bar, which will focus the omnibox. iOS only.
   </description>
@@ -16856,7 +17577,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileMenuPasswords">
-  <owner>rkgibson@chromium.org</owner>
+  <owner>rkgibson@google.com</owner>
   <description>User pressed 'Passwords' in the app menu.</description>
 </action>
 
@@ -16963,6 +17684,14 @@ should be able to be added at any place in this file.
 <action name="MobileMenuTextZoom">
   <owner>rkgibson@google.com</owner>
   <description>User pressed 'Zoom Text' in the app menu</description>
+</action>
+
+<action name="MobileMenuToolbarMenuTriggered">
+  <owner>gambard@chromium.org</owner>
+  <owner>rkgibson@google.com</owner>
+  <description>
+    User triggered the presentation of a context menu on the toolbar
+  </description>
 </action>
 
 <action name="MobileMenuTranslate">
@@ -17505,7 +18234,8 @@ should be able to be added at any place in this file.
 
 <action name="MobilePasswordsSettingsClose">
   <owner>djean@chromium.org</owner>
-  <owner>javierrobles@chromium.org</owner>
+  <owner>kazinova@google.com</owner>
+  <owner>sczs@chromium.org</owner>
   <description>
     Reported when Passwords Settings UI was dismissed. iOS only.
   </description>
@@ -17568,7 +18298,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobilePullGestureCloseTab">
-  <owner>rkgibson@chromium.org</owner>
+  <owner>rkgibson@google.com</owner>
   <owner>michaeldo@chromium.org</owner>
   <description>
     Emitted on iOS when over-scroll action touch gesture closes current tab.
@@ -17578,7 +18308,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobilePullGestureNewTab">
-  <owner>rkgibson@chromium.org</owner>
+  <owner>rkgibson@google.com</owner>
   <owner>michaeldo@chromium.org</owner>
   <description>
     Emitted on iOS when over-scroll action touch gesture opens a new tab. This
@@ -17588,7 +18318,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobilePullGestureReload">
-  <owner>rkgibson@chromium.org</owner>
+  <owner>rkgibson@google.com</owner>
   <owner>tedchoc@chromium.org</owner>
   <description>
     Emitted on Android and iOS when a pull-to-refresh touch gesture initiates a
@@ -18611,7 +19341,7 @@ should be able to be added at any place in this file.
 <action name="MobileToolbarSearchButtonTapped">
   <obsolete>Deprecate as of 3/2020</obsolete>
   <owner>stkhapugin@chromium.org</owner>
-  <owner>rkgibson@chromium.org</owner>
+  <owner>rkgibson@google.com</owner>
   <description>
     The user has tapped on search bottom toolbar, which will focus the omnibox.
     iOS only.
@@ -19540,6 +20270,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="NewTabPage.PreinstalledApps.Clicked">
+  <obsolete>Removed from code in 2022-01.</obsolete>
   <owner>phillis@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <description>
@@ -19550,6 +20281,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="NewTabPage.Promo.EnhancedProtectionPromo.Accepted">
+  <obsolete>Removed from code in 2021-12.</obsolete>
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <description>
@@ -19558,6 +20290,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="NewTabPage.Promo.EnhancedProtectionPromo.Dismissed">
+  <obsolete>Removed from code in 2021-12.</obsolete>
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <description>
@@ -22506,7 +23239,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="OverscrollActionCloseTab">
-  <owner>rkgibson@chromium.org</owner>
+  <owner>rkgibson@google.com</owner>
   <owner>kkhorimoto@chromium.org</owner>
   <description>
     Called when the user closes the tab using overscroll action.
@@ -24836,6 +25569,140 @@ should be able to be added at any place in this file.
   <description>
     Reported when user navigates to Language Settings. iOS only.
   </description>
+</action>
+
+<action name="Settings.PrivacyGuide.BackClickCompletion">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User clicks the back button on the completion card in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.BackClickCookies">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User clicks the back button on the cookies card in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.BackClickHistorySync">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User clicks the back button on the history sync card in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.BackClickMSBB">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User clicks the back button on the MSBB card in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.BackClickSafeBrowsing">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User clicks the back button on the Safe Browsing card in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.CompletionPSClick">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User clicks on the Privacy Sandbox link on the completion step of Privacy
+    guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.CompletionSWAAClick">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User clicks on the sWAA link on the completion step of Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.NextClickCompletion">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User clicks the next button on the completion card in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.NextClickCookies">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User clicks the next button on the cookies card in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.NextClickHistorySync">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User clicks the next button on the history sync card in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.NextClickMSBB">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User clicks the next button on the msbb card in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.NextClickSafeBrowsing">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User clicks the next button on the Safe Browsing card in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.NextClickWelcome">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User clicks the next button on the welcome card in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.StartPrivacySettings">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>
+    User starts the Privacy guide via the link row in settings privacy section.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.StartPromo">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <description>User starts the Privacy guide via the promo.</description>
 </action>
 
 <action name="Settings.PrivacySandbox.ApisDisabled">
@@ -28281,6 +29148,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="StatusArea_Cast_Detailed_Launch_AccesCastDialog">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
+</action>
+
 <action name="StatusArea_Cast_Detailed_Launch_Cast">
   <owner>jdufault@chromium.org</owner>
   <description>
@@ -31193,7 +32065,7 @@ should be able to be added at any place in this file.
 
 <action name="WindowDrag_Maximize">
   <owner>sammiequon@chromium.org</owner>
-  <owner>tclaiborne@chromium.org</owner>
+  <owner>shidi@chromium.org</owner>
   <description>
     Tracks if a window has been snapped to maximized state by dragging the
     window to the top of the screen.
@@ -31202,7 +32074,7 @@ should be able to be added at any place in this file.
 
 <action name="WindowDrag_MaximizeLeft">
   <owner>sammiequon@chromium.org</owner>
-  <owner>tclaiborne@chromium.org</owner>
+  <owner>shidi@chromium.org</owner>
   <description>
     Tracks if a window has been snapped to to the left by dragging the window to
     the left side of the screen.
@@ -31211,10 +32083,28 @@ should be able to be added at any place in this file.
 
 <action name="WindowDrag_MaximizeRight">
   <owner>sammiequon@chromium.org</owner>
-  <owner>tclaiborne@chromium.org</owner>
+  <owner>shidi@chromium.org</owner>
   <description>
     Tracks if a window has been snapped to to the right by dragging the window
     to the right side of the screen.
+  </description>
+</action>
+
+<action name="WindowDrag_Unmaximize">
+  <owner>sammiequon@chromium.org</owner>
+  <owner>shidi@chromium.org</owner>
+  <description>
+    Tracks if a window has been unmaximized by dragging down on the title bar of
+    a maximized window.
+  </description>
+</action>
+
+<action name="WindowDrag_Unsnap">
+  <owner>sammiequon@chromium.org</owner>
+  <owner>shidi@chromium.org</owner>
+  <description>
+    Tracks if a window has been unsnapped by dragging down on the title bar of a
+    snapped window.
   </description>
 </action>
 
@@ -31557,6 +32447,8 @@ should be able to be added at any place in this file.
       label="For SharedHighlightingReceiver feature."/>
   <suffix name="SharingHubLinkToggle"
       label="For Sharing Hub link toggle feature."/>
+  <suffix name="ShoppingListMenuItem"
+      label="For ShoppingListMenuItem feature."/>
   <suffix name="SideSearch" label="For the side search feature."/>
   <suffix name="StartSurfaceTabSwitcherHomeButton"
       label="For StartSurfaceTabSwitcherHomeButton feature."/>

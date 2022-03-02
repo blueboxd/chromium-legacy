@@ -26,6 +26,7 @@
 #include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "components/network_session_configurator/common/network_features.h"
@@ -71,17 +72,17 @@
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/network/url_loader.h"
 
-#if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
+#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARMEL)
 #include "crypto/openssl_util.h"
 #include "third_party/boringssl/src/include/openssl/cpu.h"
 #endif
 
-#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
     !BUILDFLAG(IS_CHROMECAST)
 #include "components/os_crypt/key_storage_config_linux.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/application_status_listener.h"
 #include "net/android/http_auth_negotiate_android.h"
 #endif
@@ -120,7 +121,7 @@ void OnGetNetworkList(std::unique_ptr<net::NetworkInterfaceList> networks,
   }
 }
 
-#if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(USE_KERBEROS)
 // Used for Negotiate authentication on Android, which needs to generate tokens
 // in the browser process.
 class NetworkServiceAuthNegotiateAndroid : public net::HttpAuthMechanism {
@@ -279,7 +280,7 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
 
   initialized_ = true;
 
-#if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
+#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARMEL)
   // Make sure OpenSSL is initialized before using it to histogram data.
   crypto::EnsureOpenSSLInit();
 
@@ -345,8 +346,9 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
         std::move(params->default_observer));
   }
 
-  first_party_sets_ = std::make_unique<FirstPartySets>();
-  if (net::cookie_util::IsFirstPartySetsEnabled()) {
+  first_party_sets_ =
+      std::make_unique<FirstPartySets>(params->first_party_sets_enabled);
+  if (first_party_sets_->is_enabled()) {
     first_party_sets_->SetManuallySpecifiedSet(
         command_line->GetSwitchValueASCII(switches::kUseFirstPartySet));
   }
@@ -380,18 +382,17 @@ NetworkService::~NetworkService() {
     trace_net_log_observer_.StopWatchForTraceStart();
 }
 
-void NetworkService::set_os_crypt_is_configured() {
-  os_crypt_config_set_ = true;
-}
-
 std::unique_ptr<NetworkService> NetworkService::Create(
     mojo::PendingReceiver<mojom::NetworkService> receiver) {
   return std::make_unique<NetworkService>(nullptr, std::move(receiver));
 }
 
+// static
 std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
-  return std::make_unique<NetworkService>(
+  auto network_service = std::make_unique<NetworkService>(
       std::make_unique<service_manager::BinderRegistry>());
+  network_service->InitMockNetworkChangeNotifierForTesting();  // IN-TEST
+  return network_service;
 }
 
 void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
@@ -485,11 +486,8 @@ void NetworkService::CreateNetworkContext(
 void NetworkService::ConfigureStubHostResolver(
     bool insecure_dns_client_enabled,
     net::SecureDnsMode secure_dns_mode,
-    absl::optional<std::vector<mojom::DnsOverHttpsServerPtr>>
-        dns_over_https_servers,
+    const std::vector<net::DnsOverHttpsServerConfig>& dns_over_https_servers,
     bool additional_dns_types_enabled) {
-  DCHECK(!dns_over_https_servers || !dns_over_https_servers->empty());
-
   // Enable or disable the insecure part of DnsClient. "DnsClient" is the class
   // that implements the stub resolver.
   host_resolver_manager_->SetInsecureDnsClientEnabled(
@@ -497,13 +495,7 @@ void NetworkService::ConfigureStubHostResolver(
 
   // Configure DNS over HTTPS.
   net::DnsConfigOverrides overrides;
-  if (dns_over_https_servers && !dns_over_https_servers.value().empty()) {
-    overrides.dns_over_https_servers.emplace();
-    for (const auto& doh_server : *dns_over_https_servers) {
-      overrides.dns_over_https_servers.value().emplace_back(
-          doh_server->server_template, doh_server->use_post);
-    }
-  }
+  overrides.dns_over_https_servers = dns_over_https_servers;
   overrides.secure_dns_mode = secure_dns_mode;
   overrides.allow_dns_over_https_upgrade =
       base::FeatureList::IsEnabled(features::kDnsOverHttpsUpgrade);
@@ -625,28 +617,9 @@ void NetworkService::OnCertDBChanged() {
   net::CertDatabase::GetInstance()->NotifyObserversCertDBChanged();
 }
 
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
-#if !BUILDFLAG(IS_CHROMECAST)
-  DCHECK(!os_crypt_config_set_);
-  auto config = std::make_unique<os_crypt::Config>();
-  config->store = crypt_config->store;
-  config->product_name = crypt_config->product_name;
-  config->application_name = crypt_config->application_name;
-  config->main_thread_runner = base::ThreadTaskRunnerHandle::Get();
-  config->should_use_preference = crypt_config->should_use_preference;
-  config->user_data_path = crypt_config->user_data_path;
-  OSCrypt::SetConfig(std::move(config));
-  os_crypt_config_set_ = true;
-#endif
-}
-#endif
-
-#if defined(OS_WIN) || defined(OS_MAC)
 void NetworkService::SetEncryptionKey(const std::string& encryption_key) {
   OSCrypt::SetRawEncryptionKey(encryption_key);
 }
-#endif
 
 void NetworkService::AddAllowedRequestInitiatorForPlugin(
     int32_t process_id,
@@ -685,7 +658,7 @@ void NetworkService::OnPeerToPeerConnectionsCountChange(uint32_t count) {
       ->OnPeerToPeerConnectionsCountChange(count);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void NetworkService::OnApplicationStateChange(
     base::android::ApplicationState state) {
   for (auto* network_context : network_contexts_)
@@ -723,13 +696,11 @@ void NetworkService::ConfigureSCTAuditing(
     bool enabled,
     double sampling_rate,
     const GURL& reporting_uri,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojo::PendingRemote<mojom::URLLoaderFactory> factory) {
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   sct_auditing_cache_->set_enabled(enabled);
   sct_auditing_cache_->set_sampling_rate(sampling_rate);
   sct_auditing_cache_->set_report_uri(reporting_uri);
   sct_auditing_cache_->set_traffic_annotation(traffic_annotation);
-  sct_auditing_cache_->set_url_loader_factory(std::move(factory));
 }
 
 void NetworkService::UpdateCtLogList(std::vector<mojom::CTLogInfoPtr> log_list,
@@ -763,7 +734,7 @@ void NetworkService::SetCtEnforcementEnabled(bool enabled) {
 
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void NetworkService::DumpWithoutCrashing(base::Time dump_request_time) {
   static base::debug::CrashKeyString* time_key =
       base::debug::AllocateCrashKeyString("time_since_dump_request_ms",
@@ -805,7 +776,7 @@ NetworkService::CreateHttpAuthHandlerFactory(NetworkContext* network_context) {
   if (!http_auth_static_network_service_params_) {
     return net::HttpAuthHandlerFactory::CreateDefault(
         network_context->GetHttpAuthPreferences()
-#if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(USE_KERBEROS)
             ,
         base::BindRepeating(&CreateAuthSystem, network_context)
 #endif
@@ -813,17 +784,21 @@ NetworkService::CreateHttpAuthHandlerFactory(NetworkContext* network_context) {
   }
 
   return net::HttpAuthHandlerRegistryFactory::Create(
-      network_context->GetHttpAuthPreferences(),
-      http_auth_static_network_service_params_->supported_schemes
+      network_context->GetHttpAuthPreferences()
 #if BUILDFLAG(USE_EXTERNAL_GSSAPI)
-      ,
+          ,
       http_auth_static_network_service_params_->gssapi_library_name
 #endif
-#if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
+#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(USE_KERBEROS)
       ,
       base::BindRepeating(&CreateAuthSystem, network_context)
 #endif
   );
+}
+
+void NetworkService::InitMockNetworkChangeNotifierForTesting() {
+  mock_network_change_notifier_ =
+      net::NetworkChangeNotifier::CreateMockIfNeeded();
 }
 
 void NetworkService::DestroyNetworkContexts() {

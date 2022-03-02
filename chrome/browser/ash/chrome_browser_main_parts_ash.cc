@@ -20,7 +20,7 @@
 #include "ash/components/drivefs/fake_drivefs_launcher_client.h"
 #include "ash/components/fwupd/firmware_update_manager.h"
 #include "ash/components/login/session/session_termination_manager.h"
-#include "ash/components/pcie_peripheral/pcie_peripheral_manager.h"
+#include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/components/power/dark_resume_controller.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
@@ -31,6 +31,7 @@
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/shell.h"
 #include "ash/system/pcie_peripheral/pcie_peripheral_notification_controller.h"
+#include "ash/system/usb_peripheral/usb_peripheral_notification_controller.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -65,7 +66,6 @@
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crostini/crostini_unsupported_action_notifier.h"
-#include "chrome/browser/ash/crostini/crosvm_metrics.h"
 #include "chrome/browser/ash/dbus/ash_dbus_helper.h"
 #include "chrome/browser/ash/dbus/chrome_features_service_provider.h"
 #include "chrome/browser/ash/dbus/component_updater_service_provider.h"
@@ -86,6 +86,7 @@
 #include "chrome/browser/ash/dbus/smb_fs_service_provider.h"
 #include "chrome/browser/ash/dbus/virtual_file_request_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_disk_management_service_provider.h"
+#include "chrome/browser/ash/dbus/vm/vm_launch_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_permission_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_sk_forwarding_service_provider.h"
 #include "chrome/browser/ash/dbus/vm_applications_service_provider.h"
@@ -171,10 +172,11 @@
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/ash/assistant/assistant_browser_delegate_impl.h"
 #include "chrome/browser/ui/ash/assistant/assistant_state_client.h"
+#include "chrome/browser/ui/ash/fwupd_download_client_impl.h"
 #include "chrome/browser/ui/ash/image_downloader_impl.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
-#include "chrome/browser/ui/ash/quick_answers/quick_answers_controller_impl.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
+#include "chrome/browser/ui/quick_answers/quick_answers_controller_impl.h"
 #include "chrome/browser/ui/webui/chromeos/emoji/emoji_ui.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -239,6 +241,7 @@
 #include "rlz/buildflags/buildflags.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/cros_system_api/dbus/vm_launch/dbus-constants.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ime/ash/ime_keyboard.h"
 #include "ui/base/ime/ash/input_method_manager.h"
@@ -258,10 +261,6 @@
 
 namespace ash {
 namespace {
-
-// TODO(https://crbug.com/1164001): remove after migrating to namespace ash.
-using ::chromeos::NetworkPortalDetectorImpl;
-namespace network_health = ::chromeos::network_health;
 
 void ChromeOSVersionCallback(const std::string& version) {
   base::SetLinuxDistro(std::string("CrOS ") + version);
@@ -377,6 +376,12 @@ class DBusServices {
             vm_tools::disk_management::kVmDiskManagementServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<VmDiskManagementServiceProvider>()));
+
+    vm_launch_service_ = CrosDBusService::Create(
+        system_bus, vm_tools::launch::kVmLaunchServiceName,
+        dbus::ObjectPath(vm_tools::launch::kVmLaunchServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<VmLaunchServiceProvider>()));
 
     vm_sk_forwarding_service_ = CrosDBusService::Create(
         system_bus, vm_tools::sk_forwarding::kVmSKForwardingServiceName,
@@ -494,6 +499,7 @@ class DBusServices {
     chrome_features_service_.reset();
     vm_applications_service_.reset();
     vm_disk_management_service_.reset();
+    vm_launch_service_.reset();
     vm_sk_forwarding_service_.reset();
     vm_permission_service_.reset();
     drive_file_stream_service_.reset();
@@ -524,6 +530,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> chrome_features_service_;
   std::unique_ptr<CrosDBusService> vm_applications_service_;
   std::unique_ptr<CrosDBusService> vm_disk_management_service_;
+  std::unique_ptr<CrosDBusService> vm_launch_service_;
   std::unique_ptr<CrosDBusService> vm_sk_forwarding_service_;
   std::unique_ptr<CrosDBusService> vm_permission_service_;
   std::unique_ptr<CrosDBusService> drive_file_stream_service_;
@@ -926,7 +933,8 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
     std::string user_id_hash =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
 
-    if (BrowserDataMigrator::MaybeRestartToMigrate(account_id, user_id_hash)) {
+    if (BrowserDataMigratorImpl::MaybeRestartToMigrate(account_id,
+                                                       user_id_hash)) {
       LOG(WARNING) << "Restarting chrome to run profile migration.";
       return;
     }
@@ -1009,138 +1017,139 @@ void SetGuestLocale(Profile* const profile) {
       profile, user, std::move(callback));
 }
 
-void ChromeBrowserMainPartsAsh::PostProfileInit() {
+void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
+                                                bool is_initial_profile) {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
 
-  if (ProfileHelper::IsSigninProfile(profile())) {
-    // Flush signin profile if it is just created (new device or after recovery)
-    // to ensure it is correctly persisted.
-    if (profile()->IsNewProfile())
-      ProfileHelper::Get()->FlushProfile(profile());
+  if (is_initial_profile) {
+    if (ProfileHelper::IsSigninProfile(profile)) {
+      // Flush signin profile if it is just created (new device or after
+      // recovery) to ensure it is correctly persisted.
+      if (profile->IsNewProfile())
+        ProfileHelper::Get()->FlushProfile(profile);
 
-    ApplySigninProfileModifications(profile());
-  } else {
-    // Force loading of signin profile if it was not loaded before. It is
-    // possible when we are restoring session or skipping login screen for some
-    // other reason.
-    ProfileHelper::GetSigninProfile();
-  }
+      ApplySigninProfileModifications(profile);
+    } else {
+      // Force loading of signin profile if it was not loaded before. It is
+      // possible when we are restoring session or skipping login screen for
+      // some other reason.
+      ProfileHelper::GetSigninProfile();
+    }
 
-  if (base::FeatureList::IsEnabled(features::kImeSystemEmojiPicker)) {
-    ui::SetShowEmojiKeyboardCallback(
-        base::BindRepeating(&EmojiUI::Show, base::Unretained(profile())));
-  }
+    if (base::FeatureList::IsEnabled(features::kImeSystemEmojiPicker)) {
+      ui::SetShowEmojiKeyboardCallback(
+          base::BindRepeating(&EmojiUI::Show, base::Unretained(profile)));
+    }
 
-  BootTimesRecorder::Get()->OnChromeProcessStart();
+    BootTimesRecorder::Get()->OnChromeProcessStart();
 
-  // Initialize the network portal detector for Chrome OS. The network
-  // portal detector starts to listen for notifications from
-  // NetworkStateHandler and initiates captive portal detection for
-  // active networks. Should be called before call to initialize
-  // ChromeSessionManager because it depends on NetworkPortalDetector.
-  InitializeNetworkPortalDetector();
-  {
+    // Initialize the network portal detector for Chrome OS. The network
+    // portal detector starts to listen for notifications from
+    // NetworkStateHandler and initiates captive portal detection for
+    // active networks. Should be called before call to initialize
+    // ChromeSessionManager because it depends on NetworkPortalDetector.
+    InitializeNetworkPortalDetector();
+    {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    bool is_official_build = true;
+      bool is_official_build = true;
 #else
-    bool is_official_build = false;
+      bool is_official_build = false;
 #endif
-    // Enable portal detector if EULA was previously accepted or if
-    // this is an unofficial build.
-    if (!is_official_build || StartupUtils::IsEulaAccepted())
-      network_portal_detector::GetInstance()->Enable(true);
+      // Enable portal detector if EULA was previously accepted or if
+      // this is an unofficial build.
+      if (!is_official_build || StartupUtils::IsEulaAccepted())
+        network_portal_detector::GetInstance()->Enable(true);
+    }
+
+    // Initialize an observer to update NetworkHandler's pref based services.
+    network_pref_state_observer_ = std::make_unique<NetworkPrefStateObserver>();
+
+    if (features::IsBluetoothRevampEnabled()) {
+      // Initialize an observer to update CrosBluetoothConfig's pref based
+      // services.
+      bluetooth_pref_state_observer_ =
+          std::make_unique<BluetoothPrefStateObserver>();
+    }
+
+    // Initialize the NetworkHealth aggregator.
+    network_health::NetworkHealthService::GetInstance();
+
+    // Create the service connection to CrosHealthd platform service instance.
+    auto* cros_healthd = cros_healthd::ServiceConnection::GetInstance();
+
+    // Pass a callback to the CrosHealthd service connection that binds a
+    // pending remote to service.
+    cros_healthd->SetBindNetworkHealthServiceCallback(base::BindRepeating([] {
+      return network_health::NetworkHealthService::GetInstance()
+          ->GetHealthRemoteAndBindReceiver();
+    }));
+
+    // Pass a callback to the CrosHealthd service connection that binds a
+    // pending remote to the interface.
+    cros_healthd->SetBindNetworkDiagnosticsRoutinesCallback(
+        base::BindRepeating([] {
+          return network_health::NetworkHealthService::GetInstance()
+              ->GetDiagnosticsRemoteAndBindReceiver();
+        }));
+
+    // Initialize input methods.
+    input_method::InputMethodManager* manager =
+        input_method::InputMethodManager::Get();
+    // TODO(crbug/1264581): Remove this object once kDeviceI18nShortcutsEnabled
+    // policy is deprecated.
+    UserSessionManager* session_manager = UserSessionManager::GetInstance();
+    DCHECK(manager);
+    DCHECK(session_manager);
+
+    manager->SetState(session_manager->GetDefaultIMEState(profile));
+
+    bool is_running_test = !!parameters().ui_task;
+    g_browser_process->platform_part()->session_manager()->Initialize(
+        parsed_command_line(), profile, is_running_test);
+
+    // Guest user profile is never initialized with locale settings,
+    // so we need special handling for Guest session.
+    if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
+      SetGuestLocale(profile);
+
+    renderer_freezer_ = std::make_unique<RendererFreezer>(
+        std::make_unique<FreezerCgroupProcessManager>());
+
+    power_metrics_reporter_ = std::make_unique<PowerMetricsReporter>(
+        PowerManagerClient::Get(), g_browser_process->local_state());
+
+    g_browser_process->platform_part()->InitializeAutomaticRebootManager();
+    user_removal_manager::RemoveUsersIfNeeded();
+
+    // This observer cannot be created earlier because it requires the shell to
+    // be available.
+    idle_action_warning_observer_ =
+        std::make_unique<IdleActionWarningObserver>();
+
+    if (!user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
+      // Start watching for low disk space events to notify the user if it is
+      // not a guest profile.
+      low_disk_notification_ = std::make_unique<LowDiskNotification>();
+    }
+
+    gnubby_notification_ = std::make_unique<GnubbyNotification>();
+    demo_mode_resources_remover_ = DemoModeResourcesRemover::CreateIfNeeded(
+        g_browser_process->local_state());
+
+    login_screen_extensions_lifetime_manager_ =
+        std::make_unique<LoginScreenExtensionsLifetimeManager>();
+    login_screen_extensions_storage_cleaner_ =
+        std::make_unique<LoginScreenExtensionsStorageCleaner>();
+
+    quick_answers_controller_ = std::make_unique<QuickAnswersControllerImpl>();
+    QuickAnswersController::Get()->SetClient(
+        std::make_unique<quick_answers::QuickAnswersClient>(
+            g_browser_process->shared_url_loader_factory(),
+            QuickAnswersController::Get()->GetQuickAnswersDelegate()));
   }
 
-  // Initialize an observer to update NetworkHandler's pref based services.
-  network_pref_state_observer_ = std::make_unique<NetworkPrefStateObserver>();
-
-  if (features::IsBluetoothRevampEnabled()) {
-    // Initialize an observer to update CrosBluetoothConfig's pref based
-    // services.
-    bluetooth_pref_state_observer_ =
-        std::make_unique<BluetoothPrefStateObserver>();
-  }
-
-  // Initialize the NetworkHealth aggregator.
-  network_health::NetworkHealthService::GetInstance();
-
-  // Create the service connection to CrosHealthd platform service instance.
-  auto* cros_healthd = cros_healthd::ServiceConnection::GetInstance();
-
-  // Pass a callback to the CrosHealthd service connection that binds a pending
-  // remote to service.
-  cros_healthd->SetBindNetworkHealthServiceCallback(base::BindRepeating([] {
-    return network_health::NetworkHealthService::GetInstance()
-        ->GetHealthRemoteAndBindReceiver();
-  }));
-
-  // Pass a callback to the CrosHealthd service connection that binds a pending
-  // remote to the interface.
-  cros_healthd->SetBindNetworkDiagnosticsRoutinesCallback(
-      base::BindRepeating([] {
-        return network_health::NetworkHealthService::GetInstance()
-            ->GetDiagnosticsRemoteAndBindReceiver();
-      }));
-
-  // Initialize input methods.
-  input_method::InputMethodManager* manager =
-      input_method::InputMethodManager::Get();
-  // TODO(crbug/1264581): Remove this object once kDeviceI18nShortcutsEnabled
-  // policy is deprecated.
-  UserSessionManager* session_manager = UserSessionManager::GetInstance();
-  DCHECK(manager);
-  DCHECK(session_manager);
-
-  manager->SetState(session_manager->GetDefaultIMEState(profile()));
-
-  bool is_running_test = !!parameters().ui_task;
-  g_browser_process->platform_part()->session_manager()->Initialize(
-      parsed_command_line(), profile(), is_running_test);
-
-  // Guest user profile is never initialized with locale settings,
-  // so we need special handling for Guest session.
-  if (user_manager::UserManager::Get()->IsLoggedInAsGuest())
-    SetGuestLocale(profile());
-
-  renderer_freezer_ = std::make_unique<RendererFreezer>(
-      std::make_unique<FreezerCgroupProcessManager>());
-
-  power_metrics_reporter_ = std::make_unique<PowerMetricsReporter>(
-      PowerManagerClient::Get(), g_browser_process->local_state());
-
-  g_browser_process->platform_part()->InitializeAutomaticRebootManager();
-  user_removal_manager::RemoveUsersIfNeeded();
-
-  // This observer cannot be created earlier because it requires the shell to be
-  // available.
-  idle_action_warning_observer_ = std::make_unique<IdleActionWarningObserver>();
-
-  if (!user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
-    // Start watching for low disk space events to notify the user if it is not
-    // a guest profile.
-    low_disk_notification_ = std::make_unique<LowDiskNotification>();
-  }
-
-  gnubby_notification_ = std::make_unique<GnubbyNotification>();
-  demo_mode_resources_remover_ = DemoModeResourcesRemover::CreateIfNeeded(
-      g_browser_process->local_state());
-  // Start measuring crosvm processes resource usage.
-  crosvm_metrics_ = std::make_unique<crostini::CrosvmMetrics>();
-  crosvm_metrics_->Start();
-
-  login_screen_extensions_lifetime_manager_ =
-      std::make_unique<LoginScreenExtensionsLifetimeManager>();
-  login_screen_extensions_storage_cleaner_ =
-      std::make_unique<LoginScreenExtensionsStorageCleaner>();
-
-  quick_answers_controller_ = std::make_unique<QuickAnswersControllerImpl>();
-  QuickAnswersController::Get()->SetClient(
-      std::make_unique<quick_answers::QuickAnswersClient>(
-          g_browser_process->shared_url_loader_factory(),
-          QuickAnswersController::Get()->GetQuickAnswersDelegate()));
-
-  ChromeBrowserMainPartsLinux::PostProfileInit();
+  ChromeBrowserMainPartsLinux::PostProfileInit(profile, is_initial_profile);
 }
 
 void ChromeBrowserMainPartsAsh::PreBrowserStart() {
@@ -1245,18 +1254,22 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
 
   if (features::IsFirmwareUpdaterAppEnabled()) {
     firmware_update_manager_ = std::make_unique<FirmwareUpdateManager>();
+    fwupd_download_client_ = std::make_unique<FwupdDownloadClientImpl>();
   }
 
   if (features::IsPciguardUiEnabled()) {
     // The local_state pref may not be available at this stage of Chrome's
     // lifecycle, default to false for now. The actual state will be set in a
     // later initializer.
-    PciePeripheralManager::Initialize(
+    PeripheralNotificationManager::Initialize(
         user_manager::UserManager::Get()->IsLoggedInAsGuest(),
         /*initial_state=*/false);
     Shell::Get()
         ->pcie_peripheral_notification_controller()
-        ->OnPciePeripheralManagerInitialized();
+        ->OnPeripheralNotificationManagerInitialized();
+    Shell::Get()
+        ->usb_peripheral_notification_controller()
+        ->OnPeripheralNotificationManagerInitialized();
   }
 
   crostini_unsupported_action_notifier_ =
@@ -1503,10 +1516,6 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
 }
 
 void ChromeBrowserMainPartsAsh::PostDestroyThreads() {
-  // Destroy crosvm_metrics_ after threads are stopped so that no weak_ptr is
-  // held by any task.
-  crosvm_metrics_.reset();
-
   network_change_manager_client_.reset();
   session_termination_manager_.reset();
 

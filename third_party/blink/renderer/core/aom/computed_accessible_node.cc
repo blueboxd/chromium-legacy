@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "ui/accessibility/ax_mode.h"
 
@@ -81,7 +81,7 @@ void ComputedAccessibleNodePromiseResolver::ComputeAccessibleNode() {
 
 void ComputedAccessibleNodePromiseResolver::EnsureUpToDate() {
   DCHECK(RuntimeEnabledFeatures::AccessibilityObjectModelEnabled());
-  if (continue_callback_request_id_)
+  if (continue_callback_request_id_ || !ax_context_->GetDocument())
     return;
   // TODO(aboxhall): Trigger a call when lifecycle is next at kPrePaintClean.
   RequestAnimationFrameCallback* callback =
@@ -91,6 +91,10 @@ void ComputedAccessibleNodePromiseResolver::EnsureUpToDate() {
 }
 
 void ComputedAccessibleNodePromiseResolver::UpdateTreeAndResolve() {
+  if (!ax_context_->GetDocument()) {
+    resolver_->Resolve();
+    return;
+  }
   LocalFrame* local_frame = ax_context_->GetDocument()->GetFrame();
   if (!local_frame) {
     resolver_->Resolve();
@@ -220,6 +224,8 @@ absl::optional<float> ComputedAccessibleNode::valueNow() const {
 
 ScriptPromise ComputedAccessibleNode::ensureUpToDate(
     ScriptState* script_state) {
+  if (!GetDocument())
+    return ScriptPromise();  // Empty promise.
   auto* resolver = MakeGarbageCollected<ComputedAccessibleNodePromiseResolver>(
       script_state, *GetDocument(), ax_id_);
   ScriptPromise promise = resolver->Promise();
@@ -331,6 +337,8 @@ Document* ComputedAccessibleNode::GetDocument() const {
 }
 
 WebComputedAXTree* ComputedAccessibleNode::GetTree() const {
+  if (!GetDocument())
+    return nullptr;
   LocalFrame* local_frame = GetDocument()->GetFrame();
   if (!local_frame)
     return nullptr;

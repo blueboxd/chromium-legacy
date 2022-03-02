@@ -30,10 +30,10 @@ source_set("test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "ios_chrome_scoped_testing_chrome_browser_state_manager.cc",
     "ios_chrome_scoped_testing_chrome_browser_state_manager.h",
-    "ios_chrome_scoped_testing_local_state.cc",
+    "ios_chrome_scoped_testing_chrome_browser_state_manager.mm",
     "ios_chrome_scoped_testing_local_state.h",
+    "ios_chrome_scoped_testing_local_state.mm",
     "root_view_controller_test.h",
     "root_view_controller_test.mm",
     "scoped_key_window.h",
@@ -63,7 +63,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/util",
     "//ios/components/webui:url_constants",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser:test_support",
+    "//ios/public/provider/chrome/browser/signin:signin_sso_api",
     "//ios/web",
     "//ios/web/public/test",
     "//net",
@@ -126,8 +126,10 @@ source_set("ios_chrome_unit_test_suite") {
     "//ios/chrome/test:test_support",
     "//ios/components/webui:url_constants",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/app_utils:app_utils_api",
     "//ios/web/public",
     "//ios/web/public/test",
+    "//ios/web/public/test:test_fixture",
     "//testing/gtest",
     "//ui/base",
     "//url",
@@ -172,7 +174,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/app/resources:packed_resources",
 
     # Use the test implementation of the provider API.
-    "//ios/public/provider/chrome/browser:test_providers",
+    "//ios/chrome/test/providers",
 
     # Add unit_tests target here.
     "//ios/chrome/app:unit_tests",
@@ -239,6 +241,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/store_kit:unit_tests",
     "//ios/chrome/browser/sync:unit_tests",
     "//ios/chrome/browser/tabs:unit_tests",
+    "//ios/chrome/browser/tabs_search:unit_tests",
     "//ios/chrome/browser/translate:unit_tests",
     "//ios/chrome/browser/u2f:unit_tests",
     "//ios/chrome/browser/ui/activity_services:unit_tests",
@@ -298,7 +301,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/main_content:unit_tests",
     "//ios/chrome/browser/ui/menu:unit_tests",
     "//ios/chrome/browser/ui/ntp:unit_tests",
-    "//ios/chrome/browser/ui/ntp_tile_views:unit_tests",
     "//ios/chrome/browser/ui/omnibox:unit_tests",
     "//ios/chrome/browser/ui/omnibox/keyboard_assist:unit_tests",
     "//ios/chrome/browser/ui/omnibox/popup:unit_tests",

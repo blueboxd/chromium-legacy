@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
 
-#include "build/os_buildflags.h"
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -668,7 +668,7 @@ bool ValidateStringConstraint(const V8ConstrainDOMString* blink_union_form,
   return false;
 }
 
-WARN_UNUSED_RESULT bool ValidateAndCopyStringConstraint(
+[[nodiscard]] bool ValidateAndCopyStringConstraint(
     const V8ConstrainDOMString* blink_union_form,
     NakedValueDisposition naked_treatment,
     StringConstraint& web_form,

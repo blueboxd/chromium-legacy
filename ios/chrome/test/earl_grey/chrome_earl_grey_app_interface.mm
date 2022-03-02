@@ -30,12 +30,11 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
+#import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
-#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/test/app/bookmarks_test_util.h"
@@ -258,6 +257,10 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   return chrome_test_util::SimulateExternalAppURLOpening();
 }
 
++ (void)simulateExternalAppURLOpeningWithURL:(NSURL*)URL {
+  chrome_test_util::SimulateExternalAppURLOpeningWithURL(URL);
+}
+
 + (void)simulateAddAccountFromWeb {
   chrome_test_util::SimulateAddAccountFromWeb();
 }
@@ -316,12 +319,12 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
 
 + (NSString*)currentTabID {
   web::WebState* web_state = chrome_test_util::GetCurrentWebState();
-  return TabIdTabHelper::FromWebState(web_state)->tab_id();
+  return web_state->GetStableIdentifier();
 }
 
 + (NSString*)nextTabID {
   web::WebState* web_state = chrome_test_util::GetNextWebState();
-  return TabIdTabHelper::FromWebState(web_state)->tab_id();
+  return web_state->GetStableIdentifier();
 }
 
 + (NSUInteger)indexOfActiveNormalTab {
@@ -347,12 +350,12 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   return CGRectZero;
 }
 
-+ (NSUInteger)windowCount WARN_UNUSED_RESULT {
++ (NSUInteger)windowCount [[nodiscard]] {
   // If the scene API is in use, return the count of open sessions.
   return UIApplication.sharedApplication.openSessions.count;
 }
 
-+ (NSUInteger)foregroundWindowCount WARN_UNUSED_RESULT {
++ (NSUInteger)foregroundWindowCount [[nodiscard]] {
   // If the scene API is in use, look at all the connected scenes and count
   // those in the foreground.
   NSUInteger count = 0;
@@ -529,6 +532,20 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   if (!success) {
     NSString* NSErrorDescription = [NSString
         stringWithFormat:@"Failed waiting for web state containing element %@",
+                         selector.selectorDescription];
+    return testing::NSErrorWithLocalizedDescription(NSErrorDescription);
+  }
+  return nil;
+}
+
++ (NSError*)waitForWebStateNotContainingElement:(ElementSelector*)selector {
+  bool success = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
+    return !web::test::IsWebViewContainingElement(
+        chrome_test_util::GetCurrentWebState(), selector);
+  });
+  if (!success) {
+    NSString* NSErrorDescription = [NSString
+        stringWithFormat:@"Failed waiting for web state without element %@",
                          selector.selectorDescription];
     return testing::NSErrorWithLocalizedDescription(NSErrorDescription);
   }
@@ -992,7 +1009,7 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
 + (BOOL)isMobileModeByDefault {
   web::UserAgentType webClientUserAgent =
       web::GetWebClient()->GetDefaultUserAgent(
-          chrome_test_util::GetCurrentWebState()->GetView(), GURL());
+          chrome_test_util::GetCurrentWebState(), GURL());
 
   return webClientUserAgent == web::UserAgentType::MOBILE;
 }
@@ -1005,8 +1022,13 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   return IsContextMenuActionsRefreshEnabled();
 }
 
-+ (BOOL)isTabGridBulkActionsEnabled {
-  return IsTabsBulkActionsEnabled();
++ (BOOL)isContextMenuInWebViewEnabled {
+  return base::FeatureList::IsEnabled(
+      web::features::kWebViewNativeContextMenuPhase2);
+}
+
++ (BOOL)isNewOverflowMenuEnabled {
+  return IsNewOverflowMenuEnabled();
 }
 
 #pragma mark - ScopedBlockPopupsPref

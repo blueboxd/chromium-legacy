@@ -68,7 +68,7 @@ AudioRendererImpl::AudioRendererImpl(
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
       is_suspending_(false),
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       is_passthrough_(false) {
 #else
       is_passthrough_(false),
@@ -387,7 +387,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
       base::BindOnce(&AudioRendererImpl::OnDeviceInfoReceived,
                      weak_factory_.GetWeakPtr(), demuxer_stream_, cdm_context));
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   if (speech_recognition_client_) {
     speech_recognition_client_->SetOnReadyCallback(BindToCurrentLoop(
         base::BindOnce(&AudioRendererImpl::EnableSpeechRecognition,
@@ -518,7 +518,7 @@ void AudioRendererImpl::OnDeviceInfoReceived(
     int stream_channel_count = stream->audio_decoder_config().channels();
 
     bool try_supported_channel_layouts = false;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     try_supported_channel_layouts =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kTrySupportedChannelLayouts);
@@ -809,10 +809,10 @@ void AudioRendererImpl::SetPreservesPitch(bool preserves_pitch) {
     algorithm_->SetPreservesPitch(preserves_pitch);
 }
 
-void AudioRendererImpl::SetAutoplayInitiated(bool autoplay_initiated) {
+void AudioRendererImpl::SetWasPlayedWithUserActivation(
+    bool was_played_with_user_activation) {
   base::AutoLock auto_lock(lock_);
-
-  autoplay_initiated_ = autoplay_initiated;
+  was_played_with_user_activation_ = was_played_with_user_activation;
 }
 
 void AudioRendererImpl::OnSuspend() {
@@ -832,7 +832,7 @@ void AudioRendererImpl::SetPlayDelayCBForTesting(PlayDelayCBForTesting cb) {
 
 void AudioRendererImpl::DecodedAudioReady(
     AudioDecoderStream::ReadResult result) {
-  DVLOG(2) << __func__ << "(" << result.code() << ")";
+  DVLOG(2) << __func__ << "(" << static_cast<int>(result.code()) << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
@@ -842,7 +842,8 @@ void AudioRendererImpl::DecodedAudioReady(
   pending_read_ = false;
 
   if (result.has_error()) {
-    HandleAbortedReadOrDecodeError(result.code() == StatusCode::kAborted
+    HandleAbortedReadOrDecodeError(result.code() ==
+                                           DecoderStatus::Codes::kAborted
                                        ? PIPELINE_OK
                                        : PIPELINE_ERROR_DECODE);
     return;
@@ -974,10 +975,11 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
     if (first_packet_timestamp_ == kNoTimestamp)
       first_packet_timestamp_ = buffer->timestamp();
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     // Do not transcribe muted streams initiated by autoplay if the stream was
     // never unmuted.
-    if (transcribe_audio_callback_ && !(autoplay_initiated_ && !was_unmuted_)) {
+    if (transcribe_audio_callback_ &&
+        (was_played_with_user_activation_ || was_unmuted_)) {
       transcribe_audio_callback_.Run(buffer);
     }
 #endif
@@ -1390,7 +1392,7 @@ void AudioRendererImpl::ConfigureChannelMask() {
 }
 
 void AudioRendererImpl::EnableSpeechRecognition() {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   DCHECK(task_runner_->BelongsToCurrentThread());
   transcribe_audio_callback_ = base::BindRepeating(
       &AudioRendererImpl::TranscribeAudio, weak_factory_.GetWeakPtr());
@@ -1399,7 +1401,7 @@ void AudioRendererImpl::EnableSpeechRecognition() {
 
 void AudioRendererImpl::TranscribeAudio(
     scoped_refptr<media::AudioBuffer> buffer) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (speech_recognition_client_)
     speech_recognition_client_->AddAudio(std::move(buffer));

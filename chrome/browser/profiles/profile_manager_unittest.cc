@@ -29,14 +29,14 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/common/chrome_constants.h"
@@ -58,7 +58,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/test_browser_window.h"
 #endif
@@ -245,7 +245,7 @@ class ProfileManagerTest : public testing::Test {
   // Helper function to register an user with id |user_id| and create profile
   // with a correct path.
   void RegisterUser(const AccountId& account_id) {
-    chromeos::ProfileHelper* profile_helper = chromeos::ProfileHelper::Get();
+    ash::ProfileHelper* profile_helper = ash::ProfileHelper::Get();
     const std::string user_id_hash =
         profile_helper->GetUserIdHashByUserIdForTesting(
             account_id.GetUserEmail());
@@ -263,7 +263,7 @@ class ProfileManagerTest : public testing::Test {
       bool user_is_child,
       bool profile_is_managed,
       absl::optional<bool> arc_is_managed) {
-    chromeos::ProfileHelper* profile_helper = chromeos::ProfileHelper::Get();
+    ash::ProfileHelper* profile_helper = ash::ProfileHelper::Get();
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 
     const std::string user_email = "user_for_transition@example.com";
@@ -353,6 +353,14 @@ MATCHER(NotFail, "Profile creation failure status is not reported.") {
          arg == Profile::CREATE_STATUS_INITIALIZED;
 }
 
+MATCHER(Created, "Profile creation status is created.") {
+  return arg == Profile::CREATE_STATUS_CREATED;
+}
+
+MATCHER(Initialized, "Profile creation status is initialized.") {
+  return arg == Profile::CREATE_STATUS_INITIALIZED;
+}
+
 MATCHER(SameNotNull, "The same non-NULL value for all calls.") {
   if (!g_created_profile)
     g_created_profile = arg;
@@ -382,7 +390,7 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
   user_manager->SwitchActiveUser(test_account_id);
 
   base::FilePath expected_logged_in(
-      chromeos::ProfileHelper::GetUserProfileDir(active_user->username_hash()));
+      ash::ProfileHelper::GetUserProfileDir(active_user->username_hash()));
   EXPECT_EQ(expected_logged_in.value(),
             profile_manager->GetInitialProfileDir().value());
   VLOG(1) << temp_dir_.GetPath()
@@ -392,7 +400,7 @@ TEST_F(ProfileManagerTest, LoggedInProfileDir) {
 
 // Test Get[ActiveUser|PrimaryUser|LastUsed]Profile does not load user profile.
 TEST_F(ProfileManagerTest, UserProfileLoading) {
-  using chromeos::ProfileHelper;
+  using ::ash::ProfileHelper;
 
   Profile* const signin_profile = ProfileHelper::GetSigninProfile();
 
@@ -570,7 +578,7 @@ TEST_F(ProfileManagerTest, CreateProfilesAsync) {
   content::RunAllTasksUntilIdle();
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 // There's no multi-profiles on Android.
 TEST_F(ProfileManagerTest, CreateMultiProfileAsync) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -578,15 +586,17 @@ TEST_F(ProfileManagerTest, CreateMultiProfileAsync) {
 
   const std::string profile_name = "New Profile";
 
+  base::RunLoop run_loop;
   MockObserver mock_observer;
   Profile* profile = nullptr;
-  EXPECT_CALL(mock_observer, OnProfileCreated(testing::NotNull(), NotFail()))
-      .Times(testing::AtLeast(2))
-      .WillRepeatedly(testing::SaveArg<0>(&profile));
+  EXPECT_CALL(mock_observer, OnProfileCreated(testing::NotNull(), Created()))
+      .WillOnce(testing::SaveArg<0>(&profile));
+  EXPECT_CALL(mock_observer,
+              OnProfileCreated(testing::NotNull(), Initialized()))
+      .WillOnce([&run_loop] { run_loop.Quit(); });
 
   CreateMultiProfileAsync(profile_manager, profile_name, &mock_observer);
-
-  content::RunAllTasksUntilIdle();
+  run_loop.Run();
 
   // Check that the profile name is set correctly both in the profile prefs and
   // in storage.
@@ -603,42 +613,41 @@ TEST_F(ProfileManagerTest, CreateMultiProfilesAsync) {
   const std::string profile_name1 = "New Profile 1";
   const std::string profile_name2 = "New Profile 2";
 
+  base::RunLoop run_loop;
   MockObserver mock_observer;
-  EXPECT_CALL(mock_observer, OnProfileCreated(
-      testing::NotNull(), NotFail())).Times(testing::AtLeast(3));
+  EXPECT_CALL(mock_observer, OnProfileCreated(testing::NotNull(), Created()))
+      .Times(2);
+  EXPECT_CALL(mock_observer,
+              OnProfileCreated(testing::NotNull(), Initialized()))
+      .WillOnce(testing::Return())
+      .WillOnce([&run_loop] { run_loop.Quit(); });
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
   CreateMultiProfileAsync(profile_manager, profile_name1, &mock_observer);
   CreateMultiProfileAsync(profile_manager, profile_name2, &mock_observer);
-
-  content::RunAllTasksUntilIdle();
+  run_loop.Run();
 }
 
 TEST_F(ProfileManagerTest, CreateMultiProfileAsyncMultipleRequests) {
-  Profile* profile1 = nullptr;
-  MockObserver mock_observer1;
-  EXPECT_CALL(mock_observer1, OnProfileCreated(testing::NotNull(), NotFail()))
-      .Times(testing::AtLeast(1))
-      .WillRepeatedly(testing::SaveArg<0>(&profile1));
-  Profile* profile2 = nullptr;
-  MockObserver mock_observer2;
-  EXPECT_CALL(mock_observer2, OnProfileCreated(testing::NotNull(), NotFail()))
-      .Times(testing::AtLeast(1))
-      .WillRepeatedly(testing::SaveArg<0>(&profile2));
-  Profile* profile3 = nullptr;
-  MockObserver mock_observer3;
-  EXPECT_CALL(mock_observer3, OnProfileCreated(testing::NotNull(), NotFail()))
-      .Times(testing::AtLeast(1))
-      .WillRepeatedly(testing::SaveArg<0>(&profile3));
+  base::RunLoop run_loop;
+  MockObserver mock_observer;
+  Profile *profile1 = nullptr, *profile2 = nullptr, *profile3 = nullptr;
+  EXPECT_CALL(mock_observer, OnProfileCreated(testing::NotNull(), Created()))
+      .Times(3);
+  EXPECT_CALL(mock_observer,
+              OnProfileCreated(testing::NotNull(), Initialized()))
+      .WillOnce(testing::SaveArg<0>(&profile1))
+      .WillOnce(testing::SaveArg<0>(&profile2))
+      .WillOnce(testing::DoAll(testing::SaveArg<0>(&profile3),
+                               [&run_loop] { run_loop.Quit(); }));
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   const std::string profile_name = "New Profile";
-  CreateMultiProfileAsync(profile_manager, profile_name, &mock_observer1);
-  CreateMultiProfileAsync(profile_manager, profile_name, &mock_observer2);
-  CreateMultiProfileAsync(profile_manager, profile_name, &mock_observer3);
-
-  content::RunAllTasksUntilIdle();
+  CreateMultiProfileAsync(profile_manager, profile_name, &mock_observer);
+  CreateMultiProfileAsync(profile_manager, profile_name, &mock_observer);
+  CreateMultiProfileAsync(profile_manager, profile_name, &mock_observer);
+  run_loop.Run();
 
   // A new profile should have been created for each call.
   EXPECT_NE(profile1, profile2);
@@ -662,13 +671,17 @@ TEST_F(ProfileManagerTest,
   profile_manager->GetProfileAttributesStorage().AddProfile(
       std::move(params_1));
 
-  MockObserver mock_observer2;
+  base::RunLoop run_loop;
+  MockObserver mock_observer;
   Profile* profile2 = nullptr;
-  EXPECT_CALL(mock_observer2, OnProfileCreated(testing::NotNull(), NotFail()))
-      .Times(testing::AtLeast(2))
-      .WillRepeatedly(testing::SaveArg<0>(&profile2));
-  CreateMultiProfileAsync(profile_manager, "Profile B", &mock_observer2);
-  content::RunAllTasksUntilIdle();
+  EXPECT_CALL(mock_observer, OnProfileCreated(testing::NotNull(), Created()))
+      .WillOnce(testing::SaveArg<0>(&profile2));
+  EXPECT_CALL(mock_observer,
+              OnProfileCreated(testing::NotNull(), Initialized()))
+      .WillOnce([&run_loop] { run_loop.Quit(); });
+
+  CreateMultiProfileAsync(profile_manager, "Profile B", &mock_observer);
+  run_loop.Run();
 
   ASSERT_NE(profile2, nullptr);
   EXPECT_EQ(profile2->GetPath().BaseName().value(),
@@ -684,13 +697,16 @@ TEST_F(ProfileManagerTest,
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ASSERT_TRUE(profile_manager);
 
-  MockObserver mock_observer1;
+  base::RunLoop run_loop;
+  MockObserver mock_observer;
   Profile* profile1 = nullptr;
-  EXPECT_CALL(mock_observer1, OnProfileCreated(testing::NotNull(), NotFail()))
-      .Times(testing::AtLeast(2))
-      .WillRepeatedly(testing::SaveArg<0>(&profile1));
-  CreateMultiProfileAsync(profile_manager, "Profile A", &mock_observer1);
-  content::RunAllTasksUntilIdle();
+  EXPECT_CALL(mock_observer, OnProfileCreated(testing::NotNull(), Created()))
+      .WillOnce(testing::SaveArg<0>(&profile1));
+  EXPECT_CALL(mock_observer,
+              OnProfileCreated(testing::NotNull(), Initialized()))
+      .WillOnce([&run_loop] { run_loop.Quit(); });
+  CreateMultiProfileAsync(profile_manager, "Profile A", &mock_observer);
+  run_loop.Run();
 
   ASSERT_NE(profile1, nullptr);
   EXPECT_EQ(profile1->GetPath().BaseName().value(),
@@ -718,13 +734,16 @@ TEST_F(ProfileManagerTest,
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ASSERT_TRUE(profile_manager);
 
-  MockObserver mock_observer2;
+  base::RunLoop run_loop;
+  MockObserver mock_observer;
   Profile* profile2 = nullptr;
-  EXPECT_CALL(mock_observer2, OnProfileCreated(testing::NotNull(), NotFail()))
-      .Times(testing::AtLeast(2))
-      .WillRepeatedly(testing::SaveArg<0>(&profile2));
-  CreateMultiProfileAsync(profile_manager, "Profile B", &mock_observer2);
-  content::RunAllTasksUntilIdle();
+  EXPECT_CALL(mock_observer, OnProfileCreated(testing::NotNull(), Created()))
+      .WillOnce(testing::SaveArg<0>(&profile2));
+  EXPECT_CALL(mock_observer,
+              OnProfileCreated(testing::NotNull(), Initialized()))
+      .WillOnce([&run_loop] { run_loop.Quit(); });
+  CreateMultiProfileAsync(profile_manager, "Profile B", &mock_observer);
+  run_loop.Run();
 
   ASSERT_NE(profile2, nullptr);
   // The profile uses the same base name as in the pre test.
@@ -738,11 +757,14 @@ TEST_F(ProfileManagerTest,
 }
 
 TEST_F(ProfileManagerTest, CreateHiddenProfileAsync) {
+  base::RunLoop run_loop;
   Profile* profile = nullptr;
   MockObserver mock_observer;
-  EXPECT_CALL(mock_observer, OnProfileCreated(testing::NotNull(), NotFail()))
-      .Times(testing::AtLeast(2))
-      .WillRepeatedly(testing::SaveArg<0>(&profile));
+  EXPECT_CALL(mock_observer, OnProfileCreated(testing::NotNull(), Created()))
+      .WillOnce(testing::SaveArg<0>(&profile));
+  EXPECT_CALL(mock_observer,
+              OnProfileCreated(testing::NotNull(), Initialized()))
+      .WillOnce([&run_loop] { run_loop.Quit(); });
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
@@ -751,7 +773,7 @@ TEST_F(ProfileManagerTest, CreateHiddenProfileAsync) {
       base::BindRepeating(&MockObserver::OnProfileCreated,
                           base::Unretained(&mock_observer)));
 
-  content::RunAllTasksUntilIdle();
+  run_loop.Run();
   ASSERT_NE(profile, nullptr);
 
   ProfileAttributesEntry* entry =
@@ -761,7 +783,7 @@ TEST_F(ProfileManagerTest, CreateHiddenProfileAsync) {
   EXPECT_TRUE(entry->IsOmitted());
   EXPECT_TRUE(entry->IsEphemeral());
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 // Checks that the supervised profiles no longer marked as omitted on creation.
 TEST_F(ProfileManagerTest, AddProfileToStorageCheckNotOmitted) {
@@ -851,7 +873,7 @@ class ProfileManagerGuestTest : public ProfileManagerTest {
   void SetUp() override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-    cl->AppendSwitch(chromeos::switches::kGuestSession);
+    cl->AppendSwitch(ash::switches::kGuestSession);
     cl->AppendSwitch(::switches::kIncognito);
 #endif
 
@@ -1218,7 +1240,7 @@ TEST_F(ProfileManagerTest, GetLastUsedProfileAllowedByPolicy) {
       profile_manager->GetLastUsedProfileAllowedByPolicy()->IsOffTheRecord());
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 // There's no Browser object on Android.
 TEST_F(ProfileManagerTest, LastOpenedProfiles) {
   base::FilePath dest_path1 = temp_dir_.GetPath();
@@ -1392,9 +1414,9 @@ TEST_F(ProfileManagerTest, LastOpenedProfilesDoesNotContainIncognito) {
   last_opened_profiles = profile_manager->GetLastOpenedProfiles();
   ASSERT_EQ(0U, last_opened_profiles.size());
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 // There's no Browser object on Android and there's no multi-profiles on Chrome.
 TEST_F(ProfileManagerTest, EphemeralProfilesDontEndUpAsLastProfile) {
   base::FilePath dest_path = temp_dir_.GetPath();
@@ -1523,15 +1545,15 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
 
   // Set the last used profiles.
   ListPrefUpdate update(local_state, prefs::kProfilesLastActive);
-  base::ListValue* initial_last_active_profile_list = update.Get();
+  base::Value* initial_last_active_profile_list = update.Get();
   initial_last_active_profile_list->Append(
-      std::make_unique<base::Value>(path1.BaseName().MaybeAsASCII()));
+      base::Value(path1.BaseName().MaybeAsASCII()));
   initial_last_active_profile_list->Append(
-      std::make_unique<base::Value>(path2.BaseName().MaybeAsASCII()));
+      base::Value(path2.BaseName().MaybeAsASCII()));
 
   profile_manager->CleanUpEphemeralProfiles();
   content::RunAllTasksUntilIdle();
-  const base::ListValue* final_last_active_profile_list =
+  const base::Value* final_last_active_profile_list =
       local_state->GetList(prefs::kProfilesLastActive);
 
   // The ephemeral profile should be deleted, and the last used profile set to
@@ -1594,15 +1616,15 @@ TEST_F(ProfileManagerGuestTest, CleanUpOnlyEphemeralProfiles) {
 
   // Set the last used profiles.
   ListPrefUpdate update(local_state, prefs::kProfilesLastActive);
-  base::ListValue* initial_last_active_profile_list = update.Get();
+  base::Value* initial_last_active_profile_list = update.Get();
   initial_last_active_profile_list->Append(
-      std::make_unique<base::Value>(guest_path.BaseName().MaybeAsASCII()));
+      base::Value(guest_path.BaseName().MaybeAsASCII()));
   initial_last_active_profile_list->Append(
-      std::make_unique<base::Value>(path.BaseName().MaybeAsASCII()));
+      base::Value(path.BaseName().MaybeAsASCII()));
 
   profile_manager->CleanUpEphemeralProfiles();
   content::RunAllTasksUntilIdle();
-  const base::ListValue* final_last_active_profile_list =
+  const base::Value* final_last_active_profile_list =
       local_state->GetList(prefs::kProfilesLastActive);
 
   // The guest and the non-ephemeral regular profile aren't impacted.
@@ -1992,10 +2014,10 @@ TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesSignedInName) {
   EXPECT_EQ(gaia_given_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
 }
-#endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // GetAvatarNameForProfile() is not defined on Android.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
@@ -2034,7 +2056,7 @@ TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
   // We use "Person %n" as the default profile name. Set |SetIsUsingDefaultName|
   // manually to mimick pre-existing profiles.
   entry->SetIsUsingDefaultName(true);
-#endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
   entry->SetAuthInfo("23456", email2, true);
   entry->SetGAIAGivenName(std::u16string());
@@ -2064,9 +2086,9 @@ TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
   EXPECT_EQ(gaia_given_name,
             profiles::GetAvatarNameForProfile(profile1->GetPath()));
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // These tests are for a Mac-only code path that assumes the browser
 // process isn't killed when all browser windows are closed.
 TEST_F(ProfileManagerTest, ActiveProfileDeletedNeedsToLoadNextProfile) {
@@ -2188,7 +2210,7 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNextProfileDeletedToo) {
   EXPECT_EQ(profile_path3, profile_manager->GetLastUsedProfile()->GetPath());
   EXPECT_EQ(profile_basename3, local_state->GetString(prefs::kProfileLastUsed));
 }
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 TEST_F(ProfileManagerTest, CannotCreateProfileOutsideUserDir) {
   base::ScopedTempDir non_user_dir;
@@ -2252,8 +2274,8 @@ TEST_F(ProfileManagerTest, ScopedProfileKeepAlive) {
   }
 
   base::RunLoop().RunUntilIdle();
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Profile* should've been destroyed by now.
   EXPECT_EQ(nullptr, profile_manager->GetProfileByPath(dest_path));
-#endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 }

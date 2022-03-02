@@ -29,7 +29,6 @@
 
 #include <algorithm>
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings_builder.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_shader.h"
@@ -38,6 +37,7 @@
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
 
@@ -171,7 +171,7 @@ sk_sp<PaintShader> Gradient::CreateShaderInternal(
   return shader;
 }
 
-void Gradient::ApplyToFlags(PaintFlags& flags,
+void Gradient::ApplyToFlags(cc::PaintFlags& flags,
                             const SkMatrix& local_matrix,
                             const ImageDrawOptions& draw_options) {
   if (is_dark_mode_enabled_ != draw_options.apply_dark_mode) {

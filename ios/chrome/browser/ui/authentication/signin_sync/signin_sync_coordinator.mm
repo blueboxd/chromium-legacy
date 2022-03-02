@@ -285,11 +285,9 @@
 }
 
 - (void)didTapSecondaryActionButton {
-  [self finishPresentingAndSkipRemainingScreens:NO];
-  if (self.firstRun) {
-    base::UmaHistogramEnumeration(
-        "FirstRun.Stage", first_run::kSignInScreenCompletionWithoutSignIn);
-  }
+  // Cancel sync and sign out the user if needed.
+  [self.mediator cancelSyncAndRestoreSigninState:self.signinStateOnStart
+                           signinIdentityOnStart:self.signinIdentityOnStart];
 }
 
 #pragma mark - IdentityChooserCoordinatorDelegate
@@ -355,6 +353,15 @@
 - (void)signinSyncMediatorDidSuccessfulyFinishSigninForAdvancedSettings:
     (SigninSyncMediator*)mediator {
   [self showAdvancedSettings];
+}
+
+- (void)signinSyncMediatorDidSuccessfulyFinishSignout:
+    (SigninSyncMediator*)mediator {
+  [self finishPresentingAndSkipRemainingScreens:NO];
+  if (self.firstRun) {
+    base::UmaHistogramEnumeration(
+        "FirstRun.Stage", first_run::kSignInScreenCompletionWithoutSignIn);
+  }
 }
 
 #pragma mark - Private

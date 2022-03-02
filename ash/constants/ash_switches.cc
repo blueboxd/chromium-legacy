@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 
-namespace chromeos {
+namespace ash {
 namespace switches {
 
 namespace {
@@ -383,6 +383,10 @@ const char kEnableArcVm[] = "enable-arcvm";
 // Enables ARCVM realtime VCPU feature.
 const char kEnableArcVmRtVcpu[] = "enable-arcvm-rt-vcpu";
 
+// Enables testing the selfie camera feature of Capture Mode using fake cameras.
+// Used only in tests and the emulator.
+const char kEnableCaptureModeFakeCameras[] = "enable-capture-mode-fake-cameras";
+
 // Enables the Cast Receiver.
 const char kEnableCastReceiver[] = "enable-cast-receiver";
 
@@ -469,6 +473,12 @@ const char kEnterpriseEnrollmentInitialModulus[] =
 const char kEnterpriseEnrollmentModulusLimit[] =
     "enterprise-enrollment-modulus-limit";
 
+// Disallow blocking developer mode through enterprise device policy:
+// - Fail enterprise enrollment if enrolling would block dev mode.
+// - Don't apply new device policy if it would block dev mode.
+// This is only usable on test builds.
+const char kDisallowPolicyBlockDevMode[] = "disallow-policy-block-dev-mode";
+
 // Write extension install events to chrome log for integration test.
 const char kExtensionInstallEventChromeLogForTests[] =
     "extension-install-event-chrome-log-for-tests";
@@ -516,10 +526,9 @@ const char kForceDevToolsAvailable[] = "force-devtools-available";
 // Forces first-run UI to be shown for every login.
 const char kForceFirstRunUI[] = "force-first-run-ui";
 
-// Forces Hardware ID check (happens during OOBE) to fail. Should be used only
-// for testing.
-const char kForceHWIDCheckFailureForTest[] =
-    "force-hwid-check-failure-for-test";
+// Forces Hardware ID check (happens during OOBE) to fail or succeed. Possible
+// values: "failure" or "success". Should be used only for testing.
+const char kForceHWIDCheckResultForTest[] = "force-hwid-check-result-for-test";
 
 // Force enables the Happiness Tracking System for the device. This ignores
 // user profile check and time limits and shows the notification every time
@@ -769,6 +778,10 @@ const char kSupportsClamshellAutoRotation[] =
 // Hides all Message Center notification popups (toasts). Used for testing.
 const char kSuppressMessageCenterPopups[] = "suppress-message-center-popups";
 
+// Enables System Extensions Debug mode e.g Force enable System Extensions APIs
+// on all Service Workers.
+const char kSystemExtensionsDebug[] = "system-extensions-debug";
+
 // Specifies directory for the Telemetry System Web Extension.
 const char kTelemetryExtensionDirectory[] = "telemetry-extension-dir";
 
@@ -832,6 +845,11 @@ bool IsAuthSessionCryptohomeEnabled() {
 
 bool IsCellularFirstDevice() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kCellularFirst);
+}
+
+bool AreCaptureModeFakeCamerasEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableCaptureModeFakeCameras);
 }
 
 bool IsRevenBranding() {
@@ -945,4 +963,4 @@ bool ShouldClearFastInkBuffer() {
 }
 
 }  // namespace switches
-}  // namespace chromeos
+}  // namespace ash

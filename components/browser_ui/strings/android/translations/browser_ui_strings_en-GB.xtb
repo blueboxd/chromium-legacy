@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Allow cookies</translation>
 <translation id="2228071138934252756">To let <ph name="APP_NAME" /> access your camera, also turn on camera in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">Just once</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> Remove</translation>
 <translation id="2289270750774289114">Ask when a site wants to discover nearby Bluetooth devices (recommended)</translation>
 <translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
 <translation id="2359808026110333948">Continue</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Show info</translation>
 <translation id="3123473560110926937">Blocked on some sites</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> stored data</translation>
+<translation id="3203366800380907218">From the web</translation>
 <translation id="321187648315454507">To let <ph name="APP_NAME" /> send you notifications, also turn on notifications in <ph name="BEGIN_LINK" />Android settings<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Microphone</translation>
 <translation id="3277252321222022663">Allow sites to access sensors (recommended)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">Blocked</translation>
 <translation id="5689516760719285838">Location</translation>
 <translation id="5690795753582697420">Camera is turned off in Android settings</translation>
-<translation id="5710871682236653961">Ask before allowing sites to send and receive info when you tap NFC devices (recommended)</translation>
 <translation id="5719847187258001597">This will clear all data and cookies stored by <ph name="ORIGIN" /> or by its app on your home screen.</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> blocked</translation>
 <translation id="5804241973901381774">Permissions</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">Allowed for current search engine</translation>
 <translation id="7053983685419859001">Block</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selected}other{# selected}}</translation>
-<translation id="7070090581017165256">About this site</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> selected. Options available near top of the screen</translation>
 <translation id="7141896414559753902">Block sites from showing pop-ups and redirects (recommended)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">A site is using your microphone</translation>
 <translation id="7561196759112975576">Always</translation>
-<translation id="7572498721684305250">Block sites from sending and receiving info when you tap NFC devices</translation>
 <translation id="757524316907819857">Block sites from playing protected content</translation>
 <translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Cancel</translation>

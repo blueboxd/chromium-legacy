@@ -974,11 +974,14 @@ html element select
     property willValidate
 html element selectmenu
     property checkValidity
+    property disabled
     property form
+    property labels
     property name
     property open
     property reportValidity
     property required
+    property selectedOption
     property setCustomValidity
     property type
     property validationMessage

@@ -29,11 +29,11 @@ namespace features {
 // hints for what optimizations can be applied on a page load.
 const base::Feature kOptimizationHints {
   "OptimizationHints",
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
       base::FEATURE_DISABLED_BY_DEFAULT
-#else   // !defined(OS_IOS)
+#else   // !BUILDFLAG(IS_IOS)
       base::FEATURE_ENABLED_BY_DEFAULT
-#endif  // defined(OS_IOS)
+#endif  // BUILDFLAG(IS_IOS)
 };
 
 // Feature flag that contains a feature param that specifies the field trials
@@ -47,11 +47,11 @@ const base::Feature kRemoteOptimizationGuideFetching{
 
 const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent {
   "OptimizationHintsFetchingAnonymousDataConsent",
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
-#else   // !defined(OS_ANDROID)
+#else   // !BUILDFLAG(IS_ANDROID)
       base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 };
 
 // Enables performance info in the context menu and fetching from a remote
@@ -95,6 +95,9 @@ const base::Feature kPageTopicsBatchAnnotations{
     "PageTopicsBatchAnnotations", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kPageVisibilityBatchAnnotations{
     "PageVisibilityBatchAnnotations", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kUseLocalPageEntitiesMetadataProvider{
+    "UseLocalPageEntitiesMetadataProvider", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The default value here is a bit of a guess.
 // TODO(crbug/1163244): This should be tuned once metrics are available.
@@ -264,14 +267,15 @@ base::TimeDelta StoredHostModelFeaturesFreshnessDuration() {
       "max_store_duration_for_host_model_features_in_days", 7));
 }
 
-base::TimeDelta StoredModelsInactiveDuration() {
+base::TimeDelta StoredModelsValidDuration() {
   // TODO(crbug.com/1234054) This field should not be changed without VERY
-  // careful consideration. Any model that is on device and expires will be
-  // removed and triggered to refetch so any feature relying on the model could
-  // have a period of time without a valid model.
+  // careful consideration. This is the default duration for models that do not
+  // specify retention, so changing this can cause models to be removed and
+  // refetch would only apply to newer models. Any feature relying on the model
+  // would have a period of time without a valid model, and would need to push a
+  // new version.
   return base::Days(GetFieldTrialParamByFeatureAsInt(
-      kOptimizationTargetPrediction, "inactive_duration_for_models_in_days",
-      30));
+      kOptimizationTargetPrediction, "valid_duration_for_models_in_days", 30));
 }
 
 base::TimeDelta URLKeyedHintValidCacheDuration() {
@@ -501,7 +505,7 @@ bool ShouldMetadataValidationFetchHostKeyed() {
 bool ShouldDeferStartupActiveTabsHintsFetch() {
   return GetFieldTrialParamByFeatureAsBool(
       kOptimizationHints, "defer_startup_active_tabs_hints_fetch",
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       true
 #else
       false
@@ -515,6 +519,10 @@ bool PageTopicsBatchAnnotationsEnabled() {
 
 bool PageVisibilityBatchAnnotationsEnabled() {
   return base::FeatureList::IsEnabled(kPageVisibilityBatchAnnotations);
+}
+
+bool UseLocalPageEntitiesMetadataProvider() {
+  return base::FeatureList::IsEnabled(kUseLocalPageEntitiesMetadataProvider);
 }
 
 }  // namespace features

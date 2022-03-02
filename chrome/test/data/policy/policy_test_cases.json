@@ -1737,7 +1737,8 @@
     "os": [
       "win",
       "mac",
-      "linux"
+      "linux",
+      "android"
     ],
     "official_only": true,
     "can_be_recommended": true,
@@ -3193,43 +3194,7 @@
     ]
   },
   "CrossOriginWebAssemblyModuleSharingEnabled": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "CrossOriginWebAssemblyModuleSharingEnabled": false
-        },
-        "prefs": {
-          "profile.cross_origin_webassembly_module_sharing_enabled": {
-            "value": false
-          }
-        }
-      },
-      {
-        "policies": {
-          "CrossOriginWebAssemblyModuleSharingEnabled": true
-        },
-        "prefs": {
-          "profile.cross_origin_webassembly_module_sharing_enabled": {
-            "value": true
-          }
-        }
-      },
-      {
-        "policies": {},
-        "prefs": {
-          "profile.cross_origin_webassembly_module_sharing_enabled": {
-            "default_value": false
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "DisplayCapturePermissionsPolicyEnabled": {
     "os": [
@@ -7307,6 +7272,37 @@
       }
     ]
   },
+  "NTPMiddleSlotAnnouncementVisible": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "NTPMiddleSlotAnnouncementVisible": true
+        },
+        "prefs": {
+          "ntp.promo_visible": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "NTPMiddleSlotAnnouncementVisible": false
+        },
+        "prefs": {
+          "ntp.promo_visible": {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
   "WebRtcUdpPortRange": {
     "os": [
       "win",
@@ -7801,7 +7797,7 @@
       }
     ]
   },
-  "FullscreenNotificationUrlExemptList": {
+  "KeepFullscreenWithoutNotificationUrlAllowList": {
     "os": [
       "chromeos_ash"
     ],
@@ -7809,19 +7805,19 @@
       {
         "policies": {},
         "prefs": {
-          "ash.fullscreen_notification_url_exempt_list": {
+          "ash.keep_fullscreen_without_notification_url_allow_list": {
             "default_value": []
           }
         }
       },
       {
         "policies": {
-          "FullscreenNotificationUrlExemptList": [
+          "KeepFullscreenWithoutNotificationUrlAllowList": [
             "*"
           ]
         },
         "prefs": {
-          "ash.fullscreen_notification_url_exempt_list": {
+          "ash.keep_fullscreen_without_notification_url_allow_list": {
             "value": [
               "*"
             ]
@@ -10544,6 +10540,41 @@
       }
     ]
   },
+  "PhoneHubCameraRollAllowed": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "phone_hub_camera_roll.allowed": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "PhoneHubCameraRollAllowed": false
+        },
+        "prefs": {
+          "phone_hub_camera_roll.allowed": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "PhoneHubCameraRollAllowed": true
+        },
+        "prefs": {
+          "phone_hub_camera_roll.allowed": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
   "PhoneHubNotificationsAllowed": {
     "os": [
       "chromeos_ash"
@@ -10608,6 +10639,41 @@
         },
         "prefs": {
           "phone_hub_task_continuation.allowed": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+  "EcheAllowed": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "eche.allowed": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "EcheAllowed": false
+        },
+        "prefs": {
+          "eche.allowed": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "EcheAllowed": true
+        },
+        "prefs": {
+          "eche.allowed": {
             "value": true
           }
         }
@@ -11624,6 +11690,9 @@
   "ReportDeviceLoginLogout": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
+  "ReportCRDSessions": {
+    "reason_for_missing_test": "Maps into CrosSettings"
+  },
   "ReportDevicePrintJobs": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
@@ -12093,9 +12162,6 @@
   },
   "SystemTimezoneAutomaticDetection": {
     "reason_for_missing_test": "Maps into CrosSettings"
-  },
-  "WebRestrictionsAuthority": {
-    "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
   },
   "TaskManagerEndProcessEnabled": {
     "os": [
@@ -13586,7 +13652,7 @@
       }
     ]
   },
-  "QuickAnswersUnitConverstionEnabled": {
+  "QuickAnswersUnitConversionEnabled": {
     "os": [
       "chromeos_ash"
     ],
@@ -13601,7 +13667,7 @@
       },
       {
         "policies": {
-          "QuickAnswersUnitConverstionEnabled": false
+          "QuickAnswersUnitConversionEnabled": false
         },
         "prefs": {
           "settings.quick_answers.unit_conversion.enabled": {
@@ -13611,7 +13677,7 @@
       },
       {
         "policies": {
-          "QuickAnswersUnitConverstionEnabled": true
+          "QuickAnswersUnitConversionEnabled": true
         },
         "prefs": {
           "settings.quick_answers.unit_conversion.enabled": {
@@ -17211,7 +17277,7 @@
       {
         "policies": {},
         "prefs": {
-          "media_router.access_code_cast_enabled": {
+          "media_router.access_code_cast.enabled": {
             "default_value": false
           }
         }
@@ -17219,7 +17285,7 @@
       {
         "policies": { "AccessCodeCastEnabled": false },
         "prefs": {
-          "media_router.access_code_cast_enabled": {
+          "media_router.access_code_cast.enabled": {
             "value": false
           }
         }
@@ -17227,7 +17293,7 @@
       {
         "policies": { "AccessCodeCastEnabled": true },
         "prefs": {
-          "media_router.access_code_cast_enabled": {
+          "media_router.access_code_cast.enabled": {
             "value": true
           }
         }
@@ -17242,7 +17308,7 @@
           "AccessCodeCastDeviceDuration": 10
         },
         "prefs": {
-          "media_router.access_code_cast_device_duration": {
+          "media_router.access_code_cast.device_duration": {
             "value": 10
           }
         }
@@ -17250,7 +17316,7 @@
       {
         "policies": {},
         "prefs": {
-          "media_router.access_code_cast_device_duration": {
+          "media_router.access_code_cast.device_duration": {
             "default_value": 0
           }
         }
@@ -17466,6 +17532,44 @@
       }
     ]
   },
+  "OriginAgentClusterDefaultEnabled": {
+    "os": [
+      "win", "linux", "mac", "android", "chromeos_ash", "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "origin_agent_cluster_default_enabled": {
+            "default_value": true,
+            "location": "user_profile"
+          }
+        }
+      },
+      {
+        "policies": {
+          "OriginAgentClusterDefaultEnabled": false
+        },
+        "prefs": {
+          "origin_agent_cluster_default_enabled": {
+            "value": false,
+            "location": "user_profile"
+          }
+        }
+      },
+      {
+        "policies": {
+          "OriginAgentClusterDefaultEnabled": true
+        },
+        "prefs": {
+          "origin_agent_cluster_default_enabled": {
+            "value": true,
+            "location": "user_profile"
+          }
+        }
+      }
+    ]
+  },
   "DeviceLoginScreenWebUILazyLoading": {
     "os": [
       "chromeos_ash"
@@ -17503,5 +17607,46 @@
         }
       }
     ]
+  },
+  "ProjectorEnabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "ash.projector.allow_by_policy": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ProjectorEnabled": false
+        },
+        "prefs": {
+          "ash.projector.allow_by_policy": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ProjectorEnabled": true
+        },
+        "prefs": {
+          "ash.projector.allow_by_policy": {
+            "value": true
+          }
+        }
+      }
+    ]
+  },
+  "DeviceKeylockerForStorageEncryptionEnabled": {
+    "reason_for_missing_test": "Chrome OS device policy used by cryptohome only, not used in Chrome."
+  },
+  "DeviceRunAutomaticCleanupOnLogin": {
+    "reason_for_missing_test": "Chrome OS device policy used by cryptohome only, not used in Chrome."
   }
 }

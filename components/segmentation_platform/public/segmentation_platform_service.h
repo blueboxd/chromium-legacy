@@ -13,9 +13,9 @@
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_android.h"
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 class PrefRegistrySimple;
 
@@ -28,12 +28,12 @@ struct SegmentSelectionResult;
 class SegmentationPlatformService : public KeyedService,
                                     public base::SupportsUserData {
  public:
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Returns a Java object of the type SegmentationPlatformService for the given
   // SegmentationPlatformService.
   static base::android::ScopedJavaLocalRef<jobject> GetJavaObject(
       SegmentationPlatformService* segmentation_platform_service);
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   SegmentationPlatformService() = default;
   ~SegmentationPlatformService() override = default;
@@ -50,9 +50,15 @@ class SegmentationPlatformService : public KeyedService,
   using SegmentSelectionCallback =
       base::OnceCallback<void(const SegmentSelectionResult&)>;
 
-  // Called to get the selected segment. If none, returns empty result.
+  // Called to get the selected segment asynchronously. If none, returns empty
+  // result.
   virtual void GetSelectedSegment(const std::string& segmentation_key,
                                   SegmentSelectionCallback callback) = 0;
+
+  // Called to get the selected segment synchronously. If none, returns empty
+  // result.
+  virtual SegmentSelectionResult GetCachedSegmentResult(
+      const std::string& segmentation_key) = 0;
 
   // Called to enable or disable metrics collection. Must be explicitly called
   // on startup.

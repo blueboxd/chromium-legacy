@@ -49,8 +49,8 @@ std::unique_ptr<SystemInfo::Size> GfxSizeToSystemInfoSize(
 // 1046598, and 1153667.
 // Windows builds need more time -- see Issue 873112 and 1004472.
 // Mac builds need more time - see Issue angleproject:6182.
-#if ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && !defined(NDEBUG)) || \
-    defined(OS_WIN) || defined(OS_MAC) || defined(USE_OZONE)
+#if ((BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && !defined(NDEBUG)) || \
+    BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || defined(USE_OZONE)
 static constexpr int kGPUInfoWatchdogTimeoutMultiplierOS = 3;
 #else
 static constexpr int kGPUInfoWatchdogTimeoutMultiplierOS = 1;
@@ -143,7 +143,7 @@ std::unique_ptr<GPUDevice> GPUDeviceToProtocol(
   return GPUDevice::Create()
       .SetVendorId(device.vendor_id)
       .SetDeviceId(device.device_id)
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       .SetSubSysId(device.sub_sys_id)
       .SetRevision(device.revision)
 #endif
@@ -240,12 +240,8 @@ void SendGetInfoResponse(std::unique_ptr<GetInfoCallback> callback) {
                     gpu_info.visibility_callback_call_count);
   enumerator.EndAuxAttributes();
 
-  std::unique_ptr<base::DictionaryValue> base_feature_status =
-      base::DictionaryValue::From(
-          std::make_unique<base::Value>(GetFeatureStatus()));
-  std::unique_ptr<protocol::DictionaryValue> feature_status =
-      protocol::DictionaryValue::cast(
-          protocol::toProtocolValue(base_feature_status.get(), 1000));
+  auto feature_status = protocol::DictionaryValue::cast(
+      protocol::toProtocolValue(GetFeatureStatus(), 1000));
 
   auto driver_bug_workarounds =
       std::make_unique<protocol::Array<std::string>>(GetDriverBugWorkarounds());
@@ -286,7 +282,7 @@ void SendGetInfoResponse(std::unique_ptr<GetInfoCallback> callback) {
           .Build();
 
   base::CommandLine* command = base::CommandLine::ForCurrentProcess();
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   std::string command_string =
       base::WideToUTF8(command->GetCommandLineString());
 #else
@@ -369,7 +365,7 @@ namespace {
 
 std::unique_ptr<base::ProcessMetrics> CreateProcessMetrics(
     base::ProcessHandle handle) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   return base::ProcessMetrics::CreateProcessMetrics(
       handle, content::BrowserChildProcessHost::GetPortProvider());
 #else

@@ -272,9 +272,9 @@ TEST_F(TracingServiceTest, PerfettoClientConsumerLegacyJson) {
   wait_for_data_loop.Run();
   DCHECK(!tokenizer.has_more());
 
-  auto result = base::DictionaryValue::From(
-      base::Value::ToUniquePtrValue(*base::JSONReader::Read(json)));
-  EXPECT_TRUE(result->HasKey("traceEvents"));
+  absl::optional<base::Value> result = base::JSONReader::Read(json);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_TRUE(result->FindKey("traceEvents"));
 }
 
 class CustomDataSource : public perfetto::DataSource<CustomDataSource> {
@@ -371,7 +371,7 @@ TEST_F(TracingServiceTest, PerfettoClientProducer) {
   EXPECT_EQ(kNumPackets, ReadAndCountTestPackets(*session));
 }
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
 // TODO(crbug.com/1158482): Support tracing to file on Windows.
 TEST_F(TracingServiceTest, TraceToFile) {
   // Set up API bindings.

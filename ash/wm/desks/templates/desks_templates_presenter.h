@@ -52,8 +52,10 @@ class ASH_EXPORT DesksTemplatesPresenter : desks_storage::DeskModelObserver {
   // Calls the DeskModel to delete the template with the provided uuid.
   void DeleteEntry(const std::string& template_uuid);
 
-  // Launches the desk template with 'template_uuid' as a new desk.
-  void LaunchDeskTemplate(const std::string& template_uuid);
+  // Launches the desk template with 'template_uuid' as a new desk. `delay` is
+  // the time between each app launch, used for debugging.
+  void LaunchDeskTemplate(const std::string& template_uuid,
+                          base::TimeDelta delay);
 
   // Calls the DeskModel to capture the active desk as a template entry, with a
   // callback to `OnAddOrUpdateEntry`. If there are unsupported apps on the
@@ -66,13 +68,11 @@ class ASH_EXPORT DesksTemplatesPresenter : desks_storage::DeskModelObserver {
                                 std::unique_ptr<DeskTemplate> desk_template);
 
   // desks_storage::DeskModelObserver:
-  // TODO(sammiequon): Implement these once the model starts sending these
-  // messages.
-  void DeskModelLoaded() override;
+  void DeskModelLoaded() override {}
   void OnDeskModelDestroying() override;
   void EntriesAddedOrUpdatedRemotely(
-      const std::vector<const DeskTemplate*>& new_entries) override {}
-  void EntriesRemovedRemotely(const std::vector<std::string>& uuids) override {}
+      const std::vector<const DeskTemplate*>& new_entries) override;
+  void EntriesRemovedRemotely(const std::vector<std::string>& uuids) override;
   void EntriesAddedOrUpdatedLocally(
       const std::vector<const DeskTemplate*>& new_entries) override {}
   void EntriesRemovedLocally(const std::vector<std::string>& uuids) override {}
@@ -91,6 +91,7 @@ class ASH_EXPORT DesksTemplatesPresenter : desks_storage::DeskModelObserver {
 
   // Launches DeskTemplate after retrieval from storage.
   void OnGetTemplateForDeskLaunch(
+      base::TimeDelta delay,
       desks_storage::DeskModel::GetEntryByUuidStatus status,
       std::unique_ptr<DeskTemplate> entry);
 

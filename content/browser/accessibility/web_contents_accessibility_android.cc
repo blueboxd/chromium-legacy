@@ -228,6 +228,7 @@ WebContentsAccessibilityAndroid::WebContentsAccessibilityAndroid(
       reinterpret_cast<ui::AXTreeUpdate*>(ax_tree_update_ptr));
   manager_ = std::make_unique<BrowserAccessibilityManagerAndroid>(
       *ax_tree_snapshot, GetWeakPtr(), nullptr);
+  manager_->BuildAXTreeHitTestCache();
   connector_ = nullptr;
   BrowserAccessibilityStateImplAndroid* accessibility_state =
       static_cast<BrowserAccessibilityStateImplAndroid*>(
@@ -313,22 +314,35 @@ void WebContentsAccessibilityAndroid::SetAllowImageDescriptions(
 void WebContentsAccessibilityAndroid::SetAXMode(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    jboolean screen_reader_mode) {
-  if (!features::IsComputeAXModeEnabled())
-    return;
-
+    jboolean screen_reader_mode,
+    jboolean is_accessibility_enabled) {
   BrowserAccessibilityStateImpl* accessibility_state =
       BrowserAccessibilityStateImpl::GetInstance();
 
-  if (screen_reader_mode) {
-    accessibility_state->AddAccessibilityModeFlags(ui::kAXModeComplete);
-  } else {
-    // Remove the mode flags present in kAXModeComplete but not in
-    // kAXModeBasic, thereby reverting the mode to kAXModeBasic while
-    // not touching any other flags.
-    ui::AXMode remove_mode_flags(ui::kAXModeComplete.mode() &
-                                 ~ui::kAXModeBasic.mode());
-    accessibility_state->RemoveAccessibilityModeFlags(remove_mode_flags);
+  if (!features::IsComputeAXModeEnabled() &&
+      !features::IsAutoDisableAccessibilityEnabled()) {
+    return;
+  }
+
+  if (features::IsAutoDisableAccessibilityEnabled()) {
+    if (!is_accessibility_enabled) {
+      accessibility_state->DisableAccessibility();
+    } else {
+      accessibility_state->AddAccessibilityModeFlags(ui::kAXModeComplete);
+    }
+  }
+
+  if (features::IsComputeAXModeEnabled()) {
+    if (screen_reader_mode) {
+      accessibility_state->AddAccessibilityModeFlags(ui::kAXModeComplete);
+    } else {
+      // Remove the mode flags present in kAXModeComplete but not in
+      // kAXModeBasic, thereby reverting the mode to kAXModeBasic while
+      // not touching any other flags.
+      ui::AXMode remove_mode_flags(ui::kAXModeComplete.mode() &
+                                   ~ui::kAXModeBasic.mode());
+      accessibility_state->RemoveAccessibilityModeFlags(remove_mode_flags);
+    }
   }
 }
 
@@ -543,7 +557,7 @@ bool WebContentsAccessibilityAndroid::OnHoverEvent(
   // Hover event was consumed by accessibility by now. Return true to
   // stop the event from proceeding.
   if (event.GetAction() != ui::MotionEvent::Action::HOVER_EXIT)
-    GetRootBrowserAccessibilityManager()->HitTest(point);
+    GetRootBrowserAccessibilityManager()->HitTest(point, /*request_id=*/0);
 
   if (!GetRootBrowserAccessibilityManager()->touch_passthrough_enabled())
     return true;
@@ -583,8 +597,7 @@ bool WebContentsAccessibilityAndroid::OnHoverEventNoRenderer(
   if (BrowserAccessibilityManagerAndroid* root_manager =
           GetRootBrowserAccessibilityManager()) {
     auto* hover_node = static_cast<BrowserAccessibilityAndroid*>(
-        root_manager->GetRoot()->ApproximateHitTest(
-            gfx::ToFlooredPoint(point)));
+        root_manager->ApproximateHitTest(gfx::ToFlooredPoint(point)));
     if (hover_node && hover_node != root_manager->GetRoot()) {
       HandleHover(hover_node->unique_id());
       return true;
@@ -659,7 +672,7 @@ void WebContentsAccessibilityAndroid::HitTest(JNIEnv* env,
                                               jint y) {
   if (BrowserAccessibilityManagerAndroid* root_manager =
           GetRootBrowserAccessibilityManager())
-    root_manager->HitTest(gfx::Point(x, y));
+    root_manager->HitTest(gfx::Point(x, y), /*request_id=*/0);
 }
 
 jboolean WebContentsAccessibilityAndroid::IsEditableText(

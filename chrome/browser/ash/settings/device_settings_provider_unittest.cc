@@ -115,6 +115,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_report_app_info(enable_reporting);
     proto->set_report_print_jobs(enable_reporting);
     proto->set_report_login_logout(enable_reporting);
+    proto->set_report_crd_sessions(enable_reporting);
     proto->set_report_network_telemetry_collection_rate_ms(frequency);
     proto->set_report_network_telemetry_event_checking_rate_ms(frequency);
     proto->set_device_status_frequency(frequency);
@@ -759,10 +760,10 @@ TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
   base::ListValue expected_accounts;
   std::unique_ptr<base::DictionaryValue> entry_dict(
       new base::DictionaryValue());
-  entry_dict->SetString(kAccountsPrefDeviceLocalAccountsKeyId,
-                        policy::PolicyBuilder::kFakeUsername);
-  entry_dict->SetInteger(kAccountsPrefDeviceLocalAccountsKeyType,
-                         policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION);
+  entry_dict->SetStringKey(kAccountsPrefDeviceLocalAccountsKeyId,
+                           policy::PolicyBuilder::kFakeUsername);
+  entry_dict->SetIntKey(kAccountsPrefDeviceLocalAccountsKeyType,
+                        policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION);
   expected_accounts.Append(std::move(entry_dict));
   const base::Value* actual_accounts =
       provider_->Get(kAccountsPrefDeviceLocalAccounts);

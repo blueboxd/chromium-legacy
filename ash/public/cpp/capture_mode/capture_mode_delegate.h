@@ -72,10 +72,6 @@ class ASH_PUBLIC_EXPORT CaptureModeDelegate {
   // video.
   virtual bool Uses24HourFormat() const = 0;
 
-  // Returns whether initiation of capture mode is restricted because of Data
-  // Leak Prevention applied to the currently visible content.
-  virtual bool IsCaptureModeInitRestrictedByDlp() const = 0;
-
   // Called when capture mode is being started to check if there are any content
   // currently on the screen that are restricted by DLP. `callback` will be
   // triggered by the DLP manager with `proceed` set to true if capture mode
@@ -92,9 +88,6 @@ class ASH_PUBLIC_EXPORT CaptureModeDelegate {
       const aura::Window* window,
       const gfx::Rect& bounds,
       OnCaptureModeDlpRestrictionChecked callback) = 0;
-
-  virtual bool IsCaptureAllowedByDlp(const aura::Window* window,
-                                     const gfx::Rect& bounds) const = 0;
 
   // Returns whether screen capture is allowed by an enterprise policy.
   virtual bool IsCaptureAllowedByPolicy() const = 0;
@@ -117,6 +110,11 @@ class ASH_PUBLIC_EXPORT CaptureModeDelegate {
   // to false).
   virtual void StopObservingRestrictedContent(
       OnCaptureModeDlpRestrictionChecked callback) = 0;
+
+  // Notifies DLP that taking a screenshot was attempted. Called after checking
+  // DLP restrictions.
+  virtual void OnCaptureImageAttempted(const aura::Window* window,
+                                       const gfx::Rect& bounds) = 0;
 
   // Launches the Recording Service into a separate utility process.
   virtual mojo::Remote<recording::mojom::RecordingService>

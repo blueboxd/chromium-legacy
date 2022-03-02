@@ -5,7 +5,9 @@
 #include "chromeos/services/machine_learning/public/cpp/fake_service_connection.h"
 
 #include <utility>
+
 #include "base/bind.h"
+#include "base/notreached.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
@@ -67,20 +69,20 @@ void FakeServiceConnectionImpl::LoadFlatBufferModel(
       base::Unretained(this), std::move(receiver), std::move(callback)));
 }
 
-void FakeServiceConnectionImpl::CreateGraphExecutor(
+void FakeServiceConnectionImpl::REMOVED_0(
     mojo::PendingReceiver<mojom::GraphExecutor> receiver,
-    mojom::Model::CreateGraphExecutorCallback callback) {
-  ScheduleCall(base::BindOnce(
-      &FakeServiceConnectionImpl::HandleCreateGraphExecutorCall,
-      base::Unretained(this), std::move(receiver), std::move(callback)));
+    mojom::Model::REMOVED_0Callback callback) {
+  NOTIMPLEMENTED();
 }
 
-// Fake impl of CreateGrapHExecutorWithOptions just ignores `options`.
-void FakeServiceConnectionImpl::CreateGraphExecutorWithOptions(
+void FakeServiceConnectionImpl::CreateGraphExecutor(
     mojom::GraphExecutorOptionsPtr options,
     mojo::PendingReceiver<mojom::GraphExecutor> receiver,
     mojom::Model::CreateGraphExecutorCallback callback) {
-  CreateGraphExecutor(std::move(receiver), std::move(callback));
+  ScheduleCall(
+      base::BindOnce(&FakeServiceConnectionImpl::HandleCreateGraphExecutorCall,
+                     base::Unretained(this), std::move(options),
+                     std::move(receiver), std::move(callback)));
 }
 
 void FakeServiceConnectionImpl::LoadTextClassifier(
@@ -260,6 +262,7 @@ void FakeServiceConnectionImpl::HandleLoadFlatBufferModelCall(
 }
 
 void FakeServiceConnectionImpl::HandleCreateGraphExecutorCall(
+    mojom::GraphExecutorOptionsPtr options,
     mojo::PendingReceiver<mojom::GraphExecutor> receiver,
     mojom::Model::CreateGraphExecutorCallback callback) {
   if (create_graph_executor_result_ == mojom::CreateGraphExecutorResult::OK)

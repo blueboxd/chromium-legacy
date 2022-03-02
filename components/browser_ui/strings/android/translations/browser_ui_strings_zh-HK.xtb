@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">允許 Cookie</translation>
 <translation id="2228071138934252756">如要讓 <ph name="APP_NAME" /> 存取您的相機，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟相機。</translation>
 <translation id="2241634353105152135">只有這一次</translation>
+<translation id="2253414712144136228">移除<ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">在網站要探索附近的藍牙裝置時詢問您 (建議)</translation>
 <translation id="2315043854645842844">作業系統不支援由客戶端選取憑證。</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">顯示資料</translation>
 <translation id="3123473560110926937">在部分網站上設定封鎖</translation>
 <translation id="3198916472715691905">已使用 <ph name="STORAGE_AMOUNT" /> 儲存空間</translation>
+<translation id="3203366800380907218">來自網絡</translation>
 <translation id="321187648315454507">如要讓 <ph name="APP_NAME" /> 傳送通知，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟通知功能。</translation>
 <translation id="3227137524299004712">麥克風</translation>
 <translation id="3277252321222022663">允許網站存取感應器 (建議)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">已封鎖</translation>
 <translation id="5689516760719285838">位置</translation>
 <translation id="5690795753582697420">相機已在 Android 設定中關閉</translation>
-<translation id="5710871682236653961">系統需要先詢問您，才能允許網站在您輕按 NFC 裝置時傳送及接收資訊 (建議)</translation>
 <translation id="5719847187258001597">此操作會清除主畫面上 <ph name="ORIGIN" /> 或其應用程式儲存的所有資料和 Cookie。</translation>
 <translation id="5771720122942595109">已封鎖「<ph name="PERMISSION_1" />」</translation>
 <translation id="5804241973901381774">權限</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">允許目前的搜尋引擎使用</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已選取 1 個項目}other{已選取 # 個項目}}</translation>
-<translation id="7070090581017165256">關於此網站</translation>
 <translation id="7087918508125750058">揀咗 <ph name="ITEM_COUNT" /> 個。選項喺螢幕頂部</translation>
 <translation id="7141896414559753902">禁止網站顯示彈出式視窗和重新導向 (建議)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">有網站正在使用您的麥克風</translation>
 <translation id="7561196759112975576">永遠使用</translation>
-<translation id="7572498721684305250">禁止網站在您輕按 NFC 裝置時傳送及接收資料</translation>
 <translation id="757524316907819857">禁止網站播放受保護內容</translation>
 <translation id="7649070708921625228">說明</translation>
 <translation id="7658239707568436148">取消</translation>

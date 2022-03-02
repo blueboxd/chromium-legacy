@@ -21,15 +21,13 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/extensions/api/omnibox.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
-#include "components/omnibox/browser/omnibox_watcher.h"
+#include "components/omnibox/browser/omnibox_input_watcher.h"
+#include "components/omnibox/browser/omnibox_suggestions_watcher.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
-#include "extensions/browser/notification_types.h"
 #include "ui/gfx/image/image.h"
 
 namespace extensions {
@@ -113,8 +111,8 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
     return false;
 
   auto args(std::make_unique<base::ListValue>());
-  args->Set(0, std::make_unique<base::Value>(input));
-  args->Set(1, std::make_unique<base::Value>(suggest_id));
+  args->Append(input);
+  args->Append(suggest_id);
 
   auto event = std::make_unique<Event>(events::OMNIBOX_ON_INPUT_CHANGED,
                                        omnibox::OnInputChanged::kEventName,
@@ -140,13 +138,13 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
       active_tab_permission_granter()->GrantIfRequested(extension);
 
   auto args(std::make_unique<base::ListValue>());
-  args->Set(0, std::make_unique<base::Value>(input));
+  args->Append(input);
   if (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB)
-    args->Set(1, std::make_unique<base::Value>(kForegroundTabDisposition));
+    args->Append(kForegroundTabDisposition);
   else if (disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
-    args->Set(1, std::make_unique<base::Value>(kBackgroundTabDisposition));
+    args->Append(kBackgroundTabDisposition);
   else
-    args->Set(1, std::make_unique<base::Value>(kCurrentTabDisposition));
+    args->Append(kCurrentTabDisposition);
 
   auto event = std::make_unique<Event>(events::OMNIBOX_ON_INPUT_ENTERED,
                                        omnibox::OnInputEntered::kEventName,
@@ -154,7 +152,7 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
   EventRouter::Get(profile)
       ->DispatchEventToExtension(extension_id, std::move(event));
 
-  OmniboxWatcher::GetForBrowserContext(profile)->NotifyInputEntered();
+  OmniboxInputWatcher::GetForBrowserContext(profile)->NotifyInputEntered();
 }
 
 // static
@@ -172,7 +170,7 @@ void ExtensionOmniboxEventRouter::OnDeleteSuggestion(
     const std::string& extension_id,
     const std::string& suggestion_text) {
   auto args(std::make_unique<base::ListValue>());
-  args->Set(0, std::make_unique<base::Value>(suggestion_text));
+  args->Append(suggestion_text);
 
   auto event = std::make_unique<Event>(events::OMNIBOX_ON_DELETE_SUGGESTION,
                                        omnibox::OnDeleteSuggestion::kEventName,
@@ -277,11 +275,10 @@ ExtensionFunction::ResponseAction OmniboxSendSuggestionsFunction::Run() {
       SendSuggestions::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
-      content::Source<Profile>(
-          Profile::FromBrowserContext(browser_context())->GetOriginalProfile()),
-      content::Details<SendSuggestions::Params>(params.get()));
+  Profile* profile =
+      Profile::FromBrowserContext(browser_context())->GetOriginalProfile();
+  OmniboxSuggestionsWatcher::GetForBrowserContext(profile)
+      ->NotifySuggestionsReady(params.get());
 
   return RespondNow(NoArguments());
 }
@@ -294,10 +291,9 @@ ExtensionFunction::ResponseAction OmniboxSetDefaultSuggestionFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   if (SetOmniboxDefaultSuggestion(profile, extension_id(),
                                   params->suggestion)) {
-    content::NotificationService::current()->Notify(
-        extensions::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
-        content::Source<Profile>(profile->GetOriginalProfile()),
-        content::NotificationService::NoDetails());
+    OmniboxSuggestionsWatcher::GetForBrowserContext(
+        profile->GetOriginalProfile())
+        ->NotifyDefaultSuggestionChanged();
   }
 
   return RespondNow(NoArguments());

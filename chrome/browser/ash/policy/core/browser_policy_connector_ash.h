@@ -45,10 +45,11 @@ class BluetoothPolicyHandler;
 class DeviceActiveDirectoryPolicyManager;
 class DeviceCloudPolicyInitializer;
 class ActiveDirectoryDeviceStateUploader;
+class ActiveDirectoryMigrationManager;
 class DeviceDockMacAddressHandler;
 class DeviceLocalAccountPolicyService;
 class DeviceNamePolicyHandler;
-class DeviceNetworkConfigurationUpdater;
+class DeviceNetworkConfigurationUpdaterAsh;
 class DeviceWiFiAllowedHandler;
 struct EnrollmentConfig;
 class MinimumVersionPolicyHandler;
@@ -174,7 +175,7 @@ class BrowserPolicyConnectorAsh : public ChromeBrowserPolicyConnector,
     return minimum_version_policy_handler_.get();
   }
 
-  DeviceNetworkConfigurationUpdater* GetDeviceNetworkConfigurationUpdater()
+  DeviceNetworkConfigurationUpdaterAsh* GetDeviceNetworkConfigurationUpdater()
       const {
     return device_network_configuration_updater_.get();
   }
@@ -278,6 +279,8 @@ class BrowserPolicyConnectorAsh : public ChromeBrowserPolicyConnector,
       nullptr;
   std::unique_ptr<ActiveDirectoryDeviceStateUploader>
       active_directory_device_state_uploader_;
+  std::unique_ptr<ActiveDirectoryMigrationManager>
+      active_directory_migration_manager_;
   PrefService* local_state_ = nullptr;
   std::unique_ptr<DeviceCloudPolicyInitializer>
       device_cloud_policy_initializer_;
@@ -316,11 +319,11 @@ class BrowserPolicyConnectorAsh : public ChromeBrowserPolicyConnector,
   // pointer to get to the ProxyPolicyProvider at SetUserPolicyDelegate().
   ProxyPolicyProvider* global_user_cloud_policy_provider_ = nullptr;
 
-  std::unique_ptr<DeviceNetworkConfigurationUpdater>
+  std::unique_ptr<DeviceNetworkConfigurationUpdaterAsh>
       device_network_configuration_updater_;
 
   // The ConfigurationPolicyProviders created in the constructor are initially
-  // added here, and then pushed to the super class in BuildPolicyProviders().
+  // added here, and then pushed to the super class in CreatePolicyProviders().
   std::vector<std::unique_ptr<ConfigurationPolicyProvider>> providers_for_init_;
 
   // Manages provisioning of certificates from

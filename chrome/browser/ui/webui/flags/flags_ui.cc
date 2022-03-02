@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -127,7 +128,7 @@ void FinishInitialization(base::WeakPtr<T> flags_ui,
 
   // Show a warning info bar when kSafeMode switch is present.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kSafeMode)) {
+          ash::switches::kSafeMode)) {
     CreateSimpleAlertInfoBar(
         infobars::ContentInfoBarManager::FromWebContents(
             flags_ui->web_ui()->GetWebContents()),
@@ -138,7 +139,7 @@ void FinishInitialization(base::WeakPtr<T> flags_ui,
   }
 
   // Show a warning info bar for secondary users.
-  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
+  if (!ash::ProfileHelper::IsPrimaryProfile(profile)) {
     CreateSimpleAlertInfoBar(
         infobars::ContentInfoBarManager::FromWebContents(
             flags_ui->web_ui()->GetWebContents()),
@@ -178,7 +179,7 @@ void FlagsUI::AddStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("search-label", IDS_FLAGS_UI_SEARCH_LABEL);
   source->AddLocalizedString("search-placeholder",
                              IDS_FLAGS_UI_SEARCH_PLACEHOLDER);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   source->AddLocalizedString("os-flags-link", IDS_FLAGS_UI_OS_FLAGS_LINK);
   source->AddLocalizedString("os-flags-text1", IDS_FLAGS_UI_OS_FLAGS_TEXT1);
   source->AddLocalizedString("os-flags-text2", IDS_FLAGS_UI_OS_FLAGS_TEXT2);
@@ -218,7 +219,7 @@ void FlagsDeprecatedUI::AddStrings(content::WebUIDataSource* source) {
   source->AddLocalizedString("search-label", IDS_FLAGS_UI_SEARCH_LABEL);
   source->AddLocalizedString("search-placeholder",
                              IDS_DEPRECATED_FEATURES_SEARCH_PLACEHOLDER);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   source->AddLocalizedString("os-flags-link",
                              IDS_DEPRECATED_FLAGS_UI_OS_FLAGS_LINK);
   source->AddLocalizedString("os-flags-text1",

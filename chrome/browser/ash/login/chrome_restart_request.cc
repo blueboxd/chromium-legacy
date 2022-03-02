@@ -119,7 +119,6 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kEnableGpuRasterization,
     ::switches::kEnableLogging,
     ::switches::kEnableNativeGpuMemoryBuffers,
-    ::switches::kEnableOopRasterization,
     ::switches::kEnableTouchDragDrop,
     ::switches::kEnableUnifiedDesktop,
     ::switches::kEnableUseZoomForDSF,
@@ -127,7 +126,6 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kEnableHardwareOverlays,
     ::switches::kEdgeTouchFiltering,
     ::switches::kHostWindowBounds,
-    ::switches::kMainFrameResizesAreOrientationChanges,
     ::switches::kForceDeviceScaleFactor,
     ::switches::kForceGpuMemAvailableMb,
     ::switches::kGpuStartupDialog,
@@ -184,8 +182,8 @@ void DeriveCommandLine(const GURL& start_url,
     blink::switches::kEnableRasterSideDarkModeForImages,
     blink::switches::kEnableZeroCopy,
     blink::switches::kGpuRasterizationMSAASampleCount,
-    chromeos::switches::kAshPowerButtonPosition,
-    chromeos::switches::kAshSideVolumeButtonPosition,
+    switches::kAshPowerButtonPosition,
+    switches::kAshSideVolumeButtonPosition,
     switches::kDefaultWallpaperLarge,
     switches::kDefaultWallpaperSmall,
     switches::kGuestWallpaperLarge,
@@ -227,7 +225,7 @@ void DeriveCommandLine(const GURL& start_url,
     switches::kLoginProfile,
     switches::kNaturalScrollDefault,
     switches::kRlzPingDelay,
-    switches::kSystemInDevMode,
+    chromeos::switches::kSystemInDevMode,
     policy::switches::kDeviceManagementUrl,
     wm::switches::kWindowAnimationsDisabled,
   };
@@ -237,9 +235,9 @@ void DeriveCommandLine(const GURL& start_url,
   if (start_url.is_valid())
     command_line->AppendArg(start_url.spec());
 
-  for (base::DictionaryValue::Iterator it(new_switches); !it.IsAtEnd();
-       it.Advance()) {
-    command_line->AppendSwitchASCII(it.key(), it.value().GetString());
+  for (auto new_switch : new_switches.DictItems()) {
+    command_line->AppendSwitchASCII(new_switch.first,
+                                    new_switch.second.GetString());
   }
 }
 
@@ -367,19 +365,20 @@ void GetOffTheRecordCommandLine(const GURL& start_url,
                                 const base::CommandLine& base_command_line,
                                 base::CommandLine* command_line) {
   base::DictionaryValue otr_switches;
-  otr_switches.SetString(switches::kGuestSession, std::string());
-  otr_switches.SetString(::switches::kIncognito, std::string());
-  otr_switches.SetString(::switches::kLoggingLevel, kGuestModeLoggingLevel);
-  otr_switches.SetString(
+  otr_switches.SetStringKey(switches::kGuestSession, std::string());
+  otr_switches.SetStringKey(::switches::kIncognito, std::string());
+  otr_switches.SetStringKey(::switches::kLoggingLevel, kGuestModeLoggingLevel);
+  otr_switches.SetStringKey(
       switches::kLoginUser,
       cryptohome::Identification(user_manager::GuestAccountId()).id());
   if (!base::SysInfo::IsRunningOnChromeOS()) {
-    otr_switches.SetString(switches::kLoginProfile, chrome::kLegacyProfileDir);
+    otr_switches.SetStringKey(switches::kLoginProfile,
+                              chrome::kLegacyProfileDir);
   }
 
   // Override the home page.
-  otr_switches.SetString(::switches::kHomePage,
-                         GURL(chrome::kChromeUINewTabURL).spec());
+  otr_switches.SetStringKey(::switches::kHomePage,
+                            GURL(chrome::kChromeUINewTabURL).spec());
 
   DeriveCommandLine(start_url, base_command_line, otr_switches, command_line);
   DeriveEnabledFeatures(command_line);

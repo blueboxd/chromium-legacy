@@ -33,6 +33,8 @@
 #include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -53,8 +55,7 @@ class CORE_EXPORT FrameOverlay : public GarbageCollected<FrameOverlay>,
     virtual void PaintFrameOverlay(const FrameOverlay&,
                                    GraphicsContext&,
                                    const gfx::Size& view_size) const = 0;
-    // For CompositeAfterPaint. Invalidates composited layers managed by the
-    // delegate if any.
+    // Invalidates composited layers managed by the delegate, if any.
     virtual void Invalidate() {}
 
     // Service any animations managed by the delegate.
@@ -69,7 +70,6 @@ class CORE_EXPORT FrameOverlay : public GarbageCollected<FrameOverlay>,
 
   void UpdatePrePaint();
 
-  // For CompositeAfterPaint.
   void Paint(GraphicsContext&) const;
 
   // FrameOverlay is always the same size as the viewport.

@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="oobe.css">
   <link rel="stylesheet" href="oobe_popup_overlay.css">
   <link rel="stylesheet" href="oobe_screen.css">
-  <link rel="stylesheet" href="md_screen_container.css">
 
   <script type="module" src="oobe_polymer3.js"></script>
 </head>
@@ -47,6 +46,8 @@
           </gesture-navigation-element>
           <pin-setup-element id="pin-setup" class="step hidden" hidden>
           </pin-setup-element>
+          <gaia-signin-element id="gaia-signin" class="step hidden" hidden>
+          </gaia-signin-element>
           <marketing-opt-in-element id="marketing-opt-in" class="step hidden" hidden>
           </marketing-opt-in-element>
           <family-link-notice-element id="family-link-notice" class="step hidden" hidden>
@@ -88,6 +89,10 @@
           </gaia-password-changed-element>
           <lacros-data-migration-element id="lacros-data-migration" class="step hidden migrate" hidden>
           </lacros-data-migration-element>
+          <os-install-element id="os-install" class="step hidden" hidden>
+          </os-install-element>
+          <os-trial-element id="os-trial" class="step hidden" hidden>
+          </os-trial-element>
         </div>
       </div>
       <div class="oobe-vertical-margin"></div>

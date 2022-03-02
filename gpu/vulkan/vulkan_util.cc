@@ -11,12 +11,13 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_info.h"  // nogncheck
 #include "gpu/config/vulkan_info.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/build_info.h"
 #endif
 
@@ -32,9 +33,10 @@
 #define GL_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_EXT 0x9531
 
 namespace gpu {
+
 namespace {
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 int GetEMUIVersion() {
   const auto* build_info = base::android::BuildInfo::GetInstance();
   base::StringPiece manufacturer(build_info->manufacturer());
@@ -147,16 +149,35 @@ VkResult CreateGraphicsPipelinesHook(
                                    pCreateInfos, pAllocator, pPipelines);
 }
 
+VkResult VulkanQueueSubmitHook(VkQueue queue,
+                               uint32_t submitCount,
+                               const VkSubmitInfo* pSubmits,
+                               VkFence fence) {
+  TRACE_EVENT0("gpu", "VulkanQueueSubmitHook");
+  return vkQueueSubmit(queue, submitCount, pSubmits, fence);
+}
+
+VkResult VulkanQueueWaitIdleHook(VkQueue queue) {
+  TRACE_EVENT0("gpu", "VulkanQueueWaitIdleHook");
+  return vkQueueWaitIdle(queue);
+}
+
+VkResult VulkanQueuePresentKHRHook(VkQueue queue,
+                                   const VkPresentInfoKHR* pPresentInfo) {
+  TRACE_EVENT0("gpu", "VulkanQueuePresentKHRHook");
+  return vkQueuePresentKHR(queue, pPresentInfo);
+}
+
 bool CheckVulkanCompabilities(const VulkanInfo& vulkan_info,
                               const GPUInfo& gpu_info,
                               std::string enable_by_device_name) {
 // Android uses AHB and SyncFD for interop. They are imported into GL with other
 // API.
-#if !defined(OS_ANDROID)
-#if defined(OS_WIN)
+#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_WIN)
   constexpr char kMemoryObjectExtension[] = "GL_EXT_memory_object_win32";
   constexpr char kSemaphoreExtension[] = "GL_EXT_semaphore_win32";
-#elif defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_FUCHSIA)
   constexpr char kMemoryObjectExtension[] = "GL_ANGLE_memory_object_fuchsia";
   constexpr char kSemaphoreExtension[] = "GL_ANGLE_semaphore_fuchsia";
 #else
@@ -172,9 +193,9 @@ bool CheckVulkanCompabilities(const VulkanInfo& vulkan_info,
                 << " is not supported.";
     return false;
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (vulkan_info.physical_devices.empty())
     return false;
 
@@ -229,7 +250,7 @@ bool CheckVulkanCompabilities(const VulkanInfo& vulkan_info,
   // Imagination GPUs.
   if (device_info.properties.vendorID == kVendorImagination)
     return false;
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   return true;
 }
@@ -237,7 +258,7 @@ bool CheckVulkanCompabilities(const VulkanInfo& vulkan_info,
 VkImageLayout GLImageLayoutToVkImageLayout(uint32_t layout) {
   switch (layout) {
     case GL_NONE:
-      break;
+      return VK_IMAGE_LAYOUT_UNDEFINED;
     case GL_LAYOUT_GENERAL_EXT:
       return VK_IMAGE_LAYOUT_GENERAL;
     case GL_LAYOUT_COLOR_ATTACHMENT_EXT:

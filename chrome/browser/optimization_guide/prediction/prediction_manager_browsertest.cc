@@ -113,8 +113,9 @@ CreatePredictionModel() {
   model_info->add_supported_host_model_features("agg1");
   model_info->set_optimization_target(
       optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
-  model_info->add_supported_model_types(
-      optimization_guide::proto::ModelType::MODEL_TYPE_DECISION_TREE);
+  model_info->add_supported_model_engine_versions(
+      optimization_guide::proto::ModelEngineVersion::
+          MODEL_ENGINE_VERSION_DECISION_TREE);
   return prediction_model;
 }
 
@@ -492,7 +493,7 @@ class PredictionManagerModelDownloadingBrowserTest
     PredictionManagerBrowserTest::SetUpCommandLine(command_line);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     command_line->AppendSwitch(
-        chromeos::switches::kIgnoreUserProfileMappingForTests);
+        ash::switches::kIgnoreUserProfileMappingForTests);
 #endif
   }
 
@@ -814,7 +815,7 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerModelDownloadingBrowserTest,
   CreateBrowser(profile);
 }
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 // CreateGuestBrowser() is not supported for Android or ChromeOS out of the box.
 IN_PROC_BROWSER_TEST_F(PredictionManagerModelDownloadingBrowserTest,
                        GuestProfileReceivesModel) {

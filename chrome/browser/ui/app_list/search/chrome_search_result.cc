@@ -51,6 +51,21 @@ void ChromeSearchResult::SetDetailsTags(const Tags& tags) {
   SetSearchResultMetadata();
 }
 
+void ChromeSearchResult::SetTitleTextVector(const TextVector& text_vector) {
+  metadata_->title_vector = text_vector;
+  SetSearchResultMetadata();
+}
+
+void ChromeSearchResult::SetDetailsTextVector(const TextVector& text_vector) {
+  metadata_->details_vector = text_vector;
+  SetSearchResultMetadata();
+}
+
+void ChromeSearchResult::SetBigTitleTextVector(const TextVector& text_vector) {
+  metadata_->big_title_vector = text_vector;
+  SetSearchResultMetadata();
+}
+
 void ChromeSearchResult::SetAccessibleName(const std::u16string& name) {
   metadata_->accessible_name = name;
   SetSearchResultMetadata();
@@ -94,11 +109,6 @@ void ChromeSearchResult::SetMetricsType(MetricsType metrics_type) {
 
 void ChromeSearchResult::SetDisplayIndex(DisplayIndex display_index) {
   metadata_->display_index = display_index;
-  SetSearchResultMetadata();
-}
-
-void ChromeSearchResult::SetOmniboxType(OmniboxType omnibox_type) {
-  metadata_->omnibox_type = omnibox_type;
   SetSearchResultMetadata();
 }
 

@@ -92,7 +92,7 @@ struct Referrer;
 // Usually, observers should only care about the current RenderViewHost as
 // returned by GetRenderViewHost().
 //
-// TODO(creis, jochen): Hide the fact that there are several RenderViewHosts
+// TODO(creis): Hide the fact that there are several RenderViewHosts
 // from the WebContentsObserver API. http://crbug.com/173325
 class CONTENT_EXPORT WebContentsObserver {
  public:
@@ -352,20 +352,59 @@ class CONTENT_EXPORT WebContentsObserver {
   // (nothing loaded) to 1.0 (page fully loaded).
   virtual void LoadProgressChanged(double progress) {}
 
-  // This method is invoked once the window.document object of the main frame
-  // was created. Since the WebContents could be hosting more than one main
-  // frame (e.g. prerendered page), the |render_frame_host| represents the frame
-  // where the event happened.
+  // This method is invoked once the window.document element of the primary main
+  // frame's current document (i.e., |render_frame_host|) is ready. This happens
+  // when the document's main HTML resource has finished parsing. Here
+  // document element refers to DOMDocument, which is different from browser
+  // implementation of blink::Document in DocumentUserData/DocumentService which
+  // are typically created when navigation commits.
+  //
+  // Note that DocumentAvailableInMainFrame should be used when the observers
+  // which send IPCs to the renderer want to ensure that window.document is
+  // non-null. For for the comment cases like observing primary document/URL
+  // changes in the omnibox due to navigation
+  // WebContentsObserver::PrimaryPageChanged should be used and to observe fully
+  // loaded signal WebContentsObserver::DidFinishLoad can be used.
+  //
+  // This event is dispatched once in the document's lifetime, which means it's
+  // not dispatched after navigation that restores a Back/Forward Cache page.
+  // For prerendering, this signal is dispatched when the main document element
+  // is available and the document is shown to the user (i.e., after the
+  // activation).
+  //
+  // TODO(crbug.com/1257140): Rename DocumentAvailableInMainFrame to
+  // PrimaryMainDocumentElementAvailable to capture the new behaviour. Remove
+  // RenderFrameHost* argument and directly use
+  // WebContents::GetPrimaryMainFrame().
   virtual void DocumentAvailableInMainFrame(
       RenderFrameHost* render_frame_host) {}
 
-  // This method is invoked once the onload handler of the main frame has
-  // completed. Since the WebContents could be hosting more than one main frame,
-  // the |render_frame_host| represents the frame where the event happened.
-  // Prefer using WebContents::IsDocumentOnLoadCompletedInMainFrame instead
-  // of saving this state in your component.
-  virtual void DocumentOnLoadCompletedInMainFrame(
-      RenderFrameHost* render_frame_host) {}
+  // This method is invoked once the onload handler of the primary main frame's
+  // current document (i.e., |render_frame_host|) has completed. This happens
+  // when the primary main document has finished running onload events after
+  // loading all content (images, scripts, etc). Prefer using
+  // WebContents::IsDocumentOnLoadCompletedInPrimaryMainFrame instead of saving
+  // this state in your component.
+  //
+  // For prerendering we dispatch DocumentOnLoadCompletedInPrimaryMainFrame on
+  // activation whereas for BackForwardCache restores we don't dispatch
+  // DocumentOnLoadCompletedInPrimaryMainFrame.
+  //
+  // DocumentOnLoadCompletedInPrimaryMainFrame is typically used by the
+  // embedders to perform actions on a loaded page, for example showing load
+  // completion bubbles, injecting scripts which take page snapshots. Note,
+  // however, that some web pages might still be loading (i.e. if they
+  // dynamically inject content).
+  virtual void DocumentOnLoadCompletedInPrimaryMainFrame() {}
+
+  // This method is invoked when we have received a response from the
+  // renderer in response to a dom automation controller action.
+  // For example, `window.domAutomationController.send(foo())` sends the
+  // result of foo() here.
+  // |json_string| is a string with the response which came from a specific
+  // |render_frame_host|.
+  virtual void DomOperationResponse(RenderFrameHost* render_frame_host,
+                                    const std::string& json_string) {}
 
   // This method is invoked when the document in the given frame finished
   // loading. At this point, scripts marked as defer were executed, and

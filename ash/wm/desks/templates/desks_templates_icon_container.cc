@@ -13,6 +13,7 @@
 #include "ash/wm/desks/templates/desks_templates_icon_view.h"
 #include "base/containers/contains.h"
 #include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/app_restore_utils.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -101,14 +102,23 @@ void InsertIdentifierInfoFromLaunchList(
     if (restore_data.second->urls.has_value() && is_browser) {
       const auto& urls = restore_data.second->urls.value();
       for (int i = 0; i < static_cast<int>(urls.size()); ++i) {
-        InsertIdentifierInfo(urls[i].spec(),
+        // Strip extra information from the url so urls with the same host but
+        // different queries are treated the same.
+        InsertIdentifierInfo(urls[i].GetWithEmptyPath().spec(),
                              active_tab_index == i
                                  ? activation_index
                                  : kInactiveTabOffset + activation_index,
                              out_identifier_info);
       }
     } else {
-      InsertIdentifierInfo(app_id, activation_index, out_identifier_info);
+      // PWAs will have the same app id as chrome. For these apps, retrieve
+      // their app id from their app name if possible.
+      std::string new_app_id = app_id;
+      absl::optional<std::string> app_name = restore_data.second->app_name;
+      if (app_id == extension_misc::kChromeAppId && app_name.has_value())
+        new_app_id = app_restore::GetAppIdFromAppName(app_name.value());
+
+      InsertIdentifierInfo(new_app_id, activation_index, out_identifier_info);
     }
   }
 }
@@ -177,21 +187,23 @@ void DesksTemplatesIconContainer::PopulateIconContainerFromWindows(
 void DesksTemplatesIconContainer::Layout() {
   views::BoxLayoutView::Layout();
 
-  if (icon_views_.empty())
+  auto icon_views = children();
+  if (icon_views.empty())
     return;
 
   const int available_horizontal_space = bounds().width();
   // Use the preferred size of this since this will provide the width as if
-  // every view in `icon_views_` is shown.
+  // every view in `icon_views` is shown.
   int used_horizontal_space = GetPreferredSize().width();
-  DesksTemplatesIconView* overflow_icon_view = icon_views_.back();
+  auto* overflow_icon_view =
+      static_cast<DesksTemplatesIconView*>(icon_views.back());
   if (used_horizontal_space > available_horizontal_space) {
-    // Reverse iterate through `icon_views_` starting with the first
+    // Reverse iterate through `icon_views` starting with the first
     // non-overflow icon view (i.e. the second-last element). Hide as many icons
     // we need to fit `available_horizontal_space` and then update the overflow
     // icon view.
     int num_hidden_icons = 0;
-    for (auto it = ++icon_views_.rbegin(); it != icon_views_.rend(); ++it) {
+    for (auto it = ++icon_views.rbegin(); it != icon_views.rend(); ++it) {
       if ((*it)->GetVisible()) {
         used_horizontal_space -= (*it)->GetPreferredSize().width();
         (*it)->SetVisible(false);
@@ -211,7 +223,7 @@ void DesksTemplatesIconContainer::Layout() {
 
 void DesksTemplatesIconContainer::CreateIconViewsFromIconIdentifiers(
     const std::vector<std::pair<std::string, int>>& identifiers_and_counts) {
-  DCHECK(icon_views_.empty());
+  DCHECK(children().empty());
 
   if (identifiers_and_counts.empty())
     return;
@@ -227,7 +239,6 @@ void DesksTemplatesIconContainer::CreateIconViewsFromIconIdentifiers(
                          .Build());
     icon_view->SetIconIdentifierAndCount(identifiers_and_counts[i].first,
                                          identifiers_and_counts[i].second);
-    icon_views_.push_back(icon_view);
   }
 
   // Always add a `DesksTemplatesIconView` overflow counter in case the width
@@ -243,7 +254,6 @@ void DesksTemplatesIconContainer::CreateIconViewsFromIconIdentifiers(
                        .Build());
   overflow_icon_view->SetIconIdentifierAndCount(
       std::string(), identifiers_and_counts.size() - num_added_icons);
-  icon_views_.push_back(overflow_icon_view);
 }
 
 BEGIN_METADATA(DesksTemplatesIconContainer, views::BoxLayoutView)

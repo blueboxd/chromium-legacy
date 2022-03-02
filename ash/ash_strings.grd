@@ -10,6 +10,7 @@ This file contains the strings for ash.
     <output filename="grit/ash_strings.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
+    <output filename="ash_strings_af.pak" type="data_package" lang="af" />
     <output filename="ash_strings_am.pak" type="data_package" lang="am" />
     <output filename="ash_strings_ar.pak" type="data_package" lang="ar" />
     <output filename="ash_strings_bg.pak" type="data_package" lang="bg" />
@@ -66,6 +67,7 @@ This file contains the strings for ash.
     <output filename="ash_strings_vi.pak" type="data_package" lang="vi" />
     <output filename="ash_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="ash_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
+    <output filename="ash_strings_zu.pak" type="data_package" lang="zu" />
 
     <!-- Pseudolocales -->
     <output filename="ash_strings_ar-XB.pak" type="data_package" lang="ar-XB" />
@@ -259,9 +261,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_CAST_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for cast settings accessed through the cast feature pod.">
         Cast Settings
       </message>
-      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_DARK_THEME_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for dark theme settings accessed through the dark theme feature pod.">
-        Dark Theme Settings
-      </message>
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_IME_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for IME settings accessed through the IME feature pod.">
         Input Methods Settings
       </message>
@@ -406,6 +405,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP" desc="The label used in the tray popup to tell the user we are casting the desktop.">
         Casting screen to <ph name="RECEIVER_NAME">$1<ex>Living Room</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_ACCESS_CAST_ADD" desc="Menu item label that, when clicked on, opens the access code casting dialog. MANAGER can be a domain or an email address.">
+        Cast to a <ph name="MANAGER">$1<ex>yourdomain.com</ex></ph> device
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_DARK_THEME" desc="The label used as the header in the dark theme popup. [CHAR_LIMIT=19">
         Dark theme
       </message>
@@ -426,21 +428,6 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_ON_STATE" desc="Button label for the Dark theme feature." meaning="Dark theme feature is on. [CHAR_LIMIT=14]">
         On
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_COLOR_MODE" desc="The title for the dark theme detailed view.">
-        Color mode
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_THEMED_TITLE" desc="The title for the dark theme detailed view.">
-        Themed (default)
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_THEMED_DESCRIPTION" desc="The description for the neutral color theme.">
-        The themed color mode uses colors extracted from your wallpaper to lightly colorize the interface.
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_NEUTRAL_TITLE" desc="The title for the dark theme detailed view.">
-        Neutral
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_NEUTRAL_DESCRIPTION" desc="The description for the neutral color mode.">
-        The neutral color mode does not use wallpaper extracted colors, replacing them by a set of neutrally toned light or dark hues.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP_ACCESSIBILITY_STOP" desc="Stop button accessibility label used in the tray popup to tell the user to stop a cast to the desktop.">
         Stop casting screen to <ph name="RECEIVER_NAME">$1<ex>Living Room</ex></ph>
@@ -784,6 +771,12 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_MIC_STATE_MUTED_BY_HW_SWITCH" desc="The text used as a tooltip for microphone mute button in Chrome OS quick settings when the mic gain button is muted because the device microphone mute switch is turned on. Used as a status text for IDS_ASH_STATUS_TRAY_MIC_GAIN.">
         Device's microphone button is turned off.
+      </message>
+      <message name="IDS_ASH_STATUS_AREA_TOAST_KBL_OFF" desc="The text in the toast that shows up when the keyboard backlight is toggled off using a physical key or shortcut.">
+        Keyboard backlight is off
+      </message>
+      <message name="IDS_ASH_STATUS_AREA_TOAST_KBL_ON" desc="The text in the toast that shows up when the keyboard backlight is toggled on using a physical key or shortcut.">
+        Keyboard backlight is on
       </message>
       <message name="IDS_ASH_STATUS_AREA_TOAST_MIC_OFF" desc="The text in the toast that shows up when the mic is muted using a physical key or shortcut.">
         Microphone is off
@@ -2066,14 +2059,11 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_ADD_CELLULAR_LABEL" desc="The label for button in network quick settings that allows user to add new cellular networks.">
         Add new cellular network
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE" desc="Notification shown when a Bluetooth adapter is discoverable.">
-        Your computer is discoverable to nearby Bluetooth devices and will appear as "<ph name="NAME">$1<ex>Chromebook</ex></ph>" with address <ph name="ADDRESS">$2<ex>01:23:45:67:89:0A</ex></ph>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE" desc="Toast shown when a Bluetooth adapter is discoverable.">
+        "<ph name="NAME">$1<ex>Chromebook</ex></ph>" visible to Bluetooth devices.
       </message>
-      <message name="IDS_ASH_NETWORK_AUTOCONNECT_NOTIFICATION_TITLE" desc="Title used for the system notification shown when a network has been auto-connected (e.g., when an enterprise policy is applied which initiates a connection to a corporate network like Google-A).">
-        Switched network connection
-      </message>
-      <message name="IDS_ASH_NETWORK_AUTOCONNECT_NOTIFICATION_MESSAGE" desc="Message displayed in the system notification shown when a network has been auto-connected (e.g., when an enterprise policy is applied which initiates a connection to a corporate network like Google-A).">
-        Your connection has switched to a more secure network
+      <message name="IDS_ASH_NETWORK_AUTOCONNECT" desc="Text used for the toast shown when a network has been auto-connected (e.g., when an enterprise policy is applied which initiates a connection to a corporate network like Google-A).">
+        Your connection switched to a more secure network
       </message>
       <message name="IDS_ASH_NETWORK_CELLULAR_SETUP_NOTIFICATION_TITLE" desc="Title used for the system notification shown post-OOBE if a user has no activated mobile networks.">
         Finish setting up your mobile network
@@ -2286,6 +2276,9 @@ This file contains the strings for ash.
         Live Caption is off.
       </message>
 
+      <message name="IDS_AURA_OPEN_PERSONALIZATION_HUB" desc="The label used to open personalization hub in context menu">
+        Personalize
+      </message>
       <message name="IDS_AURA_SET_DESKTOP_WALLPAPER" desc="The label used for change wallpaper in context menu">
         Set wallpaper
       </message>
@@ -2555,6 +2548,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_INHIBITED_CELLULAR_REFRESHING_PROFILE_LIST" desc="Tooltip message for disabled add cellular button, indicating cellular network profile list is being refreshed.">
         Refreshing profile list. Wait a few minutes.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_INHIBITED_CELLULAR_RESETTING_ESIM" desc="Tooltip message for disabled add cellular button, indicating cellular eSIM is being reset.">
+        Your administrator is resetting your eSIM. Wait a few minutes.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR" desc="Message for the status area when initializing the cellular device.">
         Initializing...
@@ -2956,8 +2952,11 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_PIN_OR_PASSWORD_REQUIRED" desc="Text shown when fingerprint has been disabled because it has been too long since the user last used the device">
         PIN or password required for more security
       </message>
-      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_ATTEMPTS" desc="Text shown in the user pod to tell user that fingerprint unlock has reached maximum attempt">
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_ATTEMPTS_OLD" desc="Text shown in the user pod to tell user that fingerprint unlock has reached maximum attempt">
         Too many attempts
+      </message>
+      <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_DISABLED_FROM_ATTEMPTS" desc="Label for the Fingerprint icon on user's lock screen after too many failed attempts to authenticate a fingerprint.">
+        Too many fingerprint attempts
       </message>
       <message name="IDS_ASH_LOGIN_FINGERPRINT_UNLOCK_ACCESSIBLE_AUTH_SUCCESS" desc="Accessibility text read by chromevox when the user successfully authenticated with fingerprint on the lock screen">
         Unlocking with fingerprint
@@ -3380,11 +3379,15 @@ This file contains the strings for ash.
         Calendar
       </message>
 
-      <message name="IDS_ASH_CALENDAR_UP_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar up button.">
+      <message name="IDS_ASH_CALENDAR_CONTENT_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar content view.">
+        Calendar, <ph name="current_month_year">$1<ex>August 2021</ex></ph>, currently <ph name="date">$2<ex>August 31, 2021</ex></ph> is selected.
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_UP_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible/tooltip description of the calendar up button.">
         Show previous month
       </message>
 
-      <message name="IDS_ASH_CALENDAR_DOWN_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar down button.">
+      <message name="IDS_ASH_CALENDAR_DOWN_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible/tooltip description of the calendar down button.">
         Show next month
       </message>
 
@@ -3396,8 +3399,48 @@ This file contains the strings for ash.
         Today
       </message>
 
+      <message name="IDS_ASH_CALENDA_TODAY_BUTTON_TOOLTIP" desc="The tooltip label for the calendar info button.">
+        Go back to today
+      </message>
+
       <message name="IDS_ASH_CALENDAR_SETTINGS" desc="The label used in the settings entry in the calendar view system settings.">
         Open settings
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_SETTINGS_TOOLTIP" desc="The tooltip label used in the settings entry in the calendar view system settings.">
+        Date and time settings
+      </message>
+
+      <message name="IDS_ASH_CLOSE_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible label used in the close button in the calendar event list view.">
+        Close event panel
+      </message>
+
+      <message name="IDS_ASH_CLOSE_BUTTON_TOOLTIP" desc="The tooltip label used in the close button in the calendar event list view.">
+        Close detail information
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_DATE_CELL_TOOLTIP" desc="The tooltip of a calendar date cell, which is with 0 or 1 event.">
+        <ph name="date">$1<ex>August 31, 2021</ex></ph>, <ph name="number">$2<ex>0</ex></ph> event
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_DATE_CELL_PLURAL_EVENTS_TOOLTIP" desc="The tooltip of a calendar date cell, which is with more than 1 event.">
+        <ph name="date">$1<ex>August 31, 2021</ex></ph>, <ph name="number">$2<ex>8</ex></ph> events
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_SELECTED_DATE_CELL_ACCESSIBLE_DESCRIPTION" desc="The accessible label of the selected calendar date cell.">
+        Calendar, week of <ph name="date">$1<ex>July 16th 2021,</ex></ph>, <ph name="selected_date">$2<ex>18</ex></ph> is currently selected.
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_ACCESSIBLE_DESCRIPTION" desc="The accessible label of a calendar event entry.">
+        <ph name="start_time">$1<ex>12 PM</ex></ph> to 
+        <ph name="end_time">$2<ex>1 PM</ex></ph>, 
+        <ph name="time_zone">$3<ex>Pacific time</ex></ph>, 
+        <ph name="event_summary">$4<ex>Lunch break</ex></ph>. Select for more details in Google Calendar.
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_TOOL_TIP" desc="The tool tip label of a calendar event entry.">
+        <ph name="event_summary">$1<ex>Lunch break</ex></ph>, 
+        <ph name="time_range">$2<ex> 1:00 - 1:30 PM</ex></ph>
       </message>
 
       <message name="IDS_ASH_CALENDAR_MON" desc="The single character designator for Monday, which is used in the calendar weekday label.">
@@ -3795,9 +3838,6 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SCREEN_CAPTURE_HDCP_BLOCKED_MESSAGE" desc="The text of the notification that informs the user the screen recording is blocked due to existence of protected content.">
         Screen recording is not allowed when protected content is visible
       </message>
-      <message name="IDS_ASH_SCREEN_CAPTURE_DLP_DISABLED_TITLE" desc="The title of the notification when capture mode is disabled because of confidential content.">
-        Can't capture confidential content
-      </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_POLICY_DISABLED_TITLE" desc="The title of the notification when capture mode is disabled because of a policy.">
         Can't capture content
       </message>
@@ -3806,9 +3846,6 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_HDCP_STOPPED_TITLE" desc="The title of the notification when video capture is stopped due to protected content showing up on the screen.">
         Can't record protected content
-      </message>
-      <message name="IDS_ASH_SCREEN_CAPTURE_DLP_DISABLED_MESSAGE" desc="The text of the notification when capture mode is disabled because of confidential content.">
-        Administrator policy disables screen capture when confidential content is visible
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_POLICY_DISABLED_MESSAGE" desc="The text of the notification when capture mode is disabled because of a policy.">
         Administrator policy disables screen capture
@@ -3992,9 +4029,6 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_TOOLTIP_SETTINGS" desc="Tooltip of the settings button.">
         Settings
-      </message>
-      <message name="IDS_ASH_SCREEN_CAPTURE_LABEL_MICROPHONE" desc="The capture label message for toggling microphone recording, found in the settings menu.">
-        Record microphone
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_AUDIO_INPUT" desc="The label of the audio input menu group header in capture mode settings.">
         Audio input
@@ -4272,6 +4306,10 @@ Here are some things you can try to get started.
         Failed to save screencast
       </message>
 
+      <message name="IDS_ASH_PROJECTOR_FAILURE_MESSAGE_TRANSCRIPTION" desc="The test of the notification when Projector transcription fails.">
+        Can't generate transcription
+      </message>
+
       <!-- SODA Download strings -->
       <message name="IDS_ASH_ACCESSIBILITY_DICTATION_SETTING_SUBTITLE_SODA_DOWNLOAD_COMPLETE" desc="Description explaining that the speech recognition library download has completed.">
         Speech files downloaded
@@ -4357,16 +4395,14 @@ Here are some things you can try to get started.
       <message name="IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED" desc="Label on user's lock screen prompting user to enter password or PIN after other sign in authentication methods fail.">
         Enter password or PIN for more security
       </message>
-      <message name="IDS_AUTH_FACTOR_LABEL_CLICK_TO_ENTER" desc="Label on user's lock screen when a user is successfully authenticated and may click to enter Chromebook.">
+      <message name="IDS_AUTH_FACTOR_LABEL_CLICK_TO_ENTER" desc="Label on user's lock screen when a user is successfully authenticated and may click on arrow icon to unlock/use the Chromebook.">
         Tap or click to enter
       </message>
-
-      <!-- Fingerprint strings shown on the lock screen -->
       <message name="IDS_AUTH_FACTOR_LABEL_UNLOCKED" desc="Label on user's lock screen when a Chromebook is successfully unlocked.">
         Unlocked
       </message>
-      <message name="IDS_FINGERPRINT_LABEL_NOT_AUTHENTICATED" desc="Label for the Fingerprint icon on user's lock screen after too many failed attempts to authenticate a fingerprint.">
-        Too many fingerprint attempts
+      <message name="IDS_AUTH_FACTOR_LABEL_SIGNED_IN" desc="Label on user's login screen when a Chromebook is successfully logged in.">
+        Signed in
       </message>
 
       <!-- Launcher: Continue Section -->
@@ -4384,8 +4420,11 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_TITLE" desc="Title of the context menu in apps grid view in Productivity Launcher.">
         Reorder by
       </message>
-      <message name="IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_BY_NAME" desc="Title of the context menu item in apps grid view in Productivity Launcher that contains a submenu with options describing how the apps will be reordered by their names.">
+      <message name="IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_BY_NAME" desc="Title of the context menu item in apps grid view in Productivity Launcher for reordering the apps by their names">
         Name
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_BY_COLOR" desc="Title of the context menu item in apps grid view in Productivity Launcher for reordering the apps by their icon colors">
+        Color
       </message>
       <message name="IDS_SUGGESTED_APPS_INDICATOR" desc="Indicator text in the launcher on top of suggested apps.">
         SUGGESTED APPS
@@ -4550,6 +4589,17 @@ New install
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SHELF_PARTY_OFF_SUBLABEL" desc="The sub label text shown under the tray menu button when Shelf Party mode is off.">
         Off
+      </message>
+
+      <!-- Firmware UI notifications -->
+      <message name="IDS_ASH_FIRMWARE_UPDATE_NOTIFICATION_UPDATE_AVAILABLE_TITLE" desc="Notification title to indicate to users that firmware updates are available.">
+        Firmware updates available
+      </message>
+      <message name="IDS_ASH_FIRMWARE_UPDATE_NOTIFICATION_UPDATE_AVAILABLE_BODY" desc="Notification body text to indicate to users that firmware updates are available.">
+        Firmware updates are available for your device. Click to review and update.
+      </message>
+      <message name="IDS_ASH_FIRMWARE_UPDATE_NOTIFICATION_UPDATE_BUTTON_TEXT" desc="Notification button text, if the user clicks on the button it will redirect them to the Firmware Update app.">
+        Update
       </message>
     </messages>
   </release>

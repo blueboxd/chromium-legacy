@@ -233,17 +233,12 @@ scoped_refptr<const NGTableConstraintSpaceData> CreateConstraintSpaceData(
     const NGTableTypes::Sections& sections,
     const NGTableTypes::Rows& rows,
     const NGTableTypes::CellBlockConstraints& cell_block_constraints,
-    const LayoutUnit table_inline_size,
     const LogicalSize& border_spacing) {
   scoped_refptr<NGTableConstraintSpaceData> data =
       base::MakeRefCounted<NGTableConstraintSpaceData>();
-  data->table_inline_size = table_inline_size;
   data->table_writing_direction = style.GetWritingDirection();
   data->table_border_spacing = border_spacing;
   data->is_table_block_size_specified = !style.LogicalHeight().IsAuto();
-  data->hide_table_cell_if_empty =
-      style.EmptyCells() == EEmptyCells::kHide &&
-      style.BorderCollapse() == EBorderCollapse::kSeparate;
   data->has_collapsed_borders =
       style.BorderCollapse() == EBorderCollapse::kCollapse;
 
@@ -254,7 +249,7 @@ scoped_refptr<const NGTableConstraintSpaceData> CreateConstraintSpaceData(
   }
   data->sections.ReserveCapacity(sections.size());
   for (const auto& section : sections)
-    data->sections.emplace_back(section.start_row, section.rowspan);
+    data->sections.emplace_back(section.start_row, section.row_count);
   data->rows.ReserveCapacity(rows.size());
   for (const auto& row : rows) {
     data->rows.emplace_back(
@@ -267,13 +262,12 @@ scoped_refptr<const NGTableConstraintSpaceData> CreateConstraintSpaceData(
   // section. The cell does not know what section it is in.
   for (const auto& section : sections) {
     for (wtf_size_t row_index = section.start_row;
-         row_index < section.start_row + section.rowspan; ++row_index) {
-      for (wtf_size_t cell_index = rows[row_index].start_cell_index;
-           cell_index <
-           rows[row_index].start_cell_index + rows[row_index].cell_count;
-           ++cell_index) {
+         row_index < section.start_row + section.row_count; ++row_index) {
+      const auto& row = rows[row_index];
+      for (wtf_size_t cell_index = row.start_cell_index;
+           cell_index < row.start_cell_index + row.cell_count; ++cell_index) {
         wtf_size_t max_rowspan =
-            section.start_row + section.rowspan - row_index;
+            section.start_row + section.row_count - row_index;
         wtf_size_t rowspan =
             std::min(cell_block_constraints[cell_index].rowspan, max_rowspan);
         // Compute cell's size.
@@ -286,8 +280,8 @@ scoped_refptr<const NGTableConstraintSpaceData> CreateConstraintSpaceData(
           }
         }
         data->cells.emplace_back(
-            cell_block_constraints[cell_index].border_box_borders,
-            cell_block_size, cell_block_constraints[cell_index].column_index,
+            cell_block_constraints[cell_index].borders, cell_block_size,
+            cell_block_constraints[cell_index].column_index,
             /* has_grown */ cell_block_size >
                 cell_block_constraints[cell_index].min_block_size,
             cell_block_constraints[cell_index].is_constrained);
@@ -771,8 +765,7 @@ scoped_refptr<const NGLayoutResult> NGTableLayoutAlgorithm::GenerateFragment(
   const auto table_writing_direction = Style().GetWritingDirection();
   scoped_refptr<const NGTableConstraintSpaceData> constraint_space_data =
       CreateConstraintSpaceData(Style(), column_locations, sections, rows,
-                                cell_block_constraints, table_inline_size,
-                                border_spacing);
+                                cell_block_constraints, border_spacing);
 
   const NGBoxStrut border_padding = container_builder_.BorderPadding();
   LayoutUnit block_offset;
@@ -818,7 +811,7 @@ scoped_refptr<const NGLayoutResult> NGTableLayoutAlgorithm::GenerateFragment(
                                   kIndefiniteSize};
 
     // Sections without rows can receive redistributed height from the table.
-    if (constraint_space_data->sections[section_index].rowspan == 0) {
+    if (constraint_space_data->sections[section_index].row_count == 0) {
       section_space_builder.SetIsFixedBlockSize(true);
       available_size.block_size = sections[section_index].block_size;
     }

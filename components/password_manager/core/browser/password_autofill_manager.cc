@@ -128,6 +128,8 @@ void AppendSuggestionIfMatching(
     suggestion.label = GetHumanReadableRealm(signon_realm);
     suggestion.additional_label =
         std::u16string(password_length, kPasswordReplacementChar);
+    suggestion.voice_over = l10n_util::GetStringFUTF16(
+        IDS_PASSWORD_MANAGER_PASSWORD_FOR_ACCOUNT, suggestion.label);
     if (from_account_store) {
       suggestion.frontend_id =
           is_password_field
@@ -365,8 +367,10 @@ void PasswordAutofillManager::OnPopupHidden() {}
 
 void PasswordAutofillManager::OnPopupSuppressed() {}
 
-void PasswordAutofillManager::DidSelectSuggestion(const std::u16string& value,
-                                                  int frontend_id) {
+void PasswordAutofillManager::DidSelectSuggestion(
+    const std::u16string& value,
+    int frontend_id,
+    const std::string& backend_id) {
   ClearPreviewedForm();
   if (frontend_id == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
       frontend_id == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY ||

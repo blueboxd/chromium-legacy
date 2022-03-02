@@ -278,19 +278,19 @@ Status WebViewImpl::HandleReceivedEvents() {
 
 Status WebViewImpl::GetUrl(std::string* url) {
   base::DictionaryValue params;
-  std::unique_ptr<base::DictionaryValue> result;
-  Status status = client_->SendCommandAndGetResult(
-      "Page.getNavigationHistory", params, &result);
+  base::DictionaryValue result;
+  Status status = client_->SendCommandAndGetResult("Page.getNavigationHistory",
+                                                   params, &result);
   if (status.IsError())
     return status;
-  int current_index = 0;
-  if (!result->GetInteger("currentIndex", &current_index))
+  absl::optional<int> current_index = result.FindIntKey("currentIndex");
+  if (!current_index)
     return Status(kUnknownError, "navigation history missing currentIndex");
   base::ListValue* entries = nullptr;
-  if (!result->GetList("entries", &entries))
+  if (!result.GetList("entries", &entries))
     return Status(kUnknownError, "navigation history missing entries");
   base::DictionaryValue* entry = nullptr;
-  if (!entries->GetDictionary(current_index, &entry))
+  if (!entries->GetDictionary(*current_index, &entry))
     return Status(kUnknownError, "navigation history missing entry");
   if (!entry->GetString("url", url))
     return Status(kUnknownError, "navigation history entry is missing url");
@@ -352,8 +352,9 @@ Status WebViewImpl::SendCommandAndGetResult(
         const std::string& cmd,
         const base::DictionaryValue& params,
         std::unique_ptr<base::Value>* value) {
-  std::unique_ptr<base::DictionaryValue> result;
-  Status status = client_->SendCommandAndGetResult(cmd, params, &result);
+  std::unique_ptr<base::DictionaryValue> result =
+      std::make_unique<base::DictionaryValue>();
+  Status status = client_->SendCommandAndGetResult(cmd, params, result.get());
   if (status.IsError())
     return status;
   *value = std::move(result);
@@ -362,9 +363,9 @@ Status WebViewImpl::SendCommandAndGetResult(
 
 Status WebViewImpl::TraverseHistory(int delta, const Timeout* timeout) {
   base::DictionaryValue params;
-  std::unique_ptr<base::DictionaryValue> result;
-  Status status = client_->SendCommandAndGetResult(
-      "Page.getNavigationHistory", params, &result);
+  base::DictionaryValue result;
+  Status status = client_->SendCommandAndGetResult("Page.getNavigationHistory",
+                                                   params, &result);
   if (status.IsError()) {
     // TODO(samuong): remove this once we stop supporting WebView on KitKat.
     // Older versions of WebView on Android (on KitKat and earlier) do not have
@@ -378,26 +379,26 @@ Status WebViewImpl::TraverseHistory(int delta, const Timeout* timeout) {
       return status;
   }
 
-  int current_index;
-  if (!result->GetInteger("currentIndex", &current_index))
+  absl::optional<int> current_index = result.FindIntKey("currentIndex");
+  if (!current_index)
     return Status(kUnknownError, "DevTools didn't return currentIndex");
 
   base::ListValue* entries;
-  if (!result->GetList("entries", &entries))
+  if (!result.GetList("entries", &entries))
     return Status(kUnknownError, "DevTools didn't return entries");
 
   base::DictionaryValue* entry;
-  if (!entries->GetDictionary(current_index + delta, &entry)) {
+  if (!entries->GetDictionary(*current_index + delta, &entry)) {
     // The WebDriver spec says that if there are no pages left in the browser's
     // history (i.e. |current_index + delta| is out of range), then we must not
     // navigate anywhere.
     return Status(kOk);
   }
 
-  int entry_id;
-  if (!entry->GetInteger("id", &entry_id))
+  absl::optional<int> entry_id = entry->FindIntKey("id");
+  if (!entry_id)
     return Status(kUnknownError, "history entry does not have an id");
-  params.SetInteger("entryId", entry_id);
+  params.SetInteger("entryId", *entry_id);
 
   return client_->SendCommandWithTimeout("Page.navigateToHistoryEntry", params,
                                          timeout);
@@ -791,7 +792,7 @@ Status WebViewImpl::DispatchKeyEvents(const std::vector<KeyEvent>& events,
 Status WebViewImpl::GetCookies(std::unique_ptr<base::ListValue>* cookies,
                                const std::string& current_page_url) {
   base::DictionaryValue params;
-  std::unique_ptr<base::DictionaryValue> result;
+  base::DictionaryValue result;
 
   if (browser_info_->browser_name != "webview") {
     base::ListValue url_list;
@@ -809,7 +810,7 @@ Status WebViewImpl::GetCookies(std::unique_ptr<base::ListValue>* cookies,
   }
 
   base::ListValue* cookies_tmp;
-  if (!result->GetList("cookies", &cookies_tmp))
+  if (!result.GetList("cookies", &cookies_tmp))
     return Status(kUnknownError, "DevTools didn't return cookies");
   *cookies = cookies_tmp->CreateDeepCopy();
   return Status(kOk);
@@ -851,12 +852,12 @@ Status WebViewImpl::AddCookie(const std::string& name,
   if (expiry >= 0)
     params.SetDoubleKey("expires", expiry);
 
-  std::unique_ptr<base::DictionaryValue> result;
+  base::DictionaryValue result;
   Status status =
       client_->SendCommandAndGetResult("Network.setCookie", params, &result);
   if (status.IsError())
     return Status(kUnableToSetCookie);
-  if (!result->FindBoolKey("success").value_or(false))
+  if (!result.FindBoolKey("success").value_or(false))
     return Status(kUnableToSetCookie);
   return Status(kOk);
 }
@@ -931,13 +932,13 @@ Status WebViewImpl::OverrideDownloadDirectoryIfNeeded(
 Status WebViewImpl::CaptureScreenshot(
     std::string* screenshot,
     const base::DictionaryValue& params) {
-  std::unique_ptr<base::DictionaryValue> result;
+  base::DictionaryValue result;
   Timeout timeout(base::Seconds(10));
   Status status = client_->SendCommandAndGetResultWithTimeout(
       "Page.captureScreenshot", params, &timeout, &result);
   if (status.IsError())
     return status;
-  if (!result->GetString("data", screenshot))
+  if (!result.GetString("data", screenshot))
     return Status(kUnknownError, "expected string 'data' in response");
   return Status(kOk);
 }
@@ -949,7 +950,7 @@ Status WebViewImpl::PrintToPDF(const base::DictionaryValue& params,
     return Status(kUnknownError,
                   "PrintToPDF is only supported in headless mode");
   }
-  std::unique_ptr<base::DictionaryValue> result;
+  base::DictionaryValue result;
   Timeout timeout(base::Seconds(10));
   Status status = client_->SendCommandAndGetResultWithTimeout(
       "Page.printToPDF", params, &timeout, &result);
@@ -959,7 +960,7 @@ Status WebViewImpl::PrintToPDF(const base::DictionaryValue& params,
     }
     return status;
   }
-  if (!result->GetString("data", pdf))
+  if (!result.GetString("data", pdf))
     return Status(kUnknownError, "expected string 'data' in response");
   return Status(kOk);
 }
@@ -1010,21 +1011,21 @@ Status WebViewImpl::SetFileInputFiles(const std::string& frame,
     // Convert the node_id to a Runtime.RemoteObject
     std::string inputRemoteObjectId;
     {
-      std::unique_ptr<base::DictionaryValue> cmd_result;
+      base::DictionaryValue cmd_result;
       base::DictionaryValue params;
       params.SetInteger("nodeId", node_id);
       status = client_->SendCommandAndGetResult("DOM.resolveNode", params,
                                                 &cmd_result);
       if (status.IsError())
         return status;
-      if (!cmd_result->GetString("object.objectId", &inputRemoteObjectId))
+      if (!cmd_result.GetString("object.objectId", &inputRemoteObjectId))
         return Status(kUnknownError, "DevTools didn't return objectId");
     }
 
     // figure out how many files there are
-    int numberOfFiles = 0;
+    absl::optional<int> numberOfFiles = 0;
     {
-      std::unique_ptr<base::DictionaryValue> cmd_result;
+      base::DictionaryValue cmd_result;
       base::DictionaryValue params;
       params.SetString("functionDeclaration",
                        "function() { return this.files.length }");
@@ -1033,15 +1034,16 @@ Status WebViewImpl::SetFileInputFiles(const std::string& frame,
                                                 params, &cmd_result);
       if (status.IsError())
         return status;
-      if (!cmd_result->GetInteger("result.value", &numberOfFiles))
+      numberOfFiles = cmd_result.FindIntPath("result.value");
+      if (!numberOfFiles)
         return Status(kUnknownError, "DevTools didn't return value");
     }
 
     // Ask for each Runtime.RemoteObject and add them to the list
-    for (int i = 0; i < numberOfFiles; i++) {
+    for (int i = 0; i < *numberOfFiles; i++) {
       std::string fileObjectId;
       {
-        std::unique_ptr<base::DictionaryValue> cmd_result;
+        base::DictionaryValue cmd_result;
         base::DictionaryValue params;
         params.SetString(
             "functionDeclaration",
@@ -1052,7 +1054,7 @@ Status WebViewImpl::SetFileInputFiles(const std::string& frame,
                                                   params, &cmd_result);
         if (status.IsError())
           return status;
-        if (!cmd_result->GetString("result.objectId", &fileObjectId))
+        if (!cmd_result.GetString("result.objectId", &fileObjectId))
           return Status(kUnknownError, "DevTools didn't return objectId");
       }
 
@@ -1060,14 +1062,14 @@ Status WebViewImpl::SetFileInputFiles(const std::string& frame,
       {
         base::DictionaryValue params;
         params.SetString("objectId", fileObjectId);
-        std::unique_ptr<base::DictionaryValue> getFileInfoResult;
+        base::DictionaryValue getFileInfoResult;
         status = client_->SendCommandAndGetResult("DOM.getFileInfo", params,
                                                   &getFileInfoResult);
         if (status.IsError())
           return status;
         // Add the full path to the file_list
         std::string fullPath;
-        if (!getFileInfoResult->GetString("path", &fullPath))
+        if (!getFileInfoResult.GetString("path", &fullPath))
           return Status(kUnknownError, "DevTools didn't return path");
         file_list.Append(fullPath);
       }
@@ -1129,10 +1131,11 @@ Status WebViewImpl::StartProfile() {
 
 Status WebViewImpl::EndProfile(std::unique_ptr<base::Value>* profile_data) {
   base::DictionaryValue params;
-  std::unique_ptr<base::DictionaryValue> profile_result;
+  std::unique_ptr<base::DictionaryValue> profile_result =
+      std::make_unique<base::DictionaryValue>();
 
-  Status status = client_->SendCommandAndGetResult(
-      "Profiler.stop", params, &profile_result);
+  Status status = client_->SendCommandAndGetResult("Profiler.stop", params,
+                                                   profile_result.get());
 
   if (status.IsError()) {
     Status disable_profile_status = StopProfileInternal();
@@ -1222,13 +1225,13 @@ Status WebViewImpl::CallAsyncFunctionInternal(
     base::DictionaryValue* result_info = NULL;
     if (!query_value->GetAsDictionary(&result_info))
       return Status(kUnknownError, "async result info is not a dictionary");
-    int status_code;
-    if (!result_info->GetInteger("status", &status_code))
+    absl::optional<int> status_code = result_info->FindIntKey("status");
+    if (!status_code)
       return Status(kUnknownError, "async result info has no int 'status'");
-    if (status_code != kOk) {
+    if (*status_code != kOk) {
       std::string message;
       result_info->GetString("value", &message);
-      return Status(static_cast<StatusCode>(status_code), message);
+      return Status(static_cast<StatusCode>(*status_code), message);
     }
 
     if (base::Value* value = result_info->FindKey("value")) {
@@ -1377,7 +1380,7 @@ Status EvaluateScript(DevToolsClient* client,
     params.SetInteger("contextId", context_id);
   params.SetBoolean("returnByValue", return_type == ReturnByValue);
   params.SetBoolean("awaitPromise", awaitPromise);
-  std::unique_ptr<base::DictionaryValue> cmd_result;
+  base::DictionaryValue cmd_result;
 
   Timeout local_timeout(timeout);
   Status status = client->SendCommandAndGetResultWithTimeout(
@@ -1385,15 +1388,18 @@ Status EvaluateScript(DevToolsClient* client,
   if (status.IsError())
     return status;
 
-  if (cmd_result->HasKey("exceptionDetails")) {
+  if (cmd_result.FindKey("exceptionDetails")) {
     std::string description = "unknown";
-    cmd_result->GetString("result.description", &description);
+    if (const std::string* maybe_description =
+            cmd_result.FindStringPath("result.description")) {
+      description = *maybe_description;
+    }
     return Status(kUnknownError,
                   "Runtime.evaluate threw exception: " + description);
   }
 
   base::DictionaryValue* unscoped_result;
-  if (!cmd_result->GetDictionary("result", &unscoped_result))
+  if (!cmd_result.GetDictionary("result", &unscoped_result))
     return Status(kUnknownError, "evaluate missing dictionary 'result'");
   result->reset(unscoped_result->DeepCopy());
   return Status(kOk);
@@ -1411,12 +1417,14 @@ Status EvaluateScriptAndGetObject(DevToolsClient* client,
                                  timeout, awaitPromise, &result);
   if (status.IsError())
     return status;
-  if (!result->HasKey("objectId")) {
+  const base::Value* object_id_val = result->FindKey("objectId");
+  if (!object_id_val) {
     *got_object = false;
     return Status(kOk);
   }
-  if (!result->GetString("objectId", object_id))
+  if (!object_id_val->is_string())
     return Status(kUnknownError, "evaluate has invalid 'objectId'");
+  *object_id = object_id_val->GetString();
   *got_object = true;
   return Status(kOk);
 }
@@ -1453,15 +1461,15 @@ Status ParseCallFunctionResult(const base::Value& temp_result,
   const base::DictionaryValue* dict;
   if (!temp_result.GetAsDictionary(&dict))
     return Status(kUnknownError, "call function result must be a dictionary");
-  int status_code;
-  if (!dict->GetInteger("status", &status_code)) {
+  absl::optional<int> status_code = dict->FindIntKey("status");
+  if (!status_code) {
     return Status(kUnknownError,
                   "call function result missing int 'status'");
   }
-  if (status_code != kOk) {
+  if (*status_code != kOk) {
     std::string message;
     dict->GetString("value", &message);
-    return Status(static_cast<StatusCode>(status_code), message);
+    return Status(static_cast<StatusCode>(*status_code), message);
   }
   const base::Value* unscoped_value = dict->FindKey("value");
   if (unscoped_value == nullptr) {
@@ -1479,6 +1487,8 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
                              bool* found_node,
                              int* node_id,
                              bool w3c_compliant) {
+  DCHECK(found_node);
+  DCHECK(node_id);
   std::string json;
   base::JSONWriter::Write(args, &json);
   std::string w3c = w3c_compliant ? "true" : "false";
@@ -1502,12 +1512,12 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
     return Status(kOk);
   }
 
-  std::unique_ptr<base::DictionaryValue> cmd_result;
+  base::DictionaryValue cmd_result;
   {
     base::DictionaryValue params;
     params.SetString("objectId", element_id);
-    status = client->SendCommandAndGetResult(
-        "DOM.requestNode", params, &cmd_result);
+    status =
+        client->SendCommandAndGetResult("DOM.requestNode", params, &cmd_result);
   }
   {
     // Release the remote object before doing anything else.
@@ -1523,8 +1533,13 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
   if (status.IsError())
     return status;
 
-  if (!cmd_result->GetInteger("nodeId", node_id))
+  absl::optional<int> maybe_node_id = cmd_result.FindIntKey("nodeId");
+  if (!maybe_node_id)
     return Status(kUnknownError, "DOM.requestNode missing int 'nodeId'");
+
+  // Note that this emulates the previous Deprecated GetInteger behavior, but
+  // should likely be changed.
+  *node_id = *maybe_node_id;
   *found_node = true;
   return Status(kOk);
 }

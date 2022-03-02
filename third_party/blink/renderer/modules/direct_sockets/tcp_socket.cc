@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/direct_sockets/tcp_socket.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "net/base/net_errors.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -11,6 +12,13 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
+
+namespace {
+
+constexpr char kTCPNetworkFailuresHistogramName[] =
+    "DirectSockets.TCPNetworkFailures";
+
+}  // namespace
 
 TCPSocket::TCPSocket(ScriptPromiseResolver& resolver)
     : resolver_(&resolver),
@@ -51,7 +59,7 @@ void TCPSocket::Init(int32_t result,
   DCHECK(resolver_);
   DCHECK(!tcp_readable_stream_wrapper_);
   DCHECK(!tcp_writable_stream_wrapper_);
-  if (result == net::Error::OK) {
+  if (result == net::Error::OK && peer_addr.has_value()) {
     local_addr_ = local_addr;
     peer_addr_ = peer_addr;
     tcp_readable_stream_wrapper_ =
@@ -68,8 +76,13 @@ void TCPSocket::Init(int32_t result,
             std::move(send_stream));
     resolver_->Resolve(this);
   } else {
+    if (result != net::Error::OK) {
+      // Error codes are negative.
+      base::UmaHistogramSparse(kTCPNetworkFailuresHistogramName, -result);
+    }
+    // TODO(crbug/1282199): Create specific exception based on error code.
     resolver_->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotAllowedError, "Permission denied"));
+        DOMExceptionCode::kNetworkError, "Network error."));
     socket_observer_receiver_.reset();
   }
   resolver_ = nullptr;

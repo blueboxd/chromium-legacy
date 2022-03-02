@@ -3,32 +3,7 @@
 # found in the LICENSE file.
 """Classes that comprise the data model for binary size analysis.
 
-The primary classes are Symbol, and SymbolGroup.
-
-Description of common properties:
-  * address: The start address of the symbol.
-        May be 0 (e.g. for .bss or for SymbolGroups).
-  * size: The number of bytes this symbol takes up, including padding that comes
-        before |address|.
-  * aliases: List of symbols that represent the same bytes. The |aliases| of
-        each symbol in this list points to the same list instance.
-  * num_aliases: The number of symbols with the same address (including self).
-  * pss: size / num_aliases.
-  * padding: The number of bytes of padding before |address| due to this symbol.
-  * padding_pss: padding / num_aliases.
-  * name: Names with templates and parameter list removed.
-        Never None, but will be '' for anonymous symbols.
-  * template_name: Name with parameter list removed (but templates left in).
-        Never None, but will be '' for anonymous symbols.
-  * full_name: Name with template and parameter list left in.
-        Never None, but will be '' for anonymous symbols.
-  * is_anonymous: True when the symbol exists in an anonymous namespace (which
-        are removed from both full_name and name during normalization).
-  * container: A (shared) Container instance.
-  * section_name: E.g. ".text", ".rodata", ".data.rel.local"
-  * section: The second character of |section_name|. E.g. "t", "r", "d".
-  * component: The team that owns this feature.
-        Never None, but will be '' when no component exists.
+See docs/data_model.md for an explanation of what fields do.
 """
 
 import collections
@@ -43,13 +18,11 @@ import match_util
 BUILD_CONFIG_GIT_REVISION = 'git_revision'
 BUILD_CONFIG_GN_ARGS = 'gn_args'
 BUILD_CONFIG_LINKER_NAME = 'linker_name'
-BUILD_CONFIG_TOOL_PREFIX = 'tool_prefix'  # Path relative to SRC_ROOT.
 
 BUILD_CONFIG_KEYS = (
     BUILD_CONFIG_GIT_REVISION,
     BUILD_CONFIG_GN_ARGS,
     BUILD_CONFIG_LINKER_NAME,
-    BUILD_CONFIG_TOOL_PREFIX,
 )
 
 METADATA_APK_FILENAME = 'apk_file_name'  # Path relative to output_directory.
@@ -59,7 +32,7 @@ METADATA_ZIPALIGN_OVERHEAD = 'zipalign_padding'  # Overhead from zipalign.
 METADATA_SIGNING_BLOCK_SIZE = 'apk_signature_block_size'  # Size in bytes.
 METADATA_MAP_FILENAME = 'map_file_name'  # Path relative to output_directory.
 METADATA_ELF_ALGORITHM = 'elf_algorithm'  # linker_map / dwarf / sections.
-METADATA_ELF_ARCHITECTURE = 'elf_arch'  # "Machine" field from readelf -h
+METADATA_ELF_ARCHITECTURE = 'elf_arch'  # "arm", "arm64", "x86", or "x64".
 METADATA_ELF_FILENAME = 'elf_file_name'  # Path relative to output_directory.
 METADATA_ELF_MTIME = 'elf_mtime'  # int timestamp in utc.
 METADATA_ELF_BUILD_ID = 'elf_build_id'
@@ -421,10 +394,7 @@ class DeltaSizeInfo(BaseSizeInfo):
 
 
 class BaseSymbol:
-  """Base class for Symbol and SymbolGroup.
-
-  Refer to module docs for field descriptions.
-  """
+  """Base class for Symbol and SymbolGroup."""
   __slots__ = ()
 
   @property
@@ -578,10 +548,7 @@ class BaseSymbol:
 
 
 class Symbol(BaseSymbol):
-  """Represents a single symbol within a binary.
-
-  Refer to module docs for field descriptions.
-  """
+  """Represents a single symbol within a binary."""
 
   __slots__ = (
       'address',
@@ -1082,6 +1049,7 @@ class SymbolGroup(BaseSymbol):
 
   def WhereInContainer(self, container):
     """|container| can be name, short_name, or container instance."""
+    container = str(container)  # Allow int to be used for short names.
     if isinstance(container, str):
       if container.isdigit():
         return self.Filter(lambda s: s.container_short_name == container)

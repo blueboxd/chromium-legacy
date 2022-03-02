@@ -16,10 +16,12 @@
 #include "chrome/browser/notifications/scheduler/notification_schedule_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
+#include "chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/segmentation_platform/public/segmentation_platform_service.h"
 #include "content/public/browser/browser_context.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/feature_guide/notifications/android/feature_notification_guide_bridge.h"
 #endif
 
@@ -29,11 +31,36 @@ namespace {
 // Default notification time interval in days.
 constexpr int kDefaultNotificationTimeIntervalDays = 7;
 
+void AddFeature(std::vector<FeatureType>& enabled_features,
+                const std::string& feature_name,
+                FeatureType feature_type,
+                int repeat_count) {
+  if (!base::GetFieldTrialParamByFeatureAsBool(
+          features::kFeatureNotificationGuide, feature_name, false)) {
+    return;
+  }
+
+  for (int i = 0; i < repeat_count; i++) {
+    enabled_features.emplace_back(feature_type);
+  }
+}
+
 std::vector<FeatureType> GetEnabledFeaturesFromVariations() {
   std::vector<FeatureType> enabled_features;
-  // TODO(shaktisahu): Find these from finch.
-  enabled_features.emplace_back(FeatureType::kIncognitoTab);
-  enabled_features.emplace_back(FeatureType::kVoiceSearch);
+  int repeat_count = base::GetFieldTrialParamByFeatureAsInt(
+      features::kFeatureNotificationGuide, "feature_notification_repeat_count",
+      1);
+
+  AddFeature(enabled_features, "enable_feature_incognito_tab",
+             FeatureType::kIncognitoTab, repeat_count);
+  AddFeature(enabled_features, "enable_feature_ntp_suggestion_card",
+             FeatureType::kNTPSuggestionCard, repeat_count);
+  AddFeature(enabled_features, "enable_feature_voice_search",
+             FeatureType::kVoiceSearch, repeat_count);
+  AddFeature(enabled_features, "enable_feature_default_browser",
+             FeatureType::kDefaultBrowser, repeat_count);
+  AddFeature(enabled_features, "enable_feature_sign_in", FeatureType::kSignIn,
+             repeat_count);
   return enabled_features;
 }
 
@@ -64,6 +91,8 @@ FeatureNotificationGuideServiceFactory::FeatureNotificationGuideServiceFactory()
           "FeatureNotificationGuideService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(NotificationScheduleServiceFactory::GetInstance());
+  DependsOn(
+      segmentation_platform::SegmentationPlatformServiceFactory::GetInstance());
 }
 
 KeyedService* FeatureNotificationGuideServiceFactory::BuildServiceInstanceFor(
@@ -73,17 +102,24 @@ KeyedService* FeatureNotificationGuideServiceFactory::BuildServiceInstanceFor(
       NotificationScheduleServiceFactory::GetForKey(profile->GetProfileKey());
   feature_engagement::Tracker* tracker =
       feature_engagement::TrackerFactory::GetForBrowserContext(profile);
+  segmentation_platform::SegmentationPlatformService*
+      segmentation_platform_service = segmentation_platform::
+          SegmentationPlatformServiceFactory::GetForProfile(profile);
   Config config;
   config.enabled_features = GetEnabledFeaturesFromVariations();
   config.notification_deliver_time_delta =
       GetNotificationStartTimeDeltaFromVariations();
+  config.feature_notification_tracking_only =
+      base::GetFieldTrialParamByFeatureAsBool(
+          features::kFeatureNotificationGuide,
+          "feature_notification_tracking_only", false);
   std::unique_ptr<FeatureNotificationGuideService::Delegate> delegate;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   delegate.reset(new FeatureNotificationGuideBridge());
 #endif
   return new FeatureNotificationGuideServiceImpl(
       std::move(delegate), config, notification_scheduler, tracker,
-      base::DefaultClock::GetInstance());
+      segmentation_platform_service, base::DefaultClock::GetInstance());
 }
 
 bool FeatureNotificationGuideServiceFactory::ServiceIsNULLWhileTesting() const {

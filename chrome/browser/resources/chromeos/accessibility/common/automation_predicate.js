@@ -228,7 +228,9 @@ AutomationPredicate = class {
    * @return {boolean}
    */
   static isInvalid(node) {
-    return node.invalidState === InvalidState.TRUE;
+    return node.invalidState === InvalidState.TRUE ||
+        AutomationPredicate.hasInvalidGrammarMarker(node) ||
+        AutomationPredicate.hasInvalidSpellingMarker(node);
   }
 
 
@@ -442,7 +444,7 @@ AutomationPredicate = class {
     return AutomationPredicate.match({
       anyRole: [
         Role.GENERIC_CONTAINER, Role.DOCUMENT, Role.GROUP, Role.LIST,
-        Role.LIST_ITEM, Role.TOOLBAR, Role.WINDOW
+        Role.LIST_ITEM, Role.TAB, Role.TAB_PANEL, Role.TOOLBAR, Role.WINDOW
       ],
       anyPredicate: [
         AutomationPredicate.landmark, AutomationPredicate.structuralContainer,
@@ -914,4 +916,14 @@ AutomationPredicate.menuItem = AutomationPredicate.roles(
  */
 AutomationPredicate.text = AutomationPredicate.roles(
     [Role.STATIC_TEXT, Role.INLINE_TEXT_BOX, Role.LINE_BREAK]);
+
+/**
+ * Matches against selecteable text like nodes.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.selectableText = AutomationPredicate.roles([
+  Role.STATIC_TEXT, Role.INLINE_TEXT_BOX, Role.LINE_BREAK, Role.LIST_MARKER
+]);
+
 });  // goog.scope

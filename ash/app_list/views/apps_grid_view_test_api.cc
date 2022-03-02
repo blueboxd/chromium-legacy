@@ -130,6 +130,18 @@ void AppsGridViewTestApi::WaitForItemMoveAnimationDone() {
   waiter.Wait();
 }
 
+void AppsGridViewTestApi::FireReorderTimerAndWaitForAnimationDone() {
+  base::OneShotTimer* timer = &view_->reorder_timer_;
+  if (timer->IsRunning())
+    timer->FireNow();
+
+  WaitForItemMoveAnimationDone();
+}
+
+void AppsGridViewTestApi::FireFolderItemReparentTimer() {
+  view_->FireFolderItemReparentTimerForTest();
+}
+
 gfx::Rect AppsGridViewTestApi::GetDragIconBoundsInAppsGridView() {
   if (!view_->drag_icon_proxy_)
     return gfx::Rect();
@@ -140,6 +152,12 @@ gfx::Rect AppsGridViewTestApi::GetDragIconBoundsInAppsGridView() {
   gfx::Point icon_origin = icon_bounds_in_screen.origin();
   views::View::ConvertPointFromScreen(view_, &icon_origin);
   return gfx::Rect(icon_origin, icon_bounds_in_screen.size());
+}
+
+ui::Layer* AppsGridViewTestApi::GetDragIconLayer() {
+  if (!view_->drag_icon_proxy_)
+    return nullptr;
+  return view_->drag_icon_proxy_->GetImageLayerForTesting();
 }
 
 }  // namespace test

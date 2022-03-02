@@ -228,7 +228,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
             net::HttpRequestHeaders() /* cors_exempt_headers */,
             nullptr /* client_security_state */,
             absl::nullopt /* devtools_accepted_stream_types */,
-            false /* is_pdf */));
+            false /* is_pdf */,
+            content::WeakDocumentPtr() /* initiator_document */));
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors;
     most_recent_resource_request_ = absl::nullopt;
     interceptors.push_back(std::make_unique<TestNavigationLoaderInterceptor>(
@@ -265,7 +266,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
         request_method, &delegate);
     loader->Start();
     delegate.WaitForRequestRedirected();
-    loader->FollowRedirect({}, {}, {}, blink::PreviewsTypes::PREVIEWS_OFF);
+    loader->FollowRedirect({}, {}, {});
 
     EXPECT_EQ(expected_redirect_method, delegate.redirect_info().new_method);
 
@@ -305,7 +306,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
         true /*is_main_frame*/, upgrade_if_insecure);
     loader->Start();
     delegate.WaitForRequestRedirected();
-    loader->FollowRedirect({}, {}, {}, blink::PreviewsTypes::PREVIEWS_OFF);
+    loader->FollowRedirect({}, {}, {});
+
     if (expect_request_fail) {
       delegate.WaitForRequestFailed();
     } else {
@@ -473,8 +475,7 @@ TEST_F(NavigationURLLoaderImplTest, RedirectModifiedHeaders) {
   net::HttpRequestHeaders redirect_headers;
   redirect_headers.SetHeader("Header2", "");
   redirect_headers.SetHeader("Header3", "Value3");
-  loader->FollowRedirect({}, redirect_headers, {},
-                         blink::PreviewsTypes::PREVIEWS_OFF);
+  loader->FollowRedirect({}, redirect_headers, {});
   delegate.WaitForResponseStarted();
 
   // Redirected request should also have modified headers.
@@ -529,7 +530,7 @@ TEST_F(NavigationURLLoaderImplTest, NavigationTimeoutTest) {
 // Like NavigationTimeoutTest but the navigation initially results in a redirect
 // before hanging, to test a slightly more complicated navigation.
 // TODO(crbug.com/1271228): Flaky on Linux.
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #define MAYBE_NavigationTimeoutRedirectTest \
   DISABLED_NavigationTimeoutRedirectTest
 #else

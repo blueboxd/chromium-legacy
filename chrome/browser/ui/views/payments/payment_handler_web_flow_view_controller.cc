@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/check_op.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,7 +34,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-shared.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -53,6 +53,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view_class_properties.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 
 namespace payments {
 namespace {
@@ -64,8 +65,7 @@ std::u16string GetPaymentHandlerDialogTitle(
 
   const std::u16string title = web_contents->GetTitle();
   const std::u16string https_prefix =
-      base::ASCIIToUTF16(url::kHttpsScheme) +
-      base::ASCIIToUTF16(url::kStandardSchemeSeparator);
+      base::StrCat({url::kHttpsScheme16, url::kStandardSchemeSeparator16});
   return base::StartsWith(title, https_prefix, base::CompareCase::SENSITIVE)
              ? std::u16string()
              : title;
@@ -348,8 +348,6 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
     return;
   }
 
-  DCHECK(FrameSupportsPayments(navigation_handle->GetRenderFrameHost()));
-
   if (first_navigation_complete_callback_) {
     std::move(first_navigation_complete_callback_)
         .Run(true, web_contents()->GetMainFrame()->GetProcess()->GetID(),
@@ -369,13 +367,6 @@ void PaymentHandlerWebFlowViewController::LoadProgressChanged(double progress) {
 void PaymentHandlerWebFlowViewController::TitleWasSet(
     content::NavigationEntry* entry) {
   UpdateHeaderView();
-}
-
-bool PaymentHandlerWebFlowViewController::FrameSupportsPayments(
-    content::RenderFrameHost* rfh) const {
-  return rfh && rfh->IsActive() &&
-         rfh->IsFeatureEnabled(
-             blink::mojom::PermissionsPolicyFeature::kPayment);
 }
 
 void PaymentHandlerWebFlowViewController::AbortPayment() {

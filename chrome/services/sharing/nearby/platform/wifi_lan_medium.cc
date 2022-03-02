@@ -4,6 +4,7 @@
 
 #include "chrome/services/sharing/nearby/platform/wifi_lan_medium.h"
 
+#include "ash/services/nearby/public/cpp/tcp_server_socket_port.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/logging.h"
@@ -12,6 +13,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -62,12 +64,19 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 }  // namespace
 
 WifiLanMedium::WifiLanMedium(
-    const mojo::SharedRemote<network::mojom::NetworkContext>& network_context)
+    const mojo::SharedRemote<sharing::mojom::TcpSocketFactory>& socket_factory,
+    const mojo::SharedRemote<
+        chromeos::network_config::mojom::CrosNetworkConfig>&
+        cros_network_config,
+    const mojo::SharedRemote<sharing::mojom::FirewallHoleFactory>&
+        firewall_hole_factory)
     : task_runner_(
           base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})),
-      network_context_(network_context) {
-  // NOTE: We do not set the disconnect handler for |network_context_| here. It
-  // is a fundamental dependency of the Nearby Connections process, which will
+      socket_factory_(socket_factory),
+      cros_network_config_(cros_network_config),
+      firewall_hole_factory_(firewall_hole_factory) {
+  // NOTE: We do not set the disconnect handler for the SharedRemotes here. They
+  // are fundamental dependencies of the Nearby Connections process, which will
   // crash if any dependency disconnects.
 }
 
@@ -113,7 +122,6 @@ std::unique_ptr<api::WifiLanSocket> WifiLanMedium::ConnectToService(
                      &connect_waitable_event));
   connect_waitable_event.Wait();
 
-  // TODO(https://crbug.com/1261238): Log metric.
   bool success = connected_socket_parameters.has_value();
   if (!success) {
     LOG(WARNING) << "WifiLanMedium::" << __func__ << ": Failed to connect to "
@@ -141,7 +149,7 @@ void WifiLanMedium::DoConnect(
   mojo::PendingRemote<network::mojom::TCPConnectedSocket> tcp_connected_socket;
   mojo::PendingReceiver<network::mojom::TCPConnectedSocket> receiver =
       tcp_connected_socket.InitWithNewPipeAndPassReceiver();
-  network_context_->CreateTCPConnectedSocket(
+  socket_factory_->CreateTCPConnectedSocket(
       /*local_addr=*/absl::nullopt, address_list,
       /*tcp_connected_socket_options=*/nullptr,
       net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation),
@@ -164,12 +172,12 @@ void WifiLanMedium::OnConnect(
     mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  // TODO(https://crbug.com/1261238): Log metric.
   if (result != net::OK) {
     LOG(WARNING) << "WifiLanMedium::" << __func__
                  << ": Failed to create TCP connected socket. result="
                  << net::ErrorToString(result);
-    FinishConnectAttempt(connect_waitable_event);
+    FinishConnectAttempt(connect_waitable_event,
+                         ConnectResult::kErrorFailedToCreateTcpSocket);
     return;
   }
 
@@ -183,7 +191,7 @@ void WifiLanMedium::OnConnect(
                                   std::move(receive_stream),
                                   std::move(send_stream)};
 
-  FinishConnectAttempt(connect_waitable_event);
+  FinishConnectAttempt(connect_waitable_event, ConnectResult::kSuccess);
 }
 /*============================================================================*/
 // End: ConnectToService()
@@ -205,7 +213,6 @@ std::unique_ptr<api::WifiLanServerSocket> WifiLanMedium::ListenForService(
                      &server_socket_parameters, &listen_waitable_event, port));
   listen_waitable_event.Wait();
 
-  // TODO(https://crbug.com/1261238): Log metric.
   bool success = server_socket_parameters.has_value();
   if (!success) {
     LOG(WARNING) << "WifiLanMedium::" << __func__
@@ -228,32 +235,122 @@ void WifiLanMedium::DoListenForService(
 
   pending_listen_waitable_events_.insert(listen_waitable_event);
 
-  // TODO(https://crbug.com/1261238): Implement local IP address fetching. We
-  // temporarily use this hardcoding for unit tests.
-  net::IPAddress address(192, 168, 86, 75);
-  OnLocalIpAddressFetched(server_socket_parameters, listen_waitable_event,
-                          net::IPEndPoint(address, port));
+  // TcpServerSocketPort enforces any necessary restrictions on port number
+  // ranges. If |port| is 0, choose a random port from the acceptable range.
+  absl::optional<ash::nearby::TcpServerSocketPort> tcp_port =
+      port == 0 ? absl::make_optional<ash::nearby::TcpServerSocketPort>(
+                      ash::nearby::TcpServerSocketPort::Random())
+                : ash::nearby::TcpServerSocketPort::FromInt(port);
+  if (!tcp_port) {
+    LOG(WARNING)
+        << "WifiLanMedium::" << __func__
+        << ": Failed to construct a TcpServerSocketPort from port number "
+        << port;
+    FinishListenAttempt(listen_waitable_event, ListenResult::kErrorInvalidPort);
+    return;
+  }
+
+  // Local IP fetching: Step 1) Grab the first (i.e., default) active network.
+  cros_network_config_->GetNetworkStateList(
+      chromeos::network_config::mojom::NetworkFilter::New(
+          chromeos::network_config::mojom::FilterType::kActive,
+          chromeos::network_config::mojom::NetworkType::kAll,
+          /*limit=*/1),
+      base::BindOnce(&WifiLanMedium::OnGetNetworkStateList,
+                     base::Unretained(this), server_socket_parameters,
+                     listen_waitable_event, *tcp_port));
 }
 
-void WifiLanMedium::OnLocalIpAddressFetched(
+void WifiLanMedium::OnGetNetworkStateList(
     absl::optional<WifiLanServerSocket::ServerSocketParameters>*
         server_socket_parameters,
     base::WaitableEvent* listen_waitable_event,
-    const net::IPEndPoint& local_end_point) {
+    const ash::nearby::TcpServerSocketPort& port,
+    std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
+        result) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (result.empty()) {
+    LOG(WARNING) << "WifiLanMedium::" << __func__
+                 << ": Failed to get network state list. Features will likely "
+                 << "check for an active network connection before deciding to "
+                 << "use WifiLan as a medium. If that is the case, this "
+                 << "failure is unexpected.";
+    FinishListenAttempt(listen_waitable_event,
+                        ListenResult::kErrorFetchIpFailedToGetNetworkStateList);
+    return;
+  }
 
-  // TODO(https://crbug.com/1261238): Process fetched local IP address and log
-  // metric.
+  // Local IP fetching: Step 2) Look up the network properties by GUID.
+  cros_network_config_->GetManagedProperties(
+      result[0]->guid,
+      base::BindOnce(&WifiLanMedium::OnGetNetworkProperties,
+                     base::Unretained(this), server_socket_parameters,
+                     listen_waitable_event, port));
+}
 
+void WifiLanMedium::OnGetNetworkProperties(
+    absl::optional<WifiLanServerSocket::ServerSocketParameters>*
+        server_socket_parameters,
+    base::WaitableEvent* listen_waitable_event,
+    const ash::nearby::TcpServerSocketPort& port,
+    chromeos::network_config::mojom::ManagedPropertiesPtr properties) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (!properties) {
+    LOG(WARNING) << "WifiLanMedium::" << __func__
+                 << ": Failed to get network properties.";
+    FinishListenAttempt(
+        listen_waitable_event,
+        ListenResult::kErrorFetchIpFailedToGetManagedProperties);
+    return;
+  }
+
+  if (!properties->ip_configs || properties->ip_configs->empty()) {
+    LOG(WARNING) << "WifiLanMedium::" << __func__ << ": IP configs are empty.";
+    FinishListenAttempt(listen_waitable_event,
+                        ListenResult::kErrorFetchIpMissingIpConfigs);
+    return;
+  }
+
+  // Local IP fetching: Step 3) Take the first valid IPv4 address.
+  absl::optional<net::IPAddress> ip_address;
+  for (const auto& ip_config : *properties->ip_configs) {
+    if (!ip_config->ip_address)
+      continue;
+
+    net::IPAddress ip;
+    if (!ip.AssignFromIPLiteral(*ip_config->ip_address))
+      continue;
+
+    if (!ip.IsValid() || !ip.IsIPv4() || ip.IsLoopback() || ip.IsZero())
+      continue;
+
+    ip_address = ip;
+    break;
+  }
+
+  if (!ip_address) {
+    LOG(WARNING)
+        << "WifiLanMedium::" << __func__
+        << ": Failed to get local IPv4 address. This is likely unexpected "
+        << "unless an IPv6-only network is used, for instance.";
+    FinishListenAttempt(listen_waitable_event,
+                        ListenResult::kErrorFetchIpNoValidLocalIpAddress);
+    return;
+  }
+
+  VLOG(1) << "WifiLanMedium::" << __func__
+          << ": Fetched local IP address. ip_address="
+          << ip_address->ToString();
   mojo::PendingRemote<network::mojom::TCPServerSocket> tcp_server_socket;
   auto receiver = tcp_server_socket.InitWithNewPipeAndPassReceiver();
-  network_context_->CreateTCPServerSocket(
-      local_end_point, kBacklog,
+  socket_factory_->CreateTCPServerSocket(
+      *ip_address, port, kBacklog,
       net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation),
       std::move(receiver),
       base::BindOnce(&WifiLanMedium::OnTcpServerSocketCreated,
                      base::Unretained(this), server_socket_parameters,
-                     listen_waitable_event, std::move(tcp_server_socket)));
+                     listen_waitable_event, std::move(tcp_server_socket),
+                     *ip_address, port));
 }
 
 void WifiLanMedium::OnTcpServerSocketCreated(
@@ -261,27 +358,44 @@ void WifiLanMedium::OnTcpServerSocketCreated(
         server_socket_parameters,
     base::WaitableEvent* listen_waitable_event,
     mojo::PendingRemote<network::mojom::TCPServerSocket> tcp_server_socket,
+    const net::IPAddress& ip_address,
+    const ash::nearby::TcpServerSocketPort& port,
     int32_t result,
     const absl::optional<net::IPEndPoint>& local_addr) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-
-  // TODO(https://crbug.com/1261238): Log metric.
   if (result != net::OK) {
     LOG(WARNING) << "WifiLanMedium::" << __func__
                  << ": Failed to create TCP server socket. result="
                  << net::ErrorToString(result);
-    FinishListenAttempt(listen_waitable_event);
+    FinishListenAttempt(listen_waitable_event,
+                        ListenResult::kErrorFailedToCreateTcpServerSocket);
     return;
   }
 
-  // TODO(https://crbug.com/1261238): Open firewall hole.
   DCHECK(tcp_server_socket);
   DCHECK(local_addr);
   VLOG(1) << "WifiLanMedium::" << __func__
           << ": Created TCP server socket. local_addr="
           << local_addr->ToString();
-  OnFirewallHoleCreated(server_socket_parameters, listen_waitable_event,
-                        std::move(tcp_server_socket), local_addr);
+
+  if (local_addr->address() != ip_address ||
+      local_addr->port() != port.port()) {
+    LOG(WARNING) << "WifiLanMedium::" << __func__
+                 << ": TCP server socket's IP:port disagrees with "
+                    "input values. in="
+                 << ip_address.ToString() << ":" << port.port()
+                 << ", out=" << local_addr->ToString();
+    FinishListenAttempt(
+        listen_waitable_event,
+        ListenResult::kErrorUnexpectedTcpServerSocketIpEndpoint);
+    return;
+  }
+
+  firewall_hole_factory_->OpenFirewallHole(
+      port, base::BindOnce(&WifiLanMedium::OnFirewallHoleCreated,
+                           base::Unretained(this), server_socket_parameters,
+                           listen_waitable_event, std::move(tcp_server_socket),
+                           *local_addr));
 }
 
 void WifiLanMedium::OnFirewallHoleCreated(
@@ -289,15 +403,25 @@ void WifiLanMedium::OnFirewallHoleCreated(
         server_socket_parameters,
     base::WaitableEvent* listen_waitable_event,
     mojo::PendingRemote<network::mojom::TCPServerSocket> tcp_server_socket,
-    const absl::optional<net::IPEndPoint>& local_addr) {
+    const net::IPEndPoint& local_addr,
+    mojo::PendingRemote<sharing::mojom::FirewallHole> firewall_hole) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  // TODO(https://crbug.com/1261238): Process firewall hole, log metric, and add
-  // firewall hole to server socket parameters.
+  if (!firewall_hole) {
+    LOG(WARNING) << "WifiLanMedium::" << __func__
+                 << ": Failed to create firewall hole. local_addr="
+                 << local_addr.ToString();
+    FinishListenAttempt(listen_waitable_event,
+                        ListenResult::kErrorFailedToCreateFirewallHole);
+    return;
+  }
 
-  *server_socket_parameters = {*local_addr, std::move(tcp_server_socket)};
+  VLOG(1) << "WifiLanMedium::" << __func__
+          << ": Created firewall hole. local_addr=" << local_addr.ToString();
+  *server_socket_parameters = {local_addr, std::move(tcp_server_socket),
+                               std::move(firewall_hole)};
 
-  FinishListenAttempt(listen_waitable_event);
+  FinishListenAttempt(listen_waitable_event, ListenResult::kSuccess);
 }
 /*============================================================================*/
 // End: ListenForService()
@@ -323,26 +447,37 @@ bool WifiLanMedium::StopDiscovery(const std::string& service_type) {
   NOTIMPLEMENTED();
   return false;
 }
+absl::optional<std::pair<std::int32_t, std::int32_t>>
+WifiLanMedium::GetDynamicPortRange() {
+  NOTIMPLEMENTED();
+  return absl::nullopt;
+}
 /*============================================================================*/
 // End: Not implemented
 /*============================================================================*/
 
-void WifiLanMedium::FinishConnectAttempt(base::WaitableEvent* event) {
+void WifiLanMedium::FinishConnectAttempt(base::WaitableEvent* event,
+                                         ConnectResult result) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   auto it = pending_connect_waitable_events_.find(event);
   if (it == pending_connect_waitable_events_.end())
     return;
+
+  // TODO(https://crbug.com/1261238): Log ConnectResult metric.
 
   base::WaitableEvent* event_copy = *it;
   pending_connect_waitable_events_.erase(it);
   event_copy->Signal();
 }
 
-void WifiLanMedium::FinishListenAttempt(base::WaitableEvent* event) {
+void WifiLanMedium::FinishListenAttempt(base::WaitableEvent* event,
+                                        ListenResult result) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   auto it = pending_listen_waitable_events_.find(event);
   if (it == pending_listen_waitable_events_.end())
     return;
+
+  // TODO(https://crbug.com/1261238): Log ListenResult metric.
 
   base::WaitableEvent* event_copy = *it;
   pending_listen_waitable_events_.erase(it);
@@ -354,10 +489,12 @@ void WifiLanMedium::Shutdown(base::WaitableEvent* shutdown_waitable_event) {
 
   // Note that resetting the Remote will cancel any pending callbacks, including
   // those already in the task queue.
-  // TODO(https://crbug.com/1261238): Reset firewall hole factory.
   VLOG(1) << "WifiLanMedium::" << __func__
-          << ": Closing NetworkContext Remote.";
-  network_context_.reset();
+          << ": Closing TcpSocketFactory, CrosNetworkConfig, and "
+             "FirewallHoleFactory mojo SharedRemotes.";
+  socket_factory_.reset();
+  cros_network_config_.reset();
+  firewall_hole_factory_.reset();
 
   // Cancel all pending connect/listen calls. This is thread safe because all
   // changes to the pending-event sets are sequenced. Make a copy of the events
@@ -369,7 +506,7 @@ void WifiLanMedium::Shutdown(base::WaitableEvent* shutdown_waitable_event) {
   }
   auto pending_connect_waitable_events_copy = pending_connect_waitable_events_;
   for (base::WaitableEvent* event : pending_connect_waitable_events_copy) {
-    FinishConnectAttempt(event);
+    FinishConnectAttempt(event, ConnectResult::kCanceled);
   }
   if (!pending_listen_waitable_events_.empty()) {
     VLOG(1) << "WifiLanMedium::" << __func__ << ": Canceling "
@@ -378,7 +515,7 @@ void WifiLanMedium::Shutdown(base::WaitableEvent* shutdown_waitable_event) {
   }
   auto pending_listen_waitable_events_copy = pending_listen_waitable_events_;
   for (base::WaitableEvent* event : pending_listen_waitable_events_copy) {
-    FinishListenAttempt(event);
+    FinishListenAttempt(event, ListenResult::kCanceled);
   }
 
   shutdown_waitable_event->Signal();

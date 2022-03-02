@@ -5,14 +5,14 @@
 #ifndef ASH_WM_DESKS_TEMPLATES_DESKS_TEMPLATES_NAME_VIEW_H_
 #define ASH_WM_DESKS_TEMPLATES_DESKS_TEMPLATES_NAME_VIEW_H_
 
-#include "ash/wm/desks/label_textfield.h"
+#include "ash/wm/desks/desks_textfield.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 
 namespace ash {
 
 // Defines a textfield styled to normally look like a label. Allows modifying
 // the name of its corresponding template.
-class DesksTemplatesNameView : public LabelTextfield {
+class DesksTemplatesNameView : public DesksTextfield {
  public:
   METADATA_HEADER(DesksTemplatesNameView);
 
@@ -21,19 +21,31 @@ class DesksTemplatesNameView : public LabelTextfield {
   DesksTemplatesNameView& operator=(const DesksTemplatesNameView&) = delete;
   ~DesksTemplatesNameView() override;
 
+  static constexpr int kTemplateNameViewHeight = 24;
+
   // Commits an on-going template name change (if any) by bluring the focus away
   // from any view on `widget`, where `widget` should be the desks templates
   // grid widget.
   static void CommitChanges(views::Widget* widget);
 
-  // LabelTextfield:
+  // Called when the contents in the textfield change. Updates the preferred
+  // size of `this`, which invalidates the layout.
+  void OnContentsChanged();
+
+  // DesksTextfield:
   void SetTextAndElideIfNeeded(const std::u16string& text) override;
+  gfx::Size CalculatePreferredSize() const override;
 
  private:
   friend class DesksTemplatesNameViewTestApi;
+
+  // Gets the available width for `this`. It is the largest width `this` can be
+  // based on the parent's and visible sibling's preferred sizes. Will always
+  // return a value greater than or equal to one.
+  int GetAvailableWidth() const;
 };
 
-BEGIN_VIEW_BUILDER(/* no export */, DesksTemplatesNameView, LabelTextfield)
+BEGIN_VIEW_BUILDER(/* no export */, DesksTemplatesNameView, DesksTextfield)
 END_VIEW_BUILDER
 
 }  // namespace ash

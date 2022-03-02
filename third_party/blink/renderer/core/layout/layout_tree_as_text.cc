@@ -59,7 +59,6 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_tree_as_text.h"
 #include "third_party/blink/renderer/core/page/print_context.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -495,7 +494,7 @@ static void WritePaintProperties(WTF::TextStream& ts,
       ts << " state=(" << fragment->LocalBorderBoxProperties().ToString()
          << ")";
     }
-    if (RuntimeEnabledFeatures::CullRectUpdateEnabled() && o.HasLayer()) {
+    if (o.HasLayer()) {
       ts << " cull_rect=(" << fragment->GetCullRect().ToString()
          << ") contents_cull_rect=("
          << fragment->GetContentsCullRect().ToString() << ")";
@@ -557,7 +556,7 @@ void Write(WTF::TextStream& ts,
 
   if (o.IsText() && !o.IsBR()) {
     const auto& text = To<LayoutText>(o);
-    if (const LayoutBlockFlow* block_flow = text.ContainingNGBlockFlow()) {
+    if (const LayoutBlockFlow* block_flow = text.FragmentItemsContainer()) {
       NGInlineCursor cursor(*block_flow);
       cursor.MoveTo(text);
       for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
@@ -664,24 +663,7 @@ static void Write(WTF::TextStream& ts,
 
   if (layer.GetLayoutObject().StyleRef().HasBlendMode()) {
     ts << " blendMode: "
-       << CompositeOperatorName(
-              kCompositeSourceOver,
-              layer.GetLayoutObject().StyleRef().GetBlendMode());
-  }
-
-  if (behavior & kLayoutAsTextShowCompositedLayers) {
-    if (layer.HasCompositedLayerMapping()) {
-      ts << " (composited, bounds="
-         << layer.GetCompositedLayerMapping()->CompositedBounds()
-         << ", drawsContent="
-         << layer.GetCompositedLayerMapping()
-                ->MainGraphicsLayer()
-                ->DrawsContent()
-         << (layer.ShouldIsolateCompositedDescendants()
-                 ? ", isolatesCompositedBlending"
-                 : "")
-         << ")";
-    }
+       << BlendModeToString(layer.GetLayoutObject().StyleRef().GetBlendMode());
   }
 
   if (behavior & kLayoutAsTextShowPaintProperties) {
@@ -723,11 +705,11 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
         .CalculateRects(
             ClipRectsContext(root_layer,
                              &root_layer->GetLayoutObject().FirstFragment()),
-            &layer->GetLayoutObject().FirstFragment(), nullptr, layer_bounds,
+            &layer->GetLayoutObject().FirstFragment(), layer_bounds,
             damage_rect, clip_rect_to_apply);
   } else {
     layer->Clipper(PaintLayer::GeometryMapperOption::kDoNotUseGeometryMapper)
-        .CalculateRects(ClipRectsContext(root_layer, nullptr), nullptr, nullptr,
+        .CalculateRects(ClipRectsContext(root_layer, nullptr), nullptr,
                         layer_bounds, damage_rect, clip_rect_to_apply);
   }
 

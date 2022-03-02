@@ -65,12 +65,12 @@
 #include "rlz/buildflags/buildflags.h"
 #include "ui/base/buildflags.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
 #include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
 #endif
 
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
 #endif
 
@@ -83,10 +83,6 @@
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "components/app_restore/features.h"
 #include "components/app_restore/full_restore_utils.h"
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/lacros/lacros_service.h"
 #endif
 
 namespace {
@@ -160,7 +156,7 @@ void StartupBrowserCreatorImpl::MaybeToggleFullscreen(Browser* browser) {
   }
 }
 
-bool StartupBrowserCreatorImpl::Launch(
+void StartupBrowserCreatorImpl::Launch(
     Profile* profile,
     chrome::startup::IsProcessStartup process_startup,
     std::unique_ptr<LaunchModeRecorder> launch_mode_recorder) {
@@ -188,7 +184,7 @@ bool StartupBrowserCreatorImpl::Launch(
         command_line_.GetSwitchValueASCII(switches::kInstallChromeApp));
   }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   if (process_startup == chrome::startup::IsProcessStartup::kYes) {
     // Check whether the auto-update system needs to be promoted from user
     // to system.
@@ -202,8 +198,6 @@ bool StartupBrowserCreatorImpl::Launch(
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
   if (browser)
     MaybeToggleFullscreen(browser);
-
-  return true;
 }
 
 Browser* StartupBrowserCreatorImpl::OpenURLsInBrowser(
@@ -311,13 +305,13 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
 StartupBrowserCreatorImpl::LaunchResult
 StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
     chrome::startup::IsProcessStartup process_startup) {
-  if (!ShouldLaunch(command_line_))
+  if (StartupBrowserCreator::ShouldLoadProfileWithoutWindow(command_line_))
     return LaunchResult::kNormally;
 
   const bool is_incognito_or_guest = profile_->IsOffTheRecord();
   bool is_post_crash_launch = HasPendingUncleanExit(profile_);
   bool has_incompatible_applications = false;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (is_post_crash_launch) {
     // Check if there are any incompatible applications cached from the last
@@ -389,7 +383,7 @@ StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
   SessionRestore::BehaviorBitmask restore_options =
       SessionRestore::RESTORE_BROWSER;
   if (behavior == BrowserOpenBehavior::SYNCHRONOUS_RESTORE) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     bool was_mac_login_or_resume = base::mac::WasLaunchedAsLoginOrResumeItem();
 #else
     bool was_mac_login_or_resume = false;
@@ -485,7 +479,7 @@ StartupBrowserCreatorImpl::DetermineStartupTabs(
     StartupTabs onboarding_tabs;
     if (promotional_tabs_enabled) {
       StartupTabs welcome_back_tabs;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       // This is a launch from a prompt presented to an inactive user who chose
       // to open Chrome and is being brought to a specific URL for this one
       // launch. Launch the browser with the desired welcome back URL in the
@@ -494,7 +488,7 @@ StartupBrowserCreatorImpl::DetermineStartupTabs(
       welcome_back_tabs = provider.GetWelcomeBackTabs(
           profile_, browser_creator_, process_startup);
       AppendTabs(welcome_back_tabs, &tabs);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
       if (welcome_enabled) {
         // Policies for welcome (e.g., first run) may show promotional and
@@ -647,30 +641,6 @@ StartupBrowserCreatorImpl::DetermineSynchronousRestoreOptions(
     options |= SessionRestore::ALWAYS_CREATE_TABBED_BROWSER;
 
   return options;
-}
-
-// static
-bool StartupBrowserCreatorImpl::ShouldLaunch(
-    const base::CommandLine& command_line) {
-  // Don't open any browser windows if starting up in "background mode".
-  if (command_line.HasSwitch(switches::kNoStartupWindow))
-    return false;
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    // Don't open any browser windows if Ash requested that Lacros not do so.
-    // The implicit assumption is that some other code is responsible for
-    // keeping Lacros running in the background.
-    // Temporarily remove this logic to deal with https://crbug.com/1278549.
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // If Lacros is the primary web browser, do not open the browser window
-  // on Chrome OS session login.
-  if (crosapi::browser_util::IsLacrosPrimaryBrowser())
-    return false;
-#endif
-
-  return true;
 }
 
 // static

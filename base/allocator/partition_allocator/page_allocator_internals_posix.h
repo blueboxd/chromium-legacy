@@ -8,7 +8,9 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/mman.h>
+
 #include <algorithm>
+#include <cstdint>
 
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
@@ -16,7 +18,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -25,10 +27,10 @@
 #include <Security/Security.h>
 #include <mach/mach.h>
 #endif
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include <sys/prctl.h>
 #endif
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include <sys/resource.h>
 #endif
 
@@ -38,7 +40,7 @@
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 
 // SecTaskGetCodeSignStatus is marked as unavailable on macOS, although it’s
 // available on iOS and other Apple operating systems. It is, in fact, present
@@ -54,13 +56,13 @@ uint32_t SecTaskGetCodeSignStatus(SecTaskRef task)
     API_AVAILABLE(macos(10.12));
 #pragma clang diagnostic pop
 
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 
 namespace base {
 
 namespace {
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const char* PageTagToName(PageTag tag) {
   // Important: All the names should be string literals. As per prctl.h in
   // //third_party/android_ndk the kernel keeps a pointer to the name instead
@@ -82,9 +84,9 @@ const char* PageTagToName(PageTag tag) {
       return "";
   }
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // Tests whether the version of macOS supports the MAP_JIT flag and if the
 // current process is signed with the hardened runtime and the allow-jit
 // entitlement, returning whether MAP_JIT should be used to allocate regions
@@ -131,7 +133,7 @@ bool UseMapJit() {
 
   return mac::CFCast<CFBooleanRef>(jit_entitlement.get()) == kCFBooleanTrue;
 }
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 }  // namespace
 
@@ -141,11 +143,11 @@ std::atomic<int32_t> s_allocPageErrorCode{0};
 
 int GetAccessFlags(PageAccessibilityConfiguration accessibility);
 
-void* SystemAllocPagesInternal(void* hint,
-                               size_t length,
-                               PageAccessibilityConfiguration accessibility,
-                               PageTag page_tag) {
-#if defined(OS_APPLE)
+uintptr_t SystemAllocPagesInternal(uintptr_t hint,
+                                   size_t length,
+                                   PageAccessibilityConfiguration accessibility,
+                                   PageTag page_tag) {
+#if BUILDFLAG(IS_APPLE)
   // Use a custom tag to make it easier to distinguish Partition Alloc regions
   // in vmmap(1). Tags between 240-255 are supported.
   PA_DCHECK(PageTag::kFirst <= page_tag);
@@ -158,7 +160,7 @@ void* SystemAllocPagesInternal(void* hint,
   int access_flag = GetAccessFlags(accessibility);
   int map_flags = MAP_ANONYMOUS | MAP_PRIVATE;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // On macOS 10.14 and higher, executables that are code signed with the
   // "runtime" option cannot execute writable memory by default. They can opt
   // into this capability by specifying the "com.apple.security.cs.allow-jit"
@@ -169,13 +171,14 @@ void* SystemAllocPagesInternal(void* hint,
   }
 #endif
 
-  void* ret = mmap(hint, length, access_flag, map_flags, fd, 0);
+  void* ret = mmap(reinterpret_cast<void*>(hint), length, access_flag,
+                   map_flags, fd, 0);
   if (ret == MAP_FAILED) {
     s_allocPageErrorCode = errno;
     ret = nullptr;
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On Android, anonymous mappings can have a name attached to them. This is
   // useful for debugging, and double-checking memory attribution.
   if (ret) {
@@ -185,23 +188,24 @@ void* SystemAllocPagesInternal(void* hint,
   }
 #endif
 
-  return ret;
+  return reinterpret_cast<uintptr_t>(ret);
 }
 
 bool TrySetSystemPagesAccessInternal(
-    void* address,
+    uintptr_t address,
     size_t length,
     PageAccessibilityConfiguration accessibility) {
-  return 0 ==
-         HANDLE_EINTR(mprotect(address, length, GetAccessFlags(accessibility)));
+  return 0 == HANDLE_EINTR(mprotect(reinterpret_cast<void*>(address), length,
+                                    GetAccessFlags(accessibility)));
 }
 
 void SetSystemPagesAccessInternal(
-    void* address,
+    uintptr_t address,
     size_t length,
     PageAccessibilityConfiguration accessibility) {
   int access_flags = GetAccessFlags(accessibility);
-  const int ret = HANDLE_EINTR(mprotect(address, length, access_flags));
+  const int ret = HANDLE_EINTR(
+      mprotect(reinterpret_cast<void*>(address), length, access_flags));
 
   // On Linux, man mprotect(2) states that ENOMEM is returned when (1) internal
   // kernel data structures cannot be allocated, (2) the address range is
@@ -222,31 +226,31 @@ void SetSystemPagesAccessInternal(
   PA_PCHECK(0 == ret);
 }
 
-void FreePagesInternal(void* address, size_t length) {
-  PA_PCHECK(0 == munmap(address, length));
+void FreePagesInternal(uintptr_t address, size_t length) {
+  PA_PCHECK(0 == munmap(reinterpret_cast<void*>(address), length));
 }
 
-void* TrimMappingInternal(void* base,
-                          size_t base_length,
-                          size_t trim_length,
-                          PageAccessibilityConfiguration accessibility,
-                          size_t pre_slack,
-                          size_t post_slack) {
-  void* ret = base;
+uintptr_t TrimMappingInternal(uintptr_t base_address,
+                              size_t base_length,
+                              size_t trim_length,
+                              PageAccessibilityConfiguration accessibility,
+                              size_t pre_slack,
+                              size_t post_slack) {
+  uintptr_t ret = base_address;
   // We can resize the allocation run. Release unneeded memory before and after
   // the aligned range.
   if (pre_slack) {
-    FreePages(base, pre_slack);
-    ret = reinterpret_cast<char*>(base) + pre_slack;
+    FreePages(base_address, pre_slack);
+    ret = base_address + pre_slack;
   }
   if (post_slack) {
-    FreePages(reinterpret_cast<char*>(ret) + trim_length, post_slack);
+    FreePages(ret + trim_length, post_slack);
   }
   return ret;
 }
 
 void DecommitSystemPagesInternal(
-    void* address,
+    uintptr_t address,
     size_t length,
     PageAccessibilityDisposition accessibility_disposition) {
   // In POSIX, there is no decommit concept. Discarding is an effective way of
@@ -268,8 +272,9 @@ void DecommitSystemPagesInternal(
   if (!DecommittedMemoryIsAlwaysZeroed() && change_permissions) {
     // Memory may not be writable.
     size_t size = std::min(length, 2 * SystemPageSize());
-    PA_CHECK(mprotect(address, size, PROT_WRITE) == 0);
-    memset(address, 0xcc, size);
+    void* ptr = reinterpret_cast<void*>(address);
+    PA_CHECK(mprotect(ptr, size, PROT_WRITE) == 0);
+    memset(ptr, 0xcc, size);
   }
 #endif
 
@@ -284,20 +289,21 @@ void DecommitSystemPagesInternal(
   }
 }
 
-void DecommitAndZeroSystemPagesInternal(void* address, size_t length) {
+void DecommitAndZeroSystemPagesInternal(uintptr_t address, size_t length) {
   // https://pubs.opengroup.org/onlinepubs/9699919799/functions/mmap.html: "If
   // a MAP_FIXED request is successful, then any previous mappings [...] for
   // those whole pages containing any part of the address range [pa,pa+len)
   // shall be removed, as if by an appropriate call to munmap(), before the
   // new mapping is established." As a consequence, the memory will be
   // zero-initialized on next access.
-  void* ptr = mmap(address, length, PROT_NONE,
+  void* ptr = reinterpret_cast<void*>(address);
+  void* ret = mmap(ptr, length, PROT_NONE,
                    MAP_FIXED | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-  PA_CHECK(ptr == address);
+  PA_CHECK(ptr == ret);
 }
 
 void RecommitSystemPagesInternal(
-    void* address,
+    uintptr_t address,
     size_t length,
     PageAccessibilityConfiguration accessibility,
     PageAccessibilityDisposition accessibility_disposition) {
@@ -308,15 +314,15 @@ void RecommitSystemPagesInternal(
     SetSystemPagesAccess(address, length, accessibility);
   }
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // On macOS, to update accounting, we need to make another syscall. For more
   // details, see https://crbug.com/823915.
-  madvise(address, length, MADV_FREE_REUSE);
+  madvise(reinterpret_cast<void*>(address), length, MADV_FREE_REUSE);
 #endif
 }
 
 bool TryRecommitSystemPagesInternal(
-    void* address,
+    uintptr_t address,
     size_t length,
     PageAccessibilityConfiguration accessibility,
     PageAccessibilityDisposition accessibility_disposition) {
@@ -329,21 +335,22 @@ bool TryRecommitSystemPagesInternal(
       return false;
   }
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // On macOS, to update accounting, we need to make another syscall. For more
   // details, see https://crbug.com/823915.
-  madvise(address, length, MADV_FREE_REUSE);
+  madvise(reinterpret_cast<void*>(address), length, MADV_FREE_REUSE);
 #endif
 
   return true;
 }
 
-void DiscardSystemPagesInternal(void* address, size_t length) {
-#if defined(OS_APPLE)
-  int ret = madvise(address, length, MADV_FREE_REUSABLE);
+void DiscardSystemPagesInternal(uintptr_t address, size_t length) {
+  void* ptr = reinterpret_cast<void*>(address);
+#if BUILDFLAG(IS_APPLE)
+  int ret = madvise(ptr, length, MADV_FREE_REUSABLE);
   if (ret) {
     // MADV_FREE_REUSABLE sometimes fails, so fall back to MADV_DONTNEED.
-    ret = madvise(address, length, MADV_DONTNEED);
+    ret = madvise(ptr, length, MADV_DONTNEED);
   }
   PA_PCHECK(ret == 0);
 #else
@@ -353,7 +360,7 @@ void DiscardSystemPagesInternal(void* address, size_t length) {
   // performance benefits unclear.
   //
   // Therefore, we just do the simple thing: MADV_DONTNEED.
-  PA_PCHECK(0 == madvise(address, length, MADV_DONTNEED));
+  PA_PCHECK(0 == madvise(ptr, length, MADV_DONTNEED));
 #endif
 }
 

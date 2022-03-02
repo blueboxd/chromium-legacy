@@ -4,7 +4,9 @@
 
 #include "chrome/browser/plugins/plugin_info_host_impl.h"
 
-#include "base/at_exit.h"
+#include <map>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
@@ -104,7 +106,7 @@ class PluginInfoHostImplTest : public ::testing::Test {
 
     PluginService::GetInstance()->SetFilter(&filter_);
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
     // Can't go out of process in unit tests.
     content::RenderProcessHost::SetRunRendererInProcess(true);
 #endif
@@ -112,7 +114,7 @@ class PluginInfoHostImplTest : public ::testing::Test {
     PluginService::GetInstance()->GetPlugins(
         base::BindOnce(&PluginsLoaded, run_loop.QuitClosure()));
     run_loop.Run();
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
     content::RenderProcessHost::SetRunRendererInProcess(false);
 #endif
   }
@@ -131,7 +133,6 @@ class PluginInfoHostImplTest : public ::testing::Test {
   FakePluginServiceFilter filter_;
 
  private:
-  base::ShadowingAtExitManager at_exit_manager_;  // Destroys the PluginService.
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile_;
   PluginInfoHostImpl::Context context_;

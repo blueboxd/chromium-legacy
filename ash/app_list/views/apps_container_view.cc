@@ -15,6 +15,7 @@
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_reorder_undo_container_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/continue_section_view.h"
@@ -27,10 +28,10 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_model_delegate.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/search_box/search_box_constants.h"
-#include "ash/style/ash_color_provider.h"
-#include "ash/style/style_util.h"
+#include "ash/shelf/gradient_layer_delegate.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
@@ -48,12 +49,10 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/animation/ink_drop.h"
-#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
 
 namespace ash {
@@ -118,137 +117,26 @@ constexpr int kGridToPageSwitcherMargin = 8;
 // Minimal horizontal distance from the page switcher to apps container bounds.
 constexpr int kPageSwitcherEndMargin = 16;
 
-// The apps grid view's fadeout zone height, that contains a fadeout mask, and
-// which is used as a margin for the `AppsGridView` contents.
-constexpr int kGridFadeoutZoneHeight = 24;
-
-// The space between sort ui controls (including sort button and redo button).
-constexpr int kSortUiControlSpacing = 10;
-
-// The preferred size of sort ui controls (like sort button and redo button).
-constexpr int kSortUiControlPreferredSize = 20;
+// The vertical margin for the `AppsGridView` contents.
+constexpr int kGridVerticalMargin = 24;
 
 // The number of columns available for the ContinueSectionView.
 constexpr int kContinueColumnCount = 4;
 
-// The vertical spacing above and below the separator.
-constexpr int kSeparatorVerticalInset = 16;
+// The vertical spacing between recent apps and continue section view.
+constexpr int kRecentAppsTopMargin = 16;
+
+// The vertical spacing above and below the separator when using kRegular/kDense
+// AppListConfigType.
+constexpr int kRegularSeparatorVerticalInset = 16;
+constexpr int kDenseSeparatorVerticalInset = 8;
 
 // The width of the separator.
 constexpr int kSeparatorWidth = 240;
 
-// SortUiControl ---------------------------------------------------------------
-
-class SortUiControl : public views::ImageButton {
- public:
-  SortUiControl(AppListViewDelegate* delegate,
-                views::Button::PressedCallback pressed_callback)
-      : views::ImageButton(pressed_callback), delegate_(delegate) {
-    SetPaintToLayer();
-    layer()->SetFillsBoundsOpaquely(false);
-    views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
-    SetPreferredSize(
-        gfx::Size(kSortUiControlPreferredSize, kSortUiControlPreferredSize));
-
-    // This view is used behind the feature flag and is immature. Therefore
-    // ignore it in a11y for now.
-    GetViewAccessibility().OverrideIsIgnored(true);
-  }
-  SortUiControl(const SortUiControl&) = delete;
-  SortUiControl& operator=(const SortUiControl&) = delete;
-  ~SortUiControl() override = default;
-
-  // views::View:
-  void OnThemeChanged() override {
-    views::View::OnThemeChanged();
-    StyleUtil::ConfigureInkDropAttributes(
-        this, StyleUtil::kBaseColor | StyleUtil::kInkDropOpacity |
-                  StyleUtil::kHighlightOpacity);
-    views::InstallFixedSizeCircleHighlightPathGenerator(
-        this, kSortUiControlPreferredSize / 2);
-    views::InkDrop::UseInkDropForFloodFillRipple(views::InkDrop::Get(this),
-                                                 /*highlight_on_hover=*/true,
-                                                 /*highlight_on_focus=*/true);
-  }
-
- protected:
-  AppListViewDelegate* const delegate_;
-};
-
-// RedoButton ------------------------------------------------------------------
-
-// A button for reverting the temporary sort order if any.
-// TODO(https://crbug.com/1263999): remove `RedoButton` when the app list sort
-// is enabled as default.
-class RedoButton : public SortUiControl {
- public:
-  METADATA_HEADER(RedoButton);
-
-  explicit RedoButton(AppListViewDelegate* delegate)
-      : SortUiControl(delegate,
-                      base::BindRepeating(&RedoButton::RevertAppListSort,
-                                          base::Unretained(this))) {}
-  RedoButton(const RedoButton&) = delete;
-  RedoButton& operator=(const RedoButton&) = delete;
-  ~RedoButton() override = default;
-
- private:
-  // views::View:
-  void OnThemeChanged() override {
-    SortUiControl::OnThemeChanged();
-    const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kButtonIconColor);
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(kSmallCloseButtonIcon,
-                                   GetPreferredSize().width(), icon_color));
-  }
-
-  void RevertAppListSort() {
-    views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
-        views::InkDropState::ACTION_TRIGGERED);
-    AppListModelProvider::Get()
-        ->model()
-        ->delegate()
-        ->RequestAppListSortRevert();
-  }
-};
-
-BEGIN_METADATA(RedoButton, views::View)
-END_METADATA
-
-// SortUiControlContainer ------------------------------------------------------
-
-class SortUiControlContainer : public views::View {
- public:
-  METADATA_HEADER(SortUiControlContainer);
-
-  explicit SortUiControlContainer(AppListViewDelegate* delegate) {
-    // The layer is required in animation.
-    SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
-
-    // Configure the layout.
-    auto box_layout = std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kHorizontal,
-        /*inside_border_insets=*/gfx::Insets(),
-        /*between_child_spacing=*/kSortUiControlSpacing);
-    box_layout->set_main_axis_alignment(
-        views::BoxLayout::MainAxisAlignment::kCenter);
-    box_layout->set_cross_axis_alignment(
-        views::BoxLayout::CrossAxisAlignment::kCenter);
-    SetLayoutManager(std::move(box_layout));
-
-    // Add children.
-    AddChildView(std::make_unique<RedoButton>(delegate));
-
-    GetViewAccessibility().OverrideIsIgnored(true);
-  }
-  SortUiControlContainer(const SortUiControlContainer&) = delete;
-  SortUiControlContainer& operator=(const SortUiControlContainer&) = delete;
-  ~SortUiControlContainer() override = default;
-};
-
-BEGIN_METADATA(SortUiControlContainer, views::View)
-END_METADATA
+// The actual height of the fadeout gradient mask at the top and bottom of the
+// `scrollable_container_`.
+constexpr int kDefaultFadeoutMaskHeight = 16;
 
 }  // namespace
 
@@ -261,6 +149,7 @@ class AppsContainerView::ContinueContainer : public views::View {
   ContinueContainer(AppsContainerView* apps_container,
                     AppListViewDelegate* view_delegate) {
     SetPaintToLayer(ui::LAYER_NOT_DRAWN);
+
     SetLayoutManager(std::make_unique<views::FlexLayout>())
         ->SetOrientation(views::LayoutOrientation::kVertical);
 
@@ -276,18 +165,21 @@ class AppsContainerView::ContinueContainer : public views::View {
     recent_apps_->layer()->SetFillsBoundsOpaquely(false);
 
     separator_ = AddChildView(std::make_unique<views::Separator>());
+    DCHECK(ColorProvider::Get());
     separator_->SetColor(ColorProvider::Get()->GetContentLayerColor(
         ColorProvider::ContentLayerType::kSeparatorColor));
-    separator_->SetBorder(
-        views::CreateEmptyBorder(gfx::Insets(kSeparatorVerticalInset, 0)));
     separator_->SetPreferredSize(
-        gfx::Size(kSeparatorWidth,
-                  kSeparatorVerticalInset * 2 + views::Separator::kThickness));
+        gfx::Size(kSeparatorWidth, views::Separator::kThickness));
+    // Initially set the vertical inset to kRegularSeparatorVerticalInset. The
+    // value will be updated in `AppsContainerView::UpdateAppListConfig()`
+    separator_->SetProperty(views::kMarginsKey,
+                            gfx::Insets(kRegularSeparatorVerticalInset, 0));
     separator_->SetPaintToLayer();
     separator_->layer()->SetFillsBoundsOpaquely(false);
     separator_->SetProperty(views::kCrossAxisAlignmentKey,
                             views::LayoutAlignment::kCenter);
 
+    UpdateRecentAppsMargins();
     UpdateSeparatorVisibility();
   }
 
@@ -295,6 +187,9 @@ class AppsContainerView::ContinueContainer : public views::View {
   void ChildVisibilityChanged(views::View* child) override {
     if (child == recent_apps_ || child == continue_section_)
       UpdateSeparatorVisibility();
+
+    if (child == continue_section_)
+      UpdateRecentAppsMargins();
   }
 
   void OnThemeChanged() override {
@@ -303,11 +198,37 @@ class AppsContainerView::ContinueContainer : public views::View {
         ColorProvider::ContentLayerType::kSeparatorColor));
   }
 
+  bool HasRecentApps() const {
+    return recent_apps_ && recent_apps_->GetVisible();
+  }
+
+  void UpdateAppListConfig(AppListConfig* config) {
+    if (recent_apps_)
+      recent_apps_->UpdateAppListConfig(config);
+
+    const int separator_vertical_inset =
+        config->type() == AppListConfigType::kRegular
+            ? kRegularSeparatorVerticalInset
+            : kDenseSeparatorVerticalInset;
+    separator_->SetProperty(views::kMarginsKey,
+                            gfx::Insets(separator_vertical_inset, 0));
+  }
+
   ContinueSectionView* continue_section() { return continue_section_; }
   RecentAppsView* recent_apps() { return recent_apps_; }
   views::View* separator() { return separator_; }
 
  private:
+  void UpdateRecentAppsMargins() {
+    if (!recent_apps_ || !continue_section_)
+      return;
+    // Remove recent apps top margin if continue section is hidden.
+    recent_apps_->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets(continue_section_->GetVisible() ? kRecentAppsTopMargin : 0,
+                    0, 0, 0));
+  }
+
   void UpdateSeparatorVisibility() {
     if (!separator_ || !recent_apps_ || !continue_section_)
       return;
@@ -331,12 +252,21 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view)
   AppListViewDelegate* view_delegate =
       contents_view_->GetAppListMainView()->view_delegate();
 
+  // The bounds of the |scrollable_container_| will visually clip the
+  // |continue_container_| and |apps_grid_view_| layers.
+  scrollable_container_->layer()->SetMasksToBounds(true);
+
   if (features::IsProductivityLauncherEnabled()) {
-    // The bounds of the |scrollable_container_| will visually clip the
-    // |continue_container_| layer during page changes.
-    scrollable_container_->layer()->SetMasksToBounds(true);
     continue_container_ = scrollable_container_->AddChildView(
         std::make_unique<ContinueContainer>(this, view_delegate));
+    // Add a empty container view. A toast view should be added to
+    // `reorder_undo_container_` when the app list starts temporary sorting.
+    if (features::IsLauncherAppSortEnabled()) {
+      reorder_undo_container_ = scrollable_container_->AddChildView(
+          std::make_unique<AppListReorderUndoContainerView>(
+              /*tablet_mode=*/true));
+      reorder_undo_container_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
+    }
   } else {
     // Add child view at index 0 so focus traversal goes to suggestion chips
     // before the views in the scrollable_container.
@@ -356,9 +286,9 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view)
                                           /*container_delegate=*/this),
       0);
   apps_grid_view_->Init();
-
+  apps_grid_view_->pagination_model()->AddObserver(this);
   if (features::IsProductivityLauncherEnabled())
-    apps_grid_view_->pagination_model()->AddObserver(this);
+    apps_grid_view_->set_margin_for_gradient_mask(kDefaultFadeoutMaskHeight);
 
   // Page switcher should be initialized after AppsGridView.
   auto page_switcher = std::make_unique<PageSwitcher>(
@@ -375,11 +305,6 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view)
   // The folder view is initially hidden.
   app_list_folder_view_->SetVisible(false);
 
-  if (features::IsLauncherAppSortEnabled()) {
-    sort_button_container_ =
-        AddChildView(std::make_unique<SortUiControlContainer>(view_delegate));
-  }
-
   // NOTE: At this point, the apps grid folder and recent apps grids are not
   // fully initialized - they require an `app_list_config_` instance (because
   // they contain AppListItemView), which in turn requires widget, and the
@@ -390,9 +315,7 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view)
 
 AppsContainerView::~AppsContainerView() {
   AppListModelProvider::Get()->RemoveObserver(this);
-
-  if (features::IsProductivityLauncherEnabled())
-    apps_grid_view_->pagination_model()->RemoveObserver(this);
+  apps_grid_view_->pagination_model()->RemoveObserver(this);
 
   // Make sure |page_switcher_| is deleted before |apps_grid_view_| because
   // |page_switcher_| uses the PaginationModel owned by |apps_grid_view_|.
@@ -432,7 +355,7 @@ gfx::Rect AppsContainerView::CalculateAvailableBoundsForAppsGrid(
           contents_view_->GetSearchBoxSize(AppListState::kStateApps)),
       0, 0);
   // Subtracts apps grid view insets from space available for apps grid.
-  available_bounds.Inset(0, kGridFadeoutZoneHeight);
+  available_bounds.Inset(0, kGridVerticalMargin);
 
   return available_bounds;
 }
@@ -472,8 +395,8 @@ void AppsContainerView::UpdateAppListConfig(const gfx::Rect& contents_bounds) {
 
   apps_grid_view()->UpdateAppListConfig(app_list_config_.get());
   app_list_folder_view()->UpdateAppListConfig(app_list_config_.get());
-  if (GetRecentApps())
-    GetRecentApps()->UpdateAppListConfig(app_list_config_.get());
+  if (continue_container_)
+    continue_container_->UpdateAppListConfig(app_list_config_.get());
 }
 
 void AppsContainerView::OnActiveAppListModelsChanged(
@@ -486,8 +409,8 @@ void AppsContainerView::OnActiveAppListModelsChanged(
   UpdateForActiveAppListModel();
 }
 
-void AppsContainerView::ShowFolderForItemView(
-    AppListItemView* folder_item_view) {
+void AppsContainerView::ShowFolderForItemView(AppListItemView* folder_item_view,
+                                              bool focus_name_input) {
   // Prevent new animations from starting if there are currently animations
   // pending. This fixes crbug.com/357099.
   if (app_list_folder_view_->IsAnimationRunning())
@@ -505,9 +428,12 @@ void AppsContainerView::ShowFolderForItemView(
   // silently focus the first item in the folder to avoid showing the selection
   // highlight or announcing to A11y, but still ensuring the arrow keys navigate
   // from the first item.
-  const bool silently = !apps_grid_view()->has_selected_view();
-  app_list_folder_view_->FocusFirstItem(silently);
-
+  if (focus_name_input) {
+    app_list_folder_view_->FocusNameInput();
+  } else {
+    const bool silently = !apps_grid_view()->has_selected_view();
+    app_list_folder_view_->FocusFirstItem(silently);
+  }
   // Disable all the items behind the folder so that they will not be reached
   // during focus traversal.
   DisableFocusForShowingActiveFolder(true);
@@ -571,15 +497,27 @@ void AppsContainerView::ReparentDragEnded() {
 // PaginationModelObserver:
 void AppsContainerView::SelectedPageChanged(int old_selected,
                                             int new_selected) {
+  // There is no |continue_container_| to translate when productivity launcher
+  // is not enabled, so return early.
+  if (!features::IsProductivityLauncherEnabled())
+    return;
+
   // |continue_container_| is hidden above the grid when not on the first page.
   gfx::Transform transform;
   gfx::Vector2dF translate;
   translate.set_y(-scrollable_container_->bounds().height() * new_selected);
   transform.Translate(translate);
   continue_container_->layer()->SetTransform(transform);
+  if (reorder_undo_container_)
+    reorder_undo_container_->layer()->SetTransform(transform);
 }
 
 void AppsContainerView::TransitionChanged() {
+  // There is no |continue_container_| to translate when productivity launcher
+  // is not enabled, so return early.
+  if (!features::IsProductivityLauncherEnabled())
+    return;
+
   auto* pagination_model = apps_grid_view_->pagination_model();
   const PaginationModel::Transition& transition =
       pagination_model->transition();
@@ -604,7 +542,31 @@ void AppsContainerView::TransitionChanged() {
     gfx::Transform transform;
     transform.Translate(translate);
     continue_container_->layer()->SetTransform(transform);
+    if (reorder_undo_container_)
+      reorder_undo_container_->layer()->SetTransform(transform);
   }
+}
+
+void AppsContainerView::TransitionStarted() {
+  MaybeCreateGradientMask();
+}
+
+void AppsContainerView::TransitionEnded() {
+  // TODO(crbug.com/1285184): Sometimes gradient mask is not removed because
+  // this function does not get called in some cases.
+
+  // Gradient mask is no longer necessary once transition is finished.
+  MaybeRemoveGradientMask();
+}
+
+void AppsContainerView::ScrollStarted() {
+  MaybeCreateGradientMask();
+}
+
+void AppsContainerView::ScrollEnded() {
+  // Need to reset the mask because transition will not happen in some
+  // cases. (See https://crbug.com/1049275)
+  MaybeRemoveGradientMask();
 }
 
 // PagedAppsGridView::ContainerDelegate:
@@ -635,6 +597,36 @@ bool AppsContainerView::IsPointWithinBottomDragBuffer(
          point_in_parent.y() < kBottomDragBufferMax;
 }
 
+void AppsContainerView::MaybeCreateGradientMask() {
+  if (features::IsBackgroundBlurEnabled()) {
+    if (!layer()->layer_mask_layer() && !gradient_layer_delegate_) {
+      gradient_layer_delegate_ = std::make_unique<GradientLayerDelegate>();
+      UpdateGradientMaskBounds();
+    }
+    if (gradient_layer_delegate_) {
+      scrollable_container_->layer()->SetMaskLayer(
+          gradient_layer_delegate_->layer());
+    }
+  }
+}
+
+void AppsContainerView::MaybeRemoveGradientMask() {
+  if (scrollable_container_->layer()->layer_mask_layer() &&
+      !keep_gradient_mask_for_cardified_state_) {
+    scrollable_container_->layer()->SetMaskLayer(nullptr);
+  }
+}
+
+void AppsContainerView::OnCardifiedStateStarted() {
+  keep_gradient_mask_for_cardified_state_ = true;
+  MaybeCreateGradientMask();
+}
+
+void AppsContainerView::OnCardifiedStateEnded() {
+  keep_gradient_mask_for_cardified_state_ = false;
+  MaybeRemoveGradientMask();
+}
+
 // RecentAppsView::Delegate:
 void AppsContainerView::MoveFocusUpFromRecents() {
   DCHECK(!GetRecentApps()->children().empty());
@@ -658,6 +650,12 @@ void AppsContainerView::MoveFocusDownFromRecents(int column) {
   AppListItemView* item = apps_grid_view_->GetItemViewAt(index);
   DCHECK(item);
   item->RequestFocus();
+}
+
+void AppsContainerView::OnTemporarySortOrderChanged(
+    const absl::optional<AppListSortOrder>& new_order) {
+  DCHECK(features::IsLauncherAppSortEnabled());
+  reorder_undo_container_->OnTemporarySortOrderChanged(new_order);
 }
 
 ContinueSectionView* AppsContainerView::GetContinueSection() {
@@ -754,11 +752,6 @@ void AppsContainerView::AnimateYPosition(AppListViewState target_view_state,
   animator.Run(offset, scrollable_container_->layer());
   page_switcher_->SetY(target_suggestion_chip_y + chip_grid_y_distance_);
   animator.Run(offset, page_switcher_->layer());
-
-  if (features::IsLauncherAppSortEnabled()) {
-    sort_button_container_->SetY(target_suggestion_chip_y);
-    animator.Run(offset, sort_button_container_->layer());
-  }
 }
 
 void AppsContainerView::OnTabletModeChanged(bool started) {
@@ -809,22 +802,45 @@ void AppsContainerView::Layout() {
       GetContentsBounds(),
       contents_view_->GetSearchBoxSize(AppListState::kStateApps));
   gfx::Rect grid_rect = rect;
-  grid_rect.Inset(margins.left(), kGridFadeoutZoneHeight - grid_insets.top(),
-                  margins.right(), margins.bottom());
+  grid_rect.Inset(margins.left(), kGridVerticalMargin, margins.right(),
+                  margins.bottom());
   // The grid rect insets are added to calculated margins. Given that the
   // grid bounds rect should include insets, they have to be removed from
   // added margins.
-  grid_rect.Inset(-grid_insets.left(), 0, -grid_insets.right(),
-                  -grid_insets.bottom());
-  scrollable_container_->SetBoundsRect(grid_rect);
+  grid_rect.Inset(-grid_insets);
+
+  gfx::Rect scrollable_bounds = grid_rect;
+  // With productivity launcher enabled, add space to the top of the
+  // `scrollable_container_` bounds to make room for the gradient mask to be
+  // placed above the continue section.
+  if (features::IsProductivityLauncherEnabled())
+    scrollable_bounds.Inset(0, -kDefaultFadeoutMaskHeight, 0, 0);
+  scrollable_container_->SetBoundsRect(scrollable_bounds);
+
+  if (gradient_layer_delegate_)
+    UpdateGradientMaskBounds();
+
+  bool first_page_config_changed = false;
   if (features::IsProductivityLauncherEnabled()) {
-    continue_container_->SetBoundsRect(
-        gfx::Rect(0, 0, grid_rect.width(),
-                  continue_container_->GetPreferredSize().height()));
+    const int continue_container_height =
+        continue_container_->GetPreferredSize().height();
+    continue_container_->SetBoundsRect(gfx::Rect(0, kDefaultFadeoutMaskHeight,
+                                                 grid_rect.width(),
+                                                 continue_container_height));
+    const int reorder_undo_container_height =
+        reorder_undo_container_
+            ? reorder_undo_container_->GetPreferredSize().height()
+            : 0;
+    if (reorder_undo_container_) {
+      reorder_undo_container_->SetBoundsRect(
+          gfx::Rect(0, continue_container_->bounds().bottom(),
+                    grid_rect.width(), reorder_undo_container_height));
+    }
     // Setting this offset prevents the app items in the grid from overlapping
     // with the continue section.
-    apps_grid_view_->set_first_page_offset(
-        continue_container_->bounds().height());
+    first_page_config_changed = apps_grid_view_->ConfigureFirstPagePadding(
+        continue_container_height + reorder_undo_container_height,
+        continue_container_->HasRecentApps());
   }
 
   // Make sure that UpdateTopLevelGridDimensions() happens after setting the
@@ -832,8 +848,19 @@ void AppsContainerView::Layout() {
   // shown in the grid.
   UpdateTopLevelGridDimensions();
 
-  apps_grid_view_->SetBoundsRect(
-      gfx::Rect(0, 0, grid_rect.width(), grid_rect.height()));
+  gfx::Rect apps_grid_bounds(grid_rect.size());
+  // Set the apps grid bounds y to make room for the top gradient mask.
+  if (features::IsProductivityLauncherEnabled())
+    apps_grid_bounds.set_y(kDefaultFadeoutMaskHeight);
+
+  if (apps_grid_view_->bounds() != apps_grid_bounds) {
+    apps_grid_view_->SetBoundsRect(apps_grid_bounds);
+  } else if (first_page_config_changed) {
+    // Apps grid layout depends on the continue container bounds, so explicitly
+    // call layout to ensure apps grid view gets laid out even if its bounds do
+    // not change.
+    apps_grid_view_->Layout();
+  }
 
   // Record the distance of y position between suggestion chip container
   // and apps grid view to avoid duplicate calculation of apps grid view's
@@ -846,19 +873,6 @@ void AppsContainerView::Layout() {
       grid_rect.right() + kGridToPageSwitcherMargin, grid_rect.y(),
       page_switcher_width, grid_rect.height());
   page_switcher_->SetBoundsRect(page_switcher_bounds);
-
-  if (features::IsLauncherAppSortEnabled()) {
-    // Align `sort_button_container_` with the bottom of the
-    // `suggestion_chip_container_view_` horizontally; align
-    // `sort_button_container_` with `page_switcher_bounds` vertically on the
-    // right edge.
-    const int sort_button_container_width =
-        sort_button_container_->GetPreferredSize().width();
-    gfx::Rect sort_button_container_rect(
-        page_switcher_bounds.right() - sort_button_container_width,
-        chip_container_rect.bottom(), sort_button_container_width, 20);
-    sort_button_container_->SetBoundsRect(sort_button_container_rect);
-  }
 
   switch (show_state_) {
     case SHOW_APPS:
@@ -950,10 +964,10 @@ void AppsContainerView::OnShown() {
 
 void AppsContainerView::OnWillBeHidden() {
   DVLOG(1) << __FUNCTION__;
-  if (show_state_ == SHOW_APPS || show_state_ == SHOW_ITEM_REPARENT)
-    apps_grid_view_->EndDrag(true);
-  else if (show_state_ == SHOW_ACTIVE_FOLDER)
+  if (show_state_ == SHOW_ACTIVE_FOLDER)
     app_list_folder_view_->CloseFolderPage();
+  else
+    apps_grid_view_->CancelDragWithNoDropAnimation();
 }
 
 void AppsContainerView::OnHidden() {
@@ -1036,11 +1050,10 @@ int AppsContainerView::GetMinTopMarginForAppsGrid(
   const int suggestion_chip_container_size =
       features::IsProductivityLauncherEnabled()
           ? 0
-          : kSuggestionChipContainerHeight;
-  // NOTE: Use the fadeout zone height as min top margin to match the apps grid
-  // view's bottom margin.
-  return search_box_size.height() + kGridFadeoutZoneHeight +
-         kSuggestionChipContainerTopMargin + suggestion_chip_container_size;
+          : kSuggestionChipContainerHeight + kSuggestionChipContainerTopMargin;
+
+  return search_box_size.height() + kGridVerticalMargin +
+         suggestion_chip_container_size;
 }
 
 int AppsContainerView::GetIdealHorizontalMargin() const {
@@ -1104,7 +1117,7 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
     // Productivity launcher does not have a preset number of rows per page.
     // Instead of adjusting the margins to fit a set number of rows, the grid
     // will change the number of rows to fit within the provided space.
-    vertical_margin = kGridFadeoutZoneHeight;
+    vertical_margin = kGridVerticalMargin;
   } else {
     vertical_margin =
         calculate_margin(GetIdealVerticalMargin(), available_height,
@@ -1118,9 +1131,9 @@ const gfx::Insets& AppsContainerView::CalculateMarginsForAvailableBounds(
   const int min_horizontal_margin = GetMinHorizontalMarginForAppsGrid();
 
   cached_container_margins_.margins =
-      gfx::Insets(std::max(vertical_margin, kGridFadeoutZoneHeight),
+      gfx::Insets(std::max(vertical_margin, kGridVerticalMargin),
                   std::max(horizontal_margin, min_horizontal_margin),
-                  std::max(vertical_margin, kGridFadeoutZoneHeight),
+                  std::max(vertical_margin, kGridVerticalMargin),
                   std::max(horizontal_margin, min_horizontal_margin));
   cached_container_margins_.bounds_size = available_bounds.size();
   cached_container_margins_.search_box_size = search_box_size;
@@ -1260,6 +1273,12 @@ void AppsContainerView::DisableFocusForShowingActiveFolder(bool disabled) {
     suggestion_chip_container_view_->DisableFocusForShowingActiveFolder(
         disabled);
   }
+  if (auto* recent_apps = GetRecentApps(); recent_apps) {
+    recent_apps->DisableFocusForShowingActiveFolder(disabled);
+  }
+  if (auto* continue_section = GetContinueSection(); continue_section) {
+    continue_section->DisableFocusForShowingActiveFolder(disabled);
+  }
   apps_grid_view_->DisableFocusForShowingActiveFolder(disabled);
 
   // Ignore the page switcher in accessibility tree so that buttons inside it
@@ -1334,6 +1353,23 @@ void AppsContainerView::OnSuggestionChipsBlurDisablerReleased() {
 
   if (suggestion_chips_blur_disabler_count_ == 0)
     suggestion_chip_container_view_->SetBlurDisabled(false);
+}
+
+void AppsContainerView::UpdateGradientMaskBounds() {
+  const gfx::Rect container_bounds = scrollable_container_->bounds();
+  const gfx::Rect top_gradient_bounds(0, 0, container_bounds.width(),
+                                      kDefaultFadeoutMaskHeight);
+  const gfx::Rect bottom_gradient_bounds(
+      0, container_bounds.height() - kDefaultFadeoutMaskHeight,
+      container_bounds.width(), kDefaultFadeoutMaskHeight);
+
+  gradient_layer_delegate_->set_start_fade_zone({top_gradient_bounds,
+                                                 /*fade_in=*/true,
+                                                 /*is_horizontal=*/false});
+  gradient_layer_delegate_->set_end_fade_zone({bottom_gradient_bounds,
+                                               /*fade_in=*/false,
+                                               /*is_horizonal=*/false});
+  gradient_layer_delegate_->layer()->SetBounds(container_bounds);
 }
 
 }  // namespace ash

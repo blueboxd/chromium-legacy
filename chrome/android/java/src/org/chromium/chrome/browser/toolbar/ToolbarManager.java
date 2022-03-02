@@ -138,6 +138,7 @@ import org.chromium.chrome.browser.ui.appmenu.MenuButtonDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
+import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -937,7 +938,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 mToolbar.updateStartSurfaceToolbarState(newState, shouldShowToolbar, toolbarHeight);
 
                 if (mLogoLoadHelper == null) {
-                    mLogoLoadHelper = new LogoLoadHelper(profileSupplier, mToolbar, mActivity);
+                    mLogoLoadHelper = new LogoLoadHelper(
+                            profileSupplier, mToolbar, mActivity, startSurfaceParentTabSupplier);
                 }
                 mLogoLoadHelper.maybeLoadSearchProviderLogoOnHomepage(mStartSurfaceState);
             };
@@ -1653,8 +1655,12 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     }
 
     @Override
-    public void onTintChanged(ColorStateList tint, boolean useLight) {
+    public void onTintChanged(ColorStateList tint, @BrandedColorScheme int brandedColorScheme) {
         updateBookmarkButtonStatus();
+
+        if (mShouldUpdateToolbarPrimaryColor) {
+            mCustomTabThemeColorProvider.setTint(tint, brandedColorScheme);
+        }
     }
 
     /**
@@ -1819,6 +1825,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     }
 
     private void updateBookmarkButtonStatus() {
+        if (mBookmarkBridgeSupplier == null) return;
         Tab currentTab = mLocationBarModel.getTab();
         BookmarkBridge bridge = mBookmarkBridgeSupplier.get();
         boolean isBookmarked =

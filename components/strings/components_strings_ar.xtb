@@ -111,7 +111,7 @@
 <translation id="1307966114820526988">الميزات المتوقفة</translation>
 <translation id="1308113895091915999">العرض متاح</translation>
 <translation id="1312803275555673949">ما الدليل الذي يؤيد ذلك؟</translation>
-<translation id="131405271941274527">‏يريد <ph name="URL" /> إرسال المعلومات وتلقّيها عند النقر على جهاز NFC الظاهر على هاتفك.</translation>
+<translation id="1314311879718644478">يمكنك عرض محتوى الواقع المعزّز.</translation>
 <translation id="1314509827145471431">التجليد من الناحية اليمنى</translation>
 <translation id="1318023360584041678">تم حفظ نتيجة البحث في مجموعة علامات تبويب</translation>
 <translation id="1319245136674974084">عدم السؤال مرة أخرى عند استخدام هذا التطبيق</translation>
@@ -215,6 +215,7 @@
 <translation id="1583429793053364125">حدث خطأ ما أثناء عرض صفحة الويب هذه.</translation>
 <translation id="1586541204584340881">الإضافات التي ثبّتها</translation>
 <translation id="1588438908519853928">عادي</translation>
+<translation id="1589050138437146318">‏هل تريد تثبيت ARCore؟</translation>
 <translation id="1592005682883173041">الوصول إلى البيانات المحلية</translation>
 <translation id="1594030484168838125">اختيار</translation>
 <translation id="160851722280695521">‏تشغيل لعبة الديناصور في Chrome</translation>
@@ -478,6 +479,7 @@
 <translation id="2465655957518002998">اختيار طريقة التسليم للمستخدم</translation>
 <translation id="2465688316154986572">وضع دبوس واحد</translation>
 <translation id="2465914000209955735">‏إدارة الملفات التي تم تنزيلها في Chrome</translation>
+<translation id="2466004615675155314">عرض معلومات من الويب</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />تشغيل بيانات تشخيص الشبكة<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">طباعة الصفحات بالترتيب الأساسي</translation>
 <translation id="2470767536994572628">عند تعديل التعليقات التوضيحية، سيعود هذا المستند إلى اتجاه تدويره الأصلي وإلى عرض صفحة واحدة.</translation>
@@ -524,6 +526,7 @@
 <translation id="2609632851001447353">الاختلافات</translation>
 <translation id="2610561535971892504">النقر لنسخ النص</translation>
 <translation id="2618023639789766142">‏C10 (مغلف)</translation>
+<translation id="2623663032199728144">يمكن للموقع الإلكتروني أن يطلب استخدام المعلومات المتعلقة بشاشاتك.</translation>
 <translation id="2625385379895617796">توقيت ساعتك متقدم عن الوقت الحالي</translation>
 <translation id="262745152991669301">‏السماح للموقع الإلكتروني بطلب الاتصال بأجهزة USB</translation>
 <translation id="2629325967560697240">‏للحصول على أعلى مستوى من الحماية في متصفِّح Chrome، يمكنك <ph name="BEGIN_ENHANCED_PROTECTION_LINK" />تفعيل "الحماية المُحسَّنة"<ph name="END_ENHANCED_PROTECTION_LINK" />.</translation>
@@ -643,6 +646,7 @@
 <translation id="3037605927509011580">عذرًا!</translation>
 <translation id="3041612393474885105">معلومات الشهادة</translation>
 <translation id="3044034790304486808">استئناف عملية البحث</translation>
+<translation id="305162504811187366">‏سجلّ الوصول إلى الكمبيوتر المكتبي عن بُعد من Chrome، بما في ذلك الطوابع الزمنية والمضيفين وأرقام تعريف جلسات العملاء</translation>
 <translation id="3060227939791841287">‏C9 (مغلف)</translation>
 <translation id="3061707000357573562">خدمة رمز التصحيح</translation>
 <translation id="306573536155379004">بدأت اللعبة.</translation>
@@ -683,6 +687,7 @@
 <translation id="3197136577151645743">السماح للموقع الإلكتروني بطلب إذن لمعرفة الأوقات التي تستخدم فيها هذا الجهاز بشكل نشط</translation>
 <translation id="3202497928925179914">‏<ph name="MANAGE_SYNC_FOCUSED_FRIENDLY_MATCH_TEXT" />، اضغط على مفتاح التبويب (Tab) ثم مفتاح Enter لإدارة نوع المعلومات التي تريد مزامنتها من خلال إعدادات متصفّح Chrome.</translation>
 <translation id="320323717674993345">إلغاء الدفع</translation>
+<translation id="3203366800380907218">من الويب</translation>
 <translation id="3207960819495026254">تمت إضافتها إلى الإشارات المرجعية.</translation>
 <translation id="3209034400446768650">إمكانية تحصيل الصفحة للرسوم</translation>
 <translation id="3212581601480735796">تتم مراقبة نشاطك على <ph name="HOSTNAME" /></translation>
@@ -1173,6 +1178,7 @@
 <translation id="4708268264240856090">تم قطع اتصالك</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131">‏<ph name="BEGIN_LINK" />تشغيل بيانات تشخيص شبكة Windows<ph name="END_LINK" /></translation>
+<translation id="4722735765955348426">كلمة مرور <ph name="USERNAME" /></translation>
 <translation id="4724144314178270921">السماح للموقع الإلكتروني بطلب الاطّلاع على النصوص والصور التي تم نسخها إلى الحافظة</translation>
 <translation id="4726672564094551039">إعادة تحميل السياسات</translation>
 <translation id="4728558894243024398">النظام الأساسي</translation>
@@ -1236,7 +1242,6 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{ما من أسماء نطاقات.}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" /> و<ph name="EXAMPLE_DOMAIN_2" />}few{<ph name="EXAMPLE_DOMAIN_1" /> و<ph name="EXAMPLE_DOMAIN_2" /> و<ph name="AND_MORE" /> نطاقات أخرى}many{<ph name="EXAMPLE_DOMAIN_1" /> و<ph name="EXAMPLE_DOMAIN_2" /> و<ph name="AND_MORE" /> نطاقًا آخر}other{<ph name="EXAMPLE_DOMAIN_1" /> و<ph name="EXAMPLE_DOMAIN_2" /> و<ph name="AND_MORE" /> نطاق آخر}}</translation>
 <translation id="4877422487531841831">البحث عن <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">الإعداد التلقائي (تلقائي)</translation>
-<translation id="4879725228911483934">يمكنك فتح النوافذ ووضعها على شاشتك.</translation>
 <translation id="4880827082731008257">سجلّ البحث</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4885256590493466218">الدفع باستخدام <ph name="CARD_DETAIL" />.</translation>
@@ -1262,6 +1267,7 @@
 <translation id="4968522289500246572">هذا التطبيق مصمّم للعمل مع الأجهزة الجوّالة وقد يتعذّر تغيير حجمه بشكل مناسب. من الممكن أن يواجه التطبيق بعض المشاكل أو يتعرّض لإعادة التشغيل.</translation>
 <translation id="4969341057194253438">حذف التسجيل</translation>
 <translation id="4973922308112707173">عمل ثقبَين بالأعلى</translation>
+<translation id="4976702386844183910">تاريخ آخر زيارة للموقع الإلكتروني: <ph name="DATE" /></translation>
 <translation id="4984088539114770594">هل تريد استخدام الميكروفون؟</translation>
 <translation id="4984339528288761049">‏Prc5 (مغلف)</translation>
 <translation id="4989163558385430922">عرض الكل</translation>
@@ -1347,6 +1353,7 @@
 <translation id="5215116848420601511">‏طرق الدفع والعناوين باستخدام Google Pay</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="521659676233207110">الدُرج 13</translation>
+<translation id="5216942107514965959">تمّت زيارة الموقع الإلكتروني آخر مرّة اليوم.</translation>
 <translation id="5222812217790122047">البريد الإلكتروني مطلوب</translation>
 <translation id="5230733896359313003">عنوان الشحن</translation>
 <translation id="5230815978613972521">B8</translation>
@@ -1367,7 +1374,6 @@
 <translation id="5283044957620376778">B1</translation>
 <translation id="5284295735376057059">خصائص المستند</translation>
 <translation id="528468243742722775">‏مفتاح End</translation>
-<translation id="5284909709419567258">عناوين الشبكة</translation>
 <translation id="5285570108065881030">عرض جميع كلمات المرور المحفوظة</translation>
 <translation id="5287240709317226393">عرض ملفات تعريف الارتباط</translation>
 <translation id="5287456746628258573">يستخدم هذا الموقع الإلكتروني ضبط الأمان القديم الذي قد يكشف عن معلوماتك (مثل كلمات المرور أو أرقام بطاقة الائتمان) عند إرسالها إلى هذا الموقع الإلكتروني.</translation>
@@ -1533,6 +1539,7 @@
 <translation id="5869522115854928033">كلمات المرور المحفوظة</translation>
 <translation id="5873013647450402046">يجب تأكيد هويتك للمصرف.</translation>
 <translation id="5887400589839399685">تم حفظ البطاقة</translation>
+<translation id="5887687176710214216">تمّت زيارة الموقع الإلكتروني آخر مرة أمس.</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="5895187275912066135">تاريخ الإصدار</translation>
 <translation id="5901630391730855834">أصفر</translation>
@@ -1622,7 +1629,6 @@
 <translation id="6169916984152623906">يمكنك الآن التصفّح بخصوصية تامّة، ولن يتمكّن الأشخاص الآخرون الذين يستخدمون هذا الجهاز من مشاهدة نشاطك. ولكن، سيتم حفظ عمليات التنزيل والإشارات المرجعيّة.</translation>
 <translation id="6177128806592000436">إن اتصالك بهذا الموقع غير آمن</translation>
 <translation id="6180316780098470077">الفاصل الزمني لإعادة المحاولة</translation>
-<translation id="619448280891863779">السماح للموقع الإلكتروني بطلب فتح النوافذ ووضعها على شاشاتك</translation>
 <translation id="6196640612572343990">حظر ملفات تعريف الارتباط للجهات الخارجية</translation>
 <translation id="6203231073485539293">التحقق من اتصالك بالإنترنت</translation>
 <translation id="6218753634732582820">‏هل تريد إزالة العنوان من Chromium؟</translation>
@@ -1726,6 +1732,7 @@
 <translation id="6529602333819889595">إعادة الح&amp;ذف</translation>
 <translation id="6545864417968258051">البحث عن بلوتوث</translation>
 <translation id="6547208576736763147">عمل ثقبَين يسارًا</translation>
+<translation id="6554732001434021288">تمّت زيارة الموقع الإلكتروني آخر مرّة قبل <ph name="NUM_DAYS" /> يوم.</translation>
 <translation id="6556866813142980365">إعادة</translation>
 <translation id="6569060085658103619">أنت تعرض صفحة إضافة</translation>
 <translation id="6573200754375280815">عمل ثقبَين يمينًا</translation>
@@ -1870,7 +1877,6 @@
 <translation id="706295145388601875">‏إضافة عناوين وإدارتها في إعدادات متصفّح Chrome</translation>
 <translation id="7064851114919012435">معلومات الاتصال</translation>
 <translation id="7068733155164172741">أدخِل الرمز المكوَّن من <ph name="OTP_LENGTH" /> رقم.</translation>
-<translation id="7070090581017165256">لمحة عن هذا الموقع الإلكتروني</translation>
 <translation id="70705239631109039">اتصالك بهذا الموقع تتخلله ثغرات أمنية.</translation>
 <translation id="7075452647191940183">الطلب كبير جدًا</translation>
 <translation id="7079718277001814089">يحتوي هذا الموقع على برامج ضارة</translation>
@@ -2118,7 +2124,6 @@
 <translation id="7813600968533626083">‏هل تريد إزالة اقتراح النموذج من Chrome؟</translation>
 <translation id="781440967107097262">هل تريد مشاركة الحافظة؟</translation>
 <translation id="7815407501681723534">تم العثور على <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> لـ "<ph name="SEARCH_STRING" />"</translation>
-<translation id="782125616001965242">عرض معلومات حول هذا الموقع الإلكتروني</translation>
 <translation id="782886543891417279">‏قد يتطلب Wi-Fi الذي تستخدمه (<ph name="WIFI_NAME" />) زيارة صفحة تسجيل الدخول.</translation>
 <translation id="7836231406687464395">‏Postfix (مغلف)</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{لا تتوفَّر تطبيقات}=1{تطبيق واحد (<ph name="EXAMPLE_APP_1" />)}=2{تطبيقان (<ph name="EXAMPLE_APP_1" />، و<ph name="EXAMPLE_APP_2" />)}few{# تطبيقات (<ph name="EXAMPLE_APP_1" />، و<ph name="EXAMPLE_APP_2" />، و<ph name="AND_MORE" /> من التطبيقات الأخرى)}many{# تطبيقات (<ph name="EXAMPLE_APP_1" />، و<ph name="EXAMPLE_APP_2" />، و<ph name="AND_MORE" /> من التطبيقات الأخرى)}other{# تطبيقات (<ph name="EXAMPLE_APP_1" />، و<ph name="EXAMPLE_APP_2" />، و<ph name="AND_MORE" /> من التطبيقات الأخرى)}}</translation>
@@ -2162,7 +2167,6 @@
 <translation id="7977894662897852582">Edp</translation>
 <translation id="798134797138789862">السماح للموقع الإلكتروني بطلب استخدام أجهزة الواقع الافتراضي وبياناتها</translation>
 <translation id="7984945080620862648">‏لا يمكنك زيارة <ph name="SITE" /> الآن لأن الموقع الإلكتروني أرسل بيانات اعتماد مختلطة يتعذر على Chrome معالجتها. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة لاحقًا على الأرجح.</translation>
-<translation id="79859296434321399">‏لعرض محتوى الواقع المُعزَّز، يُرجى تثبيت ARCore</translation>
 <translation id="7986319120639858961"><ph name="CARD_TITLE" /> <ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="799149739215780103">التجليد</translation>
 <translation id="7992044431894087211">تم استئناف "مشاركة الشاشة" مع <ph name="APPLICATION_TITLE" />.</translation>
@@ -2266,6 +2270,7 @@
 <translation id="830498451218851433">الطي إلى نصفَين</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">التطبيقات المثبَّتة وعدد مرات استخدامها</translation>
+<translation id="8317207217658302555">‏هل تريد تحديث ARCore؟</translation>
 <translation id="831997045666694187">مساءً</translation>
 <translation id="8321476692217554900">الإشعارات</translation>
 <translation id="8328484624016508118">‏بعد إغلاق جميع علامات التبويب في وضع التصفُّح المتخفي، يمحو Chrome:
@@ -2337,7 +2342,6 @@
 <translation id="8554912124839363479">{NUM_PERMISSIONS,plural, =1{إعادة ضبط الإذن}zero{إعادة ضبط الأذونات}two{إعادة ضبط الإذنَين}few{إعادة ضبط الأذونات}many{إعادة ضبط الأذونات}other{إعادة ضبط الأذونات}}</translation>
 <translation id="8555010941760982128">استخدام هذا الرمز عند الدفع</translation>
 <translation id="8557066899867184262">‏رمز التحقق من البطاقة (CVC) موجود خلف بطاقتك.</translation>
-<translation id="8558485628462305855">‏لعرض محتوى الواقع المُعزَّز، يُرجى تحديث ARCore</translation>
 <translation id="8559762987265718583">تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن التاريخ والوقت للجهاز (<ph name="DATE_AND_TIME" />) غير صحيحين.</translation>
 <translation id="8564182942834072828">مستندات مفصولة/نُسخ مفصولة</translation>
 <translation id="8564985650692024650">‏يُوصي Chromium بإعادة تحديد كلمة المرور <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> في حال إعادة استخدامها في مواقع إلكترونية أخرى.</translation>
@@ -2357,6 +2361,7 @@
 <translation id="865032292777205197">أجهزة استشعار الحركة</translation>
 <translation id="8663226718884576429">ملخّص الطلب و<ph name="TOTAL_LABEL" /> وتفاصيل إضافية</translation>
 <translation id="8666678546361132282">الإنجليزية</translation>
+<translation id="8669306706049782872">استخدام المعلومات المتعلقة بشاشاتك لفتح النوافذ ووضعها عليها</translation>
 <translation id="867224526087042813">التوقيع</translation>
 <translation id="8676424191133491403">بلا تأخير</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />، إجابة، <ph name="ANSWER" /></translation>

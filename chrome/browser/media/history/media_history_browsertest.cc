@@ -735,7 +735,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, DISABLED_GetPlaybackSessions) {
 }
 
 // TODO(crbug.com/1176025): Flaking on Linux.
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #define MAYBE_SaveImagesWithDifferentSessions \
   DISABLED_SaveImagesWithDifferentSessions
 #else
@@ -819,7 +819,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
             GetPlaybackSessionsSync(GetOTRMediaHistoryService(browser), 2));
 }
 
-#if defined(OS_MAC) && !defined(NDEBUG)
+#if BUILDFLAG(IS_MAC) && !defined(NDEBUG)
 // TODO(crbug.com/1152073): This test has flaky timeouts on Mac Debug.
 #define MAYBE_RecordWatchtime_AudioVideo DISABLED_RecordWatchtime_AudioVideo
 #else
@@ -834,7 +834,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
   // doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       browser->tab_strip_model()->GetActiveWebContents(),
-      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   // Start a page and wait for significant playback so we record watchtime.
   EXPECT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
   EXPECT_TRUE(WaitForSignificantPlayback(browser));
@@ -910,7 +910,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, RecordWatchtime_AudioOnly) {
   // doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       browser->tab_strip_model()->GetActiveWebContents(),
-      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // Start a page and wait for significant playback so we record watchtime.
   EXPECT_TRUE(SetupPageAndStartPlayingAudioOnly(browser, GetTestURL()));
@@ -980,7 +980,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, RecordWatchtime_VideoOnly) {
   // doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       browser->tab_strip_model()->GetActiveWebContents(),
-      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // Start a page and wait for significant playback so we record watchtime.
   EXPECT_TRUE(SetupPageAndStartPlayingVideoOnly(browser, GetTestURL()));
@@ -1103,7 +1103,7 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
 }
 
 // TODO(crbug.com/1086828): Test is flaky on Linux, Windows, Mac and Lacros.
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC) || \
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_DoNotRecordWatchtime_Background \
   DISABLED_DoNotRecordWatchtime_Background

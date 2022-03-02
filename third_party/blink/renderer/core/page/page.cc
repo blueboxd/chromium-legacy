@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/fenced_frame/document_fenced_frames.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -77,14 +78,12 @@
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client_impl.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mobile.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -394,6 +393,11 @@ void Page::ColorSchemeChanged() {
     }
 }
 
+void Page::ColorProvidersChanged() {
+  for (Page* page : AllPages())
+    page->InvalidatePaint();
+}
+
 void Page::InitialStyleChanged() {
   for (Frame* frame = MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
@@ -616,8 +620,21 @@ void CheckFrameCountConsistency(int expected_frame_count, Frame* frame) {
         DocumentPortals::From(*local_frame->GetDocument()).GetPortals().size());
   }
 
-  for (; frame; frame = frame->Tree().TraverseNext())
+  for (; frame; frame = frame->Tree().TraverseNext()) {
     ++actual_frame_count;
+
+    // Check the ``DocumentFencedFrames`` on every local frame beneath
+    // the ``frame`` to get an accurate count (i.e. if an iframe embeds
+    // a fenced frame and creates a new ``DocumentFencedFrames`` object).
+    if (features::IsFencedFramesMPArchBased()) {
+      if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+        actual_frame_count += static_cast<int>(
+            DocumentFencedFrames::From(*local_frame->GetDocument())
+                .GetFencedFrames()
+                .size());
+      }
+    }
+  }
 
   DCHECK_EQ(expected_frame_count, actual_frame_count);
 }
@@ -856,18 +873,13 @@ void Page::UpdateAcceleratedCompositingSettings() {
     auto* local_frame = DynamicTo<LocalFrame>(frame);
     if (!local_frame)
       continue;
-    LayoutView* layout_view = local_frame->ContentLayoutObject();
-    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      layout_view->Compositor()->UpdateAcceleratedCompositingSettings();
-    } else {
-      // Mark all scrollable areas as needing a paint property update because
-      // the compositing reasons may have changed.
-      if (const auto* areas = local_frame->View()->ScrollableAreas()) {
-        for (const auto& scrollable_area : *areas) {
-          if (scrollable_area->ScrollsOverflow()) {
-            if (auto* layout_box = scrollable_area->GetLayoutBox())
-              layout_box->SetNeedsPaintPropertyUpdate();
-          }
+    // Mark all scrollable areas as needing a paint property update because the
+    // compositing reasons may have changed.
+    if (const auto* areas = local_frame->View()->ScrollableAreas()) {
+      for (const auto& scrollable_area : *areas) {
+        if (scrollable_area->ScrollsOverflow()) {
+          if (auto* layout_box = scrollable_area->GetLayoutBox())
+            layout_box->SetNeedsPaintPropertyUpdate();
         }
       }
     }

@@ -26,9 +26,9 @@
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
 #include "third_party/blink/renderer/core/css/css_image_generator_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_value.h"
-#include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace blink {
 
@@ -80,6 +80,10 @@ bool StyleGeneratedImage::IsUsingCustomProperty(
     const Document& document) const {
   return image_generator_value_->IsUsingCustomProperty(custom_property_name,
                                                        document);
+}
+
+bool StyleGeneratedImage::IsUsingCurrentColor() const {
+  return image_generator_value_->IsUsingCurrentColor();
 }
 
 scoped_refptr<Image> StyleGeneratedImage::GetImage(

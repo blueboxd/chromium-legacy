@@ -34,12 +34,13 @@
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/shelf/standalone_browser_extension_app_context_menu.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
+#include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_menu_params.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/gfx/vector_icon_types.h"
 
@@ -132,11 +133,11 @@ AppServiceContextMenu::AppServiceContextMenu(
   proxy_->AppRegistryCache().ForOneApp(
       app_id, [this](const apps::AppUpdate& update) {
         app_type_ = apps_util::IsInstalled(update.Readiness())
-                        ? update.AppType()
-                        : apps::mojom::AppType::kUnknown;
+                        ? apps::ConvertMojomAppTypToAppType(update.AppType())
+                        : apps::AppType::kUnknown;
       });
 
-  if (app_type_ == apps::mojom::AppType::kStandaloneBrowserChromeApp) {
+  if (app_type_ == apps::AppType::kStandaloneBrowserChromeApp) {
     standalone_browser_extension_menu_ =
         std::make_unique<StandaloneBrowserExtensionAppContextMenu>(
             app_id, StandaloneBrowserExtensionAppContextMenu::Source::kAppList);
@@ -146,14 +147,14 @@ AppServiceContextMenu::AppServiceContextMenu(
 AppServiceContextMenu::~AppServiceContextMenu() = default;
 
 void AppServiceContextMenu::GetMenuModel(GetMenuModelCallback callback) {
-  if (app_type_ == apps::mojom::AppType::kUnknown) {
+  if (app_type_ == apps::AppType::kUnknown) {
     std::move(callback).Run(nullptr);
     return;
   }
 
   // StandaloneBrowserExtension handles its own context menus. Forward to that
   // class.
-  if (app_type_ == apps::mojom::AppType::kStandaloneBrowserChromeApp) {
+  if (app_type_ == apps::AppType::kStandaloneBrowserChromeApp) {
     standalone_browser_extension_menu_->GetMenuModel(std::move(callback));
     return;
   }
@@ -209,8 +210,9 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW: {
       const bool is_incognito =
           command_id == ash::APP_CONTEXT_MENU_NEW_INCOGNITO_WINDOW;
-      if (app_type_ == apps::mojom::AppType::kStandaloneBrowser) {
-        crosapi::BrowserManager::Get()->NewWindow(is_incognito);
+      if (app_type_ == apps::AppType::kStandaloneBrowser) {
+        crosapi::BrowserManager::Get()->NewWindow(
+            is_incognito, /*should_trigger_session_restore=*/false);
       } else {
         // Create browser asynchronously to prevent this AppServiceContextMenu
         // object to be deleted when the browser window is shown.
@@ -248,7 +250,7 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
     default:
       if (command_id >= ash::USE_LAUNCH_TYPE_COMMAND_START &&
           command_id < ash::USE_LAUNCH_TYPE_COMMAND_END) {
-        if (app_type_ == apps::mojom::AppType::kWeb &&
+        if (app_type_ == apps::AppType::kWeb &&
             command_id == ash::USE_LAUNCH_TYPE_TABBED_WINDOW) {
           proxy_->SetWindowMode(app_id(),
                                 apps::mojom::WindowMode::kTabbedWindow);
@@ -284,7 +286,7 @@ bool AppServiceContextMenu::IsCommandIdChecked(int command_id) const {
   }
 
   switch (app_type_) {
-    case apps::mojom::AppType::kWeb:
+    case apps::AppType::kWeb:
       if (command_id >= ash::USE_LAUNCH_TYPE_COMMAND_START &&
           command_id < ash::USE_LAUNCH_TYPE_COMMAND_END) {
         auto user_window_mode = apps::mojom::WindowMode::kUnknown;
@@ -298,7 +300,7 @@ bool AppServiceContextMenu::IsCommandIdChecked(int command_id) const {
       }
       return AppContextMenu::IsCommandIdChecked(command_id);
 
-    case apps::mojom::AppType::kChromeApp:
+    case apps::AppType::kChromeApp:
       if (command_id >= ash::USE_LAUNCH_TYPE_COMMAND_START &&
           command_id < ash::USE_LAUNCH_TYPE_COMMAND_END) {
         return static_cast<int>(
@@ -311,16 +313,16 @@ bool AppServiceContextMenu::IsCommandIdChecked(int command_id) const {
       }
       return AppContextMenu::IsCommandIdChecked(command_id);
 
-    case apps::mojom::AppType::kArc:
-      FALLTHROUGH;
-    case apps::mojom::AppType::kCrostini:
-      FALLTHROUGH;
-    case apps::mojom::AppType::kBuiltIn:
-      FALLTHROUGH;
-    case apps::mojom::AppType::kPluginVm:
-      FALLTHROUGH;
-    case apps::mojom::AppType::kBorealis:
-      FALLTHROUGH;
+    case apps::AppType::kArc:
+      [[fallthrough]];
+    case apps::AppType::kCrostini:
+      [[fallthrough]];
+    case apps::AppType::kBuiltIn:
+      [[fallthrough]];
+    case apps::AppType::kPluginVm:
+      [[fallthrough]];
+    case apps::AppType::kBorealis:
+      [[fallthrough]];
     default:
       return AppContextMenu::IsCommandIdChecked(command_id);
   }
@@ -355,7 +357,7 @@ void AppServiceContextMenu::OnGetMenuModel(
   // The special rule to ensure that FilesManager's first menu item is "New
   // window".
   const bool build_extension_menu_before_default =
-      (app_type_ == apps::mojom::AppType::kChromeApp &&
+      (app_type_ == apps::AppType::kChromeApp &&
        app_id() == extension_misc::kFilesManagerAppId);
 
   if (build_extension_menu_before_default)
@@ -364,8 +366,8 @@ void AppServiceContextMenu::OnGetMenuModel(
   // Create default items for non-Remote apps.
   if (app_id() != extension_misc::kChromeAppId &&
       app_id() != extension_misc::kLacrosAppId &&
-      app_type_ != apps::mojom::AppType::kUnknown &&
-      app_type_ != apps::mojom::AppType::kRemote) {
+      app_type_ != apps::AppType::kUnknown &&
+      app_type_ != apps::AppType::kRemote) {
     app_list::AppContextMenu::BuildMenu(menu_model.get());
   }
 
@@ -390,21 +392,23 @@ void AppServiceContextMenu::OnGetMenuModel(
     reorder_submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
     // As all the options below are only for tests and are expected to change in
     // the future, the strings are directly written as the parameters.
-    // TODO(crbug.com/1269386): Change the testing strings to the strings we
-    // want when the feature is enabled by default and use string ids to
-    // interpret them.
-    reorder_submenu_->AddItem(ash::REORDER_BY_NAME_ALPHABETICAL,
-                              u"Alphabetical");
-    reorder_submenu_->AddItem(ash::REORDER_BY_NAME_REVERSE_ALPHABETICAL,
-                              u"Reverse alphabetical");
+    reorder_submenu_->AddItemWithIcon(
+        ash::REORDER_BY_NAME_ALPHABETICAL,
+        l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_REORDER_BY_NAME),
+        ui::ImageModel::FromVectorIcon(GetMenuItemVectorIcon(
+            ash::REORDER_BY_NAME_ALPHABETICAL, /*string_id=*/-1)));
+    reorder_submenu_->AddItemWithIcon(
+        ash::REORDER_BY_COLOR,
+        l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_REORDER_BY_COLOR),
+        ui::ImageModel::FromVectorIcon(
+            GetMenuItemVectorIcon(ash::REORDER_BY_COLOR, /*string_id=*/-1)));
     menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
     menu_model->AddSubMenuWithIcon(
-        ash::REORDER_SUBMENU, u"Reorder by name", reorder_submenu_.get(),
+        ash::REORDER_SUBMENU,
+        l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_REORDER_TITLE),
+        reorder_submenu_.get(),
         ui::ImageModel::FromVectorIcon(
             GetMenuItemVectorIcon(ash::REORDER_SUBMENU, /*string_id=*/-1)));
-    // TODO(crbug.com/1276230): Move reorder by color item to proper location
-    // and add a vector icon.
-    menu_model->AddItem(ash::REORDER_BY_COLOR, u"Color");
   }
 
   std::move(callback).Run(std::move(menu_model));
@@ -429,10 +433,10 @@ void AppServiceContextMenu::BuildExtensionAppShortcutsMenu(
 }
 
 void AppServiceContextMenu::ShowAppInfo() {
-  if (app_type_ == apps::mojom::AppType::kArc) {
+  if (app_type_ == apps::AppType::kArc) {
     chrome::ShowAppManagementPage(
         profile(), app_id(),
-        AppManagementEntryPoint::kAppListContextMenuAppInfoArc);
+        ash::settings::AppManagementEntryPoint::kAppListContextMenuAppInfoArc);
     return;
   }
 
@@ -441,7 +445,7 @@ void AppServiceContextMenu::ShowAppInfo() {
 
 void AppServiceContextMenu::SetLaunchType(int command_id) {
   switch (app_type_) {
-    case apps::mojom::AppType::kWeb: {
+    case apps::AppType::kWeb: {
       // Web apps can only toggle between kWindow and kBrowser.
       apps::mojom::WindowMode user_window_mode =
           ConvertUseLaunchTypeCommandToWindowMode(command_id);
@@ -449,7 +453,7 @@ void AppServiceContextMenu::SetLaunchType(int command_id) {
         proxy_->SetWindowMode(app_id(), user_window_mode);
       return;
     }
-    case apps::mojom::AppType::kChromeApp: {
+    case apps::AppType::kChromeApp: {
       // Hosted apps can only toggle between LAUNCH_TYPE_WINDOW and
       // LAUNCH_TYPE_REGULAR.
       extensions::LaunchType launch_type =
@@ -460,16 +464,16 @@ void AppServiceContextMenu::SetLaunchType(int command_id) {
       controller()->SetExtensionLaunchType(profile(), app_id(), launch_type);
       return;
     }
-    case apps::mojom::AppType::kArc:
-      FALLTHROUGH;
-    case apps::mojom::AppType::kCrostini:
-      FALLTHROUGH;
-    case apps::mojom::AppType::kBuiltIn:
-      FALLTHROUGH;
-    case apps::mojom::AppType::kPluginVm:
-      FALLTHROUGH;
-    case apps::mojom::AppType::kBorealis:
-      FALLTHROUGH;
+    case apps::AppType::kArc:
+      [[fallthrough]];
+    case apps::AppType::kCrostini:
+      [[fallthrough]];
+    case apps::AppType::kBuiltIn:
+      [[fallthrough]];
+    case apps::AppType::kPluginVm:
+      [[fallthrough]];
+    case apps::AppType::kBorealis:
+      [[fallthrough]];
     default:
       return;
   }

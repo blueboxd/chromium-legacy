@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/transform.h"
 
 namespace blink {
@@ -129,7 +130,8 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
             .Inverse();
     if (geometry.IsIntersecting()) {
       PhysicalRect intersection_rect = PhysicalRect::EnclosingRect(
-          matrix.ProjectQuad(FloatRect(geometry.IntersectionRect()))
+          matrix
+              .ProjectQuad(gfx::QuadF(gfx::RectF(geometry.IntersectionRect())))
               .BoundingBox());
 
       // Don't let EnclosingRect turn an empty rect into a non-empty one.
@@ -160,7 +162,9 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
     PhysicalRect mainframe_intersection_rect;
     if (!geometry.UnclippedIntersectionRect().IsEmpty()) {
       mainframe_intersection_rect = PhysicalRect::EnclosingRect(
-          matrix.ProjectQuad(FloatRect(geometry.UnclippedIntersectionRect()))
+          matrix
+              .ProjectQuad(
+                  gfx::QuadF(gfx::RectF(geometry.UnclippedIntersectionRect())))
               .BoundingBox());
 
       if (mainframe_intersection_rect.IsEmpty()) {
@@ -214,10 +218,10 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
   UpdateFrameVisibility(!viewport_intersection.IsEmpty());
 
   if (ShouldReportMainFrameIntersection()) {
-    gfx::Rect projected_rect = ToEnclosingRect(PhysicalRect::EnclosingRect(
+    gfx::Rect projected_rect = gfx::ToEnclosingRect(
         main_frame_transform_matrix
-            .ProjectQuad(FloatRect(gfx::Rect(mainframe_intersection)))
-            .BoundingBox()));
+            .ProjectQuad(gfx::QuadF(gfx::RectF(mainframe_intersection)))
+            .BoundingBox());
     // Return <0, 0, 0, 0> if there is no area.
     if (projected_rect.IsEmpty())
       projected_rect.set_origin(gfx::Point(0, 0));

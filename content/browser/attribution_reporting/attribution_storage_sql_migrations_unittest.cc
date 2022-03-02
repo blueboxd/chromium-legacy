@@ -8,11 +8,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
-#include "base/ignore_result.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
@@ -42,15 +40,14 @@ class AttributionStorageSqlMigrationsTest : public testing::Test {
   void SetUp() override { ASSERT_TRUE(temp_directory_.CreateUniqueTempDir()); }
 
   void MigrateDatabase() {
-    base::SimpleTestClock clock;
     AttributionStorageSql storage(
         temp_directory_.GetPath(),
-        std::make_unique<ConfigurableStorageDelegate>(), &clock);
+        std::make_unique<ConfigurableStorageDelegate>());
 
     // We need to run an operation on storage to force the lazy initialization.
-    ignore_result(
+    std::ignore =
         static_cast<AttributionStorage*>(&storage)->GetAttributionsToReport(
-            base::Time::Min()));
+            base::Time::Min());
   }
 
   base::FilePath DbPath() {
@@ -106,10 +103,9 @@ class AttributionStorageSqlMigrationsTest : public testing::Test {
 TEST_F(AttributionStorageSqlMigrationsTest, MigrateEmptyToCurrent) {
   base::HistogramTester histograms;
   {
-    base::SimpleTestClock clock;
     AttributionStorageSql storage(
         temp_directory_.GetPath(),
-        std::make_unique<ConfigurableStorageDelegate>(), &clock);
+        std::make_unique<ConfigurableStorageDelegate>());
 
     // We need to perform an operation that is non-trivial on an empty database
     // to force initialization.

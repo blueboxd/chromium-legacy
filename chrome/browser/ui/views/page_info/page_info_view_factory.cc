@@ -104,16 +104,18 @@ std::unique_ptr<views::View> PageInfoViewFactory::CreateLabelWrapper() {
 PageInfoViewFactory::PageInfoViewFactory(
     PageInfo* presenter,
     ChromePageInfoUiDelegate* ui_delegate,
-    PageInfoNavigationHandler* navigation_handler)
+    PageInfoNavigationHandler* navigation_handler,
+    PageInfoHistoryController* history_controller)
     : presenter_(presenter),
       ui_delegate_(ui_delegate),
-      navigation_handler_(navigation_handler) {}
+      navigation_handler_(navigation_handler),
+      history_controller_(history_controller) {}
 
 std::unique_ptr<views::View> PageInfoViewFactory::CreateMainPageView(
     base::OnceClosure initialized_callback) {
-  return std::make_unique<PageInfoMainView>(presenter_, ui_delegate_,
-                                            navigation_handler_,
-                                            std::move(initialized_callback));
+  return std::make_unique<PageInfoMainView>(
+      presenter_, ui_delegate_, navigation_handler_, history_controller_,
+      std::move(initialized_callback));
 }
 
 std::unique_ptr<views::View> PageInfoViewFactory::CreateSecurityPageView() {
@@ -238,7 +240,7 @@ const ui::ImageModel PageInfoViewFactory::GetPermissionIcon(
     case ContentSettingsType::AUTOMATIC_DOWNLOADS:
       icon = &vector_icons::kFileDownloadIcon;
       break;
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
     case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:
       icon = &vector_icons::kProtectedContentIcon;
       break;
@@ -398,6 +400,12 @@ const ui::ImageModel PageInfoViewFactory::GetOpenSubpageIcon() {
 const ui::ImageModel PageInfoViewFactory::GetAboutThisSiteIcon() {
   return ui::ImageModel::FromVectorIcon(views::kInfoIcon, ui::kColorIcon,
                                         GetIconSize());
+}
+
+// static
+const ui::ImageModel PageInfoViewFactory::GetHistoryIcon() {
+  return ui::ImageModel::FromVectorIcon(vector_icons::kHistoryIcon,
+                                        ui::kColorIcon, GetIconSize());
 }
 
 // static

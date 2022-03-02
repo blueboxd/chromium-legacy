@@ -164,7 +164,8 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotGiveMediaAccessPermission) {
       blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE /* audio_type */,
       blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE /* video_type */,
       false /* disable_local_echo */,
-      false /* request_pan_tilt_zoom_permission */);
+      false /* request_pan_tilt_zoom_permission */,
+      false /* region_capture_capable */);
   contents()->RequestMediaAccessPermission(
       nullptr /* contents */, request /* request */,
       base::BindRepeating(&BackgroundLoaderContentsTest::MediaAccessCallback,
@@ -182,18 +183,6 @@ TEST_F(BackgroundLoaderContentsTest, CheckMediaAccessPermissionFalse) {
   ASSERT_FALSE(contents()->CheckMediaAccessPermission(
       nullptr /* contents */, GURL::EmptyGURL() /* security_origin */,
       blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE /* type */));
-}
-
-TEST_F(BackgroundLoaderContentsTest, AdjustPreviewsState) {
-  blink::PreviewsState previews_state;
-
-  // If the state starts out as off or disabled, it should stay that way.
-  previews_state = blink::PreviewsTypes::PREVIEWS_OFF;
-  contents()->AdjustPreviewsStateForNavigation(nullptr, &previews_state);
-  EXPECT_EQ(previews_state, blink::PreviewsTypes::PREVIEWS_OFF);
-  previews_state = blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM;
-  contents()->AdjustPreviewsStateForNavigation(nullptr, &previews_state);
-  EXPECT_EQ(previews_state, blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
 }
 
 }  // namespace background_loader

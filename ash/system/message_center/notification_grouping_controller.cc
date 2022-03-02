@@ -142,6 +142,10 @@ void NotificationGroupingController::PopulateGroupParent(
                  << notification_id;
     return;
   }
+
+  if (!parent_view->IsManuallyExpandedOrCollapsed())
+    parent_view->SetExpanded(false);
+
   std::vector<const Notification*> notifications;
   for (const auto* notification : MessageCenter::Get()->GetNotifications()) {
     if (notification->notifier_id() == parent_view->notifier_id() &&
@@ -222,6 +226,10 @@ void NotificationGroupingController::
   if (!parent_view || !new_single_notification)
     return;
 
+  message_center->FindNotificationById(group_parent_id)->ClearGroupParent();
+  new_single_notification->ClearGroupChild();
+  grouped_notification_list_->ClearGroupedNotification(group_parent_id);
+
   parent_view->RemoveGroupNotification(new_single_notification_id);
   parent_view->UpdateWithNotification(*new_single_notification);
 
@@ -229,11 +237,6 @@ void NotificationGroupingController::
       ->ConvertGroupedNotificationViewToNotificationView(
           /*grouped_notification_id=*/group_parent_id,
           /*new_single_notification_id=*/new_single_notification_id);
-
-  message_center->FindNotificationById(group_parent_id)->ClearGroupParent();
-  new_single_notification->ClearGroupChild();
-
-  grouped_notification_list_->ClearGroupedNotification(group_parent_id);
 
   message_center->RemoveNotification(group_parent_id, /*by_user=*/false);
 }
@@ -254,6 +257,9 @@ NotificationGroupingController::CreateCopyForParentNotification(
       /*delegate=*/nullptr);
   child_copy->set_timestamp(parent_notification.timestamp() -
                             base::Milliseconds(1));
+  child_copy->set_settings_button_handler(
+      parent_notification.rich_notification_data().settings_button_handler);
+  child_copy->set_delegate(parent_notification.delegate());
   child_copy->SetGroupChild();
 
   return child_copy;

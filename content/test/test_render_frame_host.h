@@ -102,6 +102,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   const std::vector<std::string>& GetConsoleMessages() override;
   int GetHeavyAdIssueCount(HeavyAdIssueType type) override;
   void SimulateManifestURLUpdate(const GURL& manifest_url) override;
+  TestRenderFrameHost* AppendFencedFrame() override;
 
   void SendNavigate(int nav_entry_id,
                     bool did_create_new_entry,
@@ -112,6 +113,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       mojom::DidCommitProvisionalLoadParamsPtr params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params,
       bool was_within_same_document);
+  void SendDidCommitSameDocumentNavigation(
+      mojom::DidCommitProvisionalLoadParamsPtr params,
+      blink::mojom::SameDocumentNavigationType same_document_navigation_type);
 
   // With the current navigation logic this method is a no-op.
   // Simulates a renderer-initiated navigation to |url| starting in the

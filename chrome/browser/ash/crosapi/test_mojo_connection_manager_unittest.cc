@@ -67,7 +67,9 @@ class TestBrowserService : public crosapi::mojom::BrowserService {
     NOTIMPLEMENTED();
   }
 
-  void NewWindow(bool incognito, NewWindowCallback callback) override {}
+  void NewWindow(bool incognito,
+                 bool should_trigger_session_restore,
+                 NewWindowCallback callback) override {}
   void NewWindowForDetachingTab(
       const std::u16string& tab_id,
       const std::u16string& group_id,
@@ -77,6 +79,7 @@ class TestBrowserService : public crosapi::mojom::BrowserService {
   void NewTab(NewTabCallback callback) override {}
   void OpenUrl(const GURL& url, OpenUrlCallback callback) override {}
   void RestoreTab(RestoreTabCallback callback) override {}
+  void HandleTabScrubbing(float x_offset) override {}
   void GetFeedbackData(GetFeedbackDataCallback callback) override {}
   void GetHistograms(GetHistogramsCallback callback) override {}
   void GetActiveTabUrl(GetActiveTabUrlCallback callback) override {}
@@ -191,8 +194,7 @@ TEST_F(TestMojoConnectionManagerTest, ConnectMultipleClients) {
   TestingProfile* profile =
       testing_profile_manager.CreateTestingProfile(account.GetUserEmail());
   profile->set_profile_name(account.GetUserEmail());
-  chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
-                                                                    profile);
+  ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user, profile);
 
   auto crosapi_manager = std::make_unique<CrosapiManager>();
 

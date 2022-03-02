@@ -659,8 +659,12 @@ _BANNED_CPP_FUNCTIONS = (
        '^chrome/services/sharing/nearby/',
        # gRPC provides some C++ libraries that use std::shared_ptr<>.
        '^chromeos/services/libassistant/grpc/',
+       '^chromecast/cast_core/grpc',
+       '^chromecast/cast_core/runtime/browser',
        # Fuchsia provides C++ libraries that use std::shared_ptr<>.
        '.*fuchsia.*test\.(cc|h)',
+       # Needed for clang plugin tests
+       '^tools/clang/plugins/tests/',
        _THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     (
@@ -678,6 +682,15 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       False,  # Only a warning since it is already used.
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    (
+      r'\b(absl|std)::any\b',
+      (
+        'absl::any / std::any are not safe to use in a component build.'
+      ),
+      True,
+      # Not an error in third party folders, though it probably should be :)
+      [_THIRD_PARTY_EXCEPT_BLINK],
     ),
     (
       r'/\bstd::bind\b',
@@ -1071,8 +1084,6 @@ _VALID_OS_MACROS = (
     'OS_LINUX',
     'OS_MAC',
     'OS_NACL',
-    'OS_NACL_NONSFI',
-    'OS_NACL_SFI',
     'OS_NETBSD',
     'OS_OPENBSD',
     'OS_POSIX',
@@ -3467,6 +3478,22 @@ def _CheckAndroidXmlStyle(input_api, output_api, is_check_on_upload):
   else:
     return checkxmlstyle.CheckStyleOnCommit(input_api, output_api)
 
+def _CheckAndroidInfoBarDeprecation(input_api, output_api):
+  """Checks Android Infobar Deprecation """
+
+  import sys
+  original_sys_path = sys.path
+  try:
+    sys.path = sys.path + [input_api.os_path.join(
+        input_api.PresubmitLocalPath(), 'tools', 'android',
+        'infobar_deprecation')]
+    import infobar_deprecation
+  finally:
+    # Restore sys.path to what it was before.
+    sys.path = original_sys_path
+
+  return infobar_deprecation.CheckDeprecationOnUpload(input_api, output_api)
+
 
 class PydepsChecker(object):
   def __init__(self, input_api, pydeps_files):
@@ -3704,8 +3731,6 @@ def CheckNoDeprecatedCss(input_api, output_api):
                    input_api.DEFAULT_FILES_TO_SKIP +
                    (r"^chrome/common/extensions/docs",
                     r"^chrome/docs",
-                    r"^components/dom_distiller/core/css/distilledpage_ios.css",
-                    r"^components/neterror/resources/neterror.css",
                     r"^native_client_sdk"))
   file_filter = lambda f: input_api.FilterSourceFile(
       f, files_to_check=file_inclusion_pattern, files_to_skip=files_to_skip)
@@ -4166,6 +4191,7 @@ def ChecksAndroidSpecificOnUpload(input_api, output_api):
   results.extend(_CheckAndroidXmlStyle(input_api, output_api, True))
   results.extend(_CheckNewImagesWarning(input_api, output_api))
   results.extend(_CheckAndroidNoBannedImports(input_api, output_api))
+  results.extend(_CheckAndroidInfoBarDeprecation(input_api, output_api))
   return results
 
 def ChecksAndroidSpecificOnCommit(input_api, output_api):
@@ -4222,6 +4248,113 @@ def CheckAccessibilityRelnotesField(input_api, output_api):
              "of ui/accessibility/OWNERS.")
 
   return [output_api.PresubmitNotifyResult(message)]
+
+
+_ACCESSIBILITY_EVENTS_TEST_PATH = (
+    r"^content[\\/]test[\\/]data[\\/]accessibility[\\/]event[\\/].*\.html",
+)
+
+_ACCESSIBILITY_TREE_TEST_PATH = (
+    r"^content[\\/]test[\\/]data[\\/]accessibility[\\/]accname[\\/].*\.html",
+    r"^content[\\/]test[\\/]data[\\/]accessibility[\\/]aria[\\/].*\.html",
+    r"^content[\\/]test[\\/]data[\\/]accessibility[\\/]css[\\/].*\.html",
+    r"^content[\\/]test[\\/]data[\\/]accessibility[\\/]html[\\/].*\.html",
+)
+
+_ACCESSIBILITY_ANDROID_EVENTS_TEST_PATH = (
+    r"^.*[\\/]WebContentsAccessibilityEventsTest\.java",
+)
+
+_ACCESSIBILITY_ANDROID_TREE_TEST_PATH = (
+    r"^.*[\\/]WebContentsAccessibilityEventsTest\.java",
+)
+
+def CheckAccessibilityEventsTestsAreIncludedForAndroid(input_api, output_api):
+  """Checks that commits that include a newly added, renamed/moved, or deleted
+  test in the DumpAccessibilityEventsTest suite also includes a corresponding
+  change to the Android test."""
+  def FilePathFilter(affected_file):
+    paths = _ACCESSIBILITY_EVENTS_TEST_PATH
+    return input_api.FilterSourceFile(affected_file, files_to_check=paths)
+
+  def AndroidFilePathFilter(affected_file):
+    paths = _ACCESSIBILITY_ANDROID_EVENTS_TEST_PATH
+    return input_api.FilterSourceFile(affected_file, files_to_check=paths)
+
+  # Only consider changes in the events test data path with html type.
+  if not any(input_api.AffectedFiles(include_deletes=True,
+                                     file_filter=FilePathFilter)):
+    return []
+
+  # If the commit contains any change to the Android test file, ignore.
+  if any(input_api.AffectedFiles(include_deletes=True,
+                                 file_filter=AndroidFilePathFilter)):
+    return []
+
+  # Only consider changes that are adding/renaming or deleting a file
+  message = []
+  for f in input_api.AffectedFiles(include_deletes=True,
+                                   file_filter=FilePathFilter):
+    if f.Action()=='A' or f.Action()=='D':
+      message = ("It appears that you are adding, renaming or deleting"
+                 "\na dump_accessibility_events* test, but have not included"
+                 "\na corresponding change for Android."
+                 "\nPlease include (or remove) the test from:"
+                 "\n    content/public/android/javatests/src/org/chromium/"
+                 "content/browser/accessibility/"
+                 "WebContentsAccessibilityEventsTest.java"
+                 "\nIf this message is confusing or annoying, please contact"
+                 "\nmembers of ui/accessibility/OWNERS.")
+
+  # If no message was set, return empty.
+  if not len(message):
+    return []
+
+  return [output_api.PresubmitPromptWarning(message)]
+
+def CheckAccessibilityTreeTestsAreIncludedForAndroid(input_api, output_api):
+  """Checks that commits that include a newly added, renamed/moved, or deleted
+  test in the DumpAccessibilityTreeTest suite also includes a corresponding
+  change to the Android test."""
+  def FilePathFilter(affected_file):
+    paths = _ACCESSIBILITY_TREE_TEST_PATH
+    return input_api.FilterSourceFile(affected_file, files_to_check=paths)
+
+  def AndroidFilePathFilter(affected_file):
+    paths = _ACCESSIBILITY_ANDROID_TREE_TEST_PATH
+    return input_api.FilterSourceFile(affected_file, files_to_check=paths)
+
+  # Only consider changes in the various tree test data paths with html type.
+  if not any(input_api.AffectedFiles(include_deletes=True,
+                                     file_filter=FilePathFilter)):
+    return []
+
+  # If the commit contains any change to the Android test file, ignore.
+  if any(input_api.AffectedFiles(include_deletes=True,
+                                 file_filter=AndroidFilePathFilter)):
+    return []
+
+  # Only consider changes that are adding/renaming or deleting a file
+  message = []
+  for f in input_api.AffectedFiles(include_deletes=True,
+                                   file_filter=FilePathFilter):
+    if f.Action()=='A' or f.Action()=='D':
+      message = ("It appears that you are adding, renaming or deleting"
+                 "\na dump_accessibility_tree* test, but have not included"
+                 "\na corresponding change for Android."
+                 "\nPlease include (or remove) the test from:"
+                 "\n    content/public/android/javatests/src/org/chromium/"
+                 "content/browser/accessibility/"
+                 "WebContentsAccessibilityTreeTest.java"
+                 "\nIf this message is confusing or annoying, please contact"
+                 "\nmembers of ui/accessibility/OWNERS.")
+
+  # If no message was set, return empty.
+  if not len(message):
+    return []
+
+  return [output_api.PresubmitPromptWarning(message)]
+
 
 # string pattern, sequence of strings to show when pattern matches,
 # error flag. True if match is a presubmit error, otherwise it's a warning.
@@ -5401,7 +5534,7 @@ def CheckMPArchApiUsage(input_api, output_api):
      'RenderViewDeleted',
      'RenderViewHostChanged',
      'DocumentAvailableInMainFrame',
-     'DocumentOnLoadCompletedInMainFrame',
+     'DocumentOnLoadCompletedInPrimaryMainFrame',
      'DOMContentLoaded',
      'DidFinishLoad',
   ]

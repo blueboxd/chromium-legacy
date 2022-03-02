@@ -13,8 +13,6 @@
 #include "chromeos/dbus/rmad/rmad.pb.h"
 #include "chromeos/dbus/rmad/rmad_client.h"
 #include "chromeos/dbus/update_engine/update_engine.pb.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "chromeos/services/network_config/public/mojom/network_types.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -100,9 +98,13 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   void GetOriginalRegion(GetOriginalRegionCallback callback) override;
   void GetOriginalSku(GetOriginalSkuCallback callback) override;
   void GetOriginalWhiteLabel(GetOriginalWhiteLabelCallback callback) override;
+  void GetOriginalDramPartNumber(
+      GetOriginalDramPartNumberCallback callback) override;
   void SetDeviceInformation(const std::string& serial_number,
                             uint8_t region_index,
                             uint8_t sku_index,
+                            uint8_t white_label_index,
+                            const std::string& dram_part_number,
                             SetDeviceInformationCallback callback) override;
 
   void GetCalibrationComponentList(
@@ -116,8 +118,10 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   void ContinueCalibration(ContinueCalibrationCallback callback) override;
   void CalibrationComplete(CalibrationCompleteCallback callback) override;
 
+  void RetryProvisioning(RetryProvisioningCallback callback) override;
   void ProvisioningComplete(ProvisioningCompleteCallback callback) override;
 
+  void RetryFinalization(RetryFinalizationCallback callback) override;
   void FinalizationComplete(FinalizationCompleteCallback callback) override;
 
   void WriteProtectManuallyEnabled(
@@ -186,10 +190,6 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
                           bool reboot,
                           absl::optional<rmad::AbortRmaReply> response);
   void OnGetLog(GetLogCallback callback, absl::optional<std::string> log);
-  void OnNetworkListResponse(
-      BeginFinalizationCallback callback,
-      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
-          response);
 
   void OnOsUpdateStatusCallback(update_engine::Operation operation,
                                 double progress,
@@ -232,9 +232,6 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   mojo::Remote<mojom::FinalizationObserver> finalization_observer_;
   mojo::Remote<mojom::UpdateRoFirmwareObserver> update_ro_firmware_observer_;
   mojo::Receiver<mojom::ShimlessRmaService> receiver_{this};
-
-  mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
-      remote_cros_network_config_;
 
   VersionUpdater version_updater_;
   base::OnceCallback<void(const std::string& version)> check_os_callback_;

@@ -120,7 +120,8 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
       const std::vector<ServerBookmarksEqualityChecker::ExpectedBookmark>&
           expected_bookmarks,
       const std::string& passphrase) {
-    auto cryptographer = CreateCryptographerFromServerNigori(passphrase);
+    std::unique_ptr<Cryptographer> cryptographer =
+        CreateCryptographerFromServerNigori(passphrase);
     return ServerBookmarksEqualityChecker(GetSyncService(), GetFakeServer(),
                                           expected_bookmarks,
                                           cryptographer.get())
@@ -278,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
 }
 
 // PRE_* tests aren't supported on Android browser tests.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 // Populates custom passphrase Nigori without keystore keys to the client.
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
                        PRE_CanDecryptWithKeystoreKeys) {
@@ -305,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
       PasswordFormsChecker(/*index=*/0, /*expected_forms=*/{password_form})
           .Wait());
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
                        DoesNotLeakUnencryptedData) {

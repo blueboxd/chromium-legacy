@@ -36,10 +36,16 @@ AX_EXPORT constexpr NSString* const NSAccessibilityARIASetSizeAttribute =
     @"AXARIASetSize";
 AX_EXPORT constexpr NSString* const NSAccessibilityAutocompleteValueAttribute =
     @"AXAutocompleteValue";
+AX_EXPORT constexpr NSString* const NSAccessibilityBlockQuoteLevelAttribute =
+    @"AXBlockQuoteLevel";
 AX_EXPORT constexpr NSString* const NSAccessibilityDetailsElementsAttribute =
     @"AXDetailsElements";
+AX_EXPORT constexpr NSString* const NSAccessibilityDOMClassList =
+    @"AXDOMClassList";
 AX_EXPORT constexpr NSString* const NSAccessibilityDOMIdentifierAttribute =
     @"AXDOMIdentifier";
+AX_EXPORT constexpr NSString* const NSAccessibilityDropEffectsAttribute =
+    @"AXDropEffects";
 AX_EXPORT constexpr NSString* const NSAccessibilityHasPopupAttribute =
     @"AXHasPopup";
 AX_EXPORT constexpr NSString* const NSAccessibilityInvalidAttribute =

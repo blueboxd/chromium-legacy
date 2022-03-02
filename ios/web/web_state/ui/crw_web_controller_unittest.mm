@@ -507,11 +507,11 @@ class CRWWebControllerResponseTest : public CRWWebControllerTest {
   // Calls webView:decidePolicyForNavigationResponse:decisionHandler: callback
   // and waits for decision handler call. Returns false if decision handler call
   // times out.
-  bool CallDecidePolicyForNavigationResponseWithResponse(
+  [[nodiscard]] bool CallDecidePolicyForNavigationResponseWithResponse(
       NSURLResponse* response,
       BOOL for_main_frame,
       BOOL can_show_mime_type,
-      WKNavigationResponsePolicy* out_policy) WARN_UNUSED_RESULT {
+      WKNavigationResponsePolicy* out_policy) {
     id navigation_response =
         [OCMockObject mockForClass:[WKNavigationResponse class]];
     OCMStub([navigation_response response]).andReturn(response);
@@ -809,9 +809,9 @@ class CRWWebControllerPolicyDeciderTest : public CRWWebControllerTest {
   // callback and waits for decision handler call. Returns false if decision
   // handler policy parameter didn't match |expected_policy| or if the call
   // timed out.
-  bool VerifyDecidePolicyForNavigationAction(
+  [[nodiscard]] bool VerifyDecidePolicyForNavigationAction(
       NSURLRequest* request,
-      WKNavigationActionPolicy expected_policy) WARN_UNUSED_RESULT {
+      WKNavigationActionPolicy expected_policy) {
     CRWFakeWKNavigationAction* navigation_action =
         [[CRWFakeWKNavigationAction alloc] init];
     navigation_action.request = request;
@@ -1108,6 +1108,7 @@ TEST_F(WindowOpenByDomTest, CloseWindow) {
 
   delegate_.child_windows()[0]->SetDelegate(&delegate_);
   CloseWindow();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(delegate_.child_windows().empty());
   EXPECT_TRUE(delegate_.popups().empty());

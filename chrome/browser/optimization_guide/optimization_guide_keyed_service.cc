@@ -24,6 +24,7 @@
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/optimization_guide/core/command_line_top_host_provider.h"
 #include "components/optimization_guide/core/hints_processing_util.h"
+#include "components/optimization_guide/core/model_util.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_navigation_data.h"
@@ -42,7 +43,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/commerce/price_tracking/android/price_tracking_notification_bridge.h"
 #include "chrome/browser/optimization_guide/android/android_push_notification_manager.h"
 #include "chrome/browser/optimization_guide/android/optimization_guide_tab_url_provider_android.h"
@@ -98,7 +99,7 @@ Profile* GetProfileForOTROptimizationGuide(Profile* profile) {
 std::unique_ptr<optimization_guide::PushNotificationManager>
 OptimizationGuideKeyedService::MaybeCreatePushNotificationManager(
     Profile* profile) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (optimization_guide::features::IsPushNotificationsEnabled()) {
     auto push_notification_manager = std::make_unique<
         optimization_guide::android::AndroidPushNotificationManager>(
@@ -167,7 +168,7 @@ void OptimizationGuideKeyedService::Initialize() {
         "SyntheticOptimizationGuideRemoteFetching",
         optimization_guide_fetching_enabled ? "Enabled" : "Disabled");
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     tab_url_provider_ = std::make_unique<
         optimization_guide::android::OptimizationGuideTabUrlProviderAndroid>(
         profile);
@@ -202,7 +203,6 @@ void OptimizationGuideKeyedService::Initialize() {
   hints_manager_ = std::make_unique<optimization_guide::ChromeHintsManager>(
       profile, profile->GetPrefs(), hint_store, top_host_provider_.get(),
       tab_url_provider_.get(), url_loader_factory,
-      content::GetNetworkConnectionTracker(),
       MaybeCreatePushNotificationManager(profile));
   prediction_manager_ = std::make_unique<optimization_guide::PredictionManager>(
       prediction_model_and_features_store, url_loader_factory,

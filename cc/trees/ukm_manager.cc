@@ -227,7 +227,6 @@ void UkmManager::RecordCompositorLatencyUKM(
       CASE_FOR_BLINK_BREAKDOWN(LayoutUpdate);
       CASE_FOR_BLINK_BREAKDOWN(Prepaint);
       CASE_FOR_BLINK_BREAKDOWN(CompositingInputs);
-      CASE_FOR_BLINK_BREAKDOWN(CompositingAssignments);
       CASE_FOR_BLINK_BREAKDOWN(Paint);
       CASE_FOR_BLINK_BREAKDOWN(CompositeCommit);
       CASE_FOR_BLINK_BREAKDOWN(UpdateLayers);
@@ -313,18 +312,18 @@ void UkmManager::RecordEventLatencyUKM(
         event_metrics->GetDispatchStageTimestamp(
             EventMetrics::DispatchStage::kGenerated);
 
-    if (event_metrics->scroll_type()) {
+    if (ScrollEventMetrics* scroll_metrics = event_metrics->AsScroll()) {
       builder.SetScrollInputType(
-          static_cast<int64_t>(*event_metrics->scroll_type()));
+          static_cast<int64_t>(scroll_metrics->scroll_type()));
 
       if (!processed_viz_breakdown.swap_start().is_null()) {
         builder.SetTotalLatencyToSwapBegin(
             (processed_viz_breakdown.swap_start() - generated_timestamp)
                 .InMicroseconds());
       }
-    } else if (event_metrics->pinch_type()) {
+    } else if (PinchEventMetrics* pinch_metrics = event_metrics->AsPinch()) {
       builder.SetPinchInputType(
-          static_cast<int64_t>(*event_metrics->pinch_type()));
+          static_cast<int64_t>(pinch_metrics->pinch_type()));
     }
 
     // Record event dispatch metrics.
@@ -504,7 +503,6 @@ void UkmManager::RecordEventLatencyUKM(
         CASE_FOR_BLINK_BREAKDOWN(LayoutUpdate);
         CASE_FOR_BLINK_BREAKDOWN(Prepaint);
         CASE_FOR_BLINK_BREAKDOWN(CompositingInputs);
-        CASE_FOR_BLINK_BREAKDOWN(CompositingAssignments);
         CASE_FOR_BLINK_BREAKDOWN(Paint);
         CASE_FOR_BLINK_BREAKDOWN(CompositeCommit);
         CASE_FOR_BLINK_BREAKDOWN(UpdateLayers);

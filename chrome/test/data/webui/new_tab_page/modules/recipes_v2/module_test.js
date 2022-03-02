@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://test/mojo_webui_test_support.js';
+
 import {$$, recipeTasksV2Descriptor, TaskModuleHandlerProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {TaskModuleHandlerRemote} from 'chrome://new-tab-page/task_module.mojom-webui.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {assertEquals} from 'chrome://test/chai_assert.js';
+import {assertEquals, assertTrue} from 'chrome://test/chai_assert.js';
 import {installMock} from 'chrome://test/new_tab_page/test_support.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.js';
 
@@ -15,9 +18,8 @@ suite('NewTabPageModulesRecipesV2ModuleTest', () => {
   setup(() => {
     document.body.innerHTML = '';
 
-    handler = installMock(
-        taskModule.mojom.TaskModuleHandlerRemote,
-        TaskModuleHandlerProxy.setHandler);
+    handler =
+        installMock(TaskModuleHandlerRemote, TaskModuleHandlerProxy.setHandler);
   });
 
   test('module appears on render with recipes', async () => {
@@ -84,7 +86,7 @@ suite('NewTabPageModulesRecipesV2ModuleTest', () => {
         'Cranberry Site', recipes[2].querySelector('.site-name').innerText);
   });
 
-  test('no module renders if no tasks available', async () => {
+  test('empty module renders if no tasks available', async () => {
     // Arrange.
     handler.setResultFor('getPrimaryTask', Promise.resolve({task: null}));
 
@@ -92,6 +94,6 @@ suite('NewTabPageModulesRecipesV2ModuleTest', () => {
     const moduleElement = await recipeTasksV2Descriptor.initialize(0);
 
     // Assert.
-    assertEquals(null, moduleElement);
+    assertTrue(!!moduleElement);
   });
 });

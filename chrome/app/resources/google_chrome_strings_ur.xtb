@@ -51,7 +51,6 @@
 <translation id="2121284319307530122">‏Chrome&amp; کو اپ ڈیٹ کرنے کیلئے بند کر کے دوبارہ چلائیں</translation>
 <translation id="2123055963409958220">‏<ph name="BEGIN_LINK" />موجودہ ترتیبات<ph name="END_LINK" /> کی اطلاع دے کر Chrome کو بہتر بنانے میں مدد کریں</translation>
 <translation id="2151406531797534936">‏براہ کرم ابھی Chrome دوبارہ شروع کریں</translation>
-<translation id="2189289170880510015">‏Chrome کے کچھ انتہائی اہم رازداری کے اختیارات کو حسب ضرورت بنائیں</translation>
 <translation id="2258103955319320201">‏اپنے تمام آلات پر اپنے Chrome براؤزر کی چیزوں تک رسائی حاصل کرنے کیلئے، سائن ان کریں اور پھر مطابقت پذیری کو آن کریں</translation>
 <translation id="2290014774651636340">‏Google API کلیدیں چھوٹی ہوئی ہیں۔ Google Chrome کی کچھ فعالیت غیر فعال ہو جائے گی۔</translation>
 <translation id="2290095356545025170">‏کیا آپ واقعی Google Chrome کو ان انسٹال کرنا چاہتے ہیں؟</translation>
@@ -65,6 +64,7 @@
 <translation id="2467438592969358367">‏Google Chrome آپ کے پاس ورڈز برآمد کرنا چاہتا ہے۔ اس کی اجازت دینے کیلئے، اپنا Windows پاس ورڈ ٹائپ کریں۔</translation>
 <translation id="2485422356828889247">ان انسٹال کریں</translation>
 <translation id="2534507159460261402">‏Google Pay ‏(Chrome میں کاپی کر دیا گیا)</translation>
+<translation id="2563121210305478421">‏Chrome کو بند کر کے دوبارہ چلائیں؟</translation>
 <translation id="2574930892358684005">‏<ph name="EXISTING_USER" /> اس Chrome پروفائل میں پہلے سے سائن ان ہے۔ اپنی براؤزنگ کو الگ رکھنے کیلئے، Chrome آپ کیلئے آپ کی ذاتی پروفائل تخلیق کر سکتا ہے۔</translation>
 <translation id="2580411288591421699">‏Google Chrome کا وہی ورژن انسٹال نہیں کیا جا سکتا ہے جو فی الحال چل رہا ہے۔ براہ کرم Google Chrome بند کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="2586406160782125153">‏یہ اس آلہ سے آپ کے براؤزنگ ڈیٹا کو حذف کر دے گا۔ بعد میں اپنے ڈیٹا کی بازیافت کرنے کیلئے، Chrome میں <ph name="USER_EMAIL" /> کے بطور سائن ان کریں۔</translation>
@@ -89,6 +89,7 @@
 <translation id="2926952073016206995">‏Chrome کو اس سائٹ کے لیے کیمرے کی اجازت درکار ہے</translation>
 <translation id="2929907241665500097">‏Chrome اپ ڈیٹ نہیں ہوا، کچھ غلط ہو گیا۔ <ph name="BEGIN_LINK" />Chrome اپ ڈیٹ کی دشواریوں اور ناکام اپ ڈیٹس کو درست کریں۔<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736">‏<ph name="PAGE_TITLE" /> - نیٹ ورک سائن ان - Chrome</translation>
+<translation id="303514781271618814">‏Chrome نئی خصوصیات کو دریافت کر رہا ہے جو سائٹس کو آپ کے کم ڈیٹا کا استعمال کر کے وہی براؤزنگ تجربہ فراہم کرنے کی اجازت دیتا ہے</translation>
 <translation id="3037838751736561277">‏Google Chrome پس منظر وضع میں ہے۔</translation>
 <translation id="3059710691562604940">‏محفوظ براؤزنگ آف ہے۔ Chrome اسے آن کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="3065168410429928842">‏Chrome ٹیب</translation>
@@ -99,6 +100,7 @@
 <translation id="3114643501466072395">‏یہ چیک کرنے کے لئے کہ آیا آپ کے دیگر پاس ورڈز ڈیٹا کی خلاف ورزیوں اور دیگر سیکیورٹی مسائل سے محفوظ ہیں، <ph name="BEGIN_LINK" />Chrome میں سائن ان کریں<ph name="END_LINK" />۔</translation>
 <translation id="3140883423282498090">‏آپ کی تبدیلیاں Google Chrome اگلی بار آپ کے دوبارہ شروع کرنے کے وقت نافذ ہوں گی۔</translation>
 <translation id="3149510190863420837">‏Chrome ایپس</translation>
+<translation id="3245429137663807393">‏اگر آپ Chrome کے استعمال کی رپورٹس کا بھی اشتراک کرتے ہیں تو ان رپورٹس میں آپ کے ملاحظہ کردہ URLs شامل ہوں گے</translation>
 <translation id="3360895254066713204">‏Chrome مدد کنندہ</translation>
 <translation id="3379938682270551431">{0,plural, =0{‏ابھی Chrome دوبارہ لانچ ہوگا}=1{‏1 سیکنڈ میں Chrome دوبارہ لانچ ہوگا}other{‏# سیکنڈ میں Chrome دوبارہ لانچ ہوگا}}</translation>
 <translation id="3395323229510056640">‏Chromium OS کے بارے میں مدد حاصل کریں</translation>
@@ -116,7 +118,6 @@
 <translation id="3596080736082218006">{COUNT,plural, =0{‏آپ کے منتظم کا مطالبہ ہے کہ آپ اپ ڈیٹ کو لاگو کرنے کیلئے Chrome کو بند کر کے دوبارہ چلائیں}=1{‏آپ کے منتظم کا مطالبہ ہے کہ آپ اپ ڈیٹ کو لاگو کرنے کیلئے Chrome کو بند کر کے دوبارہ چلائیں۔ آپ کی پوشیدگی ونڈو دوبارہ نہیں کھلے گی۔}other{‏آپ کے منتظم کا مطالبہ ہے کہ آپ اپ ڈیٹ کو لاگو کرنے کیلئے Chrome کو بند کر کے دوبارہ چلائیں۔ آپ کی # پوشیدگی ونڈوز دوبارہ نہیں کھلیں گی۔}}</translation>
 <translation id="3622797965165704966">‏اب آپ کے Google اکاؤنٹ کے ساتھ اور اشتراک کردہ کمپیوٹرز پر Chrome کو استعمال کرنا آسان تر ہے۔</translation>
 <translation id="3673813398384385993">‏Chrome کو پتا چلا ہے کہ "<ph name="EXTENSION_NAME" />" میلوئیر پر مشتمل ہے</translation>
-<translation id="3678552270983184277">‏ڈیفالٹ ترتیبات زیادہ تر لوگوں کے لئے کام کرتی ہیں، لیکن آپ ان کو حسب ضرورت بنا سکتے ہیں تاکہ آپ اپنے طریقے کے مطابق Chrome کا استعمال کر سکیں</translation>
 <translation id="3718181793972440140">‏یہ اس آلہ سے 1 آئٹم کو حذف کر دے گا۔ بعد میں اپنا ڈیٹا بازیافت کرنے کیلئے Chrome میں <ph name="USER_EMAIL" /> کے بطور سائن ان کریں۔</translation>
 <translation id="3735758079232443276">‏آپ کی جانب سے Chrome شروع کرنے پر دکھائی دینے والے صفحہ کو ایکسٹینشن "<ph name="EXTENSION_NAME" />" نے تبدیل کر دیا ہے۔</translation>
 <translation id="3779473566290487688">‏آئندہ کے Google Chrome اپ ڈیٹس حاصل کرنے کے لیے، آپ کو OS X 10.11 یا بعد کی ضرورت ہوگی۔ یہ کمپیوٹر OS X 10.10 کا استعمال کر رہا ہے۔</translation>
@@ -160,6 +161,7 @@
 <translation id="4754614261631455953">‎Google Chrome (mDNS-In)‎</translation>
 <translation id="4771048833395599659">‏یہ فائل خطرناک ہو سکتی ہے، اس لیے Chrome نے اسے مسدود کر دیا ہے۔</translation>
 <translation id="479167709087336770">‏یہ وہی املا جانچ کنندہ استعمال کرتا ہے جسے Google تلاش میں استعمال کیا جاتا ہے۔ آپ براؤزر میں جو متن ٹائپ کرتے ہیں، اسے Google کو بھیجا جاتا ہے۔ آپ اس برتاؤ کو کسی بھی وقت ترتیبات میں تبدیل کر سکتے ہیں۔</translation>
+<translation id="4873783916118289636">‏Chrome میں کلیدی رازداری اور سیکیورٹی کنٹرولز کا جائزہ لیں</translation>
 <translation id="4891791193823137474">‏Google Chrome کو پس منظر میں چلنے دیں</translation>
 <translation id="4895437082222824641">‏لنک کو نئے Chrome &amp;ٹیب میں کھولیں</translation>
 <translation id="4953650215774548573">‏Google Chrome کو اپنے ڈیفالٹ براؤزر کے بطور سیٹ کریں</translation>
@@ -176,7 +178,6 @@
 <translation id="5193136243808726294">‏Google Chrome OS یہ صفحہ نہیں کھول سکتا ہے۔</translation>
 <translation id="521447420733633466">‏اگر آپ کسی آلے کا اشتراک کرتے ہیں تو دوست اور اہل خانہ الگ الگ براؤز کر سکتے ہیں اور Chrome کو اپنی مرضی کے مطابق سیٹ اپ کر سکتے ہیں</translation>
 <translation id="5251420635869119124">‏مہمان کسی چیز کو پیچھے چھوڑے بغیر Chrome کو استعمال کر سکتے ہیں۔</translation>
-<translation id="5251679006894510177">‏تقریباً اپ ٹو ڈیٹ! اپ ڈیٹ مکمل کرنے کے لیے Chrome کو بند کر کے دوبارہ چلائیں۔ پوشیدگی ونڈوز دوبارہ نہیں کھلیں گی۔</translation>
 <translation id="5334487786912937552">‏Chrome کو فائلیں ڈاؤن لوڈ کرنے کیلئے اسٹوریج تک رسائی کی اجازت درکار ہے</translation>
 <translation id="5386244825306882791">‏یہ آپ کی جانب سے Chrome شروع کیے جانے یا اومنی باکس سے تلاش کیے جانے پر دکھائی دینے والے صفحہ کو کنٹرول بھی کرتا ہے۔</translation>
 <translation id="5394833366792865639">‏ایک Chrome ٹیب کا اشتراک کریں</translation>
@@ -219,7 +220,6 @@ Google Chrome آپ کی ترتیبات کو بازیافت کرنے سے قاص�
 <translation id="6506909944137591434">‏Chrome کو آپ کے اطراف کا 3D نقشہ تخلیق کرنے کے لیے کیمرے کی اجازت درکار ہے</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6568793831116033768">‏Chrome OS سسٹم</translation>
-<translation id="6594121454516132231">‏دیکھیں کہ Chrome کیسے آپ کو اوپن ویب کے تحفظ کے دوران کراس سائٹ کی ٹریکنگ سے محفوظ رکھنے کے لیے پلان بناتا ہے</translation>
 <translation id="6676384891291319759">انٹرنیٹ تک رسائی حاصل کریں</translation>
 <translation id="6679975945624592337">‏Google Chrome کو پس منظر میں چلنے دیں</translation>
 <translation id="6696915334902295848">‏Chrome کو اس سائٹ کے لیے مائیکروفون کی اجازت درکار ہے</translation>
@@ -301,6 +301,7 @@ Google Chrome آپ کی ترتیبات کو بازیافت کرنے سے قاص�
 <translation id="8669527147644353129">‏Google Chrome مدد کنندہ</translation>
 <translation id="8679801911857917785">‏یہ آپ کی جانب سے Chrome شروع کیے جانے پر دکھائی دینے والے صفحہ کو بھی کنٹرول کرتا ہے۔</translation>
 <translation id="8686817260976772516">‏Chrome کی پروفائلز کے ساتھ آپ اپنے تمام Chrome مواد کو الگ کر سکتے ہیں۔ دوستوں اور فیملی کیلئے پروفائلز تخلیق کریں یا کام اور تفریح کے درمیان تقسیم کریں۔</translation>
+<translation id="8712767363896337380">‏تقریباً اپ ٹو ڈیٹ! اپ ڈیٹ مکمل کرنے کے لیے Chrome کو بند کر کے دوبارہ چلائیں۔</translation>
 <translation id="873133009373065397">‏Google Chrome ڈیفالٹ براؤزر کا تعین یا اس کو سیٹ نہیں کر سکتا ہے</translation>
 <translation id="8823341990149967727">‏Chrome پرانا ہے</translation>
 <translation id="8834965163890861871">‏Google Chrome پاس ورڈز میں ترمیم کرنے کی کوشش کر رہا ہے۔ اس کی اجازت دینے کے لیے اپنا Windows پاس ورڈ ٹائپ کریں۔</translation>

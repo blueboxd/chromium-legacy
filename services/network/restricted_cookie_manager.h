@@ -20,6 +20,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_partition_key_collection.h"
 #include "net/cookies/cookie_store.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -72,7 +73,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
       const CookieSettings& cookie_settings,
       const url::Origin& origin,
       const net::IsolationInfo& isolation_info,
-      mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer);
+      mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer,
+      bool first_party_sets_enabled);
 
   RestrictedCookieManager(const RestrictedCookieManager&) = delete;
   RestrictedCookieManager& operator=(const RestrictedCookieManager&) = delete;
@@ -83,10 +85,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
     origin_ = new_origin;
   }
   void OverrideIsolationInfoForTesting(
-      const net::IsolationInfo& new_isolation_info) {
-    isolation_info_ = new_isolation_info;
-    ComputeCookiePartitionKey();
-  }
+      const net::IsolationInfo& new_isolation_info);
 
   const CookieSettings& cookie_settings() const { return cookie_settings_; }
 
@@ -128,9 +127,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   // The state associated with a CookieChangeListener.
   class Listener;
 
-  // Computes the cookie partition key that this instance will have access to.
-  // Should only be called in the constructor or in ...ForTesting methods.
-  void ComputeCookiePartitionKey();
+  // Returns true if the RCM instance can read and/or set partitioned cookies.
+  bool IsPartitionedCookiesEnabled() const;
 
   // Feeds a net::CookieList to a GetAllForUrl() callback.
   void CookieListToGetAllForUrlCallback(
@@ -142,6 +140,35 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
       GetAllForUrlCallback callback,
       const net::CookieAccessResultList& cookie_list,
       const net::CookieAccessResultList& excluded_cookies);
+
+  // Called after getting First-Party Set data when setting a cookie.
+  void OnGotFirstPartySetMetadataForSet(
+      const GURL& url,
+      const net::SiteForCookies& site_for_cookies,
+      std::unique_ptr<net::CanonicalCookie> sanitized_cookie,
+      const GURL& origin_url,
+      SetCanonicalCookieCallback callback,
+      net::FirstPartySetMetadata first_party_set_metadata) const;
+
+  // Called after getting First-Party Set data when getting all cookies for a
+  // URL.
+  void OnGotFirstPartySetMetadataForGetAllForUrl(
+      const GURL& url,
+      const net::SiteForCookies& site_for_cookies,
+      const url::Origin& top_frame_origin,
+      mojom::CookieManagerGetOptionsPtr options,
+      GetAllForUrlCallback callback,
+      net::FirstPartySetMetadata first_party_set_metadata) const;
+
+  // Called after getting First-Party Set data when adding a cookie change
+  // listener.
+  void OnGotFirstPartySetMetadataForAddChangeListener(
+      const GURL& url,
+      const net::SiteForCookies& site_for_cookies,
+      const url::Origin& top_frame_origin,
+      mojo::PendingRemote<mojom::CookieChangeListener> mojo_listener,
+      AddChangeListenerCallback callback,
+      net::FirstPartySetMetadata first_party_set_metadata);
 
   // Reports the result of setting the cookie to |network_context_client_|, and
   // invokes the user callback.
@@ -207,16 +234,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Cookie partition key that the instance of RestrictedCookieManager will have
-  // access to.
+  // access to. Must be set only in the constructor or in *ForTesting methods.
   absl::optional<net::CookiePartitionKey> cookie_partition_key_;
   // CookiePartitionKeyCollection that is either empty if
   // `cookie_partition_key_` is nullopt. If `cookie_partition_key_` is not null,
-  // the key collection contains its value.
+  // the key collection contains its value. Must be kept in sync with
+  // `cookie_partition_key_`.
   net::CookiePartitionKeyCollection cookie_partition_key_collection_;
 
   // Contains a mapping of url/site -> recent cookie updates for duplicate
   // update filtering.
   CookieAccessesByURLAndSite recent_cookie_accesses_;
+
+  const bool first_party_sets_enabled_;
 
   base::WeakPtrFactory<RestrictedCookieManager> weak_ptr_factory_{this};
 };

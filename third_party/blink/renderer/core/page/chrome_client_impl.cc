@@ -96,7 +96,6 @@
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -669,7 +668,7 @@ ColorChooser* ChromeClientImpl::OpenColorChooser(
     controller = MakeGarbageCollected<ColorChooserPopupUIController>(
         frame, this, chooser_client);
   } else {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     NOTREACHED() << "Page popups should be enabled on all but Android";
 #endif
     controller =
@@ -771,7 +770,7 @@ void ChromeClientImpl::SetCursorInternal(const ui::Cursor& cursor,
   if (cursor_overridden_)
     return;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   DCHECK(web_view_);
   // On Mac the mousemove event propagates to both the popup and main window.
   // If a popup is open we don't want the main window to change the cursor.
@@ -880,16 +879,6 @@ void ChromeClientImpl::AnimateDoubleTapZoom(const gfx::Point& point,
                                             const gfx::Rect& rect) {
   DCHECK(web_view_);
   web_view_->AnimateDoubleTapZoom(point, rect);
-}
-
-void ChromeClientImpl::ClearLayerSelection(LocalFrame* frame) {
-  frame->GetWidgetForLocalRoot()->RegisterSelection(cc::LayerSelection());
-}
-
-void ChromeClientImpl::UpdateLayerSelection(
-    LocalFrame* frame,
-    const cc::LayerSelection& selection) {
-  frame->GetWidgetForLocalRoot()->RegisterSelection(selection);
 }
 
 bool ChromeClientImpl::HasOpenedPopup() const {
@@ -1232,7 +1221,7 @@ void ChromeClientImpl::NotifyPopupOpeningObservers() const {
     observer->WillOpenPopup();
 }
 
-FloatSize ChromeClientImpl::ElasticOverscroll() const {
+gfx::Vector2dF ChromeClientImpl::ElasticOverscroll() const {
   DCHECK(web_view_);
   return web_view_->ElasticOverscroll();
 }

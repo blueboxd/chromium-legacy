@@ -27,6 +27,7 @@ class CORE_EXPORT HTMLSelectMenuElement final
  public:
   explicit HTMLSelectMenuElement(Document&);
 
+  HTMLOptionElement* selectedOption() const;
   String value() const;
   void setValue(const String&, bool send_events = false);
   bool open() const;
@@ -34,6 +35,8 @@ class CORE_EXPORT HTMLSelectMenuElement final
   // For ValidityState
   String validationMessage() const override;
   bool ValueMissing() const override;
+
+  void ResetImpl() override;
 
   void Trace(Visitor*) const override;
 
@@ -57,6 +60,7 @@ class CORE_EXPORT HTMLSelectMenuElement final
   class SelectMutationCallback;
 
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
+  void DidMoveToNewDocument(Document& old_document) override;
   void OpenListbox();
   void CloseListbox();
 
@@ -67,7 +71,6 @@ class CORE_EXPORT HTMLSelectMenuElement final
   void EnsureButtonPartIsValid();
   void EnsureSelectedValuePartIsValid();
   void EnsureListboxPartIsValid();
-  HTMLOptionElement* SelectedOption() const;
   void SetSelectedOption(HTMLOptionElement* selected_option);
   void SelectNextOption();
   void SelectPreviousOption();
@@ -85,6 +88,10 @@ class CORE_EXPORT HTMLSelectMenuElement final
   void OptionPartInserted(HTMLOptionElement*);
   void OptionPartRemoved(HTMLOptionElement*);
   void ResetOptionParts();
+  void ResetToDefaultSelection();
+  void DispatchInputAndChangeEventsIfNeeded();
+  void DispatchInputEvent();
+  void DispatchChangeEvent();
 
   bool IsValidButtonPart(const Node* node, bool show_warning) const;
   bool IsValidListboxPart(const Node* node, bool show_warning) const;
@@ -95,6 +102,8 @@ class CORE_EXPORT HTMLSelectMenuElement final
 
   bool IsRequiredFormControl() const override;
   bool IsOptionalFormControl() const override;
+
+  bool IsLabelable() const override;
 
   // HTMLFormControlElementWithState overrides:
   const AtomicString& FormControlType() const override;
@@ -151,6 +160,7 @@ class CORE_EXPORT HTMLSelectMenuElement final
   Member<HTMLSlotElement> button_slot_;
   Member<HTMLSlotElement> listbox_slot_;
   Member<HTMLOptionElement> selected_option_;
+  Member<HTMLOptionElement> selected_option_when_listbox_opened_;
 };
 
 }  // namespace blink

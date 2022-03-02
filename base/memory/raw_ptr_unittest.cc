@@ -12,7 +12,6 @@
 
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -68,6 +67,7 @@ static int g_get_for_dereference_cnt = INT_MIN;
 static int g_get_for_extraction_cnt = INT_MIN;
 static int g_get_for_comparison_cnt = INT_MIN;
 static int g_wrapped_ptr_swap_cnt = INT_MIN;
+static int g_pointer_to_member_operator_cnt = INT_MIN;
 
 static void ClearCounters() {
   g_wrap_raw_ptr_cnt = 0;
@@ -76,6 +76,7 @@ static void ClearCounters() {
   g_get_for_extraction_cnt = 0;
   g_get_for_comparison_cnt = 0;
   g_wrapped_ptr_swap_cnt = 0;
+  g_pointer_to_member_operator_cnt = 0;
 }
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
@@ -118,6 +119,10 @@ struct RawPtrCountingImpl : public CountingSuperClass {
 
   static ALWAYS_INLINE void IncrementSwapCountForTest() {
     ++g_wrapped_ptr_swap_cnt;
+  }
+
+  static ALWAYS_INLINE void IncrementPointerToMemberOperatorCountForTest() {
+    ++g_pointer_to_member_operator_cnt;
   }
 };
 
@@ -205,10 +210,9 @@ TEST_F(RawPtrTest, BoolOpNotCast) {
   is_valid = ptr || is_valid;      // volatile, so won't be optimized
   if (ptr)
     is_valid = true;
-  bool is_not_valid = !ptr;
+  [[maybe_unused]] bool is_not_valid = !ptr;
   if (!ptr)
     is_not_valid = true;
-  ALLOW_UNUSED_LOCAL(is_not_valid);
   std::ignore = IsValidNoCast(ptr);
   std::ignore = IsValidNoCast2(ptr);
   FuncThatAcceptsBool(!ptr);
@@ -228,9 +232,8 @@ bool IsValidWithCast(CountingRawPtr<int> ptr) {
 // costly, so the caller has to be careful not to trigger this path.
 TEST_F(RawPtrTest, CastNotBoolOp) {
   CountingRawPtr<int> ptr = nullptr;
-  bool is_valid = ptr;
+  [[maybe_unused]] bool is_valid = ptr;
   is_valid = IsValidWithCast(ptr);
-  ALLOW_UNUSED_LOCAL(is_valid);
   FuncThatAcceptsBool(ptr);
   EXPECT_EQ(g_get_for_comparison_cnt, 0);
   EXPECT_EQ(g_get_for_extraction_cnt, 3);
@@ -875,6 +878,17 @@ TEST_F(RawPtrTest, DerivedStructsComparison) {
             checked_derived2_ptr);
 }
 
+class PmfTestBase {
+ public:
+  int MemFunc(char, double) const { return 11; }
+};
+
+class PmfTestDerived : public PmfTestBase {
+ public:
+  using PmfTestBase::MemFunc;
+  int MemFunc(float, double) { return 22; }
+};
+
 }  // namespace
 
 namespace base {
@@ -893,7 +907,7 @@ static constexpr PartitionOptions kOpts = {
     PartitionOptions::Cookie::kAllowed,
     PartitionOptions::BackupRefPtr::kEnabled,
     PartitionOptions::UseConfigurablePool::kNo,
-    PartitionOptions::LazyCommit::kEnabled};
+};
 
 TEST(BackupRefPtrImpl, Basic) {
   // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to

@@ -24,10 +24,10 @@
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
-#include "components/policy/core/browser/url_util.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/url_matcher/url_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace policy {
@@ -103,12 +103,12 @@ void AddUrlConditions(url_matcher::URLMatcher* matcher,
   bool match_subdomains = true;
   for (const auto& list_entry : urls->GetList()) {
     std::string url = list_entry.GetString();
-    if (!url_util::FilterToComponents(url, &scheme, &host, &match_subdomains,
-                                      &port, &path, &query)) {
+    if (!url_matcher::util::FilterToComponents(
+            url, &scheme, &host, &match_subdomains, &port, &path, &query)) {
       LOG(ERROR) << "Invalid pattern " << url;
       continue;
     }
-    auto condition_set = url_util::CreateConditionSet(
+    auto condition_set = url_matcher::util::CreateConditionSet(
         matcher, ++condition_id, scheme, host, match_subdomains, port, path,
         query, /*allow=*/true);
 
@@ -250,8 +250,7 @@ DlpRulesManager::Level DlpRulesManagerImpl::IsRestrictedDestination(
          restriction == Restriction::kFiles);
 
   // Allow copy/paste within the same document.
-  if (url::Origin::Create(source).IsSameOriginWith(
-          url::Origin::Create(destination)))
+  if (url::IsSameOriginWith(source, destination))
     return Level::kAllow;
 
   const RulesConditionsMap src_rules_map = MatchUrlAndGetRulesMapping(
@@ -394,20 +393,6 @@ std::string DlpRulesManagerImpl::GetSourceUrlPattern(const GURL& source_url,
 size_t DlpRulesManagerImpl::GetClipboardCheckSizeLimitInBytes() const {
   return pref_change_registrar_.prefs()->GetInteger(
       policy_prefs::kDlpClipboardCheckSizeLimit);
-}
-
-std::vector<uint64_t> DlpRulesManagerImpl::GetDisallowedFileTransfers(
-    const std::vector<FileMetadata>& transferred_files,
-    const GURL& destination) const {
-  // TODO(crbug.com/1273793): Change to handle VMs, external drive, ...etc.
-  std::vector<uint64_t> restricted_files;
-  for (const auto& file : transferred_files) {
-    Level level = IsRestrictedDestination(
-        file.source, destination, Restriction::kFiles, nullptr, nullptr);
-    if (level == Level::kBlock)
-      restricted_files.push_back(file.inode);
-  }
-  return restricted_files;
 }
 
 void DlpRulesManagerImpl::OnPolicyUpdate() {

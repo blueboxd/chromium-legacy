@@ -14,8 +14,8 @@
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_system_web_app_data.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/share_target.h"
@@ -223,6 +223,8 @@ class WebApp {
 
   blink::mojom::CaptureLinks capture_links() const { return capture_links_; }
 
+  blink::mojom::HandleLinks handle_links() const { return handle_links_; }
+
   const GURL& manifest_url() const { return manifest_url_; }
 
   const absl::optional<std::string>& manifest_id() const {
@@ -305,6 +307,7 @@ class WebApp {
   void SetRunOnOsLoginMode(RunOnOsLoginMode mode);
   void SetSyncFallbackData(SyncFallbackData sync_fallback_data);
   void SetCaptureLinks(blink::mojom::CaptureLinks capture_links);
+  void SetHandleLinks(blink::mojom::HandleLinks handle_links);
   void SetManifestUrl(const GURL& manifest_url);
   void SetManifestId(const absl::optional<std::string>& manifest_id);
   void SetWindowControlsOverlayEnabled(bool enabled);
@@ -371,6 +374,8 @@ class WebApp {
   SyncFallbackData sync_fallback_data_;
   blink::mojom::CaptureLinks capture_links_ =
       blink::mojom::CaptureLinks::kUndefined;
+  blink::mojom::HandleLinks handle_links_ =
+      blink::mojom::HandleLinks::kUndefined;
   ClientData client_data_;
   GURL manifest_url_;
   absl::optional<std::string> manifest_id_;

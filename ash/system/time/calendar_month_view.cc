@@ -5,17 +5,22 @@
 #include "ash/system/time/calendar_month_view.h"
 
 #include "ash/public/cpp/ash_typography.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/time/calendar_utils.h"
 #include "ash/system/time/calendar_view_controller.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/check.h"
+#include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/table_layout.h"
 
@@ -41,9 +46,13 @@ constexpr int kFocusCirclePadding = 4;
 void MoveToNextDay(int& column,
                    base::Time& current_date,
                    base::Time::Exploded& current_date_exploded) {
-  current_date += base::Days(1);
+  // Using 30 hours to make sure the date is moved to the next day, since there
+  // are daylight saving days which have more than 24 hours in a day.
+  // `base::Days(1)` cannot be used, because it is 24 hours.
+  current_date = current_date.LocalMidnight() + base::Hours(30);
   current_date.LocalExplode(&current_date_exploded);
   column = (column + 1) % calendar_utils::kDateInOneWeek;
+  DCHECK_EQ(column, current_date_exploded.day_of_week);
 }
 
 }  // namespace
@@ -109,9 +118,29 @@ void CalendarDateCellView::OnPaintBackground(gfx::Canvas* canvas) {
   const SkColor border_color = color_provider->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kFocusRingColor);
 
+  const gfx::Rect content = GetContentsBounds();
+  const gfx::Point center(
+      (content.width() + calendar_utils::kDateHorizontalPadding * 2) / 2,
+      (content.height() + calendar_utils::kDateVerticalPadding * 2) / 2);
+
   // If the view is focused or selected, paint a solid background.
   is_selected_ = calendar_utils::IsTheSameDay(
       date_, calendar_view_controller_->selected_date());
+
+  // Sets accessible label. E.g. Calendar, week of July 16th 2021, [selected
+  // date] is currently selected.
+  if (is_selected_) {
+    base::Time unexploded;
+    bool result = base::Time::FromLocalExploded(date_, &unexploded);
+    DCHECK(result);
+    unexploded -= base::Days(date_.day_of_week);
+
+    SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_CALENDAR_SELECTED_DATE_CELL_ACCESSIBLE_DESCRIPTION,
+        base::TimeFormatWithPattern(unexploded, "MMMMdyyyy"),
+        base::UTF8ToUTF16(base::NumberToString(date_.day_of_month))));
+  }
+
   if (views::View::HasFocus() || is_selected_) {
     // Change text color to the background color.
     const SkColor text_color = color_provider->GetBaseLayerColor(
@@ -119,11 +148,6 @@ void CalendarDateCellView::OnPaintBackground(gfx::Canvas* canvas) {
     SetEnabledTextColors(text_color);
 
     cc::PaintFlags background;
-    const gfx::Rect content = GetContentsBounds();
-    const gfx::Point center(
-        (content.width() + calendar_utils::kDateHorizontalPadding * 2) / 2,
-        (content.height() + calendar_utils::kDateVerticalPadding * 2) / 2);
-
     background.setColor(border_color);
     background.setStyle(cc::PaintFlags::kFill_Style);
     background.setAntiAlias(true);
@@ -139,11 +163,6 @@ void CalendarDateCellView::OnPaintBackground(gfx::Canvas* canvas) {
     return;
 
   cc::PaintFlags highlight_background;
-  const gfx::Rect content = GetContentsBounds();
-  gfx::Point center(
-      (content.width() + calendar_utils::kDateHorizontalPadding * 2) / 2,
-      (content.height() + calendar_utils::kDateVerticalPadding * 2) / 2);
-
   highlight_background.setColor(bg_color);
   highlight_background.setStyle(cc::PaintFlags::kFill_Style);
   highlight_background.setAntiAlias(true);
@@ -186,6 +205,15 @@ void CalendarDateCellView::DisableFocus() {
   SetFocusBehavior(FocusBehavior::NEVER);
 }
 
+void CalendarDateCellView::MaybeSchedulePaint() {
+  // No need to re-paint the grayed out cells, since here should be no change
+  // for them.
+  if (grayed_out_)
+    return;
+
+  SchedulePaint();
+}
+
 gfx::Point CalendarDateCellView::GetEventsPresentIndicatorCenterPosition() {
   const gfx::Rect content = GetContentsBounds();
   return gfx::Point(
@@ -195,19 +223,35 @@ gfx::Point CalendarDateCellView::GetEventsPresentIndicatorCenterPosition() {
 }
 
 void CalendarDateCellView::MaybeDrawEventsIndicator(gfx::Canvas* canvas) {
+  if (grayed_out_)
+    return;
+
   base::Time unexploded;
-  bool result = base::Time::FromUTCExploded(date_, &unexploded);
+  bool result = base::Time::FromLocalExploded(date_, &unexploded);
   DCHECK(result);
 
-  if (!calendar_view_controller_->IsDayWithEvents(unexploded,
-                                                  /*events =*/nullptr)) {
+  const int event_number =
+      calendar_view_controller_->EventsNumberOfDay(unexploded,
+                                                   /*events =*/nullptr);
+  const int tooltip_id = (event_number <= 1)
+                             ? IDS_ASH_CALENDAR_DATE_CELL_TOOLTIP
+                             : IDS_ASH_CALENDAR_DATE_CELL_PLURAL_EVENTS_TOOLTIP;
+
+  SetTooltipText(l10n_util::GetStringFUTF16(
+      tooltip_id, base::TimeFormatWithPattern(unexploded, "MMMMdyyyy"),
+      base::UTF8ToUTF16(base::NumberToString(event_number))));
+  SetAccessibleName(l10n_util::GetStringFUTF16(
+      tooltip_id, base::TimeFormatWithPattern(unexploded, "MMMMdyyyy"),
+      base::UTF8ToUTF16(base::NumberToString(event_number))));
+
+  if (event_number == 0)
     return;
-  }
 
   cc::PaintFlags indicator_paint_flags;
   indicator_paint_flags.setColor(AshColorProvider::Get()->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kFocusRingColor));
   indicator_paint_flags.setStyle(cc::PaintFlags::kFill_Style);
+  indicator_paint_flags.setAntiAlias(true);
   canvas->DrawCircle(GetEventsPresentIndicatorCenterPosition(),
                      kEventsPresentRoundedRadius, indicator_paint_flags);
 }
@@ -322,6 +366,11 @@ void CalendarMonthView::EnableFocus() {
 void CalendarMonthView::DisableFocus() {
   for (auto* cell : children())
     static_cast<CalendarDateCellView*>(cell)->DisableFocus();
+}
+
+void CalendarMonthView::SchedulePaintChildren() {
+  for (auto* cell : children())
+    static_cast<CalendarDateCellView*>(cell)->MaybeSchedulePaint();
 }
 
 BEGIN_METADATA(CalendarDateCellView, views::View)

@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
@@ -36,8 +37,7 @@ namespace settings {
 namespace {
 
 bool ShouldShowQuickAnswersSettings() {
-  return ash::QuickAnswersState::Get() &&
-         ash::QuickAnswersState::Get()->is_eligible();
+  return QuickAnswersState::Get() && QuickAnswersState::Get()->is_eligible();
 }
 
 const std::vector<SearchConcept>& GetSearchPageSearchConcepts() {
@@ -281,7 +281,7 @@ SearchSection::SearchSection(Profile* profile,
   }
 
   if (ShouldShowQuickAnswersSettings()) {
-    ash::QuickAnswersState::Get()->AddObserver(this);
+    QuickAnswersState::Get()->AddObserver(this);
     UpdateQuickAnswersSearchTags();
   }
 }
@@ -309,6 +309,9 @@ void SearchSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("shouldShowQuickAnswersSettings",
                           ShouldShowQuickAnswersSettings());
+  html_source->AddBoolean(
+      "syncSettingsCategorizationEnabled",
+      chromeos::features::IsSyncSettingsCategorizationEnabled());
   const bool is_assistant_allowed = IsAssistantAllowed();
   html_source->AddBoolean("isAssistantAllowed", is_assistant_allowed);
   html_source->AddLocalizedString("osSearchPageTitle",
@@ -438,13 +441,13 @@ void SearchSection::UpdateAssistantSearchTags() {
 }
 
 void SearchSection::UpdateQuickAnswersSearchTags() {
-  DCHECK(ash::QuickAnswersState::Get());
+  DCHECK(QuickAnswersState::Get());
 
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
   updater.RemoveSearchTags(GetQuickAnswersOnSearchConcepts());
 
   if (chromeos::features::IsQuickAnswersV2SettingsSubToggleEnabled() &&
-      ash::QuickAnswersState::Get()->settings_enabled()) {
+      QuickAnswersState::Get()->settings_enabled()) {
     updater.AddSearchTags(GetQuickAnswersOnSearchConcepts());
   }
 }

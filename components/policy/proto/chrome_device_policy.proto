@@ -166,13 +166,16 @@ message DeviceReportingProto {
 
   // Network telemetry policies.
   optional int64 report_network_telemetry_collection_rate_ms = 33
-      [default = 600000];
+      [default = 3600000];
   optional int64 report_network_telemetry_event_checking_rate_ms = 34
-      [default = 60000];
+      [default = 600000];
 
   // Audio telemetry policy
   optional int64 report_device_audio_status_checking_rate_ms = 35
       [default = 600000];
+
+  // CRD Sessions reporting policy
+  optional bool report_crd_sessions = 36 [default = false];
 }
 
 message EphemeralUsersEnabledProto {
@@ -180,6 +183,12 @@ message EphemeralUsersEnabledProto {
   // mode, no cryptohome is created for the user, but a tmpfs mount is used
   // instead such that upon logout all user state is discarded.
   optional bool ephemeral_users_enabled = 1;
+}
+
+message DeviceKeylockerForStorageEncryptionEnabledProto {
+  // Determines whether cryptohome uses Keylocker for storage encryption ciphers
+  // when supported.
+  optional bool enabled = 1;
 }
 
 // Details of an extension to install as part of the AppPack.
@@ -2025,4 +2034,7 @@ message ChromeDeviceSettingsProto {
   optional RevenDeviceHWDataUsageEnabledProto hardware_data_usage_enabled = 130;
   optional DeviceLoginScreenWebUILazyLoadingProto login_web_ui_lazy_loading =
       131;
+  optional DeviceKeylockerForStorageEncryptionEnabledProto
+      keylocker_for_storage_encryption_enabled = 132;
+  optional BooleanPolicyProto device_run_automatic_cleanup_on_login = 133;
 }

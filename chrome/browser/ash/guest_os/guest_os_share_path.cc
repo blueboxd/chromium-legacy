@@ -130,7 +130,7 @@ class ErrorCapture {
   std::string first_failure_reason_;
 };  // class
 
-void RemovePersistedPathFromPrefs(base::DictionaryValue* shared_paths,
+void RemovePersistedPathFromPrefs(base::Value* shared_paths,
                                   const std::string& vm_name,
                                   const base::FilePath& path) {
   // |shared_paths| format is {'path': ['vm1', vm2']}.
@@ -513,7 +513,7 @@ void GuestOsSharePath::UnsharePath(const std::string& vm_name,
   if (unpersist) {
     PrefService* pref_service = profile_->GetPrefs();
     DictionaryPrefUpdate update(pref_service, prefs::kGuestOSPathsSharedToVms);
-    base::DictionaryValue* shared_paths = update.Get();
+    base::Value* shared_paths = update.Get();
     RemovePersistedPathFromPrefs(shared_paths, vm_name, path);
   }
 
@@ -536,7 +536,7 @@ std::vector<base::FilePath> GuestOsSharePath::GetPersistedSharedPaths(
   CHECK(profile_);
   CHECK(profile_->GetPrefs());
   // |shared_paths| format is {'path': ['vm1', vm2']}.
-  const base::DictionaryValue* shared_paths =
+  const base::Value* shared_paths =
       profile_->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
   CHECK(shared_paths);
   for (const auto it : shared_paths->DictItems()) {
@@ -564,7 +564,7 @@ void GuestOsSharePath::RegisterPersistedPath(const std::string& vm_name,
                                              const base::FilePath& path) {
   PrefService* pref_service = profile_->GetPrefs();
   DictionaryPrefUpdate update(pref_service, prefs::kGuestOSPathsSharedToVms);
-  base::DictionaryValue* shared_paths = update.Get();
+  base::Value* shared_paths = update.Get();
   // Check if path is already shared so we know whether we need to add it.
   bool already_shared = false;
   // Remove any paths that are children of this path.
@@ -628,7 +628,7 @@ void GuestOsSharePath::OnVolumeMounted(chromeos::MountError error_code,
 
   // Check if any persisted paths match volume.mount_path() or are children
   // of it then share them with any running VMs.
-  const base::DictionaryValue* shared_paths =
+  const base::Value* shared_paths =
       profile_->GetPrefs()->GetDictionary(prefs::kGuestOSPathsSharedToVms);
   for (const auto it : shared_paths->DictItems()) {
     base::FilePath path(it.first);

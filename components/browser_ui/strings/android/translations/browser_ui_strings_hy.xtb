@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Թույլատրել քուքիները</translation>
 <translation id="2228071138934252756">Որպեսզի տեսախցիկը հասանելի դառնա <ph name="APP_NAME" />-ին, միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="2241634353105152135">Միայն այս անգամ</translation>
+<translation id="2253414712144136228">Հեռացնել «<ph name="NAME_OF_LIST_ITEM" />» կետը</translation>
 <translation id="2289270750774289114">Հարցնել, երբ որևէ կայք ուզում է հայտնաբերել մոտակա Bluetooth սարքերը (խորհուրդ է տրվում)</translation>
 <translation id="2315043854645842844">Տվյալ օպերացիոն համակարգը չի աջակցում սպասառուի կողմից վկայագրի ընտրությունը:</translation>
 <translation id="2359808026110333948">Շարունակել</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Ցուցադրել տեղեկությունները</translation>
 <translation id="3123473560110926937">Արգելափակված է որոշ կայքերում</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> պահված տվյալներ</translation>
+<translation id="3203366800380907218">Համացանցից</translation>
 <translation id="321187648315454507">Որպեսզի <ph name="APP_NAME" />-ին թույլատրեք ձեզ ծանուցումներ ուղարկել, միացրեք նաև ծանուցումները <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="3227137524299004712">Խոսափող</translation>
 <translation id="3277252321222022663">Թույլ տալ կայքերին օգտագործել տվիչները (խորհուրդ է տրվում)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">Արգելափակված է</translation>
 <translation id="5689516760719285838">Տեղորոշում</translation>
 <translation id="5690795753582697420">Տեսախցիկն անջատված է Android-ի կարգավորումներում</translation>
-<translation id="5710871682236653961">Հարցնել՝ նախքան թույլատրելը կայքերին ուղարկել և ստանալ տեղեկություններ, երբ հպում եք NFC սարքերին (խորհուրդ է տրվում)</translation>
 <translation id="5719847187258001597">Կջնջվեն բոլոր տվյալներն ու քուքիները, որոնք հիմնական էկրանին են պահվել <ph name="ORIGIN" /> կայքի և դրա հավելվածի կողմից։</translation>
 <translation id="5771720122942595109">Արգելափակված է՝ «<ph name="PERMISSION_1" />»</translation>
 <translation id="5804241973901381774">Թույլտվություններ</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">Թույլատրված է ընթացիկ որոնիչին</translation>
 <translation id="7053983685419859001">Արգելափակել</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ընտրված տարր}one{# ընտրված տարր}other{# ընտրված տարր}}</translation>
-<translation id="7070090581017165256">Այս կայքի մասին</translation>
 <translation id="7087918508125750058">Ընտրված է <ph name="ITEM_COUNT" /> տարր։ Ընտրանքները հասանելի են էկրանի վերին հատվածում</translation>
 <translation id="7141896414559753902">Արգելափակել ելնող պատուհանները և վերահասցեավորումը կայքերում (խորհուրդ է տրվում)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> ԿԲ</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Կայքն օգտագործում է ձեր խոսափողը</translation>
 <translation id="7561196759112975576">Միշտ</translation>
-<translation id="7572498721684305250">Թույլ չտալ կայքերին ուղարկել և ստանալ տեղեկություններ, երբ հպում եք NFC սարքերին</translation>
 <translation id="757524316907819857">Արգելել կայքերին պաշտպանված բովանդակություն նվագարկել</translation>
 <translation id="7649070708921625228">Օգնություն</translation>
 <translation id="7658239707568436148">Չեղարկել</translation>

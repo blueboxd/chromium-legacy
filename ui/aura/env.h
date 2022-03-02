@@ -24,7 +24,7 @@ class EventObserver;
 class GestureRecognizer;
 class PlatformEventSource;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 class WinCursorFactory;
 #endif
 }  // namespace ui
@@ -147,7 +147,9 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   Env();
 
-  void Init();
+  // Returns whether the initialisation was successful.  If it was not,
+  // CreateInstance will return nullptr, and the process will eventually exit.
+  bool Init();
 
   // Called by the Window when it is initialized. Notifies observers.
   void NotifyWindowInitialized(Window* window);
@@ -184,7 +186,7 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   std::unique_ptr<ui::GestureRecognizer> gesture_recognizer_;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   std::unique_ptr<ui::WinCursorFactory> cursor_factory_;
 #endif
 

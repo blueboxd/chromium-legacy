@@ -48,7 +48,7 @@ bool CheckForOversizedImagesPolicy(const LayoutImage& layout_image,
           layout_image.GetDocument().GetExecutionContext()))
     return false;
 
-  DoubleSize layout_size(layout_image.ContentSize());
+  LayoutSize layout_size = layout_image.ContentSize();
   gfx::Size image_size = image->Size();
   if (layout_size.IsEmpty() || image_size.IsEmpty())
     return false;
@@ -60,9 +60,9 @@ bool CheckForOversizedImagesPolicy(const LayoutImage& layout_image,
   const double dsf =
       layout_image.GetDocument().GetPage()->DeviceScaleFactorDeprecated();
   const double downscale_ratio_width =
-      image_size.width() / layout_size.Width() / dsf;
+      image_size.width() / layout_size.Width().ToDouble() / dsf;
   const double downscale_ratio_height =
-      image_size.height() / layout_size.Height() / dsf;
+      image_size.height() / layout_size.Height().ToDouble() / dsf;
 
   const LayoutImageResource* image_resource = layout_image.ImageResource();
   const ImageResourceContent* cached_image =
@@ -186,7 +186,6 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
 
   BoxDrawingRecorder recorder(context, layout_image_, paint_info.phase,
                               paint_offset);
-  DCHECK(paint_info.PaintContainer());
   PaintIntoRect(context, paint_rect, content_rect);
 }
 

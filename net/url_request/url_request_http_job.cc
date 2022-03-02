@@ -39,6 +39,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/trace_constants.h"
 #include "net/base/url_util.h"
@@ -90,7 +91,7 @@
 #include "url/origin.h"
 #include "url/url_constants.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "net/android/network_library.h"
 #endif
 
@@ -205,7 +206,7 @@ std::unique_ptr<URLRequestJob> URLRequestHttpJob::Create(URLRequest* request) {
           RedirectUtil::ResponseCode::REDIRECT_307_TEMPORARY_REDIRECT, "HSTS");
     }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // Check whether the app allows cleartext traffic to this host, and return
     // ERR_CLEARTEXT_NOT_PERMITTED if not.
     if (request->context()->check_cleartext_permitted() &&
@@ -241,7 +242,7 @@ URLRequestHttpJob::URLRequestHttpJob(
     throttling_entry_ = manager->RegisterRequestUrl(request->url());
 
   ResetTimer();
-  ComputeCookiePartitionKey();
+  cookie_partition_key_ = ComputeCookiePartitionKey();
 }
 
 URLRequestHttpJob::~URLRequestHttpJob() {
@@ -285,7 +286,10 @@ void URLRequestHttpJob::Start() {
 
   // Privacy mode could still be disabled in SetCookieHeaderAndStart if we are
   // going to send previously saved cookies.
-  request_info_.privacy_mode = request_->privacy_mode();
+  request_info_.privacy_mode = DeterminePrivacyMode();
+  request()->net_log().AddEventWithStringParams(
+      NetLogEventType::COMPUTED_PRIVACY_MODE, "privacy_mode",
+      PrivacyModeToDebugString(request_info_.privacy_mode));
 
   // Strip Referer from request_info_.extra_headers to prevent, e.g., plugins
   // from overriding headers that are controlled using other means. Otherwise a
@@ -332,6 +336,32 @@ int URLRequestHttpJob::NotifyConnectedCallback(
     const TransportInfo& info,
     CompletionOnceCallback callback) {
   return URLRequestJob::NotifyConnected(info, std::move(callback));
+}
+
+PrivacyMode URLRequestHttpJob::DeterminePrivacyMode() const {
+  if (!request()->allow_credentials()) {
+    // |allow_credentials_| implies LOAD_DO_NOT_SAVE_COOKIES.
+    DCHECK(request_->load_flags() & LOAD_DO_NOT_SAVE_COOKIES);
+
+    // TODO(https://crbug.com/775438): Client certs should always be
+    // affirmatively omitted for these requests.
+    return request()->send_client_certs()
+               ? PRIVACY_MODE_ENABLED
+               : PRIVACY_MODE_ENABLED_WITHOUT_CLIENT_CERTS;
+  }
+
+  // Otherwise, check with the delegate if present, or base it off of
+  // |URLRequest::DefaultCanUseCookies()| if not.
+  // TODO(mmenke): Looks like |URLRequest::DefaultCanUseCookies()| is not too
+  // useful, with the network service - remove it.
+  bool enable_privacy_mode = !URLRequest::DefaultCanUseCookies();
+  if (request()->network_delegate()) {
+    enable_privacy_mode = request()->network_delegate()->ForcePrivacyMode(
+        request()->url(), request()->site_for_cookies(),
+        request()->isolation_info().top_frame_origin(),
+        request()->first_party_set_metadata().context().context_type());
+  }
+  return enable_privacy_mode ? PRIVACY_MODE_ENABLED : PRIVACY_MODE_DISABLED;
 }
 
 void URLRequestHttpJob::NotifyHeadersComplete() {
@@ -580,21 +610,15 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
             request_->site_for_cookies(), request_->initiator(),
             is_main_frame_navigation, force_ignore_site_for_cookies);
 
-    net::SchemefulSite request_site(request_->url());
-    const CookieAccessDelegate* delegate =
-        cookie_store->cookie_access_delegate();
-
     bool is_in_nontrivial_first_party_set =
-        delegate && delegate->IsInNontrivialFirstPartySet(request_site);
+        request_->first_party_set_metadata().owner().has_value();
     CookieOptions options = CreateCookieOptions(
-        same_site_context, request_->same_party_context(),
+        same_site_context, request_->first_party_set_metadata().context(),
         request_->isolation_info(), is_in_nontrivial_first_party_set);
 
     UMA_HISTOGRAM_ENUMERATION(
         "Cookie.FirstPartySetsContextType.HTTP.Read",
-        net::cookie_util::ComputeFirstPartySetsContextType(
-            request_site, request_->isolation_info(), delegate,
-            request_->force_ignore_top_frame_party_for_cookies()));
+        request_->first_party_set_metadata().first_party_sets_context_type());
 
     cookie_store->GetCookieListWithOptionsAsync(
         request_->url(), options,
@@ -638,6 +662,8 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
       request_info_.extra_headers.SetHeader(HttpRequestHeaders::kCookie,
                                             cookie_line);
 
+      size_t n_partitioned_cookies = 0;
+
       // TODO(crbug.com/1031664): Reduce the number of times the cookie list
       // is iterated over. Get metrics for every cookie which is included.
       for (const auto& c : maybe_included_cookies) {
@@ -667,6 +693,13 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 
         UMA_HISTOGRAM_ENUMERATION("Cookie.CookieSchemeRequestScheme",
                                   cookie_request_schemes);
+        if (c.cookie.IsPartitioned())
+          ++n_partitioned_cookies;
+      }
+
+      if (IsPartitionedCookiesEnabled()) {
+        base::UmaHistogramCounts100("Cookie.PartitionedCookiesInRequest",
+                                    n_partitioned_cookies);
       }
     }
   }
@@ -695,6 +728,24 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
   request_->set_maybe_sent_cookies(std::move(maybe_sent_cookies));
 
   StartTransaction();
+}
+
+void URLRequestHttpJob::AnnotateAndMoveUserBlockedCookies(
+    CookieAccessResultList& maybe_included_cookies,
+    CookieAccessResultList& excluded_cookies) const {
+  DCHECK_EQ(request_info_.privacy_mode, PrivacyMode::PRIVACY_MODE_DISABLED);
+  bool can_get_cookies = URLRequest::DefaultCanUseCookies();
+  if (request()->network_delegate()) {
+    can_get_cookies =
+        request()->network_delegate()->AnnotateAndMoveUserBlockedCookies(
+            *request(), maybe_included_cookies, excluded_cookies,
+            /*allowed_from_caller=*/true);
+  }
+
+  if (!can_get_cookies) {
+    request()->net_log().AddEvent(
+        NetLogEventType::COOKIE_GET_BLOCKED_BY_NETWORK_DELEGATE);
+  }
 }
 
 void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
@@ -742,20 +793,15 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
           request_->initiator(), is_main_frame_navigation,
           force_ignore_site_for_cookies);
 
-  const CookieAccessDelegate* delegate = cookie_store->cookie_access_delegate();
-  net::SchemefulSite request_site(request_->url());
-
   bool is_in_nontrivial_first_party_set =
-      delegate && delegate->IsInNontrivialFirstPartySet(request_site);
+      request_->first_party_set_metadata().owner().has_value();
   CookieOptions options = CreateCookieOptions(
-      same_site_context, request_->same_party_context(),
+      same_site_context, request_->first_party_set_metadata().context(),
       request_->isolation_info(), is_in_nontrivial_first_party_set);
 
   UMA_HISTOGRAM_ENUMERATION(
       "Cookie.FirstPartySetsContextType.HTTP.Write",
-      net::cookie_util::ComputeFirstPartySetsContextType(
-          request_site, request_->isolation_info(), delegate,
-          request_->force_ignore_top_frame_party_for_cookies()));
+      request_->first_party_set_metadata().first_party_sets_context_type());
 
   // Set all cookies, without waiting for them to be set. Any subsequent
   // read will see the combined result of all cookie operation.
@@ -1613,15 +1659,18 @@ void URLRequestHttpJob::NotifyURLRequestDestroyed() {
     network_quality_estimator->NotifyURLRequestDestroyed(*request());
 }
 
-void URLRequestHttpJob::ComputeCookiePartitionKey() {
+absl::optional<CookiePartitionKey>
+URLRequestHttpJob::ComputeCookiePartitionKey() {
   const CookieStore* cookie_store = request_->context()->cookie_store();
-  if (!cookie_store) {
-    cookie_partition_key_ = absl::nullopt;
-    return;
-  }
-  cookie_partition_key_ = CookieAccessDelegate::CreateCookiePartitionKey(
+  if (!cookie_store)
+    return absl::nullopt;
+  return CookieAccessDelegate::CreateCookiePartitionKey(
       cookie_store->cookie_access_delegate(),
       request_->isolation_info().network_isolation_key());
+}
+
+bool URLRequestHttpJob::IsPartitionedCookiesEnabled() const {
+  return cookie_partition_key_.has_value();
 }
 
 }  // namespace net

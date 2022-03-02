@@ -136,8 +136,6 @@ struct NET_EXPORT HttpNetworkSessionParams {
   SpdySessionPool::TimeFunc time_func;
   // Whether to enable HTTP/2 Alt-Svc entries.
   bool enable_http2_alternative_service;
-  // Whether to enable Websocket over HTTP/2.
-  bool enable_websocket_over_http2;
 
   // Enables 0-RTT support.
   bool enable_early_data;
@@ -281,9 +279,6 @@ class NET_EXPORT HttpNetworkSession {
   const SSLConfig::ApplicationSettings& GetApplicationSettings() const {
     return application_settings_;
   }
-
-  // Populates |server_config| and |proxy_config| based on this session.
-  void GetSSLConfig(SSLConfig* server_config, SSLConfig* proxy_config) const;
 
   // Evaluates if QUIC is enabled for new streams.
   bool IsQuicEnabled() const;

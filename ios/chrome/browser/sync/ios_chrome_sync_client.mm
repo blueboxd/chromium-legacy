@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
@@ -18,7 +17,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
-#include "components/browser_sync/profile_sync_components_factory_impl.h"
+#include "components/browser_sync/sync_api_component_factory_impl.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/history/core/browser/history_service.h"
@@ -66,24 +65,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-syncer::ModelTypeSet GetDisabledTypesFromCommandLine() {
-  std::string disabled_types_str =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kDisableSyncTypes);
-
-  syncer::ModelTypeSet disabled_types =
-      syncer::ModelTypeSetFromString(disabled_types_str);
-  if (disabled_types.Has(syncer::DEVICE_INFO)) {
-    DLOG(WARNING) << "DEVICE_INFO cannot be disabled via a command-line switch";
-    disabled_types.Remove(syncer::DEVICE_INFO);
-  }
-  return disabled_types;
-}
-
-}  // namespace
-
 IOSChromeSyncClient::IOSChromeSyncClient(ChromeBrowserState* browser_state)
     : browser_state_(browser_state) {
   profile_web_data_service_ =
@@ -102,7 +83,7 @@ IOSChromeSyncClient::IOSChromeSyncClient(ChromeBrowserState* browser_state)
       browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
   component_factory_ =
-      std::make_unique<browser_sync::ProfileSyncComponentsFactoryImpl>(
+      std::make_unique<browser_sync::SyncApiComponentFactoryImpl>(
           this, ::GetChannel(),
           base::CreateSingleThreadTaskRunner({web::WebThread::UI}), db_thread_,
           profile_web_data_service_, account_web_data_service_, password_store_,
@@ -179,7 +160,7 @@ IOSChromeSyncClient::CreateDataTypeControllers(
     syncer::SyncService* sync_service) {
   // The iOS port does not have any platform-specific datatypes.
   return component_factory_->CreateCommonDataTypeControllers(
-      GetDisabledTypesFromCommandLine(), sync_service);
+      /*disabled_types=*/{}, sync_service);
 }
 
 BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoService() {

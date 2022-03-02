@@ -92,7 +92,7 @@ class MimeHandlerViewGuest
   static const char Type[];
 
   // GuestViewBase overrides.
-  bool CanBeEmbeddedInsideCrossProcessFrames() override;
+  bool CanBeEmbeddedInsideCrossProcessFrames() const override;
   content::RenderWidgetHost* GetOwnerRenderWidgetHost() override;
   content::SiteInstance* GetOwnerSiteInstance() override;
 
@@ -188,8 +188,7 @@ class MimeHandlerViewGuest
   bool SetFullscreenState(bool is_fullscreen);
 
   // content::WebContentsObserver implementation.
-  void DocumentOnLoadCompletedInMainFrame(
-      content::RenderFrameHost* render_frame_host) final;
+  void DocumentOnLoadCompletedInPrimaryMainFrame() final;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) final;
   void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;

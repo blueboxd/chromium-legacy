@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/dcheck_is_on.h"
 
-namespace base {
+namespace partition_alloc::internal {
 
 // Alignment has two constraints:
 // - Alignment requirement for scalar types: alignof(std::max_align_t)
@@ -37,26 +37,32 @@ static_assert(kAlignment <= 16,
               "PartitionAlloc doesn't support a fundamental alignment larger "
               "than 16 bytes.");
 
+}  // namespace partition_alloc::internal
+
+namespace base {
+
+// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
+// the migration to the new namespaces gets done.
+using ::partition_alloc::internal::kAlignment;
+
 namespace internal {
 
 template <bool thread_safe>
 struct SlotSpanMetadata;
 
 constexpr bool ThreadSafe = true;
-constexpr bool NotThreadSafe = false;
 
 #if (DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)) && \
     BUILDFLAG(USE_BACKUP_REF_PTR)
-BASE_EXPORT void CheckThatSlotOffsetIsZero(void*);
+BASE_EXPORT void CheckThatSlotOffsetIsZero(uintptr_t address);
 #endif
 
 }  // namespace internal
 
-template <bool thread_safe>
+template <bool thread_safe = true>
 struct PartitionRoot;
 
 using ThreadSafePartitionRoot = PartitionRoot<internal::ThreadSafe>;
-using ThreadUnsafePartitionRoot = PartitionRoot<internal::NotThreadSafe>;
 
 class PartitionStatsDumper;
 
@@ -81,7 +87,8 @@ class PartitionStatsDumper;
 // kAlignment boundary. This is useful for e.g. using aligned vector
 // instructions in the constructor for zeroing.
 #if __has_attribute(assume_aligned)
-#define MALLOC_ALIGNED __attribute__((assume_aligned(base::kAlignment)))
+#define MALLOC_ALIGNED \
+  __attribute__((assume_aligned(::partition_alloc::internal::kAlignment)))
 #endif
 
 #endif  // defined(__has_attribute)

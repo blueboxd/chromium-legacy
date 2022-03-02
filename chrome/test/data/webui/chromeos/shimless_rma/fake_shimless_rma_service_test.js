@@ -281,10 +281,10 @@ export function fakeShimlessRmaServiceTestSuite() {
   });
 
   test('SetGetRsuDisableWriteProtectChallengeResultUpdatesResult', () => {
-    let expected_challenge = '9876543210';
-    service.setGetRsuDisableWriteProtectChallengeResult(expected_challenge);
+    let expectedChallenge = '9876543210';
+    service.setGetRsuDisableWriteProtectChallengeResult(expectedChallenge);
     return service.getRsuDisableWriteProtectChallenge().then((challenge) => {
-      assertEquals(challenge.challenge, expected_challenge);
+      assertEquals(challenge.challenge, expectedChallenge);
     });
   });
 
@@ -321,7 +321,7 @@ export function fakeShimlessRmaServiceTestSuite() {
   });
 
   test('SetGetComponentListResultUpdatesResult', () => {
-    let expected_components = [
+    let expectedComponents = [
       {
         component: ComponentType.kKeyboard,
         state: ComponentRepairStatus.kOriginal
@@ -331,9 +331,9 @@ export function fakeShimlessRmaServiceTestSuite() {
         state: ComponentRepairStatus.kMissing
       },
     ];
-    service.setGetComponentListResult(expected_components);
+    service.setGetComponentListResult(expectedComponents);
     return service.getComponentList().then((components) => {
-      assertDeepEquals(components.components, expected_components);
+      assertDeepEquals(components.components, expectedComponents);
     });
   });
 
@@ -493,10 +493,10 @@ export function fakeShimlessRmaServiceTestSuite() {
   });
 
   test('SetGetOriginalSerialNumberResultUpdatesResult', () => {
-    let expected_serial_number = '123456789';
-    service.setGetOriginalSerialNumberResult(expected_serial_number);
-    return service.getOriginalSerialNumber().then((serial_number) => {
-      assertEquals(serial_number.serialNumber, expected_serial_number);
+    let expectedSerialNumber = '123456789';
+    service.setGetOriginalSerialNumberResult(expectedSerialNumber);
+    return service.getOriginalSerialNumber().then((serialNumber) => {
+      assertEquals(serialNumber.serialNumber, expectedSerialNumber);
     });
   });
 
@@ -507,10 +507,10 @@ export function fakeShimlessRmaServiceTestSuite() {
   });
 
   test('SetGetOriginalRegionResultUpdatesResult', () => {
-    let expected_region = 1;
-    service.setGetOriginalRegionResult(expected_region);
+    let expectedRegion = 1;
+    service.setGetOriginalRegionResult(expectedRegion);
     return service.getOriginalRegion().then((region) => {
-      assertEquals(region.regionIndex, expected_region);
+      assertEquals(region.regionIndex, expectedRegion);
     });
   });
 
@@ -521,10 +521,10 @@ export function fakeShimlessRmaServiceTestSuite() {
   });
 
   test('SetGetOriginalSkuResultUpdatesResult', () => {
-    let expected_sku = 1;
-    service.setGetOriginalSkuResult(expected_sku);
+    let expectedSku = 1;
+    service.setGetOriginalSkuResult(expectedSku);
     return service.getOriginalSku().then((sku) => {
-      assertEquals(sku.skuIndex, expected_sku);
+      assertEquals(sku.skuIndex, expectedSku);
     });
   });
 
@@ -534,11 +534,25 @@ export function fakeShimlessRmaServiceTestSuite() {
     });
   });
 
-  test('SetGetOriginalRegionResultUpdatesResult', () => {
-    const expected_whiteLabel = 1;
-    service.setGetOriginalWhiteLabelResult(expected_whiteLabel);
+  test('SetGetOriginalWhiteLabelResultUpdatesResult', () => {
+    const expectedWhiteLabel = 1;
+    service.setGetOriginalWhiteLabelResult(expectedWhiteLabel);
     return service.getOriginalWhiteLabel().then((whiteLabel) => {
-      assertEquals(whiteLabel.whiteLabelIndex, expected_whiteLabel);
+      assertEquals(whiteLabel.whiteLabelIndex, expectedWhiteLabel);
+    });
+  });
+
+  test('GetOriginalDramPartNumberDefaultUndefined', () => {
+    return service.getOriginalDramPartNumber().then((dramPartNumber) => {
+      assertEquals(dramPartNumber, undefined);
+    });
+  });
+
+  test('SetGetOriginalDramPartNumberResultUpdatesResult', () => {
+    const expectedDramPartNumber = '123-456-789';
+    service.setGetOriginalDramPartNumberResult(expectedDramPartNumber);
+    return service.getOriginalDramPartNumber().then((dramPartNumber) => {
+      assertEquals(dramPartNumber.dramPartNumber, expectedDramPartNumber);
     });
   });
 
@@ -549,10 +563,11 @@ export function fakeShimlessRmaServiceTestSuite() {
     ];
     service.setStates(states);
 
-    return service.setDeviceInformation('serial number', 1, 2).then((state) => {
-      assertEquals(state.state, State.kChooseDestination);
-      assertEquals(state.error, RmadErrorCode.kOk);
-    });
+    return service.setDeviceInformation('serial number', 1, 2, 3, '123-456-789')
+        .then((state) => {
+          assertEquals(state.state, State.kChooseDestination);
+          assertEquals(state.error, RmadErrorCode.kOk);
+        });
   });
 
   test('GetCalibrationComponentList', () => {
@@ -919,12 +934,12 @@ export function fakeShimlessRmaServiceTestSuite() {
            * Implements
            * HardwareVerificationStatusObserverRemote.
            *      onHardwareVerificationResult()
-           * @param {boolean} is_compliant
-           * @param {string} error_message
+           * @param {boolean} isCompliant
+           * @param {string} errorMessage
            */
-          onHardwareVerificationResult(is_compliant, error_message) {
-            assertEquals(true, is_compliant);
-            assertEquals('ok', error_message);
+          onHardwareVerificationResult(isCompliant, errorMessage) {
+            assertEquals(true, isCompliant);
+            assertEquals('ok', errorMessage);
           }
         });
     service.observeHardwareVerificationStatus(observer);

@@ -59,6 +59,7 @@ cr.define('cr.login', function() {
 
   /**
    * Credentials passed with 'authCompleted' message.
+   * `isAvailableInArc` field is optional and is used only on Chrome OS.
    * @typedef {{
    *   email: string,
    *   gaiaId: string,
@@ -71,7 +72,8 @@ cr.define('cr.login', function() {
    *   trusted: boolean,
    *   services: Array,
    *   passwordAttributes: !PasswordAttributes,
-   *   syncTrustedVaultKeys: !SyncTrustedVaultKeys
+   *   syncTrustedVaultKeys: !SyncTrustedVaultKeys,
+   *   isAvailableInArc: (boolean|undefined),
    * }}
    */
   /* #export */ let AuthCompletedCredentials;
@@ -148,7 +150,7 @@ cr.define('cr.login', function() {
    * @type {!Array<string>}
    * @const
    */
-  const SUPPORTED_PARAMS = [
+  /* #export */ const SUPPORTED_PARAMS = [
     'gaiaId',        // Obfuscated GAIA ID to skip the email prompt page
                      // during the re-auth flow.
     'gaiaUrl',       // Gaia url to use.

@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">ਕੁਕੀਜ਼ ਨੂੰ ਆਗਿਆ ਦਿਓ</translation>
 <translation id="2228071138934252756"><ph name="APP_NAME" /> ਨੂੰ ਆਪਣੇ ਕੈਮਰੇ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੇਣ ਲਈ, <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਕੈਮਰਾ ਵੀ ਚਾਲੂ ਕਰੋ।</translation>
 <translation id="2241634353105152135">ਸਿਰਫ ਇੱਕ ਵਾਰ</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> ਹਟਾਓ</translation>
 <translation id="2289270750774289114">ਕਿਸੇ ਸਾਈਟ ਵੱਲੋਂ ਨਜ਼ਦੀਕੀ ਬਲੂਟੁੱਥ ਡੀਵਾਈਸਾਂ ਦਾ ਪਤਾ ਲਗਾਉਣ ਵੇਲੇ ਪੁੱਛੋ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="2315043854645842844">ਕਲਾਈਂਟ ਵੱਲੋਂ ਕੀਤੀ ਗਈ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਦੀ ਚੋਣ ਓਪਰੇਟਿੰਗ ਸਿਸਟਮ ਵੱਲੋਂ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ।</translation>
 <translation id="2359808026110333948">ਜਾਰੀ ਰੱਖੋ</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">ਜਾਣਕਾਰੀ ਦਿਖਾਓ</translation>
 <translation id="3123473560110926937">ਕੁਝ ਸਾਈਟਾਂ 'ਤੇ ਬਲਾਕ ਕੀਤੇ ਗਏ</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> ਸਟੋਰ ਕੀਤਾ ਡਾਟਾ</translation>
+<translation id="3203366800380907218">ਵੈੱਬ ਤੋਂ</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> ਨੂੰ ਤੁਹਾਨੂੰ ਸੂਚਨਾਵਾਂ ਭੇਜਣ ਦੇਣ ਲਈ, <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਸੂਚਨਾਵਾਂ ਵੀ ਚਾਲੂ ਕਰੋ।</translation>
 <translation id="3227137524299004712">ਮਾਈਕ੍ਰੋਫੋਨ</translation>
 <translation id="3277252321222022663">ਸਾਈਟਾਂ ਨੂੰ ਸੈਂਸਰਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦਿਓ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">ਬਲੌਕ ਕੀਤਾ</translation>
 <translation id="5689516760719285838">ਟਿਕਾਣਾ</translation>
 <translation id="5690795753582697420">Android ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਕੈਮਰਾ ਬੰਦ ਕੀਤਾ ਹੋਇਆ ਹੈ</translation>
-<translation id="5710871682236653961">ਤੁਹਾਡੇ ਵੱਲੋਂ NFC ਡੀਵਾਈਸਾਂ 'ਤੇ ਟੈਪ ਕਰਨ ਵੇਲੇ ਸਾਈਟਾਂ 'ਤੇ ਜਾਣਕਾਰੀ ਭੇਜਣ ਅਤੇ ਪ੍ਰਾਪਤ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਪੁੱਛੋ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="5719847187258001597">ਇੰਝ ਕਰਨ ਨਾਲ ਤੁਹਾਡੀ ਹੋਮ ਸਕ੍ਰੀਨ 'ਤੇ <ph name="ORIGIN" /> ਜਾਂ ਉਸਦੀ ਐਪ ਵੱਲੋਂ ਸਟੋਰ ਕੀਤੇ ਸਾਰੇ ਡਾਟੇ ਅਤੇ ਕੁਕੀਜ਼ ਨੂੰ ਕਲੀਅਰ ਕਰ ਦਿੱਤਾ ਜਾਵੇਗਾ।</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="5804241973901381774">ਅਨੁਮਤੀਆਂ</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">ਮੌਜੂਦਾ ਖੋਜ ਇੰਜਣ ਲਈ ਇਜਾਜ਼ਤ ਹੈ</translation>
 <translation id="7053983685419859001">ਬਲੌਕ ਕਰੋ</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ਚੁਣੀ ਗਈ}one{# ਚੁਣੀ ਗਈ}other{# ਚੁਣੀਆਂ ਗਈਆਂ}}</translation>
-<translation id="7070090581017165256">ਇਸ ਸਾਈਟ ਬਾਰੇ</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ਨੂੰ ਚੁਣਿਆ ਗਿਆ। ਸਕ੍ਰੀਨ ਦੇ ਸਿਖਰ ਨੇੜੇ ਵਿਕਲਪ ਉਪਲਬਧ ਹਨ</translation>
 <translation id="7141896414559753902">ਸਾਈਟਾਂ ਨੂੰ ਪੌਪ-ਅੱਪ ਅਤੇ ਰੀਡਾਇਰੈਕਟ ਦਿਖਾਉਣ ਤੋਂ ਬਲਾਕ ਕਰੋ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">ਕੋਈ ਸਾਈਟ ਤੁਹਾਡਾ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਵਰਤ ਰਹੀ ਹੈ</translation>
 <translation id="7561196759112975576">ਹਮੇਸ਼ਾਂ</translation>
-<translation id="7572498721684305250">ਤੁਹਾਡੇ ਵੱਲੋਂ NFC ਡੀਵਾਈਸਾਂ 'ਤੇ ਟੈਪ ਕਰਨ ਵੇਲੇ ਜਾਣਕਾਰੀ ਭੇਜਣ ਜਾਂ ਪ੍ਰਾਪਤ ਕਰਨ ਤੋਂ ਸਾਈਟਾਂ ਨੂੰ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="757524316907819857">ਸਾਈਟਾਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਸਮੱਗਰੀ ਚਲਾਉਣ ਤੋਂ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="7649070708921625228">ਸਹਾਇਤਾ</translation>
 <translation id="7658239707568436148">ਰੱਦ ਕਰੋ</translation>

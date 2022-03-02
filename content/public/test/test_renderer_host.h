@@ -135,6 +135,9 @@ class RenderFrameHostTester {
 
   // Simulates the receipt of a manifest URL.
   virtual void SimulateManifestURLUpdate(const GURL& manifest_url) = 0;
+
+  // Creates and appends a fenced frame.
+  virtual RenderFrameHost* AppendFencedFrame() = 0;
 };
 
 // An interface and utility for driving tests of RenderViewHost.
@@ -182,7 +185,7 @@ class RenderViewHostTestEnabler {
 
   friend class RenderViewHostTestHarness;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   std::unique_ptr<display::Screen> screen_;
 #endif
   std::unique_ptr<base::test::SingleThreadTaskEnvironment> task_environment_;
@@ -305,7 +308,7 @@ class RenderViewHostTestHarness : public ::testing::Test {
   std::unique_ptr<RenderViewHostTestEnabler> rvh_test_enabler_;
 
   std::unique_ptr<WebContents> contents_;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   std::unique_ptr<ui::ScopedOleInitializer> ole_initializer_;
 #endif
 #if defined(USE_AURA)

@@ -100,7 +100,7 @@ FileSearchProvider::FileSearchProvider(Profile* profile)
 
 FileSearchProvider::~FileSearchProvider() = default;
 
-ash::AppListSearchResultType FileSearchProvider::ResultType() {
+ash::AppListSearchResultType FileSearchProvider::ResultType() const {
   return ash::AppListSearchResultType::kFileSearch;
 }
 
@@ -111,10 +111,6 @@ void FileSearchProvider::Start(const std::u16string& query) {
   // Clear results and cancel any outgoing requests.
   ClearResultsSilently();
   weak_factory_.InvalidateWeakPtrs();
-
-  // This provider does not handle zero-state.
-  if (query.empty())
-    return;
 
   last_query_ = query;
   last_tokenized_query_.emplace(query, TokenizedString::Mode::kWords);
@@ -161,7 +157,8 @@ std::unique_ptr<FileResult> FileSearchProvider::MakeResult(
                                       : FileResult::Type::kFile;
   auto result = std::make_unique<FileResult>(
       kFileSearchSchema, path.path, ash::AppListSearchResultType::kFileSearch,
-      last_query_, relevance, type, profile_);
+      ash::SearchResultDisplayType::kList, relevance, last_query_, type,
+      profile_);
   result->RequestThumbnail(&thumbnail_loader_);
   return result;
 }

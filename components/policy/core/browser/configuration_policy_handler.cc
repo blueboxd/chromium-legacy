@@ -31,7 +31,10 @@
 
 namespace policy {
 
-// ConfigurationPolicyHandler implementation -----------------------------------
+const size_t kMaxUrlFiltersPerPolicy = 1000;
+
+// ConfigurationPolicyHandler implementation
+// -----------------------------------
 
 ConfigurationPolicyHandler::ConfigurationPolicyHandler() {}
 
@@ -242,14 +245,13 @@ bool StringMappingListPolicyHandler::Convert(const base::Value* input,
   if (!input)
     return true;
 
-  const base::ListValue* list_value = nullptr;
-  if (!input->GetAsList(&list_value)) {
+  if (!input->is_list()) {
     NOTREACHED();
     return false;
   }
 
   int index = -1;
-  for (const auto& entry : list_value->GetList()) {
+  for (const auto& entry : input->GetList()) {
     ++index;
     if (!entry.is_string()) {
       if (errors) {

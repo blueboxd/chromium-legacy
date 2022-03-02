@@ -21,9 +21,9 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui_untrusted.h"
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/webui/video_tutorials/video_player_ui.h"
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
@@ -31,13 +31,13 @@
 #include "ash/webui/file_manager/file_manager_untrusted_ui.h"
 #include "ash/webui/help_app_ui/help_app_kids_magazine_untrusted_ui.h"
 #include "ash/webui/personalization_app/untrusted_personalization_app_ui_config.h"
+#include "chrome/browser/ash/web_applications/crosh_ui.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_untrusted_ui_config.h"
 #include "chrome/browser/ash/web_applications/media_app/media_app_guest_ui_config.h"
 #include "chrome/browser/ash/web_applications/projector_app/untrusted_projector_ui_config.h"
 #include "chrome/browser/ash/web_applications/terminal_ui.h"
 #if !defined(OFFICIAL_BUILD)
 #include "ash/webui/sample_system_web_app_ui/untrusted_sample_system_web_app_ui.h"
-#include "ash/webui/telemetry_extension_ui/telemetry_extension_untrusted_ui.h"
 #endif  // !defined(OFFICIAL_BUILD)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -52,25 +52,25 @@ namespace {
 // constructing from a vector is O(n log n).
 WebUIConfigList CreateConfigs() {
   WebUIConfigList config_list;
-  auto register_config =
+  // Delete [[maybe_unused]] once register_config is used outside of Chrome OS.
+  [[maybe_unused]] auto register_config =
       [&config_list](std::unique_ptr<ui::WebUIConfig> config) {
         DCHECK_EQ(config->scheme(), content::kChromeUIUntrustedScheme);
         const std::string& host = config->host();
         config_list.emplace_back(host, std::move(config));
       };
-  // Delete once register_config is used outside of Chrome OS.
-  ALLOW_UNUSED_LOCAL(register_config);
 
   // Register WebUIConfigs below.
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   register_config(std::make_unique<printing::PrintPreviewUIUntrustedConfig>());
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   register_config(std::make_unique<video_tutorials::VideoPlayerUIConfig>());
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  register_config(std::make_unique<CroshUIConfig>());
   register_config(std::make_unique<TerminalUIConfig>());
   register_config(std::make_unique<ash::eche_app::UntrustedEcheAppUIConfig>());
   register_config(std::make_unique<MediaAppGuestUIConfig>());
@@ -84,7 +84,6 @@ WebUIConfigList CreateConfigs() {
     register_config(
         std::make_unique<ash::file_manager::FileManagerUntrustedUIConfig>());
 #if !defined(OFFICIAL_BUILD)
-  register_config(std::make_unique<ash::TelemetryExtensionUntrustedUIConfig>());
   register_config(std::make_unique<ash::UntrustedSampleSystemWebAppUIConfig>());
 #endif  // !defined(OFFICIAL_BUILD)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

@@ -85,13 +85,13 @@ class DesksTemplatesItemViewTestApi {
 
   const base::GUID uuid() const { return item_view_->desk_template_->uuid(); }
 
-  const std::vector<DesksTemplatesIconView*>& icon_views() const {
-    return item_view_->icon_container_view_->icon_views_;
-  }
-
   const views::View* hover_container() const {
     return item_view_->hover_container_;
   }
+
+  // Icons views are stored in the view hierarchy so this convenience function
+  // returns them as a vector of DesksTemplatesIconView*.
+  std::vector<DesksTemplatesIconView*> GetIconViews() const;
 
  private:
   const DesksTemplatesItemView* item_view_;
@@ -152,6 +152,8 @@ views::Button* GetZeroStateDesksTemplatesButton();
 views::Button* GetExpandedStateDesksTemplatesButton();
 views::Button* GetSaveDeskAsTemplateButton();
 views::Button* GetTemplateItemButton(int index);
+views::Button* GetTemplateItemDeleteButton(int index);
+views::Button* GetDesksTemplatesDialogAcceptButton();
 
 // A lot of the UI relies on calling into the local desk data manager to
 // update, which sends callbacks via posting tasks. Call

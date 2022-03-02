@@ -10,7 +10,7 @@
 namespace history_clusters {
 
 void MergeDuplicateVisitIntoCanonicalVisit(
-    const history::ClusterVisit& duplicate_visit,
+    history::ClusterVisit&& duplicate_visit,
     history::ClusterVisit& canonical_visit) {
   // Upgrade the canonical visit's annotations (i.e. is-bookmarked) with
   // those of the duplicate visits.
@@ -43,6 +43,11 @@ void MergeDuplicateVisitIntoCanonicalVisit(
     }
   }
 
+  // Merge over the model annotations (categories and entities) too.
+  canonical_visit.annotated_visit.content_annotations.model_annotations
+      .MergeFrom(duplicate_visit.annotated_visit.content_annotations
+                     .model_annotations);
+
   // Roll up the visit duration from the duplicate visit into the canonical
   // visit.
   canonical_visit.annotated_visit.visit_row.visit_duration +=
@@ -63,19 +68,50 @@ void MergeDuplicateVisitIntoCanonicalVisit(
             : duplicate_foreground_duration;
   }
 
-  // Add the duplicate visit into the canonical visit's duplicate IDs.
-  canonical_visit.duplicate_visit_ids.push_back(
-      duplicate_visit.annotated_visit.visit_row.visit_id);
+  // Update the canonical_visit with the more recent timestamp.
+  canonical_visit.annotated_visit.visit_row.visit_time =
+      std::max(canonical_visit.annotated_visit.visit_row.visit_time,
+               duplicate_visit.annotated_visit.visit_row.visit_time);
+
+  canonical_visit.duplicate_visits.push_back(std::move(duplicate_visit));
 }
 
-base::flat_set<history::VisitID> CalculateAllDuplicateVisitsForCluster(
-    const history::Cluster& cluster) {
-  base::flat_set<history::VisitID> duplicate_visit_ids;
-  for (const auto& visit : cluster.visits) {
-    duplicate_visit_ids.insert(visit.duplicate_visit_ids.begin(),
-                               visit.duplicate_visit_ids.end());
+void SortClusters(std::vector<history::Cluster>* clusters) {
+  DCHECK(clusters);
+  // Within each cluster, sort visits from best to worst using score.
+  // TODO(crbug.com/1184879): Once cluster persistence is done, maybe we can
+  //  eliminate this sort step, if they are stored in-order.
+  for (auto& cluster : *clusters) {
+    base::ranges::stable_sort(cluster.visits, [](auto& v1, auto& v2) {
+      if (v1.score != v2.score) {
+        // Use v1 > v2 to get higher scored visits BEFORE lower scored visits.
+        return v1.score > v2.score;
+      }
+
+      // Use v1 > v2 to get more recent visits BEFORE older visits.
+      return v1.annotated_visit.visit_row.visit_time >
+             v2.annotated_visit.visit_row.visit_time;
+    });
   }
-  return duplicate_visit_ids;
+
+  // After that, sort clusters reverse-chronologically based on their highest
+  // scored visit.
+  base::ranges::stable_sort(*clusters, [&](auto& c1, auto& c2) {
+    DCHECK(!c1.visits.empty());
+    base::Time c1_time = c1.visits.front().annotated_visit.visit_row.visit_time;
+
+    DCHECK(!c2.visits.empty());
+    base::Time c2_time = c2.visits.front().annotated_visit.visit_row.visit_time;
+
+    // Use c1 > c2 to get more recent clusters BEFORE older clusters.
+    return c1_time > c2_time;
+  });
+}
+
+bool IsNoisyVisit(const history::ClusterVisit& visit) {
+  return visit.engagement_score >
+             features::NoisyClusterVisitEngagementThreshold() &&
+         !visit.is_search_visit;
 }
 
 bool IsNoisyVisit(const history::ClusterVisit& visit) {

@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include <memory>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -15,8 +16,6 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/test/app_list_test_helper.h"
-#include "ash/app_list/views/app_list_view.h"
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/display/screen_orientation_controller.h"
@@ -39,7 +38,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
-#include "base/ignore_result.h"
 #include "base/numerics/math_constants.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -232,12 +230,12 @@ class TabletModeControllerTest : public AshTestBase {
   }
 
   // Wait one more frame presented for the metrics to get recorded.
-  // ignore_result() and timeout is because the frame could already be
+  // std::ignore and timeout is because the frame could already be
   // presented.
   void WaitForSmoothnessMetrics() {
-    ignore_result(ui::WaitForNextFrameToBePresented(
+    std::ignore = ui::WaitForNextFrameToBePresented(
         Shell::GetPrimaryRootWindow()->layer()->GetCompositor(),
-        base::Milliseconds(100)));
+        base::Milliseconds(100));
   }
 
  private:
@@ -1273,9 +1271,11 @@ TEST_F(TabletModeControllerTest, StartTabletActiveTransientChildOfLeftSnap) {
 // previous window on the left.
 TEST_F(TabletModeControllerTest, StartTabletActiveAppListPreviousLeftSnap) {
   std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
-  Shell::Get()->app_list_controller()->ShowAppList();
-  ASSERT_TRUE(wm::IsActiveWindow(
-      GetAppListTestHelper()->GetAppListView()->GetWidget()->GetNativeView()));
+  auto* app_list_controller = Shell::Get()->app_list_controller();
+  app_list_controller->ShowAppList();
+  aura::Window* app_list_window = app_list_controller->GetWindow();
+  ASSERT_TRUE(app_list_window);
+  ASSERT_TRUE(wm::IsActiveWindow(app_list_window));
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewController::State::kLeftSnapped,
             split_view_controller()->state());
@@ -1789,7 +1789,7 @@ class TabletModeControllerOnDeviceTest : public TabletModeControllerTest {
   void SetUp() override {
     // We need to simulate the real on-device behavior for some tests.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kForceSystemCompositorMode);
+        switches::kForceSystemCompositorMode);
     TabletModeControllerTest::SetUp();
     // PowerManagerClient callback is a posted task.
     base::RunLoop().RunUntilIdle();

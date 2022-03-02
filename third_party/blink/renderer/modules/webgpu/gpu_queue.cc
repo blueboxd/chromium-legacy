@@ -62,10 +62,10 @@ WGPUOrigin3D GPUOrigin2DToWGPUOrigin3D(const V8GPUOrigin2D* webgpu_origin) {
         default:
           // This is a 2D origin and the depth should be 0 always.
           dawn_origin.y = webgpu_origin_sequence[1];
-          FALLTHROUGH;
+          [[fallthrough]];
         case 1:
           dawn_origin.x = webgpu_origin_sequence[0];
-          FALLTHROUGH;
+          [[fallthrough]];
         case 0:
           break;
       }
@@ -206,11 +206,12 @@ scoped_refptr<Image> GetImageFromExternalImage(
     return nullptr;
   }
 
-  if (canvas && !(canvas->IsWebGL() || canvas->IsRenderingContext2D())) {
+  if (canvas && !(canvas->IsWebGL() || canvas->IsRenderingContext2D() ||
+                  canvas->IsWebGPU())) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kOperationError,
-        "CopyExternalImageToTexture doesn't support canvas without 2d, webgl "
-        "or webgl2 context");
+        "CopyExternalImageToTexture doesn't support canvas without 2d, webgl,"
+        " webgl2 or webgpu context");
     return nullptr;
   }
 
@@ -657,7 +658,7 @@ bool GPUQueue::CopyContentFromCPU(StaticBitmapImage* image,
                                   const WGPUExtent3D& copy_size,
                                   const WGPUImageCopyTexture& destination,
                                   const WGPUTextureFormat dest_texture_format,
-                                  bool premultiplied_alpha,
+                                  bool dst_premultiplied_alpha,
                                   bool flipY) {
   // Prepare for uploading CPU data.
   gfx::Rect image_data_rect(origin.x, origin.y, copy_size.width,
@@ -690,7 +691,8 @@ bool GPUQueue::CopyContentFromCPU(StaticBitmapImage* image,
 
     if (!CopyBytesFromImageBitmapForWebGPU(
             image, base::span<uint8_t>(static_cast<uint8_t*>(data), size),
-            image_data_rect, dest_texture_format, premultiplied_alpha, flipY)) {
+            image_data_rect, dest_texture_format, dst_premultiplied_alpha,
+            flipY)) {
       // Release the buffer.
       GetProcs().bufferRelease(buffer);
       return false;
@@ -732,7 +734,7 @@ bool GPUQueue::CopyContentFromGPU(StaticBitmapImage* image,
                                   const WGPUExtent3D& copy_size,
                                   const WGPUImageCopyTexture& destination,
                                   const WGPUTextureFormat dest_texture_format,
-                                  bool premultiplied_alpha,
+                                  bool dst_premultiplied_alpha,
                                   bool flipY) {
   // Check src/dst texture formats are supported by CopyTextureForBrowser
   SkImageInfo image_info = image->PaintImageForCurrentFrame().GetSkImageInfo();
@@ -749,7 +751,7 @@ bool GPUQueue::CopyContentFromGPU(StaticBitmapImage* image,
           static_cast<WGPUTextureUsage>(WGPUTextureUsage_CopyDst |
                                         WGPUTextureUsage_CopySrc |
                                         WGPUTextureUsage_TextureBinding),
-          image, CanvasColorSpace::kSRGB, image_info.colorType());
+          image, PredefinedColorSpace::kSRGB, image_info.colorType());
 
   // Fail to associate staticBitmapImage to dawn resource.
   if (!mailbox_texture) {
@@ -769,10 +771,12 @@ bool GPUQueue::CopyContentFromGPU(StaticBitmapImage* image,
     options.flipY = true;
   }
 
-  options.alphaOp = image->IsPremultiplied() == premultiplied_alpha
-                        ? WGPUAlphaOp_DontChange
-                        : premultiplied_alpha ? WGPUAlphaOp_Premultiply
-                                              : WGPUAlphaOp_Unpremultiply;
+  options.srcAlphaMode = image->IsPremultiplied()
+                             ? WGPUAlphaMode_Premultiplied
+                             : WGPUAlphaMode_Unpremultiplied;
+  options.dstAlphaMode = dst_premultiplied_alpha
+                             ? WGPUAlphaMode_Premultiplied
+                             : WGPUAlphaMode_Unpremultiplied;
 
   GetProcs().queueCopyTextureForBrowser(GetHandle(), &src, &destination,
                                         &copy_size, &options);

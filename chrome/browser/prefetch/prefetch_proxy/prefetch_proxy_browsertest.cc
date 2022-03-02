@@ -58,7 +58,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_handle.h"
@@ -432,7 +431,7 @@ BuildPrefetchResourceMatchers(
 }  // namespace
 
 // Occasional flakes on Windows (https://crbug.com/1045971).
-#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
@@ -1318,7 +1317,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
   // The test assumes the previous page gets deleted after navigation. Disable
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
-      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
                                            GetOriginServerURL("/simple.html")));
@@ -1988,7 +1987,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
   // The test assumes the previous page gets deleted after navigation. Disable
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
-      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   GURL starting_page = GetOriginServerURL("/simple.html");
   SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
@@ -2092,7 +2091,8 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetWebsiteSettingDefaultScope(
           client_cert_needed_page, GURL(),
-          ContentSettingsType::AUTO_SELECT_CERTIFICATE, std::move(setting));
+          ContentSettingsType::AUTO_SELECT_CERTIFICATE,
+          base::Value::FromUniquePtrValue(std::move(setting)));
 
   // Navigating to the page should work just fine in the normal profile.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), client_cert_needed_page));
@@ -2864,10 +2864,9 @@ IN_PROC_BROWSER_TEST_F(
                /*expect_probe=*/true);
 }
 
-// Flaky test. See crbug.com/1278069.
 IN_PROC_BROWSER_TEST_F(
     ProbingEnabled_CanaryOn_TLSCanaryBadDisabled_DNSCanaryGood_PrefetchProxyBrowserTest,
-    DISABLED_NoProbe) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoProbe)) {
   RunProbeTest(/*wait_for_tls=*/false,
                /*probe_success=*/false,
                /*expect_successful_tls_probe=*/false,
@@ -2897,7 +2896,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
   // The test assumes the previous page gets deleted after navigation. Disable
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
-      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   base::HistogramTester histogram_tester;
 
   SetDataSaverEnabled(true);
@@ -3775,7 +3774,7 @@ IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledPrefetchProxyBrowserTest,
   // The test assumes the previous page gets deleted after navigation. Disable
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
-      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
@@ -4049,7 +4048,7 @@ IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
   // The test assumes the previous page gets deleted after navigation. Disable
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
-      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   base::HistogramTester histogram_tester;
 
   SetDataSaverEnabled(true);
@@ -4479,7 +4478,7 @@ IN_PROC_BROWSER_TEST_F(IndividualNetworkContextsPrefetchProxyBrowserTest,
   // The test assumes the previous page gets deleted after navigation. Disable
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
-      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   GURL starting_page = GetOriginServerURL("/simple.html");
   SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
@@ -4582,7 +4581,7 @@ IN_PROC_BROWSER_TEST_F(SpeculationOnlyPrivatePrefetchesPrefetchProxyTest,
   // The test assumes the previous page gets deleted after navigation. Disable
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
-      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   SetDataSaverEnabled(true);
 
   GURL starting_page = GetReferringPageServerURL("/search/q=blah");
@@ -4638,7 +4637,7 @@ IN_PROC_BROWSER_TEST_F(
   // The test assumes the previous page gets deleted after navigation. Disable
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
-      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   SetDataSaverEnabled(true);
 
   GURL starting_page = GetReferringPageServerURL("/search/q=blah");
@@ -4698,7 +4697,7 @@ IN_PROC_BROWSER_TEST_F(
   // The test assumes the previous page gets deleted after navigation. Disable
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
-      GetWebContents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   SetDataSaverEnabled(true);
 
   GURL starting_page = GetOriginServerURL("/search/q=blah");

@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">ኩኪዎችን ፍቀድ</translation>
 <translation id="2228071138934252756">የእርስዎን ካሜራ <ph name="APP_NAME" /> እንዲደርስበት ለማድረግ፣ በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ካሜራን በተጨማሪ ያብሩ።</translation>
 <translation id="2241634353105152135">አንድ ጊዜ ብቻ</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" />ን አስወግድ</translation>
 <translation id="2289270750774289114">አንድ ጣቢያ በአቅራቢያ ያሉ ብሉቱዝ መሣሪያዎችን ፈልጎ ለማግኘት ሲፈልግ ጠይቅ (የሚመከር)</translation>
 <translation id="2315043854645842844">የደንበኛ ወገን ዕውቅና ማረጋገጫ ምርጫ በስርዓተ-ክወናው አይደገፍም።</translation>
 <translation id="2359808026110333948">ቀጥል</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">መረጃ አሳይ</translation>
 <translation id="3123473560110926937">በአንዳንድ ጣቢያዎች ላይ ታግዷል</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> የተከማቸ ውሂብ</translation>
+<translation id="3203366800380907218">ከድሩ</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> ማሳወቂያዎችን እንዲልክልዎት ለማድረግ፣ በተጨማሪ በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ማሳወቂያዎችን ያብሩ።</translation>
 <translation id="3227137524299004712">ማይክሮፎን</translation>
 <translation id="3277252321222022663">ጣቢያዎች ዳሳሾችን እንዲደርሱ ይፍቀዱላቸው (የሚመከር)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">ታግዷል</translation>
 <translation id="5689516760719285838">አካባቢ</translation>
 <translation id="5690795753582697420">ካሜራ በAndroid ቅንብሮች ውስጥ ጠፍቷል</translation>
-<translation id="5710871682236653961">የNFC መሣሪያዎችን መታ ሲያደርጉ ጣቢያዎች መረጃን እንዲልኩ እና እንዲቀበሉ ከመፍቀድዎ በፊት ይጠይቁ (የሚመከር)</translation>
 <translation id="5719847187258001597">ይህ በ<ph name="ORIGIN" /> ወይም በመነሻ ገጽዎ ላይ በመተግበሪያው የተከማቹ ሁሉንም ውሂብ እና ኩኪዎች ያጸዳል።</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> ታግዷል</translation>
 <translation id="5804241973901381774">ፍቃዶች</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">ለአሁኑ የፍለጋ ፕሮግራም ተፈቅዷል</translation>
 <translation id="7053983685419859001">አግድ</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ተመርጧል}one{# ተመርጠዋል}other{# ተመርጠዋል}}</translation>
-<translation id="7070090581017165256">ስለዚህ ጣቢያ</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ተመርጠዋል።  አማራጮች ከማያ ገጹ አናት አጠገብ ይገኛሉ</translation>
 <translation id="7141896414559753902">ጣቢያዎች ብቅ-ባዮችን እንዳያሳዩ ያግዱ (የሚመከር)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> ኪባ</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">ጃቫስክሪፕት</translation>
 <translation id="7554752735887601236">አንድ ጣቢያ የእርስዎን ማይክሮፎን እየተጠቀመ ነው</translation>
 <translation id="7561196759112975576">ሁልጊዜ</translation>
-<translation id="7572498721684305250">የNFC መሣሪያዎችን መታ ሲያደርጉ ጣቢያዎች መረጃን እንዳይልኩ እና እንዳይቀበሉ ያግዷቸው</translation>
 <translation id="757524316907819857">ጣቢያዎች ጥበቃ የሚደረግለትን ይዘት እንዳያጫውቱ ያግዱ</translation>
 <translation id="7649070708921625228">እገዛ</translation>
 <translation id="7658239707568436148">ይቅር</translation>

@@ -70,7 +70,7 @@ class TypeDisabledChecker : public SingleClientStatusChangeChecker {
 
   // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied(std::ostream* os) override {
-    *os << "Waiting for type " << syncer::ModelTypeToString(type_)
+    *os << "Waiting for type " << syncer::ModelTypeToDebugString(type_)
         << " to become disabled";
     return !service()->GetActiveDataTypes().Has(type_);
   }
@@ -358,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
   }
 }
 
-#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64)
 // https://crbug.com/1223092
 #define MAYBE_ShouldResendUncommittedEntitiesAfterBrowserRestart \
   DISABLED_ShouldResendUncommittedEntitiesAfterBrowserRestart

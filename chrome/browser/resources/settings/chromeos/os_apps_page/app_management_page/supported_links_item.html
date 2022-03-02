@@ -1,5 +1,5 @@
-<style include="app-management-shared-css settings-shared">
-  #explanation-text {
+<style include="app-management-cros-shared-css settings-shared">
+  #disabled-explanation-text {
     align-items: center;
     display: flex;
     flex-direction: row;
@@ -9,6 +9,11 @@
   #supported-links-option {
     height: 48px;
   }
+
+  .info-icon {
+    height: var(--help-icon-size);
+    width: var(--help-icon-size);
+  }
 </style>
 <div class="permission-section-header">
   <localized-link id="heading" class="header-text"
@@ -17,8 +22,8 @@
   </localized-link>
 </div>
 <template is="dom-if" if="[[disabled_]]">
-  <span class="info-text-row">
-    <iron-icon id="info-icon" icon="cr:info-outline"></iron-icon>
+  <span class="info-text-row" id="disabled-explanation-text">
+    <iron-icon id="info-icon" icon="app-management:info"></iron-icon>
     <localized-link id="info-string"
       localized-string="[[getDisabledExplanation_(app)]]">
     </localized-link>

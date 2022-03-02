@@ -4,6 +4,7 @@
 
 #include "ash/components/arc/ime/arc_ime_service.h"
 
+#include <tuple>
 #include <utility>
 
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -13,7 +14,6 @@
 #include "ash/components/arc/ime/key_event_result_receiver.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_types_util.h"
-#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
@@ -53,6 +53,20 @@ bool IsTextInputActive(ui::TextInputType type) {
 // Return true if the given key event generats a visible character.
 bool IsCharacterKeyEvent(const ui::KeyEvent* event) {
   return !IsControlChar(event) && !ui::IsSystemKeyModifier(event->flags());
+}
+
+// Return true if the given key event is used for language switching by IME.
+// Please refer to ui::InputMethodAsh::DispatchKeyEvent for details.
+bool IsLanguageInputKey(const ui::KeyEvent* event) {
+  switch (event->key_code()) {
+    case ui::VKEY_CONVERT:
+    case ui::VKEY_NONCONVERT:
+    case ui::VKEY_DBE_SBCSCHAR:
+    case ui::VKEY_DBE_DBCSCHAR:
+      return true;
+    default:
+      return false;
+  }
 }
 
 int CursorBehaviorToCursorPosition(
@@ -359,7 +373,7 @@ void ArcImeService::ShowVirtualKeyboardIfEnabled() {
 
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method && input_method->GetTextInputClient() == this) {
-    input_method->ShowVirtualKeyboardIfEnabled();
+    input_method->SetVirtualKeyboardVisibilityIfEnabled(true);
   }
 }
 
@@ -391,8 +405,9 @@ void ArcImeService::SendKeyEvent(std::unique_ptr<ui::KeyEvent> key_event,
                                  KeyEventDoneCallback callback) {
   ui::InputMethod* const input_method = GetInputMethod();
   receiver_->SetCallback(std::move(callback), key_event.get());
+
   if (input_method)
-    ignore_result(input_method->DispatchKeyEvent(key_event.get()));
+    std::ignore = input_method->DispatchKeyEvent(key_event.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -664,6 +679,11 @@ void ArcImeService::OnDispatchingKeyEventPostIME(ui::KeyEvent* event) {
       event->properties() && (event->properties()->find(ui::kPropertyFromVK) !=
                               event->properties()->end());
   if (from_vk && IsCharacterKeyEvent(event) && IsTextInputActive(ime_type_))
+    event->SetHandled();
+
+  // Do not forward the language input key event from virtual keyboard because
+  // it's already handled by ui::InputMethodAsh.
+  if (from_vk && IsLanguageInputKey(event))
     event->SetHandled();
 
   // Do no forward a fabricated key event which is not originated from a

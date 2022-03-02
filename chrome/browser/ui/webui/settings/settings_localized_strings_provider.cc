@@ -23,8 +23,8 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
-#include "chrome/browser/privacy_sandbox/privacy_sandbox_settings.h"
-#include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
@@ -82,6 +82,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "crypto/crypto_buildflags.h"
 #include "device/fido/features.h"
 #include "media/base/media_switches.h"
 #include "net/base/url_util.h"
@@ -116,11 +117,11 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #endif
 
-#if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "ui/display/screen.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "device/fido/win/webauthn_api.h"
 
@@ -130,13 +131,13 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
-#if defined(USE_NSS_CERTS)
+#if BUILDFLAG(USE_NSS_CERTS)
 #include "chrome/browser/ui/webui/certificate_manager_localized_strings_provider.h"
 #endif
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -166,7 +167,11 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"menu", IDS_MENU},
     {"menuButtonLabel", IDS_SETTINGS_MENU_BUTTON_LABEL},
     {"moreActions", IDS_SETTINGS_MORE_ACTIONS},
+    {"noThanks", IDS_NO_THANKS},
     {"ok", IDS_OK},
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+    {"relaunchConfirmationDialogTitle", IDS_RELAUNCH_CONFIRMATION_DIALOG_TITLE},
+#endif
     {"restart", IDS_SETTINGS_RESTART},
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     {"restartToApplyChanges", IDS_SETTINGS_RESTART_TO_APPLY_CHANGES},
@@ -210,7 +215,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
                           profile->IsGuestSession());
 #endif
 
-  html_source->AddBoolean("isSupervised", profile->IsChild());
+  html_source->AddBoolean("isChildAccount", profile->IsChild());
 }
 
 void AddA11yStrings(content::WebUIDataSource* html_source) {
@@ -237,7 +242,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   html_source->AddBoolean("isWindows10OrNewer",
                           base::win::GetVersion() >= base::win::Version::WIN10);
 #endif
@@ -365,7 +370,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
     {"huge", IDS_SETTINGS_HUGE_FONT_SIZE},
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
     {"systemTheme", IDS_SETTINGS_SYSTEM_THEME},
     {"useSystemTheme", IDS_SETTINGS_USE_SYSTEM_THEME},
     {"classicTheme", IDS_SETTINGS_CLASSIC_THEME},
@@ -373,10 +378,10 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 #else
     {"resetToDefaultTheme", IDS_SETTINGS_RESET_TO_DEFAULT_THEME},
 #endif
-#if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
     {"showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS},
 #endif
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     {"tabsToLinks", IDS_SETTINGS_TABS_TO_LINKS_PREF},
     {"warnBeforeQuitting", IDS_SETTINGS_WARN_BEFORE_QUITTING_PREF},
 #endif
@@ -394,7 +399,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   bool show_custom_chrome_frame = ui::OzonePlatform::GetInstance()
                                       ->GetPlatformRuntimeProperties()
                                       .supports_server_side_window_decorations;
@@ -537,7 +542,7 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
                              IDS_SETTINGS_DOWNLOAD_WEB_DRIVE_LOCATION, kBox));
 }
 
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
   const char16_t kUnwantedSoftwareProtectionWhitePaperUrl[] =
       u"https://www.google.ca/chrome/browser/privacy/"
@@ -662,11 +667,11 @@ void AddIncompatibleApplicationsStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("incompatibleApplicationsSubpageLearnHow",
                          learn_how_text);
 }
-#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 void AddResetStrings(content::WebUIDataSource* html_source, Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"resetPageTitle", IDS_SETTINGS_RESET_AND_CLEANUP},
 #else
     {"resetPageTitle", IDS_SETTINGS_RESET},
@@ -686,7 +691,7 @@ void AddResetStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"resetAutomatedDialogTitle", IDS_SETTINGS_RESET_AUTOMATED_DIALOG_TITLE},
     {"resetProfileBannerButton", IDS_SETTINGS_RESET_BANNER_RESET_BUTTON_TEXT},
     {"resetProfileBannerDescription", IDS_SETTINGS_RESET_BANNER_TEXT},
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"resetCleanupComputerTrigger",
      IDS_SETTINGS_RESET_CLEAN_UP_COMPUTER_TRIGGER},
 #endif
@@ -697,7 +702,7 @@ void AddResetStrings(content::WebUIDataSource* html_source, Profile* profile) {
       "showResetProfileBanner",
       ResetSettingsHandler::ShouldShowResetProfileBanner(profile));
   bool is_reset_shortcuts_feature_enabled = false;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // TODO(crbug/1234599): Remove this flag from the JS.
   is_reset_shortcuts_feature_enabled = true;
 #endif
@@ -749,7 +754,7 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source,
     {"removeLanguage", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_REMOVE},
     {"addLanguages", IDS_SETTINGS_LANGUAGES_LANGUAGES_ADD},
     {"addLanguagesDialogTitle", IDS_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_TITLE},
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     {"isDisplayedInThisLanguage",
      IDS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE},
     {"displayInThisLanguage", IDS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE},
@@ -772,7 +777,7 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source,
     // Managed dialog strings:
     {"languageManagedDialogTitle", IDS_SETTINGS_LANGUAGES_MANAGED_DIALOG_TITLE},
     {"languageManagedDialogBody", IDS_SETTINGS_LANGUAGES_MANAGED_DIALOG_BODY},
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     {"spellCheckDisabledReason",
      IDS_SETTING_LANGUAGES_SPELL_CHECK_DISABLED_REASON},
     {"spellCheckLanguagesListTitle",
@@ -923,6 +928,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"editDisclaimerTitle", IDS_SETTINGS_COMPROMISED_EDIT_DISCLAIMER_TITLE},
       {"editDisclaimerDescription",
        IDS_SETTINGS_COMPROMISED_EDIT_DISCLAIMER_DESCRIPTION},
+      {"genericCreditCard", IDS_AUTOFILL_CC_GENERIC},
       {"creditCards", IDS_AUTOFILL_PAYMENT_METHODS},
       {"noPaymentMethodsFound", IDS_SETTINGS_PAYMENT_METHODS_NONE},
       {"googlePayments", IDS_SETTINGS_GOOGLE_PAYMENTS},
@@ -944,6 +950,10 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"addressEmail", IDS_SETTINGS_AUTOFILL_ADDRESSES_EMAIL},
       {"honorificLabel", IDS_SETTINGS_AUTOFILL_ADDRESS_HONORIFIC_LABEL},
       {"moreActionsForAddress", IDS_SETTINGS_AUTOFILL_MORE_ACTIONS_FOR_ADDRESS},
+      {"moreActionsForCreditCard",
+       IDS_SETTINGS_AUTOFILL_MORE_ACTIONS_FOR_CREDIT_CARD},
+      {"moreActionsCreditCardDescription",
+       IDS_SETTINGS_AUTOFILL_MORE_ACTIONS_CARD_DESCRIPTION},
       {"removeAddress", IDS_SETTINGS_ADDRESS_REMOVE},
       {"removeAddressConfirmationTitle",
        IDS_SETTINGS_ADDRESS_REMOVE_CONFIRMATION_TITLE},
@@ -1038,6 +1048,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_ACCOUNT},
       {"passwordDeletedFromAccountAndDevice",
        IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_ACCOUNT_AND_DEVICE},
+      {"passwordCopiedToClipboard", IDS_SETTINGS_PASSWORD_COPIED_TO_CLIPBOARD},
       {"passwordMovePasswordsToAccount",
        IDS_SETTINGS_PASSWORD_MOVE_PASSWORDS_TO_ACCOUNT},
       {"passwordMovePasswordsToAccountDialogBodyText",
@@ -1091,9 +1102,11 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS_PLAINTEXT},
       {"savedToThisDeviceOnly",
        IDS_SETTINGS_PAYMENTS_SAVED_TO_THIS_DEVICE_ONLY},
-      {"trustedVaultOptInLabel", IDS_SETTINGS_TRUSTED_VAULT_OPT_IN_LABEL},
-      {"trustedVaultOptInSubLabel",
-       IDS_SETTINGS_TRUSTED_VAULT_OPT_IN_SUB_LABEL},
+      {"trustedVaultBannerLabel", IDS_SETTINGS_TRUSTED_VAULT_BANNER_LABEL},
+      {"trustedVaultBannerSubLabelOfferOptIn",
+       IDS_SETTINGS_TRUSTED_VAULT_BANNER_SUB_LABEL_OFFER_OPT_IN},
+      {"trustedVaultBannerSubLabelOptedIn",
+       IDS_SETTINGS_TRUSTED_VAULT_BANNER_SUB_LABEL_OPTED_IN},
       {"noSearchResults", IDS_SEARCH_NO_RESULTS},
       {"searchResultsPlural", IDS_SEARCH_RESULTS_PLURAL},
       {"searchResultsSingular", IDS_SEARCH_RESULTS_SINGULAR},
@@ -1163,6 +1176,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
           base::ASCIIToUTF16(chrome::kSyncLearnMoreURL)));
   html_source->AddString("trustedVaultOptInUrl",
                          chrome::kSyncTrustedVaultOptInURL);
+  html_source->AddString("trustedVaultLearnMoreUrl",
+                         chrome::kSyncTrustedVaultLearnMoreURL);
 
   bool is_guest_mode = false;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1211,15 +1226,12 @@ void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
                              Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   bool is_dice_enabled = false;
-  bool use_browser_sync_consent =
-      chromeos::features::ShouldUseBrowserSyncConsent();
 #else
   bool is_dice_enabled =
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile);
-  bool use_browser_sync_consent = false;
 #endif
 
-  if (use_browser_sync_consent || is_dice_enabled) {
+  if (is_dice_enabled) {
     static constexpr webui::LocalizedString kTurnOffStrings[] = {
         {"syncDisconnect", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
         {"syncDisconnectTitle",
@@ -1589,7 +1601,7 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
   // one provided by the Privacy Sandbox service, and one with a URL
   // replacement based on a feature parameter.
   std::u16string floc_explanation =
-      PrivacySandboxSettingsFactory::GetForProfile(profile)
+      PrivacySandboxServiceFactory::GetForProfile(profile)
           ->GetFlocDescriptionForDisplay() +
       u" " +  // Whitespace is a valid separator w.r.t l10n.
       l10n_util::GetStringFUTF16(IDS_SETTINGS_PRIVACY_SANDBOX_FLOC_TRIAL_ACTIVE,
@@ -1600,7 +1612,7 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
   // profile, and so the relevant string can be injected here, rather than
   // fetched dynamically from JS.
   html_source->AddString("privacySandboxPageFlocResetExplanation",
-                         PrivacySandboxSettingsFactory::GetForProfile(profile)
+                         PrivacySandboxServiceFactory::GetForProfile(profile)
                              ->GetFlocResetExplanationForDisplay());
 }
 
@@ -1608,7 +1620,7 @@ void AddPrivacyReviewStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"privacyReviewLabel", IDS_SETTINGS_PRIVACY_REVIEW_LABEL},
       {"privacyReviewSublabel", IDS_SETTINGS_PRIVACY_REVIEW_SUBLABEL},
-      {"privacyReviewPromoTitle", IDS_SETTINGS_PRIVACY_REVIEW_PROMO_TITLE},
+      {"privacyReviewPromoHeader", IDS_SETTINGS_PRIVACY_REVIEW_PROMO_HEADER},
       {"privacyReviewPromoBody", IDS_SETTINGS_PRIVACY_REVIEW_PROMO_BODY},
       {"privacyReviewPromoStartButton",
        IDS_SETTINGS_PRIVACY_REVIEW_PROMO_START_BUTTON},
@@ -1617,18 +1629,12 @@ void AddPrivacyReviewStrings(content::WebUIDataSource* html_source) {
       {"privacyReviewNextButton", IDS_SETTINGS_PRIVACY_REVIEW_NEXT_BUTTON},
       {"privacyReviewFeatureDescriptionHeader",
        IDS_SETTINGS_PRIVACY_REVIEW_FEATURE_DESCRIPTION_HEADER},
-      {"privacyReviewWhatYouShareWithGoogle",
-       IDS_SETTINGS_PRIVACY_REVIEW_WHAT_YOU_SHARE_WITH_GOOGLE},
-      {"privacyReviewWhatYouShareWithWebsites",
-       IDS_SETTINGS_PRIVACY_REVIEW_WHAT_YOU_SHARE_WITH_WEBSITES},
+      {"privacyReviewThingsToConsider",
+       IDS_SETTINGS_PRIVACY_REVIEW_THINGS_TO_CONSIDER},
       {"privacyReviewWelcomeCardHeader",
        IDS_SETTINGS_PRIVACY_REVIEW_WELCOME_CARD_HEADER},
       {"privacyReviewWelcomeCardSubHeader",
        IDS_SETTINGS_PRIVACY_REVIEW_WELCOME_CARD_SUB_HEADER},
-      {"privacyReviewWelcomeCardStartButton",
-       IDS_SETTINGS_PRIVACY_REVIEW_WELCOME_CARD_START_BUTTON},
-      {"privacyReviewWelcomeCardDontShowAgainCheckbox",
-       IDS_SETTINGS_PRIVACY_REVIEW_WELCOME_CARD_DONT_SHOW_AGAIN_CHECKBOX},
       {"privacyReviewCompletionCardHeader",
        IDS_SETTINGS_PRIVACY_REVIEW_COMPLETION_CARD_HEADER},
       {"privacyReviewCompletionCardSubHeader",
@@ -1649,8 +1655,6 @@ void AddPrivacyReviewStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PRIVACY_REVIEW_MSBB_FEATURE_DESCRIPTION1},
       {"privacyReviewMsbbFeatureDescription2",
        IDS_SETTINGS_PRIVACY_REVIEW_MSBB_FEATURE_DESCRIPTION2},
-      {"privacyReviewMsbbFeatureDescription3",
-       IDS_SETTINGS_PRIVACY_REVIEW_MSBB_FEATURE_DESCRIPTION3},
       {"privacyReviewMsbbPrivacyDescription1",
        IDS_SETTINGS_PRIVACY_REVIEW_MSBB_PRIVACY_DESCRIPTION1},
       {"privacyReviewMsbbPrivacyDescription2",
@@ -1681,6 +1685,8 @@ void AddPrivacyReviewStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PRIVACY_REVIEW_COOKIES_CARD_BLOCK_TPC_INCOGNITO_FEATURE_DESCRIPTION2},
       {"privacyReviewCookiesCardBlockTpcIncognitoPrivacyDescription1",
        IDS_SETTINGS_PRIVACY_REVIEW_COOKIES_CARD_BLOCK_TPC_INCOGNITO_PRIVACY_DESCRIPTION1},
+      {"privacyReviewCookiesCardBlockTpcIncognitoPrivacyDescription2",
+       IDS_SETTINGS_PRIVACY_REVIEW_COOKIES_CARD_BLOCK_TPC_INCOGNITO_PRIVACY_DESCRIPTION2},
       {"privacyReviewCookiesCardBlockTpcSubheader",
        IDS_SETTINGS_PRIVACY_REVIEW_COOKIES_CARD_BLOCK_TPC_SUBHEADER},
       {"privacyReviewCookiesCardBlockTpcFeatureDescription1",
@@ -1744,12 +1750,12 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_PRIMARY_LABEL},
     {"safetyCheckExtensionsButtonAriaLabel",
      IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON_ARIA_LABEL},
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"safetyCheckChromeCleanerPrimaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_PRIMARY_LABEL},
     {"safetyCheckChromeCleanerButtonAriaLabel",
      IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_BUTTON_ARIA_LABEL},
-#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -1973,6 +1979,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_ALL_SITES_SORT_METHOD_STORAGE},
     {"siteSettingsAllSitesSortMethodName",
      IDS_SETTINGS_SITE_SETTINGS_ALL_SITES_SORT_METHOD_NAME},
+    {"siteSettingsSiteEntryPartitionedLabel",
+     IDS_SETTINGS_SITE_SETTINGS_SITE_ENTRY_PARTITIONED_LABEL},
     {"siteSettingsSiteRepresentationSeparator",
      IDS_SETTINGS_SITE_SETTINGS_SITE_REPRESENTATION_SEPARATOR},
     {"siteSettingsAppProtocolHandlers",
@@ -2047,7 +2055,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_PROTECTED_CONTENT_BLOCKED},
     {"siteSettingsProtectedContentBlockedSubLabel",
      IDS_SETTINGS_SITE_SETTINGS_PROTECTED_CONTENT_BLOCKED_SUB_LABEL},
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
     {"siteSettingsProtectedContentIdentifiersExplanation",
      IDS_SETTINGS_SITE_SETTINGS_PROTECTED_CONTENT_IDENTIFIERS_EXPLANATION},
     {"siteSettingsProtectedContentEnableIdentifiers",
@@ -2306,6 +2314,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_REMOVE_SITE_ORIGIN_DIALOG_TITLE},
     {"siteSettingsRemoveSiteOriginAppDialogTitle",
      IDS_SETTINGS_SITE_SETTINGS_REMOVE_SITE_ORIGIN_APP_DIALOG_TITLE},
+    {"siteSettingsRemoveSiteOriginPartitionedDialogTitle",
+     IDS_SETTINGS_SITE_SETTINGS_REMOVE_SITE_ORIGIN_PARTITIONED_DIALOG_TITLE},
     {"siteSettingsRemoveSiteGroupDialogTitle",
      IDS_SETTINGS_SITE_SETTINGS_REMOVE_SITE_GROUP_DIALOG_TITLE},
     {"siteSettingsRemoveSiteGroupAppDialogTitle",
@@ -2619,12 +2629,16 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsWindowPlacement", IDS_SITE_SETTINGS_TYPE_WINDOW_PLACEMENT},
     {"siteSettingsWindowPlacementMidSentence",
      IDS_SITE_SETTINGS_TYPE_WINDOW_PLACEMENT_MID_SENTENCE},
+    {"siteSettingsWindowPlacementDescription",
+     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_DESCRIPTION},
     {"siteSettingsWindowPlacementAsk",
      IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_ASK},
-    {"siteSettingsWindowPlacementAskRecommended",
-     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_ASK_RECOMMENDED},
-    {"siteSettingsWindowPlacementBlock",
-     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_BLOCK},
+    {"siteSettingsWindowPlacementBlocked",
+     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_BLOCKED},
+    {"siteSettingsWindowPlacementAskExceptions",
+     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_ASK_EXCEPTIONS},
+    {"siteSettingsWindowPlacementBlockedExceptions",
+     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_BLOCKED_EXCEPTIONS},
     {"siteSettingsFontAccessMidSentence",
      IDS_SITE_SETTINGS_TYPE_FONT_ACCESS_MID_SENTENCE},
     {"siteSettingsFontAccessAsk", IDS_SETTINGS_SITE_SETTINGS_FONT_ACCESS_ASK},
@@ -2700,7 +2714,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
 void AddSystemStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"systemPageTitle", IDS_SETTINGS_SYSTEM},
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
     {"backgroundAppsLabel", IDS_SETTINGS_SYSTEM_BACKGROUND_APPS_LABEL},
 #endif
     {"hardwareAccelerationLabel",
@@ -2849,10 +2863,23 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
       {"securityKeysSetPinButton", IDS_SETTINGS_SECURITY_KEYS_SET_PIN_BUTTON},
       {"securityKeysSamePINAsCurrent",
        IDS_SETTINGS_SECURITY_KEYS_SAME_PIN_AS_CURRENT},
+      {"securityKeysPhoneEditDialogTitle",
+       IDS_SETTINGS_SECURITY_KEYS_PHONE_EDIT_DIALOG_TITLE},
+      {"securityKeysPhonesYourDevices",
+       IDS_SETTINGS_SECURITY_KEYS_PHONES_YOUR_DEVICES},
+      {"securityKeysPhonesSyncedDesc",
+       IDS_SETTINGS_SECURITY_KEYS_PHONES_SYNCED_DESC},
+      {"securityKeysPhonesLinkedDevices",
+       IDS_SETTINGS_SECURITY_KEYS_PHONES_LINKED_DEVICES},
+      {"securityKeysPhonesLinkedDesc",
+       IDS_SETTINGS_SECURITY_KEYS_PHONES_LINKED_DESC},
+      {"securityKeysPhonesManage", IDS_SETTINGS_SECURITY_KEYS_PHONES_MANAGE},
+      {"securityKeysPhonesManageDesc",
+       IDS_SETTINGS_SECURITY_KEYS_PHONES_MANAGE_DESC},
   };
   html_source->AddLocalizedStrings(kSecurityKeysStrings);
   bool win_native_api_available = false;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   win_native_api_available =
       base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
       device::WinWebAuthnApi::GetDefault()->IsAvailable();
@@ -2861,6 +2888,9 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
                           !win_native_api_available);
   html_source->AddBoolean("enableSecurityKeysBioEnrollment",
                           !win_native_api_available);
+  html_source->AddBoolean(
+      "enableSecurityKeysPhonesSubpage",
+      base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport));
 }
 
 void AddIPHStrings(content::WebUIDataSource* html_source) {
@@ -2878,10 +2908,10 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddAutofillStrings(html_source, profile, web_contents);
   AddAppearanceStrings(html_source, profile);
 
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   AddChromeCleanupStrings(html_source);
   AddIncompatibleApplicationsStrings(html_source);
-#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   AddClearBrowsingDataStrings(html_source, profile);
   AddCommonStrings(html_source, profile);
@@ -2909,7 +2939,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddImportDataStrings(html_source);
 #endif
 
-#if defined(USE_NSS_CERTS)
+#if BUILDFLAG(USE_NSS_CERTS)
   certificate_manager::AddLocalizedStrings(html_source);
 #endif
 

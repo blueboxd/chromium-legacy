@@ -9,6 +9,7 @@ import logging
 import re
 import sys
 import time
+import unittest
 
 from telemetry.internal.results import artifact_compatibility_wrapper as acw
 from telemetry.testing import serially_executed_browser_test_case
@@ -69,7 +70,7 @@ class GpuIntegrationTest(
   _first_run_test = None
 
   def __init__(self, *args, **kwargs):
-    super(GpuIntegrationTest, self).__init__(*args, **kwargs)
+    super().__init__(*args, **kwargs)
     if self.artifacts is None:
       self.set_artifacts(None)
 
@@ -80,7 +81,7 @@ class GpuIntegrationTest(
     # as during initial browser startup.
     if artifacts is None:
       artifacts = acw.FullLoggingArtifactImpl()
-    super(GpuIntegrationTest, self).set_artifacts(artifacts)
+    super().set_artifacts(artifacts)
 
   @classmethod
   def SetUpProcess(cls):
@@ -163,7 +164,7 @@ class GpuIntegrationTest(
       # Some platforms require GPU process, so browser fails to launch with
       # --disable-gpu mode, therefore, even test expectations fail to evaluate.
       os_name = cls.browser.platform.GetOSName()
-      if os_name == 'android' or os_name == 'chromeos':
+      if os_name in ('android', 'chromeos'):
         browser_args.remove(cba.DISABLE_GPU)
 
     if cls._finder_options.browser_type == 'web-engine-shell':
@@ -302,7 +303,7 @@ class GpuIntegrationTest(
     # TODO(crbug.com/1245346): Move this into Telemetry itself once it is
     # shown to work.
     os_name = cls.platform.GetOSName()
-    if os_name == 'android' or os_name == 'chromeos':
+    if os_name in ('android', 'chromeos'):
       logging.warning(
           'Restarting TsProxyServer due to being on a remote platform')
       network_controller_backend = (
@@ -328,7 +329,9 @@ class GpuIntegrationTest(
         # Internal bookkeeping.
         should_retry_on_failure = True
         # Notify typ that it should retry this test if necessary.
-        self.retryOnFailure = True  # pylint: disable=attribute-defined-outside-init
+        # pylint: disable=attribute-defined-outside-init
+        self.retryOnFailure = True
+        # pylint: enable=attribute-defined-outside-init
     try:
       # TODO(nednguyen): For some reason the arguments are getting wrapped
       # in another tuple sometimes (like in the WebGL extension tests).
@@ -343,6 +346,11 @@ class GpuIntegrationTest(
       if os_name == 'android':
         self.browser.platform.android_action_runner.TurnScreenOn()
       self.RunActualGpuTest(url, *args)
+    except unittest.SkipTest:
+      # pylint: disable=attribute-defined-outside-init
+      self.programmaticSkipIsExpected = True
+      # pylint: enable=attribute-defined-outside-init
+      raise
     except Exception:
       if ResultType.Failure in expected_results or should_retry_on_failure:
         # We don't check the return value here since we'll be raising the
@@ -514,9 +522,9 @@ class GpuIntegrationTest(
     tuples of tests to run."""
     raise NotImplementedError
 
-  def RunActualGpuTest(self, file_path, *args):
+  def RunActualGpuTest(self, test_path, *args):
     """Subclasses must override this to run the actual test at the given
-    URL. file_path is a path on the local file system that may need to
+    URL. test_path is a path on the local file system that may need to
     be resolved via UrlOfStaticFilePath.
     """
     raise NotImplementedError

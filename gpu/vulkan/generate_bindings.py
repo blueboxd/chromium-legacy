@@ -82,7 +82,7 @@ VULKAN_INSTANCE_FUNCTIONS = [
     ]
   },
   {
-    'ifdef': 'defined(OS_WIN)',
+    'ifdef': 'BUILDFLAG(IS_WIN)',
     'extension': 'VK_KHR_WIN32_SURFACE_EXTENSION_NAME',
     'functions': [
       'vkCreateWin32SurfaceKHR',
@@ -90,14 +90,14 @@ VULKAN_INSTANCE_FUNCTIONS = [
     ]
   },
   {
-    'ifdef': 'defined(OS_ANDROID)',
+    'ifdef': 'BUILDFLAG(IS_ANDROID)',
     'extension': 'VK_KHR_ANDROID_SURFACE_EXTENSION_NAME',
     'functions': [
       'vkCreateAndroidSurfaceKHR',
     ]
   },
   {
-    'ifdef': 'defined(OS_FUCHSIA)',
+    'ifdef': 'BUILDFLAG(IS_FUCHSIA)',
     'extension': 'VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME',
     'functions': [
       'vkCreateImagePipeSurfaceFUCHSIA',
@@ -176,7 +176,7 @@ VULKAN_DEVICE_FUNCTIONS = [
     ]
   },
   {
-    'ifdef': 'defined(OS_ANDROID)',
+    'ifdef': 'BUILDFLAG(IS_ANDROID)',
     'extension':
         'VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME',
     'functions': [
@@ -184,7 +184,8 @@ VULKAN_DEVICE_FUNCTIONS = [
     ]
   },
   {
-    'ifdef': 'defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)',
+    'ifdef':
+    'BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)',
     'extension': 'VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME',
     'functions': [
       'vkGetSemaphoreFdKHR',
@@ -192,7 +193,7 @@ VULKAN_DEVICE_FUNCTIONS = [
     ]
   },
   {
-    'ifdef': 'defined(OS_WIN)',
+    'ifdef': 'BUILDFLAG(IS_WIN)',
     'extension': 'VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME',
     'functions': [
       'vkGetSemaphoreWin32HandleKHR',
@@ -200,7 +201,8 @@ VULKAN_DEVICE_FUNCTIONS = [
     ]
   },
   {
-    'ifdef': 'defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)',
+    'ifdef':
+    'BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)',
     'extension': 'VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME',
     'functions': [
       'vkGetMemoryFdKHR',
@@ -208,7 +210,7 @@ VULKAN_DEVICE_FUNCTIONS = [
     ]
   },
   {
-    'ifdef': 'defined(OS_WIN)',
+    'ifdef': 'BUILDFLAG(IS_WIN)',
     'extension': 'VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME',
     'functions': [
       'vkGetMemoryWin32HandleKHR',
@@ -216,7 +218,7 @@ VULKAN_DEVICE_FUNCTIONS = [
     ]
   },
   {
-    'ifdef': 'defined(OS_FUCHSIA)',
+    'ifdef': 'BUILDFLAG(IS_FUCHSIA)',
     'extension': 'VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME',
     'functions': [
       'vkImportSemaphoreZirconHandleFUCHSIA',
@@ -224,20 +226,20 @@ VULKAN_DEVICE_FUNCTIONS = [
     ]
   },
   {
-    'ifdef': 'defined(OS_FUCHSIA)',
+    'ifdef': 'BUILDFLAG(IS_FUCHSIA)',
     'extension': 'VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME',
     'functions': [
       'vkGetMemoryZirconHandleFUCHSIA',
     ]
   },
   {
-    'ifdef': 'defined(OS_FUCHSIA)',
-    'extension': 'VK_FUCHSIA_BUFFER_COLLECTION_X_EXTENSION_NAME',
+    'ifdef': 'BUILDFLAG(IS_FUCHSIA)',
+    'extension': 'VK_FUCHSIA_BUFFER_COLLECTION_EXTENSION_NAME',
     'functions': [
-      'vkCreateBufferCollectionFUCHSIAX',
-      'vkSetBufferCollectionConstraintsFUCHSIAX',
-      'vkGetBufferCollectionPropertiesFUCHSIAX',
-      'vkDestroyBufferCollectionFUCHSIAX',
+      'vkCreateBufferCollectionFUCHSIA',
+      'vkSetBufferCollectionImageConstraintsFUCHSIA',
+      'vkGetBufferCollectionPropertiesFUCHSIA',
+      'vkDestroyBufferCollectionFUCHSIA',
     ]
   },
   {
@@ -251,7 +253,7 @@ VULKAN_DEVICE_FUNCTIONS = [
     ]
   },
   {
-    'ifdef': 'defined(OS_LINUX) || defined(OS_CHROMEOS)',
+    'ifdef': 'BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)',
     'extension': 'VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME',
     'functions': [
       'vkGetImageDrmFormatModifierPropertiesEXT',
@@ -345,7 +347,14 @@ def WriteMacros(out_file, functions):
       pdecl += text + tail
     n = len(params)
 
-    callstat = 'return gpu::GetVulkanFunctionPointers()->%s(' % func
+    callstat = ''
+    if (func == 'vkQueueSubmit' or func == 'vkQueueWaitIdle'
+        or func == 'vkQueuePresentKHR'):
+        callstat = '''base::AutoLockMaybe auto_lock
+        (gpu::GetVulkanFunctionPointers()->per_queue_lock_map[queue].get());
+        \n'''
+
+    callstat += 'return gpu::GetVulkanFunctionPointers()->%s(' % func
     paramdecl = '('
     if n > 0:
       paramnames = (''.join(t for t in p.itertext())
@@ -376,15 +385,17 @@ def GenerateHeaderFile(out_file):
 
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/native_library.h"
+#include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "ui/gfx/extension_set.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include <vulkan/vulkan_android.h>
 #endif
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 #include <zircon/types.h>
 // <vulkan/vulkan_fuchsia.h> must be included after <zircon/types.h>
 #include <vulkan/vulkan_fuchsia.h>
@@ -398,7 +409,7 @@ def GenerateHeaderFile(out_file):
 #include <vulkan/vulkan_xcb.h>
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <vulkan/vulkan_win32.h>
 #endif
 
@@ -430,6 +441,12 @@ struct COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers {
       const gfx::ExtensionSet& enabled_extensions);
 
   base::NativeLibrary vulkan_loader_library = nullptr;
+
+  // This is used to allow thread safe access to a given vulkan queue when
+  // multiple gpu threads are accessing it. Note that this map will be only
+  // accessed by multiple gpu threads concurrently to read the data, so it
+  // should be thread safe to use this map by multiple threads.
+  base::flat_map<VkQueue, std::unique_ptr<base::Lock>> per_queue_lock_map;
 
   template<typename T>
   class VulkanFunction;
@@ -650,14 +667,14 @@ def main(argv):
 
   header_file_name = 'vulkan_function_pointers.h'
   header_file = open(
-      os.path.join(output_dir, header_file_name), 'w')
+      os.path.join(output_dir, header_file_name), 'w', newline='\n')
   GenerateHeaderFile(header_file)
   header_file.close()
   ClangFormat(header_file.name)
 
   source_file_name = 'vulkan_function_pointers.cc'
   source_file = open(
-      os.path.join(output_dir, source_file_name), 'w')
+      os.path.join(output_dir, source_file_name), 'w', newline='\n')
   GenerateSourceFile(source_file)
   source_file.close()
   ClangFormat(source_file.name)

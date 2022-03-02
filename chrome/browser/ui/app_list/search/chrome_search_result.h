@@ -11,6 +11,7 @@
 
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/ranking/types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -41,9 +42,10 @@ class ChromeSearchResult {
   using Action = ash::SearchResultAction;
   using Actions = ash::SearchResultActions;
   using DisplayIndex = ash::SearchResultDisplayIndex;
-  using OmniboxType = ash::SearchResultOmniboxDisplayType;
   using IconInfo = ash::SearchResultIconInfo;
   using IconShape = ash::SearchResultIconShape;
+  using TextItem = ash::SearchResultTextItem;
+  using TextVector = std::vector<TextItem>;
 
   ChromeSearchResult();
 
@@ -56,6 +58,17 @@ class ChromeSearchResult {
   const Tags& title_tags() const { return metadata_->title_tags; }
   const std::u16string& details() const { return metadata_->details; }
   const Tags& details_tags() const { return metadata_->details_tags; }
+
+  const TextVector& title_text_vector() const {
+    return metadata_->title_vector;
+  }
+  const TextVector& details_text_vector() const {
+    return metadata_->details_vector;
+  }
+  const TextVector& big_title_text_vector() const {
+    return metadata_->big_title_vector;
+  }
+
   const std::u16string& accessible_name() const {
     return metadata_->accessible_name;
   }
@@ -72,7 +85,6 @@ class ChromeSearchResult {
   }
   MetricsType metrics_type() const { return metadata_->metrics_type; }
   DisplayIndex display_index() const { return metadata_->display_index; }
-  OmniboxType omnibox_type() const { return metadata_->omnibox_type; }
   float position_priority() const { return metadata_->position_priority; }
   const Actions& actions() const { return metadata_->actions; }
   double display_score() const { return metadata_->display_score; }
@@ -96,6 +108,9 @@ class ChromeSearchResult {
   void SetTitleTags(const Tags& tags);
   void SetDetails(const std::u16string& details);
   void SetDetailsTags(const Tags& tags);
+  void SetTitleTextVector(const TextVector& text_vector);
+  void SetDetailsTextVector(const TextVector& text_vector);
+  void SetBigTitleTextVector(const TextVector& text_vector);
   void SetAccessibleName(const std::u16string& name);
   void SetRating(float rating);
   void SetFormattedPrice(const std::u16string& formatted_price);
@@ -105,7 +120,6 @@ class ChromeSearchResult {
   void SetResultType(ResultType result_type);
   void SetMetricsType(MetricsType metrics_type);
   void SetDisplayIndex(DisplayIndex display_index);
-  void SetOmniboxType(OmniboxType omnibox_type);
   void SetPositionPriority(float position_priority);
   void SetDisplayScore(double display_score);
   void SetActions(const Actions& actions);
@@ -169,6 +183,10 @@ class ChromeSearchResult {
       base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetContextMenuModel(GetMenuModelCallback callback);
 
+  base::WeakPtr<ChromeSearchResult> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  protected:
   // These id setters should be called in derived class constructors only.
   void set_id(const std::string& id) { metadata_->id = id; }
@@ -209,6 +227,8 @@ class ChromeSearchResult {
   std::unique_ptr<ash::SearchResultMetadata> metadata_;
 
   AppListModelUpdater* model_updater_ = nullptr;
+
+  base::WeakPtrFactory<ChromeSearchResult> weak_ptr_factory_{this};
 };
 
 ::std::ostream& operator<<(::std::ostream& os,

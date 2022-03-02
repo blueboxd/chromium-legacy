@@ -9,6 +9,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 
 namespace {
 
@@ -26,9 +27,10 @@ std::unique_ptr<base::DictionaryValue> GetAutoDisplayDictForSettings(
   if (!settings)
     return std::make_unique<base::DictionaryValue>();
 
-  std::unique_ptr<base::DictionaryValue> value =
-      base::DictionaryValue::From(settings->GetWebsiteSetting(
-          origin, origin, ContentSettingsType::INTENT_PICKER_DISPLAY, nullptr));
+  std::unique_ptr<base::DictionaryValue> value = base::DictionaryValue::From(
+      content_settings::ToNullableUniquePtrValue(settings->GetWebsiteSetting(
+          origin, origin, ContentSettingsType::INTENT_PICKER_DISPLAY,
+          nullptr)));
 
   if (value.get())
     return value;
@@ -88,8 +90,7 @@ int IntentPickerAutoDisplayPref::QueryDismissedCounter() {
   if (!pref_dict_)
     return 0;
 
-  int counter = 0;
-  pref_dict_->GetInteger(kAutoDisplayKey, &counter);
+  int counter = pref_dict_->FindIntKey(kAutoDisplayKey).value_or(0);
   DCHECK_GE(counter, static_cast<int>(Platform::kNone));
   DCHECK_LE(counter, static_cast<int>(Platform::kMaxValue));
 
@@ -111,8 +112,7 @@ IntentPickerAutoDisplayPref::QueryPlatform() {
   if (!pref_dict_)
     return Platform::kNone;
 
-  int platform = 0;
-  pref_dict_->GetInteger(kPlatformKey, &platform);
+  int platform = pref_dict_->FindIntKey(kPlatformKey).value_or(0);
   DCHECK_GE(platform, static_cast<int>(Platform::kNone));
   DCHECK_LE(platform, static_cast<int>(Platform::kMaxValue));
 
@@ -122,5 +122,5 @@ IntentPickerAutoDisplayPref::QueryPlatform() {
 void IntentPickerAutoDisplayPref::Commit() {
   settings_map_->SetWebsiteSettingDefaultScope(
       origin_, origin_, ContentSettingsType::INTENT_PICKER_DISPLAY,
-      std::move(pref_dict_));
+      content_settings::FromNullableUniquePtrValue(std::move(pref_dict_)));
 }

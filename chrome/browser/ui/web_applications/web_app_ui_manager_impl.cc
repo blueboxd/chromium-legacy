@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/ui/webui/web_app_internals/web_app_internals_source.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -49,9 +50,15 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
+#include "base/process/process.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "ui/gfx/native_widget_types.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace web_app {
 
@@ -67,27 +74,40 @@ bool IsAppInstalled(Profile* profile, const AppId& app_id) {
   return installed;
 }
 
-#if defined(OS_WIN)
-
-// UninstallWebAppWithDialogFromStartupSwitch handles WebApp uninstallation from
-// the Windows Settings.
+#if BUILDFLAG(IS_WIN)
+// ScopedKeepAlive not only keeps the process from terminating early
+// during uninstall, it also ensures the process will terminate when it
+// is destroyed if there is no active browser window.
 void UninstallWebAppWithDialogFromStartupSwitch(const AppId& app_id,
                                                 Profile* profile,
                                                 WebAppProvider* provider) {
-  if (!provider->registrar().IsLocallyInstalled(app_id)) {
-    // App does not exist and controller is destroyed.
-    return;
+  // ScopedKeepAlive does not only keeps the process from early termination,
+  // but ensure the process termination when there is no active browser window.
+  std::unique_ptr<ScopedKeepAlive> scoped_keep_alive =
+      std::make_unique<ScopedKeepAlive>(KeepAliveOrigin::WEB_APP_UNINSTALL,
+                                        KeepAliveRestartOption::DISABLED);
+  if (provider->install_finalizer().CanUserUninstallWebApp(app_id)) {
+    WebAppUiManagerImpl::Get(provider)->dialog_manager().UninstallWebApp(
+        app_id, webapps::WebappUninstallSource::kOsSettings,
+        gfx::kNullNativeWindow,
+        base::BindOnce([](std::unique_ptr<ScopedKeepAlive> scoped_keep_alive,
+                          bool success) {},
+                       std::move(scoped_keep_alive)));
+  } else {
+    // There is a chance that a previous invalid uninstall operation (due
+    // to a crash or otherwise) could end up orphaning an OsSettings entry.
+    // In this case we clean up the OsSettings entry.
+    web_app::OsHooksOptions options;
+    options[OsHookType::kUninstallationViaOsSettings] = true;
+    provider->os_integration_manager().UninstallOsHooks(
+        app_id, options,
+        base::BindOnce([](std::unique_ptr<ScopedKeepAlive> scoped_keep_alive,
+                          OsHooksErrors os_hooks_errors) {},
+                       std::move(scoped_keep_alive)));
   }
-
-  // Note: WebAppInstallFinalizer::UninstallWebApp creates a ScopedKeepAlive
-  // object which ensures the browser stays alive during the WebApp
-  // uninstall.
-  WebAppUiManagerImpl::Get(provider)->dialog_manager().UninstallWebApp(
-      app_id, webapps::WebappUninstallSource::kOsSettings,
-      gfx::kNullNativeWindow, base::DoNothing());
 }
 
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 DisplayMode GetExtensionDisplayMode(Profile* profile,
                                     const extensions::Extension* extension) {
@@ -98,11 +118,11 @@ DisplayMode GetExtensionDisplayMode(Profile* profile,
 
   switch (extensions::GetLaunchContainer(
       extensions::ExtensionPrefs::Get(profile), extension)) {
-    case extensions::LaunchContainer::kLaunchContainerWindow:
-    case extensions::LaunchContainer::kLaunchContainerPanelDeprecated:
+    case apps::mojom::LaunchContainer::kLaunchContainerWindow:
+    case apps::mojom::LaunchContainer::kLaunchContainerPanelDeprecated:
       return DisplayMode::kStandalone;
-    case extensions::LaunchContainer::kLaunchContainerTab:
-    case extensions::LaunchContainer::kLaunchContainerNone:
+    case apps::mojom::LaunchContainer::kLaunchContainerTab:
+    case apps::mojom::LaunchContainer::kLaunchContainerNone:
       return DisplayMode::kBrowser;
   }
 }
@@ -375,7 +395,7 @@ void WebAppUiManagerImpl::NotifyOnAssociatedAppChanged(
 bool WebAppUiManagerImpl::CanReparentAppTabToWindow(
     const AppId& app_id,
     bool shortcut_created) const {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // On macOS it is only possible to reparent the window when the shortcut (app
   // shim) was created. See https://crbug.com/915571.
   return shortcut_created;
@@ -454,7 +474,7 @@ void WebAppUiManagerImpl::OnBrowserRemoved(Browser* browser) {
   windows_closed_requests_map_.erase(app_id);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void WebAppUiManagerImpl::UninstallWebAppFromStartupSwitch(
     const AppId& app_id) {
   WebAppProvider* provider = WebAppProvider::GetForWebApps(profile_);
@@ -462,7 +482,7 @@ void WebAppUiManagerImpl::UninstallWebAppFromStartupSwitch(
       FROM_HERE, base::BindOnce(&UninstallWebAppWithDialogFromStartupSwitch,
                                 app_id, profile_, provider));
 }
-#endif  //  defined(OS_WIN)
+#endif  //  BUILDFLAG(IS_WIN)
 
 bool WebAppUiManagerImpl::IsBrowserForInstalledApp(Browser* browser) {
   if (browser->profile() != profile_)

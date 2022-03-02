@@ -127,20 +127,48 @@ std::string Pattern::GeneratePatternString() const {
     // necessary when the group:
     //
     // 1. is using a non-automatic prefix or any suffix.
-    // 2. followed by a matching group that may be represented by a
-    //    `(...)` expression.  This is necessary to avoid the following `(...)`
-    //    being mistakenly interpretted as the custom regexp for this
-    //    named group; like `:foo(...)`.
-    const Part* next_part =
-        (i + 1) < part_list_.size() ? &part_list_[i + 1] : nullptr;
     bool needs_grouping =
         !part.suffix.empty() ||
         (!part.prefix.empty() &&
          (part.prefix.size() != 1 ||
-          options_.prefix_list.find(part.prefix[0]) == std::string::npos)) ||
-        (custom_name && part.modifier == Modifier::kNone && next_part &&
-         next_part->type != PartType::kFixed && next_part->prefix.empty() &&
-         next_part->suffix.empty() && !next_part->HasCustomName());
+          options_.prefix_list.find(part.prefix[0]) == std::string::npos));
+
+    // 2. followed by a matching group that may be expressed in a way that can
+    //    be mistakenly interpreted as part of this matching group.  For
+    //    example:
+    //
+    //    a. An `(...)` expression following a `:foo` group.  We want to
+    //       output `{:foo}(...)` and not `:foo(...)`.
+    //    b. A plaint text expression following a `:foo` group where the text
+    //       could be mistakenly interpreted as part of the name.  We want to
+    //       output `{:foo}bar` and not `:foobar`.
+    const Part* next_part =
+        (i + 1) < part_list_.size() ? &part_list_[i + 1] : nullptr;
+    if (!needs_grouping && part.prefix.empty() && custom_name &&
+        part.type == PartType::kSegmentWildcard &&
+        part.modifier == Modifier::kNone && next_part &&
+        next_part->prefix.empty() && next_part->suffix.empty()) {
+      if (next_part->type == PartType::kFixed) {
+        UChar32 codepoint = -1;
+        U8_GET(reinterpret_cast<const uint8_t*>(next_part->value.data()), 0, 0,
+               static_cast<int>(next_part->value.size()), codepoint);
+        needs_grouping = IsNameCodepoint(codepoint, /*first_codepoint=*/false);
+      } else {
+        needs_grouping = !next_part->HasCustomName();
+      }
+    }
+
+    // 3. preceded by a fixed text part that ends with an implicit prefix
+    //    character (like `/`).  This occurs when the original pattern used
+    //    an escape or grouping to prevent the implicit prefix; e.g.
+    //    `\\/*` or `/{*}`.  In these cases we use a grouping to prevent the
+    //    implicit prefix in the generated string.
+    const Part* last_part = i > 0 ? &part_list_[i - 1] : nullptr;
+    if (!needs_grouping && part.prefix.empty() && last_part &&
+        last_part->type == PartType::kFixed) {
+      needs_grouping = options_.prefix_list.find(last_part->value.back()) !=
+                       std::string::npos;
+    }
 
     // This is a full featured part.  We must generate a string that looks
     // like:
@@ -173,7 +201,6 @@ std::string Pattern::GeneratePatternString() const {
         result += ")";
       }
     } else if (part.type == PartType::kFullWildcard) {
-      const Part* last_part = i > 0 ? &part_list_[i - 1] : nullptr;
       // We can only use the `*` wildcard card if we meet a number
       // of conditions.  We must use an explicit `(.*)` group if:
       //
@@ -182,8 +209,11 @@ std::string Pattern::GeneratePatternString() const {
       //    `(foo)(.*)`.  In that case we cannot emit the `*` shorthand without
       //    it being mistakenly interpreted as the modifier for the previous
       //    group.
+      // 3. The current group is not enclosed in a `{ }` grouping.
+      // 4. The current group does not have an implicit prefix like `/`.
       if (!custom_name && (!last_part || last_part->type == PartType::kFixed ||
-                           last_part->modifier != Modifier::kNone)) {
+                           last_part->modifier != Modifier::kNone ||
+                           needs_grouping || !part.prefix.empty())) {
         result += "*";
       } else {
         result += "(";

@@ -40,10 +40,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_uma.h"
+#include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
@@ -65,7 +65,7 @@
 ChromePageInfoDelegate::ChromePageInfoDelegate(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   sentiment_service_ =
       TrustSafetySentimentServiceFactory::GetForProfile(GetProfile());
 #endif
@@ -87,14 +87,14 @@ ChromePageInfoDelegate::GetChooserContext(ContentSettingsType type) {
       }
       return nullptr;
     case ContentSettingsType::SERIAL_CHOOSER_DATA:
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
       return SerialChooserContextFactory::GetForProfile(GetProfile());
 #else
       NOTREACHED();
       return nullptr;
 #endif
     case ContentSettingsType::HID_CHOOSER_DATA:
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
       return HidChooserContextFactory::GetForProfile(GetProfile());
 #else
       NOTREACHED();
@@ -155,7 +155,7 @@ permissions::PermissionResult ChromePageInfoDelegate::GetPermissionStatus(
   return PermissionManagerFactory::GetForProfile(GetProfile())
       ->GetPermissionStatus(type, site_url, site_url);
 }
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 bool ChromePageInfoDelegate::CreateInfoBarDelegate() {
   infobars::ContentInfoBarManager* infobar_manager =
       infobars::ContentInfoBarManager::FromWebContents(web_contents_);
@@ -171,8 +171,9 @@ void ChromePageInfoDelegate::ShowSiteSettings(const GURL& site_url) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (web_app::AppBrowserController::IsWebApp(browser)) {
     web_app::AppId app_id = browser->app_controller()->app_id();
-    chrome::ShowAppManagementPage(GetProfile(), app_id,
-                                  AppManagementEntryPoint::kPageInfoView);
+    chrome::ShowAppManagementPage(
+        GetProfile(), app_id,
+        ash::settings::AppManagementEntryPoint::kPageInfoView);
     return;
   }
 #endif
@@ -290,7 +291,7 @@ ChromePageInfoDelegate::GetPageSpecificContentSettingsDelegate() {
   return std::move(delegate);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const std::u16string ChromePageInfoDelegate::GetClientApplicationName() {
   return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
 }

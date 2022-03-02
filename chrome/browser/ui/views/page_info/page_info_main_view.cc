@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_history_controller.h"
 #include "chrome/browser/ui/views/page_info/page_info_navigation_handler.h"
 #include "chrome/browser/ui/views/page_info/page_info_security_content_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
@@ -48,10 +49,20 @@ constexpr float kMaxPermissionRowCount = 10.5;
 
 }  // namespace
 
+PageInfoMainView::ContainerView::ContainerView() {
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+}
+
+void PageInfoMainView::ContainerView::Update() {
+  PreferredSizeChanged();
+}
+
 PageInfoMainView::PageInfoMainView(
     PageInfo* presenter,
     ChromePageInfoUiDelegate* ui_delegate,
     PageInfoNavigationHandler* navigation_handler,
+    PageInfoHistoryController* history_controller,
     base::OnceClosure initialized_callback)
     : presenter_(presenter),
       ui_delegate_(ui_delegate),
@@ -71,7 +82,7 @@ PageInfoMainView::PageInfoMainView(
       ->SetProperty(views::kMarginsKey,
                     gfx::Insets(0, 0, hover_list_spacing, 0));
 
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_VR)
   page_feature_info_view_ = AddChildView(std::make_unique<views::View>());
 #endif
 
@@ -97,6 +108,10 @@ PageInfoMainView::PageInfoMainView(
         PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
         /*tooltip_text=*/l10n_util::GetStringUTF16(tooltip_text_id),
         std::u16string(), PageInfoViewFactory::GetLaunchIcon()));
+  }
+
+  if (base::FeatureList::IsEnabled(page_info::kPageInfoHistoryDesktop)) {
+    history_controller->InitRow(AddChildView(CreateContainerView()));
   }
 
   if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite)) {
@@ -344,7 +359,7 @@ void PageInfoMainView::SetIdentityInfo(const IdentityInfo& identity_info) {
 }
 
 void PageInfoMainView::SetPageFeatureInfo(const PageFeatureInfo& info) {
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_VR)
   // For now, this has only VR settings.
   if (!info.is_vr_presentation_in_headset)
     return;
@@ -427,10 +442,7 @@ void PageInfoMainView::OnChosenObjectDeleted(
 }
 
 std::unique_ptr<views::View> PageInfoMainView::CreateContainerView() {
-  auto container_view = std::make_unique<views::View>();
-  container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
-  return container_view;
+  return std::make_unique<ContainerView>();
 }
 
 void PageInfoMainView::HandleMoreInfoRequest(views::View* source) {
@@ -466,6 +478,10 @@ gfx::Size PageInfoMainView::CalculatePreferredSize() const {
     width = std::max(width, permissions_view_->GetPreferredSize().width());
   }
   return gfx::Size(width, views::View::GetHeightForWidth(width));
+}
+
+void PageInfoMainView::ChildPreferredSizeChanged(views::View* child) {
+  PreferredSizeChanged();
 }
 
 std::unique_ptr<views::View> PageInfoMainView::CreateBubbleHeaderView() {

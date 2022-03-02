@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "components/account_id/account_id.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -108,6 +109,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   bool VersionChanged() const;
 
   std::vector<std::string> AdditionalSearchTerms() const;
+  std::vector<std::string> GetAdditionalSearchTerms() const;
   bool AdditionalSearchTermsChanged() const;
 
   apps::mojom::IconKeyPtr IconKey() const;
@@ -115,23 +117,29 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   bool IconKeyChanged() const;
 
   base::Time LastLaunchTime() const;
+  base::Time GetLastLaunchTime() const;
   bool LastLaunchTimeChanged() const;
 
   base::Time InstallTime() const;
+  base::Time GetInstallTime() const;
   bool InstallTimeChanged() const;
 
   std::vector<apps::mojom::PermissionPtr> Permissions() const;
+  apps::Permissions GetPermissions() const;
   bool PermissionsChanged() const;
 
   apps::mojom::InstallReason InstallReason() const;
+  apps::InstallReason GetInstallReason() const;
   bool InstallReasonChanged() const;
 
   apps::mojom::InstallSource InstallSource() const;
+  apps::InstallSource GetInstallSource() const;
   bool InstallSourceChanged() const;
 
   // An optional ID used for policy to identify the app.
   // For web apps, it contains the install URL.
   const std::string& PolicyId() const;
+  const std::string& GetPolicyId() const;
   bool PolicyIdChanged() const;
 
   apps::mojom::OptionalBool InstalledInternally() const;

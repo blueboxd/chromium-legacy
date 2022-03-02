@@ -1188,11 +1188,11 @@ void WebAXObject::GetRelativeBounds(WebAXObject& offset_container,
 #endif
 
   AXObject* container = nullptr;
-  FloatRect bounds;
+  gfx::RectF bounds;
   private_->GetRelativeBounds(&container, bounds, container_transform,
                               clips_children);
   offset_container = WebAXObject(container);
-  bounds_in_container = ToGfxRectF(bounds);
+  bounds_in_container = bounds;
 }
 
 void WebAXObject::GetAllObjectsWithChangedBounds(
@@ -1376,8 +1376,7 @@ void WebAXObject::UpdateLayout(const WebDocument& web_document) {
   if (!document || !document->View() || !document->ExistingAXObjectCache())
     return;
   if (document->NeedsLayoutTreeUpdate() || document->View()->NeedsLayout() ||
-      document->Lifecycle().GetState() <
-          DocumentLifecycle::kCompositingAssignmentsClean ||
+      document->Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean ||
       document->ExistingAXObjectCache()->IsDirty()) {
     document->View()->UpdateAllLifecyclePhasesExceptPaint(
         DocumentUpdateReason::kAccessibility);

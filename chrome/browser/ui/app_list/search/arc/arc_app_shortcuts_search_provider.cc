@@ -28,7 +28,7 @@ ArcAppShortcutsSearchProvider::ArcAppShortcutsSearchProvider(
 
 ArcAppShortcutsSearchProvider::~ArcAppShortcutsSearchProvider() = default;
 
-ash::AppListSearchResultType ArcAppShortcutsSearchProvider::ResultType() {
+ash::AppListSearchResultType ArcAppShortcutsSearchProvider::ResultType() const {
   return ash::AppListSearchResultType::kArcAppShortcut;
 }
 
@@ -40,13 +40,9 @@ void ArcAppShortcutsSearchProvider::Start(const std::u16string& query) {
                 GetAppShortcutGlobalQueryItems)
           : nullptr;
 
-  // TODO(931149): Currently we early-exit if the query is empty because we
-  // don't show zero-state arc shortcuts. If this changes in future, remove this
-  // early exit.
-  if (!app_instance || query.empty()) {
-    ClearResults();
+  ClearResultsSilently();
+  if (!app_instance)
     return;
-  }
   last_query_ = query;
 
   if (query.empty()) {

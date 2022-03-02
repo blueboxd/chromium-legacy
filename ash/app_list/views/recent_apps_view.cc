@@ -58,15 +58,11 @@ std::string ItemIdFromAppId(const std::string& app_id) {
   return app_id;
 }
 
-// Returns a list of recent apps by filtering suggestion chip data.
-// TODO(crbug.com/1216662): Replace with a real implementation after the ML team
-// gives us a way to query directly for recent apps.
-std::vector<std::string> GetRecentAppIdsFromSuggestionChips(
-    SearchModel* search_model) {
+// Returns a list of recent apps by filtering zero-state suggestion data.
+std::vector<std::string> GetRecentAppIds(SearchModel* search_model) {
   SearchModel::SearchResults* results = search_model->results();
   auto is_app_suggestion = [](const SearchResult& r) -> bool {
-    return IsAppListSearchResultAnApp(r.result_type()) &&
-           r.display_type() == SearchResultDisplayType::kList;
+    return r.display_type() == SearchResultDisplayType::kRecentApps;
   };
   std::vector<SearchResult*> app_suggestion_results =
       SearchModel::FilterSearchResultsByFunction(
@@ -156,7 +152,26 @@ RecentAppsView::RecentAppsView(Delegate* delegate,
   SetVisible(false);
 }
 
-RecentAppsView::~RecentAppsView() = default;
+RecentAppsView::~RecentAppsView() {
+  if (model_)
+    model_->RemoveObserver(this);
+}
+
+void RecentAppsView::OnAppListItemWillBeDeleted(AppListItem* item) {
+  std::vector<AppListItemView*> views_to_delete;
+
+  for (AppListItemView* view : item_views_) {
+    if (!view->item() || view->item() == item)
+      views_to_delete.push_back(view);
+  }
+
+  for (AppListItemView* view : views_to_delete) {
+    RemoveChildView(view);
+    base::Erase(item_views_, view);
+  }
+
+  SetVisible(item_views_.size() >= kMinRecommendedApps);
+}
 
 void RecentAppsView::UpdateAppListConfig(const AppListConfig* app_list_config) {
   app_list_config_ = app_list_config;
@@ -171,8 +186,15 @@ void RecentAppsView::ShowResults(SearchModel* search_model,
   item_views_.clear();
   RemoveAllChildViews();
 
-  std::vector<std::string> app_ids =
-      GetRecentAppIdsFromSuggestionChips(search_model);
+  if (model_ != model) {
+    if (model_)
+      model_->RemoveObserver(this);
+    model_ = model;
+    if (model_)
+      model_->AddObserver(this);
+  }
+
+  std::vector<std::string> app_ids = GetRecentAppIds(search_model);
   std::vector<AppListItem*> items;
 
   for (const std::string& app_id : app_ids) {

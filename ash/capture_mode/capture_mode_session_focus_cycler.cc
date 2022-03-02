@@ -9,12 +9,10 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/magnifier/magnifier_utils.h"
 #include "ash/capture_mode/capture_label_view.h"
-#include "ash/capture_mode/capture_mode_advanced_settings_view.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_button.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_session.h"
-#include "ash/capture_mode/capture_mode_settings_entry_view.h"
 #include "ash/capture_mode/capture_mode_settings_view.h"
 #include "ash/capture_mode/capture_mode_source_view.h"
 #include "ash/capture_mode/capture_mode_toggle_button.h"
@@ -22,7 +20,7 @@
 #include "ash/capture_mode/capture_mode_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
-#include "ash/style/ash_color_provider.h"
+#include "ash/style/style_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -105,10 +103,7 @@ void CaptureModeSessionFocusCycler::HighlightableView::PseudoFocus() {
   // for children of HighlightableView, so it will not replace any other style
   // of FocusRing.
   if (!focus_ring_) {
-    views::FocusRing::Install(view);
-    focus_ring_ = views::FocusRing::Get(view);
-    focus_ring_->SetColor(AshColorProvider::Get()->GetControlsLayerColor(
-        AshColorProvider::ControlsLayerType::kFocusRingColor));
+    focus_ring_ = StyleUtil::SetUpFocusRingForView(view);
     // Use a custom focus predicate as the default one checks if |view| actually
     // has focus which won't be happening since our widgets are not activatable.
     focus_ring_->SetHasFocusPredicate(
@@ -448,9 +443,10 @@ CaptureModeSessionFocusCycler::GetGroupItems(FocusGroup group) const {
                source_view->fullscreen_toggle_button(),
                source_view->region_toggle_button(),
                source_view->window_toggle_button()};
+
       base::EraseIf(items,
                     [](CaptureModeSessionFocusCycler::HighlightableView* item) {
-                      return !item->GetView()->GetEnabled();
+                      return !item || !item->GetView()->GetEnabled();
                     });
       break;
     }
@@ -466,17 +462,10 @@ CaptureModeSessionFocusCycler::GetGroupItems(FocusGroup group) const {
       break;
     }
     case FocusGroup::kSettingsMenu: {
-      if (features::AreImprovedScreenCaptureSettingsEnabled()) {
-        CaptureModeAdvancedSettingsView* advanced_settings_view =
-            session_->capture_mode_advanced_settings_view_;
-        DCHECK(advanced_settings_view);
-        items = advanced_settings_view->GetHighlightableItems();
-      } else {
-        CaptureModeSettingsView* settings_view =
-            session_->capture_mode_settings_view_;
-        DCHECK(settings_view);
-        items = {settings_view->microphone_view()};
-      }
+      CaptureModeSettingsView* settings_view =
+          session_->capture_mode_settings_view_;
+      DCHECK(settings_view);
+      items = settings_view->GetHighlightableItems();
       break;
     }
   }

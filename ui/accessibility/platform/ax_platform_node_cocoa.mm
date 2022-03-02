@@ -7,10 +7,12 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/foundation_util.h"
+#include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_platform_node_mac.h"
 #include "ui/accessibility/platform/ax_private_attributes_mac.h"
 #include "ui/accessibility/platform/ax_private_roles_mac.h"
@@ -652,6 +654,8 @@ bool IsAXSetter(SEL selector) {
 
   // These attributes are required on all accessibility objects.
   NSArray* const kAllRoleAttributes = @[
+    NSAccessibilityBlockQuoteLevelAttribute,
+    NSAccessibilityDOMClassList,
     NSAccessibilityDOMIdentifierAttribute,
     NSAccessibilityChildrenAttribute,
     NSAccessibilityParentAttribute,
@@ -694,7 +698,7 @@ bool IsAXSetter(SEL selector) {
       [axAttributes addObject:kTextAttributes];
       if (!_node->HasState(ax::mojom::State::kProtected))
         [axAttributes addObjectsFromArray:kUnprotectedTextAttributes];
-      FALLTHROUGH;
+      [[fallthrough]];
     case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kComboBoxMenuButton:
     case ax::mojom::Role::kMenuItemCheckBox:
@@ -801,6 +805,10 @@ bool IsAXSetter(SEL selector) {
   if (_node->HasIntListAttribute(ax::mojom::IntListAttribute::kDetailsIds)) {
     [axAttributes addObject:NSAccessibilityDetailsElementsAttribute];
   }
+
+  // Drop effect.
+  if (_node->HasHtmlAttribute("aria-dropeffect"))
+    [axAttributes addObject:NSAccessibilityDropEffectsAttribute];
 
   if (ui::SupportsRequired(role)) {
     [axAttributes addObject:NSAccessibilityRequiredAttributeChrome];
@@ -1003,6 +1011,24 @@ bool IsAXSetter(SEL selector) {
   return [self getStringAttribute:ax::mojom::StringAttribute::kAutoComplete];
 }
 
+- (id)AXBlockQuoteLevel {
+  if (![self instanceActive])
+    return nil;
+  // This is for the number of ancestors that are a <blockquote>, including
+  // self, useful for tracking replies to replies etc. in an email.
+  int level = 0;
+
+  for (ui::AXPlatformNodeBase* ancestor = _node; ancestor;
+       ancestor = ancestor->GetPlatformParent()) {
+    // Do not cross document boundaries.
+    if (ui::IsPlatformDocument(ancestor->GetRole()))
+      break;
+    if (ancestor->GetRole() == ax::mojom::Role::kBlockquote)
+      ++level;
+  }
+  return @(level);
+}
+
 - (NSArray*)AXColumnHeaderUIElements {
   return [self accessibilityColumnHeaderUIElements];
 }
@@ -1022,6 +1048,23 @@ bool IsAXSetter(SEL selector) {
   return [elements count] ? elements : nil;
 }
 
+- (NSArray*)AXDOMClassList {
+  if (![self instanceActive])
+    return nil;
+
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+
+  std::string classes;
+  if (_node->GetStringAttribute(ax::mojom::StringAttribute::kClassName,
+                                &classes)) {
+    std::vector<std::string> split_classes = base::SplitString(
+        classes, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    for (const auto& className : split_classes)
+      [ret addObject:(base::SysUTF8ToNSString(className))];
+  }
+  return ret;
+}
+
 - (NSString*)AXDOMIdentifier {
   if (![self instanceActive])
     return nil;
@@ -1031,6 +1074,17 @@ bool IsAXSetter(SEL selector) {
     return base::SysUTF8ToNSString(id);
 
   return @"";
+}
+
+- (NSString*)AXDropEffects {
+  if (![self instanceActive])
+    return nil;
+
+  std::string dropEffects;
+  if (_node->GetHtmlAttribute("aria-dropeffect", &dropEffects))
+    return base::SysUTF8ToNSString(dropEffects);
+
+  return nil;
 }
 
 - (NSNumber*)AXHasPopup {

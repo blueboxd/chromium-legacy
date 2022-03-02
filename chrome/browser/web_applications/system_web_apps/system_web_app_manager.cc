@@ -32,12 +32,12 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -93,7 +93,6 @@
 #if !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ash/web_applications/demo_mode_web_app_info.h"
 #include "chrome/browser/ash/web_applications/sample_system_web_app_info.h"
-#include "chrome/browser/ash/web_applications/telemetry_extension_web_app_info.h"
 #endif  // !defined(OFFICIAL_BUILD)
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -145,7 +144,6 @@ SystemAppDelegateMap CreateSystemWebApps(Profile* profile) {
   info_vec.emplace_back(std::make_unique<OsFlagsSystemWebAppDelegate>(profile));
 
 #if !defined(OFFICIAL_BUILD)
-  info_vec.emplace_back(std::make_unique<TelemetrySystemAppDelegate>(profile));
   info_vec.emplace_back(std::make_unique<DemoModeSystemAppDelegate>(profile));
   info_vec.emplace_back(std::make_unique<SampleSystemAppDelegate>(profile));
 #endif  // !defined(OFFICIAL_BUILD)
@@ -199,6 +197,8 @@ ExternalInstallOptions CreateInstallOptionsForSystemApp(
   install_options.uninstall_and_replace =
       delegate.GetAppIdsToUninstallAndReplace();
   install_options.system_app_type = app_type;
+  install_options.handles_file_open_intents =
+      delegate.ShouldHandleFileOpenIntents();
 
   const auto& search_terms = delegate.GetAdditionalSearchTerms();
   std::transform(search_terms.begin(), search_terms.end(),

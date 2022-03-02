@@ -24,9 +24,10 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <tuple>
+
 #include "base/clang_profiling_buildflags.h"
 #include "base/files/scoped_file.h"
-#include "base/ignore_result.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -185,7 +186,7 @@ BPF_TEST_C(BaselinePolicy, CreateThread, BaselinePolicy) {
 }
 
 // Rseq should be enabled if it exists (i.e. shouldn't receive EPERM).
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 BPF_TEST_C(BaselinePolicy, RseqEnabled, BaselinePolicy) {
   errno = 0;
   int res = syscall(__NR_rseq, 0, 0, 0, 0);
@@ -195,7 +196,7 @@ BPF_TEST_C(BaselinePolicy, RseqEnabled, BaselinePolicy) {
   // EINVAL, or ENOSYS if the kernel is too old to recognize the system call.
   BPF_ASSERT(EINVAL == errno || ENOSYS == errno);
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 BPF_DEATH_TEST_C(BaselinePolicy,
                  DisallowedCloneFlagCrashes,
@@ -252,7 +253,7 @@ BPF_DEATH_TEST_C(BaselinePolicy,
                  DEATH_SEGV_MESSAGE(GetErrorMessageContentForTests()),
                  BaselinePolicy) {
   int sv[2];
-  ignore_result(socketpair(AF_INET, SOCK_STREAM, 0, sv));
+  std::ignore = socketpair(AF_INET, SOCK_STREAM, 0, sv);
   _exit(1);
 }
 #endif  // defined(__x86_64__) || defined(__arm__) || defined(__aarch64__)

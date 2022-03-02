@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/accessibility_test_utils.h"
 #include "chrome/browser/ash/input_method/textinput_test_helper.h"
@@ -38,7 +39,6 @@
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/accessibility_features.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -67,6 +67,12 @@ const char* kNetworkListeningDurationMetric =
 const char* kLocaleMetric = "Accessibility.CrosDictation.Language";
 const char* kOnDeviceSpeechMetric =
     "Accessibility.CrosDictation.UsedOnDeviceSpeech";
+const char* kMacroRecognizedMetric =
+    "Accessibility.CrosDictation.MacroRecognized";
+const char* kMacroSucceededMetric =
+    "Accessibility.CrosDictation.MacroSucceeded";
+const char* kMacroFailedMetric = "Accessibility.CrosDictation.MacroFailed";
+const int kInputTextViewMetricValue = 1;
 
 static const char* kEnglishDictationCommands[] = {
     "delete",
@@ -287,6 +293,12 @@ class DictationTest : public DictationBaseTest {
   DictationTest(const DictationTest&) = delete;
   DictationTest& operator=(const DictationTest&) = delete;
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DictationBaseTest::SetUpCommandLine(command_line);
+    scoped_feature_list_.InitAndDisableFeature(
+        ::features::kExperimentalAccessibilityDictationExtension);
+  }
+
   void SetUpOnMainThread() override {
     DictationBaseTest::SetUpOnMainThread();
 
@@ -341,6 +353,7 @@ class DictationTest : public DictationBaseTest {
   std::unique_ptr<ui::MockIMEInputContextHandler> input_context_handler_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
   ui::CompositionText empty_composition_text_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -676,9 +689,9 @@ class DictationExtensionTest : public DictationBaseTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        ::switches::kEnableExperimentalAccessibilityDictationExtension);
     DictationBaseTest::SetUpCommandLine(command_line);
+    scoped_feature_list_.InitAndEnableFeature(
+        ::features::kExperimentalAccessibilityDictationExtension);
   }
 
   void SendFinalSpeechResultAndWaitForTextAreaValue(const std::string& result,
@@ -764,6 +777,7 @@ class DictationExtensionTest : public DictationBaseTest {
   std::unique_ptr<ui::MockIMEInputContextHandler> input_context_handler_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
   std::unique_ptr<ExtensionConsoleErrorObserver> console_observer_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1129,9 +1143,28 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsExtensionTest, CutCopyPaste) {
   SendFinalSpeechResultAndWaitForTextAreaValue("  PaStE ", "StarStar");
 }
 
+// Ensures that a metric is recorded when a macro succeeds.
+// TODO(1247299): Add a test to ensure that a metric is recorded when a macro
+// fails.
+IN_PROC_BROWSER_TEST_P(DictationCommandsExtensionTest, MacroSucceededMetric) {
+  base::HistogramTester histogram_tester_;
+  SendFinalSpeechResultAndWaitForTextAreaValue(
+      "Vega is the brightest star in Lyra",
+      "Vega is the brightest star in Lyra");
+  histogram_tester_.ExpectUniqueSample(/*name=*/kMacroSucceededMetric,
+                                       /*sample=*/kInputTextViewMetricValue,
+                                       /*expected_bucket_count=*/1);
+  histogram_tester_.ExpectUniqueSample(/*name=*/kMacroFailedMetric,
+                                       /*sample=*/kInputTextViewMetricValue,
+                                       /*expected_bucket_count=*/0);
+  histogram_tester_.ExpectUniqueSample(/*name=*/kMacroRecognizedMetric,
+                                       /*sample=*/kInputTextViewMetricValue,
+                                       /*expected_bucket_count=*/1);
+}
+
 // TODO(1266696): DictationCommandsExtensionTest.Help is failing on
 // linux-chromeos-debug.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_Help DISABLED_Help
 #else
 #define MAYBE_Help Help

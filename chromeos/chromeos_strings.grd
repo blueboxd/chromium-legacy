@@ -6,6 +6,7 @@
     <output filename="grit/chromeos_strings.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
+    <output filename="chromeos_strings_af.pak" type="data_package" lang="af" />
     <output filename="chromeos_strings_am.pak" type="data_package" lang="am" />
     <output filename="chromeos_strings_ar.pak" type="data_package" lang="ar" />
     <output filename="chromeos_strings_bg.pak" type="data_package" lang="bg" />
@@ -62,6 +63,7 @@
     <output filename="chromeos_strings_vi.pak" type="data_package" lang="vi" />
     <output filename="chromeos_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
     <output filename="chromeos_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
+    <output filename="chromeos_strings_zu.pak" type="data_package" lang="zu" />
 
     <!-- Pseudolocales -->
     <output filename="chromeos_strings_ar-XB.pak" type="data_package" lang="ar-XB" />
@@ -173,6 +175,14 @@ Try tapping the mic to ask me anything.
       <!-- Managed user session warning -->
       <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_USER_WARNING" desc="Text shown in the user pod in case the user is managed. MANAGER can be a domain or an email address.">
         <ph name="MANAGER">$1<ex>example.com</ex></ph> manages this user and may remotely manage settings and monitor user activity.
+      </message>
+
+      <!-- Time out sign-in with camera screen -->
+      <message name="IDS_ASH_LOGIN_CAMERA_TIME_OUT_TITLE" desc="Text shown on camera usage timeout after the third-party SAML dialog is dismissed.">
+        Sign in to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_LOGIN_CAMERA_TIME_OUT_SUBTITLE" desc="Description shown above the button that leads to login dialog. Shown on camera usage timeout after the third-party SAML dialog is dismissed.">
+        Enter your username and password or scan your QR code
       </message>
 
       <!-- Pop-up enterprise management. -->
@@ -545,7 +555,7 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SCANNING_APP_PNG_OPTION_TEXT" desc="The text displayed for the PNG file type option.">
         PNG
       </message>
-      <!-- TODO (kmoed): Remove "translateable="false"" once string is confirmed. -->
+      <!-- TODO (gavinwill): Remove "translateable="false"" once string is confirmed. -->
       <message translateable="false" name="IDS_SCANNING_APP_SEARCHABLE_PDF_OPTION_TEXT" desc="The text displayed for the Searchable PDF file type option. This option utilizes the Object Character Recognition (OCR) service to generate a PDF file whose text has been added as a searchable layer.">
         Searchable PDF
       </message>
@@ -1871,7 +1881,10 @@ Try tapping the mic to ask me anything.
       </message>
 
       <!-- Personalization App -->
-      <message name="IDS_PERSONALIZATION_APP_TITLE" desc="Name of the system web app for personalizing ChromeOS.">
+      <message name="IDS_PERSONALIZATION_APP_PERSONALIZATION_HUB_TITLE" desc="Name of the system web app for personalizing ChromeOS.">
+        Personalization
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_WALLPAPER_LABEL" desc="Label for wallpaper element in personalization hub">
         Wallpaper
       </message>
       <message name="IDS_PERSONALIZATION_APP_BACK_BUTTON" desc="Aria label for the back button to return to a prior page">
@@ -1958,6 +1971,15 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_PERSONALIZATION_APP_SET_AS_WALLPAPER" desc="Label for the button to confirm preview wallpaper">
         Set as wallpaper
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_THEME_LABEL" desc="Label for theme element in personalization hub">
+        Theme
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_THEME_DARK_COLOR_MODE" desc="Label for dark color mode setting">
+        Dark
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_THEME_LIGHT_COLOR_MODE" desc="Label for light color mode setting">
+        Light
       </message>
 
       <!-- Traffic Counters UI -->
@@ -2106,6 +2128,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_SKIP_BUTTON" desc="Default text for the button used to skip to the next step of RMA finalization.">
         Skip
       </message>
+      <message name="IDS_SHIMLESS_RMA_OK_BUTTON" desc="Default text for OK button used to acknowledge and close dialogs.">
+        OK
+      </message>
       <!-- Landing page -->
       <message name="IDS_SHIMLESS_RMA_LANDING_PAGE_TITLE" translateable="false" desc="Title for the landing page at the start of RMA.">
         Chromebook repair
@@ -2120,10 +2145,13 @@ Try tapping the mic to ask me anything.
         Components are installed correctly.
       </message>
       <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_FAIL" translateable="false" desc="Validation check found that device components are NOT approved for this device.">
-        Components could not be validated. If you are certain you are using qualified components updating Chrome OS may resolve this issue.
+        <ph name="LINK_BEGIN">&lt;a id="unqualifiedComponentsLink"&gt;</ph>Unqualified components<ph name="LINK_END">&lt;/a&gt;</ph> found. To make sure all qualified components are identified, update your ChromeOS to the latest version.
       </message>
       <message name="IDS_SHIMLESS_RMA_GET_STARTED_BUTTON_LABEL" desc="The label for the button to start the RMA process.">
         Get started
+      </message>
+      <message name="IDS_SHIMLESS_RMA_UNQUALIFIED_COMPONENTS_TITLE" desc="The title for the dialog showing the list of components unqualfiied by Chrome OS.">
+        Unqualified components
       </message>
       <!-- Network connect page -->
       <message name="IDS_SHIMLESS_RMA_CONNECT_PAGE_TITLE" desc="Title for the connect to wifi page.">
@@ -2191,10 +2219,7 @@ Try tapping the mic to ask me anything.
         Use the QR code or <ph name="LINK_BEGIN">&lt;a id="rsuCodeDialogLink"&gt;</ph>this link<ph name="LINK_END">&lt;/a&gt;</ph> to retrieve an 8 character unlock code to perform RMA Server Unlock
       </message>
       <message name="IDS_SHIMLESS_RMA_RSU_CODE_LABEL" desc="Label for the RSU code input box.">
-        Enter the unlock code:
-      </message>
-      <message name="IDS_SHIMLESS_RMA_RSU_CODE_PLACEHOLDER" translateable="false" desc="Placeholder text for empty RSU code input box.">
-        Enter RSU Code
+        Enter the 8-character unlock code
       </message>
       <message name="IDS_SHIMLESS_RMA_RSU_CHALLENGE_DIALOG_TITLE" translateable="false" desc="Title for the dialog that shows the RSU challenge code link.">
         Go to this link for your RSU unlock code
@@ -2240,7 +2265,7 @@ Try tapping the mic to ask me anything.
         Finalizing repair
       </message>
       <message name="IDS_SHIMLESS_RMA_FINALIZE_PROGRESS" translateable="false" desc="Message to display current progress of finalization.">
-        Progress <ph name="PROGRESS_PERCENT">$1<ex>25</ex></ph>%.
+        Finalizing the device. Do not turn off power.
       </message>
       <message name="IDS_SHIMLESS_RMA_FINALIZE_COMPLETE" translateable="false" desc="Message to display when finalization is complete.">
         Complete.
@@ -2250,6 +2275,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SHIMLESS_RMA_FINALIZE_FAILED_NON_BLOCKING" translateable="false" desc="Message to display when finalization failed, but RMA can continue.">
         Failed, non blocking.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_FINALIZE_FAILED_RETRY_BUTTON_LABEL" translateable="false" desc="The label for the button to retry finalization.">
+        Retry finalization
       </message>
       <!-- Device provisioning page -->
       <message name="IDS_SHIMLESS_RMA_PROVISIONING_TITLE" translateable="false" desc="Title for the device provisioning page. Provisioning is when component specific data is set e.g. erasing fingerprint data from the thumb reader or regenerating the device stable secret before returning the device to a new owner.">
@@ -2266,6 +2294,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SHIMLESS_RMA_PROVISIONING_FAILED_NON_BLOCKING" translateable="false" desc="Message to display when provisioning failed, but RMA can continue.">
         Failed, non blocking.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_PROVISIONING_FAILED_RETRY_BUTTON_LABEL" translateable="false" desc="The label for the button to retry provisioning.">
+        Retry provisioning
       </message>
       <!-- Repair complete page -->
       <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED" desc="Title for the page shown when the RMA process repair process is completed.">
@@ -2295,6 +2326,12 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_BATTERY_CUTOFF_INSTRUCTIONS" translateable="false" desc="Instructions for battery cutoff. These instructions will display when a power cable is attached and the button is disabled.">
         Remove power cable to enable this option.
       </message>
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_SHUT_DOWN_BUTTON_LABEL" translateable="false" desc="Label for the shutdown button.">
+        Shut down
+      </message>
+      <message name="IDS_SHIMLESS_RMA_REPAIR_COMPLETED_REBOOT_BUTTON_LABEL" translateable="false" desc="Label for the reboot button.">
+        Reboot
+      </message>
       <message name="IDS_SHIMLESS_RMA_LOGS_TITLE" translateable="false" desc="Title for the logs dialog displayed on repair complete page">
         RMA Logs
       </message>
@@ -2304,20 +2341,8 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_LOGS_SAVE_BUTTON" translateable="false" desc="Label for the logs dialog save to USB button. This triggers saving to the root of a USB drive with no option to select location or title of the logs. It is automatic as the file browser is not available to the shimless RMA app.">
         Save to USB
       </message>
-      <message name="IDS_SHIMLESS_BATTERY_CUTOFF_TITLE" translateable="false" desc="Title for the battery cutoff dialog for confirming or cancelling the cutoff action">
-        Battery Cutoff
-      </message>
-      <message name="IDS_SHIMLESS_BATTERY_SHUTOFF_UNPLUG_MESSAGE" translateable="false" desc="Message informing user they need to disconnect the power cable to perform battery shutoff">
-        Unplug your cord to cut off battery
-      </message>
-      <message name="IDS_SHIMLESS_BATTERY_SHUTOFF_SHUTDOWN_MESSAGE" translateable="false" desc="Message informing user the device is ready to be shut down and perform battery shutoff">
-        Shut down your device to complete battery cut off
-      </message>
-      <message name="IDS_SHIMLESS_BATTERY_SHUTOFF_CANCEL_BUTTON" translateable="false" desc="Label for the battery shutoff dialog cancel button">
-        Cancel
-      </message>
-      <message name="IDS_SHIMLESS_BATTERY_SHUTOFF_SHUTDOWN_BUTTON" translateable="false" desc="Label for the battery shutoff dialog shut down button.">
-        Shut down
+      <message name="IDS_SHIMLESS_BATTERY_SHUTOFF_TOOLTIP_TEXT" translateable="false" desc="Label for the battery shutoff tooltip.">
+        Unplug power to perform battery cutoff
       </message>
       <!-- Run calibration page -->
       <message name="IDS_SHIMLESS_RMA_RUN_CALIBRATION_PAGE_TITLE" translateable="false" desc="Title for the page shown when running component calibration steps.">
@@ -2406,6 +2431,12 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_REGION_LABEL" translateable="false" desc="The label for the text input showing the device's current region.">
         Region
       </message>
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_WHITE_LABEL_LABEL" translateable="false" desc="The label for the text input showing the device's white-label.">
+        White-label
+      </message>
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_EMPTY_WHITE_LABEL_LABEL" translateable="false" desc="The label for the selection option that clears the device's white-label.">
+        --no white-label--
+      </message>
       <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_SKU_LABEL" translateable="false" desc="The label for the text input showing the device's SKU.">
         SKU
       </message>
@@ -2415,6 +2446,12 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_SKU_WARNING" translateable="false" desc="The text warning explaining when the device's SKU should be changed.">
         The SKU should only be changed if the new component(s) are different from the ones they replaced. For example, a touchscreen replacing a non-touchscreen, or memory being upgraded from 8GB to 16GB.
       </message>
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DRAM_PART_NUMBER_LABEL" translateable="false" desc="The label for the text input showing the device's dram part number.">
+        DRAM part number
+      </message>
+      <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_DRAM_PART_NUMBER_PLACEHOLDER_LABEL" translateable="false" desc="The placeholder label for the text input box for the device's dram part number.">
+        Enter DRAM part number
+      </message>
       <!-- RO firmware reimaging page -->
       <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATE_TITLE" translateable="false" desc="The title for the page when reimaging is in progress.">
       Install firmware image
@@ -2422,7 +2459,7 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_FIRMWARE_WAIT_FOR_USB" translateable="false" desc="The prompt to insert a thumb drive with the recovery image for this device.">
       Insert your thumb drive with the downloaded recovery image.
       </message>
-      <message name="IDS_SHIMLESS_RMA_FIRMWARE_NOT_FOUND" translateable="false" desc="The message when a thumb drive is detected but it does not conatin a valid recovery image for this device.">
+      <message name="IDS_SHIMLESS_RMA_FIRMWARE_FILE_NOT_FOUND" translateable="false" desc="The message when a thumb drive is detected but it does not conatin a valid recovery image for this device.">
       Recovery image not found. Insert your thumb drive with the downloaded recovery image.
       </message>
       <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATING" translateable="false" desc="The message when the firmware is being installed.">
@@ -2530,6 +2567,22 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_FIRMWARE_VERSION_TEXT" desc="Label for the update's version.">
         Version <ph name="VERSION">$1<ex>3.0.2</ex></ph>
+      </message>
+      <!-- TODO(michaelcheco): Update strings after UX review. -->
+      <message translateable="false" name="IDS_FIRMWARE_RESTARTING_TITLE_TEXT" desc="Label for showing that a device is being restarted.">
+        Restarting <ph name="DEVICE_NAME">$1<ex>Logitech keyboard</ex></ph>
+      </message>
+      <message translateable="false" name="IDS_FIRMWARE_RESTARTING_BODY_TEXT" desc="Label for communicating information about what actions a user can take during a device restart.">
+        Your device is restarting, you can minimize window but do not unplug your device. This may take a few minutes.
+      </message>
+      <message translateable="false" name="IDS_FIRMWARE_RESTARTING_FOOTER_TEXT" desc="Label shown when a device is being restarted.">
+        Restarting ...
+      </message>
+      <message translateable="false" name="IDS_FIRMWARE_UPDATE_FAILED_TITLE_TEXT" desc="Label shown when an update fails.">
+        Failed to update <ph name="DEVICE_NAME">$1<ex>Logitech keyboard</ex></ph>
+      </message>
+      <message translateable="false" name="IDS_FIRMWARE_UPDATE_FAILED_BODY_TEXT" desc="Label for communicating information about why an update failed.">
+        Update failed
       </message>
 
       <!-- Quick Answers -->

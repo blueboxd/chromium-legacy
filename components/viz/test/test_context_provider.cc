@@ -237,7 +237,7 @@ void TestSharedImageInterface::PresentSwapChain(
     const gpu::SyncToken& sync_token,
     const gpu::Mailbox& mailbox) {}
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 void TestSharedImageInterface::RegisterSysmemBufferCollection(
     gfx::SysmemBufferCollectionId id,
     zx::channel token,
@@ -251,7 +251,7 @@ void TestSharedImageInterface::ReleaseSysmemBufferCollection(
     gfx::SysmemBufferCollectionId id) {
   NOTREACHED();
 }
-#endif  // defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_FUCHSIA)
 
 gpu::SyncToken TestSharedImageInterface::GenVerifiedSyncToken() {
   base::AutoLock locked(lock_);
@@ -469,7 +469,7 @@ class GrDirectContext* TestContextProvider::GrContext() {
                                     &max_glyph_cache_texture_bytes);
   gr_context_ = std::make_unique<skia_bindings::GrContextForGLES2Interface>(
       context_gl_.get(), support_.get(), context_gl_->test_capabilities(),
-      max_resource_cache_bytes, max_glyph_cache_texture_bytes);
+      max_resource_cache_bytes, max_glyph_cache_texture_bytes, true);
   cache_controller_->SetGrContext(gr_context_->get());
 
   // If GlContext is already lost, also abandon the new GrContext.

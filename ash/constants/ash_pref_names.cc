@@ -75,13 +75,6 @@ const char kAudioDevicesState[] = "settings.audio.device_state";
 // consent in EDU account addition flow.
 const char kEduCoexistenceId[] = "account_manager.edu_coexistence_id";
 
-// A string pref storing a parental consent text version that requires
-// invalidation of the secondary accounts added with the previous consent
-// versions.
-// This is used for the V1 version of EduCoexistence and will be removed.
-const char kEduCoexistenceSecondaryAccountsInvalidationVersion[] =
-    "account_manager.edu_coexistence_secondary_accounts_invalidation_version";
-
 // A string pref containing valid version of Edu Coexistence Terms of Service.
 // Controlled by EduCoexistenceToSVersion policy.
 const char kEduCoexistenceToSVersion[] =
@@ -394,12 +387,11 @@ const char kAllowMGSToStoreDisplayProperties[] =
 // A boolean pref that enable fullscreen alert bubble.
 // TODO(zxdan): Change to an allowlist in M89.
 const char kFullscreenAlertEnabled[] = "ash.fullscreen_alert_enabled";
-// A list of URLs that are exempt from ash's fullscreen notification. To prevent
-// fake login screens, the notification is normally shown when the device
-// returns from sleep, low brightness or the lock screen and is still in full
-// screen mode.
-const char kFullscreenNotificationUrlExemptList[] =
-    "ash.fullscreen_notification_url_exempt_list";
+// A list of URLs that are allowed to continue full screen mode after session
+// unlock without a notification. To prevent fake login screens, the device
+// normally exits full screen mode before locking a session.
+const char kKeepFullscreenWithoutNotificationUrlAllowList[] =
+    "ash.keep_fullscreen_without_notification_url_allow_list";
 
 // A boolean pref storing whether the gesture education notification has ever
 // been shown to the user, which we use to stop showing it again.
@@ -438,9 +430,11 @@ const char kManagedGuestSessionPrivacyWarningsEnabled[] =
     "managed_session.privacy_warning_enabled";
 
 // Boolean pref indicating whether the user has enabled detection of snooping
-// over their shoulder.
+// over their shoulder, and hiding of notifications when a snooper is detected.
 const char kSnoopingProtectionEnabled[] =
     "ash.privacy.snooping_protection_enabled";
+const char kSnoopingProtectionNotificationSuppressionEnabled[] =
+    "ash.privacy.snooping_protection_notification_suppression_enabled";
 
 // A string pref storing the type of lock screen notification mode.
 // "show" -> show notifications on the lock screen
@@ -881,17 +875,31 @@ const char kPreconfiguredDeskTemplates[] = "ash.preconfigured_desk_templates";
 // A boolean pref that tracks whether the user has enabled Projector creation
 // flow during onboarding.
 const char kProjectorCreationFlowEnabled[] =
-    "ash.projector.creationFlowEnabled";
+    "ash.projector.creation_flow_enabled";
+
+// A string pref that tracks the language installed for the Projector creation
+// flow.
+const char kProjectorCreationFlowLanguage[] =
+    "ash.projector.creation_flow_language";
+
+// An integer pref counting the number of times the Onboarding flow has been
+// shown to the user inside the Projector Gallery.
+const char kProjectorGalleryOnboardingShowCount[] =
+    "ash.projector.gallery_onboarding_show_count";
+
+// An integer pref counting the number of times the Onboarding flow has been
+// shown to the user inside the Projector Viewer.
+const char kProjectorViewerOnboardingShowCount[] =
+    "ash.projector.viewer_onboarding_show_count";
+
+// A boolean pref that indicates the Projector has been enabled by admin
+// policy.
+const char kProjectorAllowByPolicy[] = "ash.projector.allow_by_policy";
 
 // A boolean pref that indicates whether the migration of Chromad devices to
 // cloud management can be started.
 const char kChromadToCloudMigrationEnabled[] =
     "ash.chromad_to_cloud_migration_enabled";
-
-// A string pref that tracks the language installed for the Projector creation
-// flow.
-const char kProjectorCreationFlowLanguage[] =
-    "ash.projector.creationFlowLanguage";
 
 // List of Drive Folder Shortcuts in the Files app. Used to sync the shortcuts
 // across devices.
@@ -901,15 +909,9 @@ const char kFilesAppFolderShortcuts[] = "ash.filesapp.folder_shortcuts";
 // the Chrome app to System Web App.
 const char kFilesAppUIPrefsMigrated[] = "ash.filesapp.ui_prefs_migrated";
 
-// An integer pref counting the number of times the Onboarding flow has been
-// shown to the user inside the Projector Gallery.
-const char kProjectorGalleryOnboardingShowCount[] =
-    "ash.projector.galleryOnboardingShowCount";
-
-// An integer pref counting the number of times the Onboarding flow has been
-// shown to the user inside the Projector Viewer.
-const char kProjectorViewerOnboardingShowCount[] =
-    "ash.projector.viewerOnboardingShowCount";
+// Boolean value for the DeviceLoginScreenWebUILazyLoading device policy.
+const char kLoginScreenWebUILazyLoading[] =
+    "ash.login.LoginScreenWebUILazyLoading";
 
 // Boolean value for the DeviceLoginScreenWebUILazyLoading device policy.
 const char kLoginScreenWebUILazyLoading[] =

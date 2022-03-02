@@ -86,7 +86,8 @@ void CrosapiNewWindowDelegate::NewTab() {
 
 void CrosapiNewWindowDelegate::NewWindow(bool incognito,
                                          bool should_trigger_session_restore) {
-  crosapi::BrowserManager::Get()->NewWindow(incognito);
+  crosapi::BrowserManager::Get()->NewWindow(incognito,
+                                            should_trigger_session_restore);
 }
 
 void CrosapiNewWindowDelegate::NewWindowForDetachingTab(
@@ -166,6 +167,10 @@ void CrosapiNewWindowDelegate::OpenFeedbackPage(
     FeedbackSource source,
     const std::string& description_template) {
   delegate_->OpenFeedbackPage(source, description_template);
+}
+
+void CrosapiNewWindowDelegate::OpenPersonalizationHub() {
+  delegate_->OpenPersonalizationHub();
 }
 
 void CrosapiNewWindowDelegate::DestroyWindowObserver() {

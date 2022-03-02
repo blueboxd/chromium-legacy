@@ -99,7 +99,7 @@
     "gn_args": {
       "arm_use_neon": false,
       "clang_use_default_sample_profile": false,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -126,7 +126,7 @@
   "android-cronet-arm64-dbg": {
     "gn_args": {
       "clang_use_default_sample_profile": false,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -153,7 +153,7 @@
     "gn_args": {
       "clang_use_default_sample_profile": false,
       "dcheck_always_on": false,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -183,7 +183,7 @@
       "arm_use_neon": false,
       "clang_use_default_sample_profile": false,
       "dcheck_always_on": false,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -202,10 +202,11 @@
       "target_cpu": "arm",
       "target_os": "android",
       "use_crash_key_stubs": true,
-      "use_goma": true,
       "use_hashed_jni_names": true,
       "use_partition_alloc": false,
       "use_platform_icu_alternatives": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
       "use_thin_lto": false
     }
   },
@@ -214,7 +215,7 @@
       "arm_use_neon": false,
       "clang_use_default_sample_profile": false,
       "dcheck_always_on": false,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -244,7 +245,7 @@
       "arm_use_neon": false,
       "clang_use_default_sample_profile": false,
       "dcheck_always_on": false,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -274,7 +275,7 @@
       "blink_enable_generated_code_formatting": false,
       "clang_use_default_sample_profile": false,
       "dcheck_always_on": true,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -302,7 +303,7 @@
   "android-cronet-x86-dbg": {
     "gn_args": {
       "clang_use_default_sample_profile": false,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -318,17 +319,18 @@
       "target_cpu": "x86",
       "target_os": "android",
       "use_crash_key_stubs": true,
-      "use_goma": true,
       "use_hashed_jni_names": true,
       "use_partition_alloc": false,
       "use_platform_icu_alternatives": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
       "use_thin_lto": false
     }
   },
   "android-cronet-x86-dbg-10-tests": {
     "gn_args": {
       "clang_use_default_sample_profile": false,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -354,7 +356,7 @@
   "android-cronet-x86-dbg-11-tests": {
     "gn_args": {
       "clang_use_default_sample_profile": false,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -380,7 +382,7 @@
   "android-cronet-x86-dbg-oreo-tests": {
     "gn_args": {
       "clang_use_default_sample_profile": false,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -406,7 +408,7 @@
   "android-cronet-x86-dbg-pie-tests": {
     "gn_args": {
       "clang_use_default_sample_profile": false,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -433,7 +435,7 @@
     "gn_args": {
       "clang_use_default_sample_profile": false,
       "dcheck_always_on": false,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -451,10 +453,11 @@
       "target_cpu": "x86",
       "target_os": "android",
       "use_crash_key_stubs": true,
-      "use_goma": true,
       "use_hashed_jni_names": true,
       "use_partition_alloc": false,
       "use_platform_icu_alternatives": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
       "use_thin_lto": false
     }
   },
@@ -702,7 +705,8 @@
       "symbol_level": 1,
       "target_cpu": "arm64",
       "target_os": "android",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "android-pie-arm64-rel": {
@@ -1063,21 +1067,6 @@
       "use_thin_lto": true
     }
   },
-  "android_clang_dbg_recipe": {
-    "gn_args": {
-      "disable_android_lint": true,
-      "ffmpeg_branding": "Chrome",
-      "is_asan": true,
-      "is_clang": true,
-      "is_component_build": true,
-      "is_debug": true,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "target_os": "android",
-      "use_errorprone_java_compiler": false,
-      "use_goma": true
-    }
-  },
   "android_compile_dbg": {
     "gn_args": {
       "ffmpeg_branding": "Chrome",
@@ -1132,7 +1121,7 @@
       "blink_enable_generated_code_formatting": false,
       "clang_use_default_sample_profile": false,
       "dcheck_always_on": true,
-      "default_min_sdk_version": 16,
+      "default_min_sdk_version": 19,
       "disable_file_support": true,
       "enable_jdk_library_desugaring": false,
       "enable_reporting": true,
@@ -1318,6 +1307,21 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
+      "target_os": "android",
+      "use_goma": true,
+      "use_static_angle": true
+    }
+  },
+  "gpu-fyi-try-android-pixel-6-64": {
+    "gn_args": {
+      "blink_enable_generated_code_formatting": false,
+      "dcheck_always_on": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "target_cpu": "arm64",
       "target_os": "android",
       "use_goma": true,
       "use_static_angle": true

@@ -41,7 +41,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -90,7 +90,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   // |paint_offset| is used to to paint the contents at the correct location.
   // It should be issued as a transform operation before painting the contents.
   void Paint(GraphicsContext&,
-             const GlobalPaintFlags,
+             PaintFlags,
              const CullRect&,
              const gfx::Vector2d& paint_offset) const override;
   void UpdateGeometry() override;

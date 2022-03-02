@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 
 using blink::mojom::PresentationConnectionState;
@@ -29,13 +30,9 @@ class MediaRouterBase::InternalMediaRoutesObserver
   ~InternalMediaRoutesObserver() override {}
 
   // MediaRoutesObserver
-  void OnRoutesUpdated(
-      const std::vector<MediaRoute>& routes,
-      const std::vector<MediaRoute::Id>& joinable_route_ids) override {
+  void OnRoutesUpdated(const std::vector<MediaRoute>& routes) override {
     current_routes = routes;
     off_the_record_route_ids.clear();
-    // TODO(crbug.com/611486): Have the MRPM pass a list of joinable route ids
-    // via |joinable_route_ids|, and check here if it is non-empty.
     has_route = !routes.empty();
     for (const auto& route : routes) {
       if (route.is_off_the_record())
@@ -88,7 +85,7 @@ MediaRouterBase::GetFlingingController(const MediaRoute::Id& route_id) {
   return nullptr;
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 void MediaRouterBase::GetMediaController(
     const MediaRoute::Id& route_id,
     mojo::PendingReceiver<mojom::MediaController> controller,
@@ -97,7 +94,7 @@ void MediaRouterBase::GetMediaController(
 base::Value MediaRouterBase::GetLogs() const {
   return base::Value();
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 MediaRouterBase::MediaRouterBase() : initialized_(false) {}
 

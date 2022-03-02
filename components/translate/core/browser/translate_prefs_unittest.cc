@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -1137,21 +1138,28 @@ TEST_F(TranslatePrefsTest, CanTranslateLanguage) {
   EXPECT_FALSE(translate_prefs_->CanTranslateLanguage(
       &translate_accept_languages, "en"));
 
-  // Blocked languages that are not in accept languages are not blocked.
+  // When the detailed language settings are enabled blocked languages not in
+  // the accept languages list are blocked. When the detailed language settings
+  // are disabled blocked languages not in the accept language list are allowed.
   translate_prefs_->BlockLanguage("de");
-  EXPECT_TRUE(translate_prefs_->CanTranslateLanguage(
-      &translate_accept_languages, "de"));
+  if (TranslatePrefs::IsDetailedLanguageSettingsEnabled()) {
+    EXPECT_FALSE(translate_prefs_->CanTranslateLanguage(
+        &translate_accept_languages, "de"));
+  } else {
+    EXPECT_TRUE(translate_prefs_->CanTranslateLanguage(
+        &translate_accept_languages, "de"));
+  }
 
 // When the detailed language settings are enabled blocked languages not in
 // accept languages can be translated.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   {  // Android scoped feature.
     base::test::ScopedFeatureList scoped_feature_list(
         language::kDetailedLanguageSettings);
     EXPECT_FALSE(translate_prefs_->CanTranslateLanguage(
         &translate_accept_languages, "de"));
   }
-#elif defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#elif BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   {  // Desktop scoped feature.
     base::test::ScopedFeatureList scoped_feature_list(
         language::kDesktopDetailedLanguageSettings);

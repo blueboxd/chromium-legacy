@@ -66,7 +66,7 @@
 #include "third_party/blink/renderer/core/workers/shared_worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
@@ -235,6 +235,9 @@ void WebSharedWorkerImpl::StartWorkerContext(
               : mojom::blink::InsecureRequestPolicy::kBlockAllMixedContent,
           FetchClientSettingsObject::InsecureNavigationsSet());
 
+  // TODO(https://crbug.com/780031): This is incorrect, as the creator context
+  // may have a potentially-trustworthy origin yet be non-secure. This is the
+  // case for example when an https iframe is embedded in http document.
   bool constructor_secure_context =
       constructor_origin.IsPotentiallyTrustworthy() ||
       SchemeRegistry::SchemeShouldBypassSecureContextCheck(
@@ -273,7 +276,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
       std::make_unique<SharedWorkerContentSettingsProxy>(
           std::move(content_settings)),
       absl::nullopt /* response_address_space */,
-      nullptr /* origin_trial_tokens */, devtools_worker_token,
+      nullptr /* inherited_trial_features */, devtools_worker_token,
       std::move(worker_settings), mojom::blink::V8CacheOptions::kDefault,
       nullptr /* worklet_module_response_map */,
       std::move(browser_interface_broker),

@@ -17,7 +17,7 @@
   }
   #heading:focus,
   #heading:active {
-    outline-color: var(--cros-toggle-color);
+    outline-color: var(--cros-text-color-prominent);
     outline-width: 2px;
   }
 
@@ -86,6 +86,11 @@
   #clear-recents-hover:hover {
     background-color: var(--cros-button-background-color-secondary-hover);
     border: 2px solid var(--cros-button-background-color-secondary-hover);
+  }
+
+  :host([v2-enabled]) {
+    --emoji-size: var(--v2-emoji-size);
+    --emoji-spacing: var(--v2-emoji-spacing);
   }
 </style>
 

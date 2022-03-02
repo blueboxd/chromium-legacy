@@ -7,6 +7,7 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "build/build_config.h"');
+GEN('#include "build/chromeos_buildflags.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
 /* eslint-disable no-var */
@@ -247,7 +248,7 @@ GEN('#if !defined(OFFICIAL_BUILD)');
 var NewTabPageModulesDummyModuleTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/dummy/module_test.js';
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/dummy_v2/module_test.js';
   }
 };
 
@@ -320,7 +321,8 @@ var NewTabPageModulesChromeCartModuleTest =
   }
 };
 
-TEST_F('NewTabPageModulesChromeCartModuleTest', 'All', function() {
+// https://crbug.com/1287294: Flaky
+TEST_F('NewTabPageModulesChromeCartModuleTest', 'DISABLED_All', function() {
   mocha.run();
 });
 

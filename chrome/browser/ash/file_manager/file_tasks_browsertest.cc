@@ -490,7 +490,7 @@ IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, ProvidedFileSystemFileSource) {
 }
 
 IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, ExecuteWebApp) {
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->start_url = GURL("https://www.example.com/");
   web_app_info->scope = GURL("https://www.example.com/");
   apps::FileHandler handler;
@@ -513,10 +513,10 @@ IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, ExecuteWebApp) {
     task_descriptor = TaskDescriptor(app_id, TaskType::TASK_TYPE_WEB_APP,
                                      "https://www.example.com/handle_file");
     // Skip past the permission dialog.
-    web_app::ScopedRegistryUpdate(
-        &web_app::WebAppProvider::GetForTest(profile)->sync_bridge())
-        ->UpdateApp(app_id)
-        ->SetFileHandlerApprovalState(web_app::ApiApprovalState::kAllowed);
+    web_app::WebAppProvider::GetForTest(profile)
+        ->sync_bridge()
+        .SetAppFileHandlerApprovalState(app_id,
+                                        web_app::ApiApprovalState::kAllowed);
   } else {
     // Use an existing SWA in ash - Media app.
     task_descriptor = TaskDescriptor(kMediaAppId, TaskType::TASK_TYPE_WEB_APP,

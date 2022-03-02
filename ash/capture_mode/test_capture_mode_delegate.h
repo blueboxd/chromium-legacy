@@ -69,15 +69,12 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
   void ShowScreenCaptureItemInFolder(const base::FilePath& file_path) override;
   void OpenScreenshotInImageEditor(const base::FilePath& file_path) override;
   bool Uses24HourFormat() const override;
-  bool IsCaptureModeInitRestrictedByDlp() const override;
   void CheckCaptureModeInitRestrictionByDlp(
       OnCaptureModeDlpRestrictionChecked callback) override;
   void CheckCaptureOperationRestrictionByDlp(
       const aura::Window* window,
       const gfx::Rect& bounds,
       OnCaptureModeDlpRestrictionChecked callback) override;
-  bool IsCaptureAllowedByDlp(const aura::Window* window,
-                             const gfx::Rect& bounds) const override;
   bool IsCaptureAllowedByPolicy() const override;
   void StartObservingRestrictedContent(
       const aura::Window* window,
@@ -85,6 +82,7 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
       base::OnceClosure stop_callback) override;
   void StopObservingRestrictedContent(
       OnCaptureModeDlpRestrictionChecked callback) override;
+  void OnCaptureImageAttempted(aura::Window const*, gfx::Rect const&) override;
   mojo::Remote<recording::mojom::RecordingService> LaunchRecordingService()
       override;
   void BindAudioStreamFactory(

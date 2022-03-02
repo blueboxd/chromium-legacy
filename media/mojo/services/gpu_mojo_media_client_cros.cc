@@ -4,6 +4,8 @@
 
 #include "media/mojo/services/gpu_mojo_media_client.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "build/build_config.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/media_switches.h"
 #include "media/gpu/chromeos/mailbox_video_frame_converter.h"
@@ -11,9 +13,9 @@
 #include "media/gpu/chromeos/video_decoder_pipeline.h"
 #include "media/gpu/ipc/service/vda_video_decoder.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chromeos/components/cdm_factory_daemon/chromeos_cdm_factory.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace media {
 
@@ -50,8 +52,14 @@ GetPlatformSupportedVideoDecoderConfigs(
     gpu::GpuPreferences gpu_preferences,
     const gpu::GPUInfo& gpu_info,
     base::OnceCallback<SupportedVideoDecoderConfigs()> get_vda_configs) {
-  switch (GetPlatformDecoderImplementationType(gpu_workarounds, gpu_preferences,
-                                               gpu_info)) {
+  VideoDecoderType decoder_implementation =
+      GetPlatformDecoderImplementationType(gpu_workarounds, gpu_preferences,
+                                           gpu_info);
+#if BUILDFLAG(IS_LINUX)
+  base::UmaHistogramEnumeration("Media.VaapiLinux.Supported",
+                                decoder_implementation);
+#endif
+  switch (decoder_implementation) {
     case VideoDecoderType::kVda:
       return std::move(get_vda_configs).Run();
     case VideoDecoderType::kVaapi:
@@ -65,7 +73,7 @@ VideoDecoderType GetPlatformDecoderImplementationType(
     gpu::GpuDriverBugWorkarounds gpu_workarounds,
     gpu::GpuPreferences gpu_preferences,
     const gpu::GPUInfo& gpu_info) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   if (gpu_preferences.enable_chromeos_direct_video_decoder)
     return VideoDecoderType::kVaapi;
   return VideoDecoderType::kVda;
@@ -79,11 +87,23 @@ VideoDecoderType GetPlatformDecoderImplementationType(
   }
   if (gpu_preferences.gr_context_type != gpu::GrContextType::kVulkan)
     return VideoDecoderType::kUnknown;
-  for (const auto& device : gpu_info.vulkan_info->physical_devices) {
-    if (device.properties.driverVersion < VK_MAKE_VERSION(21, 1, 5))
+  if (gpu_info.vulkan_info->physical_devices.empty())
+    return VideoDecoderType::kUnknown;
+  constexpr int kIntel = 0x8086;
+  const auto& device = gpu_info.vulkan_info->physical_devices[0];
+  switch (device.properties.vendorID) {
+    case kIntel: {
+      if (device.properties.driverVersion < VK_MAKE_VERSION(21, 1, 5))
+        return VideoDecoderType::kUnknown;
+      return VideoDecoderType::kVaapi;
+    }
+    default: {
+      // NVIDIA drivers have a broken implementation of most va_* methods,
+      // ARM & AMD aren't tested yet, and ImgTec/Qualcomm don't have a vaapi
+      // driver.
       return VideoDecoderType::kUnknown;
+    }
   }
-  return VideoDecoderType::kVaapi;
 #else
   NOTREACHED();
   return VideoDecoderType::kUnknown;
@@ -95,17 +115,17 @@ std::unique_ptr<AudioDecoder> CreatePlatformAudioDecoder(
   return nullptr;
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS)
 class CdmFactory {};
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS)
 
 std::unique_ptr<CdmFactory> CreatePlatformCdmFactory(
     mojom::FrameInterfaceFactory* frame_interfaces) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   return std::make_unique<chromeos::ChromeOsCdmFactory>(frame_interfaces);
-#else   // defined(OS_CHROMEOS)
+#else   // BUILDFLAG(IS_CHROMEOS)
   return nullptr;
-#endif  // else defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 }
 
 }  // namespace media

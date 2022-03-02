@@ -43,9 +43,9 @@
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor.h"
 #include "third_party/webrtc/modules/desktop_capture/shared_memory.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/scoped_handle.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace remoting {
 
@@ -598,7 +598,7 @@ void DesktopSessionProxy::OnUrlForwarderStateChange(
         // SET_UP or FAILED. NOT_SET_UP must come from a freshly started agent.
         LOG(WARNING) << "Setup process failed because the previous desktop "
                      << "session agent has exited";
-        FALLTHROUGH;
+        [[fallthrough]];
       case mojom::UrlForwarderState::kFailed:
         set_up_url_forwarder_callback_.Run(SetUpUrlForwarderResponse::FAILED);
         // Cleanup callback due to terminating state.

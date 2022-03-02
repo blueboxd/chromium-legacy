@@ -28,9 +28,9 @@
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "media/base/win/hresult_status_helper.h"
 #include "media/gpu/windows/d3d11_av1_accelerator.h"
 #include "media/gpu/windows/d3d11_picture_buffer.h"
+#include "media/gpu/windows/d3d11_status.h"
 #include "media/gpu/windows/d3d11_video_context_wrapper.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
 #include "media/gpu/windows/d3d11_video_device_format_support.h"
@@ -247,8 +247,8 @@ D3D11Status::Or<ComD3D11VideoDecoder> D3D11VideoDecoder::CreateD3D11Decoder() {
   auto hr = video_device_->GetVideoDecoderConfigCount(
       decoder_configurator_->DecoderDescriptor(), &config_count);
   if (FAILED(hr)) {
-    return D3D11Status(D3D11Status::Codes::kGetDecoderConfigCountFailed)
-        .AddCause(HresultToStatus(hr));
+    return HresultToStatus(hr,
+                           D3D11Status::Codes::kGetDecoderConfigCountFailed);
   }
 
   if (config_count == 0)
@@ -261,8 +261,7 @@ D3D11Status::Or<ComD3D11VideoDecoder> D3D11VideoDecoder::CreateD3D11Decoder() {
     hr = video_device_->GetVideoDecoderConfig(
         decoder_configurator_->DecoderDescriptor(), i, &dec_config);
     if (FAILED(hr)) {
-      return D3D11Status(D3D11Status::Codes::kGetDecoderConfigFailed)
-          .AddCause(HresultToStatus(hr));
+      return HresultToStatus(hr, D3D11Status::Codes::kGetDecoderConfigFailed);
     }
 
     if ((config_.codec() == VideoCodec::kVP9 ||
@@ -317,8 +316,7 @@ D3D11Status::Or<ComD3D11VideoDecoder> D3D11VideoDecoder::CreateD3D11Decoder() {
     return D3D11Status(D3D11Status::Codes::kDecoderCreationFailed);
 
   if (FAILED(hr)) {
-    return D3D11Status(D3D11Status::Codes::kDecoderCreationFailed)
-        .AddCause(HresultToStatus(hr));
+    return HresultToStatus(hr, D3D11Status::Codes::kDecoderCreationFailed);
   }
 
   return {std::move(video_decoder)};
@@ -407,8 +405,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   hr = device_->QueryInterface(IID_PPV_ARGS(&multi_threaded));
   if (FAILED(hr)) {
     return NotifyError(
-        D3D11Status(D3D11Status::Codes::kQueryID3D11MultithreadFailed)
-            .AddCause(HresultToStatus(hr)));
+        HresultToStatus(hr, D3D11Status::Codes::kQueryID3D11MultithreadFailed));
   }
 
   multi_threaded->SetMultithreadProtected(TRUE);
@@ -500,7 +497,7 @@ void D3D11VideoDecoder::OnGpuInitComplete(
   release_mailbox_cb_ = std::move(release_mailbox_cb);
 
   state_ = State::kRunning;
-  std::move(init_cb_).Run(OkStatus());
+  std::move(init_cb_).Run(DecoderStatus::Codes::kOk);
 }
 
 void D3D11VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -515,7 +512,7 @@ void D3D11VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   if (state_ == State::kError) {
     // TODO(liberato): consider posting, though it likely doesn't matter.
-    std::move(decode_cb).Run(DecodeStatus::DECODE_ERROR);
+    std::move(decode_cb).Run(DecoderStatus::Codes::kInterrupted);
     return;
   }
 
@@ -561,7 +558,7 @@ void D3D11VideoDecoder::DoDecode() {
       }
       // Pictures out output synchronously during Flush.  Signal the decode
       // cb now.
-      std::move(current_decode_cb_).Run(DecodeStatus::OK);
+      std::move(current_decode_cb_).Run(DecoderStatus::Codes::kOk);
       return;
     }
     // This must be after checking for EOS because there is no timestamp for an
@@ -604,7 +601,7 @@ void D3D11VideoDecoder::DoDecode() {
     // TODO(liberato): switch + class enum.
     if (result == media::AcceleratedVideoDecoder::kRanOutOfStreamData) {
       current_buffer_ = nullptr;
-      std::move(current_decode_cb_).Run(DecodeStatus::OK);
+      std::move(current_decode_cb_).Run(DecoderStatus::Codes::kOk);
       break;
     } else if (result == media::AcceleratedVideoDecoder::kRanOutOfSurfaces) {
       // At this point, we know the picture size.
@@ -676,10 +673,10 @@ void D3D11VideoDecoder::Reset(base::OnceClosure closure) {
 
   current_buffer_ = nullptr;
   if (current_decode_cb_)
-    std::move(current_decode_cb_).Run(DecodeStatus::ABORTED);
+    std::move(current_decode_cb_).Run(DecoderStatus::Codes::kAborted);
 
   for (auto& queue_pair : input_buffer_queue_)
-    std::move(queue_pair.second).Run(DecodeStatus::ABORTED);
+    std::move(queue_pair.second).Run(DecoderStatus::Codes::kAborted);
   input_buffer_queue_.clear();
 
   // TODO(liberato): how do we signal an error?
@@ -911,9 +908,8 @@ void D3D11VideoDecoder::NotifyError(D3D11Status reason) {
     // TODO(liberato): VideoDecoder::InitCB should have either its own status
     // codes, or should use a common one that has "succeeded / didn't succeed"
     // as its only options.
-    std::move(init_cb_).Run(
-        Status(Status::Codes::kDecoderInitializeNeverCompleted)
-            .AddCause(std::move(reason)));
+    std::move(init_cb_).Run(DecoderStatus(DecoderStatus::Codes::kFailed)
+                                .AddCause(std::move(reason)));
   } else {
     // TODO(tmathmeyer) - Remove this after plumbing Status through the
     // decode_cb and input_buffer_queue cb's.
@@ -925,10 +921,10 @@ void D3D11VideoDecoder::NotifyError(D3D11Status reason) {
 
   current_buffer_ = nullptr;
   if (current_decode_cb_)
-    std::move(current_decode_cb_).Run(DecodeStatus::DECODE_ERROR);
+    std::move(current_decode_cb_).Run(DecoderStatus::Codes::kFailed);
 
   for (auto& queue_pair : input_buffer_queue_)
-    std::move(queue_pair.second).Run(DecodeStatus::DECODE_ERROR);
+    std::move(queue_pair.second).Run(DecoderStatus::Codes::kFailed);
   input_buffer_queue_.clear();
 }
 

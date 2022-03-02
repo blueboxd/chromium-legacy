@@ -14,8 +14,6 @@
     <!-- Tab Switcher Colors -->
     <color name="tab_switcher_background">#14181C</color>
     <color name="accessibility_tab_switcher_list_item">#252525</color>
-    <color name="tab_back">#F1F1F1</color>
-    <color name="tab_back_incognito">#4F4F4F</color>
 
     <!-- App menu colors -->
     <color name="update_menu_item_text_color">@color/default_red</color>
@@ -44,7 +42,6 @@
 
     <!-- NTP and Home sheet colors. Also used on the bookmarks and recent tabs pages. -->
     <color name="ntp_bg_incognito">@color/default_bg_color_dark</color>
-    <color name="google_logo_tint">@android:color/transparent</color>
 
     <!-- Incognito NTP Colors. -->
     <color name="incognito_emphasis">@android:color/white</color>
@@ -67,7 +64,6 @@
     <color name="bookmark_widget_background">@color/default_bg_color_baseline</color>
 
     <!-- History Navigation UI colors -->
-    <color name="navigation_bubble_background_color">@color/default_bg_color_elev_2</color>
     <color name="navigation_bubble_arrow">@android:color/black</color>
 
     <!-- Scrollbar colors -->
@@ -81,7 +77,7 @@
     <color name="offline_indicator_back_online_color">@color/default_bg_color_blue</color>
 
     <!-- Material colorSurface  See See https://crbug.com/1186712 -->
-    <color name="material_color_surface">@color/default_bg_color_elev_4</color>
+    <color name="material_color_surface">@color/default_bg_color_elev_4_baseline</color>
 
     <!-- Other colors -->
     <color name="media_viewer_bg">#000000</color>

@@ -7,9 +7,10 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
@@ -35,23 +36,23 @@ class RateLimitTableTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
     delegate_ = std::make_unique<ConfigurableStorageDelegate>();
-    table_ = std::make_unique<RateLimitTable>(delegate_.get(), &clock_);
+    table_ = std::make_unique<RateLimitTable>(delegate_.get());
   }
 
   AttributionReport NewConversionReport(
       url::Origin impression_origin,
       url::Origin conversion_origin,
-      StorableSource::Id impression_id = StorableSource::Id(0),
+      StorableSource::Id source_id = StorableSource::Id(0),
       StorableSource::SourceType source_type =
           StorableSource::SourceType::kNavigation) {
-    return ReportBuilder(SourceBuilder(clock()->Now())
+    return ReportBuilder(SourceBuilder()
                              .SetImpressionOrigin(std::move(impression_origin))
                              .SetConversionOrigin(std::move(conversion_origin))
-                             .SetImpressionId(impression_id)
+                             .SetSourceId(source_id)
                              .SetSourceType(source_type)
                              .Build())
-        .SetConversionTime(clock()->Now())
-        .SetReportTime(clock()->Now())
+        .SetTriggerTime(base::Time::Now())
+        .SetReportTime(base::Time::Now())
         .Build();
   }
 
@@ -76,18 +77,17 @@ class RateLimitTableTest : public testing::Test {
     return temp_directory_.GetPath().Append(FILE_PATH_LITERAL("Conversions"));
   }
 
-  base::SimpleTestClock* clock() { return &clock_; }
-
   RateLimitTable* table() { return table_.get(); }
 
   ConfigurableStorageDelegate* delegate() { return delegate_.get(); }
 
  protected:
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::ScopedTempDir temp_directory_;
 
  private:
   std::unique_ptr<ConfigurableStorageDelegate> delegate_;
-  base::SimpleTestClock clock_;
   std::unique_ptr<RateLimitTable> table_;
 };
 
@@ -127,7 +127,7 @@ TEST_F(RateLimitTableTest, AddRateLimit) {
 
   // The above report should be deleted, as it expires after the clock is
   // advanced.
-  clock()->Advance(base::Days(3));
+  task_environment_.FastForwardBy(base::Days(3));
   EXPECT_TRUE(table()->AddRateLimit(
       &db,
       NewConversionReport(url::Origin::Create(GURL("https://c.example/")),
@@ -157,11 +157,11 @@ TEST_F(RateLimitTableTest, AttributionAllowed) {
   EXPECT_TRUE(
       table()->AddRateLimit(&db, NewConversionReport(example_a, example_c)));
 
-  clock()->Advance(base::Days(3));
+  task_environment_.FastForwardBy(base::Days(3));
   EXPECT_TRUE(
       table()->AddRateLimit(&db, NewConversionReport(example_a, example_d)));
 
-  clock()->Advance(base::Days(3));
+  task_environment_.FastForwardBy(base::Days(3));
   EXPECT_TRUE(
       table()->AddRateLimit(&db, NewConversionReport(example_a, example_c)));
 
@@ -177,7 +177,7 @@ TEST_F(RateLimitTableTest, AttributionAllowed) {
   // neither impression nor conversion match
   const auto report_b_a = NewConversionReport(example_b, example_a);
 
-  base::Time now = clock()->Now();
+  base::Time now = base::Time::Now();
   EXPECT_EQ(AttributionAllowedStatus::kNotAllowed,
             table()->AttributionAllowed(&db, report_a_c, now));
   EXPECT_EQ(AttributionAllowedStatus::kAllowed,
@@ -190,8 +190,8 @@ TEST_F(RateLimitTableTest, AttributionAllowed) {
             table()->AttributionAllowed(&db, report_b_a, now));
 
   // Expire the first row above by advancing to +10d.
-  clock()->Advance(base::Days(4));
-  now = clock()->Now();
+  task_environment_.FastForwardBy(base::Days(4));
+  now = base::Time::Now();
   EXPECT_EQ(AttributionAllowedStatus::kAllowed,
             table()->AttributionAllowed(&db, report_a_c, now));
   EXPECT_EQ(AttributionAllowedStatus::kAllowed,
@@ -236,7 +236,7 @@ TEST_F(RateLimitTableTest, CheckAttributionAllowed_SourceTypesIndependent) {
   EXPECT_TRUE(table()->AddRateLimit(&db, report_event));
   EXPECT_EQ(2u, GetRateLimitRows(&db));
 
-  base::Time now = clock()->Now();
+  base::Time now = base::Time::Now();
   EXPECT_EQ(AttributionAllowedStatus::kAllowed,
             table()->AttributionAllowed(&db, report_navigation, now));
   EXPECT_EQ(AttributionAllowedStatus::kAllowed,
@@ -279,11 +279,11 @@ TEST_F(RateLimitTableTest,
   // ConversionDestination.
   EXPECT_TRUE(table()->AddRateLimit(
       &db, NewConversionReport(example_a, example_c_sub_a)));
-  clock()->Advance(base::Days(3));
+  task_environment_.FastForwardBy(base::Days(3));
   EXPECT_TRUE(table()->AddRateLimit(
       &db, NewConversionReport(example_a, example_c_sub_b)));
 
-  base::Time now = clock()->Now();
+  base::Time now = base::Time::Now();
   EXPECT_EQ(AttributionAllowedStatus::kNotAllowed,
             table()->AttributionAllowed(
                 &db, NewConversionReport(example_a, example_c_sub_a), now));
@@ -316,11 +316,11 @@ TEST_F(RateLimitTableTest, CheckAttributionAllowed_ImpressionSiteSubdomains) {
   // impression_site.
   EXPECT_TRUE(table()->AddRateLimit(
       &db, NewConversionReport(example_c_sub_a, example_a)));
-  clock()->Advance(base::Days(3));
+  task_environment_.FastForwardBy(base::Days(3));
   EXPECT_TRUE(table()->AddRateLimit(
       &db, NewConversionReport(example_c_sub_b, example_a)));
 
-  base::Time now = clock()->Now();
+  base::Time now = base::Time::Now();
   EXPECT_EQ(AttributionAllowedStatus::kNotAllowed,
             table()->AttributionAllowed(
                 &db, NewConversionReport(example_c_sub_a, example_a), now));
@@ -366,18 +366,18 @@ TEST_F(RateLimitTableTest, ClearAllDataInRange) {
 
   EXPECT_TRUE(
       table()->AddRateLimit(&db, NewConversionReport(example_a, example_b)));
-  clock()->Advance(base::Days(2));
+  task_environment_.FastForwardBy(base::Days(2));
   EXPECT_TRUE(
       table()->AddRateLimit(&db, NewConversionReport(example_a, example_b)));
-  clock()->Advance(base::Days(2));
+  task_environment_.FastForwardBy(base::Days(2));
   EXPECT_TRUE(
       table()->AddRateLimit(&db, NewConversionReport(example_b, example_c)));
-  clock()->Advance(base::Days(2));
+  task_environment_.FastForwardBy(base::Days(2));
   EXPECT_TRUE(
       table()->AddRateLimit(&db, NewConversionReport(example_b, example_c)));
   EXPECT_EQ(4u, GetRateLimitRows(&db));
 
-  base::Time now = clock()->Now();
+  base::Time now = base::Time::Now();
 
   EXPECT_EQ(AttributionAllowedStatus::kNotAllowed,
             table()->AttributionAllowed(
@@ -388,8 +388,9 @@ TEST_F(RateLimitTableTest, ClearAllDataInRange) {
 
   // Delete the first row: attribution should now be allowed for the site,
   // but the other rows should not be deleted.
-  EXPECT_TRUE(table()->ClearAllDataInRange(&db, now - base::Days(7),
-                                           now - base::Days(6)));
+  EXPECT_TRUE(table()->ClearDataForOriginsInRange(
+      &db, now - base::Days(7), now - base::Days(6),
+      /*filter=*/base::NullCallback()));
   EXPECT_EQ(3u, GetRateLimitRows(&db));
   EXPECT_EQ(AttributionAllowedStatus::kAllowed,
             table()->AttributionAllowed(
@@ -420,16 +421,16 @@ TEST_F(RateLimitTableTest, ClearDataForOriginsInRange) {
 
   EXPECT_TRUE(
       table()->AddRateLimit(&db, NewConversionReport(example_a, example_ba)));
-  clock()->Advance(base::Days(2));
+  task_environment_.FastForwardBy(base::Days(2));
   EXPECT_TRUE(
       table()->AddRateLimit(&db, NewConversionReport(example_a, example_bb)));
-  clock()->Advance(base::Days(2));
+  task_environment_.FastForwardBy(base::Days(2));
   EXPECT_TRUE(
       table()->AddRateLimit(&db, NewConversionReport(example_d, example_c)));
 
   EXPECT_EQ(3u, GetRateLimitRows(&db));
 
-  base::Time now = clock()->Now();
+  base::Time now = base::Time::Now();
   EXPECT_EQ(AttributionAllowedStatus::kNotAllowed,
             table()->AttributionAllowed(
                 &db, NewConversionReport(example_a, example_b), now));
@@ -467,10 +468,10 @@ TEST_F(RateLimitTableTest, ClearDataForOriginsInRange) {
   EXPECT_EQ(AttributionAllowedStatus::kAllowed,
             table()->AddAggregateHistogramContributionsForTesting(
                 &db,
-                SourceBuilder(clock()->Now())
+                SourceBuilder()
                     .SetImpressionOrigin(example_a)
                     .SetConversionOrigin(example_b)
-                    .SetImpressionId(StorableSource::Id(1))
+                    .SetSourceId(StorableSource::Id(1))
                     .Build(),
                 {{.bucket = "a", .value = 2}}));
   EXPECT_EQ(1u, GetRateLimitRows(&db));
@@ -504,7 +505,7 @@ TEST_F(RateLimitTableTest, AddRateLimit_DeletesExpiredRateLimits) {
       .time_window = base::Minutes(2),
       .max_contributions_per_window = INT_MAX,
   });
-  clock()->Advance(base::Minutes(1));
+  task_environment_.FastForwardBy(base::Minutes(1));
   EXPECT_TRUE(table()->AddRateLimit(
       &db,
       NewConversionReport(url::Origin::Create(GURL("https://e.example/")),
@@ -513,7 +514,7 @@ TEST_F(RateLimitTableTest, AddRateLimit_DeletesExpiredRateLimits) {
               ElementsAre("https://a.example", "https://c.example",
                           "https://e.example"));
 
-  clock()->Advance(base::Minutes(3));
+  task_environment_.FastForwardBy(base::Minutes(3));
   EXPECT_TRUE(table()->AddRateLimit(
       &db,
       NewConversionReport(url::Origin::Create(GURL("https://g.example/")),
@@ -523,7 +524,7 @@ TEST_F(RateLimitTableTest, AddRateLimit_DeletesExpiredRateLimits) {
               ElementsAre("https://a.example", "https://c.example",
                           "https://e.example", "https://g.example"));
 
-  clock()->Advance(base::Minutes(1));
+  task_environment_.FastForwardBy(base::Minutes(1));
   EXPECT_TRUE(table()->AddRateLimit(
       &db,
       NewConversionReport(url::Origin::Create(GURL("https://i.example/")),
@@ -547,7 +548,7 @@ TEST_F(RateLimitTableTest, ClearDataForSourceIds) {
   const url::Origin example_c = url::Origin::Create(GURL("https://c.example/"));
   const url::Origin example_d = url::Origin::Create(GURL("https://d.example/"));
 
-  base::Time now = clock()->Now();
+  base::Time now = base::Time::Now();
 
   EXPECT_TRUE(table()->AddRateLimit(
       &db, NewConversionReport(example_a, example_b, StorableSource::Id(1))));
@@ -587,10 +588,10 @@ TEST_F(RateLimitTableTest, Aggregate) {
   });
 
   const auto impression =
-      SourceBuilder(clock()->Now())
+      SourceBuilder()
           .SetImpressionOrigin(url::Origin::Create(GURL("https://a.example/")))
           .SetConversionOrigin(url::Origin::Create(GURL("https://b.example/")))
-          .SetImpressionId(StorableSource::Id(1))
+          .SetSourceId(StorableSource::Id(1))
           .Build();
 
   EXPECT_EQ(AttributionAllowedStatus::kAllowed,
@@ -608,7 +609,7 @@ TEST_F(RateLimitTableTest, Aggregate) {
                     {.bucket = "a", .value = 10},
                 }));
 
-  clock()->Advance(base::Days(7) - base::Milliseconds(1));
+  task_environment_.FastForwardBy(base::Days(7) - base::Milliseconds(1));
   EXPECT_EQ(AttributionAllowedStatus::kAllowed,
             table()->AddAggregateHistogramContributionsForTesting(
                 &db, impression,
@@ -623,7 +624,7 @@ TEST_F(RateLimitTableTest, Aggregate) {
                 }));
 
   // This is checking expiry behavior.
-  clock()->Advance(base::Days(1));
+  task_environment_.FastForwardBy(base::Days(1));
   EXPECT_EQ(AttributionAllowedStatus::kAllowed,
             table()->AddAggregateHistogramContributionsForTesting(
                 &db, impression,

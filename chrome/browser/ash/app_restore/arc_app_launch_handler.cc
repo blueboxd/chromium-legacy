@@ -777,6 +777,12 @@ void ArcAppLaunchHandler::UpdateCpuUsage() {
 
 void ArcAppLaunchHandler::OnCpuUsageUpdated(
     chromeos::cros_healthd::mojom::TelemetryInfoPtr info_ptr) {
+  // May be null in tests.
+  if (info_ptr.is_null() || info_ptr->cpu_result.is_null() ||
+      info_ptr->cpu_result->get_cpu_info().is_null()) {
+    return;
+  }
+
   CpuTick tick;
   // For simplicity, assume that device has only one physical CPU.
   for (const auto& logical_cpu :

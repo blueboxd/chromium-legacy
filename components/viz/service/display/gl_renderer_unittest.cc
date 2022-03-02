@@ -52,11 +52,11 @@
 #include "ui/gfx/geometry/transform.h"
 #include "ui/latency/latency_info.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "components/viz/service/display/overlay_processor_win.h"
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
 #include "components/viz/service/display/overlay_processor_mac.h"
-#elif defined(OS_ANDROID) || defined(USE_OZONE)
+#elif BUILDFLAG(IS_ANDROID) || defined(USE_OZONE)
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
@@ -224,7 +224,7 @@ class GLRendererShaderPixelTest : public cc::PixelTest {
           auto adjusted_color_space = src_color_space;
           if (src_color_space.IsHDR()) {
             adjusted_color_space = src_color_space.GetWithSDRWhiteLevel(
-                drawing_frame.display_color_spaces.GetSDRWhiteLevel());
+                drawing_frame.display_color_spaces.GetSDRMaxLuminanceNits());
           }
           SCOPED_TRACE(
               base::StringPrintf("adjusted_color_space=%s, dst_color_space=%s",
@@ -287,7 +287,7 @@ class GLRendererShaderPixelTest : public cc::PixelTest {
   void TestShadersWithSDRWhiteLevel(const ProgramKey& program_key,
                                     float sdr_white_level) {
     GLRenderer::DrawingFrame frame;
-    frame.display_color_spaces.SetSDRWhiteLevel(sdr_white_level);
+    frame.display_color_spaces.SetSDRMaxLuminanceNits(sdr_white_level);
     TestShaderWithDrawingFrame(program_key, frame, false);
   }
 
@@ -430,7 +430,7 @@ class GLRendererShaderPixelTest : public cc::PixelTest {
 
 namespace {
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 static const TexCoordPrecision kPrecisionList[] = {TEX_COORD_PRECISION_MEDIUM,
                                                    TEX_COORD_PRECISION_HIGH};
 
@@ -998,7 +998,7 @@ class GLRendererTextureDrawQuadHDRTest
 
     constexpr float kSDRWhiteLevel = 123.0f;
     gfx::DisplayColorSpaces display_color_spaces;
-    display_color_spaces.SetSDRWhiteLevel(kSDRWhiteLevel);
+    display_color_spaces.SetSDRMaxLuminanceNits(kSDRWhiteLevel);
 
     DrawFrame(renderer_.get(), viewport_size, display_color_spaces);
 
@@ -2537,7 +2537,7 @@ TEST_F(MockOutputSurfaceTest, BackbufferDiscard) {
   Mock::VerifyAndClearExpectations(output_surface_.get());
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 class MockDCLayerOverlayProcessor : public DCLayerOverlayProcessor {
  public:
   MockDCLayerOverlayProcessor()
@@ -2569,7 +2569,7 @@ class TestOverlayProcessor : public OverlayProcessorWin {
     return static_cast<MockDCLayerOverlayProcessor*>(GetOverlayProcessor());
   }
 };
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
 class MockCALayerOverlayProcessor : public CALayerOverlayProcessor {
  public:
   MockCALayerOverlayProcessor() : CALayerOverlayProcessor(true) {}
@@ -2598,7 +2598,7 @@ class TestOverlayProcessor : public OverlayProcessorMac {
   }
 };
 
-#elif defined(OS_ANDROID) || defined(USE_OZONE)
+#elif BUILDFLAG(IS_ANDROID) || defined(USE_OZONE)
 
 class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
  public:
@@ -2659,7 +2659,7 @@ class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
   // to be traditionally composited. Candidates with |overlay_handled| set to
   // true must also have their |display_rect| converted to integer
   // coordinates if necessary.
-  void CheckOverlaySupport(
+  void CheckOverlaySupportImpl(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
       OverlayCandidateList* surfaces) override {}
 
@@ -2698,7 +2698,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   cc::FakeOutputSurfaceClient output_surface_client;
   std::unique_ptr<FakeOutputSurface> output_surface(
       FakeOutputSurface::Create3d());
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   output_surface->set_supports_dc_layers(true);
 #endif
   output_surface->BindToClient(&output_surface_client);
@@ -2744,10 +2744,10 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   renderer.Initialize();
   renderer.SetVisible(true);
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   MockCALayerOverlayProcessor* mock_ca_processor =
       processor->GetTestProcessor();
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   MockDCLayerOverlayProcessor* dc_processor = processor->GetTestProcessor();
 #endif
 
@@ -2778,7 +2778,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   // added a fake strategy, so checking for Attempt calls checks if there was
   // any attempt to overlay, which there shouldn't be. We can't use the quad
   // list because the render pass is cleaned up by DrawFrame.
-#if defined(USE_OZONE) || defined(OS_ANDROID)
+#if defined(USE_OZONE) || BUILDFLAG(IS_ANDROID)
   if (features::IsOverlayPrioritizationEnabled()) {
     EXPECT_CALL(processor->strategy(),
                 AttemptPrioritized(_, _, _, _, _, _, _, _, _))
@@ -2787,19 +2787,19 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
     EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _, _))
         .Times(0);
   }
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   EXPECT_CALL(*mock_ca_processor, ProcessForCALayerOverlays(_, _, _, _, _, _))
       .WillOnce(Return(false));
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   EXPECT_CALL(*dc_processor, Process(_, _, _, _, _, _, _, _)).Times(0);
 #endif
   DrawFrame(&renderer, viewport_size);
-#if defined(USE_OZONE) || defined(OS_ANDROID)
+#if defined(USE_OZONE) || BUILDFLAG(IS_ANDROID)
   Mock::VerifyAndClearExpectations(&processor->strategy());
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   Mock::VerifyAndClearExpectations(
       const_cast<MockCALayerOverlayProcessor*>(mock_ca_processor));
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   Mock::VerifyAndClearExpectations(
       const_cast<MockDCLayerOverlayProcessor*>(dc_processor));
 #endif
@@ -2817,7 +2817,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
       /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
-#if defined(USE_OZONE) || defined(OS_ANDROID)
+#if defined(USE_OZONE) || BUILDFLAG(IS_ANDROID)
   if (features::IsOverlayPrioritizationEnabled()) {
     EXPECT_CALL(processor->strategy(),
                 AttemptPrioritized(_, _, _, _, _, _, _, _, _))
@@ -2826,10 +2826,10 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
     EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _, _))
         .Times(1);
   }
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   EXPECT_CALL(*mock_ca_processor, ProcessForCALayerOverlays(_, _, _, _, _, _))
       .WillOnce(Return(true));
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   EXPECT_CALL(*dc_processor, Process(_, _, _, _, _, _, _, _)).Times(1);
 #endif
   DrawFrame(&renderer, viewport_size);
@@ -2843,7 +2843,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   child_resource_provider->ShutdownAndReleaseAllResources();
 }
 
-#if defined(OS_ANDROID) || defined(USE_OZONE)
+#if BUILDFLAG(IS_ANDROID) || defined(USE_OZONE)
 class SingleOverlayOnTopProcessor : public OverlayProcessorUsingStrategy {
  public:
   SingleOverlayOnTopProcessor() : OverlayProcessorUsingStrategy() {
@@ -2856,7 +2856,7 @@ class SingleOverlayOnTopProcessor : public OverlayProcessorUsingStrategy {
   bool NeedsSurfaceDamageRectList() const override { return true; }
   bool IsOverlaySupported() const override { return true; }
 
-  void CheckOverlaySupport(
+  void CheckOverlaySupportImpl(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
       OverlayCandidateList* surfaces) override {
     if (!multiple_candidates_)
@@ -2999,7 +2999,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   child_resource_provider->RemoveImportedResource(resource_id);
   child_resource_provider->ShutdownAndReleaseAllResources();
 }
-#endif  // defined(USE_OZONE) || defined(OS_ANDROID)
+#endif  // defined(USE_OZONE) || BUILDFLAG(IS_ANDROID)
 
 class OutputColorMatrixMockGLES2Interface : public TestGLES2Interface {
  public:
@@ -3657,7 +3657,7 @@ TEST_F(GLRendererPartialSwapTest, NoPartialSwap) {
   RunTest(false, false);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 TEST_F(GLRendererPartialSwapTest, SetDrawRectangle_PartialSwap) {
   RunTest(true, true);
 }
@@ -3832,7 +3832,7 @@ TEST_F(GLRendererWithMockContextTest,
   Mock::VerifyAndClearExpectations(context_support_ptr_);
 }
 
-#if defined(USE_OZONE) || defined(OS_ANDROID)
+#if defined(USE_OZONE) || BUILDFLAG(IS_ANDROID)
 class ContentBoundsOverlayProcessor : public OverlayProcessorUsingStrategy {
  public:
   class Strategy : public OverlayProcessorUsingStrategy::Strategy {
@@ -3915,7 +3915,7 @@ class ContentBoundsOverlayProcessor : public OverlayProcessorUsingStrategy {
   // to be traditionally composited. Candidates with |overlay_handled| set to
   // true must also have their |display_rect| converted to integer
   // coordinates if necessary.
-  void CheckOverlaySupport(
+  void CheckOverlaySupportImpl(
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
       OverlayCandidateList* surfaces) override {}
 
@@ -3980,9 +3980,9 @@ TEST_F(GLRendererSwapWithBoundsTest, NonEmpty) {
   content_bounds.push_back(gfx::Rect(20, 20, 30, 30));
   RunTest(content_bounds);
 }
-#endif  // defined(USE_OZONE) || defined(OS_ANDROID)
+#endif  // defined(USE_OZONE) || BUILDFLAG(IS_ANDROID)
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 class MockCALayerGLES2Interface : public TestGLES2Interface {
  public:
   MOCK_METHOD6(ScheduleCALayerSharedStateCHROMIUM,
@@ -4036,7 +4036,7 @@ class CALayerGLRendererTest : public GLRendererTest {
     // The Mac TestOverlayProcessor default to enable CALayer overlays, then all
     // damage is removed and we can skip the root RenderPass, swapping empty.
     overlay_processor_ = std::make_unique<OverlayProcessorMac>(
-        std::make_unique<CALayerOverlayProcessor>(true));
+        std::make_unique<CALayerOverlayProcessor>());
     renderer_ = std::make_unique<FakeRendererGL>(
         settings_.get(), &debug_settings_, output_surface_.get(),
         display_resource_provider_.get(), overlay_processor_.get(),
@@ -5062,7 +5062,7 @@ TEST_F(GLRendererTest, UndamagedRenderPassStillDrawnWhenNoPartialSwap) {
   }
 }
 
-#if defined(USE_OZONE) || defined(OS_ANDROID)
+#if defined(USE_OZONE) || BUILDFLAG(IS_ANDROID)
 class GLRendererWithGpuFenceTest : public GLRendererTest {
  protected:
   GLRendererWithGpuFenceTest() {
@@ -5183,7 +5183,7 @@ TEST_F(GLRendererWithGpuFenceTest,
       .Times(1);
   DrawFrame(renderer_.get(), viewport_size);
 }
-#endif  // defined(USE_OZONE) || defined(OS_ANDROID)
+#endif  // defined(USE_OZONE) || BUILDFLAG(IS_ANDROID)
 
 }  // namespace
 }  // namespace viz

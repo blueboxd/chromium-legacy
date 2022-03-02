@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AppWindow} from './app_window.js';
 import {assertInstanceof} from './assert.js';
 import * as metrics from './metrics.js';
 import {
@@ -31,7 +30,7 @@ function toStackFrame(callsite: CallSite): StackFrame {
   if (fileName.startsWith(window.location.origin)) {
     fileName = fileName.substring(window.location.origin.length + 1);
   }
-  const ensureNumber = (n) => (n === undefined ? -1 : n);
+  const ensureNumber = (n: number|undefined) => (n === undefined ? -1 : n);
   return {
     fileName,
     funcName: callsite.getFunctionName() || '[Anonymous]',
@@ -44,9 +43,9 @@ function toStackFrame(callsite: CallSite): StackFrame {
  * Gets stack frames from error.
  * @return return null if failed to get frames from error.
  */
-export function getStackFrames(error: Error): StackFrame[]|null {
+function getStackFrames(error: Error): StackFrame[]|null {
   const prevPrepareStackTrace = Error.prepareStackTrace;
-  Error.prepareStackTrace = (error, stack) => {
+  Error.prepareStackTrace = (_error, stack) => {
     try {
       return stack.map(toStackFrame);
     } catch (e) {
@@ -94,7 +93,7 @@ function formatErrorStack(error: Error, frames: StackFrame[]|null): string {
           .join('');
 }
 
-const appWindow: AppWindow|null = window['appWindow'];
+const appWindow = window.appWindow;
 
 /**
  * Initializes error collecting functions.
@@ -118,7 +117,8 @@ const triggeredErrorSet = new Set<string>();
  * metrics in non test run.
  */
 export function reportError(
-    type: ErrorType, level: ErrorLevel, error: Error): void {
+    type: ErrorType, level: ErrorLevel, errorRaw: unknown): void {
+  const error = assertInstanceof(errorRaw, Error);
   // Uncaught promise is already logged in console.
   if (type !== ErrorType.UNCAUGHT_PROMISE) {
     if (level === ErrorLevel.ERROR) {

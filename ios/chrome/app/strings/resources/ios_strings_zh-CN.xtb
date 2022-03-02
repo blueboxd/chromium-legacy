@@ -82,6 +82,7 @@
 <translation id="1605658421715042784">复制图片</translation>
 <translation id="1608337082864370066">搜索复制的图片</translation>
 <translation id="1612730193129642006">显示标签页网格</translation>
+<translation id="1620510694547887537">摄像头</translation>
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="1650222530560417226">点按“开始记录”按钮即可从所有标签页中收集日后的 JavaScript 控制台日志和错误。系统会一直收集（并仅在内存中存储）日志，直到用户关闭此页面或点按“停止记录”。</translation>
 <translation id="1657011748321897393">分享失败，因为您没有连接到网络。</translation>
@@ -141,6 +142,8 @@
 <translation id="2268044343513325586">优化</translation>
 <translation id="2271351792809375263">在设备上的其他应用内使用已保存到 Chrome 中的密码</translation>
 <translation id="2273327106802955778">“更多”菜单</translation>
+<translation id="2286505070150039482">突出显示的文字</translation>
+<translation id="2299218006564889602">系统会先在设备上对您的密码进行加密，然后再将其保存到 Google 密码管理器中。</translation>
 <translation id="2302742851632557585">在网站上更改密码</translation>
 <translation id="2316709634732130529">使用建议的密码</translation>
 <translation id="2320166752086256636">隐藏键盘</translation>
@@ -245,6 +248,7 @@
 <translation id="3184767182050912705">通过<ph name="BIOMETRIC_AUTHENITCATION_TYPE" />解锁</translation>
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3224641773458703735">要想导出密码，您必须先在设备上设置屏幕锁定。</translation>
+<translation id="3227137524299004712">麦克风</translation>
 <translation id="3230318355092723906">关闭同步功能后，您仍可在此设备上查看自己的所有书签、历史记录、密码及其他设置。如果您做出更改，这些更改将不会同步到您的帐号。</translation>
 <translation id="3240426699337459095">已复制链接</translation>
 <translation id="3244271242291266297">MM</translation>
@@ -311,6 +315,7 @@
 <translation id="3803696231112616155">主动询问是否翻译此网站</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3858860766373142691">名称</translation>
+<translation id="3861486700625780712">取消关注</translation>
 <translation id="3892144330757387737">您的历史记录会显示在此处</translation>
 <translation id="3897092660631435901">菜单</translation>
 <translation id="3913386780052199712">已登录 Chrome</translation>
@@ -331,6 +336,7 @@
 <translation id="4042870976416480368">在网页上查找</translation>
 <translation id="4049507953662678203">请确保已连接到网络，然后重试。</translation>
 <translation id="408404951701638773">现在可以更方便地使用搜索栏</translation>
+<translation id="4108314971463891922">关注</translation>
 <translation id="411254640334432676">下载失败。</translation>
 <translation id="4112644173421521737">搜索</translation>
 <translation id="4113030288477039509">由您的管理员管理</translation>
@@ -407,6 +413,7 @@
 <translation id="481968316161811770">Cookie 和网站数据</translation>
 <translation id="4824497107140370669">{count,plural, =0{{domain}}=1{{domain} 以及另外 1 个}other{{domain} 以及另外 {count} 个}}</translation>
 <translation id="4826218269716039351">阻止第三方 Cookie</translation>
+<translation id="4826726074642088322">分享突出显示的内容</translation>
 <translation id="48274138579728272">标记为已读</translation>
 <translation id="4833686396768033263">“最近打开的标签页”页面不可用</translation>
 <translation id="4833786495304741580">自动将使用情况统计信息和崩溃报告发送至 Google。</translation>
@@ -418,12 +425,12 @@
 <translation id="4901778704868714008">保存…</translation>
 <translation id="4904877109095351937">标记为已读</translation>
 <translation id="4908869848243824489">Google 探索</translation>
-<translation id="4930268273022498155">删除现有数据。您可通过切换回 <ph name="USER_EMAIL1" /> 来获取现有数据。</translation>
 <translation id="4930714375720679147">开启</translation>
 <translation id="4941089862236492464">很抱歉，分享您的信息时出现问题。</translation>
 <translation id="4944543191714094452">在网页中查找…</translation>
 <translation id="4945756290001680296">访问密码设置</translation>
 <translation id="4979397965658815378">登录 Google 帐号，即可获取您在任何登录过的设备上的书签、密码、历史记录及其他设置</translation>
+<translation id="4986678885919050584">从此设备中移除</translation>
 <translation id="5005498671520578047">复制密码</translation>
 <translation id="5017828934289857214">稍后提醒我</translation>
 <translation id="5037676449506322593">全选</translation>
@@ -469,7 +476,6 @@
 <translation id="5489208564673669003">若要管理所有网站的 Cookie，请参阅 <ph name="BEGIN_LINK" />Cookie 设置<ph name="END_LINK" />。</translation>
 <translation id="5490005495580364134">阻止所有 Cookie（不建议）</translation>
 <translation id="5513681519188741830"><ph name="TIME" /> 小时前</translation>
-<translation id="5523579157975978438">如需关闭此功能，请打开<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />，然后转至“密码”。</translation>
 <translation id="5525269841082836315">创建密码</translation>
 <translation id="5548760955356983418">借助 Handoff 功能，您在此设备上浏览网站时，可轻松改用 Mac 继续浏览。当前打开的网站将显示在 Mac 的 Dock 中。
 
@@ -498,7 +504,9 @@
 <translation id="575902488528307720">搜索图片</translation>
 <translation id="5781453543752460388">添加到相册</translation>
 <translation id="5782227691023083829">正在翻译...</translation>
+<translation id="5802829331520313983">设置…</translation>
 <translation id="5803566855766646066">确定要舍弃这张新信用卡吗？</translation>
+<translation id="5804241973901381774">权限</translation>
 <translation id="5812974770859303494">添加到…</translation>
 <translation id="5816228676161003208">这样，您就可以使用语音更快速地进行搜索。</translation>
 <translation id="581659025233126501">开启同步功能</translation>
@@ -540,6 +548,7 @@
 <translation id="6066301408025741299">点按可取消。</translation>
 <translation id="60829778314739003">接受并继续</translation>
 <translation id="6084848228346514841">选择标签页</translation>
+<translation id="6103540626693881831">设备上加密</translation>
 <translation id="6108923351542677676">正在设置…</translation>
 <translation id="6119050551270742952">当前网页处于无痕模式</translation>
 <translation id="6122191549521593678">在线</translation>
@@ -557,12 +566,12 @@
 <translation id="6219688215832490856">一律不翻译</translation>
 <translation id="6223816392543092032">获取您在自己的所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="6232329973559504466">无痕搜索</translation>
+<translation id="6232736989810857397">这样您就可以使用 Google 智能镜头轻松创建日历活动。</translation>
 <translation id="6254066287920239840">在应用（而非浏览器）中打开链接。</translation>
 <translation id="6255097610484507482">修改信用卡</translation>
 <translation id="6284652193729350524">主动询问是否翻译<ph name="LANGUAGE" />内容</translation>
 <translation id="6293101329759844770">如需开启“安全浏览”功能，请打开 <ph name="BEGIN_LINK" />Google 服务<ph name="END_LINK" />，然后点按“安全浏览”。</translation>
 <translation id="6321526113093607004">添加到“书签”</translation>
-<translation id="6324528485781869530">切换同步帐号</translation>
 <translation id="6324669097367352121">登录设置</translation>
 <translation id="6337234675334993532">加密</translation>
 <translation id="633809752005859102">出错了，我们马上处理。</translation>
@@ -601,10 +610,12 @@
 <translation id="6497772452874122664">如果您信任 <ph name="TIME" />，则可使用您为另一网站保存的密码。
 
 请尽量为每个网站使用独一无二的密码。</translation>
+<translation id="650279896687777322">了解详情…</translation>
 <translation id="651505212789431520">取消同步？您随时可在“设置”中开启同步功能。</translation>
 <translation id="6524918542306337007">无痕模式不可用</translation>
 <translation id="6537746030088321027">example.com</translation>
 <translation id="6561262006871132942">放大</translation>
+<translation id="6583087784430677195">如需关闭此功能，请打开<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />，然后转至“自动填充密码”。</translation>
 <translation id="6585618849026997638">您可以为重要网页添加书签以便返回查看</translation>
 <translation id="6603393121510733479">贵单位关闭了无痕浏览。
 <ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
@@ -733,7 +744,6 @@
 <translation id="7741325291586284254">新的无痕式标签页</translation>
 <translation id="7765158879357617694">移动</translation>
 <translation id="7772032839648071052">确认密码</translation>
-<translation id="7778472311864276518">从此设备上移除帐号</translation>
 <translation id="7781011649027948662">翻译网页？</translation>
 <translation id="7781069478569868053">新标签页</translation>
 <translation id="7781829728241885113">昨天</translation>
@@ -757,6 +767,7 @@
 <translation id="797413074872316787">若要在您的所有设备上保持同步并获享个性化体验，请开启同步功能。</translation>
 <translation id="7978018860671536736">3. 点按“自动填充密码”</translation>
 <translation id="7982789257301363584">网络</translation>
+<translation id="7987685713885608670">为了提高安全性，请先在设备上对密码进行加密，然后再将其保存到 Google 密码管理器中。</translation>
 <translation id="7993619969781047893">某些网站上的功能可能会无法正常运作</translation>
 <translation id="800361585186029508">在 Google Chrome 中打开输入的网址。</translation>
 <translation id="802154636333426148">下载失败</translation>

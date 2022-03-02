@@ -224,12 +224,12 @@ class D3D11VideoDecoderTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void CheckStatus(bool expectSuccess, Status actual) {
+  void CheckStatus(bool expectSuccess, DecoderStatus actual) {
     ASSERT_EQ(expectSuccess, actual.is_ok());
     MockInitCB(actual);
   }
 
-  MOCK_METHOD1(MockInitCB, void(Status));
+  MOCK_METHOD1(MockInitCB, void(DecoderStatus));
 
   base::test::TaskEnvironment task_environment_;
 
@@ -271,16 +271,6 @@ TEST_F(D3D11VideoDecoderTest, SupportsVP9Profile0WithDecoderEnabled) {
   } else {
     InitializeDecoder(configuration, true);
   }
-}
-
-TEST_F(D3D11VideoDecoderTest, DoesNotSupportVP9WithLegacyGPU) {
-  SetGPUProfile(LegacyIntelGPU);
-  VideoDecoderConfig configuration = TestVideoConfig::NormalCodecProfile(
-      VideoCodec::kVP9, VP9PROFILE_PROFILE0);
-
-  EnableDecoder(D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0);
-  CreateDecoder();
-  InitializeDecoder(configuration, false);
 }
 
 TEST_F(D3D11VideoDecoderTest, DoesNotSupportVP9WithGPUWorkaroundDisableVPX) {

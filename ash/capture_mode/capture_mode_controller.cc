@@ -261,9 +261,6 @@ int GetDisabledNotificationMessageId(CaptureAllowance allowance,
     case CaptureAllowance::kDisallowedByPolicy:
       return for_title ? IDS_ASH_SCREEN_CAPTURE_POLICY_DISABLED_TITLE
                        : IDS_ASH_SCREEN_CAPTURE_POLICY_DISABLED_MESSAGE;
-    case CaptureAllowance::kDisallowedByDlp:
-      return for_title ? IDS_ASH_SCREEN_CAPTURE_DLP_DISABLED_TITLE
-                       : IDS_ASH_SCREEN_CAPTURE_DLP_DISABLED_MESSAGE;
     case CaptureAllowance::kDisallowedByHdcp:
       return for_title ? IDS_ASH_SCREEN_CAPTURE_HDCP_STOPPED_TITLE
                        : IDS_ASH_SCREEN_CAPTURE_HDCP_BLOCKED_MESSAGE;
@@ -485,15 +482,6 @@ void CaptureModeController::EnableAudioRecording(bool enable_audio_recording) {
     return;
 
   enable_audio_recording_ = enable_audio_recording;
-
-  // TODO(conniekxu): remove all code below for this function once feature
-  // 'ImprovedScreenCaptureSettings' is fully launched.
-  // Return directly if |kImprovedScreenCaptureSettings| is enabled because for
-  // the new CaptureMode settings we don't have microphone toggle button.
-  if (features::AreImprovedScreenCaptureSettingsEnabled())
-    return;
-  DCHECK(capture_mode_session_);
-  capture_mode_session_->OnMicrophoneChanged(enable_audio_recording_);
 }
 
 void CaptureModeController::Start(CaptureModeEntryType entry_type) {
@@ -980,19 +968,6 @@ void CaptureModeController::OnRecordingServiceDisconnected() {
   FinalizeRecording(/*success=*/false, gfx::ImageSkia());
 }
 
-CaptureAllowance CaptureModeController::IsCaptureAllowedByEnterprisePolicies(
-    const CaptureParams& capture_params) const {
-  if (!delegate_->IsCaptureAllowedByPolicy()) {
-    return CaptureAllowance::kDisallowedByPolicy;
-  }
-  if (!delegate_->IsCaptureAllowedByDlp(capture_params.window,
-                                        capture_params.bounds)) {
-    return CaptureAllowance::kDisallowedByDlp;
-  }
-
-  return CaptureAllowance::kAllowed;
-}
-
 void CaptureModeController::FinalizeRecording(bool success,
                                               const gfx::ImageSkia& thumbnail) {
   // If |success| is false, then recording has been force-terminated due to a
@@ -1036,8 +1011,7 @@ void CaptureModeController::CaptureImage(const CaptureParams& capture_params,
   // Note that |type_| may not necessarily be |kImage| here, since this may be
   // called to take an instant fullscreen screenshot for the keyboard shortcut,
   // which doesn't go through the capture mode UI, and doesn't change |type_|.
-  DCHECK_EQ(CaptureAllowance::kAllowed,
-            IsCaptureAllowedByEnterprisePolicies(capture_params));
+  DCHECK(delegate_->IsCaptureAllowedByPolicy());
 
   // Stop the capture session now, so as not to take a screenshot of the capture
   // bar.
@@ -1067,12 +1041,14 @@ void CaptureModeController::CaptureImage(const CaptureParams& capture_params,
 
   capture_mode_util::TriggerAccessibilityAlert(
       IDS_ASH_SCREEN_CAPTURE_ALERT_SCREENSHOT_CAPTURED);
+
+  delegate_->OnCaptureImageAttempted(capture_params.window,
+                                     capture_params.bounds);
 }
 
 void CaptureModeController::CaptureVideo(const CaptureParams& capture_params) {
   DCHECK_EQ(CaptureModeType::kVideo, type_);
-  DCHECK_EQ(CaptureAllowance::kAllowed,
-            IsCaptureAllowedByEnterprisePolicies(capture_params));
+  DCHECK(delegate_->IsCaptureAllowedByPolicy());
 
   if (skip_count_down_ui_) {
     OnVideoRecordCountDownFinished();
@@ -1153,7 +1129,8 @@ void CaptureModeController::OnVideoFileSaved(
     }
     DCHECK(!recording_start_time_.is_null());
     RecordCaptureModeRecordTime(
-        (base::TimeTicks::Now() - recording_start_time_).InSeconds());
+        (base::TimeTicks::Now() - recording_start_time_).InSeconds(),
+        in_projector_mode);
   }
   if (Shell::Get()->session_controller()->IsActiveUserSessionStarted())
     RecordSaveToLocation(GetSaveToOption(saved_video_file_path));
@@ -1397,7 +1374,14 @@ void CaptureModeController::OnDlpRestrictionCheckedAtPerformingCapture(
   DCHECK(IsActive());
 
   pending_dlp_check_ = false;
-  capture_mode_session_->OnWaitingForDlpConfirmationEnded(proceed);
+
+  // We don't need to bring capture mode UIs back if `proceed` is false or if
+  // `type_` is `CaptureModeType::kImage`, since the session is about to
+  // shutdown anyways at these use cases, so it's better to avoid any wasted
+  // effort. In the case of video recording, we need to reshow the UIs so that
+  // we can start the 3-second count down animation.
+  capture_mode_session_->OnWaitingForDlpConfirmationEnded(
+      /*reshow_uis=*/proceed && type_ != CaptureModeType::kImage);
 
   if (!proceed) {
     Stop();
@@ -1432,7 +1416,11 @@ void CaptureModeController::OnDlpRestrictionCheckedAtCountDownFinished(
   DCHECK(IsActive());
 
   pending_dlp_check_ = false;
-  capture_mode_session_->OnWaitingForDlpConfirmationEnded(proceed);
+
+  // We don't need to bring back capture mode UIs on 3-second count down
+  // finished, since the session is about to shutdown anyways for starting the
+  // video recording.
+  capture_mode_session_->OnWaitingForDlpConfirmationEnded(/*reshow_uis=*/false);
 
   if (!proceed) {
     Stop();
@@ -1597,9 +1585,9 @@ void CaptureModeController::
 
   // Since this doesn't create a capture mode session, log metrics here.
   RecordCaptureModeEntryType(CaptureModeEntryType::kCaptureAllDisplays);
-  RecordCaptureModeConfiguration(CaptureModeType::kImage,
-                                 CaptureModeSource::kFullscreen,
-                                 /*audio_on=*/false);
+  RecordCaptureModeConfiguration(
+      CaptureModeType::kImage, CaptureModeSource::kFullscreen,
+      /*audio_on=*/false, /*is_in_projector_mode=*/false);
 }
 
 CaptureModeSaveToLocation CaptureModeController::GetSaveToOption(

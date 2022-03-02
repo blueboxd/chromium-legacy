@@ -9,12 +9,25 @@
  */
 
 import '/strings.m.js';
+import './ambient/ambient_preview_element.js';
+import './ambient/ambient_subpage_element.js';
 import './personalization_router_element.js';
 import './personalization_test_api.js';
 import './personalization_toast_element.js';
 import './personalization_breadcrumb_element.js';
+import './personalization_main_element.js';
+import './personalization_theme_element.js';
+import './user_preview_element.js';
+import './user/avatar_list_element.js';
+import './user/user_subpage_element.js';
 import './wallpaper/wallpaper_subpage.js';
+
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
 import {emptyState} from './personalization_state.js';
 import {PersonalizationStore} from './personalization_store.js';
 
 PersonalizationStore.getInstance().init(emptyState());
+document.title = loadTimeData.getBoolean('isPersonalizationHubEnabled') ?
+    loadTimeData.getString('personalizationTitle') :
+    loadTimeData.getString('wallpaperLabel');

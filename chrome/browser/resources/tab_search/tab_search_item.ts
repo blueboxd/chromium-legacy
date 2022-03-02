@@ -16,8 +16,8 @@ import {get as deepGet, html, PolymerElement} from 'chrome://resources/polymer/v
 
 import {ariaLabel, TabData, TabItemType} from './tab_data.js';
 import {colorName} from './tab_group_color_helper.js';
-import {Tab, TabGroup} from './tab_search.mojom-webui.js';
-import {highlightText} from './tab_search_utils.js';
+import {Tab} from './tab_search.mojom-webui.js';
+import {highlightText, tabHasMediaAlerts} from './tab_search_utils.js';
 import {TabAlertState} from './tabs.mojom-webui.js';
 
 export interface TabSearchItem {
@@ -67,6 +67,18 @@ export class TabSearchItem extends TabSearchItemBase {
     return type === TabItemType.OPEN_TAB;
   }
 
+  /**
+   * @return the class name for the close button including a second class to
+   *     preallocate space for the close button even while hidden if the tab
+   *     will display a media alert.
+   */
+  private getButtonContainerStyles_(tabData: TabData): string {
+    return 'button-container' +
+        (this.isOpenTabAndHasMediaAlert_(tabData) ?
+             ' allocate-space-while-hidden' :
+             '');
+  }
+
   private onItemClose_(e: Event) {
     this.dispatchEvent(new CustomEvent('close'));
     e.stopPropagation();
@@ -87,21 +99,8 @@ export class TabSearchItem extends TabSearchItemBase {
   }
 
   private isOpenTabAndHasMediaAlert_(tabData: TabData): boolean {
-    if (tabData.type != TabItemType.OPEN_TAB ||
-        !(tabData.tab as Tab).alertStates ||
-        (tabData.tab as Tab).alertStates.length == 0) {
-      return false;
-    }
-
-    /* Current UI mocks only have specs for the following media related alert
-     * states. */
-    function validAlertState(alert: TabAlertState): boolean {
-      return alert == TabAlertState.kMediaRecording ||
-          alert == TabAlertState.kAudioPlaying ||
-          alert == TabAlertState.kAudioMuting;
-    }
-
-    return (tabData.tab as Tab).alertStates.some(validAlertState);
+    return tabData.type == TabItemType.OPEN_TAB &&
+        tabHasMediaAlerts(tabData.tab as Tab);
   }
 
   /**

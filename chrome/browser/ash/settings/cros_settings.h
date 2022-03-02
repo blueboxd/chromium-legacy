@@ -17,8 +17,11 @@
 #include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+static_assert(BUILDFLAG(IS_CHROMEOS_ASH), "For ChromeOS ash-chrome only");
 
 class PrefService;
 
@@ -119,9 +122,9 @@ class CrosSettings {
       CrosSettingsProvider* provider);
 
   // Add an observer Callback for changes for the given |path|.
-  base::CallbackListSubscription AddSettingsObserver(
+  [[nodiscard]] base::CallbackListSubscription AddSettingsObserver(
       const std::string& path,
-      base::RepeatingClosure callback) WARN_UNUSED_RESULT;
+      base::RepeatingClosure callback);
 
   // Returns the provider that handles settings with the |path| or prefix.
   CrosSettingsProvider* GetProvider(const std::string& path) const;

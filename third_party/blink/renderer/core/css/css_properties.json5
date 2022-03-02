@@ -219,6 +219,10 @@
         "keyword",
         // Field can take on any subset of values from a list of keywords.
         "multi_keyword",
+        // Semantically equivalent to keyword, but the type is represented as a
+        // bit flag field as with multi_keyword as a performance optimization
+        // for matching multiple values.
+        "bitset_keyword",
         // Field stores a primitive value like int/bool. The type is specified
         // by type_name. The interface has a initial/getter/setter/resetter.
         "primitive",
@@ -753,6 +757,15 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       inherited: true,
+      // color isn't strictly independent of all other properties;
+      // it determines currentColor, which in turn can affect the used value of
+      // other properties (such as border colors, stops in gradients, etc.).
+      // However, changes to color generally also trigger paint invalidation,
+      // and paint invalidation resolves the color anew. (For the special case
+      // of gradient stops, we have logic within ComputedStyle::AdjustDiffForBackgroundVisuallyEqual
+      // that forces paint invalidation, recomputing the gradient and repainting
+      // the element.)
+      independent: true,
       field_group: "inherited",
       field_template: "external",
       include_paths: ["third_party/blink/renderer/core/css/style_color.h"],
@@ -825,6 +838,21 @@
       type_name: "OpticalSizing",
       priority: "High",
       keywords: ["auto", "none"],
+      typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
+      valid_for_first_line: true,
+      valid_for_marker: true,
+    },
+    {
+      name: "font-palette",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal" ],
+      inherited: true,
+      font: true,
+      runtime_flag: "FontPalette",
+      converter: "ConvertFontPalette",
+      type_name: "FontPalette",
+      priority: "High",
+      keywords: ["normal", "light", "dark"],
       typedom_types: ["Keyword"],
       valid_for_first_letter: true,
       valid_for_first_line: true,
@@ -2978,7 +3006,7 @@
       keywords: [
         "normal", "multiply", "screen", "overlay", "darken", "lighten",
         "color-dodge", "color-burn", "hard-light", "soft-light", "difference",
-        "exclusion", "hue", "saturation", "color", "luminosity"
+        "exclusion", "hue", "saturation", "color", "luminosity", "plus-lighter"
       ],
       typedom_types: ["Keyword"],
       default_value: "normal",
@@ -4926,7 +4954,7 @@
     {
       name: "-webkit-print-color-adjust",
       property_methods: ["CSSValueFromComputedStyleInternal"],
-      independent: true,
+      independent: false,  // Actually true, but setting it to false saves a precious bit in ComputedStyleBase.
       inherited: true,
       field_template: "keyword",
       keywords: ["economy", "exact"],
@@ -4983,8 +5011,9 @@
       name_for_methods: "TextCombine",
     },
     {
-      name: "-webkit-text-emphasis-color",
+      name: "text-emphasis-color",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
+      interpolable: true,
       inherited: true,
       field_group: "*",
       field_template: "external",
@@ -4992,13 +5021,15 @@
       default_value: "StyleColor::CurrentColor()",
       type_name: "StyleColor",
       computed_style_custom_functions: ["getter"],
+      keywords: ["currentcolor"],
+      typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
       valid_for_marker: true,
       valid_for_highlight: true,
     },
     {
-      name: "-webkit-text-emphasis-position",
+      name: "text-emphasis-position",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
@@ -5010,7 +5041,7 @@
       valid_for_marker: true,
     },
     {
-      name: "-webkit-text-emphasis-style",
+      name: "text-emphasis-style",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       style_builder_custom_functions: ["initial", "inherit", "value"],
@@ -5118,9 +5149,9 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: true,
       inherited: true,
-      field_template: "multi_keyword", // We use a bitflag field due peformance issues
+      field_template: "bitset_keyword",
       keywords: [
-        "none", "normal", "pre", "pre-wrap", "pre-line", "nowrap", "-webkit-nowrap", "break-spaces"
+        "normal", "pre", "pre-wrap", "pre-line", "nowrap", "-webkit-nowrap", "break-spaces"
       ],
       typedom_types: ["Keyword"],
       default_value: "normal",
@@ -6396,9 +6427,9 @@
       computable: true,
     },
     {
-      name: "-webkit-text-emphasis",
-      longhands: ["-webkit-text-emphasis-style", "-webkit-text-emphasis-color"],
-      property_methods: ["ParseShorthand"],
+      name: "text-emphasis",
+      longhands: ["text-emphasis-style", "text-emphasis-color"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "-webkit-text-stroke",
@@ -6658,7 +6689,7 @@
     },
     {
       name: "-internal-visited-text-emphasis-color",
-      visited_property_for: "-webkit-text-emphasis-color",
+      visited_property_for: "text-emphasis-color",
       property_methods: ["ParseSingleValue", "ColorIncludingFallback"],
       inherited: true,
       field_group: "*->inherited_visited",
@@ -6839,15 +6870,15 @@
     },
     {
       name: "-epub-text-emphasis",
-      alias_for: "-webkit-text-emphasis",
+      alias_for: "text-emphasis",
     },
     {
       name: "-epub-text-emphasis-color",
-      alias_for: "-webkit-text-emphasis-color",
+      alias_for: "text-emphasis-color",
     },
     {
       name: "-epub-text-emphasis-style",
-      alias_for: "-webkit-text-emphasis-style",
+      alias_for: "text-emphasis-style",
     },
     {
       name: "-epub-text-orientation",
@@ -7070,6 +7101,22 @@
     {
       name: "-webkit-shape-outside",
       alias_for: "shape-outside",
+    },
+    {
+      name: "-webkit-text-emphasis",
+      alias_for: "text-emphasis",
+    },
+    {
+      name: "-webkit-text-emphasis-color",
+      alias_for: "text-emphasis-color",
+    },
+    {
+      name: "-webkit-text-emphasis-position",
+      alias_for: "text-emphasis-position",
+    },
+    {
+      name: "-webkit-text-emphasis-style",
+      alias_for: "text-emphasis-style",
     },
     {
       name: "-webkit-text-size-adjust",

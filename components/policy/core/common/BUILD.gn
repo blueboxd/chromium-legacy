@@ -280,6 +280,8 @@ source_set("internal") {
   if (is_chromeos_ash) {
     deps += [ "//chromeos/system" ]
     sources += [
+      "default_chrome_apps_migrator.cc",
+      "default_chrome_apps_migrator.h",
       "policy_scheduler.cc",
       "policy_scheduler.h",
     ]
@@ -356,7 +358,6 @@ static_library("test_support") {
     "mock_policy_service.h",
     "policy_test_utils.cc",
     "policy_test_utils.h",
-    "remote_commands/test_support/blocking_queue.h",
     "remote_commands/test_support/echo_remote_command_job.cc",
     "remote_commands/test_support/echo_remote_command_job.h",
     "remote_commands/test_support/testing_remote_commands_server.cc",
@@ -447,6 +448,7 @@ source_set("unit_tests") {
     "policy_bundle_unittest.cc",
     "policy_loader_command_line_unittest.cc",
     "policy_map_unittest.cc",
+    "policy_proto_decoders_unittest.cc",
     "policy_service_impl_unittest.cc",
     "policy_statistics_collector_unittest.cc",
     "remote_commands/remote_commands_queue_unittest.cc",
@@ -474,6 +476,7 @@ source_set("unit_tests") {
   }
   if (is_chromeos_ash) {
     sources += [
+      "default_chrome_apps_migrator_unittest.cc",
       "policy_scheduler_unittest.cc",
       "proxy_policy_provider_unittest.cc",
     ]

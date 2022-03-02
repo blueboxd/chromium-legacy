@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './drive.mojom-lite.js';
+import {DriveHandler, DriveHandlerRemote} from '../../drive.mojom-webui.js';
 
 /**
  * @fileoverview This file provides a class that exposes the Mojo handler
@@ -10,16 +10,16 @@ import './drive.mojom-lite.js';
  * and receiving the browser response.
  */
 
-/** @type {?drive.mojom.DriveHandlerRemote} */
+/** @type {?DriveHandlerRemote} */
 let handler = null;
 
 export class DriveProxy {
-  /** @return {!drive.mojom.DriveHandlerRemote} */
+  /** @return {!DriveHandlerRemote} */
   static getHandler() {
-    return handler || (handler = drive.mojom.DriveHandler.getRemote());
+    return handler || (handler = DriveHandler.getRemote());
   }
 
-  /** @param {!drive.mojom.DriveHandlerRemote} newHandler */
+  /** @param {!DriveHandlerRemote} newHandler */
   static setHandler(newHandler) {
     handler = newHandler;
   }

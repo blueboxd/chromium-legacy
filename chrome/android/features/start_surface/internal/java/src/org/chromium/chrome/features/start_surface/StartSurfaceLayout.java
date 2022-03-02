@@ -26,7 +26,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
@@ -46,8 +45,8 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.TabListDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
-import org.chromium.chrome.browser.version.ChromeVersionInfo;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
+import org.chromium.components.version_info.VersionInfo;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.util.ArrayList;
@@ -115,7 +114,7 @@ public class StartSurfaceLayout extends Layout {
     public StartSurfaceLayout(Context context, LayoutUpdateHost updateHost,
             LayoutRenderHost renderHost, StartSurface startSurface, JankTracker jankTracker) {
         super(context, updateHost, renderHost);
-        mDummyLayoutTab = createLayoutTab(Tab.INVALID_TAB_ID, false, false, false);
+        mDummyLayoutTab = createLayoutTab(Tab.INVALID_TAB_ID, false);
         mDummyLayoutTab.setShowToolbar(true);
         mStartSurface = startSurface;
         mStartSurface.setOnTabSelectingListener(this::onTabSelecting);
@@ -247,8 +246,8 @@ public class StartSurfaceLayout extends Layout {
 
         // Keep the current tab in mLayoutTabs even if we are not going to show the shrinking
         // animation so that thumbnail taking is not blocked.
-        LayoutTab sourceLayoutTab = createLayoutTab(mTabModelSelector.getCurrentTabId(),
-                mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NO_TITLE);
+        LayoutTab sourceLayoutTab = createLayoutTab(
+                mTabModelSelector.getCurrentTabId(), mTabModelSelector.isIncognitoSelected());
         sourceLayoutTab.setDecorationAlpha(0);
 
         mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
@@ -332,8 +331,8 @@ public class StartSurfaceLayout extends Layout {
             sourceTabId = mTabModelSelector.getCurrentTabId();
         }
 
-        LayoutTab sourceLayoutTab = createLayoutTab(
-                sourceTabId, mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NO_TITLE);
+        LayoutTab sourceLayoutTab =
+                createLayoutTab(sourceTabId, mTabModelSelector.isIncognitoSelected());
         sourceLayoutTab.setDecorationAlpha(0);
 
         List<LayoutTab> layoutTabs = new ArrayList<>();
@@ -342,8 +341,8 @@ public class StartSurfaceLayout extends Layout {
         if (sourceTabId != mTabModelSelector.getCurrentTabId()) {
             // Keep the original tab in mLayoutTabs to unblock thumbnail taking at the end of
             // the animation.
-            LayoutTab originalTab = createLayoutTab(mTabModelSelector.getCurrentTabId(),
-                    mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NO_TITLE);
+            LayoutTab originalTab = createLayoutTab(
+                    mTabModelSelector.getCurrentTabId(), mTabModelSelector.isIncognitoSelected());
             originalTab.setScale(0);
             originalTab.setDecorationAlpha(0);
             layoutTabs.add(originalTab);
@@ -660,7 +659,7 @@ public class StartSurfaceLayout extends Layout {
                 elapsedMs, mMaxFrameInterval, dirtySpan);
 
         // TODO(crbug.com/964406): stop logging it after this feature stabilizes.
-        if (!ChromeVersionInfo.isStableBuild()) {
+        if (!VersionInfo.isStableBuild()) {
             Log.i(TAG, message);
         }
 
@@ -686,17 +685,17 @@ public class StartSurfaceLayout extends Layout {
 
     @Override
     protected void updateSceneLayer(RectF viewport, RectF contentViewport,
-            LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
-            ResourceManager resourceManager, BrowserControlsStateProvider browserControls) {
+            TabContentManager tabContentManager, ResourceManager resourceManager,
+            BrowserControlsStateProvider browserControls) {
         ensureSceneLayerCreated();
-        super.updateSceneLayer(viewport, contentViewport, layerTitleCache, tabContentManager,
-                resourceManager, browserControls);
+        super.updateSceneLayer(
+                viewport, contentViewport, tabContentManager, resourceManager, browserControls);
         assert mSceneLayer != null;
         TabListDelegate currentTabListDelegate = getLastUsedTabListDelegate();
 
         // The content viewport is intentionally sent as both params below.
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
-                layerTitleCache, tabContentManager, resourceManager, browserControls,
+                tabContentManager, resourceManager, browserControls,
                 TabUiFeatureUtilities.isTabToGtsAnimationEnabled()
                         ? currentTabListDelegate.getResourceId()
                         : 0,

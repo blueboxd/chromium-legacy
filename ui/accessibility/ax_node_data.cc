@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <set>
+#include <type_traits>
 #include <utility>
 
 #include "base/containers/cxx20_erase.h"
@@ -437,6 +438,13 @@ bool AXNodeData::GetStringListAttribute(
   return false;
 }
 
+bool AXNodeData::HasHtmlAttribute(const char* attribute) const {
+  std::string value;
+  if (!GetHtmlAttribute(attribute, &value))
+    return false;
+  return true;
+}
+
 bool AXNodeData::GetHtmlAttribute(const char* attribute,
                                   std::string* value) const {
   for (const std::pair<std::string, std::string>& html_attribute :
@@ -447,7 +455,6 @@ bool AXNodeData::GetHtmlAttribute(const char* attribute,
       return true;
     }
   }
-
   return false;
 }
 
@@ -1019,9 +1026,9 @@ bool AXNodeData::IsInvocable() const {
   // would be considered a toggle or expand-collapse element - these elements
   // are "clickable" but not "invocable". Similarly, if the action only involves
   // activating the control, such as when clicking a text field, the control is
-  // not considered "invocable".
-  return IsClickable() && !IsActivatable() && !SupportsExpandCollapse() &&
-         !SupportsToggle(role);
+  // not considered "invocable". However, all links are always invocable.
+  return IsLink(role) || (IsClickable() && !IsActivatable() &&
+                          !SupportsExpandCollapse() && !SupportsToggle(role));
 }
 
 bool AXNodeData::IsMenuButton() const {

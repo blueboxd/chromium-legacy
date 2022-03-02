@@ -38,7 +38,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/views/border.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/views/widget/native_widget_aura.h"
 #endif
 
@@ -105,7 +105,7 @@ void InitContentsBorderWidget(WebContents* contents) {
   // Let events go through to underlying view.
   params.accept_events = false;
   params.activatable = views::Widget::InitParams::Activatable::kNo;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   params.native_widget = new views::NativeWidgetAura(widget);
 #endif
 
@@ -157,22 +157,12 @@ WebContents* WebContentsFromId(GlobalRenderFrameHostId rfh_id) {
       content::RenderFrameHost::FromID(rfh_id));
 }
 
-GURL GetOriginFromId(GlobalRenderFrameHostId rfh_id) {
-  WebContents* capturer = WebContentsFromId(rfh_id);
-  if (!capturer)
+url::Origin GetOriginFromId(GlobalRenderFrameHostId rfh_id) {
+  auto* rfh = content::RenderFrameHost::FromID(rfh_id);
+  if (!rfh)
     return {};
 
-  return capturer->GetLastCommittedURL().DeprecatedGetOriginAsURL();
-}
-
-bool CanFocusCapturer(GlobalRenderFrameHostId capturer_id) {
-  WebContents* const capturer = WebContentsFromId(capturer_id);
-  if (!capturer) {
-    return false;
-  }
-
-  return !capturer->GetLastCommittedURL().SchemeIs(
-      extensions::kExtensionScheme);
+  return rfh->GetLastCommittedOrigin();
 }
 
 bool CapturerRestrictedToSameOrigin(GlobalRenderFrameHostId capturer_id) {
@@ -180,8 +170,8 @@ bool CapturerRestrictedToSameOrigin(GlobalRenderFrameHostId capturer_id) {
   if (!capturer)
     return false;
   return capture_policy::GetAllowedCaptureLevel(
-             capturer->GetLastCommittedURL().DeprecatedGetOriginAsURL(),
-             capturer) == AllowedScreenCaptureLevel::kSameOrigin;
+             GetOriginFromId(capturer_id).GetURL(), capturer) ==
+         AllowedScreenCaptureLevel::kSameOrigin;
 }
 
 }  // namespace
@@ -206,7 +196,8 @@ TabSharingUIViews::TabSharingUIViews(
     bool favicons_used_for_switch_to_tab_button)
     : capturer_(capturer),
       capturer_origin_(GetOriginFromId(capturer)),
-      can_focus_capturer_(CanFocusCapturer(capturer)),
+      can_focus_capturer_(GetOriginFromId(capturer).scheme() !=
+                          extensions::kExtensionScheme),
       capturer_restricted_to_same_origin_(
           CapturerRestrictedToSameOrigin(capturer)),
       shared_tab_media_id_(media_id),
@@ -349,14 +340,9 @@ void TabSharingUIViews::OnInfoBarRemoved(infobars::InfoBar* infobar,
     StopSharing();
 }
 
-void TabSharingUIViews::DidFinishNavigation(content::NavigationHandle* handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
-  if (!handle->IsInPrimaryMainFrame() || !handle->HasCommitted() ||
-      handle->IsSameDocument() || handle->GetWebContents() != shared_tab_) {
+void TabSharingUIViews::PrimaryPageChanged(content::Page& page) {
+  if (!shared_tab_)
     return;
-  }
   shared_tab_name_ = GetTabName(shared_tab_);
   for (const auto& infobars_entry : infobars_) {
     // Recreate infobars to reflect the new shared tab's hostname.
@@ -438,9 +424,8 @@ void TabSharingUIViews::CreateInfobarForWebContents(WebContents* contents) {
   // Determine if we are currently allowed to share this tab by policy.
   const bool is_sharing_allowed_by_policy =
       !capturer_restricted_to_same_origin_ ||
-      url::IsSameOriginWith(
-          capturer_origin_,
-          contents->GetLastCommittedURL().DeprecatedGetOriginAsURL());
+      capturer_origin_.IsSameOriginWith(
+          contents->GetMainFrame()->GetLastCommittedOrigin());
 
   // Never show the [share this tab instead] if sharing is not possible or is
   // blocked by policy.
@@ -477,7 +462,7 @@ void TabSharingUIViews::CreateTabCaptureIndicator() {
                                   ->GetMediaStreamCaptureIndicator()
                                   ->RegisterMediaStream(shared_tab_, {device});
   tab_capture_indicator_ui_->OnStarted(
-      base::OnceClosure(), content::MediaStreamUI::SourceCallback(),
+      base::RepeatingClosure(), content::MediaStreamUI::SourceCallback(),
       /*label=*/std::string(), /*screen_capture_ids=*/{},
       content::MediaStreamUI::StateChangeCallback());
 }

@@ -121,8 +121,6 @@ BrowserContextImpl::BrowserContextImpl(ProfileImpl* profile_impl,
 }
 
 BrowserContextImpl::~BrowserContextImpl() {
-  NotifyWillBeDestroyed();
-
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       this);
 }
@@ -138,8 +136,6 @@ base::FilePath BrowserContextImpl::GetDefaultDownloadDirectory() {
   if (SUCCEEDED(
           SHGetKnownFolderPath(FOLDERID_Downloads, 0, nullptr, &path_buf))) {
     download_dir = base::FilePath(path_buf.get());
-  } else {
-    NOTREACHED();
   }
 #else
   download_dir = base::nix::GetXDGUserDirectory("DOWNLOAD", "Downloads");

@@ -34,9 +34,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include "base/linux_util.h"
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 namespace remoting {
 
@@ -232,7 +232,7 @@ It2MeHostTest::It2MeHostTest() {}
 It2MeHostTest::~It2MeHostTest() = default;
 
 void It2MeHostTest::SetUp() {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // Need to prime the host OS version value for linux to prevent IO on the
   // network thread. base::GetLinuxDistro() caches the result.
   base::GetLinuxDistro();
@@ -272,7 +272,7 @@ void It2MeHostTest::SetPolicies(
         policies) {
   policies_ = std::make_unique<base::DictionaryValue>();
   for (const auto& policy : policies) {
-    policies_->Set(policy.first, policy.second.CreateDeepCopy());
+    policies_->SetKey(policy.first, policy.second.Clone());
   }
   if (it2me_host_) {
     it2me_host_->OnPolicyUpdate(std::move(policies_));

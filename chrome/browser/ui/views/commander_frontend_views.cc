@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/views/commander_frontend_views.h"
 
+#include <tuple>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/ignore_result.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -30,7 +31,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/views/widget/native_widget_aura.h"
 #endif
 
@@ -172,7 +173,7 @@ void CommanderFrontendViews::Show(Browser* browser) {
   params.parent = parent->GetWidget()->GetNativeView();
 // On Windows, this defaults to DesktopNativeWidgetAura, which has incorrect
 // parenting behavior for this widget.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   params.native_widget = new views::NativeWidgetAura(widget_);
 #endif
   widget_->Init(std::move(params));
@@ -213,7 +214,7 @@ void CommanderFrontendViews::Hide() {
 
   focus_loss_watcher_.reset();
   widget_delegate_->SetOwnedByWidget(true);
-  ignore_result(widget_delegate_.release());
+  std::ignore = widget_delegate_.release();
   widget_->Close();
   widget_ = nullptr;
 }

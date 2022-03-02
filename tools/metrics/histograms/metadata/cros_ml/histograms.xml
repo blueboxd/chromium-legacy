@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram base="true" name="MachineLearningService.CpuTimeMicrosec"
-    units="microseconds" expires_after="2022-01-15">
+    units="microseconds" expires_after="2022-07-15">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>
@@ -46,7 +46,7 @@ chromium-metrics-reviews@google.com.
 <histogram base="true"
     name="MachineLearningService.CreateGraphExecutorResult.Event"
     enum="MachineLearningServiceCreateGraphExecutorResultEvent"
-    expires_after="2022-01-15">
+    expires_after="2022-07-15">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>
@@ -71,7 +71,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="MachineLearningService.ExecuteResult.Event"
-    enum="MachineLearningServiceExecuteResultEvent" expires_after="2022-01-15">
+    enum="MachineLearningServiceExecuteResultEvent" expires_after="2022-07-15">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>
@@ -88,7 +88,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="MachineLearningService.GrammarChecker.LoadModelResult.Event"
     enum="MachineLearningServiceLoadModelResultEvent"
-    expires_after="2021-12-31">
+    expires_after="2022-06-30">
   <owner>jiwan@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
@@ -100,7 +100,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="MachineLearningService.HandwritingModel.LoadModelResult.Event"
     enum="MachineLearningServiceLoadHandwritingModelResultEvent"
-    expires_after="2022-04-10">
+    expires_after="2022-10-10">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <owner>charleszhao@chromium.org</owner>
@@ -124,7 +124,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="MachineLearningService.LoadModelResult"
     enum="MachineLearningServiceLoadModelResultEvent"
-    expires_after="2022-01-15">
+    expires_after="2022-07-15">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>
@@ -136,7 +136,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true" name="MachineLearningService.LoadModelResult.Event"
     enum="MachineLearningServiceLoadModelResultEvent"
-    expires_after="2022-01-15">
+    expires_after="2022-07-15">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>
@@ -145,7 +145,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.MojoConnectionEvent"
-    enum="MachineLearningServiceMojoConnectionEvent" expires_after="2022-04-10">
+    enum="MachineLearningServiceMojoConnectionEvent" expires_after="2022-10-10">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <summary>
@@ -155,7 +155,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.NumWorkerProcess" units="count"
-    expires_after="2022-05-08">
+    expires_after="2022-11-08">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -166,7 +166,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.PeakTotalMemoryKb" units="KB"
-    expires_after="2022-05-22">
+    expires_after="2022-11-22">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -190,7 +190,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="MachineLearningService.ReapWorkerProcessErrno"
     enum="MachineLearningServiceReapWorkerProcessErrno"
-    expires_after="2022-01-15">
+    expires_after="2022-07-15">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -215,7 +215,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="MachineLearningService.TotalMemoryDeltaKb"
-    units="KB" expires_after="2022-01-15">
+    units="KB" expires_after="2022-07-15">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -225,7 +225,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.TotalMemoryKb" units="KB"
-    expires_after="2022-05-22">
+    expires_after="2022-11-22">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -237,7 +237,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="MachineLearningService.WebPlatformHandwritingModel.GetPrediction.Event"
-    enum="Boolean" expires_after="2022-04-10">
+    enum="Boolean" expires_after="2022-10-10">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <owner>charleszhao@chromium.org</owner>
@@ -250,7 +250,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="MachineLearningService.WebPlatformHandwritingModel.LoadModelResult.Event"
     enum="MachineLearningServiceLoadHandwritingModelResultEvent"
-    expires_after="2022-05-01">
+    expires_after="2022-11-01">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <owner>charleszhao@chromium.org</owner>
@@ -262,7 +262,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.WorkerProcessAcceptMojoConnectionTime"
-    units="microseconds" expires_after="2022-04-17">
+    units="microseconds" expires_after="2022-10-17">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -273,7 +273,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.WorkerProcessCleanUpTime"
-    units="microseconds" expires_after="2022-04-10">
+    units="microseconds" expires_after="2022-10-10">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -284,7 +284,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.WorkerProcessExitStatus"
-    units="exit status" expires_after="2022-04-24">
+    units="exit status" expires_after="2022-10-24">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>honglinyu@chromium.org</owner>
@@ -294,29 +294,6 @@ chromium-metrics-reviews@google.com.
     And theoretically, there can be 255 different types of status (from 1 to
     255).
   </summary>
-</histogram>
-
-<histogram name="MachineLearningService.{ObsoleteRequestName}.CpuTimeMicrosec"
-    units="microseconds" expires_after="M95">
-  <obsolete>
-    Removed in M95.
-  </obsolete>
-  <owner>amoylan@chromium.org</owner>
-  <owner>alanlxl@chromium.org</owner>
-  <summary>
-    CPU time (for one CPU core) of obsolete {ObsoleteRequestName} request.
-  </summary>
-  <token key="ObsoleteRequestName">
-    <variant name="CreateGraphExecutorResult"/>
-    <variant name="ExecuteResult"/>
-    <variant name="LoadModelResult"/>
-    <variant name="smart_dim_model_20190521_v3.CreateGraphExecutorResult"/>
-    <variant name="smart_dim_model_20190521_v3.ExecuteResult"/>
-    <variant name="smart_dim_model_20190521_v3.LoadModelResult"/>
-    <variant name="TopCatModel.CreateGraphExecutorResult"/>
-    <variant name="TopCatModel.ExecuteResult"/>
-    <variant name="TopCatModel.LoadModelResult"/>
-  </token>
 </histogram>
 
 <histogram
@@ -331,45 +308,6 @@ chromium-metrics-reviews@google.com.
   <token key="ObsoleteRequestName">
     <variant name="smart_dim_model_20190521_v3"/>
     <variant name="TopCatModel"/>
-  </token>
-</histogram>
-
-<histogram
-    name="MachineLearningService.{ObsoleteRequestName}.ElapsedTimeMicrosec"
-    units="microseconds" expires_after="2020-02-01">
-  <obsolete>
-    Removed 2020-02-01 because the elapsed time of {ObsoleteRequestName} request
-    should be measured by clients, if they need it.
-  </obsolete>
-  <owner>amoylan@chromium.org</owner>
-  <owner>alanlxl@chromium.org</owner>
-  <summary/>
-  <token key="ObsoleteRequestName">
-    <variant name="CreateGraphExecutorResult"/>
-    <variant name="ExecuteResult"/>
-    <variant name="HandwritingModel.LoadModelResult"/>
-    <variant name="HandwritingModel.Recognize"/>
-    <variant name="LoadModelResult"/>
-    <variant name="smart_dim_model_20190521_v3.CreateGraphExecutorResult"/>
-    <variant name="smart_dim_model_20190521_v3.ExecuteResult"/>
-    <variant name="smart_dim_model_20190521_v3.LoadModelResult"/>
-    <variant name="SmartDimModel.CreateGraphExecutorResult"/>
-    <variant name="SmartDimModel.ExecuteResult"/>
-    <variant name="SmartDimModel.LoadModelResult"/>
-    <variant name="TestModel.CreateGraphExecutorResult"/>
-    <variant name="TestModel.ExecuteResult"/>
-    <variant name="TestModel.LoadModelResult"/>
-    <variant name="TextClassifier.Annotate"/>
-    <variant name="TextClassifier.FindLanguages"/>
-    <variant name="TextClassifier.LoadModelResult"/>
-    <variant name="TextClassifier.SuggestSelection"/>
-    <variant name="TextSuggester.LoadModelResult"/>
-    <variant name="TextSuggester.Suggest"/>
-    <variant name="TopCatModel.CreateGraphExecutorResult"/>
-    <variant name="TopCatModel.ExecuteResult"/>
-    <variant name="TopCatModel.LoadModelResult"/>
-    <variant name="WebPlatformHandwritingModel.GetPrediction"/>
-    <variant name="WebPlatformHandwritingModel.LoadModelResult"/>
   </token>
 </histogram>
 
@@ -452,7 +390,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.{RequestName}.CpuTimeMicrosec"
-    units="microseconds" expires_after="2022-01-15">
+    units="microseconds" expires_after="2022-07-15">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>
@@ -487,7 +425,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="MachineLearningService.{RequestName}.CreateGraphExecutorResult.Event"
     enum="MachineLearningServiceCreateGraphExecutorResultEvent"
-    expires_after="2022-01-15">
+    expires_after="2022-07-15">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>
@@ -501,7 +439,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MachineLearningService.{RequestName}.ExecuteResult.Event"
-    enum="MachineLearningServiceExecuteResultEvent" expires_after="2022-01-15">
+    enum="MachineLearningServiceExecuteResultEvent" expires_after="2022-07-15">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>
@@ -516,7 +454,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="MachineLearningService.{RequestName}.LoadModelResult.Event"
     enum="MachineLearningServiceLoadModelResultEvent"
-    expires_after="2022-01-15">
+    expires_after="2022-07-15">
   <owner>amoylan@chromium.org</owner>
   <owner>alanlxl@chromium.org</owner>
   <summary>

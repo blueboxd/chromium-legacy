@@ -5,8 +5,10 @@
 #include "services/network/public/cpp/cookie_manager_mojom_traits.h"
 
 #include "mojo/public/cpp/base/time_mojom_traits.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/same_party_context.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace mojo {
 

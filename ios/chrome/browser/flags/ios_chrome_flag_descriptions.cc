@@ -106,6 +106,11 @@ const char kDefaultBrowserFullscreenPromoExperimentDescription[] =
     "When enabled, will show a modified default browser fullscreen modal promo "
     "UI.";
 
+const char kAddSettingForDefaultPageModeName[] = "Let user choose default mode";
+const char kAddSettingForDefaultPageModeDescription[] =
+    "When enabled, the user can choose if they want the page in Desktop or "
+    "Mobile mode.";
+
 const char kDefaultWebViewContextMenuName[] =
     "Use the default WebKit context menus";
 const char kDefaultWebViewContextMenuDescription[] =
@@ -213,16 +218,21 @@ const char kEnableOptimizationHintsFetchingMSBBDescription[] =
     "Enable optimization hints fetching for users who have enabled the 'Make "
     "Searches and Browsing Better' setting.";
 
+const char kEnableUnicornAccountSupportName[] =
+    "Enable Unicorn account support";
+const char kEnableUnicornAccountSupportDescription[] =
+    "Allows users to sign-in with their Unicorn account.";
+
 const char kEnableShortenedPasswordAutoFillInstructionName[] =
     "Enable shortened instructions to turn on Password AutoFill for Chrome";
 const char kEnableShortenedPasswordAutoFillInstructionDescription[] =
     "When enabled, the instructions to turn on Password AutoFill will have "
     "shorter steps and come with a button that links the user to iOS Settings.";
 
-const char kEnableWebChannelsName[] = "Enable Web Channels";
+const char kEnableWebChannelsName[] = "Enable WebChannels";
 const char kEnableWebChannelsDescription[] =
     "Enable folowing content from web and display Following feed on NTP based "
-    "on websites that users followed.";
+    "on web channels that users followed.";
 
 const char kExpandedTabStripName[] = "Enable expanded tabstrip";
 const char kExpandedTabStripDescription[] =
@@ -318,6 +328,12 @@ const char kLogBreadcrumbsName[] = "Log Breadcrumb Events";
 const char kLogBreadcrumbsDescription[] =
     "When enabled, breadcrumb events will be logged.";
 
+const char kMediaPermissionsControlName[] =
+    "Camera and Microphone Access Permissions Control";
+const char kMediaPermissionsControlDescription[] =
+    "Enables user control for camera and/or microphone access for a specific "
+    "site through site settings during its lifespan.";
+
 const char kMetrickitCrashReportName[] = "Metrickit crash reports";
 const char kMetrickitCrashReportDescription[] =
     "Enables sending Metrickit crash reports";
@@ -412,6 +428,11 @@ const char kSafeBrowsingRealTimeLookupDescription[] =
     "When enabled, navigation URLs are checked using real-time queries to Safe "
     "Browsing servers, subject to an opt-in preference.";
 
+const char kSaveSessionTabsToSeparateFilesName[] =
+    "Enable save tabs to separate files";
+const char kSaveSessionTabsToSeparateFilesDescription[] =
+    "When enabled, each Tab is saved in a separate file.";
+
 const char kScreenTimeIntegrationName[] = "Enables ScreenTime Integration";
 const char kScreenTimeIntegrationDescription[] =
     "Enables integration with ScreenTime in iOS 14.0 and above.";
@@ -420,17 +441,6 @@ const char kSearchHistoryLinkIOSName[] = "Enables Search History Link";
 const char kSearchHistoryLinkIOSDescription[] =
     "Changes the Clear Browsing Data "
     "UI to display a link to clear search history on My Google Activity.";
-
-const char kSendTabToSelfWhenSignedInName[] = "Send-tab-to-self when signed in";
-const char kSendTabToSelfWhenSignedInDescription[] =
-    "Makes the tab sharing feature also available for users who have \"only\" "
-    "signed-in to their Google Account (as opposed to having enabled Sync).";
-
-const char kSendTabToSelfManageDevicesLinkName[] =
-    "Send-tab-to-self manage devices link";
-const char kSendTabToSelfManageDevicesLinkDescription[] =
-    "Shows a link to manage the user's devices below the device list when "
-    "sharing";
 
 const char kSendUmaOverAnyNetwork[] =
     "Send UMA data over any network available.";
@@ -441,6 +451,11 @@ const char kSharedHighlightingIOSName[] = "Enable Shared Highlighting features";
 const char kSharedHighlightingIOSDescription[] =
     "Adds a Link to Text option in the Edit Menu which generates URLs with a "
     "text fragment.";
+
+const char kSingleCellContentSuggestionsName[] =
+    "Use Single Cell for Content Suggestions";
+const char kSingleCellContentSuggestionsDescription[] =
+    "Uses a single cell for all items in the NTP's content suggestions.";
 
 const char kSingleNtpName[] = "Enable Single NTP";
 const char kSingleNtpDescription[] =
@@ -491,11 +506,6 @@ const char kStartSurfaceDescription[] =
     "Enable showing the Start Surface when launching Chrome via clicking the "
     "icon or the app switcher.";
 
-const char kTabsBulkActionsName[] = "Enable Tab Grid Bulk Actions";
-const char kTabsBulkActionsDescription[] =
-    "Enables the selection mode in the Tab grid where users can perform "
-    "actions on multiple tabs at once for iOS 13 and above.";
-
 const char kTabsSearchName[] = "Enable Tabs Search";
 const char kTabsSearchDescription[] =
     "Enables the search mode in the Tab grid where users can search open tabs "
@@ -512,16 +522,20 @@ const char kUpdateHistoryEntryPointsInIncognitoDescription[] =
     "When enabled, the entry points to history UI from Incognito mode will be "
     "removed.";
 
-const char kURLBlocklistIOSName[] = "URL Blocklist Policy";
-const char kURLBlocklistIOSDescription[] =
-    "When enabled, URLs can be blocked/allowed by the URLBlocklist/URLAllowlist"
-    "enterprise policies.";
-
 const char kUseLensToSearchForImageName[] =
     "Use Google Lens to Search for images";
 const char kUseLensToSearchForImageDescription[] =
     "When enabled, use Lens to search for images from the long press context "
     "menu when Google is the selected search engine.";
+
+const char kUseSFSymbolsSamplesName[] = "Replace Image by SFSymbols";
+const char kUseSFSymbolsSamplesDescription[] =
+    "When enabled, some images (toolbar...) are replaced by SFSymbols";
+
+const char kUseUIKitPopupMenuName[] = "Replace popup menus by native ones";
+const char kUseUIKitPopupMenuDescription[] =
+    "When enabled, the popup menus displayed for example when long pressing on "
+    "a toolbar button are replaced by native ones (UIKit).";
 
 const char kWaitThresholdMillisecondsForCapabilitiesApiName[] =
     "Maximum wait time (in seconds) for a response from the Account "

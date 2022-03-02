@@ -25,7 +25,6 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1104084341931202936">Mostrar la configuración de accesibilidad</translation>
 <translation id="1104621072296271835">Tus dispositivos funcionan incluso mejor juntos</translation>
 <translation id="1111781754511998498">Proyector</translation>
-<translation id="1119348796022671382">El modo de colores temático usa los colores de tu fondo de pantalla para aplicarlos ligeramente a la interfaz.</translation>
 <translation id="112308213915226829">Ocultar la barra automáticamente</translation>
 <translation id="1142002900084379065">Fotos recientes</translation>
 <translation id="1148499908455722006">Abrir el diálogo de información de <ph name="USER_NAME" /></translation>
@@ -54,6 +53,10 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1247519845643687288">Apps recientes</translation>
 <translation id="1252999807265626933">Cargando desde <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">¿Cómo está el clima?</translation>
+<translation id="1262870540683925850"><ph name="START_TIME" /> a 
+        <ph name="END_TIME" />, 
+        <ph name="TIME_ZONE" />, 
+        <ph name="EVENT_SUMMARY" />. Selecciona un evento para ver más detalles en el Calendario de Google.</translation>
 <translation id="1266097335951928626">Activar la cámara de selfies</translation>
 <translation id="1267032506238418139">Cambio de la combinación de teclas</translation>
 <translation id="1269405891096105529">El dispositivo periférico no es compatible en el Modo de invitado.</translation>
@@ -110,11 +113,9 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1570871743947603115">Activar o desactivar Bluetooth: <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Accede a toda tu actividad en esta sesión</translation>
 <translation id="1611993646327628135">Sí</translation>
-<translation id="1615402009686901181">La política del administrador inhabilita la captura de pantalla cuando hay contenido confidencial a la vista.</translation>
 <translation id="1632985212731562677">Accesibilidad con interruptores se puede inhabilitar en Configuración &gt; Accesibilidad.</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> dispositivos</translation>
 <translation id="1654477262762802994">Iniciar una búsqueda por voz</translation>
-<translation id="1667964833127753507">El modo de color neutral no usa los colores extraídos del fondo de pantalla; los reemplaza por un conjunto de tonos neutros oscuros o claros.</translation>
 <translation id="1677472565718498478">Tiempo restante <ph name="TIME" /></translation>
 <translation id="1677507110654891115">No se conectó <ph name="FEATURE_NAME" />.</translation>
 <translation id="1698080062160024910">Temporizador: <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
@@ -124,6 +125,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1715874602234207">F</translation>
 <translation id="1719094688023114093">El Subtitulado instantáneo está activado.</translation>
 <translation id="1720011244392820496">Activa la Sincronización Wi-Fi</translation>
+<translation id="1736898441010944794">"<ph name="NAME" />" visible para dispositivos Bluetooth.</translation>
 <translation id="1743570585616704562">No se reconoció</translation>
 <translation id="1746730358044914197">Tu administrador configura los métodos de entrada.</translation>
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
@@ -133,6 +135,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1768366657309696705">Se modificó la combinación de teclas <ph name="LAUNCHER_KEY_NAME" /> + signo de punto. Para usar la tecla Insertar, presiona la tecla <ph name="LAUNCHER_KEY_NAME" /> + Mayúsculas + retroceso.</translation>
 <translation id="1770726142253415363">Se movió a la fila <ph name="ROW_NUMBER" />, columna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="1771761307086386028">Desplazar hacia la derecha</translation>
+<translation id="1774796056689732716">Calendario, <ph name="CURRENT_MONTH_YEAR" />, se seleccionó <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">No</translation>
 <translation id="1804572139604454141">Finalizó la grabación porque hay muy poco espacio disponible en el disco</translation>
 <translation id="181103072419391116">Intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, administrada por tu administrador</translation>
@@ -362,7 +365,6 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3441920967307853524"><ph name="RECEIVED_BYTES" />/<ph name="TOTAL_BYTES" /></translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
-<translation id="3454224730401036106">Tu conexión se cambió a una red más segura</translation>
 <translation id="3465223694362104965">Se conectó otro teclado a este dispositivo desde la última vez que accediste. Asegúrate de que este teclado sea de confianza antes de usarlo.</translation>
 <translation id="3465356146291925647">Administrada por tu administrador</translation>
 <translation id="3477079411857374384">Control-Mayúscula-Espacio</translation>
@@ -407,7 +409,6 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3640092422335864171">Guardar <ph name="NAME" /></translation>
 <translation id="3649505501900178324">Actualización pendiente</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" />, usuario administrado</translation>
-<translation id="3665889125180354336">Grabar con el micrófono</translation>
 <translation id="3680908746918359504">Borrar todos los marcadores</translation>
 <translation id="36813544980941320">Se compartirán las redes Wi-Fi entre tu teléfono y tu <ph name="DEVICE_NAME" /></translation>
 <translation id="3694122362646626770">Sitios web</translation>
@@ -475,7 +476,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="412298498316631026">ventana</translation>
 <translation id="4129129681837227511">Para ver notificaciones en la pantalla bloqueada, desbloquéala para cambiar la configuración</translation>
 <translation id="4146833061457621061">Reproducir música</translation>
-<translation id="4157822100366708405">Configuración del Tema oscuro</translation>
 <translation id="4173958948577803258">J</translation>
 <translation id="4177913004758410636">{0,plural, =1{Actualiza el dispositivo en el transcurso de 1 día}other{Actualiza el dispositivo dentro de los próximos # días}}</translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -625,6 +625,8 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5075554201838155866">Activar subtítulos</translation>
 <translation id="5078796286268621944">Número de PIN incorrecto</translation>
 <translation id="5083553833479578423">Desbloquea más funciones del Asistente.</translation>
+<translation id="5090752371472782287">Transmitir a un dispositivo de <ph name="MANAGER" /></translation>
+<translation id="5106223312672646208">Personalizar</translation>
 <translation id="5117590920725113268">Mostrar el mes siguiente</translation>
 <translation id="5136175204352732067">Se conectó otro teclado</translation>
 <translation id="5147567197700016471">Desbloqueada</translation>
@@ -633,6 +635,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
 <translation id="5170568018924773124">Mostrar en carpeta</translation>
 <translation id="5176318573511391780">Grabar parte de la pantalla</translation>
+<translation id="5198413532174090167"><ph name="DATE" />, <ph name="NUMBER" /> eventos</translation>
 <translation id="5198715732953550718">Se combinó <ph name="MOVED_APP_NAME" /> con <ph name="IN_PLACE_APP" /> para crear una nueva carpeta.</translation>
 <translation id="5206028654245650022"><ph name="APP_NAME" />, <ph name="NOTIFICATION_TITLE" />: <ph name="MESSAGE" />, <ph name="PHONE_NAME" /></translation>
 <translation id="5206057955438543357">{NUM_NOTIFICATIONS,plural, =1{1 notificación más}other{# notificaciones más}}</translation>
@@ -669,6 +672,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5426063383988017631">Se cerró el menú de configuración</translation>
 <translation id="5428899915242071344">Comenzar a seleccionar</translation>
 <translation id="5430931332414098647">Conexión instantánea mediante dispositivo móvil</translation>
+<translation id="5431318178759467895">Color</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="5433020815079095860">Entrada de audio</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se agregaron a esta sesión.</translation>
@@ -766,7 +770,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6059276912018042191">Pestañas recientes de Chrome</translation>
 <translation id="6062360702481658777">Saldrás de la sesión automáticamente en <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6073451960410192870">Detener grabación</translation>
-<translation id="607652042414456612">La computadora es visible para dispositivos Bluetooth cercanos y aparecerá como "<ph name="NAME" />" con la dirección <ph name="ADDRESS" />.</translation>
 <translation id="6114505516289286752">Se descargaron los archivos de voz en <ph name="LANGUAGE" /></translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" />.</translation>
 <translation id="6121838516699723042">Confirmar la descarga de <ph name="FILENAME" /></translation>
@@ -805,6 +808,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="643147933154517414">Todo listo</translation>
 <translation id="6431865393913628856">Grabación de pantalla</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> en <ph name="RECEIVER_NAME" /></translation>
+<translation id="6447111710783417522"><ph name="DATE" />, <ph name="NUMBER" /> evento</translation>
 <translation id="6452181791372256707">Rechazar</translation>
 <translation id="6453179446719226835">Se cambió el idioma</translation>
 <translation id="6459472438155181876">Ampliando pantalla para <ph name="DISPLAY_NAME" /></translation>
@@ -831,6 +835,7 @@ Nueva instalación</translation>
 <translation id="6578407462441924264">Sin nombre</translation>
 <translation id="6585808820553845416">La sesión terminará en <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6593850935013518327"><ph name="PRIMARY_TEXT" />, <ph name="SECONDARY_TEXT" /></translation>
+<translation id="6602800870584047641">Tu conexión se cambió a una red más segura</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, administrada por tu administrador</translation>
 <translation id="6612802754306526077">Se seleccionó el modo de grabación de pantalla</translation>
 <translation id="6614169507485700968">La pantalla de privacidad está activada</translation>
@@ -868,6 +873,7 @@ Nueva instalación</translation>
 <translation id="6811454077060061666">Google Drive para escritorio no está disponible</translation>
 <translation id="6818242057446442178">Volver palabra por palabra</translation>
 <translation id="6820676911989879663">Toma un descanso</translation>
+<translation id="6827049576281411231">Cerrar el panel de eventos</translation>
 <translation id="6836499262298959512">Archivo peligroso</translation>
 <translation id="6837064795450991317">Ocultar la barra de escritorio</translation>
 <translation id="6852052252232534364">Clic para activar</translation>
@@ -875,6 +881,7 @@ Nueva instalación</translation>
 <translation id="685782768769951078">{NUM_DIGITS,plural, =1{Queda un dígito}other{Quedan # dígitos}}</translation>
 <translation id="6867938213751067702">Descarga detenida: <ph name="FILENAME" /></translation>
 <translation id="6878400149835617132">Se desactivó la combinación de teclas</translation>
+<translation id="6884665277231944629">Volver al día de hoy</translation>
 <translation id="6886172995547742638">Es posible que tu dispositivo <ph name="DEVICE_TYPE" /> tenga un rendimiento deficiente. Usa un adaptador de alimentación con conexión USB tipo C de <ph name="PREFERRED_MINIMUM_POWER" /> W o más.</translation>
 <translation id="688631446150864480">Presiona la tecla de flecha hacia abajo para cambiar de ventana</translation>
 <translation id="6896758677409633944">Copiar</translation>
@@ -941,7 +948,6 @@ Nueva instalación</translation>
 <translation id="7378594059915113390">Controles de contenido multimedia</translation>
 <translation id="7378889811480108604">El modo de Ahorro de batería está desactivado</translation>
 <translation id="7392563512730092880">Puedes configurarlo más tarde en la Configuración cuando lo desees.</translation>
-<translation id="7398254312354928459">Se cambió la conexión de red</translation>
 <translation id="7405710164030118432">Para desbloquear el dispositivo, ingresa el código de acceso parental de Family Link</translation>
 <translation id="7406608787870898861">Completa la configuración de la red móvil</translation>
 <translation id="740790383907119240">Accesos directos a aplicaciones</translation>
@@ -961,15 +967,18 @@ Nueva instalación</translation>
 <translation id="7497767806359279797">Elegir idioma y teclado</translation>
 <translation id="7509246181739783082">Verifica tu identidad</translation>
 <translation id="7513622367902644023">Se seleccionó el modo de captura de pantalla</translation>
+<translation id="7513922695575567867">Calendario, semana del <ph name="DATE" />, se seleccionó <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">Descargar</translation>
 <translation id="7526573455193969409">Es posible que la red esté supervisada</translation>
 <translation id="7536035074519304529">Dirección IP: <ph name="ADDRESS" /></translation>
+<translation id="7544300628205093162">La retroiluminación del teclado está activada</translation>
 <translation id="7548434653388805669">Es hora de ir a la cama</translation>
 <translation id="7551643184018910560">Fijar en la barra</translation>
 <translation id="7561982940498449837">Cerrar menú</translation>
 <translation id="7564874036684306347">Si mueves las ventanas a otro escritorio, puede producirse un comportamiento inesperado. Es posible que las próximas notificaciones, ventanas y cuadros de diálogo se dividan entre los escritorios.</translation>
 <translation id="7569509451529460200">Se habilitaron el braille y ChromeVox</translation>
 <translation id="7569983096843329377">Negro</translation>
+<translation id="757941033127302446">Accediste a tu cuenta</translation>
 <translation id="7579778809502851308">Captura de pantalla</translation>
 <translation id="7590883480672980941">Configuración de entradas</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
@@ -977,7 +986,6 @@ Nueva instalación</translation>
 <translation id="7600875258240007829">Ver todas las notificaciones</translation>
 <translation id="7607002721634913082">Detenido</translation>
 <translation id="7610198039767537854">Visualiza fotos recientes de la galería de fotos del teléfono en tu <ph name="DEVICE_TYPE" />.</translation>
-<translation id="7618774594543487847">Neutro</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7631906263969450674">Lápiz marcador</translation>
 <translation id="7633755430369750696">Mostrar la configuración de Compartir con Nearby</translation>
@@ -994,6 +1002,8 @@ Nueva instalación</translation>
 <translation id="7720410380936703141">VOLVER A INTENTAR</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notificación}other{# notificaciones}}</translation>
 <translation id="7724603315864178912">Cortar</translation>
+<translation id="7734209118399753735"><ph name="EVENT_SUMMARY" />, 
+        <ph name="TIME_RANGE" /></translation>
 <translation id="7745560842763881396">Mostrar apps en la barra</translation>
 <translation id="7749443890790263709">Se alcanzó la cantidad máxima de escritorios.</translation>
 <translation id="7749640678855296659">Tu micrófono está apagado.</translation>
@@ -1011,6 +1021,7 @@ Nueva instalación</translation>
 <translation id="7860671499921112077">Para ingresar a la Vista general, desliza tres dedos hacia arriba.</translation>
 <translation id="7866482334467279021">activado</translation>
 <translation id="7868900307798234037">Desbloqueando con huella dactilar</translation>
+<translation id="7872195908557044066">El administrador está restableciendo tu eSIM. Espera unos minutos.</translation>
 <translation id="7872786842639831132">No</translation>
 <translation id="7875575368831396199">Al parecer, tu <ph name="DEVICE_TYPE" /> tiene la conexión Bluetooth desactivada. Actívala para poder usar Phone Hub.</translation>
 <translation id="7877557217297072640">{0,plural, =0{Cambia el dispositivo a la versión anterior ahora}=1{Cambia el dispositivo a la versión anterior en el transcurso de 1 segundo}other{Cambia el dispositivo a la versión anterior en el transcurso de # segundos}}</translation>
@@ -1044,6 +1055,8 @@ Nueva instalación</translation>
 <translation id="8035152190676905274">Lápiz</translation>
 <translation id="8036504271468642248">Oración anterior</translation>
 <translation id="8042893070933512245">Abrir el menú de configuración de accesibilidad</translation>
+<translation id="8042925093898452104">Cerrar la información detallada</translation>
+<translation id="8044457332620420407">La retroiluminación del teclado está desactivada</translation>
 <translation id="8048123526339889627">Configuración de Bluetooth</translation>
 <translation id="8051716679295756675">Ya existe una plantilla con el nombre <ph name="DESK_TEMPLATE_NAME" />.</translation>
 <translation id="8052898407431791827">Se copió el elemento en el portapapeles</translation>
@@ -1114,6 +1127,7 @@ Nueva instalación</translation>
 <translation id="8513108775083588393">Giro autom.</translation>
 <translation id="851458219935658693">Está seleccionado el botón que muestra las ventanas del escritorio actual</translation>
 <translation id="8517041960877371778">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido.</translation>
+<translation id="8551588720239073785">Configuración de fecha y hora</translation>
 <translation id="8553395910833293175">Ya se asignó a todos los escritorios.</translation>
 <translation id="856298576161209842"><ph name="MANAGER" /> te recomienda que actualices tu <ph name="DEVICE_TYPE" /></translation>
 <translation id="8563862697512465947">Configuración de notificación</translation>
@@ -1133,7 +1147,6 @@ Nueva instalación</translation>
 <translation id="8660331759611631213">Raíz cuadrada de 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Mostrar la lista de redes: <ph name="STATE_TEXT" /></translation>
-<translation id="8668052347555487755">Modo de color</translation>
 <translation id="8676770494376880701">Cargador de baja potencia conectado</translation>
 <translation id="8683506306463609433">Registro del rendimiento activado</translation>
 <translation id="8685326675965865247">Realiza búsquedas en el dispositivo, en su configuración y apps, y en la Web. Usa las flechas para navegar por las apps.</translation>
@@ -1167,7 +1180,6 @@ Nueva instalación</translation>
 <translation id="8896630965521842259"><ph name="DESK_TEMPLATE_NAME" /> se borrará de forma permanente.</translation>
 <translation id="890616557918890486">Cambiar la fuente</translation>
 <translation id="8909138438987180327">Batería al <ph name="PERCENTAGE" />%</translation>
-<translation id="8913384980486163186">Temático (predeterminado)</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">El Asistente de Google no habla este idioma</translation>
 <translation id="8926951137623668982">Biblioteca siempre oculta</translation>
@@ -1184,7 +1196,6 @@ Nueva instalación</translation>
 <translation id="9024331582947483881">pantalla completa</translation>
 <translation id="9047624247355796468">Abrir la configuración para <ph name="NETWORK_NAME" /></translation>
 <translation id="9059834730836941392">Contraer notificación</translation>
-<translation id="9063800855227801443">No se puede capturar contenido confidencial</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9070640332319875144">Configuración de Asistente</translation>
 <translation id="9072519059834302790">Tiempo restante hasta que se agote la batería: <ph name="TIME_LEFT" />.</translation>

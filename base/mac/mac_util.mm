@@ -31,8 +31,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 
-namespace base {
-namespace mac {
+namespace base::mac {
 
 namespace {
 
@@ -43,7 +42,7 @@ class LoginItemsFileList {
   LoginItemsFileList& operator=(const LoginItemsFileList&) = delete;
   ~LoginItemsFileList() = default;
 
-  bool Initialize() WARN_UNUSED_RESULT {
+  [[nodiscard]] bool Initialize() {
     DCHECK(!login_items_.get()) << __func__ << " called more than once.";
     // The LSSharedFileList suite of functions has been deprecated. Instead,
     // a LoginItems helper should be registered with SMLoginItemSetEnabled()
@@ -493,5 +492,4 @@ std::string GetPlatformSerialNumber() {
   return base::SysCFStringRefToUTF8(serial_number_cfstring);
 }
 
-}  // namespace mac
-}  // namespace base
+}  // namespace base::mac

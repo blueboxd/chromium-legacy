@@ -47,7 +47,6 @@
 <translation id="2121284319307530122">เปิดอีกครั้งเพื่ออัปเดต Chrome</translation>
 <translation id="2123055963409958220">ช่วยให้ Chrome ดียิ่งขึ้นด้วยการรายงาน<ph name="BEGIN_LINK" />การตั้งค่าปัจจุบัน<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">โปรดรีสตาร์ท Chrome ตอนนี้เลย</translation>
-<translation id="2189289170880510015">ปรับแต่งตัวเลือกด้านความเป็นส่วนตัวที่สำคัญที่สุดส่วนหนึ่งของ Chrome</translation>
 <translation id="2258103955319320201">หากต้องการเข้าถึงข้อมูลของคุณในเบราว์เซอร์ Chrome ในอุปกรณ์ทั้งหมด ให้ลงชื่อเข้าใช้แล้วเปิดการซิงค์</translation>
 <translation id="2290014774651636340">คีย์ API ของ Google หายไป การทำงานบางอย่างของ Google Chrome จะถูกปิดใช้งาน</translation>
 <translation id="2290095356545025170">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการติดตั้ง Google Chrome</translation>
@@ -61,6 +60,7 @@
 <translation id="2467438592969358367">Google Chrome ต้องการส่งออกรหัสผ่านของคุณ พิมพ์รหัสผ่าน Windows เพื่ออนุญาตให้ดำเนินการ</translation>
 <translation id="2485422356828889247">ถอนการติดตั้ง</translation>
 <translation id="2534507159460261402">Google Pay (คัดลอกไปยัง Chrome)</translation>
+<translation id="2563121210305478421">เปิด Chrome อีกครั้ง</translation>
 <translation id="2574930892358684005"><ph name="EXISTING_USER" /> ลงชื่อเข้าใช้โปรไฟล์ Chrome นี้แล้ว หากต้องการแยกการท่องเว็บของคุณไว้ต่างหาก Chrome สร้างโปรไฟล์ให้คุณโดยเฉพาะได้</translation>
 <translation id="2580411288591421699">ไม่สามารถติดตั้ง Google Chrome รุ่นเดียวกับที่กำลังเรียกใช้อยู่ได้ โปรดปิด Google Chrome แล้วลองใหม่อีกครั้ง</translation>
 <translation id="2586406160782125153">การดำเนินการนี้จะลบข้อมูลการท่องเว็บออกจากอุปกรณ์นี้ หากต้องการดึงข้อมูลภายหลัง ให้ลงชื่อเข้าใช้ Chrome ด้วย <ph name="USER_EMAIL" /></translation>
@@ -85,6 +85,7 @@
 <translation id="2926952073016206995">Chrome ต้องการสิทธิ์เข้าถึงกล้องสำหรับเว็บไซต์นี้</translation>
 <translation id="2929907241665500097">Chrome ไม่ได้อัปเดตเนื่องจากเกิดข้อผิดพลาด <ph name="BEGIN_LINK" />โปรดแก้ปัญหาการอัปเดต Chrome และการอัปเดตที่ไม่สำเร็จ<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - หน้าลงชื่อเข้าใช้ของเครือข่าย - Chrome</translation>
+<translation id="303514781271618814">Chrome กำลังสำรวจฟีเจอร์ใหม่ๆ ที่ทำให้เว็บไซต์มอบประสบการณ์การท่องเว็บที่เหมือนกันได้โดยใช้อินเทอร์เน็ตน้อยลง</translation>
 <translation id="3037838751736561277">Google Chrome กำลังอยู่ในโหมดทำงานในพื้นหลัง</translation>
 <translation id="3059710691562604940">Google Safe Browsing ปิดอยู่ Chrome ขอแนะนำให้เปิด</translation>
 <translation id="3065168410429928842">แท็บ Chrome</translation>
@@ -95,6 +96,7 @@
 <translation id="3114643501466072395"><ph name="BEGIN_LINK" />ลงชื่อเข้าใช้ Chrome<ph name="END_LINK" /> เพื่อตรวจสอบว่ารหัสผ่านรายการอื่นไม่ได้รับผลกระทบจากการละเมิดข้อมูลและปัญหาด้านความปลอดภัยอื่นๆ</translation>
 <translation id="3140883423282498090">การเปลี่ยนแปลงของคุณจะมีผลในครั้งถัดไปที่คุณเปิด Google Chrome</translation>
 <translation id="3149510190863420837">แอป Chrome</translation>
+<translation id="3245429137663807393">หากคุณแชร์รายงานการใช้งาน Chrome ด้วย รายงานดังกล่าวจะรวม URL ที่คุณเข้าชม</translation>
 <translation id="3360895254066713204">ตัวช่วยเหลือของ Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome จะเปิดขึ้นมาใหม่ตอนนี้}=1{Chrome จะเปิดขึ้นมาใหม่ใน 1 วินาที}other{Chrome จะเปิดขึ้นมาใหม่ใน # วินาที}}</translation>
 <translation id="3395323229510056640">รับความช่วยเหลือเกี่ยวกับ Chrome OS</translation>
@@ -112,7 +114,6 @@
 <translation id="3596080736082218006">{COUNT,plural, =0{ผู้ดูแลระบบต้องการให้คุณเปิด Chrome ขึ้นมาใหม่เพื่อใช้การอัปเดต}=1{ผู้ดูแลระบบต้องการให้คุณเปิด Chrome ขึ้นมาใหม่เพื่อใช้การอัปเดต หน้าต่างที่ไม่ระบุตัวตนจะไม่เปิดให้อีก}other{ผู้ดูแลระบบต้องการให้คุณเปิด Chrome ขึ้นมาใหม่เพื่อใช้การอัปเดต หน้าต่างที่ไม่ระบุตัวตนจำนวน # หน้าต่างจะไม่เปิดให้อีก}}</translation>
 <translation id="3622797965165704966">ตอนนี้การใช้ Chrome กับบัญชี Google ของคุณและบนคอมพิวเตอร์ที่ใช้ร่วมกันทำได้ง่ายกว่าเดิม</translation>
 <translation id="3673813398384385993">Chrome พบว่า "<ph name="EXTENSION_NAME" />" มีมัลแวร์</translation>
-<translation id="3678552270983184277">การตั้งค่าเริ่มต้นใช้ได้ดีสำหรับคนส่วนใหญ่ แต่คุณสามารถปรับแต่งการตั้งค่าให้เหมาะกับวิธีที่คุณใช้ Chrome</translation>
 <translation id="3718181793972440140">การดำเนินการนี้จะลบ 1 รายการออกจากอุปกรณ์นี้ หากต้องการดึงข้อมูลภายหลัง ให้ลงชื่อเข้าใช้ Chrome ด้วย <ph name="USER_EMAIL" /></translation>
 <translation id="3735758079232443276">ส่วนขยาย "<ph name="EXTENSION_NAME" />" ได้เปลี่ยนหน้าที่จะแสดงเมื่อคุณเริ่มต้น Chrome</translation>
 <translation id="3779473566290487688">คุณจะต้องใช้ OS X 10.11 ขึ้นไปเพื่อรับการอัปเดตของ Google Chrome ในอนาคต คอมพิวเตอร์เครื่องนี้ใช้ OS X 10.10</translation>
@@ -156,6 +157,7 @@
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">ไฟล์นี้อาจเป็นอันตราย Chrome จึงบล็อกไว้</translation>
 <translation id="479167709087336770">การดำเนินการนี้จะใช้โปรแกรมตรวจตัวสะกดแบบเดียวกับใน Google Search ข้อความที่คุณพิมพ์ในเบราว์เซอร์จะส่งไปยัง Google คุณปรับเปลี่ยนลักษณะการทำงานนี้ได้ทุกเมื่อในการตั้งค่า</translation>
+<translation id="4873783916118289636">ตรวจสอบการควบคุมที่สำคัญด้านความเป็นส่วนตัวและความปลอดภัยใน Chrome</translation>
 <translation id="4891791193823137474">ให้ Google Chrome ทำงานในเบื้องหลัง</translation>
 <translation id="4895437082222824641">เปิดลิงก์ใน Chrome แท็บใหม่</translation>
 <translation id="4953650215774548573">ตั้ง Google Chrome เป็นเบราว์เซอร์เริ่มต้นของคุณ</translation>
@@ -170,7 +172,6 @@
 <translation id="5193136243808726294">Google Chrome OS ไม่สามารถเปิดหน้านี้</translation>
 <translation id="521447420733633466">เพื่อนและครอบครัวสามารถท่องเว็บแยกกันและตั้งค่า Chrome ตามที่ตนต้องการในกรณีที่ใช้อุปกรณ์ร่วมกัน</translation>
 <translation id="5251420635869119124">ผู้เยี่ยมชมสามารถใช้ Chrome ได้โดยไม่ทิ้งร่องรอยไว้</translation>
-<translation id="5251679006894510177">ใกล้จะอัปเดตเสร็จแล้ว เปิด Chrome อีกครั้งเพื่อให้การอัปเดตเสร็จสมบูรณ์ หน้าต่างที่ไม่ระบุตัวตนจะไม่เปิดให้อีก</translation>
 <translation id="5334487786912937552">Chrome ต้องการสิทธิ์เข้าถึงพื้นที่เก็บข้อมูลเพื่อดาวน์โหลดไฟล์</translation>
 <translation id="5386244825306882791">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome หรือทำการค้นหาจากแถบอเนกประสงค์ด้วย</translation>
 <translation id="5394833366792865639">แชร์แท็บ Chrome</translation>
@@ -210,7 +211,6 @@
 <translation id="6506909944137591434">Chrome ต้องการสิทธิ์เข้าถึงกล้องเพื่อสร้างแผนที่ 3 มิติของสิ่งที่อยู่รอบตัวคุณ</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6568793831116033768">ระบบ Chrome OS</translation>
-<translation id="6594121454516132231">ดูว่า Chrome มีแผนการอย่างไรในการปกป้องคุณจากการติดตามข้ามเว็บไซต์ในขณะที่ยังคงรักษาความเปิดกว้างของเว็บไว้</translation>
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
 <translation id="6679975945624592337">ให้ Google Chrome ทำงานในพื้นหลัง</translation>
 <translation id="6696915334902295848">Chrome ต้องการสิทธิ์เข้าถึงไมโครโฟนสำหรับเว็บไซต์นี้</translation>
@@ -292,6 +292,7 @@
 <translation id="8669527147644353129">ตัวช่วยเหลือของ Google Chrome</translation>
 <translation id="8679801911857917785">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome ด้วย</translation>
 <translation id="8686817260976772516">โปรไฟล์ Chrome ช่วยให้คุณแยกข้อมูลต่างๆ ใน Chrome ออกจากกัน สร้างโปรไฟล์สำหรับเพื่อนและครอบครัว หรือแยกการทำงานออกจากความบันเทิง</translation>
+<translation id="8712767363896337380">ใกล้จะอัปเดตเสร็จแล้ว เปิด Chrome อีกครั้งเพื่อให้การอัปเดตเสร็จสมบูรณ์</translation>
 <translation id="873133009373065397">Google Chrome ไม่สามารถกำหนดหรือตั้งค่าเบราว์เซอร์เริ่มต้น</translation>
 <translation id="8823341990149967727">Chrome ล้าสมัย</translation>
 <translation id="8834965163890861871">Google Chrome กำลังพยายามแก้ไขรหัสผ่าน โปรดพิมพ์รหัสผ่าน Windows ของคุณเพื่ออนุญาต</translation>

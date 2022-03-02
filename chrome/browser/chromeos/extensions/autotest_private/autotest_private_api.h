@@ -466,6 +466,16 @@ class AutotestPrivateImportCrostiniFunction : public ExtensionFunction {
   void CrostiniImported(crostini::CrostiniResult);
 };
 
+class AutotestPrivateCouldAllowCrostiniFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.couldAllowCrostini",
+                             AUTOTESTPRIVATE_COULDALLOWCROSTINI)
+
+ private:
+  ~AutotestPrivateCouldAllowCrostiniFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateSetPluginVMPolicyFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setPluginVMPolicy",
@@ -940,6 +950,8 @@ class AutotestPrivateSetOverviewModeStateFunction : public ExtensionFunction {
   void OnOverviewModeChanged(bool for_start, bool finished);
 };
 
+// TODO(crbug.com/1275410): Replace this by introducing
+// autotestPrivate.setVirtualKeyboardVisibilityIfEnabled().
 class AutotestPrivateShowVirtualKeyboardIfEnabledFunction
     : public ExtensionFunction {
  public:

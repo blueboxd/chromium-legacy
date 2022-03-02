@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/commerce/commerce_feature_list.h"
+#include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
 #include "chrome/browser/flags/jni_headers/ChromeFeatureList_jni.h"
 #include "chrome/browser/notifications/chime/android/features.h"
 #include "chrome/browser/performance_hints/performance_hints_features.h"
@@ -30,7 +31,6 @@
 #include "components/content_creation/notes/core/note_features.h"
 #include "components/content_creation/reactions/core/reactions_features.h"
 #include "components/content_settings/core/common/features.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/download/public/common/download_features.h"
 #include "components/embedder_support/android/util/cdn_utils.h"
 #include "components/feature_engagement/public/feature_list.h"
@@ -102,6 +102,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &download::features::kSmartSuggestionForLargeDownloads,
     &download::features::kUseDownloadOfflineContentProvider,
     &embedder_support::kShowTrustedPublisherURL,
+    &features::kAnonymousUpdateChecks,
     &features::kContinuousSearch,
     &features::kEarlyLibraryLoad,
     &features::kGenericSensorExtraClasses,
@@ -134,12 +135,12 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feature_engagement::kIPHSnooze,
     &feature_engagement::kIPHTabSwitcherButtonFeature,
     &feature_engagement::kUseClientConfigIPH,
+    &feature_guide::features::kFeatureNotificationGuide,
     &feed::kFeedBackToTop,
     &feed::kFeedClearImageMemoryCache,
     &feed::kFeedImageMemoryCacheSizePercentage,
     &feed::kFeedInteractiveRefresh,
     &feed::kFeedLoadingPlaceholder,
-    &feed::kFeedSignInPromoDismiss,
     &feed::kInterestFeedContentSuggestions,
     &feed::kInterestFeedSpinnerAlwaysAnimate,
     &feed::kInterestFeedV1ClicksAndViewsConditionalUpload,
@@ -214,16 +215,17 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualTriggersSelectionMenu,
     &kContextualTriggersSelectionSize,
     &kDirectActions,
+    &kDisableCompositedProgressBar,
     &kDownloadFileProvider,
     &kDownloadNotificationBadge,
     &kDownloadProgressInfoBar,
     &kDownloadProgressMessage,
     &kDownloadRename,
+    &kDragAndDropAndroid,
     &kDuetTabStripIntegrationAndroid,
     &kDynamicColorAndroid,
     &kEnableDangerousDownloadDialog,
     &kEnableDuplicateDownloadDialog,
-    &kEnhancedProtectionPromoCard,
     &kExperimentsForAgsa,
     &kExploreSites,
     &kFixedUmaSessionResumeOrder,
@@ -261,7 +263,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kServiceManagerForDownload,
     &kShareButtonInTopToolbar,
     &kSharedClipboardUI,
-    &kSharingHubLinkToggle,
     &kSpannableInlineAutocomplete,
     &kSpecialLocaleWrapper,
     &kSpecialUserDecision,
@@ -330,12 +331,12 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kBiometricTouchToFill,
     &password_manager::features::kEditPasswordsInSettings,
     &password_manager::features::kLeakDetectionUnauthenticated,
+    &password_manager::features::kPasswordChange,
     &password_manager::features::kPasswordScriptsFetching,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
     &password_manager::features::kUnifiedCredentialManagerDryRun,
     &password_manager::features::kUnifiedPasswordManagerAndroid,
     &performance_hints::features::kContextMenuPerformanceInfo,
-    &permissions::features::kRevertDSEAutomaticPermissions,
     &policy::features::kChromeManagementPageAndroid,
     &query_tiles::features::kQueryTilesGeoFilter,
     &query_tiles::features::kQueryTiles,
@@ -351,6 +352,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &share::kSwapAndroidShareHubRows,
     &share::kUpcomingSharingFeatures,
     &signin::kMobileIdentityConsistencyPromos,
+    &switches::kAllowSyncOffForChildAccounts,
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
     &switches::kSyncTrustedVaultPassphraseRecovery,
@@ -544,7 +546,7 @@ const base::Feature kContextualSearchLiteralSearchTap{
     "ContextualSearchLiteralSearchTap", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchLongpressResolve{
-    "ContextualSearchLongpressResolve", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ContextualSearchLongpressResolve", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchMlTapSuppression{
     "ContextualSearchMlTapSuppression", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -581,6 +583,9 @@ const base::Feature kQuickActionSearchWidgetAndroidDinoVariant{
 const base::Feature kDirectActions{"DirectActions",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kDisableCompositedProgressBar{
+    "DisableCompositedProgressBar", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDownloadAutoResumptionThrottling{
     "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -599,6 +604,9 @@ const base::Feature kDownloadNotificationBadge{
 const base::Feature kDownloadRename{"DownloadRename",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kDragAndDropAndroid{"DragAndDropAndroid",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDuetTabStripIntegrationAndroid{
     "DuetTabStripIntegrationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -613,9 +621,6 @@ const base::Feature kEnableDuplicateDownloadDialog{
 
 const base::Feature kEnableMixedContentDownloadDialog{
     "EnableMixedContentDownloadDialog", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kEnhancedProtectionPromoCard{
-    "EnhancedProtectionPromoCard", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kExperimentsForAgsa{"ExperimentsForAgsa",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
@@ -715,9 +720,6 @@ const base::Feature kServiceManagerForDownload{
 
 const base::Feature kShareButtonInTopToolbar{"ShareButtonInTopToolbar",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kSharingHubLinkToggle{"SharingHubLinkToggle",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSpannableInlineAutocomplete{
     "SpannableInlineAutocomplete", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/sync/model/sync_metadata_store.h"
 
@@ -42,6 +41,8 @@ enum class FormRetrievalResult {
   // A service-level failure (e.g., on a platform using a keyring, the keyring
   // is temporarily unavailable).
   kEncrytionServiceFailure,
+  // A service-level failure, but some forms can be retrieved successfully.
+  kEncryptionServiceFailureWithPartialData,
 };
 
 // Error values for adding a login to the store.
@@ -122,8 +123,8 @@ class PasswordStoreSync {
 
   // Overwrites |key_to_form_map| with a map from the DB primary key to the
   // corresponding form for all stored credentials. Returns true on success.
-  virtual FormRetrievalResult ReadAllLogins(
-      PrimaryKeyToFormMap* key_to_form_map) WARN_UNUSED_RESULT = 0;
+  [[nodiscard]] virtual FormRetrievalResult ReadAllLogins(
+      PrimaryKeyToFormMap* key_to_form_map) = 0;
 
   // Deletes logins that cannot be decrypted.
   virtual DatabaseCleanupResult DeleteUndecryptableLogins() = 0;

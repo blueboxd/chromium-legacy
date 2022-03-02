@@ -6,8 +6,8 @@ import("//build/buildflag_header.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/compiler.gni")
-import("//build/config/crypto.gni")
 import("//build/config/features.gni")
+import("//crypto/features.gni")
 import("//net/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
@@ -423,6 +423,8 @@ component("net") {
     "cookies/cookie_store.h",
     "cookies/cookie_util.cc",
     "cookies/cookie_util.h",
+    "cookies/first_party_set_metadata.cc",
+    "cookies/first_party_set_metadata.h",
     "cookies/parsed_cookie.cc",
     "cookies/parsed_cookie.h",
     "cookies/same_party_context.cc",
@@ -653,7 +655,6 @@ component("net") {
     "http/url_security_manager.h",
     "http/webfonts_histogram.cc",
     "http/webfonts_histogram.h",
-    "http2/platform/impl/http2_macros_impl.h",
     "log/file_net_log_observer.cc",
     "log/file_net_log_observer.h",
     "log/net_log.cc",
@@ -1071,6 +1072,7 @@ component("net") {
   deps = [
     ":net_deps",
     "//build:chromeos_buildflags",
+    "//net/data/ssl/ev_roots:gen_ev_root_store_inc",
     "//net/http:transport_security_state_generated_files",
   ]
 
@@ -1963,6 +1965,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/prime256v1-ecdsa-intermediate.pem",
     "data/ssl/certificates/punycodetest.pem",
     "data/ssl/certificates/quic-chain.pem",
+    "data/ssl/certificates/quic-ecdsa-leaf.key",
     "data/ssl/certificates/quic-leaf-cert.key",
     "data/ssl/certificates/quic-leaf-cert.key.pkcs8.pem",
     "data/ssl/certificates/quic-leaf-cert.key.sct",
@@ -2028,6 +2031,8 @@ static_library("test_support") {
     "base/test_completion_callback.h",
     "base/test_data_stream.cc",
     "base/test_data_stream.h",
+    "cert/mock_cert_net_fetcher.cc",
+    "cert/mock_cert_net_fetcher.h",
     "cert/mock_cert_verifier.cc",
     "cert/mock_cert_verifier.h",
     "cert/mock_client_cert_verifier.cc",
@@ -2496,6 +2501,7 @@ if (is_android) {
       "android/java/src/org/chromium/net/HttpUtil.java",
       "android/java/src/org/chromium/net/NetStringUtil.java",
       "android/java/src/org/chromium/net/NetworkActivationRequest.java",
+      "android/java/src/org/chromium/net/NetworkActiveNotifier.java",
       "android/java/src/org/chromium/net/NetworkChangeNotifier.java",
       "android/java/src/org/chromium/net/ProxyChangeListener.java",
       "android/java/src/org/chromium/net/X509Util.java",
@@ -2653,8 +2659,6 @@ source_set("simple_quic_tools") {
     "tools/quic/quic_simple_server_session_helper.h",
     "tools/quic/quic_simple_server_socket.cc",
     "tools/quic/quic_simple_server_socket.h",
-    "tools/quic/quic_transport_simple_server.cc",
-    "tools/quic/quic_transport_simple_server.h",
     "tools/quic/synchronous_host_resolver.cc",
     "tools/quic/synchronous_host_resolver.h",
   ]
@@ -2703,17 +2707,6 @@ if (!is_ios) {
     public_deps = [ "//net/third_party/quiche:quic_server_core" ]
     allow_circular_includes_from =
         [ "//net/third_party/quiche:quic_server_core" ]
-  }
-  executable("quic_transport_simple_server") {
-    sources = [ "tools/quic/quic_transport_simple_server_bin.cc" ]
-    deps = [
-      ":net",
-      ":simple_quic_tools",
-      "//base",
-      "//build/win:default_exe_manifest",
-      "//third_party/boringssl",
-      "//third_party/protobuf:protobuf_lite",
-    ]
   }
   executable("crypto_message_printer") {
     sources = [ "tools/quic/crypto_message_printer_bin.cc" ]

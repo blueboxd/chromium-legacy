@@ -118,6 +118,36 @@ AppListItemMetadata::AppListItemMetadata(const AppListItemMetadata& rhs) =
 AppListItemMetadata::~AppListItemMetadata() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+std::ostream& operator<<(std::ostream& os, AppListBubblePage page) {
+  switch (page) {
+    case AppListBubblePage::kNone:
+      return os << "None";
+    case AppListBubblePage::kApps:
+      return os << "Apps";
+    case AppListBubblePage::kSearch:
+      return os << "Search";
+    case AppListBubblePage::kAssistant:
+      return os << "Assistant";
+  }
+}
+
+std::ostream& operator<<(std::ostream& os, AppListViewState state) {
+  switch (state) {
+    case AppListViewState::kClosed:
+      return os << "Closed";
+    case AppListViewState::kPeeking:
+      return os << "Peeking";
+    case AppListViewState::kHalf:
+      return os << "Half";
+    case AppListViewState::kFullscreenAllApps:
+      return os << "FullscreenAllApps";
+    case AppListViewState::kFullscreenSearch:
+      return os << "FullscreenSearch";
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // SearchResultIconInfo:
 
 SearchResultIconInfo::SearchResultIconInfo() = default;
@@ -164,6 +194,80 @@ SearchResultAction::SearchResultAction(const SearchResultAction& other) =
 
 SearchResultAction::~SearchResultAction() = default;
 
+////////////////////////////////////////////////////////////////////////////////
+// SearchResultTextItem:
+
+SearchResultTextItem::SearchResultTextItem(SearchResultTextItemType type) {
+  item_type = type;
+}
+
+SearchResultTextItem::SearchResultTextItem(const SearchResultTextItem& other) {
+  item_type = other.item_type;
+  raw_text = other.raw_text;
+  text_tags = other.text_tags;
+  icon_code = other.icon_code;
+  raw_icon = other.raw_icon;
+}
+
+SearchResultTextItem& SearchResultTextItem::operator=(
+    const SearchResultTextItem& other) {
+  item_type = other.item_type;
+  raw_text = other.raw_text;
+  text_tags = other.text_tags;
+  icon_code = other.icon_code;
+  raw_icon = other.raw_icon;
+  return *this;
+}
+
+SearchResultTextItem::~SearchResultTextItem() = default;
+
+SearchResultTextItemType SearchResultTextItem::GetType() const {
+  return item_type;
+}
+
+const std::u16string& SearchResultTextItem::GetText() const {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kString);
+  return raw_text.value();
+}
+
+SearchResultTextItem& SearchResultTextItem::SetText(std::u16string text) {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kString);
+  raw_text = text;
+  return *this;
+}
+
+const SearchResultTags& SearchResultTextItem::GetTextTags() const {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kString);
+  return text_tags.value();
+}
+
+SearchResultTextItem& SearchResultTextItem::SetTextTags(SearchResultTags tags) {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kString);
+  text_tags = tags;
+  return *this;
+}
+
+gfx::ImageSkia SearchResultTextItem::GetIconFromCode() const {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kIconCode);
+  return gfx::ImageSkia();
+}
+
+SearchResultTextItem& SearchResultTextItem::SetIconCode(int code) {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kIconCode);
+  icon_code = code;
+  return *this;
+}
+
+gfx::ImageSkia SearchResultTextItem::GetIcon() const {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kCustomIcon);
+  return raw_icon.value();
+}
+
+SearchResultTextItem& SearchResultTextItem::SetIcon(gfx::ImageSkia icon) {
+  DCHECK_EQ(item_type, SearchResultTextItemType::kCustomIcon);
+  raw_icon = icon;
+  return *this;
+}
 ////////////////////////////////////////////////////////////////////////////////
 // SearchResultMetadata:
 

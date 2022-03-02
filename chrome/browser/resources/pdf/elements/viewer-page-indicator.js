@@ -6,6 +6,8 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {Viewport} from '../viewport.js';
+
 export class ViewerPageIndicatorElement extends PolymerElement {
   static get is() {
     return 'viewer-page-indicator';
@@ -27,8 +29,12 @@ export class ViewerPageIndicatorElement extends PolymerElement {
 
   constructor() {
     super();
+
     /** @type {number|undefined} */
     this.timerId = undefined;
+
+    /** @private @type {?Viewport} */
+    this.viewport_ = null;
   }
 
   /** @override */
@@ -40,27 +46,32 @@ export class ViewerPageIndicatorElement extends PolymerElement {
     });
   }
 
+  /** @param {!Viewport} viewport */
+  setViewport(viewport) {
+    this.viewport_ = viewport;
+  }
+
   /** @private */
   fadeIn_() {
-    const percent = window.scrollY /
-        (document.scrollingElement.scrollHeight -
-         document.documentElement.clientHeight);
+    // Vertically position relative to scroll position.
+    let percent = 0;
+    if (this.viewport_) {
+      percent = this.viewport_.position.y /
+          (this.viewport_.contentSize.height - this.viewport_.size.height);
+    }
     this.style.top =
         percent * (document.documentElement.clientHeight - this.offsetHeight) +
         'px';
-    // <if expr="is_macosx">
-    // If overlay scrollbars are enabled, prevent them from overlapping the
-    // triangle. TODO(dbeam): various platforms can enable overlay scrolling,
-    // not just Mac. The scrollbars seem to have different widths/appearances on
-    // those platforms, though.
+
+    // Horizontally position to compensate for overlay scrollbars.
     assert(document.documentElement.dir);
-    const endEdge = isRTL() ? 'left' : 'right';
-    if (window.innerWidth === document.scrollingElement.scrollWidth) {
-      this.style[endEdge] = '16px';
-    } else {
-      this.style[endEdge] = '0px';
+    let overlayScrollbarWidth = 0;
+    if (this.viewport_ && this.viewport_.documentHasScrollbars().vertical) {
+      overlayScrollbarWidth = this.viewport_.overlayScrollbarWidth;
     }
-    // </if>
+    this.style[isRTL() ? 'left' : 'right'] = `${overlayScrollbarWidth}px`;
+
+    // Animate opacity.
     this.style.opacity = 1;
     clearTimeout(this.timerId);
 

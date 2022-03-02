@@ -26,6 +26,16 @@ const char kFREUIIdentitySwitcherPositionParam[] =
 const char kFREUIStringsSetParam[] = "signin_sync_screen_strings_set";
 const char kFRESecondUITrialName[] = "EnableFREUIModuleIOSV2";
 
+// Group names for the second trial of the FRE UI.
+const char kIdentitySwitcherInTopAndOldStringsSetGroup[] =
+    "IdentitySwitcherInTopAndOldStringsSet";
+const char kIdentitySwitcherInTopAndNewStringsSetGroup[] =
+    "IdentitySwitcherInTopAndNewStringsSet";
+const char kIdentitySwitcherInBottomAndOldStringsSetGroup[] =
+    "IdentitySwitcherInBottomAndOldStringsSet";
+const char kIdentitySwitcherInBottomAndNewStringsSetGroup[] =
+    "IdentitySwitcherInBottomAndNewStringsSet";
+
 // Feature param and options for the identity switcher position.
 constexpr base::FeatureParam<SigninSyncScreenUIIdentitySwitcherPosition>::Option
     kIdentitySwitcherPositionOptions[] = {
@@ -68,18 +78,8 @@ const variations::VariationID
     kFREDefaultBrowserAndDefaultDelayBeforeOtherPromosID = 3342137;
 const variations::VariationID
     kFREDefaultBrowserAndSmallDelayBeforeOtherPromosID = 3342138;
-
-// Group names for the second trial of the FRE UI.
+// Group name for the FRE disabled group.
 const char kDisabledGroup[] = "Disabled";
-const char kIdentitySwitcherInTopAndOldStringsSetGroup[] =
-    "IdentitySwitcherInTopAndOldStringsSet";
-const char kIdentitySwitcherInTopAndNewStringsSetGroup[] =
-    "IdentitySwitcherInTopAndNewStringsSet";
-const char kIdentitySwitcherInBottomAndOldStringsSetGroup[] =
-    "IdentitySwitcherInBottomAndOldStringsSet";
-const char kIdentitySwitcherInBottomAndNewStringsSetGroup[] =
-    "IdentitySwitcherInBottomAndNewStringsSet";
-
 // Experiment IDs defined for the second trial of the FRE UI.
 const variations::VariationID kDisabledTrialID = 3344682;
 const variations::VariationID kIdentitySwitcherInTopAndOldStringsSetID =
@@ -342,20 +342,18 @@ void Create(const base::FieldTrial::EntropyProvider& low_entropy_provider,
     // Experience yet.
     return;
   }
-
   // Don't create the trial if it was already created for testing. This is only
   // expected when the browser is used for development purpose. The trial
   // created when the about flag is set will have the same name as the feature.
   // This condition is to avoid having multiple trials overriding the same
   // feature. A trial might have also been created with the commandline
-  // arguments.
+  // arugments.
   if (!base::FieldTrialList::TrialExists(kFRESecondUITrialName) &&
       !base::FieldTrialList::TrialExists(kEnableFREUIModuleIOS.name)) {
     // Create trial and group user for the first time, or tag users again to
     // ensure the experiment can be used to filter UMA metrics.
     trial_group = CreateFirstRunSecondTrial(low_entropy_provider, feature_list);
   }
-
   // Persist the assigned group for subsequent runs.
   local_state->SetInteger(kTrialGroupPrefName, trial_group);
 }

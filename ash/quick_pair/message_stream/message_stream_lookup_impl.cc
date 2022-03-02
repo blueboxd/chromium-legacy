@@ -5,6 +5,7 @@
 #include "ash/quick_pair/message_stream/message_stream_lookup_impl.h"
 
 #include "ash/quick_pair/common/constants.h"
+#include "ash/quick_pair/common/fast_pair/fast_pair_metrics.h"
 #include "ash/quick_pair/common/logging.h"
 #include "base/containers/contains.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -76,18 +77,38 @@ void MessageStreamLookupImpl::DeviceConnectedStateChanged(
 
 void MessageStreamLookupImpl::DeviceRemoved(device::BluetoothAdapter* adapter,
                                             device::BluetoothDevice* device) {
+  if (!device)
+    return;
+
   // Remove message stream if the device removed from the adapter has a
-  // message stream. It isn't expected to already have a MessageStream
-  // associated with it.
-  message_streams_.erase(device->GetAddress());
+  // message stream and disconnect from socket if applicable. It isn't expected
+  // to already have a MessageStream associated with it.
+  EraseMessageStream(device->GetAddress());
 }
 
 void MessageStreamLookupImpl::RemoveMessageStream(
     const std::string& device_address) {
   QP_LOG(VERBOSE) << __func__ << ": device address = " << device_address;
+  EraseMessageStream(device_address);
+}
 
+void MessageStreamLookupImpl::EraseMessageStream(
+    const std::string& device_address) {
   // Remove map entry if it exists. It may not exist if it was failed to be
   // created due to a |ConnectToService| error.
+  if (!base::Contains(message_streams_, device_address))
+    return;
+
+  // If the MessageStream still exists, we can attempt to gracefully disconnect
+  // the socket before erasing (and therefore destructing) the MessageStream
+  // instance.
+  message_streams_[device_address]->Disconnect(
+      base::BindOnce(&MessageStreamLookupImpl::OnSocketDisconnected,
+                     weak_ptr_factory_.GetWeakPtr(), device_address));
+}
+
+void MessageStreamLookupImpl::OnSocketDisconnected(
+    const std::string& device_address) {
   message_streams_.erase(device_address);
 }
 
@@ -103,7 +124,8 @@ void MessageStreamLookupImpl::CreateMessageStream(
   device->ConnectToService(
       /*uuid=*/kMessageStreamUuid, /*callback=*/
       base::BindOnce(&MessageStreamLookupImpl::OnConnected,
-                     weak_ptr_factory_.GetWeakPtr(), device_address),
+                     weak_ptr_factory_.GetWeakPtr(), device_address,
+                     base::TimeTicks::Now()),
       /*error_callback=*/
       base::BindOnce(&MessageStreamLookupImpl::OnConnectError,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -111,8 +133,13 @@ void MessageStreamLookupImpl::CreateMessageStream(
 
 void MessageStreamLookupImpl::OnConnected(
     std::string device_address,
+    base::TimeTicks connect_to_service_start_time,
     scoped_refptr<device::BluetoothSocket> socket) {
   QP_LOG(VERBOSE) << __func__;
+  RecordMessageStreamConnectToServiceResult(/*success=*/true);
+  RecordMessageStreamConnectToServiceTime(base::TimeTicks::Now() -
+                                          connect_to_service_start_time);
+
   std::unique_ptr<MessageStream> message_stream =
       std::make_unique<MessageStream>(device_address, std::move(socket));
 
@@ -124,6 +151,8 @@ void MessageStreamLookupImpl::OnConnected(
 
 void MessageStreamLookupImpl::OnConnectError(const std::string& error_message) {
   QP_LOG(INFO) << __func__ << ": Error = [ " << error_message << "].";
+  RecordMessageStreamConnectToServiceResult(/*success=*/false);
+  RecordMessageStreamConnectToServiceError(error_message);
 }
 
 }  // namespace quick_pair

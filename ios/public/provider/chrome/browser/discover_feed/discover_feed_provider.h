@@ -42,8 +42,6 @@ class DiscoverFeedProvider {
   virtual void StopFeed();
   // Returns true if the Discover Feed is enabled.
   virtual bool IsDiscoverFeedEnabled();
-  // Returns the Discover Feed ViewController.
-  virtual UIViewController* NewFeedViewController(Browser* browser);
   // Returns the Discover Feed ViewController with a custom
   // DiscoverFeedViewControllerConfiguration.
   virtual UIViewController* NewFeedViewControllerWithConfiguration(
@@ -61,12 +59,6 @@ class DiscoverFeedProvider {
   // Methods to register or remove observers.
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
-  // Loads and appends the next set of articles in the feed.
-  virtual void LoadMoreFeedArticles();
-  // Called by the embedder whenever the Feed has been shown.
-  // TODO(crbug.com/1126940): The Feed should have a callback for this, remove
-  // when its available.
-  virtual void FeedWasShown();
 };
 
 #endif  // IOS_PUBLIC_PROVIDER_CHROME_BROWSER_DISCOVER_FEED_DISCOVER_FEED_PROVIDER_H_

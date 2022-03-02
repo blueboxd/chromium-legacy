@@ -5,7 +5,6 @@
 #ifndef MEDIA_FILTERS_DECODER_STREAM_H_
 #define MEDIA_FILTERS_DECODER_STREAM_H_
 
-#include <list>
 #include <memory>
 #include <vector>
 
@@ -18,6 +17,7 @@
 #include "base/types/pass_key.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_timestamp_helper.h"
+#include "media/base/decoder_status.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
@@ -55,7 +55,7 @@ class MEDIA_EXPORT DecoderStream {
   using InitCB = base::OnceCallback<void(bool success)>;
 
   // Indicates completion of a DecoderStream read.
-  using ReadResult = StatusOr<scoped_refptr<Output>>;
+  using ReadResult = DecoderStatus::Or<scoped_refptr<Output>>;
   using ReadCB = base::OnceCallback<void(ReadResult)>;
 
   DecoderStream(std::unique_ptr<DecoderStreamTraits<StreamType>> traits,
@@ -199,7 +199,7 @@ class MEDIA_EXPORT DecoderStream {
   void OnDecodeDone(int buffer_size,
                     bool end_of_stream,
                     std::unique_ptr<ScopedDecodeTrace> trace_event,
-                    media::Status status);
+                    DecoderStatus status);
 
   // Output callback passed to Decoder::Initialize().
   void OnDecodeOutputReady(scoped_refptr<Output> output);

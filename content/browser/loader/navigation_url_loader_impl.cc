@@ -98,7 +98,7 @@
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "content/browser/android/content_url_loader_factory.h"
 #endif
 
@@ -186,19 +186,19 @@ const net::NetworkTrafficAnnotationTag kNavigationUrlLoaderTrafficAnnotation =
         cookies_store: "user"
         setting: "This feature cannot be disabled."
         chrome_policy {
-          URLBlacklist {
-            URLBlacklist: { entries: '*' }
+          URLBlocklist {
+            URLBlocklist: { entries: '*' }
           }
         }
         chrome_policy {
-          URLWhitelist {
-            URLWhitelist { }
+          URLAllowlist {
+            URLAllowlist { }
           }
         }
       }
       comments:
         "Chrome would be unable to navigate to websites without this type of "
-        "request. Using either URLBlacklist or URLWhitelist policies (or a "
+        "request. Using either URLBlocklist or URLAllowlist policies (or a "
         "combination of both) limits the scope of these requests."
       )");
 
@@ -285,7 +285,6 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->upgrade_if_insecure = request_info.upgrade_if_insecure;
   new_request->throttling_profile_id = request_info.devtools_frame_token;
   new_request->transition_type = request_info.common_params->transition;
-  new_request->previews_state = request_info.common_params->previews_state;
   new_request->devtools_request_id =
       request_info.devtools_navigation_token.ToString();
   new_request->obey_origin_policy = request_info.obey_origin_policy;
@@ -313,13 +312,7 @@ uint32_t GetURLLoaderOptions(bool is_main_frame, bool is_in_fenced_frame_tree) {
   // Ensure that Mime sniffing works.
   options |= network::mojom::kURLLoadOptionSniffMimeType;
 
-  if (is_in_fenced_frame_tree) {
-    // Fenced frames cannot have any credentialed requests.
-    // TODO(https://crbug.com/1229638): Once cookies partitioning is in place,
-    // consider using a unique partition for those cookies instead of blocking.
-    // For unpartitioned cookies though, we will continue to block them.
-    options |= network::mojom::kURLLoadOptionBlockAllCookies;
-  } else if (is_main_frame) {
+  if (is_main_frame && !is_in_fenced_frame_tree) {
     // SSLInfo is not needed on subframe or fenced frame responses because users
     // can inspect only the certificate for the main frame when using the info
     // bubble.
@@ -670,7 +663,7 @@ NavigationURLLoaderImpl::PrepareForNonInterceptedRequest(
           request_info_->sandbox_flags,
           static_cast<ui::PageTransition>(resource_request_->transition_type),
           resource_request_->has_user_gesture, initiating_origin,
-          &loader_factory);
+          initiator_document_.AsRenderFrameHostIfValid(), &loader_factory);
 
       if (loader_factory) {
         factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
@@ -1214,6 +1207,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       url_(request_info_->common_params->url),
       frame_tree_node_id_(request_info_->frame_tree_node_id),
       global_request_id_(GlobalRequestID::MakeBrowserInitiated()),
+      initiator_document_(request_info_->initiator_document),
       web_contents_getter_(
           base::BindRepeating(&WebContents::FromFrameTreeNodeId,
                               frame_tree_node_id_)),
@@ -1346,7 +1340,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
                             browser_context_->GetSharedCorsOriginAccessList(),
                             file_factory_priority));
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   non_network_url_loader_factories_.emplace(url::kContentScheme,
                                             ContentURLLoaderFactory::Create());
 #endif
@@ -1381,8 +1375,7 @@ void NavigationURLLoaderImpl::Start() {
 void NavigationURLLoaderImpl::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
-    const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    blink::PreviewsState new_previews_state) {
+    const net::HttpRequestHeaders& modified_cors_exempt_headers) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!redirect_info_.new_url.is_empty());
 
@@ -1416,7 +1409,6 @@ void NavigationURLLoaderImpl::FollowRedirect(
 
   resource_request_->referrer = GURL(redirect_info_.new_referrer);
   resource_request_->referrer_policy = redirect_info_.new_referrer_policy;
-  resource_request_->previews_state = new_previews_state;
   resource_request_->navigation_redirect_chain.push_back(
       redirect_info_.new_url);
   url_chain_.push_back(redirect_info_.new_url);

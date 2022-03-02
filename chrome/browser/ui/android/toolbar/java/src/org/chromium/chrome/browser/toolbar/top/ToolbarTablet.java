@@ -19,6 +19,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewStub;
 import android.widget.ImageButton;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.view.ViewCompat;
@@ -48,10 +49,12 @@ import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.top.NavigationPopup.HistoryDelegate;
+import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.util.ColorUtils;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
@@ -378,13 +381,12 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    public void onTintChanged(ColorStateList tint, boolean useLight) {
+    public void onTintChanged(ColorStateList tint, @BrandedColorScheme int brandedColorScheme) {
         ApiCompatibilityUtils.setImageTintList(mHomeButton, tint);
         ApiCompatibilityUtils.setImageTintList(mBackButton, tint);
         ApiCompatibilityUtils.setImageTintList(mForwardButton, tint);
         ApiCompatibilityUtils.setImageTintList(mSaveOfflineButton, tint);
         ApiCompatibilityUtils.setImageTintList(mReloadButton, tint);
-        mAccessibilitySwitcherButton.setUseLightDrawables(useLight);
 
         if (mOptionalButton != null && mOptionalButtonUsesTint) {
             ApiCompatibilityUtils.setImageTintList(mOptionalButton, tint);
@@ -399,6 +401,8 @@ public class ToolbarTablet extends ToolbarLayout
         mLocationBar.getTabletCoordinator().getBackground().setTint(textBoxColor);
         mLocationBar.updateVisualsForState();
         setToolbarHairlineColor(color);
+        final boolean useLight = ColorUtils.shouldUseLightForegroundOnBackground(color);
+        mAccessibilitySwitcherButton.setUseLightDrawables(useLight);
     }
 
     /**
@@ -459,9 +463,10 @@ public class ToolbarTablet extends ToolbarLayout
     void updateBookmarkButton(boolean isBookmarked, boolean editingAllowed) {
         if (isBookmarked) {
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
-            ApiCompatibilityUtils.setImageTintList(mBookmarkButton,
-                    AppCompatResources.getColorStateList(
-                            getContext(), R.color.default_icon_color_accent1_tint_list));
+            final @ColorRes int tint = isIncognito() ? R.color.default_icon_color_blue_light
+                                                     : R.color.default_icon_color_accent1_tint_list;
+            ApiCompatibilityUtils.setImageTintList(
+                    mBookmarkButton, AppCompatResources.getColorStateList(getContext(), tint));
             mBookmarkButton.setContentDescription(getContext().getString(R.string.edit_bookmark));
         } else {
             mBookmarkButton.setImageResource(R.drawable.btn_star);

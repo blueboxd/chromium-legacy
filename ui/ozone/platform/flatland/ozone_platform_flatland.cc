@@ -31,16 +31,16 @@
 #include "ui/ozone/platform/flatland/flatland_sysmem_buffer_collection.h"
 #include "ui/ozone/platform/flatland/flatland_window.h"
 #include "ui/ozone/platform/flatland/flatland_window_manager.h"
+#include "ui/ozone/platform/scenic/mojom/scenic_gpu_service.mojom.h"
 #include "ui/ozone/platform_selection.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
-#include "ui/ozone/public/mojom/scenic_gpu_service.mojom.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 #include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 #include "ui/platform_window/fuchsia/initialize_presenter_api_view.h"
 #endif
 
@@ -148,7 +148,7 @@ class OzonePlatformFlatland : public OzonePlatform,
         delegate, window_manager_->GetWindow(widget)->CloneViewRef());
   }
 
-  void InitializeUI(const InitParams& params) override {
+  bool InitializeUI(const InitParams& params) override {
     if (!PlatformEventSource::GetInstance())
       platform_event_source_ = std::make_unique<FlatlandPlatformEventSource>();
     keyboard_layout_engine_ = std::make_unique<StubKeyboardLayoutEngine>();
@@ -170,6 +170,8 @@ class OzonePlatformFlatland : public OzonePlatform,
 
     if (base::ThreadTaskRunnerHandle::IsSet())
       BindInMainProcessIfNecessary();
+
+    return true;
   }
 
   void InitializeGPU(const InitParams& params) override {

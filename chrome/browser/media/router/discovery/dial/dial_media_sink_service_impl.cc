@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
@@ -78,11 +79,6 @@ DialMediaSinkServiceImpl::DialMediaSinkServiceImpl(
 
 DialMediaSinkServiceImpl::~DialMediaSinkServiceImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (dial_registry_) {
-    dial_registry_->OnListenerRemoved();
-    dial_registry_->UnregisterObserver(this);
-    dial_registry_ = nullptr;
-  }
 }
 
 void DialMediaSinkServiceImpl::Start() {
@@ -101,10 +97,8 @@ void DialMediaSinkServiceImpl::Start() {
 
   StartTimer();
 
-  dial_registry_ = test_dial_registry_ ? test_dial_registry_.get()
-                                       : DialRegistry::GetInstance();
-  dial_registry_->RegisterObserver(this);
-  dial_registry_->OnListenerAdded();
+  dial_registry_ = std::make_unique<DialRegistry>(*this, task_runner_);
+  dial_registry_->Start();
 }
 
 void DialMediaSinkServiceImpl::OnUserGesture() {
@@ -137,12 +131,6 @@ DialMediaSinkServiceImpl::StartMonitoringAvailableSinksForApp(
   }
 
   return callback_list->Add(callback);
-}
-
-void DialMediaSinkServiceImpl::SetDialRegistryForTest(
-    DialRegistry* dial_registry) {
-  DCHECK(!test_dial_registry_);
-  test_dial_registry_ = dial_registry;
 }
 
 void DialMediaSinkServiceImpl::SetDescriptionServiceForTest(
@@ -185,7 +173,7 @@ void DialMediaSinkServiceImpl::OnDiscoveryComplete() {
   MediaSinkServiceBase::OnDiscoveryComplete();
 }
 
-void DialMediaSinkServiceImpl::OnDialDeviceEvent(
+void DialMediaSinkServiceImpl::OnDialDeviceList(
     const DialRegistry::DeviceList& devices) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   current_devices_ = devices;

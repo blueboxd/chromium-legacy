@@ -5,6 +5,8 @@
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 
 import {confirmationPageTest} from './confirmation_page_test.js';
+import {fakeMojoProviderTestSuite} from './mojo_interface_provider_test.js';
+import {searchPageTestSuite} from './search_page_test.js';
 
 window.test_suites_list = [];
 
@@ -13,4 +15,6 @@ function runSuite(suiteName, testFn) {
   suite(suiteName, testFn);
 }
 
-runSuite('ConfirmationPageTest', confirmationPageTest);
+runSuite('confirmationPageTest', confirmationPageTest);
+runSuite('fakeMojoProviderTest', fakeMojoProviderTestSuite);
+runSuite('searchPageTest', searchPageTestSuite);

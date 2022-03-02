@@ -37,7 +37,6 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "build/chromeos_buildflags.h"
 #include "net/base/escape.h"
 #include "pdf/accessibility.h"
 #include "pdf/accessibility_structs.h"
@@ -523,8 +522,8 @@ void PdfViewPluginBase::SetIsSelecting(bool is_selecting) {
 
 void PdfViewPluginBase::SelectionChanged(const gfx::Rect& left,
                                          const gfx::Rect& right) {
-  const gfx::Rect left_with_offset = left + plugin_rect_.OffsetFromOrigin();
-  const gfx::Rect right_with_offset = right + plugin_rect_.OffsetFromOrigin();
+  const gfx::Rect left_with_offset = left + plugin_offset_in_frame();
+  const gfx::Rect right_with_offset = right + plugin_offset_in_frame();
 
   gfx::PointF left_point(left_with_offset.x() + available_area_.x(),
                          left_with_offset.y());
@@ -535,8 +534,9 @@ void PdfViewPluginBase::SelectionChanged(const gfx::Rect& left,
   left_point.Scale(inverse_scale);
   right_point.Scale(inverse_scale);
 
-  NotifySelectionChanged(left_point, left_with_offset.height(), right_point,
-                         right_with_offset.height());
+  NotifySelectionChanged(left_point, left_with_offset.height() * inverse_scale,
+                         right_point,
+                         right_with_offset.height() * inverse_scale);
 
   if (accessibility_state_ == AccessibilityState::kLoaded)
     PrepareAndSetAccessibilityViewportInfo();
@@ -567,8 +567,6 @@ void PdfViewPluginBase::SetLinkUnderCursor(
   NotifyLinkUnderCursor();
 }
 
-// TODO(crbug.com/1191817): Add tests for input events. Unit testing should be
-// feasible now that the Pepper dependency is removed for input events.
 bool PdfViewPluginBase::HandleInputEvent(const blink::WebInputEvent& event) {
   // Ignore user input in read-only mode.
   if (engine()->IsReadOnly())
@@ -1060,8 +1058,9 @@ void PdfViewPluginBase::PrepareAndSetAccessibilityPageInfo(int32_t page_index) {
 
 void PdfViewPluginBase::PrepareAndSetAccessibilityViewportInfo() {
   AccessibilityViewportInfo viewport_info;
-  viewport_info.scroll =
-      gfx::ScaleToFlooredPoint(plugin_rect_.origin(), -1 / device_scale_);
+  viewport_info.scroll = gfx::ScaleToFlooredPoint(
+      gfx::PointAtOffsetFromOrigin(plugin_offset_in_frame()),
+      -1 / device_scale_);
   viewport_info.offset = gfx::ScaleToFlooredPoint(available_area_.origin(),
                                                   1 / (device_scale_ * zoom_));
   viewport_info.zoom = zoom_;
@@ -1090,6 +1089,10 @@ void PdfViewPluginBase::StopFind() {
   engine_->StopFind();
   tickmarks_.clear();
   NotifyFindTickmarks(tickmarks_);
+}
+
+gfx::Vector2d PdfViewPluginBase::plugin_offset_in_frame() const {
+  return plugin_rect_.OffsetFromOrigin();
 }
 
 void PdfViewPluginBase::SetZoom(double scale) {
@@ -1635,15 +1638,12 @@ void PdfViewPluginBase::SendMetadata() {
 }
 
 void PdfViewPluginBase::SendThumbnail(base::Value reply, Thumbnail thumbnail) {
-  const SkBitmap& bitmap = thumbnail.bitmap();
-  base::Value image_data(base::make_span(
-      static_cast<uint8_t*>(bitmap.getPixels()), bitmap.computeByteSize()));
-
   DCHECK_EQ(*reply.FindStringKey("type"), "getThumbnailReply");
   DCHECK(reply.FindStringKey("messageId"));
-  reply.SetKey("imageData", std::move(image_data));
-  reply.SetIntKey("width", bitmap.width());
-  reply.SetIntKey("height", bitmap.height());
+
+  reply.SetKey("imageData", base::Value(thumbnail.TakeData()));
+  reply.SetIntKey("width", thumbnail.image_size().width());
+  reply.SetIntKey("height", thumbnail.image_size().height());
   SendMessage(std::move(reply));
 }
 
@@ -1818,10 +1818,10 @@ void PdfViewPluginBase::LoadNextPreviewPage() {
 
 gfx::Point PdfViewPluginBase::FrameToPdfCoordinates(
     const gfx::PointF& frame_coordinates) const {
+  // TODO(crbug.com/1288847): Use methods on `blink::WebPluginContainer`.
   return gfx::ToFlooredPoint(
              gfx::ScalePoint(frame_coordinates, device_scale_)) -
-         plugin_rect_.OffsetFromOrigin() -
-         gfx::Vector2d(available_area_.x(), 0);
+         plugin_offset_in_frame() - gfx::Vector2d(available_area_.x(), 0);
 }
 
 }  // namespace chrome_pdf

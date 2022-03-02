@@ -42,7 +42,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -81,9 +81,9 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "storage/browser/database/database_tracker.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "components/prefs/scoped_user_pref_update.h"
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/preferences.h"
@@ -241,7 +241,7 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Bypass profile lifetime recording for ChromeOS helper profiles (sign-in,
   // lockscreen, etc).
-  if (!chromeos::ProfileHelper::IsRegularProfile(profile_))
+  if (!ash::ProfileHelper::IsRegularProfile(profile_))
     return;
 #endif
   // Store incognito lifetime and navigations count histogram.

@@ -28,6 +28,13 @@ bool SamePartyContext::operator==(const SamePartyContext& other) const {
                          other.top_resource_for_metrics_only());
 }
 
+std::ostream& operator<<(std::ostream& os, const SamePartyContext& spc) {
+  os << "{" << static_cast<int>(spc.context_type()) << ", "
+     << static_cast<int>(spc.ancestors_for_metrics_only()) << ", "
+     << static_cast<int>(spc.top_resource_for_metrics_only()) << "}";
+  return os;
+}
+
 // static
 SamePartyContext SamePartyContext::MakeInclusive() {
   return SamePartyContext(Type::kSameParty);

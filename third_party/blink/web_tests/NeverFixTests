@@ -210,7 +210,6 @@ external/wpt/css/CSS2/text/text-align-white-space-003.xht [ Skip ]
 external/wpt/css/CSS2/text/text-align-white-space-007.xht [ Skip ]
 
 # CSS2 tests that require files in different directories.
-external/wpt/css/CSS2/linebox/inline-formatting-context-012.xht [ Skip ]
 external/wpt/css/CSS2/normal-flow/blocks-017.xht [ Skip ]
 
 # CSS2 tests that have 1px diff due to font hinting.
@@ -1186,7 +1185,7 @@ external/wpt/css/css-animations/animation-timing-function-010-manual.html [ Skip
 external/wpt/css/css-animations/animation-timing-function-011-manual.html [ Skip ]
 external/wpt/css/css-animations/animation-timing-function-012-manual.html [ Skip ]
 external/wpt/css/css-animations/animationstart-and-animationend-events-manual.html [ Skip ]
-external/wpt/css/css-counter-styles/counter-style-speak-as-manual.html [ Skip ]
+external/wpt/css/css-counter-styles/counter-style-at-rule/speak-as-manual.html [ Skip ]
 external/wpt/css/css-text/text-transform/text-transform-copy-paste-001-manual.html [ Skip ]
 external/wpt/css/css-transitions/transition-delay-000-manual.html [ Skip ]
 external/wpt/css/css-transitions/transition-delay-002-manual.html [ Skip ]
@@ -1522,6 +1521,7 @@ external/wpt/visual-viewport/viewport-scale-manual.html [ Skip ]
 external/wpt/visual-viewport/viewport-scroll-event-manual.html [ Skip ]
 external/wpt/visual-viewport/viewport-url-bar-changes-height-manual.html [ Skip ]
 external/wpt/web-nfc/NDEFReader-read-document-hidden-manual.https.html [ Skip ]
+external/wpt/web-nfc/NDEFReader-make-read-only-document-hidden-manual.https.html [ Skip ]
 external/wpt/web-nfc/NDEFReader-write-document-hidden-manual.https.html [ Skip ]
 external/wpt/web-nfc/nfc-prompt-manual.https.html [ Skip ]
 external/wpt/screen-wake-lock/wakelock-document-hidden-manual.https.html [ Skip ]
@@ -1688,8 +1688,6 @@ virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-windo
 virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/open-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
 virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/submit-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
 virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/wasm-module-sharing-enabled-not-site-per-process/external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Pass ]
-virtual/wasm-module-sharing-enabled-not-site-per-process/external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Pass ]
 # ----------------------- origin-keyed agent clusters --------------------
 # Origin-keyed agent clusters web platform tests are for the feature at
 # https://html.spec.whatwg.org/#origin-keyed-agent-clusters. It doesn't make
@@ -1755,11 +1753,6 @@ external/wpt/html/webappapis/user-prompts/print-manual.html [ Skip ]
 # Windows doesn't have native overlay scrollbar
 [ Win ] virtual/overlay-scrollbar/* [ Skip ]
 
-# Blink implements additional privacy measures that cause the regular test in
-# WPT to time out.
-# There is a version in wpt_internal that performs the same checks but works
-# as expected.
-external/wpt/ambient-light/AmbientLightSensor.https.html [ Skip ]
 crbug.com/626703 [ Linux ] external/wpt/payment-method-basic-card/billing-address-is-null-manual.https.html [ Skip ]
 crbug.com/626703 [ Mac ] external/wpt/payment-method-basic-card/billing-address-is-null-manual.https.html [ Skip ]
 crbug.com/626703 [ Win ] external/wpt/payment-method-basic-card/billing-address-is-null-manual.https.html [ Skip ]
@@ -1823,14 +1816,12 @@ virtual/passive-fingerprinting/http/tests/navigation/frozen-useragent.html [ Pas
 # This test run under virtual suites only.
 crbug.com/1018640 external/wpt/web-bundle/wbn-from-network/* [ Skip ]
 virtual/wbn-from-network/external/wpt/web-bundle/wbn-from-network/* [ Pass ]
-crbug.com/1119600 external/wpt/raw-sockets/* [ Skip ]
-virtual/direct-sockets/external/wpt/raw-sockets/* [ Pass ]
+crbug.com/1119600 external/wpt/direct-sockets/* [ Skip ]
+crbug.com/1119600 wpt_internal/direct-sockets/* [ Skip ]
+virtual/direct-sockets/external/wpt/direct-sockets/* [ Pass ]
+virtual/direct-sockets/wpt_internal/direct-sockets/* [ Pass ]
 crbug.com/1082020 http/tests/loading/wbn/origin-trial/* [ Skip ]
 virtual/subresource-web-bundles-disabled/http/tests/loading/wbn/origin-trial/* [ Pass ]
-
-# This test requires sxg-subresource-disabled.
-http/tests/loading/sxg/sxg-subresource-origin-trial.https.html [ Skip ]
-virtual/sxg-subresource-disabled/http/tests/loading/sxg/sxg-subresource-origin-trial.https.html [ Pass ]
 
 # No good way to automate this test yet
 external/wpt/file-system-access/showSaveFilePicker-manual.https.html [ Skip ]
@@ -1839,12 +1830,17 @@ external/wpt/file-system-access/showSaveFilePicker-manual.https.html [ Skip ]
 external/wpt/webusb/usbDevice_claimInterface-manual.https.html [ Skip ]
 external/wpt/webusb/usbDevice_controlTransferIn-manual.https.html [ Skip ]
 external/wpt/webusb/usbDevice_transferIn-manual.https.html [ Skip ]
+external/wpt/webusb/usbDevice_reset-manual.https.html [ Skip ]
 wpt_internal/hid/hidDevice_collections-manual.https.html [ Skip ]
 external/wpt/serial/serialPort_loopback-manual.https.html [ Skip ]
 external/wpt/serial/serialPort_loopback_BreakError-manual.https.html [ Skip ]
 external/wpt/serial/serialPort_loopback_BufferOverrunError-manual.https.html [ Skip ]
+external/wpt/serial/serialPort_loopback_flowControl-manual.https.html [ Skip ]
 external/wpt/serial/serialPort_disconnect-manual.https.html [ Skip ]
 external/wpt/serial/serialPort_readable-manual.https.html [ Skip ]
+
+# Content-shell doesn't support plugins
+fast/dom/HTMLObjectElement/object-param-url-usecounter-manual.html [ Skip ]
 
 # CPU test is enough for this one as there are gradient issues on the GPU
 crbug.com/626703 [ Linux ] external/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol-handler-query-nosw-manual.https.html [ Skip ]
@@ -1869,16 +1865,7 @@ crbug.com/626703 [ Win ] external/wpt/html/editing/dnd/events/historical-manual.
 # Remove from virtual tests when FontAccess is turned on by default.
 external/wpt/font-access/font_access-blob.tentative.https.window.html [ Skip ]
 external/wpt/font-access/font_access-enumeration.tentative.https.window.html [ Skip ]
-external/wpt/font-access/font_access-chooser.tentative.manual.https.html [ Skip ]
-external/wpt/font-access/font_access-chooser-multiple.tentative.manual.https.html [ Skip ]
-external/wpt/font-access/font_access-chooser-selection.tentative.manual.https.html [ Skip ]
 external/wpt/font-access/font_metadata.tentative.https.window.html [ Skip ]
-virtual/font-access-persistent/external/wpt/font-access/font_access-blob.tentative.https.window.html [ Pass ]
-virtual/font-access-persistent/external/wpt/font-access/font_access-chooser.tentative.manual.https.html [ Skip ]
-virtual/font-access-persistent/external/wpt/font-access/font_access-chooser-multiple.tentative.manual.https.html [ Skip ]
-virtual/font-access-persistent/external/wpt/font-access/font_access-chooser-selection.tentative.manual.https.html [ Skip ]
-virtual/font-access-persistent/external/wpt/font-access/font_access-enumeration.tentative.https.window.html [ Pass ]
-virtual/font-access-persistent/external/wpt/font-access/font_metadata.tentative.https.window.html [ Pass ]
 
 # Remove from virtual tests when ComputePressure is turned on by default.
 crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_arguments.tentative.https.window.html [ Skip ]

@@ -315,8 +315,9 @@ chrome.fileManagerPrivate.IOTaskState = {
 /** @enum {string} */
 chrome.fileManagerPrivate.IOTaskType = {
   COPY: 'copy',
-  MOVE: 'move',
   DELETE: 'delete',
+  EXTRACT: 'extract',
+  MOVE: 'move',
   ZIP: 'zip',
 };
 
@@ -1343,6 +1344,12 @@ chrome.fileManagerPrivate.isTabletModeEnabled = function(callback) {};
  * @param {chrome.fileManagerPrivate.DriveDialogResult} result
  */
 chrome.fileManagerPrivate.notifyDriveDialogResult = function(result) {};
+
+/**
+ * Opens a new browser tab and navigates to `URL`.
+ * @param {!string} URL
+ */
+chrome.fileManagerPrivate.openURL = function(URL) {};
 
 /**
  * Creates a new Files app window in the directory provided in `params`.

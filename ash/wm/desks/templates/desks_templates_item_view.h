@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/overview/overview_highlightable_view.h"
-#include "base/guid.h"
 #include "base/scoped_observation.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/button.h"
@@ -58,6 +57,7 @@ class ASH_EXPORT DesksTemplatesItemView : public views::Button,
   void OnThemeChanged() override;
   void OnViewFocused(views::View* observed_view) override;
   void OnViewBlurred(views::View* observed_view) override;
+  KeyClickAction GetKeyClickActionForEvent(const ui::KeyEvent& event) override;
 
   // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
@@ -76,15 +76,16 @@ class ASH_EXPORT DesksTemplatesItemView : public views::Button,
   void OnDeleteTemplate();
   void OnDeleteButtonPressed();
 
-  void OnGridItemPressed();
+  void OnGridItemPressed(const ui::Event& event);
+
+  // Launches the apps associated with the template unless editing the desk
+  // template name is underway. Adds a 3 second delay between each app launch if
+  // `should_delay` is true.
+  void MaybeLaunchTemplate(bool should_delay);
 
   // Called when we want to update `name_view_` when the template's name
   // changes.
   void OnTemplateNameChanged(const std::u16string& new_name);
-
-  // Layout `name_view_` given the current bounds of `this` as well as the
-  // contents of the textfield.
-  void LayoutTemplateNameView();
 
   // OverviewHighlightableView:
   views::View* GetView() override;

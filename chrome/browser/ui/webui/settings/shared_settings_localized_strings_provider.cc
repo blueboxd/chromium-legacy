@@ -125,8 +125,7 @@ void AddLiveCaptionSectionStrings(content::WebUIDataSource* html_source) {
       IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_TITLE);
 
   const bool liveCaptionMultiLanguageEnabled =
-      base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage) &&
-      base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption);
+      base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage);
   const int live_caption_subtitle_message =
       liveCaptionMultiLanguageEnabled
           ? IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_SUBTITLE
@@ -368,6 +367,8 @@ void AddNearbyShareData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_NEARBY_SHARE_FAST_INITIATION_NOTIFICATION_TOGGLE_TITLE},
       {"fastInitiationNotificationToggleDescription",
        IDS_SETTINGS_NEARBY_SHARE_FAST_INITIATION_NOTIFICATION_TOGGLE_DESCRIPTION},
+      {"fastInitiationNotificationToggleAriaLabel",
+       IDS_SETTINGS_NEARBY_SHARE_FAST_INITIATION_NOTIFICATION_TOGGLE_ARIA_LABEL},
       {"nearbyShareDeviceNameAriaDescription",
        IDS_SETTINGS_NEARBY_SHARE_DEVICE_NAME_ARIA_DESCRIPTION},
       {"nearbyShareConfirmDeviceName",

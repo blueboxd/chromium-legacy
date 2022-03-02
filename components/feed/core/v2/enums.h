@@ -81,7 +81,10 @@ enum class LoadStreamStatus {
   kAbortWithPendingClearAll = 24,
   kAlreadyHaveUnreadContent = 25,
   kNotAWebFeedSubscriber = 26,
-  kMaxValue = kNotAWebFeedSubscriber,
+  kAccountTokenFetchFailedWrongAccount = 27,
+  kAccountTokenFetchTimedOut = 28,
+  kNetworkFetchTimedOut = 29,
+  kMaxValue = kNetworkFetchTimedOut,
 };
 
 // Were we able to load fresh Feed data. This should be 'true' unless some kind
@@ -100,6 +103,7 @@ enum class UploadActionsStatus {
   kUpdatedConsistencyToken = 4,
   kFinishedWithoutUpdatingConsistencyToken = 5,
   kAbortUploadForSignedOutUser = 6,
+  // TODO(b/213622639): This is unused, remove it.
   kAbortUploadBecauseDisabled = 7,
   kAbortUploadForWrongUser = 8,
   kAbortUploadActionsWithPendingClearAll = 9,

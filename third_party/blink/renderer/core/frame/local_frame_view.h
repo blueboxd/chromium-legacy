@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/frame/sticky_ad_detector.h"
 #include "third_party/blink/renderer/core/layout/depth_ordered_layout_object_list.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
-#include "third_party/blink/renderer/core/paint/compositing/compositing_update_type.h"
 #include "third_party/blink/renderer/core/paint/layout_object_counter.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -53,6 +52,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -67,6 +67,10 @@ using PaintRecord = PaintOpBuffer;
 struct PaintBenchmarkResult;
 }
 
+namespace gfx {
+class SizeF;
+}
+
 namespace ui {
 class Cursor;
 }
@@ -77,11 +81,9 @@ class ChromeClient;
 class CompositorAnimationTimeline;
 class DarkModeFilter;
 class DocumentLifecycle;
-class FloatSize;
 class FragmentAnchor;
 class Frame;
 class FrameViewAutoSizeInfo;
-class GraphicsLayer;
 class HTMLVideoElement;
 class JSONObject;
 class KURL;
@@ -236,13 +238,6 @@ class CORE_EXPORT LocalFrameView final
 
   void SetPaintArtifactCompositorNeedsUpdate();
 
-  // Marks this frame, and ancestor frames, as needing a mandatory compositing
-  // update. This overrides throttling for one frame, up to kCompositingClean.
-  void SetNeedsForcedCompositingUpdate();
-  void ResetNeedsForcedCompositingUpdate() {
-    needs_forced_compositing_update_ = false;
-  }
-
   // Methods for getting/setting the size Blink should use to layout the
   // contents.
   gfx::Size GetLayoutSize() const { return layout_size_; }
@@ -254,10 +249,6 @@ class CORE_EXPORT LocalFrameView final
   bool LayoutSizeFixedToFrameSize() const {
     return layout_size_fixed_to_frame_size_;
   }
-
-  void SetInitialViewportSize(const gfx::Size&);
-  int InitialViewportWidth() const;
-  int InitialViewportHeight() const;
 
   bool GetIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
   bool HasIntrinsicSizingInfo() const override;
@@ -372,6 +363,7 @@ class CORE_EXPORT LocalFrameView final
   // detached frame and need special handling of the frame.
   void UpdateLifecyclePhasesForPrinting();
 
+  // TODO(pdr): Remove this in favor of |UpdateAllLifecyclePhasesExceptPaint|.
   bool UpdateLifecycleToPrePaintClean(DocumentUpdateReason reason);
 
   // Computes the style, layout, and compositing inputs lifecycle stages if
@@ -542,26 +534,21 @@ class CORE_EXPORT LocalFrameView final
   PhysicalRect FrameToDocument(const PhysicalRect&) const;
 
   // Normally a LocalFrameView synchronously paints during full lifecycle
-  // updates, into the local frame root's PaintController (CompositeAfterPaint)
-  // or the PaintControllers of GraphicsLayers (pre-CompositeAfterPaint)
-  // However, in some cases (e.g. when printing) we need to paint the frame view
-  // into a PaintController other than the default one(s). The following
-  // functions are provided for these cases. This frame view must be in
-  // PrePaintClean or PaintClean state when these functions are called.
+  // updates, into the local frame root's PaintController. However, in some
+  // cases (e.g. when printing) we need to paint the frame view into a
+  // PaintController other than the default one(s). The following functions are
+  // provided for these cases. This frame view must be in PrePaintClean or
+  // PaintClean state when these functions are called.
   void PaintOutsideOfLifecycle(
       GraphicsContext&,
-      const GlobalPaintFlags,
+      PaintFlags,
       const CullRect& cull_rect = CullRect::Infinite());
-  void PaintContentsOutsideOfLifecycle(GraphicsContext&,
-                                       const GlobalPaintFlags,
-                                       const CullRect&);
 
-  // For testing paint with an optional custom cull rect. In pre-CAP, this
-  // paints the contents of the main GraphicsLayer only.
-  void PaintContentsForTest(const CullRect&);
+  // For testing paint with a custom cull rect.
+  void PaintForTest(const CullRect&);
 
   // Get the PaintRecord based on the cached paint artifact generated during
-  // the last paint in lifecycle update. For CompositeAfterPaint only.
+  // the last paint in lifecycle update.
   sk_sp<cc::PaintRecord> GetPaintRecord() const;
 
   void Show() override;
@@ -632,11 +619,11 @@ class CORE_EXPORT LocalFrameView final
   // Viewport size that should be used for viewport units (i.e. 'vh'/'vw').
   // May include the size of browser controls. See implementation for further
   // documentation.
-  FloatSize ViewportSizeForViewportUnits() const;
+  gfx::SizeF ViewportSizeForViewportUnits() const;
 
   // Initial containing block size for evaluating viewport-dependent media
   // queries.
-  FloatSize ViewportSizeForMediaQueries() const;
+  gfx::SizeF ViewportSizeForMediaQueries() const;
 
   void EnqueueScrollAnchoringAdjustment(ScrollableArea*);
   void DequeueScrollAnchoringAdjustment(ScrollableArea*);
@@ -644,7 +631,6 @@ class CORE_EXPORT LocalFrameView final
 
   void SetNeedsEnqueueScrollEvent(PaintLayerScrollableArea*);
 
-  // Only for CompositeAfterPaint.
   std::unique_ptr<JSONObject> CompositedLayersAsJSON(LayerTreeFlags);
 
   String MainThreadScrollingReasonsAsText();
@@ -845,13 +831,11 @@ class CORE_EXPORT LocalFrameView final
 
   // EmbeddedContentView implementation
   void Paint(GraphicsContext&,
-             const GlobalPaintFlags,
+             PaintFlags,
              const CullRect&,
              const gfx::Vector2d&) const final;
 
-  void PaintInternal(GraphicsContext&,
-                     const GlobalPaintFlags,
-                     const CullRect&) const;
+  void PaintFrame(GraphicsContext&, PaintFlags = PaintFlag::kNoFlag) const;
 
   LayoutSVGRoot* EmbeddedReplacedContent() const;
 
@@ -874,8 +858,6 @@ class CORE_EXPORT LocalFrameView final
   bool RunAccessibilityLifecyclePhase(
       DocumentLifecycle::LifecycleState target_state);
   bool RunCompositingInputsLifecyclePhase(
-      DocumentLifecycle::LifecycleState target_state);
-  bool RunCompositingAssignmentsLifecyclePhase(
       DocumentLifecycle::LifecycleState target_state);
   bool RunPrePaintLifecyclePhase(
       DocumentLifecycle::LifecycleState target_state);
@@ -919,9 +901,6 @@ class CORE_EXPORT LocalFrameView final
   void ScheduleUpdatePluginsIfNecessary();
   void UpdatePluginsTimerFired(TimerBase*);
   bool UpdatePlugins();
-
-  void UpdateCompositedSelectionIfNeeded();
-  void SetNeedsCompositingUpdate(CompositingUpdateType);
 
   AXObjectCache* ExistingAXObjectCache() const;
 
@@ -1057,7 +1036,6 @@ class CORE_EXPORT LocalFrameView final
   Member<FrameViewAutoSizeInfo> auto_size_info_;
 
   gfx::Size layout_size_;
-  gfx::Size initial_viewport_size_;
   bool layout_size_fixed_to_frame_size_;
 
   bool needs_update_geometries_;
@@ -1108,7 +1086,6 @@ class CORE_EXPORT LocalFrameView final
   bool allows_layout_invalidation_after_layout_clean_ = true;
 #endif
   IntersectionObservationState intersection_observation_state_;
-  bool needs_forced_compositing_update_;
 
   bool needs_focus_on_fragment_;
 
@@ -1130,11 +1107,8 @@ class CORE_EXPORT LocalFrameView final
   // For testing.
   bool is_tracking_raster_invalidations_ = false;
 
-  // Currently used in PushPaintArtifactToCompositor() to collect composited
-  // layers as foreign layers. It's transient, but may live across frame updates
-  // until SetForeignLayerListNeedsUpdate() is called.
-  // For CompositeAfterPaint, we use it in PaintTree() for all paintings of the
-  // frame tree in PaintTree(). It caches display items and subsequences across
+  // Used by |PaintTree()| to collect the updated |PaintArtifact| which will be
+  // passed to the compositor. It caches display items and subsequences across
   // frame updates and repaints.
   std::unique_ptr<PaintController> paint_controller_;
   std::unique_ptr<PaintArtifactCompositor> paint_artifact_compositor_;

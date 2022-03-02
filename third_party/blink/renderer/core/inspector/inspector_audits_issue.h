@@ -25,6 +25,7 @@ class Element;
 class ExecutionContext;
 class LocalFrame;
 class ResourceError;
+class LocalDOMWindow;
 class LocalFrame;
 class SecurityPolicyViolationEventInit;
 class SourceLocation;
@@ -63,6 +64,11 @@ enum class MixedContentResolutionStatus {
   kMixedContentBlocked,
   kMixedContentAutomaticallyUpgraded,
   kMixedContentWarning,
+};
+
+enum class ClientHintIssueReason {
+  kMetaTagAllowListInvalidOrigin,
+  kMetaTagModifiedHTML,
 };
 
 // |AuditsIssue| is a thin wrapper around the Audits::InspectorIssue
@@ -137,8 +143,15 @@ class CORE_EXPORT AuditsIssue {
       bool shared_buffer_transfer_allowed,
       SharedArrayBufferIssueType issue_type);
 
+  // Reports a Deprecation issue to DevTools.
+  // `type` is a string instead of an enum, so that adding a new deprecation
+  // issue requires changing only a single file (deprecation.cc).
   static void ReportDeprecationIssue(ExecutionContext* execution_context,
-                                     const String& message);
+                                     const String& message,
+                                     const String& type);
+
+  static void ReportClientHintIssue(LocalDOMWindow* local_dom_window,
+                                    ClientHintIssueReason reason);
 
   static AuditsIssue CreateBlockedByResponseIssue(
       network::mojom::BlockedByResponseReason reason,

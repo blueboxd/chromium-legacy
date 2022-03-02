@@ -18,7 +18,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -2843,7 +2842,7 @@ void CrostiniManager::OnStartLxdContainer(
                                               CrostiniUISurface::kAppList);
       // signal.
       // Then perform the same steps as for starting.
-      FALLTHROUGH;
+      [[fallthrough]];
     case vm_tools::cicerone::StartLxdContainerResponse::STARTING: {
       VLOG(1) << "Awaiting LxdContainerStartingSignal for " << owner_id_ << ", "
               << container_id;
@@ -3292,21 +3291,6 @@ void CrostiniManager::OnExportLxdContainerProgress(
 
   CrostiniResult result;
   switch (signal.status()) {
-    // TODO(juwa): Remove EXPORTING_[PACK|DOWNLOAD] once a new version of
-    // tremplin has shipped.
-    case ProgressSignal::EXPORTING_PACK:
-    case ProgressSignal::EXPORTING_DOWNLOAD: {
-      // If we are still exporting, call progress observers.
-      const auto status = signal.status() == ProgressSignal::EXPORTING_PACK
-                              ? ExportContainerProgressStatus::PACK
-                              : ExportContainerProgressStatus::DOWNLOAD;
-      for (auto& observer : export_container_progress_observers_) {
-        observer.OnExportContainerProgress(container_id, status,
-                                           signal.progress_percent(),
-                                           signal.progress_speed());
-      }
-      return;
-    }
     case ProgressSignal::EXPORTING_STREAMING: {
       const StreamingExportStatus status{
           .total_files = signal.total_input_files(),

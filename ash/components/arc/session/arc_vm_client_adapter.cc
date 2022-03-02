@@ -37,7 +37,6 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/no_destructor.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
 #include "base/process/process_metrics.h"
@@ -92,6 +91,10 @@ constexpr int kArcBugReportBackupTimeMetricBuckets = 50;
 constexpr const char kArcBugReportBackupTimeMetric[] =
     "Login.ArcBugReportBackupTime";
 
+constexpr int kLogdConfigSizeSmall = 256;   // kBytes
+constexpr int kLogdConfigSizeMed = 512;     // kBytes
+constexpr int kLogdConfigSizeLarge = 1024;  // kBytes
+
 // The owner ID that ARCVM is started with for mini-ARCVM. On UpgradeArc,
 // the owner ID is set to the logged-in user.
 constexpr const char kArcVmDefaultOwner[] = "ARCVM_DEFAULT_OWNER";
@@ -133,11 +136,11 @@ ArcBinaryTranslationType IdentifyBinaryTranslationType(
     const StartParams& start_params) {
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   const bool is_houdini_available =
-      command_line->HasSwitch(chromeos::switches::kEnableHoudini) ||
-      command_line->HasSwitch(chromeos::switches::kEnableHoudini64);
+      command_line->HasSwitch(ash::switches::kEnableHoudini) ||
+      command_line->HasSwitch(ash::switches::kEnableHoudini64);
   const bool is_ndk_translation_available =
-      command_line->HasSwitch(chromeos::switches::kEnableNdkTranslation) ||
-      command_line->HasSwitch(chromeos::switches::kEnableNdkTranslation64);
+      command_line->HasSwitch(ash::switches::kEnableNdkTranslation) ||
+      command_line->HasSwitch(ash::switches::kEnableNdkTranslation64);
 
   if (!is_houdini_available && !is_ndk_translation_available)
     return ArcBinaryTranslationType::NONE;
@@ -277,6 +280,33 @@ std::vector<std::string> GenerateKernelCmdline(
       break;
   }
 
+  // Set logcat size, only if configured to one of the few supported sizes.
+  if (base::FeatureList::IsEnabled(kLogdConfig)) {
+    auto logd_config_size = kLogdConfigSize.Get();
+    switch (logd_config_size) {
+      case kLogdConfigSizeSmall:
+        result.push_back("androidboot.arcvm.logd.size=256K");
+        break;
+      case kLogdConfigSizeMed:
+        result.push_back("androidboot.arcvm.logd.size=512K");
+        break;
+      case kLogdConfigSizeLarge:
+        result.push_back("androidboot.arcvm.logd.size=1M");
+        break;
+      default:
+        VLOG(1) << "WARNING: Invalid logd size ignored: [" << logd_config_size
+                << "]";
+        break;
+    }
+  }
+
+  if (base::FeatureList::IsEnabled(kVmMemoryPSIReports)) {
+    auto period = kVmMemoryPSIReportsPeriod.Get();
+    // Since Android performs parameter validation, not doing it here.
+    result.push_back(base::StringPrintf(
+        "androidboot.arcvm_metrics_mem_psi_period=%d", period));
+  }
+
   if (base::FeatureList::IsEnabled(arc::kUseDalvikMemoryProfile)) {
     switch (start_params.dalvik_memory_profile) {
       case StartParams::DalvikMemoryProfile::DEFAULT:
@@ -328,8 +358,7 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     const FileSystemStatus& file_system_status,
     bool use_per_vm_core_scheduling,
     std::vector<std::string> kernel_cmdline,
-    base::OnceCallback<bool(base::SystemMemoryInfoKB*)>
-        get_system_memory_info_cb) {
+    ArcVmClientAdapterDelegate* delegate) {
   vm_tools::concierge::StartArcVmRequest request;
 
   request.set_name(kArcVmName);
@@ -401,21 +430,25 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   // Specify VM Memory.
   if (base::FeatureList::IsEnabled(kVmMemorySize)) {
     base::SystemMemoryInfoKB info;
-    if (std::move(get_system_memory_info_cb).Run(&info)) {
+    if (delegate->GetSystemMemoryInfo(&info)) {
       const int ram_mib = info.total / 1024;
       const int shift_mib = kVmMemorySizeShiftMiB.Get();
       const int max_mib = kVmMemorySizeMaxMiB.Get();
-      const int vm_ram_mib = std::min(max_mib, ram_mib + shift_mib);
+      int vm_ram_mib = std::min(max_mib, ram_mib + shift_mib);
       constexpr int kVmRamMinMib = 2048;
 
-      if (sizeof(uintptr_t) == 4) {
+      if (delegate->IsCrosvm32bit()) {
         // This is a workaround for ARM Chromebooks where userland including
-        // crosvm is compiled in 32 bit. crosvm binary in 32 bit doesn't have
-        // enough virtual address space to map >4GB of VM memory obviously.
+        // crosvm is compiled in 32 bit.
         // TODO(yusukes): Remove this once crosvm becomes 64 bit binary on ARM.
-        VLOG(1) << "VmMemorySize is enabled, but we are on a 32-bit device, so "
-                << "fall back to the old VM memory size policy.";
-      } else if (vm_ram_mib > kVmRamMinMib) {
+        if (vm_ram_mib > static_cast<int>(k32bitVmRamMaxMib)) {
+          VLOG(1) << "VmMemorySize is enabled, but we are on a 32-bit device, "
+                  << "so limit the size to " << k32bitVmRamMaxMib << " MiB.";
+          vm_ram_mib = k32bitVmRamMaxMib;
+        }
+      }
+
+      if (vm_ram_mib > kVmRamMinMib) {
         request.set_memory_mib(vm_ram_mib);
       } else {
         VLOG(1) << "VmMemorySize is enabled, but computed size is "
@@ -533,6 +566,11 @@ bool ArcVmClientAdapterDelegate::GetSystemMemoryInfo(
     base::SystemMemoryInfoKB* info) {
   // Call the base function by default.
   return base::GetSystemMemoryInfo(info);
+}
+
+bool ArcVmClientAdapterDelegate::IsCrosvm32bit() {
+  // Assume that crosvm is 32-bit if chrome is 32-bit.
+  return sizeof(uintptr_t) == 4;
 }
 
 class ArcVmClientAdapter : public ArcClientAdapter,
@@ -924,11 +962,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
         GetChromeOsChannelFromLsbRelease());
     auto start_request = CreateStartArcVmRequest(
         cpus, demo_session_apps_path, file_system_status,
-        use_per_vm_core_scheduling, std::move(kernel_cmdline),
-        base::BindOnce(&ArcVmClientAdapterDelegate::GetSystemMemoryInfo,
-                       // Unretained is safe because CreateStartArcVmRequest is
-                       // a synchronous function.
-                       base::Unretained(delegate_.get())));
+        use_per_vm_core_scheduling, std::move(kernel_cmdline), delegate_.get());
 
     GetConciergeClient()->StartArcVm(
         start_request,

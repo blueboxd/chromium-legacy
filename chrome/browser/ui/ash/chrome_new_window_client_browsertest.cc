@@ -6,8 +6,8 @@
 
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,8 +21,8 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/account_id/account_id.h"
@@ -47,7 +47,7 @@ constexpr char kTestUserName2[] = "test2@test.com";
 constexpr char kTestUser2GaiaId[] = "2222222222";
 
 void CreateAndStartUserSession(const AccountId& account_id) {
-  using chromeos::ProfileHelper;
+  using ::ash::ProfileHelper;
   using session_manager::SessionManager;
 
   user_manager::known_user::SetProfileRequiresPolicy(
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientWebAppBrowserTest,
   const GURL app_url = https_server().GetURL(GetAppUrlHost(), GetAppUrlPath());
 
   // InstallTestWebApp() but with a ShareTarget definition added.
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->start_url = app_url;
   web_app_info->scope =
       https_server().GetURL(GetAppUrlHost(), GetAppScopePath());

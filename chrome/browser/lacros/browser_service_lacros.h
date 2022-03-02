@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
@@ -15,6 +16,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 
 class GURL;
+class Profile;
 class ScopedKeepAlive;
 
 // BrowserSerivce's Lacros implementation.
@@ -30,7 +32,9 @@ class BrowserServiceLacros : public crosapi::mojom::BrowserService,
   // crosapi::mojom::BrowserService:
   void REMOVED_0(REMOVED_0Callback callback) override;
   void REMOVED_2(crosapi::mojom::BrowserInitParamsPtr) override;
-  void NewWindow(bool incognito, NewWindowCallback callback) override;
+  void NewWindow(bool incognito,
+                 bool should_trigger_session_restore,
+                 NewWindowCallback callback) override;
   void NewFullscreenWindow(const GURL& url,
                            NewFullscreenWindowCallback callback) override;
   void NewWindowForDetachingTab(
@@ -40,6 +44,7 @@ class BrowserServiceLacros : public crosapi::mojom::BrowserService,
   void NewTab(NewTabCallback callback) override;
   void OpenUrl(const GURL& url, OpenUrlCallback callback) override;
   void RestoreTab(RestoreTabCallback callback) override;
+  void HandleTabScrubbing(float x_offset) override;
   void GetFeedbackData(GetFeedbackDataCallback callback) override;
   void GetHistograms(GetHistogramsCallback callback) override;
   void GetActiveTabUrl(GetActiveTabUrlCallback callback) override;
@@ -47,6 +52,8 @@ class BrowserServiceLacros : public crosapi::mojom::BrowserService,
   void UpdateKeepAlive(bool enabled) override;
 
  private:
+  struct PendingOpenUrl;
+
   void OnSystemInformationReady(
       GetFeedbackDataCallback callback,
       std::unique_ptr<system_logs::SystemLogsResponse> sys_info);
@@ -54,13 +61,20 @@ class BrowserServiceLacros : public crosapi::mojom::BrowserService,
   void OnGetCompressedHistograms(GetHistogramsCallback callback,
                                  const std::string& compressed_histogram);
 
+  void OpenUrlImpl(Profile* profile, const GURL& url, OpenUrlCallback callback);
+
+  // Called when a session is restored.
+  void OnSessionRestored(Profile* profile, int num_tabs_restored);
+
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;
 
   // Keeps the Lacros browser alive in the background. This is destroyed once
   // any browser window is opened.
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
+  std::vector<PendingOpenUrl> pending_open_urls_;
 
+  base::CallbackListSubscription session_restored_subscription_;
   mojo::Receiver<crosapi::mojom::BrowserService> receiver_{this};
   base::WeakPtrFactory<BrowserServiceLacros> weak_ptr_factory_{this};
 };

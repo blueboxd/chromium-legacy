@@ -9,15 +9,15 @@
 #include "ash/grit/ash_scanning_app_resources.h"
 #include "ash/webui/scanning/url_constants.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-std::unique_ptr<WebApplicationInfo> CreateWebAppInfoForScanningSystemWebApp() {
-  std::unique_ptr<WebApplicationInfo> info =
-      std::make_unique<WebApplicationInfo>();
+std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForScanningSystemWebApp() {
+  std::unique_ptr<WebAppInstallInfo> info =
+      std::make_unique<WebAppInstallInfo>();
   info->start_url = GURL(ash::kChromeUIScanningAppUrl);
   info->scope = GURL(ash::kChromeUIScanningAppUrl);
   info->title = l10n_util::GetStringUTF16(IDS_SCANNING_APP_TITLE);
@@ -51,7 +51,7 @@ ScanningSystemAppDelegate::ScanningSystemAppDelegate(Profile* profile)
                                     GURL("chrome://scanning"),
                                     profile) {}
 
-std::unique_ptr<WebApplicationInfo> ScanningSystemAppDelegate::GetWebAppInfo()
+std::unique_ptr<WebAppInstallInfo> ScanningSystemAppDelegate::GetWebAppInfo()
     const {
   return CreateWebAppInfoForScanningSystemWebApp();
 }

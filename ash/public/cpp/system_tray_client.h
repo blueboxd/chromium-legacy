@@ -43,6 +43,9 @@ class ASH_PUBLIC_EXPORT SystemTrayClient {
   // Shows settings related to multiple displays.
   virtual void ShowDisplaySettings() = 0;
 
+  // Shows settings related to multiple displays.
+  virtual void ShowDarkModeSettings() = 0;
+
   // Shows settings related to storage.
   virtual void ShowStorageSettings() = 0;
 
@@ -127,12 +130,18 @@ class ASH_PUBLIC_EXPORT SystemTrayClient {
   // Shows the MultiDevice setup flow dialog.
   virtual void ShowMultiDeviceSetup() = 0;
 
+  // Shows the Firmware update app.
+  virtual void ShowFirmwareUpdate() = 0;
+
   // Attempts to restart the system for update.
   virtual void RequestRestartForUpdate() = 0;
 
   // Sets the UI locale to |locale_iso_code| and exit the session to take
   // effect.
   virtual void SetLocaleAndExit(const std::string& locale_iso_code) = 0;
+
+  // Shows the access code casting dialog.
+  virtual void ShowAccessCodeCastingDialog() = 0;
 
  protected:
   SystemTrayClient() {}

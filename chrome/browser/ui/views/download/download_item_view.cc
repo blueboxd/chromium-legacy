@@ -195,7 +195,7 @@ bool UseNewWarnings() {
 }
 
 int GetFilenameStyle(const views::Label& label) {
-#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
   if (UseNewWarnings())
     return STYLE_EMPHASIZED;
 #endif
@@ -203,7 +203,7 @@ int GetFilenameStyle(const views::Label& label) {
 }
 
 int GetFilenameStyle(const views::StyledLabel& label) {
-#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
   if (UseNewWarnings())
     return STYLE_EMPHASIZED;
 #endif
@@ -320,6 +320,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
   file_name_label_ = AddChildView(std::make_unique<views::Label>());
   file_name_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   file_name_label_->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
+  file_name_label_->SetAutoColorReadabilityEnabled(false);
   file_name_label_->GetViewAccessibility().OverrideIsIgnored(true);
   const std::u16string filename = ElidedFilename(*file_name_label_);
   file_name_label_->SetText(filename);
@@ -329,13 +330,16 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
   status_label_ = AddChildView(std::make_unique<views::Label>(
       std::u16string(), CONTEXT_DOWNLOAD_SHELF_STATUS));
   status_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  status_label_->SetAutoColorReadabilityEnabled(false);
 
   warning_label_ = AddChildView(std::make_unique<views::StyledLabel>());
   warning_label_->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
+  warning_label_->SetAutoColorReadabilityEnabled(false);
   warning_label_->SetCanProcessEventsWithinSubtree(false);
 
   deep_scanning_label_ = AddChildView(std::make_unique<views::StyledLabel>());
   deep_scanning_label_->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
+  deep_scanning_label_->SetAutoColorReadabilityEnabled(false);
   deep_scanning_label_->SetCanProcessEventsWithinSubtree(false);
 
   open_now_button_ = AddChildView(std::make_unique<views::MdTextButton>(
@@ -697,10 +701,6 @@ void DownloadItemView::OnThemeChanged() {
   const SkColor background_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF);
   SetBackground(views::CreateSolidBackground(background_color));
-  file_name_label_->SetBackgroundColor(background_color);
-  status_label_->SetBackgroundColor(background_color);
-  warning_label_->SetDisplayedOnBackgroundColor(background_color);
-  deep_scanning_label_->SetDisplayedOnBackgroundColor(background_color);
 
   shelf_->ConfigureButtonForTheme(open_now_button_);
   shelf_->ConfigureButtonForTheme(save_button_);
@@ -1195,7 +1195,7 @@ std::pair<std::u16string, int> DownloadItemView::GetStatusTextAndStyle() const {
   const std::u16string text =
       (!model_->ShouldPromoteOrigin() || url.is_empty())
           ? model_->GetStatusText()
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
           // url_formatter::ElideUrl() doesn't exist on Android.
           : std::u16string();
 #else
@@ -1282,7 +1282,7 @@ void DownloadItemView::UpdateDropdownButtonImage() {
       dropdown_button_,
       dropdown_pressed_ ? vector_icons::kCaretDownIcon
                         : vector_icons::kCaretUpIcon,
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_TEXT));
   dropdown_button_->SizeToPreferredSize();
 }
 
@@ -1309,14 +1309,19 @@ void DownloadItemView::SaveOrDiscardButtonPressed(
 
 void DownloadItemView::DropdownButtonPressed(const ui::Event& event) {
   SetDropdownPressed(true);
-  ShowContextMenuImpl(dropdown_button_->GetBoundsInScreen(),
-                      ui::GetMenuSourceTypeForEvent(event));
+
   if (!dropdown_button_pressed_recorded_) {
     base::UmaHistogramEnumeration(
         "Download.ShelfContextMenuAction",
         DownloadShelfContextMenuAction::kDropDownPressed);
     dropdown_button_pressed_recorded_ = true;
   }
+  // It is possible for ShowContextMenuImpl to delete |this| causing
+  // a heap use after free error. To avoid this, do not
+  // place any code referencing the DownloadItemView object
+  // after this function call.
+  ShowContextMenuImpl(dropdown_button_->GetBoundsInScreen(),
+                      ui::GetMenuSourceTypeForEvent(event));
 }
 
 void DownloadItemView::ReviewButtonPressed() {

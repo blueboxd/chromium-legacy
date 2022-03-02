@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_matrix.h"
@@ -289,7 +290,10 @@ void V8ScriptValueSerializer::PrepareTransfer(ExceptionState& exception_state) {
   for (uint32_t i = 0; i < transferables_->array_buffers.size(); i++) {
     DOMArrayBufferBase* array_buffer = transferables_->array_buffers[i].Get();
     if (!array_buffer->IsShared()) {
-      v8::Local<v8::Value> wrapper = ToV8(array_buffer, script_state_);
+      v8::Local<v8::Value> wrapper =
+          ToV8Traits<DOMArrayBuffer>::ToV8(
+              script_state_, static_cast<DOMArrayBuffer*>(array_buffer))
+              .ToLocalChecked();
       serializer_.TransferArrayBuffer(
           i, v8::Local<v8::ArrayBuffer>::Cast(wrapper));
     } else {
@@ -456,7 +460,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteTag(kImageBitmapTag);
     SkImageInfo info = image_bitmap->GetBitmapSkImageInfo();
     SerializedImageBitmapSettings color_params(info);
-    WriteUint32Enum(ImageSerializationTag::kCanvasColorSpaceTag);
+    WriteUint32Enum(ImageSerializationTag::kPredefinedColorSpaceTag);
     WriteUint32Enum(color_params.GetSerializedColorSpace());
     WriteUint32Enum(ImageSerializationTag::kCanvasPixelFormatTag);
     WriteUint32Enum(color_params.GetSerializedPixelFormat());
@@ -486,9 +490,9 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     ImageData* image_data = wrappable->ToImpl<ImageData>();
     WriteTag(kImageDataTag);
     SerializedImageDataSettings settings(
-        image_data->GetCanvasColorSpace(),
+        image_data->GetPredefinedColorSpace(),
         image_data->GetImageDataStorageFormat());
-    WriteUint32Enum(ImageSerializationTag::kCanvasColorSpaceTag);
+    WriteUint32Enum(ImageSerializationTag::kPredefinedColorSpaceTag);
     WriteUint32Enum(settings.GetSerializedColorSpace());
     WriteUint32Enum(ImageSerializationTag::kImageDataStorageFormatTag);
     WriteUint32Enum(settings.GetSerializedImageDataStorageFormat());
@@ -913,13 +917,6 @@ v8::Maybe<uint32_t> V8ScriptValueSerializer::GetWasmModuleTransferId(
       // simple and should perform sufficiently well under these expectations.
       serialized_script_value_->WasmModules().push_back(
           module->GetCompiledModule());
-      if (!serialized_script_value_->origin()) {
-        // Store the |SecurityOrigin| of the current |ExecutionContext| to count
-        // during deserialization if the WebAssembly module got transferred
-        // cross-origin.
-        serialized_script_value_->set_origin(
-            ExecutionContext::From(script_state_)->GetSecurityOrigin());
-      }
       uint32_t size =
           static_cast<uint32_t>(serialized_script_value_->WasmModules().size());
       DCHECK_GE(size, 1u);

@@ -29,8 +29,8 @@
 #include "chrome/browser/extensions/suspicious_extension_bubble_delegate.h"
 #include "chrome/browser/extensions/test_extension_message_bubble_delegate.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/common/chrome_features.h"
@@ -717,13 +717,13 @@ TEST_F(ExtensionMessageBubbleTest, ShowDevModeBubbleOncePerOriginalProfile) {
 }
 
 // The feature this is meant to test is only implemented on Windows and Mac.
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 TEST_F(ExtensionMessageBubbleTest, SettingsApiControllerTest) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // On Mac, this API is limited to trunk.
   ScopedCurrentChannel scoped_channel(version_info::Channel::UNKNOWN);
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 
   Init();
 
@@ -859,7 +859,7 @@ TEST_F(ExtensionMessageBubbleTest, SettingsApiControllerTest) {
   }
 }
 
-#endif  // defined(OS_WIN) || defined(OS_MAC)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 // Tests that a displayed extension bubble will be closed after its associated
 // enabled extension is uninstalled.
@@ -1006,7 +1006,7 @@ void SetInstallTime(const std::string& extension_id,
 }
 
 // The feature this is meant to test is only implemented on Windows and Mac.
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 // http://crbug.com/397426
 #define MAYBE_ProxyOverriddenControllerTest DISABLED_ProxyOverriddenControllerTest
 #else
@@ -1014,10 +1014,10 @@ void SetInstallTime(const std::string& extension_id,
 #endif
 
 TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // On Mac, this API is limited to trunk.
   ScopedCurrentChannel scoped_channel(version_info::Channel::UNKNOWN);
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 
   Init();
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());

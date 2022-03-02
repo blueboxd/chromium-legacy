@@ -4,11 +4,14 @@
 
 import 'chrome://resources/cr_elements/cr_search_field/cr_search_field.js';
 
-import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {EmojiButton} from './emoji_button.js';
+import {EmojiCategoryButton} from './emoji_category_button.js';
+import {CATEGORY_BUTTON_CLICK} from './events.js';
 import Fuse from './fuse.js';
-import {EmojiGroupData, EmojiVariants} from './types.js';
+import {CATEGORY_DATA} from './metadata_extension.js';
+import {CategoryData, EmojiGroupData, EmojiVariants} from './types.js';
 
 /**
  * @typedef {!Array<{item: !EmojiVariants}>} FuseResults
@@ -26,6 +29,8 @@ export class EmojiSearch extends PolymerElement {
 
   static get properties() {
     return {
+      /** @type {!Array<!CategoryData>} */
+      categoryData: {type: Array, value: CATEGORY_DATA, notify: true},
       /** @type {EmojiGroupData} */
       emojiData: {type: Array, readonly: true},
       /** @type {!string} */
@@ -39,6 +44,14 @@ export class EmojiSearch extends PolymerElement {
       /** @private {!FuseResults} */
       results:
           {type: Array, computed: 'computeSearchResults(search, emojiList)'},
+      /** @private {!boolean} */
+      v2Enabled: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+        readonly: true,
+        observer: 'onV2EnabledChanged'
+      }
     };
   }
 
@@ -72,6 +85,13 @@ export class EmojiSearch extends PolymerElement {
     this.search = newSearch;
   }
 
+  onV2EnabledChanged(newFlag) {
+    if (newFlag) {
+      this.addEventListener(
+          CATEGORY_BUTTON_CLICK,
+          ev => this.onSelectCategory(ev.detail.categoryName));
+    }
+  }
   /**
    * Event handler for keydown anywhere in the search component.
    * Used to move the focused result up/down on arrow presses.
@@ -197,6 +217,16 @@ export class EmojiSearch extends PolymerElement {
     ev.currentTarget.querySelector('emoji-button')
         .shadowRoot.querySelector('button')
         .click();
+  }
+
+  /**
+   * @param {string} categoryName
+   */
+  onSelectCategory(categoryName) {
+    this.categoryData.forEach((category, idx) => {
+      const isActive = (categoryName === category.name);
+      this.set(['categoryData', idx, 'active'], isActive);
+    });
   }
 }
 

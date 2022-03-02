@@ -55,14 +55,29 @@ void QuotaInternalsProxy::RequestInfo(
       base::BindOnce(&QuotaInternalsProxy::DidGetGlobalUsage,
                      weak_factory_.GetWeakPtr(), StorageType::kSyncable));
 
+  quota_manager_->GetStorageKeysForType(
+      StorageType::kTemporary,
+      base::BindOnce(&QuotaInternalsProxy::DidGetStorageKeys,
+                     weak_factory_.GetWeakPtr(), StorageType::kTemporary));
+
+  quota_manager_->GetStorageKeysForType(
+      StorageType::kPersistent,
+      base::BindOnce(&QuotaInternalsProxy::DidGetStorageKeys,
+                     weak_factory_.GetWeakPtr(), StorageType::kPersistent));
+
+  quota_manager_->GetStorageKeysForType(
+      StorageType::kSyncable,
+      base::BindOnce(&QuotaInternalsProxy::DidGetStorageKeys,
+                     weak_factory_.GetWeakPtr(), StorageType::kSyncable));
+
   quota_manager_->DumpQuotaTable(base::BindOnce(
       &QuotaInternalsProxy::DidDumpQuotaTable, weak_factory_.GetWeakPtr()));
 
   quota_manager_->DumpBucketTable(base::BindOnce(
       &QuotaInternalsProxy::DidDumpBucketTable, weak_factory_.GetWeakPtr()));
 
-  std::map<std::string, std::string> stats = quota_manager_->GetStatistics();
-  ReportStatistics(stats);
+  quota_manager_->GetStatistics(base::BindOnce(
+      &QuotaInternalsProxy::DidGetStatistics, weak_factory_.GetWeakPtr()));
 }
 
 void QuotaInternalsProxy::TriggerStoragePressure(
@@ -123,7 +138,30 @@ void QuotaInternalsProxy::DidGetGlobalUsage(StorageType type,
   info.set_unlimited_usage(unlimited_usage);
 
   ReportGlobalInfo(info);
-  RequestPerOriginInfo(type);
+}
+
+void QuotaInternalsProxy::DidGetStorageKeys(
+    StorageType type,
+    const std::set<blink::StorageKey>& storage_keys) {
+  std::vector<PerOriginStorageInfo> origin_infos;
+  origin_infos.reserve(storage_keys.size());
+
+  std::set<std::string> hosts;
+  std::vector<PerHostStorageInfo> host_infos;
+
+  for (const blink::StorageKey& storage_key : storage_keys) {
+    PerOriginStorageInfo per_origin_info(storage_key.origin().GetURL(), type);
+    origin_infos.push_back(per_origin_info);
+
+    const std::string& host = storage_key.origin().host();
+    if (hosts.insert(host).second) {
+      PerHostStorageInfo per_host_info(host, type);
+      host_infos.push_back(per_host_info);
+      VisitHost(host, type);
+    }
+  }
+  ReportPerOriginInfo(origin_infos);
+  ReportPerHostInfo(host_infos);
 }
 
 void QuotaInternalsProxy::DidDumpQuotaTable(const QuotaTableEntries& entries) {
@@ -179,31 +217,13 @@ void QuotaInternalsProxy::DidGetHostUsage(
                  hosts_pending_.begin()->second);
 }
 
-void QuotaInternalsProxy::RequestPerOriginInfo(StorageType type) {
-  DCHECK(quota_manager_.get());
-
-  std::set<blink::StorageKey> storage_keys =
-      quota_manager_->GetCachedStorageKeys(type);
-
-  std::vector<PerOriginStorageInfo> origin_infos;
-  origin_infos.reserve(storage_keys.size());
-
-  std::set<std::string> hosts;
-  std::vector<PerHostStorageInfo> host_infos;
-
-  for (const blink::StorageKey& storage_key : storage_keys) {
-    PerOriginStorageInfo per_origin_info(storage_key.origin().GetURL(), type);
-    origin_infos.push_back(per_origin_info);
-
-    const std::string& host = storage_key.origin().host();
-    if (hosts.insert(host).second) {
-      PerHostStorageInfo per_host_info(host, type);
-      host_infos.push_back(per_host_info);
-      VisitHost(host, type);
-    }
+void QuotaInternalsProxy::DidGetStatistics(
+    const base::flat_map<std::string, std::string>& stats) {
+  std::map<std::string, std::string> stats_map;
+  for (const auto& stat : stats) {
+    stats_map[stat.first] = stat.second;
   }
-  ReportPerOriginInfo(origin_infos);
-  ReportPerHostInfo(host_infos);
+  ReportStatistics(stats_map);
 }
 
 void QuotaInternalsProxy::VisitHost(const std::string& host, StorageType type) {

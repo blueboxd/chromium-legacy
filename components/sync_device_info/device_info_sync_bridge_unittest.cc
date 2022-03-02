@@ -23,12 +23,12 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
-#include "components/sync/engine/entity_data.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
+#include "components/sync/protocol/entity_data.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
@@ -343,8 +343,8 @@ std::map<std::string, sync_pb::EntitySpecifics> DataBatchToSpecificsMap(
     std::unique_ptr<DataBatch> batch) {
   std::map<std::string, sync_pb::EntitySpecifics> storage_key_to_specifics;
   while (batch && batch->HasNext()) {
-    const syncer::KeyAndData& pair = batch->Next();
-    storage_key_to_specifics[pair.first] = pair.second->specifics;
+    const auto& [key, data] = batch->Next();
+    storage_key_to_specifics[key] = data->specifics;
   }
   return storage_key_to_specifics;
 }

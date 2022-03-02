@@ -382,14 +382,14 @@ OptionsOrError ParseConfig(FileUtilsWrapper& file_utils,
   // offline_manifest
   value = app_config.FindDictKey(kOfflineManifest);
   if (value) {
-    WebApplicationInfoFactoryOrError offline_manifest_result =
+    WebAppInstallInfoFactoryOrError offline_manifest_result =
         ParseOfflineManifest(file_utils, dir, file, *value);
     if (std::string* error =
             absl::get_if<std::string>(&offline_manifest_result)) {
       return std::move(*error);
     }
-    options.app_info_factory = std::move(
-        absl::get<WebApplicationInfoFactory>(offline_manifest_result));
+    options.app_info_factory =
+        std::move(absl::get<WebAppInstallInfoFactory>(offline_manifest_result));
   }
 
   if (options.only_use_app_info_factory && !options.app_info_factory) {
@@ -430,12 +430,12 @@ OptionsOrError ParseConfig(FileUtilsWrapper& file_utils,
   return options;
 }
 
-WebApplicationInfoFactoryOrError ParseOfflineManifest(
+WebAppInstallInfoFactoryOrError ParseOfflineManifest(
     FileUtilsWrapper& file_utils,
     const base::FilePath& dir,
     const base::FilePath& file,
     const base::Value& offline_manifest) {
-  WebApplicationInfo app_info;
+  WebAppInstallInfo app_info;
 
   // name
   const std::string* name_string =
@@ -562,7 +562,7 @@ WebApplicationInfoFactoryOrError ParseOfflineManifest(
   }
 
   return base::BindRepeating(
-      &std::make_unique<WebApplicationInfo, const WebApplicationInfo&>,
+      &std::make_unique<WebAppInstallInfo, const WebAppInstallInfo&>,
       std::move(app_info));
 }
 
@@ -586,7 +586,7 @@ bool IsReinstallPastMilestoneNeeded(
 }
 
 bool WasAppMigratedToWebApp(Profile* profile, const std::string& app_id) {
-  const base::ListValue* migrated_apps =
+  const base::Value* migrated_apps =
       profile->GetPrefs()->GetList(webapps::kWebAppsMigratedPreinstalledApps);
   if (!migrated_apps)
     return false;
@@ -611,7 +611,7 @@ void MarkAppAsMigratedToWebApp(Profile* profile,
 }
 
 bool WasMigrationRun(Profile* profile, base::StringPiece feature_name) {
-  const base::ListValue* migrated_features =
+  const base::Value* migrated_features =
       profile->GetPrefs()->GetList(prefs::kWebAppsDidMigrateDefaultChromeApps);
   if (!migrated_features)
     return false;
@@ -637,7 +637,7 @@ void SetMigrationRun(Profile* profile,
 
 bool WasPreinstalledAppUninstalled(Profile* profile,
                                    const std::string& app_id) {
-  const base::ListValue* uninstalled_apps =
+  const base::Value* uninstalled_apps =
       profile->GetPrefs()->GetList(prefs::kWebAppsUninstalledDefaultChromeApps);
   if (!uninstalled_apps)
     return false;

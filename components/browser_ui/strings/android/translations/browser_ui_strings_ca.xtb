@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Permet les galetes</translation>
 <translation id="2228071138934252756">Perquè <ph name="APP_NAME" /> pugui accedir a la càmera, també has d'activar-la a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">Només una vegada</translation>
+<translation id="2253414712144136228">Suprimeix <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">Pregunta'm quan un lloc web vulgui descobrir dispositius Bluetooth propers (opció recomanada)</translation>
 <translation id="2315043854645842844">El sistema operatiu no permet seleccionar el certificat del client.</translation>
 <translation id="2359808026110333948">Continua</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Mostra la informació</translation>
 <translation id="3123473560110926937">Bloquejat en alguns llocs web</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dades desades</translation>
+<translation id="3203366800380907218">Del web</translation>
 <translation id="321187648315454507">Perquè <ph name="APP_NAME" /> et pugui enviar notificacions, també has d'activar-les a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Micròfon</translation>
 <translation id="3277252321222022663">Permet que els llocs web accedeixin als sensors (opció recomanada)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">Bloquejat</translation>
 <translation id="5689516760719285838">Ubicació</translation>
 <translation id="5690795753582697420">La càmera està desactivada a la configuració d'Android</translation>
-<translation id="5710871682236653961">Pregunta abans de permetre que els llocs web enviïn i rebin informació quan toquis dispositius amb NFC (opció recomanada)</translation>
 <translation id="5719847187258001597">Amb aquesta acció s'esborraran totes les dades i galetes emmagatzemades per <ph name="ORIGIN" /> o per la seva aplicació de la pantalla d'inici.</translation>
 <translation id="5771720122942595109">S'ha bloquejat <ph name="PERMISSION_1" /></translation>
 <translation id="5804241973901381774">Permisos</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">Es permet al motor de cerca actual</translation>
 <translation id="7053983685419859001">Bloqueja</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 seleccionat}other{# seleccionats}}</translation>
-<translation id="7070090581017165256">Sobre aquest lloc web</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> elements seleccionats. Hi ha opcions disponibles a prop de la part superior de la pantalla.</translation>
 <translation id="7141896414559753902">Bloqueja les finestres emergents i les redireccions als llocs web (opció recomanada)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Un lloc web està utilitzant el micròfon</translation>
 <translation id="7561196759112975576">Sempre</translation>
-<translation id="7572498721684305250">Evita que els llocs web enviïn i rebin informació quan toquis dispositius amb NFC</translation>
 <translation id="757524316907819857">Impedeix que els llocs web reprodueixin contingut protegit</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancel·la</translation>

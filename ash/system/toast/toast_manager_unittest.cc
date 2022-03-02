@@ -7,6 +7,8 @@
 #include <string>
 
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/system/toast_catalog.h"
+#include "ash/public/cpp/system/toast_data.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
@@ -99,8 +101,9 @@ class ToastManagerImplTest : public AshTestBase {
                         int32_t duration,
                         bool visible_on_lock_screen = false) {
     std::string id = "TOAST_ID_" + base::NumberToString(serial_++);
-    manager()->Show(ToastData(id, base::ASCIIToUTF16(text), duration,
-                              std::u16string(), visible_on_lock_screen));
+    manager()->Show(ToastData(id, ToastCatalogName::kToastManagerUnittest,
+                              base::ASCIIToUTF16(text), duration,
+                              visible_on_lock_screen));
     return id;
   }
 
@@ -113,12 +116,23 @@ class ToastManagerImplTest : public AshTestBase {
       localized_dismiss = base::ASCIIToUTF16(dismiss_text.value());
 
     std::string id = "TOAST_ID_" + base::NumberToString(serial_++);
-    manager()->Show(
-        ToastData(id, base::ASCIIToUTF16(text), duration, localized_dismiss));
+    manager()->Show(ToastData(id, ToastCatalogName::kToastManagerUnittest,
+                              base::ASCIIToUTF16(text), duration,
+                              /*visible_on_lock_screen=*/false,
+                              localized_dismiss));
     return id;
   }
 
   void CancelToast(const std::string& id) { manager()->Cancel(id); }
+
+  void ReplaceToast(const std::string& id,
+                    const std::string& text,
+                    int32_t duration,
+                    bool visible_on_lock_screen = false) {
+    manager()->Show(ToastData(id, ToastCatalogName::kToastManagerUnittest,
+                              base::ASCIIToUTF16(text), duration,
+                              visible_on_lock_screen));
+  }
 
   void ChangeLockState(bool lock) {
     SessionInfo info;
@@ -142,7 +156,7 @@ TEST_F(ToastManagerImplTest, ShowAndCloseAutomatically) {
 }
 
 TEST_F(ToastManagerImplTest, ShowAndCloseManually) {
-  ShowToast("DUMMY", ToastData::kInfiniteDuration);
+  ShowToastWithDismiss("DUMMY", ToastData::kInfiniteDuration, "Dismiss");
 
   EXPECT_EQ(1, GetToastSerial());
 
@@ -158,7 +172,7 @@ TEST_F(ToastManagerImplTest, DISABLED_ShowAndCloseManuallyDuringAnimation) {
   ui::ScopedAnimationDurationScaleMode slow_animation_duration(
       ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
 
-  ShowToast("DUMMY", ToastData::kInfiniteDuration);
+  ShowToastWithDismiss("DUMMY", ToastData::kInfiniteDuration, "Dismiss");
   EXPECT_TRUE(GetCurrentWidget()->GetLayer()->GetAnimator()->is_animating());
   base::RunLoop().RunUntilIdle();
 
@@ -448,6 +462,54 @@ TEST_F(ToastManagerImplTest, CancelToast) {
   EXPECT_FALSE(GetCurrentOverlay());
   // Confirm that only 1 toast is shown.
   EXPECT_EQ(2, GetToastSerial());
+}
+
+TEST_F(ToastManagerImplTest, ReplaceContentsOfQueuedToast) {
+  std::string id1 = ShowToast(/*text=*/"TEXT1", ToastData::kInfiniteDuration);
+  std::string id2 = ShowToast(/*text=*/"TEXT2", ToastData::kInfiniteDuration);
+
+  // Confirm that the first toast is shown.
+  EXPECT_EQ(u"TEXT1", GetCurrentText());
+  EXPECT_EQ(1, GetToastSerial());
+
+  // Replace the contents of the queued toast.
+  ReplaceToast(id2, /*text=*/"TEXT2_updated", ToastData::kInfiniteDuration);
+
+  // Confirm that the shown toast is still visible.
+  EXPECT_EQ(u"TEXT1", GetCurrentText());
+  EXPECT_EQ(1, GetToastSerial());
+
+  // Cancel the shown toast.
+  CancelToast(id1);
+
+  // Confirm that the next toast is visible with the updated text.
+  EXPECT_EQ(u"TEXT2_updated", GetCurrentText());
+  EXPECT_EQ(2, GetToastSerial());
+}
+
+TEST_F(ToastManagerImplTest, ReplaceContentsOfCurrentToast) {
+  std::string id1 = ShowToast(/*text=*/"TEXT1", ToastData::kInfiniteDuration);
+  std::string id2 = ShowToast(/*text=*/"TEXT2", ToastData::kInfiniteDuration);
+
+  // Confirm that the first toast is shown.
+  EXPECT_EQ(u"TEXT1", GetCurrentText());
+  EXPECT_EQ(1, GetToastSerial());
+
+  // Replace the contents of the current toast showing.
+  ReplaceToast(id1, /*text=*/"TEXT1_updated", ToastData::kInfiniteDuration);
+
+  // Confirm that the new toast content is visible. The toast serial should be
+  // different, indicating the original toast's timeout won't close the new
+  // toast's.
+  EXPECT_EQ(u"TEXT1_updated", GetCurrentText());
+  EXPECT_EQ(2, GetToastSerial());
+
+  // Cancel the shown toast.
+  CancelToast(id1);
+
+  // Confirm that the second toast is now showing.
+  EXPECT_EQ(u"TEXT2", GetCurrentText());
+  EXPECT_EQ(3, GetToastSerial());
 }
 
 TEST_F(ToastManagerImplTest, ShowToastOnLockScreen) {

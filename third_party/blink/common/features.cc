@@ -87,7 +87,7 @@ const base::Feature kSmallScriptStreaming{"SmallScriptStreaming",
 
 // Controls off-thread code cache consumption.
 const base::Feature kConsumeCodeCacheOffThread{
-    "ConsumeCodeCacheOffThread", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ConsumeCodeCacheOffThread", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables user level memory pressure signal generation on Android.
 const base::Feature kUserLevelMemoryPressureSignal{
@@ -123,7 +123,7 @@ const base::Feature kJSONModules{"JSONModules",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kForceSynchronousHTMLParsing{
-    "ForceSynchronousHTMLParsing", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ForceSynchronousHTMLParsing", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable EditingNG by default. This feature is for a kill switch.
 const base::Feature kEditingNG{"EditingNG", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -170,7 +170,7 @@ const base::Feature kNavigationPredictor {
 // Enable browser-initiated dedicated worker script loading
 // (PlzDedicatedWorker). https://crbug.com/906991
 const base::Feature kPlzDedicatedWorker{"PlzDedicatedWorker",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable Portals. https://crbug.com/865123.
 // Note that default enabling this does not expose the portal
@@ -354,6 +354,10 @@ const base::Feature kIntensiveWakeUpThrottling{
 const char kIntensiveWakeUpThrottling_GracePeriodSeconds_Name[] =
     "grace_period_seconds";
 
+// Throttles Javascript timer wake ups on foreground pages.
+const base::Feature kThrottleForegroundTimers{
+    "ThrottleForegroundTimers", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 // Run-time feature for the |rtc_use_h264| encoder/decoder.
 const base::Feature kWebRtcH264WithOpenH264FFmpeg{
@@ -420,10 +424,6 @@ const base::Feature kAllowSyncXHRInPageDismissal{
 // Font enumeration and data access. https://crbug.com/535764
 const base::Feature kFontAccess{"FontAccess",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Font enumeration and data access. https://crbug.com/1173275
-const base::Feature kFontAccessPersistent{"FontAccessPersistent",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for the Compute Pressure API. https://crbug.com/1067627
 const base::Feature kComputePressure{"ComputePressure",
@@ -516,13 +516,13 @@ const base::FeatureParam<ForceDarkImageBehavior> kForceDarkImageBehaviorParam{
     &forcedark_image_behavior_options};
 
 // Do not invert text lighter than this.
-// Range: 0 (do not invert any text) to 256 (invert all text)
+// Range: 0 (do not invert any text) to 255 (invert all text)
 // Can also set to -1 to let Blink's internal settings control the value
-const base::FeatureParam<int> kForceDarkTextLightnessThresholdParam{
-    &kForceWebContentsDarkMode, "text_lightness_threshold", -1};
+const base::FeatureParam<int> kForceDarkForegroundLightnessThresholdParam{
+    &kForceWebContentsDarkMode, "foreground_lightness_threshold", -1};
 
 // Do not invert backgrounds darker than this.
-// Range: 0 (invert all backgrounds) to 256 (invert no backgrounds)
+// Range: 0 (invert all backgrounds) to 255 (invert no backgrounds)
 // Can also set to -1 to let Blink's internal settings control the value
 const base::FeatureParam<int> kForceDarkBackgroundLightnessThresholdParam{
     &kForceWebContentsDarkMode, "background_lightness_threshold", -1};
@@ -581,16 +581,6 @@ const base::Feature kBlinkCompositorUseDisplayThreadPriority {
 #endif
 };
 
-// Enables redirecting subresources in the page to better compressed and
-// optimized versions to provide data savings.
-const base::Feature kSubresourceRedirect{"SubresourceRedirect",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables redirecting src videos in the page to better compressed and optimized
-// versions to provide data savings.
-const base::Feature kSubresourceRedirectSrcVideo{
-    "SubresourceRedirectSrcVideo", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When enabled, enforces new interoperable semantics for 3D transforms.
 // See crbug.com/1008483.
 const base::Feature kBackfaceVisibilityInterop{
@@ -645,6 +635,11 @@ const base::Feature kDawn2dCanvas{"Dawn2dCanvas",
 // Enables small accelerated canvases for webview (crbug.com/1004304)
 const base::Feature kWebviewAccelerateSmallCanvases{
     "WebviewAccelerateSmallCanvases", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use old behavior for accelerated canvases: de-accelerate after first call to
+// ctx.getImageData (crbug.com/1288118)
+const base::Feature kSoftwareCanvas2DOnReadback{
+    "SoftwareCanvas2DOnReadback", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, frees up CachedMetadata after consumption by script resources
 // and modules. Needed for the experiment in http://crbug.com/1045052.
@@ -751,11 +746,20 @@ const char kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[] =
 const base::Feature kCompressParkableStrings{"CompressParkableStrings",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enabling this will cause parkable strings to use Snappy for compression iff
+// kCompressParkableStrings is enabled.
+const base::Feature kUseSnappyForParkableStrings{
+    "UseSnappyForParkableStrings", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enabling this will delay the first aging of strings by 60 seconds instead of
 // the default. See comment around the use of the feature for the logic behind
 // the delay.
 const base::Feature kDelayFirstParkingOfStrings{
     "DelayFirstParkingOfStrings", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool ParkableStringsUseSnappy() {
+  return base::FeatureList::IsEnabled(kUseSnappyForParkableStrings);
+}
 
 bool IsParkableStringsToDiskEnabled() {
   // Always enabled as soon as compression is enabled.
@@ -845,7 +849,7 @@ const base::Feature kWebAppEnableTranslations{
 
 // Controls URL handling feature in web apps. Controls parsing of "url_handlers"
 // field in web app manifests. See explainer for more information:
-// https://github.com/WICG/pwa-url-handler/blob/master/explainer.md
+// https://github.com/WICG/pwa-url-handler/blob/main/explainer.md
 const base::Feature kWebAppEnableUrlHandlers{"WebAppEnableUrlHandlers",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -865,9 +869,10 @@ const base::Feature kLoadingTasksUnfreezable{"LoadingTasksUnfreezable",
 // Only use per-process buffer limit and not per-request limt. When this flag is
 // on network requests can continue buffering data as long as it is under per
 // process limit.
+// TODO(crbug.com/1243600): Remove this flag eventually.
 const base::Feature kNetworkRequestUsesOnlyPerProcessBufferLimit{
     "NetworkRequestUsesOnlyPerProcessBufferLimit",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Kill switch for the new behavior whereby anchors with target=_blank get
 // noopener behavior by default. TODO(crbug.com/898942): Remove in Chrome 95.
@@ -908,7 +913,7 @@ const base::Feature kScopeMemoryCachePerContext{
 // Allow image context menu selections to penetrate through transparent
 // elements.
 const base::Feature kEnablePenetratingImageSelection{
-    "EnablePenetratingImageSelection", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnablePenetratingImageSelection", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, permits shared/root element transitions. See
 // https://github.com/WICG/shared-element-transitions.
@@ -1049,9 +1054,6 @@ const base::Feature kDesktopPWAsSubApps{"DesktopPWAsSubApps",
 const base::Feature kCORSErrorsIssueOnly{"CORSErrorsIssueOnly",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSyncLoadDataUrlFonts{"SyncLoadDataUrlFonts",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kPersistentQuotaIsTemporaryQuota{
     "PersistentQuotaIsTemporaryQuota", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1082,6 +1084,10 @@ const base::Feature kForceMajorVersion100InUserAgent{
 
 const base::Feature kForceMinorVersion100InUserAgent{
     "ForceMinorVersion100InUserAgent", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kForceMajorVersionInMinorPositionInUserAgent{
+    "ForceMajorVersionInMinorPositionInUserAgent",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable `sec-ch-device-memory` client hint.
 const base::Feature kClientHintsDeviceMemory{"ClientHintsDeviceMemory",
@@ -1121,7 +1127,7 @@ const base::Feature kClientHintsViewportWidth_DEPRECATED{
 
 // https://drafts.csswg.org/css-cascade-5/#layering
 const base::Feature kCSSCascadeLayers{"CSSCascadeLayers",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the setTimeout(..., 0) will not clamp to 1ms.
 // Tracking bug: https://crbug.com/402694.
@@ -1184,6 +1190,9 @@ const base::Feature kPrefetchAndroidFonts{"PrefetchAndroidFonts",
 // Lazy initialize TimeZoneController.
 const base::Feature kLazyInitializeTimeZoneController{
     "LazyInitializeTimeZoneController", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCompositedCaret{"CompositedCaret",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

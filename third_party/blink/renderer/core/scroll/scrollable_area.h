@@ -35,16 +35,16 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/overlay_scrollbar_clip_behavior.h"
 #include "third_party/blink/renderer/platform/heap/disallow_new_wrapper.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -280,8 +280,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // Note that this function just set the scrollbar itself needs repaint by
   // blink during paint, but doesn't set the scrollbar parts (thumb or track)
   // of an accelerated scrollbar needing repaint by the compositor.
-  // Use Scrollbar::SetNeedsPaintInvaldiation() instead.
-  virtual void SetScrollbarNeedsPaintInvalidation(ScrollbarOrientation);
+  // Use Scrollbar::SetNeedsPaintInvalidation() instead.
+  void SetScrollbarNeedsPaintInvalidation(ScrollbarOrientation);
 
   virtual void SetScrollCornerNeedsPaintInvalidation();
 
@@ -389,9 +389,6 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual bool ScrollAnimatorEnabled() const { return false; }
 
-  // NOTE: Only called from Internals for testing.
-  void UpdateScrollOffsetFromInternals(const gfx::Vector2d&);
-
   gfx::Vector2d ClampScrollOffset(const gfx::Vector2d&) const;
   ScrollOffset ClampScrollOffset(const ScrollOffset&) const;
 
@@ -404,12 +401,8 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual void DeregisterForAnimation() {}
 
   virtual bool UsesCompositedScrolling() const {
-    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-    return uses_composited_scrolling_;
-  }
-  void SetUsesCompositedScrolling(bool uses_composited_scrolling) {
-    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-    uses_composited_scrolling_ = uses_composited_scrolling;
+    NOTREACHED();
+    return false;
   }
   virtual bool ShouldScrollOnMainThread() const { return false; }
   void MainThreadScrollingDidChange();
@@ -444,9 +437,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
                    MaximumScrollOffset(orientation));
   }
 
-  // Note that in CompositeAfterPaint, these methods always return nullptr
-  // except for VisualViewport.
-  virtual cc::Layer* LayerForScrolling() const { return nullptr; }
+  // These methods always return nullptr except for VisualViewport.
   virtual cc::Layer* LayerForHorizontalScrollbar() const { return nullptr; }
   virtual cc::Layer* LayerForVerticalScrollbar() const { return nullptr; }
   virtual cc::Layer* LayerForScrollCorner() const { return nullptr; }
@@ -500,9 +491,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // ScrollableArea to the coordinate system of the ScrollableArea's visible
   // content rect.  If the LayoutObject* argument is null, the argument quad is
   // considered to be in the coordinate space of the overflow rect.
-  virtual FloatQuad LocalToVisibleContentQuad(const FloatQuad&,
-                                              const LayoutObject*,
-                                              unsigned = 0) const;
+  virtual gfx::QuadF LocalToVisibleContentQuad(const gfx::QuadF&,
+                                               const LayoutObject*,
+                                               unsigned = 0) const;
 
   virtual bool IsPaintLayerScrollableArea() const { return false; }
   virtual bool IsRootFrameViewport() const { return false; }
@@ -669,7 +660,6 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   unsigned scrollbar_captured_ : 1;
   unsigned mouse_over_scrollbar_ : 1;
   unsigned has_been_disposed_ : 1;
-  unsigned uses_composited_scrolling_ : 1;
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 };

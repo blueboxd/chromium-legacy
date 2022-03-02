@@ -40,6 +40,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_loader.h"
 #include "chrome/browser/ash/crosapi/browser_service_host_ash.h"
@@ -94,6 +95,45 @@ enum class LacrosLaunchMode {
   // Lacros is the only browser and Ash is disabled.
   kLacrosOnly = 3,
   kMaxValue = kLacrosOnly
+};
+
+// The actual Lacros launch mode.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class LacrosLaunchModeAndSource {
+  // Either set by user or system/flags, indicates that Lacros is disabled.
+  kPossiblySetByUserLacrosDisabled = 0,
+  // Either set by user or system/flags, indicates that Lacros and Ash are both
+  // enabled and accessible by the user.
+  kPossiblySetByUserSideBySide = 1,
+  // Either set by user or system/flags, indicates that Lacros is the primary
+  // (but not only) browser.
+  kPossiblySetByUserLacrosPrimary = 2,
+  // Either set by user or system/flags, Lacros is the only browser and Ash is
+  // disabled.
+  kPossiblySetByUserLacrosOnly = 3,
+  // Enforced by the user, indicates that Lacros is disabled.
+  kForcedByUserLacrosDisabled = 4 + kPossiblySetByUserLacrosDisabled,
+  // Enforced by the user, indicates that Lacros and Ash are both enabled and
+  // accessible by the user.
+  kForcedByUserSideBySide = 4 + kPossiblySetByUserSideBySide,
+  // Enforced by the user, indicates that Lacros is the primary (but not only)
+  // browser.
+  kForcedByUserLacrosPrimary = 4 + kPossiblySetByUserLacrosPrimary,
+  // Enforced by the user, Lacros is the only browser and Ash is disabled.
+  kForcedByUserLacrosOnly = 4 + kPossiblySetByUserLacrosOnly,
+  // Enforced by policy, indicates that Lacros is disabled.
+  kForcedByPolicyLacrosDisabled = 8 + kPossiblySetByUserLacrosDisabled,
+  // Enforced by policy, indicates that Lacros and Ash are both enabled and
+  // accessible by the user.
+  kForcedByPolicySideBySide = 8 + kPossiblySetByUserSideBySide,
+  // Enforced by policy, indicates that Lacros is the primary (but not only)
+  // browser.
+  kForcedByPolicyLacrosPrimary = 8 + kPossiblySetByUserLacrosPrimary,
+  // Enforced by policy, Lacros is the only browser and Ash is disabled.
+  kForcedByPolicyLacrosOnly = 8 + kPossiblySetByUserLacrosOnly,
+
+  kMaxValue = kForcedByPolicyLacrosOnly
 };
 
 using LaunchParamsFromBackground = BrowserManager::LaunchParamsFromBackground;
@@ -230,23 +270,26 @@ bool GetLaunchOnLoginPref() {
       browser_util::kLaunchOnLoginPref);
 }
 
-// Returns the initial browser action. No browser will be opened when
-// lacros-chrome is initialized in the web Kiosk session.
+// Returns the initial browser action. No browser will be opened in the
+// following circumstances:
+// 1. Lacros-chrome is initialized in the web Kiosk session
+// 2. Full restore is responsible for restoring/launching Lacros.
 browser_util::InitialBrowserAction GetInitialBrowserAction() {
   return browser_util::InitialBrowserAction(
-      user_manager::UserManager::Get()->IsLoggedInAsWebKioskApp()
+      user_manager::UserManager::Get()->IsLoggedInAsWebKioskApp() ||
+              ash::full_restore::MaybeCreateFullRestoreServiceForLacros()
           ? mojom::InitialBrowserAction::kDoNotOpenWindow
           : mojom::InitialBrowserAction::kUseStartupPreference);
 }
 
 bool IsKeepAliveDisabledForTesting() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDisableLacrosKeepAliveForTesting);
+      ash::switches::kDisableLacrosKeepAliveForTesting);
 }
 
 bool IsLoginLacrosOpeningDisabledForTesting() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDisableLoginLacrosOpening);
+      ash::switches::kDisableLoginLacrosOpening);
 }
 
 }  // namespace
@@ -298,7 +341,7 @@ BrowserManager::BrowserManager(
 
   std::string socket_path =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          chromeos::switches::kLacrosMojoSocketForTesting);
+          ash::switches::kLacrosMojoSocketForTesting);
   if (!socket_path.empty()) {
     test_mojo_connection_manager_ =
         std::make_unique<crosapi::TestMojoConnectionManager>(
@@ -336,13 +379,24 @@ bool BrowserManager::IsRunningOrWillRun() const {
          state_ == State::CREATING_LOG_FILE || state_ == State::TERMINATING;
 }
 
-void BrowserManager::NewWindow(bool incognito) {
-  // Chrome OS uses different user model where clicking the chrome icon always
-  // opens a new tab page, and it doesn't matter whether lacros is launching
-  // for the first time or not.
+void BrowserManager::NewWindow(bool incognito,
+                               bool should_trigger_session_restore) {
+  // If `should_trigger_session_restore` is set to true the new lacros window
+  // should be treated like the start of a new session. Ensure this is the case
+  // by deferring to the browser startup preferences. Otherwise we open the
+  // window with the default NTP.
+  // Incognito's default behavior is to open to a NTP regardless of session
+  // restore settings so the same browser action is used regardless of the value
+  // of `should_trigger_session_restore`.
+  constexpr mojom::InitialBrowserAction kBrowserActions[2][2] = {
+      {mojom::InitialBrowserAction::kOpenNewTabPageWindow,
+       mojom::InitialBrowserAction::kUseStartupPreference},
+      {mojom::InitialBrowserAction::kOpenIncognitoWindow,
+       mojom::InitialBrowserAction::kOpenIncognitoWindow}};
+
   auto result = MaybeStart(browser_util::InitialBrowserAction(
-      incognito ? mojom::InitialBrowserAction::kOpenIncognitoWindow
-                : mojom::InitialBrowserAction::kOpenNewTabPageWindow));
+      kBrowserActions[incognito][should_trigger_session_restore]));
+
   if (result != MaybeStartResult::kRunning)
     return;
 
@@ -350,7 +404,8 @@ void BrowserManager::NewWindow(bool incognito) {
     LOG(ERROR) << "BrowserService was disconnected";
     return;
   }
-  browser_service_->service->NewWindow(incognito, base::DoNothing());
+  browser_service_->service->NewWindow(
+      incognito, should_trigger_session_restore, base::DoNothing());
 }
 
 bool BrowserManager::NewWindowForDetachingTabSupported() const {
@@ -462,28 +517,48 @@ void BrowserManager::RestoreTab() {
   browser_service_->service->RestoreTab(base::DoNothing());
 }
 
+bool BrowserManager::HandleTabScrubbingSupported() const {
+  return browser_service_.has_value() &&
+         browser_service_->interface_version >=
+             crosapi::mojom::BrowserService::kHandleTabScrubbingMinVersion;
+}
+
+void BrowserManager::HandleTabScrubbing(float x_offset) {
+  // If Lacros isn't running, bail out.
+  if (!IsRunning())
+    return;
+
+  if (!browser_service_.has_value())
+    return;
+
+  if (!HandleTabScrubbingSupported())
+    return;
+
+  browser_service_->service->HandleTabScrubbing(x_offset);
+}
+
 void BrowserManager::InitializeAndStart() {
   DCHECK_EQ(state_, State::NOT_INITIALIZED);
-
-  // Perform the UMA recording for the current Lacros mode of operation.
-  RecordLacrosLaunchMode();
 
   // Ensure this isn't run multiple times.
   session_manager::SessionManager::Get()->RemoveObserver(this);
 
   PrepareLacrosPolicies();
 
-  const bool is_enabled = browser_util::IsLacrosEnabled();
+  // Perform the UMA recording for the current Lacros mode of operation.
+  RecordLacrosLaunchMode();
+
+  const bool is_lacros_enabled = browser_util::IsLacrosEnabled();
 
   // As a switch between Ash and Lacros mode requires an Ash restart plus
   // profile migration, the state will not change while the system is up.
   // At this point we are starting Lacros for the first time and with that the
   // operation mode is 'locked in'.
   crosapi::lacros_startup_state::SetLacrosStartupState(
-      is_enabled, browser_util::IsLacrosPrimaryBrowser());
+      is_lacros_enabled, browser_util::IsLacrosPrimaryBrowser());
 
   // Must be checked after user session start because it depends on user type.
-  if (is_enabled) {
+  if (is_lacros_enabled) {
     component_update_observation_.Observe(component_update_service_);
     SetState(State::MOUNTING);
     browser_loader_->Load(base::BindOnce(&BrowserManager::OnLoadComplete,
@@ -498,7 +573,7 @@ void BrowserManager::InitializeAndStart() {
   // inside the profile data directory.
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&ash::BrowserDataMigrator::DryRunToCollectUMA,
+      base::BindOnce(&ash::BrowserDataMigratorImpl::DryRunToCollectUMA,
                      ProfileManager::GetPrimaryUserProfile()->GetPath()));
 }
 
@@ -696,9 +771,8 @@ void BrowserManager::Start(
 
   // TODO(ythjkt): After M92 cherry-pick, clean up the following code by moving
   // the data wipe check logic from `BrowserDataMigrator` to browser_util.
-  const std::string user_id_hash =
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(
-          ProfileManager::GetPrimaryUserProfile());
+  const std::string user_id_hash = ash::ProfileHelper::GetUserIdHashFromProfile(
+      ProfileManager::GetPrimaryUserProfile());
   // Check if user data directory needs to be wiped for a backward incompatible
   // update.
   bool cleared_user_data_dir = !browser_util::IsDataWipeRequired(user_id_hash);
@@ -734,9 +808,8 @@ void BrowserManager::StartWithLogFile(
     return;
   }
 
-  const std::string user_id_hash =
-      chromeos::ProfileHelper::GetUserIdHashFromProfile(
-          ProfileManager::GetPrimaryUserProfile());
+  const std::string user_id_hash = ash::ProfileHelper::GetUserIdHashFromProfile(
+      ProfileManager::GetPrimaryUserProfile());
   crosapi::browser_util::RecordDataVer(g_browser_process->local_state(),
                                        user_id_hash,
                                        version_info::GetVersion());
@@ -759,7 +832,7 @@ void BrowserManager::StartWithLogFile(
 
   std::string additional_env =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          chromeos::switches::kLacrosChromeAdditionalEnv);
+          ash::switches::kLacrosChromeAdditionalEnv);
   base::StringPairs env_pairs;
   if (base::SplitStringIntoKeyValuePairsUsingSubstr(additional_env, '=', "####",
                                                     &env_pairs)) {
@@ -790,7 +863,6 @@ void BrowserManager::StartWithLogFile(
                                    "--ozone-platform=wayland",
                                    "--user-data-dir=" + user_data_dir,
                                    "--enable-gpu-rasterization",
-                                   "--enable-oop-rasterization",
                                    "--lang=" + locale,
                                    "--enable-crashpad",
                                    "--enable-webgl-image-chromium",
@@ -802,7 +874,7 @@ void BrowserManager::StartWithLogFile(
 
   std::string additional_flags =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          chromeos::switches::kLacrosChromeAdditionalArgs);
+          ash::switches::kLacrosChromeAdditionalArgs);
   std::vector<base::StringPiece> delimited_flags =
       base::SplitStringPieceUsingSubstr(additional_flags, "####",
                                         base::TRIM_WHITESPACE,
@@ -891,6 +963,8 @@ void BrowserManager::OnBrowserServiceConnected(
     return;
   }
 
+  is_terminated_ = false;
+
   DCHECK(!browser_service_.has_value());
   browser_service_ =
       BrowserServiceInfo{mojo_id, browser_service, browser_service_version};
@@ -952,6 +1026,8 @@ void BrowserManager::OnLacrosChromeTerminated() {
   // TODO(https://crbug.com/1109366): Restart lacros-chrome if it exits
   // abnormally (e.g. crashes). For now, assume the user meant to close it.
   SetLaunchOnLoginPref(false);
+
+  is_terminated_ = true;
 
   if (!shutdown_requested_ && relaunch_requested_) {
     MaybeStart(browser_util::InitialBrowserAction(
@@ -1050,7 +1126,7 @@ policy::CloudPolicyStore* BrowserManager::GetDeviceAccountPolicyStore() {
 
   switch (user->GetType()) {
     case user_manager::USER_TYPE_REGULAR: {
-      Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+      Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
       DCHECK(profile);
       policy::CloudPolicyManager* user_cloud_policy_manager =
           profile->GetUserCloudPolicyManagerAsh();
@@ -1135,21 +1211,60 @@ bool BrowserManager::IsReady() const {
 
 void BrowserManager::RecordLacrosLaunchMode() {
   LacrosLaunchMode lacros_mode;
+  LacrosLaunchModeAndSource lacros_mode_and_source;
+
   if (!browser_util::IsAshWebBrowserEnabled(chrome::GetChannel())) {
     // As Ash is disabled, Lacros is the only available browser.
     lacros_mode = LacrosLaunchMode::kLacrosOnly;
+    lacros_mode_and_source =
+        LacrosLaunchModeAndSource::kPossiblySetByUserLacrosOnly;
   } else if (browser_util::IsLacrosPrimaryBrowser()) {
     // Lacros is the primary browser - but Ash is still available.
     lacros_mode = LacrosLaunchMode::kLacrosPrimary;
+    lacros_mode_and_source =
+        LacrosLaunchModeAndSource::kPossiblySetByUserLacrosPrimary;
   } else if (browser_util::IsLacrosEnabled()) {
     // If Lacros is enabled but not primary or the only browser, the
     // side by side mode is active.
     lacros_mode = LacrosLaunchMode::kSideBySide;
+    lacros_mode_and_source =
+        LacrosLaunchModeAndSource::kPossiblySetByUserSideBySide;
+
   } else {
     lacros_mode = LacrosLaunchMode::kLacrosDisabled;
+    lacros_mode_and_source =
+        LacrosLaunchModeAndSource::kPossiblySetByUserLacrosDisabled;
   }
 
   UMA_HISTOGRAM_ENUMERATION("Ash.Lacros.Launch.Mode", lacros_mode);
+
+  crosapi::browser_util::LacrosLaunchSwitchSource source =
+      crosapi::browser_util::GetLacrosLaunchSwitchSource();
+
+  // Unit tests can come here before the source is known.
+  if (source == crosapi::browser_util::LacrosLaunchSwitchSource::kUnknown)
+    return;
+
+  LacrosLaunchModeAndSource source_offset;
+  if (source ==
+      crosapi::browser_util::LacrosLaunchSwitchSource::kPossiblySetByUser) {
+    source_offset = LacrosLaunchModeAndSource::kPossiblySetByUserLacrosDisabled;
+  } else if (source ==
+             crosapi::browser_util::LacrosLaunchSwitchSource::kForcedByUser) {
+    source_offset = LacrosLaunchModeAndSource::kForcedByUserLacrosDisabled;
+  } else {
+    source_offset = LacrosLaunchModeAndSource::kForcedByPolicyLacrosDisabled;
+  }
+
+  // The states are comprised of the basic four Lacros options and the
+  // source of the mode selection (By user, by Policy, by System). These
+  // combinations are "nibbled together" here in one status value.
+  lacros_mode_and_source = static_cast<LacrosLaunchModeAndSource>(
+      static_cast<int>(source_offset) +
+      static_cast<int>(lacros_mode_and_source));
+
+  UMA_HISTOGRAM_ENUMERATION("Ash.Lacros.Launch.ModeAndSource",
+                            lacros_mode_and_source);
 }
 
 }  // namespace crosapi

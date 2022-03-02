@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
@@ -278,8 +277,6 @@ TEST_P(BlockPainterTest, WheelEventRectPaintChunkChanges) {
     <div id='wheelevent'></div>
   )HTML");
 
-  auto* wheelevent_element = GetElementById("wheelevent");
-  auto* wheelevent = wheelevent_element->GetLayoutObject();
   EXPECT_THAT(ContentDisplayItems(),
               ElementsAre(VIEW_SCROLLING_BACKGROUND_DISPLAY_ITEM));
 
@@ -291,15 +288,13 @@ TEST_P(BlockPainterTest, WheelEventRectPaintChunkChanges) {
   EXPECT_THAT(ContentDisplayItems(),
               ElementsAre(VIEW_SCROLLING_BACKGROUND_DISPLAY_ITEM));
 
-  PaintChunk::Id hit_test_chunk_id(wheelevent->EnclosingLayer()->Id(),
-                                   kNonScrollingBackgroundChunkType);
   HitTestData hit_test_data;
   hit_test_data.wheel_event_rects = {{gfx::Rect(0, 0, 100, 100)}};
 
   EXPECT_THAT(ContentPaintChunks(),
               ElementsAre(VIEW_SCROLLING_BACKGROUND_CHUNK(1, &hit_test_data)));
 
-  wheelevent_element->RemoveAllEventListeners();
+  GetElementById("wheelevent")->RemoveAllEventListeners();
   UpdateAllLifecyclePhasesForTest();
   EXPECT_THAT(ContentDisplayItems(),
               ElementsAre(VIEW_SCROLLING_BACKGROUND_DISPLAY_ITEM));
@@ -530,7 +525,7 @@ TEST_P(BlockPainterTest, TouchActionRectPaintChunkChanges) {
               ElementsAre(VIEW_SCROLLING_BACKGROUND_DISPLAY_ITEM));
 
   PaintChunk::Id hit_test_chunk_id(touchaction->EnclosingLayer()->Id(),
-                                   kNonScrollingBackgroundChunkType);
+                                   kHitTestChunkType);
   HitTestData hit_test_data;
   hit_test_data.touch_action_rects = {{gfx::Rect(0, 0, 100, 100)}};
 
@@ -671,8 +666,7 @@ TEST_P(BlockPainterTest, ScrolledHitTestChunkProperties) {
       ElementsAre(
           VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
           IsPaintChunk(
-              1, 1,
-              PaintChunk::Id(scroller->Layer()->Id(), DisplayItem::kLayerChunk),
+              1, 1, PaintChunk::Id(scroller->Id(), kBackgroundChunkType),
               scroller->FirstFragment().LocalBorderBoxProperties(),
               &scroller_touch_action_hit_test_data, gfx::Rect(0, 0, 100, 100)),
           IsPaintChunk(

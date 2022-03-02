@@ -16,9 +16,9 @@
 @synthesize suggestedFilename = _suggestedFilename;
 
 - (instancetype)initWithDownload:(WKDownload*)download
-           downloadReadyDelegate:
-               (id<DownloadNativeTaskBridgeReadyDelegate>)ready {
-  if (self = [super initWithDownload:download downloadReadyDelegate:ready]) {
+                        delegate:
+                            (id<DownloadNativeTaskBridgeDelegate>)delegate {
+  if (self = [super initWithDownload:download delegate:delegate]) {
     _calledStartDownloadBlock = NO;
     if (@available(iOS 15, *))
       [self downloadInitialized];
@@ -33,7 +33,7 @@
 
 - (void)startDownload:(NSURL*)url
     progressionHandler:(void (^)())progressionHandler
-     completionHandler:(void (^)(int error_code))completionHandler {
+     completionHandler:(web::DownloadCompletionHandler)completionHandler {
   [super startDownload:url
       progressionHandler:progressionHandler
        completionHandler:completionHandler];

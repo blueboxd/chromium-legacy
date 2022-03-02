@@ -82,8 +82,9 @@ export class Viewport {
     /** @private {!HTMLElement} */
     this.window_ = container;
 
-    /** @private {number} */
-    this.scrollbarWidth_ = scrollbarWidth;
+    /** @private {!ScrollContent} */
+    this.scrollContent_ =
+        new ScrollContent(this.window_, sizer, content, scrollbarWidth);
 
     /** @private {!ScrollContent} */
     this.scrollContent_ =
@@ -504,11 +505,11 @@ export class Viewport {
   }
 
   /**
-   * Exposes the current content size for testing.
+   * Gets the content size.
    * @return {!Size}
    */
-  get contentSizeForTesting() {
-    return this.scrollContent_.sizeForTesting;
+  get contentSize() {
+    return this.scrollContent_.size;
   }
 
   /** @return {number} The current zoom. */
@@ -680,9 +681,21 @@ export class Viewport {
     });
   }
 
-  /** @return {number} The width of scrollbars in the viewport in pixels. */
+  /**
+   * Gets the width of scrollbars in the viewport in pixels.
+   * @return {number}
+   */
   get scrollbarWidth() {
-    return this.scrollbarWidth_;
+    return this.scrollContent_.scrollbarWidth;
+  }
+
+  /**
+   * Gets the width of overlay scrollbars in the viewport in pixels, or 0 if not
+   * using overlay scrollbars.
+   * @return {number}
+   */
+  get overlayScrollbarWidth() {
+    return this.scrollContent_.overlayScrollbarWidth;
   }
 
   /** @return {FittingType} The fitting type the viewport is currently in. */
@@ -868,7 +881,7 @@ export class Viewport {
     const zoomedDimensions = this.getZoomedDocumentDimensions_(zoom);
 
     // Check if adding a scrollbar will result in needing the other scrollbar.
-    const scrollbarWidth = this.scrollbarWidth_;
+    const scrollbarWidth = this.scrollContent_.scrollbarWidth;
     if (needsScrollbars.horizontal &&
         zoomedDimensions.height > this.window_.offsetHeight - scrollbarWidth) {
       needsScrollbars.vertical = true;
@@ -1751,11 +1764,33 @@ class ScrollContent {
     this.dispatchScroll_();
   }
 
+  /** @return {number} */
+  get scrollbarWidth() {
+    return this.scrollbarWidth_;
+  }
+
+  /** @return {number} */
+  get overlayScrollbarWidth() {
+    let overlayScrollbarWidth = 0;
+
+    // TODO(crbug.com/1286009): Support overlay scrollbars on all platforms.
+    // <if expr="is_macosx">
+    overlayScrollbarWidth = 16;
+    // </if>
+    // <if expr="not is_macosx">
+    if (this.unseasonedPlugin_) {
+      overlayScrollbarWidth = this.scrollbarWidth_;
+    }
+    // </if>
+
+    return overlayScrollbarWidth;
+  }
+
   /**
-   * Exposes the current content size for testing.
+   * Gets the content size.
    * @return {!Size}
    */
-  get sizeForTesting() {
+  get size() {
     return {
       width: this.width_,
       height: this.height_,
@@ -1825,12 +1860,13 @@ class ScrollContent {
           this.width_ > this.container_.clientWidth);
 
       if (this.container_.dir === 'rtl') {
-        // Right-to-left.
+        // Right-to-left. If `maxX` > 0, clamp to [-maxX, 0]. Else set to 0.
         x = Math.min(Math.max(-maxX, x), 0);
       } else {
-        // Left-to-right.
+        // Left-to-right. If `maxX` > 0, clamp to [0, maxX]. Else set to 0.
         x = Math.max(0, Math.min(x, maxX));
       }
+      // If `maxY` > 0, clamp to [0, maxY]. Else set to 0.
       y = Math.max(0, Math.min(y, maxY));
 
       // To match the DOM's scrollTo() behavior, update the scroll position

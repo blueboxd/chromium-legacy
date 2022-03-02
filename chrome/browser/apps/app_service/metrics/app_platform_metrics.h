@@ -5,23 +5,20 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_METRICS_APP_PLATFORM_METRICS_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_METRICS_APP_PLATFORM_METRICS_H_
 
-#include <list>
 #include <map>
 #include <set>
 #include <string>
 
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_utils.h"
+#include "chrome/browser/apps/app_service/metrics/browser_to_tab_list.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 class Profile;
-
-namespace aura {
-class Window;
-}
 
 namespace apps {
 
@@ -68,7 +65,7 @@ const std::set<apps::AppTypeName>& GetAppTypeNameSet();
 
 // Records metrics when launching apps.
 void RecordAppLaunchMetrics(Profile* profile,
-                            apps::mojom::AppType app_type,
+                            AppType app_type,
                             const std::string& app_id,
                             apps::mojom::LaunchSource launch_source,
                             apps::mojom::LaunchContainer container);
@@ -82,6 +79,21 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   AppPlatformMetrics(const AppPlatformMetrics&) = delete;
   AppPlatformMetrics& operator=(const AppPlatformMetrics&) = delete;
   ~AppPlatformMetrics() override;
+
+  // Returns the SourceId of UKM for `app_id`.
+  static ukm::SourceId GetSourceId(Profile* profile, const std::string& app_id);
+
+  // Returns the SourceId for a Borealis app_id.
+  static ukm::SourceId GetSourceIdForBorealis(Profile* profile,
+                                              const std::string& app_id);
+
+  // Gets the source id for a Crostini app_id.
+  static ukm::SourceId GetSourceIdForCrostini(Profile* profile,
+                                              const std::string& app_id);
+
+  // Informs UKM service that the source_id is no longer needed and can be
+  // deleted later.
+  static void RemoveSourceId(ukm::SourceId source_id);
 
   // UMA metrics name for installed apps count in Chrome OS.
   static std::string GetAppsCountHistogramNameForTest(
@@ -117,13 +129,13 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   void OnFiveMinutes();
 
   // Records UKM when launching an app.
-  void RecordAppLaunchUkm(apps::mojom::AppType app_type,
+  void RecordAppLaunchUkm(AppType app_type,
                           const std::string& app_id,
                           apps::mojom::LaunchSource launch_source,
                           apps::mojom::LaunchContainer container);
 
   // Records UKM when uninstalling an app.
-  void RecordAppUninstallUkm(apps::mojom::AppType app_type,
+  void RecordAppUninstallUkm(AppType app_type,
                              const std::string& app_id,
                              apps::mojom::UninstallSource uninstall_source);
 
@@ -141,15 +153,6 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
     AppTypeName app_type_name = AppTypeName::kUnknown;
     bool window_is_closed = false;
   };
-
-  struct BrowserToTab {
-    BrowserToTab(const aura::Window* browser_window,
-                 const base::UnguessableToken& tab_id);
-    const aura::Window* browser_window;
-    base::UnguessableToken tab_id;
-  };
-
-  using BrowserToTabs = std::list<BrowserToTab>;
 
   // AppRegistryCache::Observer:
   void OnAppTypeInitialized(apps::mojom::AppType app_type) override;
@@ -174,23 +177,7 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   // inactivated.
   void UpdateBrowserWindowStatus(const InstanceUpdate& update);
 
-  // Returns true if the browser with `browser_window` has activated tabs.
-  // Otherwise, returns false.
-  bool HasActivatedTab(const aura::Window* browser_window);
-
-  // Returns the browser window for `tab_id`.
-  const aura::Window* GetBrowserWindow(
-      const base::UnguessableToken& tab_id) const;
-
-  // Adds an activated `browser_window` and `tab_id` to
-  // `active_browser_to_tabs_`.
-  void AddActivatedTab(const aura::Window* browser_window,
-                       const base::UnguessableToken& tab_id);
-
-  // Removes `tab_id` from `active_browser_to_tabs_`.
-  void RemoveActivatedTab(const base::UnguessableToken& tab_id);
-
-  void SetWindowActivated(apps::mojom::AppType app_type,
+  void SetWindowActivated(AppType app_type,
                           AppTypeName app_type_name,
                           AppTypeNameV2 app_type_name_v2,
                           const std::string& app_id,
@@ -220,15 +207,6 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   void RecordAppsInstallUkm(const apps::AppUpdate& update,
                             InstallTime install_time);
 
-  // Returns the SourceId of UKM for `app_id`.
-  ukm::SourceId GetSourceId(const std::string& app_id);
-
-  // Returns the SourceId for a Borealis app_id.
-  ukm::SourceId GetSourceIdForBorealis(const std::string& app_id);
-
-  // Gets the source id for a Crostini app_id.
-  ukm::SourceId GetSourceIdForCrostini(const std::string& app_id);
-
   Profile* const profile_ = nullptr;
 
   AppRegistryCache& app_registry_cache_;
@@ -240,8 +218,7 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
 
   int user_type_by_device_type_;
 
-  // Records the map from browsers to activated web apps tabs.
-  BrowserToTabs active_browsers_to_tabs_;
+  BrowserToTabList browser_to_tab_list_;
 
   // |running_start_time_| and |running_duration_| are used for accumulating app
   // running duration per each day interval.

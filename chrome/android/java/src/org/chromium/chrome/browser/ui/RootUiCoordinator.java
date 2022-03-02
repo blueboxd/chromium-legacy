@@ -725,8 +725,12 @@ public class RootUiCoordinator
 
         if (shareDirectly) {
             RecordUserAction.record("MobileMenuDirectShare");
+            new UkmRecorder.Bridge().recordEventWithBooleanMetric(
+                    tab.getWebContents(), "MobileMenu.DirectShare", "HasOccurred");
         } else {
             RecordUserAction.record("MobileMenuShare");
+            new UkmRecorder.Bridge().recordEventWithBooleanMetric(
+                    tab.getWebContents(), "MobileMenu.Share", "HasOccurred");
         }
         shareDelegate.share(tab, shareDirectly, ShareOrigin.OVERFLOW_MENU);
     }
@@ -1033,6 +1037,10 @@ public class RootUiCoordinator
                     mActivityLifecycleDispatcher, mToolbarManager, mAppMenuDelegate,
                     mActivity.getWindow().getDecorView(),
                     mActivity.getWindow().getDecorView().findViewById(R.id.menu_anchor_stub));
+            AppMenuCoordinatorFactory.setExceptionReporter(
+                    (throwable)
+                            -> PureJavaExceptionReporter.reportJavaException(
+                                    (Throwable) throwable));
 
             mAppMenuCoordinator.registerAppMenuBlocker(this);
             mAppMenuCoordinator.registerAppMenuBlocker(mAppMenuBlocker);

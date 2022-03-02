@@ -354,8 +354,9 @@ enum IOTaskState {
 
 enum IOTaskType {
   copy,
-  move,
   delete,
+  extract,
+  move,
   zip
 };
 
@@ -1607,6 +1608,9 @@ interface Functions {
   // Notifies the browser of the result of a dialog displayed earlier as a
   // result of the onDriveConfirmDialog event.
   static void notifyDriveDialogResult(DriveDialogResult result);
+
+  // Opens a new browser tab and navigates to `url`.
+  static void openURL(DOMString url);
 
   // Creates a new Files app window in the directory provided in `params`.
   static void openWindow(OpenWindowParams params, BooleanCallback callback);

@@ -15,7 +15,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
@@ -691,10 +690,10 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
     ASSERT_FALSE(IsBlocked(extension_id));
   }
 
-  const base::DictionaryValue* GetExtensionPref(const std::string& extension_id,
-                                                const std::string& pref_path) {
-    const base::DictionaryValue* dict =
-        profile()->GetPrefs()->GetDictionary(pref_names::kExtensions);
+  const base::DictionaryValue* GetExtensionPref(
+      const std::string& extension_id) {
+    const base::DictionaryValue* dict = &base::Value::AsDictionaryValue(
+        *profile()->GetPrefs()->GetDictionary(pref_names::kExtensions));
     if (!dict) {
       return nullptr;
     }
@@ -707,15 +706,13 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
 
   bool IsPrefExist(const std::string& extension_id,
                    const std::string& pref_path) {
-    const base::DictionaryValue* pref =
-        GetExtensionPref(extension_id, pref_path);
+    const base::DictionaryValue* pref = GetExtensionPref(extension_id);
     return pref && pref->FindBoolPath(pref_path).has_value();
   }
 
   bool DoesIntegerPrefExist(const std::string& extension_id,
                             const std::string& pref_path) {
-    const base::DictionaryValue* pref =
-        GetExtensionPref(extension_id, pref_path);
+    const base::DictionaryValue* pref = GetExtensionPref(extension_id);
     if (!pref) {
       return false;
     }
@@ -726,7 +723,8 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
                const std::string& pref_path,
                std::unique_ptr<base::Value> value,
                const std::string& msg) {
-    DictionaryPrefUpdate update(profile()->GetPrefs(), pref_names::kExtensions);
+    DictionaryPrefUpdateDeprecated update(profile()->GetPrefs(),
+                                          pref_names::kExtensions);
     base::DictionaryValue* dict = update.Get();
     ASSERT_TRUE(dict) << msg;
     base::DictionaryValue* pref = nullptr;
@@ -764,7 +762,8 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
     std::string msg = " while clearing: ";
     msg += extension_id + " " + pref_path;
 
-    DictionaryPrefUpdate update(profile()->GetPrefs(), pref_names::kExtensions);
+    DictionaryPrefUpdateDeprecated update(profile()->GetPrefs(),
+                                          pref_names::kExtensions);
     base::DictionaryValue* dict = update.Get();
     ASSERT_TRUE(dict) << msg;
     base::DictionaryValue* pref = nullptr;
@@ -2325,7 +2324,7 @@ TEST_F(ExtensionServiceTest, TestInstallThemeWithExtensionsDisabled) {
                       static_cast<int>(ManifestLocation::kInternal));
 }
 
-#if defined(OS_MAC) || defined(OS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 // Flaky on these platforms. http://crbug.com/1148894
 #define MAYBE_InstallTheme DISABLED_InstallTheme
 #else
@@ -2389,7 +2388,7 @@ TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   EXPECT_EQ("description", theme->description());
 }
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
 TEST_F(ExtensionServiceTest, UnpackedExtensionMayContainSymlinkedFiles) {
   base::FilePath source_data_dir =
       data_dir().AppendASCII("unpacked").AppendASCII("symlinks_allowed");
@@ -4403,7 +4402,7 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionPolicyUpdate) {
 }
 
 // Flaky on windows; http://crbug.com/309833
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_ExternalExtensionAutoAcknowledgement DISABLED_ExternalExtensionAutoAcknowledgement
 #else
 #define MAYBE_ExternalExtensionAutoAcknowledgement ExternalExtensionAutoAcknowledgement
@@ -4823,7 +4822,6 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
       registry()->disabled_extensions().GetByID(good_crx);
   EXPECT_TRUE(extension->from_webstore());
   EXPECT_TRUE(extension->was_installed_by_default());
-  EXPECT_FALSE(extension->from_bookmark());
 
   // Extension counts shouldn't change.
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
@@ -5622,7 +5620,7 @@ void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
 }
 
 // Tests the external installation feature
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 TEST_F(ExtensionServiceTest, ExternalInstallRegistry) {
   // This should all work, even when normal extension installation is disabled.
   InitializeExtensionServiceWithExtensionsDisabled();
@@ -6184,8 +6182,6 @@ class ExtensionServiceTestSimple : public testing::Test {
 };
 
 TEST_F(ExtensionServiceTestSimple, Enabledness) {
-  // Make sure the PluginService singleton is destroyed at the end of the test.
-  base::ShadowingAtExitManager at_exit_manager;
 #if BUILDFLAG(ENABLE_PLUGINS)
   content::PluginService::GetInstance()->Init();
 #endif
@@ -6956,7 +6952,7 @@ TEST_F(ExtensionServiceTest, DisablingComponentExtensions) {
 // Flaky on windows; http://crbug.com/295757 .
 // Causes race conditions with an in-process utility thread, so disable under
 // TSan: https://crbug.com/518957
-#if defined(OS_WIN) || defined(THREAD_SANITIZER)
+#if BUILDFLAG(IS_WIN) || defined(THREAD_SANITIZER)
 #define MAYBE_ExternalInstallMultiple DISABLED_ExternalInstallMultiple
 #else
 #define MAYBE_ExternalInstallMultiple ExternalInstallMultiple

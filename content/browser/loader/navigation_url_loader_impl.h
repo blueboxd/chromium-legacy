@@ -15,6 +15,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/browser/weak_document_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/url_request/url_request.h"
@@ -23,7 +24,6 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
 
 namespace net {
@@ -210,8 +210,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   void FollowRedirect(
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
-      const net::HttpRequestHeaders& modified_cors_exempt_headers,
-      blink::PreviewsState new_previews_state) override;
+      const net::HttpRequestHeaders& modified_cors_exempt_headers) override;
   bool SetNavigationTimeout(base::TimeDelta timeout) override;
 
   raw_ptr<NavigationURLLoaderDelegate> delegate_;
@@ -230,6 +229,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
 
   const int frame_tree_node_id_;
   const GlobalRequestID global_request_id_;
+  const WeakDocumentPtr initiator_document_;
   net::RedirectInfo redirect_info_;
   int redirect_limit_ = net::URLRequest::kMaxRedirects;
   base::RepeatingCallback<WebContents*()> web_contents_getter_;

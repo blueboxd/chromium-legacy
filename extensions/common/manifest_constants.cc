@@ -334,7 +334,7 @@ const char kInvalidCSPInsecureValueError[] =
     "'*': Insecure CSP value \"*\" in directive '*'.";
 const char kInvalidCSPMissingSecureSrc[] =
     "'*': CSP directive '*' must be specified (either explicitly, or "
-    "implicitly via 'default-src') and must whitelist only secure resources.";
+    "implicitly via 'default-src') and must allowlist only secure resources.";
 const char kInvalidDefaultLocale[] =
     "Invalid value for default locale - locale name must be a string.";
 const char16_t kInvalidDefaultLocale16[] =
@@ -638,11 +638,20 @@ const char kLocalesTreeMissing[] =
 const char kManifestParseError[] =
     "Manifest is not valid JSON.";
 const char kManifestUnreadable[] = "Manifest file is missing or unreadable";
+const char kManifestV2IsDeprecatedWarning[] =
+    "Manifest version 2 is deprecated, and support will be removed in 2023. "
+    "See https://developer.chrome.com/blog/mv2-transition/ for more details.";
 const char kManifestVersionTooHighWarning[] =
     "The maximum currently-supported manifest version is *, but this is *.  "
     "Certain features may not work as expected.";
 const char kMissingFile[] =
     "At least one js or css file is required for 'content_scripts[*]'.";
+const char kMatchOriginAsFallbackCantHavePaths[] =
+    "The path component for scripts with 'match_origin_as_fallback' must be "
+    "'*'.";
+const char kMatchOriginAsFallbackRestrictedToMV3[] =
+    "The 'match_origin_as_fallback' property is restricted to extensions with "
+    "'manifest_version' set to 3 or higher.";
 const char16_t kMultipleOverrides[] =
     u"An extension cannot override more than one page.";
 const char kNoWildCardsInPaths[] =

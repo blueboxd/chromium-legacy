@@ -18,21 +18,21 @@ namespace base {
 namespace internal {
 
 // Death tests misbehave on Android, crbug.com/1240184
-#if !defined(OS_ANDROID) && defined(GTEST_HAS_DEATH_TEST) && \
+#if !BUILDFLAG(IS_ANDROID) && defined(GTEST_HAS_DEATH_TEST) && \
     defined(PA_HAS_FREELIST_HARDENING)
 
 TEST(HardeningTest, PartialCorruption) {
   std::string important_data("very important");
   char* to_corrupt = const_cast<char*>(important_data.c_str());
 
-  PartitionRoot<base::internal::ThreadSafe> root{
-      PartitionOptions{PartitionOptions::AlignedAlloc::kAllowed,
-                       PartitionOptions::ThreadCache::kDisabled,
-                       PartitionOptions::Quarantine::kDisallowed,
-                       PartitionOptions::Cookie::kDisallowed,
-                       PartitionOptions::BackupRefPtr::kDisabled,
-                       PartitionOptions::UseConfigurablePool::kNo,
-                       PartitionOptions::LazyCommit::kEnabled}};
+  PartitionRoot<ThreadSafe> root({
+      PartitionOptions::AlignedAlloc::kAllowed,
+      PartitionOptions::ThreadCache::kDisabled,
+      PartitionOptions::Quarantine::kDisallowed,
+      PartitionOptions::Cookie::kDisallowed,
+      PartitionOptions::BackupRefPtr::kDisabled,
+      PartitionOptions::UseConfigurablePool::kNo,
+  });
   root.UncapEmptySlotSpanMemoryForTesting();
 
   const size_t kAllocSize = 100;
@@ -56,14 +56,14 @@ TEST(HardeningTest, OffHeapPointerCrashing) {
   std::string important_data("very important");
   char* to_corrupt = const_cast<char*>(important_data.c_str());
 
-  PartitionRoot<base::internal::ThreadSafe> root{
-      PartitionOptions{PartitionOptions::AlignedAlloc::kAllowed,
-                       PartitionOptions::ThreadCache::kDisabled,
-                       PartitionOptions::Quarantine::kDisallowed,
-                       PartitionOptions::Cookie::kDisallowed,
-                       PartitionOptions::BackupRefPtr::kDisabled,
-                       PartitionOptions::UseConfigurablePool::kNo,
-                       PartitionOptions::LazyCommit::kEnabled}};
+  PartitionRoot<ThreadSafe> root({
+      PartitionOptions::AlignedAlloc::kAllowed,
+      PartitionOptions::ThreadCache::kDisabled,
+      PartitionOptions::Quarantine::kDisallowed,
+      PartitionOptions::Cookie::kDisallowed,
+      PartitionOptions::BackupRefPtr::kDisabled,
+      PartitionOptions::UseConfigurablePool::kNo,
+  });
   root.UncapEmptySlotSpanMemoryForTesting();
 
   const size_t kAllocSize = 100;
@@ -84,14 +84,14 @@ TEST(HardeningTest, OffHeapPointerCrashing) {
 }
 
 TEST(HardeningTest, MetadataPointerCrashing) {
-  PartitionRoot<base::internal::ThreadSafe> root{
-      PartitionOptions{PartitionOptions::AlignedAlloc::kAllowed,
-                       PartitionOptions::ThreadCache::kDisabled,
-                       PartitionOptions::Quarantine::kDisallowed,
-                       PartitionOptions::Cookie::kDisallowed,
-                       PartitionOptions::BackupRefPtr::kDisabled,
-                       PartitionOptions::UseConfigurablePool::kNo,
-                       PartitionOptions::LazyCommit::kEnabled}};
+  PartitionRoot<ThreadSafe> root({
+      PartitionOptions::AlignedAlloc::kAllowed,
+      PartitionOptions::ThreadCache::kDisabled,
+      PartitionOptions::Quarantine::kDisallowed,
+      PartitionOptions::Cookie::kDisallowed,
+      PartitionOptions::BackupRefPtr::kDisabled,
+      PartitionOptions::UseConfigurablePool::kNo,
+  });
   root.UncapEmptySlotSpanMemoryForTesting();
 
   const size_t kAllocSize = 100;
@@ -113,18 +113,18 @@ TEST(HardeningTest, MetadataPointerCrashing) {
   // Crashes, because |metadata_address| points inside the metadata area.
   EXPECT_DEATH(root.Alloc(kAllocSize, ""), "");
 }
-#endif  // !defined(OS_ANDROID) && defined(GTEST_HAS_DEATH_TEST) &&
+#endif  // !BUILDFLAG(IS_ANDROID) && defined(GTEST_HAS_DEATH_TEST) &&
         // defined(PA_HAS_FREELIST_HARDENING)
 
 TEST(HardeningTest, SuccessfulCorruption) {
-  PartitionRoot<base::internal::ThreadSafe> root{
-      PartitionOptions{PartitionOptions::AlignedAlloc::kAllowed,
-                       PartitionOptions::ThreadCache::kDisabled,
-                       PartitionOptions::Quarantine::kDisallowed,
-                       PartitionOptions::Cookie::kDisallowed,
-                       PartitionOptions::BackupRefPtr::kDisabled,
-                       PartitionOptions::UseConfigurablePool::kNo,
-                       PartitionOptions::LazyCommit::kEnabled}};
+  PartitionRoot<ThreadSafe> root({
+      PartitionOptions::AlignedAlloc::kAllowed,
+      PartitionOptions::ThreadCache::kDisabled,
+      PartitionOptions::Quarantine::kDisallowed,
+      PartitionOptions::Cookie::kDisallowed,
+      PartitionOptions::BackupRefPtr::kDisabled,
+      PartitionOptions::UseConfigurablePool::kNo,
+  });
   root.UncapEmptySlotSpanMemoryForTesting();
 
   uintptr_t* zero_vector = reinterpret_cast<uintptr_t*>(

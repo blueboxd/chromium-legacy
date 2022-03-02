@@ -4,6 +4,7 @@
 
 #include "ui/base/clipboard/clipboard_format_type.h"
 
+#include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -136,5 +137,14 @@ const ClipboardFormatType& ClipboardFormatType::WebCustomDataType() {
   static base::NoDestructor<ClipboardFormatType> type(kMimeTypeWebCustomData);
   return *type;
 }
+
+#if defined(OS_CHROMEOS)
+// static
+const ClipboardFormatType& ClipboardFormatType::DataTransferEndpointDataType() {
+  static base::NoDestructor<ClipboardFormatType> type(
+      kMimeTypeDataTransferEndpoint);
+  return *type;
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ui

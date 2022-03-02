@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/drag_and_drop/table_view_url_drag_drop_handler.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#import "ios/chrome/browser/net/crurl.h"
 #include "ios/chrome/browser/sessions/live_tab_context_browser_agent.h"
 #include "ios/chrome/browser/sessions/session_util.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -357,7 +358,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     TableViewURLItem* recentlyClosedTab =
         [[TableViewURLItem alloc] initWithType:ItemTypeRecentlyClosed];
     recentlyClosedTab.title = base::SysUTF16ToNSString(navigationEntry.title());
-    recentlyClosedTab.URL = navigationEntry.virtual_url();
+    recentlyClosedTab.URL =
+        [[CrURL alloc] initWithGURL:navigationEntry.virtual_url()];
     [self.tableViewModel addItem:recentlyClosedTab
          toSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
   }
@@ -436,7 +438,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     TableViewURLItem* sessionTabItem =
         [[TableViewURLItem alloc] initWithType:ItemTypeSessionTabData];
     sessionTabItem.title = title;
-    sessionTabItem.URL = sessionTab->virtual_url;
+    sessionTabItem.URL = [[CrURL alloc] initWithGURL:sessionTab->virtual_url];
     [model addItem:sessionTabItem
         toSectionWithIdentifier:[self sectionIdentifierForSession:session]];
   }
@@ -969,7 +971,10 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
       TableViewURLItem* URLItem =
           base::mac::ObjCCastStrict<TableViewURLItem>(item);
-      return [[URLInfo alloc] initWithURL:URLItem.URL title:URLItem.title];
+      GURL gurl;
+      if (URLItem.URL)
+        gurl = URLItem.URL.gurl;
+      return [[URLInfo alloc] initWithURL:gurl title:URLItem.title];
     }
 
     case ItemTypeRecentlyClosedHeader:
@@ -1349,32 +1354,40 @@ const int kRecentlyClosedTabsSectionIndex = 0;
                              identityChanged:(BOOL)identityChanged {
   DCHECK(self.signinPromoViewMediator);
   if (![self.tableViewModel
-          hasSectionForSectionIdentifier:SectionIdentifierOtherDevices]) {
+          hasSectionForSectionIdentifier:SectionIdentifierOtherDevices] ||
+      ![self.tableViewModel hasItemForItemType:ItemTypeOtherDevicesSigninPromo
+                             sectionIdentifier:SectionIdentifierOtherDevices]) {
     // Need to remove the sign-in promo view mediator when the section doesn't
     // exist anymore. The mediator should not be removed each time the section
     // is removed since the section is replaced at each reload.
     // Metrics would be recorded too often.
+    // The other device section can be present even without the sync promo. This
+    // happens when sync is disabled.
     [self.signinPromoViewMediator disconnect];
     self.signinPromoViewMediator = nil;
     return;
   }
-  // Update the TableViewSigninPromoItem configurator. It will be used by the
-  // item to configure the cell once |self.tableView| requests a cell on
-  // cellForRowAtIndexPath.
-  NSIndexPath* indexPath =
-      [self.tableViewModel indexPathForItemType:ItemTypeOtherDevicesSigninPromo
-                              sectionIdentifier:SectionIdentifierOtherDevices];
-  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  TableViewSigninPromoItem* signInItem =
-      base::mac::ObjCCastStrict<TableViewSigninPromoItem>(item);
-  signInItem.configurator = configurator;
-  // If section is collapsed no tableView update is needed.
-  if ([self.tableViewModel sectionIsCollapsed:SectionIdentifierOtherDevices]) {
-    return;
+  if ([self.tableViewModel hasItemForItemType:ItemTypeOtherDevicesSigninPromo
+                            sectionIdentifier:SectionIdentifierOtherDevices]) {
+    // Update the TableViewSigninPromoItem configurator. It will be used by the
+    // item to configure the cell once |self.tableView| requests a cell on
+    // cellForRowAtIndexPath.
+    NSIndexPath* indexPath = [self.tableViewModel
+        indexPathForItemType:ItemTypeOtherDevicesSigninPromo
+           sectionIdentifier:SectionIdentifierOtherDevices];
+    TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+    TableViewSigninPromoItem* signInItem =
+        base::mac::ObjCCastStrict<TableViewSigninPromoItem>(item);
+    signInItem.configurator = configurator;
+    // If section is collapsed no tableView update is needed.
+    if ([self.tableViewModel
+            sectionIsCollapsed:SectionIdentifierOtherDevices]) {
+      return;
+    }
+    // After setting the new configurator to the item, reload the item's Cell.
+    [self reloadCellsForItems:@[ signInItem ]
+             withRowAnimation:UITableViewRowAnimationNone];
   }
-  // After setting the new configurator to the item, reload the item's Cell.
-  [self reloadCellsForItems:@[ signInItem ]
-           withRowAnimation:UITableViewRowAnimationNone];
 }
 
 - (void)signinDidFinish {

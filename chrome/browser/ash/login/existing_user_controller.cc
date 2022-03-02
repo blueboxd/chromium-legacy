@@ -5,11 +5,13 @@
 #include "chrome/browser/ash/login/existing_user_controller.h"
 
 #include <memory>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
+#include "ash/components/login/auth/key.h"
 #include "ash/components/login/session/session_termination_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_pref_names.h"
@@ -22,7 +24,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/scoped_observation.h"
@@ -95,7 +96,6 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
-#include "chromeos/login/auth/key.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
 #include "components/google/core/common/google_util.h"
@@ -219,7 +219,7 @@ bool IsUpdateRequiredDeadlineReached() {
 
 bool IsTestingMigrationUI() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kTestEncryptionMigrationUI);
+      switches::kTestEncryptionMigrationUI);
 }
 
 bool ShouldForceDircrypto(const AccountId& account_id) {
@@ -255,15 +255,17 @@ LoginDisplay* GetLoginDisplay() {
   return GetLoginDisplayHost()->GetLoginDisplay();
 }
 
-void SetLoginExtensionApiLaunchExtensionIdPref(const AccountId& account_id,
-                                               const std::string extension_id) {
+void SetLoginExtensionApiCanLockManagedGuestSessionPref(
+    const AccountId& account_id,
+    bool can_lock_managed_guest_session) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id);
   DCHECK(user);
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
   DCHECK(profile);
   PrefService* prefs = profile->GetPrefs();
-  prefs->SetString(::prefs::kLoginExtensionApiLaunchExtensionId, extension_id);
+  prefs->SetBoolean(::prefs::kLoginExtensionApiCanLockManagedGuestSession,
+                    can_lock_managed_guest_session);
   prefs->CommitPendingWrite();
 }
 
@@ -285,7 +287,7 @@ absl::optional<EncryptionMigrationMode> GetEncryptionMigrationMode(
           user_context.GetAccountId()) ==
           user_manager::ProfileRequiresPolicy::kPolicyRequired ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kProfileRequiresPolicy);
+          switches::kProfileRequiresPolicy);
 
   // Force-migrate all home directories if the user is known to have enterprise
   // policy, otherwise ask the user.
@@ -445,6 +447,8 @@ void ExistingUserController::UpdateLoginDisplay(
       user_manager::UserManager::Get();
   // By default disable offline login from the error screen.
   ErrorScreen::AllowOfflineLogin(false /* allowed */);
+  // Counts regular device users that can log in.
+  int regular_users_counter = 0;
   for (auto* user : users) {
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
     // kiosk UI) is currently disabled and it gets the apps directly from
@@ -457,6 +461,7 @@ void ExistingUserController::UpdateLoginDisplay(
         user->GetType() == user_manager::USER_TYPE_CHILD ||
         user->GetType() == user_manager::USER_TYPE_ACTIVE_DIRECTORY) {
       ErrorScreen::AllowOfflineLogin(true /* allowed */);
+      regular_users_counter++;
     }
     const bool meets_allowlist_requirements =
         !user->HasGaiaAccount() ||
@@ -464,6 +469,10 @@ void ExistingUserController::UpdateLoginDisplay(
     if (meets_allowlist_requirements && user->using_saml())
       saml_users_for_password_sync.push_back(user);
   }
+
+  // Records total number of users on the login screen.
+  base::UmaHistogramCounts100("Login.NumberOfUsersOnLoginScreen",
+                              regular_users_counter);
 
   auto login_users = ExtractLoginUsers(users);
 
@@ -911,7 +920,7 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
 
   // LoginPerformer instance will delete itself in case of successful auth.
   login_performer_->set_delegate(nullptr);
-  ignore_result(login_performer_.release());
+  std::ignore = login_performer_.release();
 
   if (user_context.GetAuthFlow() == UserContext::AUTH_FLOW_OFFLINE) {
     base::UmaHistogramCounts100("Login.OfflineSuccess.Attempts",
@@ -929,15 +938,15 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
     DeviceSettingsService::Get()->MarkWillEstablishConsumerOwnership();
   }
 
-  if (user_context.IsLockableManagedGuestSession()) {
+  if (user_context.CanLockManagedGuestSession()) {
     CHECK(user_context.GetUserType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
     user_manager::User* user =
         user_manager::UserManager::Get()->FindUserAndModify(
             user_context.GetAccountId());
     DCHECK(user);
-    user->AddProfileCreatedObserver(base::BindOnce(
-        &SetLoginExtensionApiLaunchExtensionIdPref, user_context.GetAccountId(),
-        user_context.GetManagedGuestSessionLaunchExtensionId()));
+    user->AddProfileCreatedObserver(
+        base::BindOnce(&SetLoginExtensionApiCanLockManagedGuestSessionPref,
+                       user_context.GetAccountId(), true));
   }
 
   UserSessionManager::StartSessionType start_session_type =
@@ -1024,7 +1033,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
 
   profile_prepared_ = true;
 
-  chromeos::UserContext user_context =
+  UserContext user_context =
       UserContext(*ProfileHelper::Get()->GetUserByProfile(profile));
   auto* profile_connector = profile->GetProfilePolicyConnector();
   bool is_enterprise_managed =
@@ -1317,7 +1326,7 @@ void ExistingUserController::LoginAsPublicSessionWithPolicyStoreReady(
         base::BindOnce(
             &ExistingUserController::SetPublicSessionKeyboardLayoutAndLogin,
             weak_factory_.GetWeakPtr(), new_user_context),
-        locale);
+        locale, input_method::InputMethodManager::Get());
     return;
   }
 
@@ -1494,7 +1503,9 @@ void ExistingUserController::SetPublicSessionKeyboardLayoutAndLogin(
     base::DictionaryValue* entry = nullptr;
     keyboard_layouts->GetDictionary(i, &entry);
     if (entry->FindBoolKey("selected").value_or(false)) {
-      entry->GetString("value", &keyboard_layout);
+      const std::string* keyboard_layout_ptr = entry->FindStringKey("value");
+      if (keyboard_layout_ptr)
+        keyboard_layout = *keyboard_layout_ptr;
       break;
     }
   }

@@ -36,9 +36,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/app_session_service.h"
 #include "chrome/browser/sessions/app_session_service_factory.h"
@@ -539,23 +539,6 @@ class SessionRestoreImpl : public BrowserListObserver {
     }
 
     for (auto i = windows->begin(); i != windows->end(); ++i) {
-      // Check if a collapse tab group will be restored and if the feature flag
-      // |kTabGroupsCollapseFreezing| is enabled. UMA metrics for features are
-      // gathered based on the check of the feature flag. The goal of this code
-      // is to ensure the feature is initialized before the first UMA snapshot
-      // gets uploaded.
-      // TODO(1110108): Remove this check once the feature is fully launched.
-      for (auto& session_tab_group : (*i)->tab_groups) {
-        // Ensure that the user has a collapsed group before checking if the
-        // freezing experiment is enabled to ensure our metrics accurately track
-        // the impact of freezing for users with collapsed tab groups.
-        if (session_tab_group->visual_data.is_collapsed() &&
-            base::FeatureList::IsEnabled(
-                features::kTabGroupsCollapseFreezing)) {
-          break;
-        }
-      }
-
       ++(*window_count);
       // 1. Choose between restoring tabs in an existing browser or in a newly
       //    created browser.
@@ -621,14 +604,14 @@ class SessionRestoreImpl : public BrowserListObserver {
                        initial_tab_count);
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       // On the mac, app visibility is asynchronously available, so we can't
       // rely on a particular value here.
       const bool is_visibility_async =
           browser->type() == Browser::Type::TYPE_APP;
 #else
       const bool is_visibility_async = false;
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
       DCHECK(is_visibility_async || browser->window()->IsVisible() ||
              browser->window()->IsMinimized());
@@ -864,7 +847,7 @@ class SessionRestoreImpl : public BrowserListObserver {
           /*user_gesture=*/false);
     }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
     params.restore_id = restore_id;
 #endif
 

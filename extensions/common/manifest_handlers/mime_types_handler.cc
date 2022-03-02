@@ -26,7 +26,7 @@ namespace {
 // This has to by in sync with MimeHandlerType enum.
 // Note that if multiple versions of quickoffice are installed, the
 // higher-indexed entry will clobber earlier entries.
-constexpr const char* const kMIMETypeHandlersAllowlist[] = {
+const char* kMIMETypeHandlersAllowlist[] = {
     extension_misc::kPdfExtensionId,
     extension_misc::kQuickOfficeComponentExtensionId,
     extension_misc::kQuickOfficeInternalExtensionId,
@@ -157,10 +157,9 @@ bool MimeTypesHandlerParser::Parse(extensions::Extension* extension,
     info->handler_.AddMIMEType(entry.GetString());
   }
 
-  std::string mime_types_handler;
-  if (extension->manifest()->GetString(keys::kMimeTypesHandler,
-                                       &mime_types_handler)) {
-    info->handler_.set_handler_url(mime_types_handler);
+  if (const std::string* mime_types_handler =
+          extension->manifest()->FindStringPath(keys::kMimeTypesHandler)) {
+    info->handler_.set_handler_url(*mime_types_handler);
   }
 
   extension->SetManifestData(keys::kMimeTypesHandler, std::move(info));

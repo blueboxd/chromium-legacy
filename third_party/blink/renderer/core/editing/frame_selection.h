@@ -37,12 +37,12 @@
 #include "third_party/blink/renderer/core/editing/set_selection_options.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
-class CaretDisplayItemClient;
+class EffectPaintPropertyNode;
 class Element;
 class InlineTextBox;
 class LayoutBlock;
@@ -304,6 +304,8 @@ class CORE_EXPORT FrameSelection final
   // |VisibleSelection| and selection bounds.
   void MarkCacheDirty();
 
+  const EffectPaintPropertyNode& CaretEffectNode() const;
+
   FrameCaret& FrameCaretForTesting() const { return *frame_caret_; }
 
   LayoutTextSelectionStatus ComputeLayoutSelectionStatus(
@@ -322,8 +324,6 @@ class CORE_EXPORT FrameSelection final
   friend class FrameSelectionTest;
   friend class PaintControllerPaintTestBase;
   friend class SelectionControllerTest;
-
-  const CaretDisplayItemClient& CaretDisplayItemClientForTesting() const;
 
   void NotifyAccessibilityForSelectionChange();
   void NotifyCompositorForSelectionChange();

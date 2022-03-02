@@ -171,17 +171,20 @@ devtools_domains = [
   "tracing",
 ]
 
-generated_devtools_api = []
+generated_devtools_api_sources = []
+generated_devtools_api_headers = []
 foreach(domain, devtools_domains) {
-  generated_devtools_api += [
-    "$target_gen_dir/public/devtools/domains/" + domain + ".cc",
+  generated_devtools_api_headers += [
     "$target_gen_dir/public/devtools/domains/" + domain + ".h",
     "$target_gen_dir/public/devtools/domains/types_" + domain + ".h",
-    "$target_gen_dir/public/devtools/domains/types_" + domain + ".cc",
     "$target_gen_dir/public/devtools/internal/type_conversions_" + domain +
         ".h",
     "$target_gen_dir/public/devtools/internal/" +
         "types_forward_declarations_" + domain + ".h",
+  ]
+  generated_devtools_api_sources += [
+    "$target_gen_dir/public/devtools/domains/" + domain + ".cc",
+    "$target_gen_dir/public/devtools/domains/types_" + domain + ".cc",
   ]
 }
 
@@ -195,7 +198,7 @@ action("gen_devtools_client_api") {
     "$root_gen_dir/third_party/blink/public/devtools_protocol/protocol.json",
   ]
 
-  outputs = generated_devtools_api
+  outputs = generated_devtools_api_headers + generated_devtools_api_sources
   sources = [
     "lib/browser/devtools_api/domain_cc.template",
     "lib/browser/devtools_api/domain_h.template",
@@ -308,7 +311,7 @@ source_set("headless_shared_sources") {
     "public/util/user_agent.h",
   ]
 
-  sources += generated_devtools_api
+  sources += generated_devtools_api_headers + generated_devtools_api_sources
 
   if (!is_fuchsia) {
     sources += [
@@ -546,6 +549,10 @@ component("headless_non_renderer") {
     }
   }
 
+  if (is_linux || is_chromeos) {
+    data_deps += [ "//components/crash/core/app:chrome_crashpad_handler" ]
+  }
+
   # Normally set to false (see build/args/headless.gn), but we can optionally
   # use external v8 startup data too.
   if ((!is_win || is_component_build) && v8_use_external_startup_data) {
@@ -553,8 +560,7 @@ component("headless_non_renderer") {
     if (use_v8_context_snapshot) {
       data += [ "$root_out_dir/$v8_context_snapshot_filename" ]
       data_deps += [ "//tools/v8_context_snapshot" ]
-    }
-    if (!use_v8_context_snapshot || include_both_v8_snapshots) {
+    } else {
       data += [ "$root_out_dir/snapshot_blob.bin" ]
     }
   }
@@ -687,10 +693,20 @@ test("headless_unittests") {
   sources = [
     "public/domains/types_unittest.cc",
     "public/util/error_reporter_unittest.cc",
+
+    # Headers for code under test that aren't normally exposed.
+    "public/headless_export.h",
+    "public/util/error_reporter.h",
   ]
+
+  # Headers for generated API code under test.
+  sources += generated_devtools_api_headers
+
   defines = []
 
   deps = [
+    ":gen_devtools_client_api",
+    ":headless_non_renderer",
     ":headless_shell_lib",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
@@ -811,10 +827,11 @@ test("headless_browsertests") {
   ]
 
   if (is_mac) {
-    deps += [
-      "//services/device/public/cpp:test_support",
-      "//third_party/crashpad/crashpad/client",
-    ]
+    deps += [ "//services/device/public/cpp:test_support" ]
+  }
+
+  if (!is_fuchsia) {
+    deps += [ "//third_party/crashpad/crashpad/client" ]
   }
 
   if (enable_basic_printing) {

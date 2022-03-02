@@ -289,7 +289,6 @@ if (use_allocator == "tcmalloc") {
 buildflag_header("buildflags") {
   header = "buildflags.h"
   _use_partition_alloc_as_malloc = use_allocator == "partition"
-  _use_tcmalloc_as_malloc = use_allocator == "tcmalloc"
   assert(use_allocator_shim || !_use_partition_alloc_as_malloc,
          "Partition alloc requires the allocator shim")
 
@@ -302,9 +301,10 @@ buildflag_header("buildflags") {
   _enable_backup_ref_ptr_slow_checks =
       enable_backup_ref_ptr_slow_checks && _use_backup_ref_ptr
 
+  # TODO(crbug.com/1257213): Remove USE_TCMALLOC.
   flags = [
     "USE_ALLOCATOR_SHIM=$use_allocator_shim",
-    "USE_TCMALLOC=$_use_tcmalloc_as_malloc",
+    "USE_TCMALLOC=false",
     "USE_PARTITION_ALLOC=$use_partition_alloc",
     "USE_PARTITION_ALLOC_AS_MALLOC=$_use_partition_alloc_as_malloc",
 
@@ -354,4 +354,13 @@ config("wrap_malloc_symbols") {
     "-Wl,-wrap,asprintf",
     "-Wl,-wrap,vasprintf",
   ]
+}
+
+config("mac_no_default_new_delete_symbols") {
+  if (!is_component_build) {
+    # This is already set when we compile libc++, see
+    # buildtools/third_party/libc++/BUILD.gn. But it needs to be set here as well,
+    # since the shim defines the symbols, to prevent them being exported.
+    cflags = [ "-fvisibility-global-new-delete-hidden" ]
+  }
 }

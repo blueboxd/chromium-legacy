@@ -28,7 +28,7 @@
 #include "extensions/common/extension_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
@@ -260,9 +260,7 @@ class CryptoTokenPermissionTest : public ExtensionApiUnittest {
       bool* out_result) {
     if (bubble_action != permissions::PermissionRequestManager::NONE) {
       prompt_factory_->set_response_type(bubble_action);
-      auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
-      prompt_factory_->DocumentOnLoadCompletedInMainFrame(
-          web_contents->GetMainFrame());
+      prompt_factory_->DocumentOnLoadCompletedInPrimaryMainFrame();
     }
 
     auto function = base::MakeRefCounted<
@@ -295,9 +293,7 @@ class CryptoTokenPermissionTest : public ExtensionApiUnittest {
       bool* out_result) {
     if (bubble_action != permissions::PermissionRequestManager::NONE) {
       prompt_factory_->set_response_type(bubble_action);
-      auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
-      prompt_factory_->DocumentOnLoadCompletedInMainFrame(
-          web_contents->GetMainFrame());
+      prompt_factory_->DocumentOnLoadCompletedInPrimaryMainFrame();
     }
 
     auto function = base::MakeRefCounted<
@@ -326,7 +322,7 @@ class CryptoTokenPermissionTest : public ExtensionApiUnittest {
 };
 
 TEST_F(CryptoTokenPermissionTest, AttestationPrompt) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // TODO(crbug.com/1225335) This test is failing on WIN10_20H2.
   if (base::win::OSInfo::GetInstance()->version() >=
       base::win::Version::WIN10_20H2)

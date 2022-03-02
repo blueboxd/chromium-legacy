@@ -22,7 +22,7 @@ using content::BrowserContext;
 namespace {
 
 bool IsStoragePressureEnabled() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return false;
 #else
   return true;
@@ -56,8 +56,8 @@ void QuotaInternalsHandler::ReportAvailableSpace(int64_t available_space) {
 }
 
 void QuotaInternalsHandler::ReportGlobalInfo(const GlobalStorageInfo& data) {
-  std::unique_ptr<base::Value> value(data.NewValue());
-  FireWebUIListener("GlobalInfoUpdated", *value);
+  base::Value value(data.NewValue());
+  FireWebUIListener("GlobalInfoUpdated", value);
 }
 
 void QuotaInternalsHandler::ReportPerHostInfo(

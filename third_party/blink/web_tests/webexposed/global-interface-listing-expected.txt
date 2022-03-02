@@ -2700,7 +2700,6 @@ interface FileSystemFileHandle : FileSystemHandle
     method createWritable
     method getFile
     method move
-    method rename
 interface FileSystemHandle
     attribute @@toStringTag
     getter kind
@@ -2710,7 +2709,6 @@ interface FileSystemHandle
     method move
     method queryPermission
     method remove
-    method rename
     method requestPermission
 interface FileSystemWritableFileStream : WritableStream
     attribute @@toStringTag
@@ -2885,6 +2883,7 @@ interface HIDDevice : EventTarget
     getter vendorId
     method close
     method constructor
+    method forget
     method open
     method receiveFeatureReport
     method sendFeatureReport
@@ -4248,10 +4247,13 @@ interface HTMLSelectElement : HTMLElement
     setter value
 interface HTMLSelectMenuElement : HTMLElement
     attribute @@toStringTag
+    getter disabled
     getter form
+    getter labels
     getter name
     getter open
     getter required
+    getter selectedOption
     getter type
     getter validationMessage
     getter validity
@@ -4261,6 +4263,7 @@ interface HTMLSelectMenuElement : HTMLElement
     method constructor
     method reportValidity
     method setCustomValidity
+    setter disabled
     setter name
     setter required
     setter value
@@ -5715,6 +5718,7 @@ interface NDEFReader : EventTarget
     getter onreading
     getter onreadingerror
     method constructor
+    method makeReadOnly
     method scan
     method write
     setter onreading
@@ -10571,7 +10575,6 @@ interface WebGLVertexArrayObject
 interface WebId
     attribute @@toStringTag
     method constructor
-    method logout
     method provide
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
@@ -11401,6 +11404,7 @@ namespace CSS
     attribute propertyNamesInGlobal
     attribute testRunner
     attribute textInputController
+    getter anonymous
     getter appHistory
     getter attributionReporting
     getter caches

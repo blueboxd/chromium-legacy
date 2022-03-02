@@ -20,7 +20,7 @@
 #include "chromeos/network/network_state.h"
 #include "components/session_manager/core/session_manager.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace tether {
 
@@ -267,7 +267,7 @@ bool HostScannerImpl::IsPotentialHotspotNotificationShowing() {
 
 bool HostScannerImpl::CanAvailableHostNotificationBeShown() {
   const chromeos::NetworkTypePattern network_type_pattern =
-      chromeos::switches::ShouldTetherHostScansIgnoreWiredConnections()
+      switches::ShouldTetherHostScansIgnoreWiredConnections()
           ? chromeos::NetworkTypePattern::Wireless()
           : chromeos::NetworkTypePattern::Default();
   // Note: If a network is active (i.e., connecting or connected), it will be
@@ -311,4 +311,4 @@ bool HostScannerImpl::CanAvailableHostNotificationBeShown() {
 
 }  // namespace tether
 
-}  // namespace chromeos
+}  // namespace ash

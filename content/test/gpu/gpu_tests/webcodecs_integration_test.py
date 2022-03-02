@@ -17,7 +17,7 @@ data_path = os.path.join(path_util.GetChromiumSrcDir(), 'media', 'test', 'data')
 four_colors_img_path = os.path.join(data_path, 'four-colors.y4m')
 
 frame_sources = ["camera", "capture", "offscreen", "hw_decoder", "sw_decoder"]
-codecs = ["avc1.42001E", "vp8", "vp09.00.10.08"]
+codecs = ["avc1.42001E", "vp8", "vp09.00.10.08", "av01.0.04M.08"]
 accelerations = ["prefer-hardware", "prefer-software"]
 
 
@@ -105,12 +105,14 @@ class WebCodecsIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'document.readyState == "complete"')
     tab.EvaluateJavaScript('TEST.run(' + json.dumps(arg_obj) + ')')
     tab.action_runner.WaitForJavaScriptCondition('TEST.finished', timeout=60)
+    if tab.EvaluateJavaScript('TEST.skipped'):
+      self.skipTest('Skipping test:' + tab.EvaluateJavaScript('TEST.summary()'))
     if not tab.EvaluateJavaScript('TEST.success'):
       self.fail('Test failure:' + tab.EvaluateJavaScript('TEST.summary()'))
 
   @staticmethod
   def CameraCanShowFourColors(os_name):
-    return os_name != 'android' and os_name != 'chromeos'
+    return os_name not in ('android', 'chromeos')
 
   @classmethod
   def SetUpProcess(cls):

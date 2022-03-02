@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
-import org.chromium.chrome.browser.omnibox.styles.OmniboxTheme;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.voice.AssistantVoiceSearchService;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
@@ -56,7 +55,9 @@ import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
+import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -72,7 +73,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
-import org.chromium.ui.util.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -183,6 +183,7 @@ class LocationBarMediator
     private final BooleanSupplier mIsToolbarMicEnabledSupplier;
     // Tracks if the location bar is laid out in a focused state due to an ntp scroll.
     private boolean mIsLocationBarFocusedFromNtpScroll;
+    private @BrandedColorScheme int mBrandedColorScheme = BrandedColorScheme.APP_DEFAULT;
 
     /*package */ LocationBarMediator(@NonNull Context context,
             @NonNull LocationBarLayout locationBarLayout,
@@ -907,8 +908,8 @@ class LocationBarMediator
                 mAssistantVoiceSearchServiceSupplier.get();
         if (assistantVoiceSearchService == null) return;
 
-        mLocationBarLayout.setMicButtonTint(assistantVoiceSearchService.getButtonColorStateList(
-                getPrimaryBackgroundColor(), mContext));
+        mLocationBarLayout.setMicButtonTint(
+                assistantVoiceSearchService.getButtonColorStateList(mBrandedColorScheme, mContext));
         mLocationBarLayout.setMicButtonDrawable(
                 assistantVoiceSearchService.getCurrentMicDrawable());
     }
@@ -919,32 +920,28 @@ class LocationBarMediator
                 mAssistantVoiceSearchServiceSupplier.get();
         if (assistantVoiceSearchService == null) return;
 
-        mLocationBarLayout.setLensButtonTint(assistantVoiceSearchService.getButtonColorStateList(
-                getPrimaryBackgroundColor(), mContext));
+        mLocationBarLayout.setLensButtonTint(
+                assistantVoiceSearchService.getButtonColorStateList(mBrandedColorScheme, mContext));
     }
 
     /**
      * Update visuals to use a correct color scheme depending on the primary color.
      */
     @VisibleForTesting
-    /* package */ void updateOmniboxTheme() {
-        // TODO(crbug.com/1114183): Unify light and dark color logic in chrome and make it clear
-        // whether the foreground or background color is dark.
-        final boolean useDarkForegroundColors =
-                !ColorUtils.shouldUseLightForegroundOnBackground(getPrimaryBackgroundColor());
-        final @OmniboxTheme int omniboxTheme = OmniboxResourceProvider.getOmniboxTheme(
+    /* package */ void updateBrandedColorScheme() {
+        mBrandedColorScheme = OmniboxResourceProvider.getBrandedColorScheme(
                 mContext, mLocationBarDataProvider.isIncognito(), getPrimaryBackgroundColor());
 
         mLocationBarLayout.setDeleteButtonTint(
-                ChromeColors.getPrimaryIconTint(mContext, !useDarkForegroundColors));
+                ThemeUtils.getThemedToolbarIconTint(mContext, mBrandedColorScheme));
         // If the URL changed colors and is not focused, update the URL to account for the new
         // color scheme.
-        if (mUrlCoordinator.setOmniboxTheme(omniboxTheme) && !isUrlBarFocused()) {
+        if (mUrlCoordinator.setBrandedColorScheme(mBrandedColorScheme) && !isUrlBarFocused()) {
             updateUrl();
         }
-        mStatusCoordinator.setUseDarkForegroundColors(useDarkForegroundColors);
+        mStatusCoordinator.setBrandedColorScheme(mBrandedColorScheme);
         if (mAutocompleteCoordinator != null) {
-            mAutocompleteCoordinator.updateVisualsForState(omniboxTheme);
+            mAutocompleteCoordinator.updateVisualsForState(mBrandedColorScheme);
         }
     }
 
@@ -1170,9 +1167,11 @@ class LocationBarMediator
 
     @Override
     public void onPrimaryColorChanged() {
+        // This method needs to be called first as it computes |mBrandedColorScheme|.
+        updateBrandedColorScheme();
+
         updateAssistantVoiceSearchDrawableAndColors();
         updateLensButtonColors();
-        updateOmniboxTheme();
     }
 
     @Override

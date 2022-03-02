@@ -31,10 +31,14 @@
 #include "base/dcheck_is_on.h"
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -51,11 +55,19 @@ constexpr int kPreferredTitleTopMargins = 12;
 constexpr int kPreferredTitleBottomMargins = 4;
 
 constexpr base::TimeDelta kImpressionThreshold = base::Seconds(3);
+constexpr static base::TimeDelta kFadeInDuration = base::Milliseconds(100);
+constexpr static base::TimeDelta kIdentityTranslationDuration =
+    base::Milliseconds(200);
 
 // TODO(crbug.com/1199206): Move this into SharedAppListConfig once the UI for
 // categories is more developed.
 constexpr size_t kMaxResultsWithCategoricalSearch = 3;
 constexpr int kAnswerCardMaxResults = 1;
+
+// Show animations for search result views and titles have a translation
+// distance of 'kAnimatedOffsetMultiplier' * i where i is the position of the
+// view in the 'ProductivityLauncherSearchView'.
+constexpr int kAnimatedOffsetMultiplier = 4;
 
 SearchResultIdWithPositionIndices GetSearchResultsForLogging(
     std::vector<SearchResultView*> search_result_views) {
@@ -108,10 +120,12 @@ SearchResultListView::SearchResultListView(
     AppListViewDelegate* view_delegate,
     SearchResultPageDialogController* dialog_controller,
     SearchResultView::SearchResultViewType search_result_view_type,
+    bool animates_result_updates,
     absl::optional<size_t> productivity_launcher_index)
     : SearchResultContainerView(view_delegate),
       main_view_(main_view),
       view_delegate_(view_delegate),
+      animates_result_updates_(animates_result_updates),
       results_container_(new views::View),
       productivity_launcher_index_(productivity_launcher_index),
       search_result_view_type_(search_result_view_type) {
@@ -126,6 +140,9 @@ SearchResultListView::SearchResultListView(
       kPreferredTitleTopMargins, kPreferredTitleHorizontalMargins,
       kPreferredTitleBottomMargins, kPreferredTitleHorizontalMargins));
   title_label_->SetVisible(false);
+  title_label_->SetPaintToLayer();
+  title_label_->layer()->SetFillsBoundsOpaquely(false);
+
   results_container_->AddChildView(title_label_);
 
   size_t result_count =
@@ -136,6 +153,8 @@ SearchResultListView::SearchResultListView(
     search_result_views_.emplace_back(new SearchResultView(
         this, view_delegate_, dialog_controller, search_result_view_type));
     search_result_views_.back()->set_index_in_container(i);
+    search_result_views_.back()->SetPaintToLayer();
+    search_result_views_.back()->layer()->SetFillsBoundsOpaquely(false);
     results_container_->AddChildView(search_result_views_.back());
     AddObservedResultView(search_result_views_.back());
   }
@@ -145,6 +164,9 @@ SearchResultListView::SearchResultListView(
 SearchResultListView::~SearchResultListView() = default;
 
 void SearchResultListView::SetListType(SearchResultListType list_type) {
+  if (list_type_ != list_type)
+    removed_results_.clear();
+
   list_type_ = list_type;
   switch (list_type_.value()) {
     case SearchResultListType::kUnified:
@@ -236,14 +258,6 @@ void SearchResultListView::SetListType(SearchResultListType list_type) {
 #endif
 }
 
-void SearchResultListView::ListItemsRemoved(size_t start, size_t count) {
-  size_t last = std::min(start + count, search_result_views_.size());
-  for (size_t i = start; i < last; ++i)
-    GetResultViewAt(i)->ClearResult();
-
-  SearchResultContainerView::ListItemsRemoved(start, count);
-}
-
 SearchResultView* SearchResultListView::GetResultViewAt(size_t index) {
   DCHECK(index >= 0 && index < search_result_views_.size());
   return search_result_views_[index];
@@ -264,6 +278,102 @@ SearchResultListView::GetAllListTypesForCategoricalSearch() {
   return categorical_search_types;
 }
 
+absl::optional<SearchResultContainerView::ResultsAnimationInfo>
+SearchResultListView::ScheduleResultAnimations(
+    const ResultsAnimationInfo& aggregate_animation_info) {
+  DCHECK(features::IsProductivityLauncherAnimationEnabled());
+  DCHECK(animates_result_updates_);
+
+  // Collect current container animation info.
+  ResultsAnimationInfo current_animation_info;
+
+  if (num_results_ < 1 || !enabled_) {
+    SetVisible(false);
+    last_container_start_index_ = -1;
+    for (auto* result_view : search_result_views_)
+      result_view->SetVisible(false);
+    return current_animation_info;
+  }
+
+  // All views should be animated if
+  // *   the container is being shown, or
+  // *   any of the result views that precede the container in the search UI are
+  //     animating, or
+  // *   the number of result views before this container changed (e.g. if some
+  //     results get removed).
+  bool force_animation =
+      !GetVisible() || aggregate_animation_info.animating_views > 0 ||
+      last_container_start_index_ != aggregate_animation_info.total_views;
+
+  SetVisible(true);
+  last_container_start_index_ = aggregate_animation_info.total_views;
+
+  auto schedule_animation = [this, &current_animation_info,
+                             &aggregate_animation_info](views::View* view) {
+    ShowViewWithAnimation(view, current_animation_info.total_views +
+                                    aggregate_animation_info.total_views);
+    ++current_animation_info.animating_views;
+  };
+
+  if (title_label_->GetVisible()) {
+    if (force_animation)
+      schedule_animation(title_label_);
+    ++current_animation_info.total_views;
+  }
+
+  for (size_t i = 0; i < search_result_views_.size(); ++i) {
+    SearchResultView* result_view = GetResultViewAt(i);
+    result_view->SetVisible(i < num_results_);
+
+    const bool needs_animation = result_view->GetAndResetResultChanged();
+    if (i < num_results_) {
+      if (force_animation || needs_animation) {
+        // If one of the result views have to be animated, animate all result
+        // views that follow.
+        force_animation = true;
+        schedule_animation(result_view);
+      }
+      ++current_animation_info.total_views;
+    }
+  }
+
+  return current_animation_info;
+}
+
+void SearchResultListView::ShowViewWithAnimation(views::View* view,
+                                                 int position) {
+  // Abort any in-progress layer animation.
+  DCHECK(view->layer()->GetAnimator());
+  view->layer()->GetAnimator()->AbortAllAnimations();
+
+  // Animation spec:
+  //
+  // Y Position: Down (offset) → End position
+  // offset: position * kAnimatedOffsetMultiplier px
+  // Duration: 200ms
+  // Ease: (0.00, 0.00, 0.20, 1.00)
+
+  // Opacity: 0% -> 100%
+  // Duration: 100 ms
+  // Ease: Linear
+
+  gfx::Transform translate_down;
+  translate_down.Translate(0, position * kAnimatedOffsetMultiplier);
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetOpacity(view, 0.0f)
+      .SetTransform(view, translate_down)
+      .Then()
+      .SetOpacity(view, 1.0f, gfx::Tween::LINEAR)
+      .SetDuration(kFadeInDuration)
+      .At(base::TimeDelta())
+      .SetDuration(kIdentityTranslationDuration)
+      .SetTransform(view, gfx::Transform(), gfx::Tween::LINEAR_OUT_SLOW_IN);
+}
+
 int SearchResultListView::DoUpdate() {
   if (productivity_launcher_index_.has_value()) {
     std::vector<ash::AppListSearchResultCategory>* ordered_categories =
@@ -278,8 +388,8 @@ int SearchResultListView::DoUpdate() {
     }
   }
 
-  SetVisible(enabled_);
   if (!enabled_ || !GetWidget() || !GetWidget()->IsVisible()) {
+    SetVisible(false);
     for (auto* result_view : search_result_views_) {
       result_view->SetResult(nullptr);
       result_view->SetVisible(false);
@@ -287,28 +397,14 @@ int SearchResultListView::DoUpdate() {
     return 0;
   }
 
-  std::vector<SearchResult*> display_results = GetCategorizedSearchResults();
-  size_t num_results = display_results.size();
-  for (size_t i = 0; i < search_result_views_.size(); ++i) {
-    SearchResultView* result_view = GetResultViewAt(i);
-    if (i < num_results) {
-      result_view->SetResult(display_results[i]);
-      result_view->SizeToPreferredSize();
-      result_view->SetVisible(true);
-    } else {
-      result_view->SetResult(nullptr);
-      result_view->SetVisible(false);
-    }
-  }
-  // the search_result_list_view should be hidden if there are no results.
-  SetVisible(num_results > 0);
+  std::vector<SearchResult*> displayed_results = UpdateResultViews();
 
   auto* notifier = view_delegate_->GetNotifier();
 
   // TODO(crbug/1216097): replace metrics with something more meaningful.
   if (notifier) {
     std::vector<AppListNotifier::Result> notifier_results;
-    for (const auto* result : display_results)
+    for (const auto* result : displayed_results)
       notifier_results.emplace_back(result->id(), result->metrics_type());
     notifier->NotifyResultsUpdated(SearchResultDisplayType::kList,
                                    notifier_results);
@@ -323,7 +419,7 @@ int SearchResultListView::DoUpdate() {
     impression_timer_.Stop();
   impression_timer_.Start(FROM_HERE, kImpressionThreshold, this,
                           &SearchResultListView::LogImpressions);
-  return display_results.size();
+  return displayed_results.size();
 }
 
 void SearchResultListView::LogImpressions() {
@@ -397,9 +493,13 @@ void SearchResultListView::SearchResultActionActivated(
     SearchResultActionType action) {
   if (view_delegate_ && view->result()) {
     switch (action) {
-      case SearchResultActionType::kRemove:
-        view_delegate_->InvokeSearchResultAction(view->result()->id(), action);
+      case SearchResultActionType::kRemove: {
+        const std::string result_id = view->result()->id();
+        removed_results_.insert(result_id);
+        view_delegate_->InvokeSearchResultAction(result_id, action);
+        Update();
         break;
+      }
       case SearchResultActionType::kAppend:
         main_view_->search_box_view()->UpdateQuery(view->result()->title());
         break;
@@ -407,14 +507,6 @@ void SearchResultListView::SearchResultActionActivated(
         NOTREACHED();
     }
   }
-}
-
-void SearchResultListView::VisibilityChanged(View* starting_from,
-                                             bool is_visible) {
-  SearchResultContainerView::VisibilityChanged(starting_from, is_visible);
-  // We only do this work when is_visible is false.
-  if (is_visible)
-    return;
 }
 
 std::vector<SearchResult*> SearchResultListView::GetAssistantResults() {
@@ -429,11 +521,10 @@ std::vector<SearchResult*> SearchResultListView::GetAssistantResults() {
     return std::vector<SearchResult*>();
 
   return SearchModel::FilterSearchResultsByFunction(
-      results(), base::BindRepeating([](const SearchResult& search_result) {
-        return search_result.display_type() == SearchResultDisplayType::kList &&
-               search_result.result_type() ==
-                   AppListSearchResultType::kAssistantText;
-      }),
+      results(),
+      base::BindRepeating(&SearchResultListView::FilterResultsForUnifiedList,
+                          base::Unretained(this),
+                          /*for_assistant_results=*/true),
       /*max_results=*/
       SharedAppListConfig::instance().max_assistant_search_result_list_items());
 }
@@ -441,11 +532,10 @@ std::vector<SearchResult*> SearchResultListView::GetAssistantResults() {
 std::vector<SearchResult*> SearchResultListView::GetUnifiedSearchResults() {
   std::vector<SearchResult*> search_results =
       SearchModel::FilterSearchResultsByFunction(
-          results(), base::BindRepeating([](const SearchResult& result) {
-            return result.display_type() == SearchResultDisplayType::kList &&
-                   result.result_type() !=
-                       AppListSearchResultType::kAssistantText;
-          }),
+          results(),
+          base::BindRepeating(
+              &SearchResultListView::FilterResultsForUnifiedList,
+              base::Unretained(this), /*for_assistant_results=*/false),
           GetMaxSearchResultListItems());
 
   std::vector<SearchResult*> assistant_results = GetAssistantResults();
@@ -501,10 +591,9 @@ std::vector<SearchResult*> SearchResultListView::GetCategorizedSearchResults() {
     case SearchResultListType::kBestMatch:
       // Filter results based on whether they have the best_match label.
       return SearchModel::FilterSearchResultsByFunction(
-          results(), base::BindRepeating([](const SearchResult& result) {
-            return result.best_match() &&
-                   result.display_type() == SearchResultDisplayType::kList;
-          }),
+          results(),
+          base::BindRepeating(&SearchResultListView::FilterBestMatches,
+                              base::Unretained(this)),
           GetMaxSearchResultListItems());
     case SearchResultListType::kApps:
     case SearchResultListType::kAppShortcuts:
@@ -514,20 +603,71 @@ std::vector<SearchResult*> SearchResultListView::GetCategorizedSearchResults() {
     case SearchResultListType::kHelp:
     case SearchResultListType::kPlayStore:
     case SearchResultListType::kSearchAndAssistant:
-      // filter results based on category. Filter out best match items to avoid
-      // duplication between different types of search_result_list_views.
       SearchResult::Category search_category = GetSearchCategory();
-      auto filter_function = base::BindRepeating(
-          [](const SearchResult::Category& search_category,
-             const SearchResult& result) -> bool {
-            return result.category() == search_category &&
-                   !result.best_match() &&
-                   result.display_type() == SearchResultDisplayType::kList;
-          },
-          search_category);
       return SearchModel::FilterSearchResultsByFunction(
-          results(), filter_function, GetMaxSearchResultListItems());
+          results(),
+          base::BindRepeating(
+              &SearchResultListView::FilterSearchResultsByCategory,
+              base::Unretained(this), search_category),
+          GetMaxSearchResultListItems());
   }
+}
+
+std::vector<SearchResult*> SearchResultListView::UpdateResultViews() {
+  std::vector<SearchResult*> display_results = GetCategorizedSearchResults();
+  size_t num_results = display_results.size();
+  num_results_ = num_results;
+  for (size_t i = 0; i < search_result_views_.size(); ++i) {
+    SearchResultView* result_view = GetResultViewAt(i);
+    if (i < num_results) {
+      result_view->SetResult(display_results[i]);
+      result_view->SizeToPreferredSize();
+    } else {
+      result_view->SetResult(nullptr);
+    }
+    // If result updates are animated, the result visibility will be updated in
+    // `ScheduleResultAnimations()`
+    if (!animates_result_updates_)
+      result_view->SetVisible(i < num_results);
+  }
+
+  // If result updates are animated, the container visibility will be updated in
+  // `ScheduleResultAnimations()`
+  if (!animates_result_updates_)
+    SetVisible(num_results > 0);
+  return display_results;
+}
+
+bool SearchResultListView::FilterResultsForUnifiedList(
+    bool for_assistant_results,
+    const SearchResult& result) const {
+  // Filter out results that have been removed from the list by the user.
+  if (removed_results_.count(result.id()))
+    return false;
+  const bool is_assistant_result =
+      result.result_type() == AppListSearchResultType::kAssistantText;
+  return result.display_type() == SearchResultDisplayType::kList &&
+         for_assistant_results == is_assistant_result;
+}
+
+bool SearchResultListView::FilterBestMatches(const SearchResult& result) const {
+  // Filter out results that have been removed from the list by the user.
+  if (removed_results_.count(result.id()))
+    return false;
+  return result.best_match() &&
+         result.display_type() == SearchResultDisplayType::kList;
+}
+
+bool SearchResultListView::FilterSearchResultsByCategory(
+    const SearchResult::Category& category,
+    const SearchResult& result) const {
+  // Filter out results that have been removed from the list by the user.
+  if (removed_results_.count(result.id()))
+    return false;
+  // Filter out best match items to avoid
+  // duplication between different types of search_result_list_views.
+  return result.category() == category && !result.best_match() &&
+         result.display_type() == SearchResultDisplayType::kList;
 }
 
 }  // namespace ash

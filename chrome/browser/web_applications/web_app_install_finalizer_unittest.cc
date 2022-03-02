@@ -19,9 +19,9 @@
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -78,7 +78,7 @@ class WebAppInstallFinalizerUnitTest : public WebAppTest {
 
   // Synchronous version of FinalizeInstall.
   FinalizeInstallResult AwaitFinalizeInstall(
-      WebApplicationInfo info,
+      WebAppInstallInfo info,
       WebAppInstallFinalizer::FinalizeOptions options) {
     FinalizeInstallResult result{};
     base::RunLoop run_loop;
@@ -108,7 +108,7 @@ class WebAppInstallFinalizerUnitTest : public WebAppTest {
 };
 
 TEST_F(WebAppInstallFinalizerUnitTest, BasicInstallSucceeds) {
-  auto info = std::make_unique<WebApplicationInfo>();
+  auto info = std::make_unique<WebAppInstallInfo>();
   info->start_url = GURL("https://foo.example");
   info->title = u"Foo Title";
   WebAppInstallFinalizer::FinalizeOptions options;
@@ -122,11 +122,11 @@ TEST_F(WebAppInstallFinalizerUnitTest, BasicInstallSucceeds) {
 }
 
 TEST_F(WebAppInstallFinalizerUnitTest, ConcurrentInstallSucceeds) {
-  auto info1 = std::make_unique<WebApplicationInfo>();
+  auto info1 = std::make_unique<WebAppInstallInfo>();
   info1->start_url = GURL("https://foo1.example");
   info1->title = u"Foo1 Title";
 
-  auto info2 = std::make_unique<WebApplicationInfo>();
+  auto info2 = std::make_unique<WebAppInstallInfo>();
   info2->start_url = GURL("https://foo2.example");
   info2->title = u"Foo2 Title";
 
@@ -176,7 +176,7 @@ TEST_F(WebAppInstallFinalizerUnitTest, ConcurrentInstallSucceeds) {
 }
 
 TEST_F(WebAppInstallFinalizerUnitTest, InstallStoresLatestWebAppInstallSource) {
-  auto info = std::make_unique<WebApplicationInfo>();
+  auto info = std::make_unique<WebAppInstallInfo>();
   info->start_url = GURL("https://foo.example");
   info->title = u"Foo Title";
   WebAppInstallFinalizer::FinalizeOptions options;

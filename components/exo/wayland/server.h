@@ -13,11 +13,10 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/time/time.h"
-#include "components/exo/wayland/scoped_wl.h"
-#include "ui/display/display_observer.h"
-
 #include "build/chromeos_buildflags.h"
 #include "components/exo/buildflags.h"
+#include "components/exo/wayland/scoped_wl.h"
+#include "ui/display/display_observer.h"
 
 struct wl_resource;
 struct wl_client;
@@ -38,7 +37,7 @@ struct WaylandTextInputManager;
 struct WaylandXdgShell;
 struct WaylandZxdgShell;
 struct WaylandRemoteShellData;
-struct WestonTestState;
+class WestonTest;
 class WaylandWatcher;
 
 // This class is a thin wrapper around a Wayland display server. All Wayland
@@ -109,11 +108,14 @@ class Server : public display::DisplayObserver {
   const base::FilePath& socket_path() const { return socket_path_; }
 
  protected:
+  friend class WestonTest;
   void AddWaylandOutput(int64_t id,
                         std::unique_ptr<WaylandDisplayOutput> output);
   wl_display* GetWaylandDisplay() const { return wl_display_.get(); }
 
  private:
+  friend class ScopedEventDispatchDisabler;
+
   // This has the server's socket inside it, so it must be deleted last.
   base::ScopedTempDir socket_dir_;
   Display* const display_;
@@ -135,9 +137,7 @@ class Server : public display::DisplayObserver {
   std::unique_ptr<WaylandZxdgShell> zxdg_shell_data_;
   std::unique_ptr<WaylandXdgShell> xdg_shell_data_;
   std::unique_ptr<WaylandRemoteShellData> remote_shell_data_;
-#if BUILDFLAG(ENABLE_WESTON_TEST)
-  std::unique_ptr<WestonTestState> weston_test_data_;
-#endif
+  std::unique_ptr<WestonTest> weston_test_holder_;
 #endif
 };
 

@@ -43,6 +43,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -527,6 +528,14 @@ TEST_P(PdfViewWebPluginTestUseZoomForDSF,
       /*expected_device_scale=*/1.0f, /*expected_plugin_rect=*/gfx::Rect());
 }
 
+TEST_P(PdfViewWebPluginTestUseZoomForDSF, SetCaretPositionIgnoresOrigin) {
+  SetDocumentDimensions({16, 9});
+  UpdatePluginGeometryWithoutWaiting(1.0f, {10, 20, 20, 5});
+
+  EXPECT_CALL(*engine_ptr_, SetCaretPosition(gfx::Point(2, 3)));
+  plugin_->SetCaretPosition({4.0f, 3.0f});
+}
+
 TEST_P(PdfViewWebPluginTestUseZoomForDSF, PaintEmptySnapshots) {
   TestPaintEmptySnapshots(/*device_scale=*/4.0f,
                           /*window_rect=*/gfx::Rect(10, 10, 20, 20),
@@ -721,28 +730,8 @@ TEST_F(PdfViewWebPluginMouseEventsTest,
 
 class PdfViewWebPluginImeTest : public PdfViewWebPluginTest {
  public:
-  class TestPDFiumEngineForIme : public TestPDFiumEngine {
-   public:
-    explicit TestPDFiumEngineForIme(PDFEngine::Client* client)
-        : TestPDFiumEngine(client) {}
-
-    // TestPDFiumEngine:
-    MOCK_METHOD(bool,
-                HandleInputEvent,
-                (const blink::WebInputEvent&),
-                (override));
-  };
-
-  std::unique_ptr<TestPDFiumEngine> CreateEngine() override {
-    return std::make_unique<NiceMock<TestPDFiumEngineForIme>>(plugin_.get());
-  }
-
-  TestPDFiumEngineForIme* engine() {
-    return static_cast<TestPDFiumEngineForIme*>(engine_ptr_);
-  }
-
   void TestImeSetCompositionForPlugin(const blink::WebString& text) {
-    EXPECT_CALL(*engine(), HandleInputEvent).Times(0);
+    EXPECT_CALL(*engine_ptr_, HandleInputEvent).Times(0);
     plugin_->ImeSetCompositionForPlugin(text, std::vector<ui::ImeTextSpan>(),
                                         gfx::Range(),
                                         /*selection_start=*/0,
@@ -756,12 +745,12 @@ class PdfViewWebPluginImeTest : public PdfViewWebPluginTest {
     if (expected_text16.size()) {
       for (const auto& c : expected_text16) {
         base::StringPiece16 expected_key(&c, 1);
-        EXPECT_CALL(*engine(),
+        EXPECT_CALL(*engine_ptr_,
                     HandleInputEvent(IsExpectedImeKeyEvent(expected_key)))
             .WillOnce(Return(true));
       }
     } else {
-      EXPECT_CALL(*engine(), HandleInputEvent).Times(0);
+      EXPECT_CALL(*engine_ptr_, HandleInputEvent).Times(0);
     }
     plugin_->ImeFinishComposingTextForPlugin(false);
   }
@@ -772,11 +761,12 @@ class PdfViewWebPluginImeTest : public PdfViewWebPluginTest {
     if (expected_text16.size()) {
       for (const auto& c : expected_text16) {
         base::StringPiece16 event(&c, 1);
-        EXPECT_CALL(*engine(), HandleInputEvent(IsExpectedImeKeyEvent(event)))
+        EXPECT_CALL(*engine_ptr_,
+                    HandleInputEvent(IsExpectedImeKeyEvent(event)))
             .WillOnce(Return(true));
       }
     } else {
-      EXPECT_CALL(*engine(), HandleInputEvent).Times(0);
+      EXPECT_CALL(*engine_ptr_, HandleInputEvent).Times(0);
     }
     plugin_->ImeCommitTextForPlugin(text, std::vector<ui::ImeTextSpan>(),
                                     gfx::Range(),

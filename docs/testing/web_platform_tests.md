@@ -223,7 +223,7 @@ wpt {
 
 When a test under `external/wpt/css/css-grid/` newly fails in a WPT import, the
 importer will automatically file a bug against the Blink>Layout>Grid component
-in [crbug.com][https://crbug.com], with details of which test failed and the
+in [crbug.com](https://crbug.com), with details of which test failed and the
 output.
 
 Note that we are considering making the notifications opt-out instead of
@@ -442,3 +442,9 @@ see output if it is too long.
 ```bash
 curl -v http://localhost:8081/wpt_internal/fake/foobar.html |& less
 ```
+
+#### Debugging with a debugger
+
+You are able to debug the inside of Chromium with a debugger for particular
+WPT tests. Refer to [Running web tests using the content shell](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/testing/web_tests_in_content_shell.md)
+for details.

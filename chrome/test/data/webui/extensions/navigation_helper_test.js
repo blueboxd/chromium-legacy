@@ -5,7 +5,7 @@
 import {Dialog, NavigationHelper, Page} from 'chrome://extensions/extensions.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {MockMethod} from '../mock_controller.js';
+import {MockMethod} from 'chrome://webui-test/mock_controller.js';
 
 window.extension_navigation_helper_tests = {};
 extension_navigation_helper_tests.suiteName = 'ExtensionNavigationHelperTest';
@@ -102,6 +102,10 @@ suite(extension_navigation_helper_tests.suiteName, function() {
           shortcuts: {
             url: 'chrome://extensions/shortcuts',
             state: {page: Page.SHORTCUTS},
+          },
+          sitePermissions: {
+            url: 'chrome://extensions/sitePermissions',
+            state: {page: Page.SITE_PERMISSIONS},
           },
         };
 

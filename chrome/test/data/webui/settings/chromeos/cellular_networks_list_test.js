@@ -301,6 +301,36 @@ suite('CellularNetworksList', function() {
   });
 
   test(
+      'Allow only managed cellular networks should hide pending eSIM networks',
+      async () => {
+        eSimManagerRemote.addEuiccForTest(1);
+        init();
+        addESimSlot();
+        cellularNetworkList.globalPolicy = {
+          allowOnlyPolicyCellularNetworks: false,
+        };
+        await flushAsync();
+        let eSimNetworkList = cellularNetworkList.$$('#esimNetworkList');
+        assertTrue(!!eSimNetworkList);
+
+        Polymer.dom.flush();
+
+        const listItem = eSimNetworkList.$$('network-list-item');
+        assertTrue(!!listItem);
+        const installButton = listItem.$$('#installButton');
+        assertTrue(!!installButton);
+
+        cellularNetworkList.globalPolicy = {
+          allowOnlyPolicyCellularNetworks: true,
+        };
+        eSimManagerRemote.addEuiccForTest(1);
+        addESimSlot();
+        await flushAsync();
+        eSimNetworkList = cellularNetworkList.$$('#esimNetworkList');
+        assertFalse(!!eSimNetworkList);
+      });
+
+  test(
       'Fire show toast event if download profile clicked without' +
           'non-cellular connection.',
       async () => {
@@ -353,9 +383,14 @@ suite('CellularNetworksList', function() {
     };
     await flushAsync();
 
-    // When policy is enabled add cellular button should not be shown.
+    // When policy is enabled add cellular button should be disabled, and policy
+    // indicator should be shown.
     let addESimButton = cellularNetworkList.$$('#addESimButton');
-    assertFalse(!!addESimButton);
+    assertTrue(!!addESimButton);
+    assertTrue(addESimButton.disabled);
+    let policyIcon = cellularNetworkList.$$('cr-policy-indicator');
+    assertTrue(!!policyIcon);
+    assertFalse(policyIcon.hidden);
 
     cellularNetworkList.globalPolicy = {
       allowOnlyPolicyCellularNetworks: false,
@@ -365,6 +400,9 @@ suite('CellularNetworksList', function() {
     addESimButton = cellularNetworkList.$$('#addESimButton');
     assertTrue(!!addESimButton);
     assertFalse(addESimButton.disabled);
+    policyIcon = cellularNetworkList.$$('cr-policy-indicator');
+    assertTrue(!!policyIcon);
+    assertTrue(policyIcon.hidden);
 
     // When device is inhibited add cellular button should be disabled.
     cellularNetworkList.cellularDeviceState = {

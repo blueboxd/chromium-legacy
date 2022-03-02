@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <tuple>
 
 #include "base/callback.h"
-#include "base/ignore_result.h"
 #include "base/synchronization/lock.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -102,7 +102,7 @@ class SCTReportingServiceBrowserTest : public CertVerifierBrowserTest {
         true);
     // The report server must be initialized here so the reporting URL can be
     // set before the network service is initialized.
-    ignore_result(report_server()->InitializeAndListen());
+    std::ignore = report_server()->InitializeAndListen();
     SCTReportingService::GetReportURLInstance() = report_server()->GetURL("/");
   }
   ~SCTReportingServiceBrowserTest() override {
@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
 
 // Tests that disabling Extended Reporting causes the cache to be cleared.
 // TODO(crbug.com/1179504): Reenable. Flakes heavily on Linux, Win, and CrOS.
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_OptingOutClearsSCTAuditingCache \
   DISABLED_OptingOutClearsSCTAuditingCache
 #else

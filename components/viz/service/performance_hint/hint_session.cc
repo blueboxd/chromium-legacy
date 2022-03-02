@@ -9,7 +9,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 
 #include <dlfcn.h>
 #include <sys/types.h>
@@ -17,7 +17,6 @@
 #include "base/android/build_info.h"
 #include "base/logging.h"
 #include "base/native_library.h"
-#include "base/no_destructor.h"
 #include "base/trace_event/trace_event.h"
 
 static_assert(sizeof(base::PlatformThreadId) == sizeof(int32_t),
@@ -164,7 +163,7 @@ std::unique_ptr<HintSessionFactory> HintSessionFactory::Create(
 
 }  // namespace viz
 
-#else  // defined(OS_ANDROID)
+#else  // BUILDFLAG(IS_ANDROID)
 
 namespace viz {
 std::unique_ptr<HintSessionFactory> HintSessionFactory::Create(
@@ -173,4 +172,4 @@ std::unique_ptr<HintSessionFactory> HintSessionFactory::Create(
 }
 }  // namespace viz
 
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)

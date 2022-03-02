@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/no_destructor.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_constants.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_helpers.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -88,8 +87,10 @@ void WebNavigationEventRouter::OnTabStripModelChanged(
              mojom::ViewType::kTabContents);
       return;
     }
-    if (!FrameNavigationState::IsValidUrl(replace->old_contents->GetURL()) ||
-        !FrameNavigationState::IsValidUrl(replace->new_contents->GetURL()))
+    if (!FrameNavigationState::IsValidUrl(
+            replace->old_contents->GetLastCommittedURL()) ||
+        !FrameNavigationState::IsValidUrl(
+            replace->new_contents->GetLastCommittedURL()))
       return;
 
     web_navigation_api_helpers::DispatchOnTabReplaced(

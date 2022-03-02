@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/ranges/algorithm.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
@@ -17,6 +18,8 @@
 #include "chrome/browser/lacros/system_logs/lacros_system_log_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sessions/session_restore.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -24,6 +27,9 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/startup/startup_tab.h"
+#include "chrome/browser/ui/views/tabs/tab_scrubber_chromeos.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/webui_url_constants.h"
@@ -58,32 +64,21 @@ std::string GetCompressedHistograms() {
   }
 }
 
-// Finds any (Lacros) Browser which has a tab matching a given URL
-// without ref (e.g. chrome://flags == chrome://flags/#).
-// If such a tab exists, it gets activated, and true gets returned.
-bool ActivateTabMatchingURLWithoutRef(Profile* profile, const GURL& url) {
-  BrowserList* browser_list = BrowserList::GetInstance();
-  for (Browser* browser : *browser_list) {
-    if (browser->profile() == profile) {
-      TabStripModel* tab_strip = browser->tab_strip_model();
-      for (int i = 0; i < tab_strip->count(); ++i) {
-        if (tab_strip->ContainsIndex(i) && !tab_strip->IsTabBlocked(i)) {
-          content::WebContents* content = tab_strip->GetWebContentsAt(i);
-          if (content->GetVisibleURL().EqualsIgnoringRef(url)) {
-            browser->window()->Activate();
-            tab_strip->ActivateTabAt(i);
-            return true;
-          }
-        }
-      }
-    }
-  }
-  return false;
-}
-
 }  // namespace
 
+// A struct to keep the pending OpenUrl task.
+struct BrowserServiceLacros::PendingOpenUrl {
+  Profile* profile;
+  GURL url;
+  OpenUrlCallback callback;
+};
+
 BrowserServiceLacros::BrowserServiceLacros() {
+  session_restored_subscription_ =
+      SessionRestore::RegisterOnSessionRestoredCallback(
+          base::BindRepeating(&BrowserServiceLacros::OnSessionRestored,
+                              weak_ptr_factory_.GetWeakPtr()));
+
   auto* lacros_service = chromeos::LacrosService::Get();
   const auto* init_params = lacros_service->init_params();
 
@@ -129,13 +124,27 @@ void BrowserServiceLacros::REMOVED_2(crosapi::mojom::BrowserInitParamsPtr) {
 }
 
 void BrowserServiceLacros::NewWindow(bool incognito,
+                                     bool should_trigger_session_restore,
                                      NewWindowCallback callback) {
   // TODO(crbug.com/1102815): Find what profile should be used.
   Profile* profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
   DCHECK(profile) << "No last used profile is found.";
-  chrome::NewEmptyWindow(
-      incognito ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
-                : profile);
+
+  if (ProfilePicker::ShouldShowAtLaunch() && !incognito) {
+    // Profile picker does not support passing through the incognito param. It
+    // also does not support passing though the `should_trigger_session_restore`
+    // param but that's true very common (left clicking the launcher icon) so
+    // we can't skip the picker in this case. The default behavior for the first
+    // browser window supports session restore, additional windows are opened
+    // blank and thus it works reasonably well for BrowserServiceLacros.
+    ProfilePicker::Show(
+        ProfilePicker::EntryPoint::kNewSessionOnExistingProcess);
+  } else {
+    chrome::NewEmptyWindow(
+        incognito ? profile->GetPrimaryOTRProfile(/*create_if_needed=*/true)
+                  : profile,
+        should_trigger_session_restore);
+  }
   std::move(callback).Run();
 }
 
@@ -249,29 +258,28 @@ void BrowserServiceLacros::OpenUrl(const GURL& url, OpenUrlCallback callback) {
   Profile* profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
   DCHECK(profile) << "No last used profile is found.";
 
-  // Try to re-activate an existing tab for a few specified URLs.
-  if (url.SchemeIs(content::kChromeUIScheme) &&
-      (url.host() == chrome::kChromeUIFlagsHost ||
-       url.host() == chrome::kChromeUIVersionHost ||
-       url.host() == chrome::kChromeUIAboutHost ||
-       url.host() == chrome::kChromeUIComponentsHost)) {
-    if (ActivateTabMatchingURLWithoutRef(profile, url)) {
-      std::move(callback).Run();
-      return;
-    }
+  // If there is on-going session restoring task, wait for its completion.
+  if (SessionRestore::IsRestoring(profile)) {
+    pending_open_urls_.push_back(
+        PendingOpenUrl{profile, url, std::move(callback)});
+    return;
   }
 
-  NavigateParams navigate_params(
-      profile, url,
-      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
-                                ui::PAGE_TRANSITION_FROM_API));
-  navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  // Ensure the browser window is showing when the URL is opened. This avoids
-  // the user being unaware a new tab with `url` has been opened (if the window
-  // was minimized for example).
-  navigate_params.window_action = NavigateParams::SHOW_WINDOW;
-  Navigate(&navigate_params);
-  std::move(callback).Run();
+  // If there's no available browsers, but there's a session to be restored,
+  // trigger it, and wait for its completion.
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileForSessionRestore(profile);
+  if (!chrome::FindBrowserWithProfile(profile) && session_service &&
+      session_service->ShouldRestore(nullptr)) {
+    pending_open_urls_.push_back(
+        PendingOpenUrl{profile, url, std::move(callback)});
+    session_service->RestoreIfNecessary(StartupTabs(),
+                                        /* restore apps */ false);
+    return;
+  }
+
+  // Otherwise, directly try to open the URL.
+  OpenUrlImpl(profile, url, std::move(callback));
 }
 
 void BrowserServiceLacros::RestoreTab(RestoreTabCallback callback) {
@@ -282,6 +290,10 @@ void BrowserServiceLacros::RestoreTab(RestoreTabCallback callback) {
   DCHECK(browser) << "No browser is found.";
   chrome::RestoreTab(browser);
   std::move(callback).Run();
+}
+
+void BrowserServiceLacros::HandleTabScrubbing(float x_offset) {
+  TabScrubberChromeOS::GetInstance()->SynthesizedScrollEvent(x_offset);
 }
 
 void BrowserServiceLacros::GetFeedbackData(GetFeedbackDataCallback callback) {
@@ -366,6 +378,55 @@ void BrowserServiceLacros::OnGetCompressedHistograms(
     const std::string& compressed_histograms) {
   DCHECK(!callback.is_null());
   std::move(callback).Run(compressed_histograms);
+}
+
+void BrowserServiceLacros::OnSessionRestored(Profile* profile,
+                                             int num_tabs_restored) {
+  if (pending_open_urls_.empty())
+    return;
+  // Extract pending OpenUrl tasks for the restored |profile|.
+  std::vector<PendingOpenUrl> pendings;
+  for (auto& pending : pending_open_urls_) {
+    if (pending.profile == profile) {
+      pendings.push_back(std::move(pending));
+      pending.profile = nullptr;  // Mark as moved.
+    }
+  }
+  // Remove marked entries.
+  pending_open_urls_.erase(base::ranges::remove(pending_open_urls_, nullptr,
+                                                [](PendingOpenUrl& pending) {
+                                                  return pending.profile;
+                                                }),
+                           pending_open_urls_.end());
+
+  // Then, run for each.
+  for (auto& pending : pendings)
+    OpenUrlImpl(pending.profile, pending.url, std::move(pending.callback));
+}
+
+void BrowserServiceLacros::OpenUrlImpl(Profile* profile,
+                                       const GURL& url,
+                                       OpenUrlCallback callback) {
+  NavigateParams navigate_params(
+      profile, url,
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_FROM_API));
+  if (url.SchemeIs(content::kChromeUIScheme) &&
+      (url.host() == chrome::kChromeUIFlagsHost ||
+       url.host() == chrome::kChromeUIVersionHost ||
+       url.host() == chrome::kChromeUIAboutHost ||
+       url.host() == chrome::kChromeUIComponentsHost)) {
+    // Try to re-activate an existing tab for a few specified URLs.
+    navigate_params.disposition = WindowOpenDisposition::SWITCH_TO_TAB;
+  } else {
+    navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  }
+  // Ensure the browser window is showing when the URL is opened. This avoids
+  // the user being unaware a new tab with `url` has been opened (if the window
+  // was minimized for example).
+  navigate_params.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&navigate_params);
+  std::move(callback).Run();
 }
 
 void BrowserServiceLacros::OnBrowserAdded(Browser* broser) {

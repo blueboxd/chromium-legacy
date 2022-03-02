@@ -6,7 +6,6 @@
 
 #include "components/prefs/pref_registry_simple.h"
 
-namespace ash {
 namespace quick_answers {
 namespace prefs {
 
@@ -37,7 +36,7 @@ const char kQuickAnswersTranslationEnabled[] =
 // A preference that indicates the user has enabled the Quick Answers unit
 // conversion services.
 // This preference can be overridden by the administrator policy.
-const char kQuickAnswersUnitConverstionEnabled[] =
+const char kQuickAnswersUnitConversionEnabled[] =
     "settings.quick_answers.unit_conversion.enabled";
 
 // A preference to keep track of the number of Quick Answers notice impression.
@@ -56,11 +55,10 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                 ConsentStatus::kUnknown);
   registry->RegisterBooleanPref(kQuickAnswersDefinitionEnabled, true);
   registry->RegisterBooleanPref(kQuickAnswersTranslationEnabled, true);
-  registry->RegisterBooleanPref(kQuickAnswersUnitConverstionEnabled, true);
+  registry->RegisterBooleanPref(kQuickAnswersUnitConversionEnabled, true);
   registry->RegisterIntegerPref(kQuickAnswersNoticeImpressionCount, 0);
   registry->RegisterIntegerPref(kQuickAnswersNoticeImpressionDuration, 0);
 }
 
 }  // namespace prefs
 }  // namespace quick_answers
-}  // namespace ash

@@ -17,7 +17,7 @@
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_restore_util.h"
-#include "ash/wm/desks/label_textfield.h"
+#include "ash/wm/desks/desks_textfield.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
@@ -312,9 +312,9 @@ void DeskMiniView::ContentsChanged(views::Textfield* sender,
   // To avoid potential security and memory issues, we don't allow desk names to
   // have an unbounded length. Therefore we trim if needed at kMaxLength UTF-16
   // boundary. Note that we don't care about code point boundaries in this case.
-  if (new_contents.size() > LabelTextfield::kMaxLength) {
+  if (new_contents.size() > DesksTextfield::kMaxLength) {
     std::u16string trimmed_new_contents = new_contents;
-    trimmed_new_contents.resize(LabelTextfield::kMaxLength);
+    trimmed_new_contents.resize(DesksTextfield::kMaxLength);
     desk_name_view_->SetText(trimmed_new_contents);
   }
 
@@ -457,7 +457,11 @@ void DeskMiniView::OnViewBlurred(views::View* observed_view) {
 bool DeskMiniView::IsPointOnMiniView(const gfx::Point& screen_location) const {
   gfx::Point point_in_view = screen_location;
   ConvertPointFromScreen(this, &point_in_view);
-  return HitTestPoint(point_in_view);
+  // `this` doesn't have access to its widget until it's added to the view's
+  // hierarchy, however this function could be triggered during the constructor
+  // of `DeskMiniView` when it's not added to the view's hierarchy yet. Thus we
+  // need to check whether the widget if accessible here.
+  return GetWidget() && HitTestPoint(point_in_view);
 }
 
 void DeskMiniView::OnCloseButtonPressed() {
@@ -483,9 +487,16 @@ void DeskMiniView::LayoutDeskNameView(const gfx::Rect& preview_bounds) {
   const gfx::Size desk_name_view_size = desk_name_view_->GetPreferredSize();
   // Desk preview's width is supposed to be larger than kMinDeskNameViewWidth,
   // but it might be not the truth for tests with extreme abnormal size of
-  // display.
-  const int min_width = std::min(preview_bounds.width(), kMinDeskNameViewWidth);
-  const int max_width = std::max(preview_bounds.width(), kMinDeskNameViewWidth);
+  // display. The preview uses a border to display focus and the name view uses
+  // a focus ring (which does not inset the view), so subtract the focus ring
+  // from the size calculations so that the focus UI is aligned.
+  views::FocusRing* focus_ring = views::FocusRing::Get(desk_name_view_);
+  const int focus_ring_length =
+      focus_ring->halo_thickness() - focus_ring->halo_inset();
+  const int min_width = std::min(preview_bounds.width() - focus_ring_length,
+                                 kMinDeskNameViewWidth);
+  const int max_width = std::max(preview_bounds.width() - focus_ring_length,
+                                 kMinDeskNameViewWidth);
   const int text_width =
       base::clamp(desk_name_view_size.width(), min_width, max_width);
   const int desk_name_view_x =
@@ -493,7 +504,7 @@ void DeskMiniView::LayoutDeskNameView(const gfx::Rect& preview_bounds) {
   gfx::Rect desk_name_view_bounds{desk_name_view_x,
                                   preview_bounds.bottom() -
                                       GetPreviewBorderInsets().bottom() +
-                                      kLabelPreviewSpacing,
+                                      kLabelPreviewSpacing + focus_ring_length,
                                   text_width, desk_name_view_size.height()};
   desk_name_view_->SetBoundsRect(desk_name_view_bounds);
 

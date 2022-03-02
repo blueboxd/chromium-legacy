@@ -31,6 +31,7 @@
 #include <wrl/client.h>
 #include <wrl/wrappers/corewrappers.h>
 
+#include <limits>
 #include <memory>
 
 #include "base/base_switches.h"
@@ -200,9 +201,25 @@ NativeLibrary PinUser32Internal(NativeLibraryLoadError* error) {
 // It looks like the API implementation is buggy at least on Surface 4 causing
 // it to always return UserInteractionMode_Touch which as per documentation
 // indicates tablet mode.
-bool IsWindows10TabletMode(HWND hwnd) {
-  if (GetVersion() < Version::WIN10)
-    return false;
+bool IsWindows10OrGreaterTabletMode(HWND hwnd) {
+  if (GetVersion() >= Version::WIN11) {
+    // Only Win10 supports explicit tablet mode. On Win11,
+    // get_UserInteractionMode always returns UserInteractionMode_Mouse, so
+    // instead we check if we're in slate mode or not - 0 value means slate
+    // mode. See
+    // https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/microsoft-windows-gpiobuttons-convertibleslatemode
+    base::win::RegKey registry_key(
+        HKEY_LOCAL_MACHINE,
+        L"System\\CurrentControlSet\\Control\\PriorityControl", KEY_READ);
+    DWORD slate_mode = 0;
+    bool value_exists = registry_key.ReadValueDW(L"ConvertibleSlateMode",
+                                                 &slate_mode) == ERROR_SUCCESS;
+    DCHECK(value_exists) << "ConvertibleSlateMode value not in registry";
+    // Some devices don't set the reg key to 0 for non touch devices, so also
+    // check if the device is used as a tablet.
+    return value_exists && slate_mode == 0 &&
+           IsDeviceUsedAsATablet(/*reason=*/nullptr);
+  }
 
   if (!ResolveCoreWinRTDelayload() ||
       !ScopedHString::ResolveCoreWinRTStringDelayload()) {
@@ -493,7 +510,7 @@ bool IsTabletDevice(std::string* reason, HWND hwnd) {
     return false;
   }
 
-  if (IsWindows10TabletMode(hwnd))
+  if (IsWindows10OrGreaterTabletMode(hwnd))
     return true;
 
   return IsDeviceUsedAsATablet(reason);
@@ -505,6 +522,11 @@ bool IsTabletDevice(std::string* reason, HWND hwnd) {
 // input configuration of the device and can be manually triggered by the user
 // independently from the hardware state.
 bool IsDeviceUsedAsATablet(std::string* reason) {
+  // Once this is set, it shouldn't be overridden, and it should be the ultimate
+  // return value, so that this method returns the same result whether or not
+  // reason is NULL.
+  absl::optional<bool> ret;
+
   if (GetVersion() < Version::WIN8) {
     if (reason)
       *reason = "Tablet device detection not supported below Windows 8\n";
@@ -514,6 +536,7 @@ bool IsDeviceUsedAsATablet(std::string* reason) {
   if (GetSystemMetrics(SM_MAXIMUMTOUCHES) == 0) {
     if (reason) {
       *reason += "Device does not support touch.\n";
+      ret = false;
     } else {
       return false;
     }
@@ -523,6 +546,8 @@ bool IsDeviceUsedAsATablet(std::string* reason) {
   if (GetSystemMetrics(SM_SYSTEMDOCKED) != 0) {
     if (reason) {
       *reason += "SM_SYSTEMDOCKED\n";
+      if (!ret.has_value())
+        ret = false;
     } else {
       return false;
     }
@@ -540,7 +565,7 @@ bool IsDeviceUsedAsATablet(std::string* reason) {
     AR_STATE rotation_state = AR_ENABLED;
     if (get_auto_rotation_state_func(&rotation_state) &&
         (rotation_state & (AR_NOT_SUPPORTED | AR_LAPTOP | AR_NOSENSOR)) != 0)
-      return false;
+      return ret.has_value() ? ret.value() : false;
   }
 
   // PlatformRoleSlate was added in Windows 8+.
@@ -551,20 +576,19 @@ bool IsDeviceUsedAsATablet(std::string* reason) {
     if (!is_tablet) {
       if (reason) {
         *reason += "Not in slate mode.\n";
+        if (!ret.has_value())
+          ret = false;
       } else {
         return false;
       }
-    } else {
-      if (reason) {
-        *reason += (role == PlatformRoleMobile) ? "PlatformRoleMobile\n"
-                                                : "PlatformRoleSlate\n";
-      }
+    } else if (reason) {
+      *reason += (role == PlatformRoleMobile) ? "PlatformRoleMobile\n"
+                                              : "PlatformRoleSlate\n";
     }
-  } else {
-    if (reason)
-      *reason += "Device role is not mobile or slate.\n";
+  } else if (reason) {
+    *reason += "Device role is not mobile or slate.\n";
   }
-  return is_tablet;
+  return ret.has_value() ? ret.value() : is_tablet;
 }
 
 bool IsEnrolledToDomain() {

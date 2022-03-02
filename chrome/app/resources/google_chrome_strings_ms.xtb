@@ -48,7 +48,6 @@
 <translation id="2121284319307530122">Lancarkan Semula untuk Mengemas Kini &amp;Chrome</translation>
 <translation id="2123055963409958220">Bantu jadikan Chrome lebih baik dengan melaporkan <ph name="BEGIN_LINK" />tetapan semasa<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Sila mulakan semula Chrome sekarang</translation>
-<translation id="2189289170880510015">Sesuaikan beberapa pilihan privasi Chrome yang paling penting</translation>
 <translation id="2258103955319320201">Untuk mengakses bahan penyemak imbas Chrome anda pada semua peranti anda, log masuk, kemudian hidupkan penyegerakan</translation>
 <translation id="2290014774651636340">Kunci API Google tiada. Sesetengah fungsi Google Chrome akan dilumpuhkan.</translation>
 <translation id="2290095356545025170">Adakah anda pasti anda mahu menyahpasang Google Chrome?</translation>
@@ -62,6 +61,7 @@
 <translation id="2467438592969358367">Google Chrome mahu mengeksport kata laluan anda. Taip kata laluan Windows anda untuk membenarkannya.</translation>
 <translation id="2485422356828889247">Nyahpasang</translation>
 <translation id="2534507159460261402">Google Pay (disalin ke Chrome)</translation>
+<translation id="2563121210305478421">Lancarkan semula Chrome?</translation>
 <translation id="2574930892358684005"><ph name="EXISTING_USER" /> telah pun dilog masuk ke profil Chrome ini. Untuk menjadikan penyemakan imbas anda terpisah, Chrome boleh membuat profil anda sendiri untuk anda.</translation>
 <translation id="2580411288591421699">Tidak dapat memasang versi Google Chrome yang sama yang kini dijalankan. Sila tutup Google Chrome dan cuba semula.</translation>
 <translation id="2586406160782125153">Tindakan ini akan memadamkan data semakan imbas anda daripada peranti ini. Untuk mendapatkan kembali data anda kemudian, log masuk ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
@@ -96,6 +96,7 @@
 <translation id="3114643501466072395">Untuk menyemak sama ada kata laluan anda yang lain selamat daripada pelanggaran data dan isu keselamatan lain, <ph name="BEGIN_LINK" />log masuk ke Chrome<ph name="END_LINK" />.</translation>
 <translation id="3140883423282498090">Perubahan anda akan berkuat kuasa apabila anda melancarkan semula Google Chrome pada masa hadapan.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
+<translation id="3245429137663807393">Jika anda turut berkongsi laporan penggunaan Chrome, laporan tersebut menyertakan URL yang anda lawati</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome akan dilancarkan semula sekarang}=1{Chrome akan dilancarkan semula dalam masa sesaat}other{Chrome akan dilancarkan semula dalam masa # saat}}</translation>
 <translation id="3395323229510056640">Dapatkan bantuan berkenaan Chrome OS</translation>
@@ -113,7 +114,6 @@
 <translation id="3596080736082218006">{COUNT,plural, =0{Pentadbir anda menghendaki anda melancarkan semula Chrome untuk menggunakan kemas kini}=1{Pentadbir anda menghendaki anda melancarkan semula Chrome untuk menggunakan kemas kini. Tetingkap Inkognito anda tidak dapat dibuka semula.}other{Pentadbir anda menghendaki anda melancarkan semula Chrome untuk menggunakan kemas kini. # tetingkap Inkognito anda tidak dapat dibuka semula.}}</translation>
 <translation id="3622797965165704966">Kini lebih mudah menggunakan Chrome dengan Akaun Google anda dan pada komputer yang dikongsi.</translation>
 <translation id="3673813398384385993">Chrome mendapati bahawa "<ph name="EXTENSION_NAME" />" mengandungi perisian hasad</translation>
-<translation id="3678552270983184277">Tetapan lalai berfungsi untuk kebanyakan orang, tetapi anda boleh menyesuaikan tetapan tersebut agar sesuai dengan cara anda suka menggunakan Chrome</translation>
 <translation id="3718181793972440140">Tindakan ini akan memadamkan 1 item daripada peranti ini. Untuk mendapatkan kembali data anda kemudian, log masuk ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">Sambungan "<ph name="EXTENSION_NAME" />" telah menukar halaman yang ditunjukkan apabila anda memulakan Chrome.</translation>
 <translation id="3779473566290487688">Untuk mendapatkan kemaskinian Google Chrome yang akan datang, anda memerlukan OS X 10.11 atau yang lebih baharu. Komputer ini menggunakan OS X 10.10.</translation>
@@ -171,7 +171,6 @@
 <translation id="5193136243808726294">OS Google Chrome tidak boleh membuka halaman ini.</translation>
 <translation id="521447420733633466">Jika anda berkongsi peranti, rakan dan keluarga boleh menyemak imbas secara terpisah dan menyediakan Chrome sebagaimana yang mereka ingini</translation>
 <translation id="5251420635869119124">Tetamu boleh menggunakan Chrome tanpa meninggalkan apa-apa.</translation>
-<translation id="5251679006894510177">Kemas kini hampir selesai! Lancarkan semula Chrome untuk menyelesaikan kemas kini. Tetingkap inkognito tidak dapat dibuka semula.</translation>
 <translation id="5334487786912937552">Chrome memerlukan kebenaran akses storan untuk memuat turun fail</translation>
 <translation id="5386244825306882791">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chrome atau membuat carian dari Kotak Omni.</translation>
 <translation id="5394833366792865639">Kongsi tab Chrome</translation>
@@ -212,7 +211,6 @@ tetapan OS Chrome<ph name="LINK_END" /> anda</translation>
 <translation id="6506909944137591434">Chrome memerlukan kebenaran kamera untuk membuat peta 3D bagi persekitaran anda</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
 <translation id="6568793831116033768">Sistem OS Chrome</translation>
-<translation id="6594121454516132231">Lihat perancangan Chrome untuk melindungi anda daripada penjejakan rentas laman sambil memelihara web terbuka</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6679975945624592337">Biarkan Google Chrome Dijalankan Di Latar Belakang</translation>
 <translation id="6696915334902295848">Chrome memerlukan kebenaran mikrofon untuk laman ini</translation>
@@ -294,6 +292,7 @@ tetapan OS Chrome<ph name="LINK_END" /> anda</translation>
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
 <translation id="8679801911857917785">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chrome.</translation>
 <translation id="8686817260976772516">Dengan profil Chrome anda dapat mengasingkan semua bahan Chrome anda. Buat profil untuk rakan dan keluarga atau asingkan antara bahan kerja dengan bahan untuk keseronokan.</translation>
+<translation id="8712767363896337380">Kemas kini hampir selesai! Lancarkan semula Chrome untuk menyelesaikan kemas kini.</translation>
 <translation id="873133009373065397">Google Chrome tidak dapat menentukan atau menetapkan penyemak imbas lalai</translation>
 <translation id="8823341990149967727">Chrome sudah Usang</translation>
 <translation id="8834965163890861871">Google Chrome cuba mengedit kata laluan. Taip kata laluan Windows anda untuk membenarkan tindakan ini.</translation>

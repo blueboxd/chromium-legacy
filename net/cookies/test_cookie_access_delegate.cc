@@ -4,10 +4,16 @@
 
 #include "net/cookies/test_cookie_access_delegate.h"
 
+#include <set>
+
+#include "base/callback.h"
 #include "base/containers/contains.h"
+#include "base/containers/flat_map.h"
+#include "base/task/thread_pool.h"
 #include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/first_party_set_metadata.h"
 #include "net/cookies/same_party_context.h"
 
 namespace net {
@@ -36,24 +42,18 @@ bool TestCookieAccessDelegate::ShouldIgnoreSameSiteRestrictions(
   return true;
 }
 
-SamePartyContext TestCookieAccessDelegate::ComputeSamePartyContext(
+void TestCookieAccessDelegate::ComputeFirstPartySetMetadataMaybeAsync(
     const net::SchemefulSite& site,
     const net::SchemefulSite* top_frame_site,
-    const std::set<net::SchemefulSite>& party_context) const {
-  return SamePartyContext();
-}
-
-FirstPartySetsContextType
-TestCookieAccessDelegate::ComputeFirstPartySetsContextType(
-    const net::SchemefulSite& site,
-    const absl::optional<net::SchemefulSite>& top_frame_site,
-    const std::set<net::SchemefulSite>& party_context) const {
-  return FirstPartySetsContextType::kUnknown;
-}
-
-bool TestCookieAccessDelegate::IsInNontrivialFirstPartySet(
-    const net::SchemefulSite& site) const {
-  return false;
+    const std::set<net::SchemefulSite>& party_context,
+    base::OnceCallback<void(FirstPartySetMetadata)> callback) const {
+  if (invoke_callbacks_asynchronously_) {
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, base::BindOnce([]() { return FirstPartySetMetadata(); }),
+        std::move(callback));
+    return;
+  }
+  std::move(callback).Run(FirstPartySetMetadata());
 }
 
 absl::optional<net::SchemefulSite>
@@ -66,9 +66,23 @@ TestCookieAccessDelegate::FindFirstPartySetOwner(
   return absl::nullopt;
 }
 
-base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
-TestCookieAccessDelegate::RetrieveFirstPartySets() const {
-  return first_party_sets_;
+void TestCookieAccessDelegate::RetrieveFirstPartySets(
+    base::OnceCallback<
+        void(base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>)>
+        callback) const {
+  if (invoke_callbacks_asynchronously_) {
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        base::BindOnce(
+            [](const base::flat_map<net::SchemefulSite,
+                                    std::set<net::SchemefulSite>>& sets) {
+              return sets;
+            },
+            first_party_sets_),
+        std::move(callback));
+    return;
+  }
+  std::move(callback).Run(first_party_sets_);
 }
 
 void TestCookieAccessDelegate::SetExpectationForCookieDomain(

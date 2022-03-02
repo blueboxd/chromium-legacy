@@ -51,6 +51,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -67,6 +68,7 @@
 #include "net/base/features.h"
 #include "net/base/isolation_info.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/schemeful_site.h"
 #include "net/base/url_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
@@ -351,17 +353,20 @@ void HistogramExpirationDuration(const CanonicalCookie& cookie,
 }  // namespace
 
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                             NetLog* net_log)
+                             NetLog* net_log,
+                             bool first_party_sets_enabled)
     : CookieMonster(std::move(store),
                     base::Seconds(kDefaultAccessUpdateThresholdSeconds),
-                    net_log) {}
+                    net_log,
+                    first_party_sets_enabled) {}
 
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
                              base::TimeDelta last_access_threshold,
-                             NetLog* net_log)
+                             NetLog* net_log,
+                             bool first_party_sets_enabled)
     : num_keys_(0u),
       num_partitioned_cookies_(0u),
-      change_dispatcher_(this),
+      change_dispatcher_(this, first_party_sets_enabled),
       initialized_(false),
       started_fetching_all_cookies_(false),
       finished_fetching_all_cookies_(false),
@@ -370,12 +375,13 @@ CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
       store_(std::move(store)),
       last_access_threshold_(last_access_threshold),
       last_statistic_record_time_(base::Time::Now()),
-      persist_session_cookies_(false) {
+      persist_session_cookies_(false),
+      first_party_sets_enabled_(first_party_sets_enabled) {
   cookieable_schemes_.insert(
       cookieable_schemes_.begin(), kDefaultCookieableSchemes,
       kDefaultCookieableSchemes + kDefaultCookieableSchemesCount);
   net_log_.BeginEvent(NetLogEventType::COOKIE_STORE_ALIVE, [&] {
-    return NetLogCookieMonsterConstructorParams(store != nullptr);
+    return NetLogCookieMonsterConstructorParams(store_ != nullptr);
   });
 }
 
@@ -1186,7 +1192,8 @@ void CookieMonster::FilterCookiesWithOptions(
         CookieAccessParams{
             GetAccessSemanticsForCookie(*cookie_ptr),
             delegate_treats_url_as_trustworthy,
-            cookie_util::GetSamePartyStatus(*cookie_ptr, options)});
+            cookie_util::GetSamePartyStatus(*cookie_ptr, options,
+                                            first_party_sets_enabled_)});
 
     if (!access_result.status.IsInclude()) {
       UMA_HISTOGRAM_BOOLEAN(
@@ -1478,7 +1485,8 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
       source_url, options,
       CookieAccessParams(GetAccessSemanticsForCookie(*cc),
                          delegate_treats_url_as_trustworthy,
-                         cookie_util::GetSamePartyStatus(*cc, options)),
+                         cookie_util::GetSamePartyStatus(
+                             *cc, options, first_party_sets_enabled_)),
       cookieable_schemes_);
 
   const std::string key(GetKey(cc->Domain()));
@@ -2225,7 +2233,6 @@ void CookieMonster::RecordPeriodicStats(const base::Time& current_time) {
     last_statistic_record_time_ = current_time;
 }
 
-// TODO(crbug.com/1225444): Record periodic stats for Partitioned cookies.
 bool CookieMonster::DoRecordPeriodicStats() {
   // These values are all bogus if we have only partially loaded the cookies.
   if (started_fetching_all_cookies_ && !finished_fetching_all_cookies_)
@@ -2234,17 +2241,9 @@ bool CookieMonster::DoRecordPeriodicStats() {
   base::UmaHistogramCounts100000("Cookie.Count2", cookies_.size());
 
   if (cookie_access_delegate()) {
-    for (const auto& set : cookie_access_delegate()->RetrieveFirstPartySets()) {
-      int sample = std::accumulate(
-          set.second.begin(), set.second.end(), 0,
-          [this](int acc, const net::SchemefulSite& site) -> int {
-            if (!site.has_registrable_domain_or_host())
-              return acc;
-            return acc + cookies_.count(site.registrable_domain_or_host());
-          });
-      base::UmaHistogramCustomCounts("Cookie.PerFirstPartySetCount", sample, 0,
-                                     4000, 50);
-    }
+    cookie_access_delegate()->RetrieveFirstPartySets(
+        base::BindOnce(&CookieMonster::RecordPeriodicFirstPartySetsStats,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Can be up to kMaxDomainPurgedKeys.
@@ -2253,7 +2252,30 @@ bool CookieMonster::DoRecordPeriodicStats() {
   // Can be up to kMaxCookies.
   UMA_HISTOGRAM_COUNTS_10000("Cookie.NumKeys", num_keys_);
 
+  // Collect stats for partitioned cookies if they are enabled.
+  if (base::FeatureList::IsEnabled(features::kPartitionedCookies)) {
+    base::UmaHistogramCounts1000("Cookie.PartitionCount",
+                                 partitioned_cookies_.size());
+    base::UmaHistogramCounts100000("Cookie.PartitionedCookieCount",
+                                   num_partitioned_cookies_);
+  }
+
   return true;
+}
+
+void CookieMonster::RecordPeriodicFirstPartySetsStats(
+    base::flat_map<SchemefulSite, std::set<SchemefulSite>> sets) const {
+  for (const auto& set : sets) {
+    int sample = std::accumulate(
+        set.second.begin(), set.second.end(), 0,
+        [this](int acc, const net::SchemefulSite& site) -> int {
+          if (!site.has_registrable_domain_or_host())
+            return acc;
+          return acc + cookies_.count(site.registrable_domain_or_host());
+        });
+    base::UmaHistogramCustomCounts("Cookie.PerFirstPartySetCount", sample, 0,
+                                   4000, 50);
+  }
 }
 
 void CookieMonster::DoCookieCallback(base::OnceClosure callback) {

@@ -23,11 +23,11 @@
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
-#include "net/dns/public/dns_over_https_server_config.h"
 #include "net/net_buildflags.h"
 #include "services/cert_verifier/test_cert_verifier_service_factory.h"
 #include "services/network/public/cpp/features.h"
@@ -87,20 +87,11 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest,
   // Test defaults.
   network::mojom::HttpAuthStaticParamsPtr static_params =
       SystemNetworkContextManager::GetHttpAuthStaticParamsForTesting();
-  EXPECT_THAT(static_params->supported_schemes,
-              testing::ElementsAre("basic", "digest", "ntlm", "negotiate"));
   EXPECT_EQ("", static_params->gssapi_library_name);
-
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Test that prefs are reflected in params.
 
   PrefService* local_state = g_browser_process->local_state();
-
-  local_state->SetString(prefs::kAuthSchemes, "basic");
-  static_params =
-      SystemNetworkContextManager::GetHttpAuthStaticParamsForTesting();
-  EXPECT_THAT(static_params->supported_schemes, testing::ElementsAre("basic"));
-
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   const char dev_null[] = "/dev/null";
   local_state->SetString(prefs::kGSSAPILibraryName, dev_null);
   static_params =
@@ -113,6 +104,8 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   // Test defaults.
   network::mojom::HttpAuthDynamicParamsPtr dynamic_params =
       SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
+  EXPECT_THAT(*dynamic_params->allowed_schemes,
+              testing::ElementsAre("basic", "digest", "ntlm", "negotiate"));
   EXPECT_FALSE(dynamic_params->negotiate_disable_cname_lookup);
   EXPECT_FALSE(dynamic_params->enable_negotiate_port);
   EXPECT_TRUE(dynamic_params->basic_over_http_enabled);
@@ -125,6 +118,8 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   local_state->SetBoolean(prefs::kDisableAuthNegotiateCnameLookup, true);
   dynamic_params =
       SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
+  EXPECT_THAT(*dynamic_params->allowed_schemes,
+              testing::ElementsAre("basic", "digest", "ntlm", "negotiate"));
   EXPECT_TRUE(dynamic_params->negotiate_disable_cname_lookup);
   EXPECT_FALSE(dynamic_params->enable_negotiate_port);
   EXPECT_TRUE(dynamic_params->basic_over_http_enabled);
@@ -135,6 +130,8 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   local_state->SetBoolean(prefs::kEnableAuthNegotiatePort, true);
   dynamic_params =
       SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
+  EXPECT_THAT(*dynamic_params->allowed_schemes,
+              testing::ElementsAre("basic", "digest", "ntlm", "negotiate"));
   EXPECT_TRUE(dynamic_params->negotiate_disable_cname_lookup);
   EXPECT_TRUE(dynamic_params->enable_negotiate_port);
   EXPECT_TRUE(dynamic_params->basic_over_http_enabled);
@@ -145,6 +142,8 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   local_state->SetBoolean(prefs::kBasicAuthOverHttpEnabled, false);
   dynamic_params =
       SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
+  EXPECT_THAT(*dynamic_params->allowed_schemes,
+              testing::ElementsAre("basic", "digest", "ntlm", "negotiate"));
   EXPECT_TRUE(dynamic_params->negotiate_disable_cname_lookup);
   EXPECT_TRUE(dynamic_params->enable_negotiate_port);
   EXPECT_FALSE(dynamic_params->basic_over_http_enabled);
@@ -156,6 +155,8 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   local_state->SetString(prefs::kAuthServerAllowlist, kServerAllowList);
   dynamic_params =
       SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
+  EXPECT_THAT(*dynamic_params->allowed_schemes,
+              testing::ElementsAre("basic", "digest", "ntlm", "negotiate"));
   EXPECT_TRUE(dynamic_params->negotiate_disable_cname_lookup);
   EXPECT_TRUE(dynamic_params->enable_negotiate_port);
   EXPECT_FALSE(dynamic_params->basic_over_http_enabled);
@@ -167,6 +168,8 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
                          kDelegateAllowList);
   dynamic_params =
       SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
+  EXPECT_THAT(*dynamic_params->allowed_schemes,
+              testing::ElementsAre("basic", "digest", "ntlm", "negotiate"));
   EXPECT_TRUE(dynamic_params->negotiate_disable_cname_lookup);
   EXPECT_TRUE(dynamic_params->enable_negotiate_port);
   EXPECT_EQ(kServerAllowList, dynamic_params->server_allowlist);
@@ -174,17 +177,30 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   EXPECT_EQ(kDelegateAllowList, dynamic_params->delegate_allowlist);
   EXPECT_FALSE(dynamic_params->delegate_by_kdc_policy);
 
-#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_CHROMEOS)
+  local_state->SetString(prefs::kAuthSchemes, "basic");
+  dynamic_params =
+      SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
+  EXPECT_THAT(*dynamic_params->allowed_schemes, testing::ElementsAre("basic"));
+  EXPECT_TRUE(dynamic_params->negotiate_disable_cname_lookup);
+  EXPECT_TRUE(dynamic_params->enable_negotiate_port);
+  EXPECT_FALSE(dynamic_params->basic_over_http_enabled);
+  EXPECT_EQ(kServerAllowList, dynamic_params->server_allowlist);
+  EXPECT_EQ(kDelegateAllowList, dynamic_params->delegate_allowlist);
+  EXPECT_FALSE(dynamic_params->delegate_by_kdc_policy);
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
+  local_state->SetString(prefs::kAuthSchemes, "basic");
   local_state->SetBoolean(prefs::kAuthNegotiateDelegateByKdcPolicy, true);
   dynamic_params =
       SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
+  EXPECT_THAT(*dynamic_params->allowed_schemes, testing::ElementsAre("basic"));
   EXPECT_TRUE(dynamic_params->negotiate_disable_cname_lookup);
   EXPECT_TRUE(dynamic_params->enable_negotiate_port);
   EXPECT_FALSE(dynamic_params->basic_over_http_enabled);
   EXPECT_EQ(kServerAllowList, dynamic_params->server_allowlist);
   EXPECT_EQ(kDelegateAllowList, dynamic_params->delegate_allowlist);
   EXPECT_TRUE(dynamic_params->delegate_by_kdc_policy);
-#endif  // defined(OS_LINUX) || defined(OS_MAC) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // The kerberos.enabled pref is false and the device is not Active Directory
@@ -205,7 +221,7 @@ class SystemNetworkContextManagerWithFirstPartySetComponentBrowserTest
 
   void SetUpInProcessBrowserTestFixture() override {
     SystemNetworkContextManagerBrowsertest::SetUpInProcessBrowserTestFixture();
-    feature_list_.InitAndEnableFeature(net::features::kFirstPartySets);
+    feature_list_.InitAndEnableFeature(features::kFirstPartySets);
     CHECK(component_dir_.CreateUniqueTempDir());
     base::ScopedAllowBlockingForTesting allow_blocking;
 

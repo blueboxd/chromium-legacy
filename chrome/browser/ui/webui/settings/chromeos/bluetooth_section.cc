@@ -122,31 +122,6 @@ const std::vector<SearchConcept>& GetBluetoothPairedSearchConcepts() {
   return *tags;
 }
 
-std::vector<mojom::Setting> GetBluetoothDevicesSubpageSettings() {
-  std::vector<mojom::Setting> bluetooth_devices_settings{
-      mojom::Setting::kBluetoothOnOff, mojom::Setting::kBluetoothPairDevice};
-
-  if (!chromeos::features::IsBluetoothRevampEnabled()) {
-    bluetooth_devices_settings.insert(
-        bluetooth_devices_settings.end(),
-        {mojom::Setting::kBluetoothConnectToDevice,
-         mojom::Setting::kBluetoothDisconnectFromDevice,
-         mojom::Setting::kBluetoothUnpairDevice});
-  }
-
-  return bluetooth_devices_settings;
-}
-
-std::vector<mojom::Setting> GetBluetoothDeviceDetailSubpageSettings() {
-  if (!chromeos::features::IsBluetoothRevampEnabled())
-    return std::vector<mojom::Setting>{};
-
-  return std::vector<mojom::Setting>{
-      mojom::Setting::kBluetoothConnectToDevice,
-      mojom::Setting::kBluetoothDisconnectFromDevice,
-      mojom::Setting::kBluetoothUnpairDevice};
-}
-
 }  // namespace
 
 BluetoothSection::BluetoothSection(Profile* profile,
@@ -189,6 +164,12 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_DISCONNECTED},
       {"bluetoothDeviceDetailForget",
        IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_FORGET},
+      {"bluetoothDeviceDetailForgetA11yLabel",
+       IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_FORGET_A11Y_LABEL},
+      {"bluetoothDeviceDetailHIDMessageConnected",
+       IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_HID_MESSAGE_CONNECTED},
+      {"bluetoothDeviceDetailHIDMessageDisconnected",
+       IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_HID_MESSAGE_DISCONNECTED},
       {"bluetoothDeviceDetailName", IDS_SETTINGS_BLUETOOTH_DEVICE_DETAIL_NAME},
       {"bluetoothDeviceDetailChangeNameDialogNewName",
        IDS_SETTINGS_BLUETOOTH_CHANGE_DEVICE_NAME_DIALOG_NEW_NAME},
@@ -290,8 +271,6 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_BLUETOOTH_PAIRED_DEVICE_ITEM_A11Y_LABEL_TYPE_TABLET},
       {"bluetoothPairedDeviceItemA11yLabelTypeTabletWithBatteryInfo",
        IDS_SETTINGS_BLUETOOTH_PAIRED_DEVICE_ITEM_A11Y_LABEL_TYPE_TABLET_WITH_BATTERY_INFO},
-      {"bluetoothPairedDeviceItemSubpageButtonA11yLabel",
-       IDS_SETTINGS_BLUETOOTH_PAIRED_DEVICE_ITEM_SUBPAGE_BUTTON_A11Y_LABEL},
       {"bluetoothPairDevicePageTitle",
        IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE},
       {"bluetoothRemove", IDS_SETTINGS_BLUETOOTH_REMOVE},
@@ -336,6 +315,9 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_BLUETOOTH_DEVICE_LIST_PREVIOUSLY_CONNECTED},
       {"bluetoothDeviceListNoConnectedDevices",
        IDS_BLUETOOTH_DEVICE_LIST_NO_CONNECTED_DEVICES},
+      {"bluetoothEnabledA11YLabel", IDS_SETTINGS_BLUETOOTH_ENABLED_A11Y_LABEL},
+      {"bluetoothDisabledA11YLabel", IDS_SETTINGS_BLUETOOTH_DISABLED_A11Y_LABEL}
+
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
   html_source->AddBoolean("enableFastPairFlag", features::IsFastPairEnabled());
@@ -381,20 +363,28 @@ void BluetoothSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                                      mojom::SearchResultIcon::kBluetooth,
                                      mojom::SearchResultDefaultRank::kMedium,
                                      mojom::kBluetoothDevicesSubpagePath);
-
+  static constexpr mojom::Setting kBluetoothDevicesSettings[] = {
+      mojom::Setting::kBluetoothOnOff,
+      mojom::Setting::kBluetoothPairDevice,
+      mojom::Setting::kBluetoothUnpairDevice,
+  };
+  static constexpr mojom::Setting kBluetoothDevicesSettingsLegacy[] = {
+      mojom::Setting::kBluetoothConnectToDevice,
+      mojom::Setting::kBluetoothDisconnectFromDevice,
+  };
   RegisterNestedSettingBulk(mojom::Subpage::kBluetoothDevices,
-                            GetBluetoothDevicesSubpageSettings(), generator);
+                            kBluetoothDevicesSettings, generator);
   generator->RegisterTopLevelAltSetting(mojom::Setting::kBluetoothOnOff);
-
   generator->RegisterNestedSubpage(IDS_SETTINGS_BLUETOOTH_DEVICE_DETAILS,
                                    mojom::Subpage::kBluetoothDeviceDetail,
                                    mojom::Subpage::kBluetoothDevices,
                                    mojom::SearchResultIcon::kBluetooth,
                                    mojom::SearchResultDefaultRank::kMedium,
                                    mojom::kBluetoothDeviceDetailSubpagePath);
-  RegisterNestedSettingBulk(mojom::Subpage::kBluetoothDeviceDetail,
-                            GetBluetoothDeviceDetailSubpageSettings(),
-                            generator);
+  RegisterNestedSettingBulk(ash::features::IsBluetoothRevampEnabled()
+                                ? mojom::Subpage::kBluetoothDeviceDetail
+                                : mojom::Subpage::kBluetoothDevices,
+                            kBluetoothDevicesSettingsLegacy, generator);
 }
 
 void BluetoothSection::AdapterPresentChanged(device::BluetoothAdapter* adapter,
@@ -454,6 +444,14 @@ void BluetoothSection::UpdateSearchTags() {
   updater.AddSearchTags(GetBluetoothOnSearchConcepts());
 
   // TODO(crbug/1257312): Add Fast Pair search concepts.
+
+  // Always include the option to pair devices, but skip any device-specific
+  // search options since we have no way to determine which device the user is
+  // interested in.
+  if (ash::features::IsBluetoothRevampEnabled()) {
+    updater.AddSearchTags(GetBluetoothPairableSearchConcepts());
+    return;
+  }
 
   // Filter devices so that only those shown in the UI are returned. Note that
   // passing |max_devices| of 0 indicates that there is no maximum.

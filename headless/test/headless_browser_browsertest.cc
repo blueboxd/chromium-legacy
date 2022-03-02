@@ -32,7 +32,6 @@
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/lib/browser/policy/headless_mode_policy.h"
-#include "headless/lib/headless_macros.h"
 #include "headless/public/devtools/domains/inspector.h"
 #include "headless/public/devtools/domains/network.h"
 #include "headless/public/devtools/domains/page.h"
@@ -53,7 +52,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(OS_MAC)
+#if !BUILDFLAG(IS_FUCHSIA)
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"  // nogncheck
 #endif
 
@@ -224,7 +223,7 @@ class HeadlessBrowserTestWithProxy : public HeadlessBrowserTest {
   net::EmbeddedTestServer proxy_server_;
 };
 
-#if defined(OS_MAC) && defined(ADDRESS_SANITIZER)
+#if BUILDFLAG(IS_MAC) && defined(ADDRESS_SANITIZER)
 // TODO(crbug.com/1086872): Disabled due to flakiness on Mac ASAN.
 #define MAYBE_SetProxyConfig DISABLED_SetProxyConfig
 #else
@@ -301,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, DefaultSizes) {
   HeadlessBrowser::Options::Builder builder;
   const HeadlessBrowser::Options kDefaultOptions = builder.Build();
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   // On Mac headless does not override the screen dimensions, so they are
   // left with the actual screen values.
   EXPECT_EQ(kDefaultOptions.window_size.width(),
@@ -314,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, DefaultSizes) {
                 ->GetResult()
                 ->GetValue()
                 ->GetInt());
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
   EXPECT_EQ(kDefaultOptions.window_size.width(),
             EvaluateScript(web_contents, "window.innerWidth")
                 ->GetResult()
@@ -372,7 +371,7 @@ class CookieSetter {
 
 // TODO(skyostil): This test currently relies on being able to run a shell
 // script.
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
 class HeadlessBrowserRendererCommandPrefixTest : public HeadlessBrowserTest {
  public:
   const base::FilePath& launcher_stamp() const { return launcher_stamp_; }
@@ -387,11 +386,11 @@ class HeadlessBrowserRendererCommandPrefixTest : public HeadlessBrowserTest {
             launcher_stamp_.value().c_str());
     fprintf(launcher_file.get(), "exec $@\n");
     launcher_file.reset();
-#if !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_FUCHSIA)
     base::SetPosixFilePermissions(launcher_script_,
                                   base::FILE_PERMISSION_READ_BY_USER |
                                       base::FILE_PERMISSION_EXECUTE_BY_USER);
-#endif  // !defined(OS_FUCHSIA)
+#endif  // !BUILDFLAG(IS_FUCHSIA)
 
     HeadlessBrowserTest::SetUp();
   }
@@ -432,7 +431,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserRendererCommandPrefixTest, Prefix) {
   EXPECT_TRUE(base::ReadFileToString(launcher_stamp(), &stamp));
   EXPECT_GE(stamp.find("--type=renderer"), 0u);
 }
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_POSIX)
 
 class CrashReporterTest : public HeadlessBrowserTest,
                           public HeadlessWebContents::Observer,
@@ -474,15 +473,8 @@ class CrashReporterTest : public HeadlessBrowserTest,
   base::FilePath crash_dumps_dir_;
 };
 
-// TODO(skyostil): Minidump generation currently is only supported on Linux and
-// Mac.
-#if (defined(HEADLESS_USE_BREAKPAD) || defined(OS_MAC)) && \
-    !defined(ADDRESS_SANITIZER)
-#define MAYBE_GenerateMinidump GenerateMinidump
-#else
-#define MAYBE_GenerateMinidump DISABLED_GenerateMinidump
-#endif  // defined(HEADLESS_USE_BREAKPAD) || defined(OS_MAC)
-IN_PROC_BROWSER_TEST_F(CrashReporterTest, MAYBE_GenerateMinidump) {
+#if !BUILDFLAG(IS_FUCHSIA) && !BUILDFLAG(IS_WIN)
+IN_PROC_BROWSER_TEST_F(CrashReporterTest, GenerateMinidump) {
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
 
   // Navigates a tab to chrome://crash and checks that a minidump is generated.
@@ -507,20 +499,11 @@ IN_PROC_BROWSER_TEST_F(CrashReporterTest, MAYBE_GenerateMinidump) {
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
 
-#if defined(OS_MAC)
     auto database = crashpad::CrashReportDatabase::Initialize(crash_dumps_dir_);
     std::vector<crashpad::CrashReportDatabase::Report> reports;
     ASSERT_EQ(database->GetPendingReports(&reports),
               crashpad::CrashReportDatabase::kNoError);
     EXPECT_EQ(reports.size(), 1u);
-#else
-    base::FileEnumerator it(crash_dumps_dir_, /* recursive */ false,
-                            base::FileEnumerator::FILES);
-    base::FilePath minidump = it.Next();
-    EXPECT_FALSE(minidump.empty());
-    EXPECT_EQ(FILE_PATH_LITERAL(".dmp"), minidump.Extension());
-    EXPECT_TRUE(it.Next().empty());
-#endif
   }
 
   web_contents_->RemoveObserver(this);
@@ -530,6 +513,7 @@ IN_PROC_BROWSER_TEST_F(CrashReporterTest, MAYBE_GenerateMinidump) {
   browser_context_->Close();
   browser_context_ = nullptr;
 }
+#endif  // !BUILDFLAG(IS_FUCHSIA) && !BUILDFLAG(IS_WIN)
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, PermissionManagerAlwaysASK) {
   GURL url("https://example.com");
@@ -596,7 +580,7 @@ class TraceHelper : public tracing::ExperimentalObserver {
   // tracing::ExperimentalObserver implementation:
   void OnDataCollected(const tracing::DataCollectedParams& params) override {
     for (const auto& value : *params.GetValue()) {
-      tracing_data_->Append(value->CreateDeepCopy());
+      tracing_data_->Append(value->Clone());
     }
   }
 
@@ -615,12 +599,12 @@ class TraceHelper : public tracing::ExperimentalObserver {
 }  // namespace
 
 // Flaky, http://crbug.com/1269261.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_TraceUsingBrowserDevToolsTarget \
   DISABLED_TraceUsingBrowserDevToolsTarget
 #else
 #define MAYBE_TraceUsingBrowserDevToolsTarget TraceUsingBrowserDevToolsTarget
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest,
                        MAYBE_TraceUsingBrowserDevToolsTarget) {
   HeadlessDevToolsTarget* target = browser()->GetDevToolsTarget();

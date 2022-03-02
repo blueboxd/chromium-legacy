@@ -386,6 +386,10 @@ bool DecodeHSTSPreload(const std::string& search_hostname, PreloadResult* out) {
 const base::Feature TransportSecurityState::kDynamicExpectCTFeature{
     "DynamicExpectCT", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// static
+const base::Feature TransportSecurityState::kCertificateTransparencyEnforcement{
+    "CertificateTransparencyEnforcement", base::FEATURE_ENABLED_BY_DEFAULT};
+
 void SetTransportSecurityStateSourceForTesting(
     const TransportSecurityStateSource* source) {
   g_hsts_source = source ? source : kDefaultHSTSSource;
@@ -410,7 +414,8 @@ TransportSecurityState::TransportSecurityState(
           features::kPartitionExpectCTStateByNetworkIsolationKey)) {
 // Static pinning is only enabled for official builds to make sure that
 // others don't end up with pins that cannot be easily updated.
-#if !BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(OS_ANDROID) || defined(OS_IOS)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_IOS)
   enable_static_pins_ = false;
   enable_static_expect_ct_ = false;
 #endif
@@ -486,9 +491,12 @@ TransportSecurityState::CheckCTRequirements(
   using CTRequirementLevel = RequireCTDelegate::CTRequirementLevel;
   std::string hostname = host_port_pair.host();
 
-  // If CT emergency disable flag is set, we don't require CT for any host.
-  if (ct_emergency_disable_)
+  // If CT is emergency disabled, either through a component updater set flag or
+  // through the feature flag, we don't require CT for any host.
+  if (ct_emergency_disable_ ||
+      !base::FeatureList::IsEnabled(kCertificateTransparencyEnforcement)) {
     return CT_NOT_REQUIRED;
+  }
 
   // CT is not required if the certificate does not chain to a publicly
   // trusted root certificate. Testing can override this, as certain tests

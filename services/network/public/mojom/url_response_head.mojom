@@ -65,7 +65,7 @@ struct URLResponseHead {
   // True if the response was delivered using SPDY.
   bool was_fetched_via_spdy = false;
 
-  // True if the response was delivered after NPN is negotiated.
+  // True if the response was delivered over a connection that negotiated ALPN.
   bool was_alpn_negotiated = false;
 
   // True if response could use alternate protocol. However, browser will
@@ -212,9 +212,8 @@ struct URLResponseHead {
   mojo_base.mojom.UnguessableToken? recursive_prefetch_token;
 
   // Aliases, if any, for the destination URL, as read from DNS CNAME records.
-  // The first entry of `dns_aliases`, if it exists, is the canonical name.
-  // The alias chain is preserved in reverse order, from canonical name (i.e.
-  // address record name) through to query name.
+  // Includes all known aliases, e.g. from A, AAAA, or HTTPS, not just from the
+  // address used for the connection, in no particular order.
   array<string> dns_aliases;
 
   // The URL of WebBundle this response was loaded from. This value is only
@@ -226,6 +225,7 @@ struct URLResponseHead {
   // TODO(crbug.com/1176753): Remove this once the investigation is done.
   bool has_authorization_covered_by_wildcard_on_preflight = false;
 
+  // [spec] https://fetch.spec.whatwg.org/#response-request-includes-credentials
   // The request's |includeCredentials| value from the "HTTP-network fetch"
   // algorithm.
   // See: https://fetch.spec.whatwg.org/#concept-http-network-fetch

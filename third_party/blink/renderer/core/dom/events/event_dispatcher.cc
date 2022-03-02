@@ -163,8 +163,6 @@ DispatchEventResult EventDispatcher::Dispatch() {
   LocalFrame* frame = node_->GetDocument().GetFrame();
   if (frame && frame->DomWindow()) {
     eventTiming = EventTiming::Create(frame->DomWindow(), *event_);
-    if (!base::FeatureList::IsEnabled(kFirstInputDelayWithoutEventListener))
-      EventTiming::HandleInputDelay(frame->DomWindow(), *event_);
   }
 
   if (event_->type() == event_type_names::kChange && event_->isTrusted() &&
@@ -379,13 +377,13 @@ inline void EventDispatcher::DispatchEventPostProcess(
       }
     }
   } else {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // If a keypress event is prevented, the cursor position may be out of
     // sync as RenderWidgetHostViewCocoa::insertText assumes that the text
     // has been accepted. See https://crbug.com/1204523 for details.
     if (event_->type() == event_type_names::kKeypress && view_)
       view_->GetFrame().GetEditor().SyncSelection(SyncCondition::kForced);
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
   }
 
   auto* keyboard_event = DynamicTo<KeyboardEvent>(event_);

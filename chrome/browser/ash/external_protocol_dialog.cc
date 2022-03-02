@@ -15,7 +15,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/weak_document_ptr.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -31,6 +33,7 @@ const int kMessageWidth = 400;
 
 void OnArcHandled(const GURL& url,
                   const absl::optional<url::Origin>& initiating_origin,
+                  content::WeakDocumentPtr initiator_document,
                   int render_process_host_id,
                   int routing_id,
                   bool handled) {
@@ -43,6 +46,11 @@ void OnArcHandled(const GURL& url,
   if (!web_contents)
     return;
 
+  aura::Window* parent_window = web_contents->GetTopLevelNativeWindow();
+  // If WebContents has been detached from window tree, do not show any dialog.
+  if (!parent_window || !parent_window->GetRootWindow())
+    return;
+
   // Display the standard ExternalProtocolDialog if Guest OS has a handler.
   absl::optional<guest_os::GuestOsRegistryService::Registration> registration =
       guest_os::GetHandler(
@@ -50,9 +58,9 @@ void OnArcHandled(const GURL& url,
   if (registration) {
     new ExternalProtocolDialog(web_contents, url,
                                base::UTF8ToUTF16(registration->Name()),
-                               initiating_origin);
+                               initiating_origin, initiator_document);
   } else {
-    new ash::ExternalProtocolNoHandlersDialog(web_contents, url);
+    new ash::ExternalProtocolNoHandlersDialog(parent_window, url);
   }
 }
 
@@ -67,7 +75,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
     WebContents* web_contents,
     ui::PageTransition page_transition,
     bool has_user_gesture,
-    const absl::optional<url::Origin>& initiating_origin) {
+    const absl::optional<url::Origin>& initiating_origin,
+    content::WeakDocumentPtr initiator_document) {
   // First, check if ARC version of the dialog is available and run ARC version
   // when possible.
   // TODO(ellyjones): Refactor arc::RunArcExternalProtocolDialog() to take a
@@ -80,7 +89,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
       url, initiating_origin, render_process_host_id, routing_id,
       page_transition, has_user_gesture,
       base::BindOnce(&OnArcHandled, url, initiating_origin,
-                     render_process_host_id, routing_id));
+                     std::move(initiator_document), render_process_host_id,
+                     routing_id));
 }
 
 namespace ash {
@@ -89,9 +99,10 @@ namespace ash {
 // ExternalProtocolNoHandlersDialog
 
 ExternalProtocolNoHandlersDialog::ExternalProtocolNoHandlersDialog(
-    WebContents* web_contents,
+    aura::Window* parent_window,
     const GURL& url)
     : creation_time_(base::TimeTicks::Now()), scheme_(url.scheme()) {
+  DCHECK(parent_window);
   SetOwnedByWidget(true);
 
   views::DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
@@ -102,13 +113,6 @@ ExternalProtocolNoHandlersDialog::ExternalProtocolNoHandlersDialog(
   message_box_view_ = new views::MessageBoxView();
   message_box_view_->SetMessageWidth(kMessageWidth);
 
-  gfx::NativeWindow parent_window;
-  if (web_contents) {
-    parent_window = web_contents->GetTopLevelNativeWindow();
-  } else {
-    // Dialog is top level if we don't have a web_contents associated with us.
-    parent_window = nullptr;
-  }
   views::DialogDelegate::CreateDialogWidget(this, nullptr, parent_window)
       ->Show();
   chrome::RecordDialogCreation(

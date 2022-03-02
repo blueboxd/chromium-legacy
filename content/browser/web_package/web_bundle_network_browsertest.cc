@@ -400,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest, SameDocumentNavigation) {
 }
 
 // https://crbug.com/1219373 fails with BFCache field trial testing config.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_IframeNavigation DISABLED_IframeNavigation
 #else
 #define MAYBE_IframeNavigation IframeNavigation
@@ -427,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
 }
 
 // https://crbug.com/1219373 fails with BFCache field trial testing config.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_IframeSameDocumentNavigation DISABLED_IframeSameDocumentNavigation
 #else
 #define MAYBE_IframeSameDocumentNavigation IframeSameDocumentNavigation
@@ -513,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
   // back navigation will recreate the page. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   const std::string wbn_path = "/web_bundle/test.wbn";
   const std::string primary_url_path = "/web_bundle/test.html";
   RegisterRequestHandler(wbn_path);
@@ -547,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
   // back navigation will recreate the page. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   const std::string wbn_path = "/web_bundle/test.wbn";
   const std::string primary_url_path = "/web_bundle/test.html";
   RegisterRequestHandler(wbn_path);
@@ -582,7 +582,7 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
   // back navigation will recreate the page. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   const std::string wbn_path = "/web_bundle/test.wbn";
   const std::string primary_url_path = "/web_bundle/test.html";
   RegisterRequestHandler(wbn_path);
@@ -615,7 +615,7 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
   // The test assumes the previous page gets deleted after navigation. Disable
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   const std::string wbn_path = "/web_bundle/test.wbn";
   const std::string primary_url_path = "/web_bundle/test.html";
   RegisterRequestHandler(wbn_path);
@@ -643,7 +643,7 @@ IN_PROC_BROWSER_TEST_F(WebBundleNetworkBrowserTest,
   // back navigation will recreate the page. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   const std::string wbn_path = "/web_bundle/test.wbn";
   const std::string primary_url_path = "/web_bundle/test.html";
   const std::string alt_primary_url_path = "/web_bundle/alt.html";

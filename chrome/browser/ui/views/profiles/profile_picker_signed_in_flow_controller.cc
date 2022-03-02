@@ -4,11 +4,12 @@
 
 #include "chrome/browser/ui/views/profiles/profile_picker_signed_in_flow_controller.h"
 
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -324,6 +325,9 @@ absl::optional<SkColor> ProfilePickerSignedInFlowController::GetProfileColor()
 
 void ProfilePickerSignedInFlowController::FinishAndOpenBrowserImpl(
     BrowserOpenedCallback callback) {
+  TRACE_EVENT1("browser",
+               "ProfilePickerSignedInFlowController::FinishAndOpenBrowserImpl",
+               "profile_path", profile_->GetPath().AsUTF8Unsafe());
   DCHECK(IsInitialized());
   DCHECK(!name_for_signed_in_profile_.empty());
 
@@ -373,9 +377,6 @@ void ProfilePickerSignedInFlowController::FinishAndOpenBrowserImpl(
   // Skip the FRE for this profile as it's replaced by profile creation flow.
   profile_->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
 
-  // TODO(crbug.com/1126913): Change the callback of
-  // profiles::OpenBrowserWindowForProfile() to be a OnceCallback as it is only
-  // called once.
   profiles::OpenBrowserWindowForProfile(
       base::BindOnce(&ProfilePickerSignedInFlowController::OnBrowserOpened,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
@@ -385,7 +386,7 @@ void ProfilePickerSignedInFlowController::FinishAndOpenBrowserImpl(
                                      // extensions because we only open browser
                                      // window if the Profile is not locked.
                                      // Hence there is no extension blocked.
-      profile_, Profile::CREATE_STATUS_INITIALIZED);
+      profile_);
 }
 
 void ProfilePickerSignedInFlowController::FinishAndOpenBrowserForSAML() {
@@ -416,8 +417,10 @@ void ProfilePickerSignedInFlowController::OnSignInContentsFreedUp() {
 
 void ProfilePickerSignedInFlowController::OnBrowserOpened(
     BrowserOpenedCallback finish_flow_callback,
-    Profile* profile,
-    Profile::CreateStatus profile_create_status) {
+    Profile* profile) {
+  TRACE_EVENT1("browser",
+               "ProfilePickerSignedInFlowController::OnBrowserOpened",
+               "profile_path", profile_->GetPath().AsUTF8Unsafe());
   DCHECK(IsInitialized());
   CHECK_EQ(profile, profile_);
 

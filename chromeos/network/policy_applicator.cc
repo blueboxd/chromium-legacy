@@ -13,12 +13,12 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/components/onc/onc_signature.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/network/cellular_policy_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_ui_data.h"
-#include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/policy_util.h"
 #include "chromeos/network/shill_property_util.h"
@@ -55,6 +55,12 @@ std::string GetGUIDFromONCPart(const base::Value& onc_part) {
   if (!guid_value)
     return std::string();
   return guid_value->GetString();
+}
+
+bool IsCellularPolicy(const base::DictionaryValue& onc_config) {
+  const std::string* type =
+      onc_config.FindStringKey(::onc::network_config::kType);
+  return type && *type == ::onc::network_type::kCellular;
 }
 
 const std::string* GetSMDPAddressFromONC(
@@ -157,21 +163,21 @@ void PolicyApplicator::GetProfilePropertiesCallback(
     if (!it.is_string())
       continue;
 
-    std::string entry = it.GetString();
+    std::string entry_identifier = it.GetString();
 
     // Skip "ethernet_any", as this is used by shill internally to persist
     // ethernet settings and the policy application logic should not mess with
     // it.
-    if (entry == kEthernetAnyService)
+    if (entry_identifier == kEthernetAnyService)
       continue;
 
-    pending_get_entry_calls_.insert(entry);
+    pending_get_entry_calls_.insert(entry_identifier);
     ShillProfileClient::Get()->GetEntry(
-        dbus::ObjectPath(profile_.path), entry,
+        dbus::ObjectPath(profile_.path), entry_identifier,
         base::BindOnce(&PolicyApplicator::GetEntryCallback,
-                       weak_ptr_factory_.GetWeakPtr(), entry),
+                       weak_ptr_factory_.GetWeakPtr(), entry_identifier),
         base::BindOnce(&PolicyApplicator::GetEntryError,
-                       weak_ptr_factory_.GetWeakPtr(), entry));
+                       weak_ptr_factory_.GetWeakPtr(), entry_identifier));
   }
   if (pending_get_entry_calls_.empty())
     ApplyRemainingPolicies();
@@ -186,11 +192,11 @@ void PolicyApplicator::GetProfilePropertiesError(
   NotifyConfigurationHandlerAndFinish();
 }
 
-void PolicyApplicator::GetEntryCallback(const std::string& entry,
+void PolicyApplicator::GetEntryCallback(const std::string& entry_identifier,
                                         base::Value entry_properties) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  VLOG(2) << "Received properties for entry " << entry << " of profile "
-          << profile_.ToDebugString();
+  VLOG(2) << "Received properties for entry " << entry_identifier
+          << " of profile " << profile_.ToDebugString();
 
   std::unique_ptr<base::DictionaryValue> onc_part(
       onc::TranslateShillServiceToONCPart(
@@ -203,8 +209,8 @@ void PolicyApplicator::GetEntryCallback(const std::string& entry,
       shill_property_util::GetUIDataFromProperties(
           base::Value::AsDictionaryValue(entry_properties));
   if (!ui_data) {
-    VLOG(1) << "Entry " << entry << " of profile " << profile_.ToDebugString()
-            << " contains no or no valid UIData.";
+    VLOG(1) << "Entry " << entry_identifier << " of profile "
+            << profile_.ToDebugString() << " contains no or no valid UIData.";
     // This might be an entry of an older ChromeOS version. Assume it to be
     // unmanaged. It's an inconsistency if there is a GUID but no UIData, thus
     // clear the GUID just in case.
@@ -230,7 +236,7 @@ void PolicyApplicator::GetEntryCallback(const std::string& entry,
 
   auto profile_entry_finished_callback =
       base::BindOnce(&PolicyApplicator::ProfileEntryFinished,
-                     weak_ptr_factory_.GetWeakPtr(), entry);
+                     weak_ptr_factory_.GetWeakPtr(), entry_identifier);
   if (new_policy) {
     std::string new_guid = GetGUIDFromONCPart(*new_policy);
     DCHECK(!new_guid.empty());
@@ -241,8 +247,8 @@ void PolicyApplicator::GetEntryCallback(const std::string& entry,
         << "Applying policy " << new_guid << " to previously unmanaged "
         << "configuration.";
 
-    ApplyNewPolicy(entry, entry_properties, std::move(ui_data), old_guid,
-                   new_guid, *new_policy,
+    ApplyNewPolicy(entry_identifier, entry_properties, std::move(ui_data),
+                   old_guid, new_guid, *new_policy,
                    std::move(profile_entry_finished_callback));
     return;
   }
@@ -254,25 +260,25 @@ void PolicyApplicator::GetEntryCallback(const std::string& entry,
     // Remove the entry, because the network was managed but isn't anymore.
     // Note: An alternative might be to preserve the user settings, but it's
     // unclear which values originating the policy should be removed.
-    DeleteEntry(entry, std::move(profile_entry_finished_callback));
+    DeleteEntry(entry_identifier, std::move(profile_entry_finished_callback));
     return;
   }
 
   ApplyGlobalPolicyOnUnmanagedEntry(
-      entry, base::Value::AsDictionaryValue(entry_properties),
+      entry_identifier, base::Value::AsDictionaryValue(entry_properties),
       std::move(profile_entry_finished_callback));
 }
 
-void PolicyApplicator::GetEntryError(const std::string& entry,
+void PolicyApplicator::GetEntryError(const std::string& entry_identifier,
                                      const std::string& error_name,
                                      const std::string& error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  LOG(ERROR) << "Could not retrieve entry " << entry << " of profile "
-             << profile_.path << ": " << error_message;
-  ProfileEntryFinished(entry);
+  LOG(ERROR) << "Could not retrieve entry " << entry_identifier
+             << " of profile " << profile_.path << ": " << error_message;
+  ProfileEntryFinished(entry_identifier);
 }
 
-void PolicyApplicator::ApplyNewPolicy(const std::string& entry,
+void PolicyApplicator::ApplyNewPolicy(const std::string& entry_identifier,
                                       const base::Value& entry_properties,
                                       std::unique_ptr<NetworkUIData> ui_data,
                                       const std::string& old_guid,
@@ -303,13 +309,11 @@ void PolicyApplicator::ApplyNewPolicy(const std::string& entry,
       profile_, new_guid, &global_network_config_, new_policy_as_dict,
       user_settings);
 
-  if (features::IsESimPolicyEnabled()) {
-    // Copy over the value of ICCID and EID property from old entry to new shill
-    // properties since Shill requires ICCID and EID to create or update the
-    // existing service.
-    CopyRequiredCellularProperies(entry_properties_as_dict,
-                                  &new_shill_properties);
-  }
+  // Copy over the value of ICCID and EID property from old entry to new shill
+  // properties since Shill requires ICCID and EID to create or update the
+  // existing service.
+  CopyRequiredCellularProperies(entry_properties_as_dict,
+                                &new_shill_properties);
 
   // A new policy has to be applied to this profile entry. In order to keep
   // implicit state of Shill like "connected successfully before", keep the
@@ -323,13 +327,13 @@ void PolicyApplicator::ApplyNewPolicy(const std::string& entry,
   if (old_guid == new_guid &&
       shill_property_util::DoIdentifyingPropertiesMatch(
           new_shill_properties, *entry_properties_as_dict)) {
-    VLOG(1) << "Updating previously managed configuration with the "
-            << "updated policy " << new_guid << ".";
+    NET_LOG(EVENT) << "Updating previously managed configuration with the "
+                   << "updated policy " << new_guid << ".";
     WriteNewShillConfiguration(std::move(new_shill_properties),
                                new_policy.Clone(), std::move(callback));
   } else {
-    VLOG(1) << "Deleting profile entry before writing new policy " << new_guid
-            << " because of identifying properties changed.";
+    NET_LOG(EVENT) << "Deleting profile entry before writing new policy "
+                   << new_guid << " because of identifying properties changed.";
     // In general, old entries should at first be deleted before new
     // configurations are written to prevent inconsistencies. Therefore, we
     // delay the writing of the new config here until ~PolicyApplicator.
@@ -340,7 +344,7 @@ void PolicyApplicator::ApplyNewPolicy(const std::string& entry,
     // At first ENTRY1 and ENTRY2 should be removed, then the new config be
     // written and the result should be:
     // { {GUID=X, SSID=Y, USER_SETTINGS=X} }
-    DeleteEntry(entry,
+    DeleteEntry(entry_identifier,
                 base::BindOnce(&PolicyApplicator::WriteNewShillConfiguration,
                                weak_ptr_factory_.GetWeakPtr(),
                                std::move(new_shill_properties),
@@ -349,7 +353,7 @@ void PolicyApplicator::ApplyNewPolicy(const std::string& entry,
 }
 
 void PolicyApplicator::ApplyGlobalPolicyOnUnmanagedEntry(
-    const std::string& entry,
+    const std::string& entry_identifier,
     const base::DictionaryValue& entry_properties,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -364,7 +368,8 @@ void PolicyApplicator::ApplyGlobalPolicyOnUnmanagedEntry(
     std::move(callback).Run();
     return;
   }
-  VLOG(2) << "Apply global network config to unmanaged entry.";
+  NET_LOG(EVENT) << "Apply global network config to unmanaged entry "
+                 << entry_identifier << ".";
   const base::DictionaryValue* entry_properties_as_dict = nullptr;
   entry_properties.GetAsDictionary(&entry_properties_as_dict);
   DCHECK(entry_properties_as_dict);
@@ -373,12 +378,13 @@ void PolicyApplicator::ApplyGlobalPolicyOnUnmanagedEntry(
       std::move(callback));
 }
 
-void PolicyApplicator::DeleteEntry(const std::string& entry,
+void PolicyApplicator::DeleteEntry(const std::string& entry_identifier,
                                    base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto split_callback = base::SplitOnceCallback(std::move(callback));
   ShillProfileClient::Get()->DeleteEntry(
-      dbus::ObjectPath(profile_.path), entry, std::move(split_callback.first),
+      dbus::ObjectPath(profile_.path), entry_identifier,
+      std::move(split_callback.first),
       base::BindOnce(&LogErrorMessageAndInvokeCallback,
                      std::move(split_callback.second), FROM_HERE));
 }
@@ -408,9 +414,10 @@ void PolicyApplicator::WriteNewShillConfiguration(base::Value shill_dictionary,
                                           std::move(callback));
 }
 
-void PolicyApplicator::ProfileEntryFinished(const std::string& entry) {
+void PolicyApplicator::ProfileEntryFinished(
+    const std::string& entry_identifier) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto iter = pending_get_entry_calls_.find(entry);
+  auto iter = pending_get_entry_calls_.find(entry_identifier);
   DCHECK(iter != pending_get_entry_calls_.end());
   pending_get_entry_calls_.erase(iter);
   if (pending_get_entry_calls_.empty())
@@ -435,15 +442,17 @@ void PolicyApplicator::ApplyRemainingPolicies() {
   // remaining policies, new configurations have to be created.
   for (std::set<std::string>::iterator it = remaining_policy_guids_.begin();
        it != remaining_policy_guids_.end();) {
-    const base::DictionaryValue* network_policy = GetByGUID(all_policies_, *it);
+    const std::string& guid = *it;
+    const base::DictionaryValue* network_policy =
+        GetByGUID(all_policies_, guid);
     DCHECK(network_policy);
 
-    VLOG(1) << "Creating new configuration managed by policy " << *it
-            << " in profile " << profile_.ToDebugString() << ".";
+    NET_LOG(EVENT) << "Creating new configuration managed by policy " << guid
+                   << " in profile " << profile_.ToDebugString() << ".";
 
-    if (features::IsESimPolicyEnabled()) {
+    if (IsCellularPolicy(*network_policy)) {
       const std::string* smdp_address = GetSMDPAddressFromONC(*network_policy);
-      if (smdp_address) {
+      if (features::IsESimPolicyEnabled() && smdp_address) {
         NET_LOG(EVENT)
             << "Found ONC configuration with SMDP: " << *smdp_address
             << ". Start installing policy eSim profile with ONC config: "
@@ -453,30 +462,34 @@ void PolicyApplicator::ApplyRemainingPolicies() {
         else
           NET_LOG(ERROR) << "Unable to install eSIM. CellularPolicyHandler not "
                             "initialized.";
-
-        it = remaining_policy_guids_.erase(it);
-        if (remaining_policy_guids_.empty()) {
-          NotifyConfigurationHandlerAndFinish();
-        }
-        continue;
+      } else {
+        NET_LOG(EVENT) << "Skip installing policy eSIM either because "
+                          "the eSIM policy feature is not enabled or the SMDP "
+                          "address is missing from ONC.";
       }
+
+      it = remaining_policy_guids_.erase(it);
+      if (remaining_policy_guids_.empty()) {
+        NotifyConfigurationHandlerAndFinish();
+      }
+      continue;
     }
 
     base::Value shill_dictionary = policy_util::CreateShillConfiguration(
-        profile_, *it, &global_network_config_, network_policy,
+        profile_, guid, &global_network_config_, network_policy,
         nullptr /* no user settings */);
 
     handler_->CreateConfigurationFromPolicy(
         shill_dictionary,
         base::BindOnce(&PolicyApplicator::RemainingPolicyApplied,
-                       weak_ptr_factory_.GetWeakPtr(), *it /* entry */));
+                       weak_ptr_factory_.GetWeakPtr(), guid));
     it++;
   }
 }
 
-void PolicyApplicator::RemainingPolicyApplied(const std::string& entry) {
+void PolicyApplicator::RemainingPolicyApplied(const std::string& guid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  remaining_policy_guids_.erase(entry);
+  remaining_policy_guids_.erase(guid);
   if (remaining_policy_guids_.empty()) {
     NotifyConfigurationHandlerAndFinish();
   }

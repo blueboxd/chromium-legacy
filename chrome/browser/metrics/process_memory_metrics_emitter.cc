@@ -235,6 +235,8 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      "wasted", EmitTo::kSizeInUmaOnly, nullptr},
     {"malloc/partitions/allocator", "Malloc.Fragmentation",
      MetricSize::kPercentage, "fragmentation", EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc", "Malloc.SyscallsPerMinute", MetricSize::kTiny,
+     "syscalls_per_minute", EmitTo::kSizeInUmaOnly, nullptr},
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     {"mojo", "NumberOfMojoHandles", MetricSize::kSmall,
      MemoryAllocatorDump::kNameObjectCount, EmitTo::kCountsInUkmOnly,
@@ -658,14 +660,14 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
     }
   }
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   // Resident set is not populated on Mac.
   builder->SetResident(pmd.os_dump().resident_set_kb / kKiB);
 #endif
 
   builder->SetPrivateMemoryFootprint(pmd.os_dump().private_footprint_kb / kKiB);
   builder->SetSharedMemoryFootprint(pmd.os_dump().shared_footprint_kb / kKiB);
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
   builder->SetPrivateSwapFootprint(pmd.os_dump().private_footprint_swap_kb /
                                    kKiB);
 #endif
@@ -675,7 +677,7 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
     return;
 
   const char* process_name = HistogramProcessTypeToString(process_type);
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Resident set is not populated on Mac.
   DCHECK_EQ(pmd.os_dump().resident_set_kb, 0U);
 #else
@@ -687,7 +689,7 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
                               pmd.os_dump().private_footprint_kb / kKiB);
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (process_type == HistogramProcessType::kBrowser && profile_manager &&
-      profile_manager->HasZombieProfile()) {
+      profile_manager->GetZombieProfileCount() > 0) {
     // Measure impact of the DestroyProfileOnBrowserClose experiment.
     MEMORY_METRICS_HISTOGRAM_MB(
         GetPrivateFootprintHistogramName(process_type) + ".HasZombieProfile",
@@ -696,7 +698,7 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
   MEMORY_METRICS_HISTOGRAM_MB(std::string(kMemoryHistogramPrefix) +
                                   process_name + ".SharedMemoryFootprint",
                               pmd.os_dump().shared_footprint_kb / kKiB);
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
   MEMORY_METRICS_HISTOGRAM_MB(std::string(kMemoryHistogramPrefix) +
                                   process_name + ".PrivateSwapFootprint",
                               pmd.os_dump().private_footprint_swap_kb / kKiB);
@@ -1067,9 +1069,9 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
         break;
       }
       case memory_instrumentation::mojom::ProcessType::PLUGIN:
-        FALLTHROUGH;
+        [[fallthrough]];
       case memory_instrumentation::mojom::ProcessType::ARC:
-        FALLTHROUGH;
+        [[fallthrough]];
       case memory_instrumentation::mojom::ProcessType::OTHER:
         break;
     }
@@ -1106,7 +1108,7 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     UMA_HISTOGRAM_MEMORY_LARGE_MB(
         "Memory.Experimental.Total2.PrivateMemoryFootprint",
         private_footprint_total_kb / kKiB);
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // Resident set is not populated on Mac.
     DCHECK_EQ(resident_set_total_kb, 0U);
 #else
@@ -1117,7 +1119,7 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.PrivateMemoryFootprint",
                                   private_footprint_total_kb / kKiB);
     ProfileManager* profile_manager = g_browser_process->profile_manager();
-    if (profile_manager && profile_manager->HasZombieProfile()) {
+    if (profile_manager && profile_manager->GetZombieProfileCount() > 0) {
       // Measure impact of the DestroyProfileOnBrowserClose experiment.
       UMA_HISTOGRAM_MEMORY_LARGE_MB(
           "Memory.Total.PrivateMemoryFootprint.HasZombieProfile",

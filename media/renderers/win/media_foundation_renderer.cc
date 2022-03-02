@@ -6,12 +6,13 @@
 
 #include <Audioclient.h>
 #include <mferror.h>
+
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include "base/callback_helpers.h"
 #include "base/guid.h"
-#include "base/ignore_result.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/clamped_math.h"
 #include "base/numerics/safe_conversions.h"
@@ -27,6 +28,7 @@
 #include "media/base/cdm_context.h"
 #include "media/base/media_log.h"
 #include "media/base/timestamp_constants.h"
+#include "media/base/win/dxgi_device_manager.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_initializer.h"
 
@@ -68,6 +70,12 @@ bool InitializeVideoWindowClass() {
 }
 
 }  // namespace
+
+// static
+void MediaFoundationRenderer::ReportErrorReason(ErrorReason reason) {
+  base::UmaHistogramEnumeration("Media.MediaFoundationRenderer.ErrorReason",
+                                reason);
+}
 
 // static
 bool MediaFoundationRenderer::IsSupported() {
@@ -150,9 +158,13 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
       BindToCurrentLoop(base::BindRepeating(
           &MediaFoundationRenderer::OnPlaybackEnded, weak_this)),
       BindToCurrentLoop(base::BindRepeating(
-          &MediaFoundationRenderer::OnBufferingStateChange, weak_this)),
+          &MediaFoundationRenderer::OnFormatChange, weak_this)),
       BindToCurrentLoop(base::BindRepeating(
-          &MediaFoundationRenderer::OnVideoNaturalSizeChange, weak_this)),
+          &MediaFoundationRenderer::OnLoadedData, weak_this)),
+      BindToCurrentLoop(
+          base::BindRepeating(&MediaFoundationRenderer::OnPlaying, weak_this)),
+      BindToCurrentLoop(
+          base::BindRepeating(&MediaFoundationRenderer::OnWaiting, weak_this)),
       BindToCurrentLoop(base::BindRepeating(
           &MediaFoundationRenderer::OnTimeUpdate, weak_this))));
 
@@ -174,6 +186,30 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
   if (dxgi_device_manager_) {
     RETURN_IF_FAILED(creation_attributes->SetUnknown(
         MF_MEDIA_ENGINE_DXGI_MANAGER, dxgi_device_manager_.Get()));
+
+    // TODO(crbug.com/1276067): We'll investigate scenarios to see if we can use
+    // the on-screen video window size and not the native video size.
+    if (in_frame_server_mode_) {
+      gfx::Size max_video_size;
+      bool has_video = false;
+      for (auto* stream : media_resource->GetAllStreams()) {
+        if (stream->type() == media::DemuxerStream::VIDEO) {
+          has_video = true;
+          gfx::Size video_size = stream->video_decoder_config().natural_size();
+          if (video_size.height() > max_video_size.height()) {
+            max_video_size.set_height(video_size.height());
+          }
+
+          if (video_size.width() > max_video_size.width()) {
+            max_video_size.set_width(video_size.width());
+          }
+        }
+      }
+
+      if (has_video) {
+        RETURN_IF_FAILED(InitializeTexturePool(max_video_size));
+      }
+    }
   }
 
   RETURN_IF_FAILED(
@@ -200,7 +236,7 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
       &mf_source_, media_resource, media_log_.get(), task_runner_));
 
   if (force_dcomp_mode_for_testing_)
-    ignore_result(SetDCompModeInternal());
+    std::ignore = SetDCompModeInternal();
 
   if (!mf_source_->HasEncryptedStream()) {
     // Supports clear stream for testing.
@@ -210,7 +246,7 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
   // Has encrypted stream.
   RETURN_IF_FAILED(MakeAndInitialize<MediaFoundationProtectionManager>(
       &content_protection_manager_, task_runner_,
-      base::BindRepeating(&MediaFoundationRenderer::OnWaiting,
+      base::BindRepeating(&MediaFoundationRenderer::OnProtectionManagerWaiting,
                           weak_factory_.GetWeakPtr())));
   ComPtr<IMFMediaEngineProtectedContent> protected_media_engine;
   RETURN_IF_FAILED(mf_media_engine_.As(&protected_media_engine));
@@ -340,6 +376,7 @@ void MediaFoundationRenderer::OnCdmProxyReceived(
 
   if (!waiting_for_mf_cdm_ || !content_protection_manager_) {
     DLOG(ERROR) << "Failed in checking internal state.";
+    ReportErrorReason(ErrorReason::kCdmProxyReceivedInInvalidState);
     renderer_client_->OnError(PipelineStatus::PIPELINE_ERROR_INVALID_STATE);
     return;
   }
@@ -352,6 +389,7 @@ void MediaFoundationRenderer::OnCdmProxyReceived(
   HRESULT hr = SetSourceOnMediaEngine();
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to set source on media engine: " << PrintHr(hr);
+    ReportErrorReason(ErrorReason::kFailedToSetSourceOnMediaEngine);
     renderer_client_->OnError(PipelineStatus::PIPELINE_ERROR_COULD_NOT_RENDER);
     return;
   }
@@ -360,13 +398,12 @@ void MediaFoundationRenderer::OnCdmProxyReceived(
 void MediaFoundationRenderer::Flush(base::OnceClosure flush_cb) {
   DVLOG_FUNC(2);
 
-  HRESULT hr = mf_media_engine_->Pause();
+  HRESULT hr = PauseInternal();
   // Ignore any Pause() error. We can continue to flush |mf_source_| instead of
   // stopping the playback with error.
   DVLOG_IF(1, FAILED(hr)) << "Failed to pause playback on flush: "
                           << PrintHr(hr);
 
-  StopSendingStatistics();
   mf_source_->FlushStreams();
   std::move(flush_cb).Run();
 }
@@ -387,6 +424,7 @@ void MediaFoundationRenderer::StartPlayingFrom(base::TimeDelta time) {
   HRESULT hr = mf_media_engine_->SetCurrentTime(current_time);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to SetCurrentTime: " << PrintHr(hr);
+    ReportErrorReason(ErrorReason::kFailedToSetCurrentTime);
     renderer_client_->OnError(PipelineStatus::PIPELINE_ERROR_COULD_NOT_RENDER);
     return;
   }
@@ -394,11 +432,10 @@ void MediaFoundationRenderer::StartPlayingFrom(base::TimeDelta time) {
   hr = mf_media_engine_->Play();
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to start playback: " << PrintHr(hr);
+    ReportErrorReason(ErrorReason::kFailedToPlay);
     renderer_client_->OnError(PipelineStatus::PIPELINE_ERROR_COULD_NOT_RENDER);
     return;
   }
-
-  StartSendingStatistics();
 }
 
 void MediaFoundationRenderer::SetPlaybackRate(double playback_rate) {
@@ -454,7 +491,7 @@ void MediaFoundationRenderer::SetVideoStreamEnabled(bool enabled) {
   if (needs_restart) {
     // If the media source indicates that we need to restart playback (e.g due
     // to a newly enabled stream being EOS), queue a pause and play operation.
-    mf_media_engine_->Pause();
+    PauseInternal();
     mf_media_engine_->Play();
   }
 }
@@ -479,6 +516,29 @@ void MediaFoundationRenderer::SetOutputRect(const gfx::Rect& output_rect,
   }
 
   std::move(callback).Run(true);
+}
+
+HRESULT MediaFoundationRenderer::InitializeTexturePool(const gfx::Size& size) {
+  DXGIDeviceScopedHandle dxgi_device_handle(dxgi_device_manager_.Get());
+  ComPtr<ID3D11Device> d3d11_device = dxgi_device_handle.GetDevice();
+
+  if (d3d11_device.Get() == nullptr) {
+    return E_UNEXPECTED;
+  }
+
+  // TODO(crbug.com/1276067): change |size| to instead use the required
+  // size of the output (for example if the video is only 1280x720 instead
+  // of a source frame of 1920x1080 we'd use the 1280x720 texture size).
+  // However we also need to investigate the scenario of WebGL and 360 video
+  // where they need the original frame size instead of the window size due
+  // to later image processing.
+  auto callback = [](std::vector<MediaFoundationFrameInfo> frame_textures,
+                     const gfx::Size& texture_size) {};
+
+  RETURN_IF_FAILED(texture_pool_.Initialize(
+      d3d11_device.Get(), base::BindRepeating(callback), size));
+
+  return S_OK;
 }
 
 HRESULT MediaFoundationRenderer::UpdateVideoStream(const gfx::Rect& rect) {
@@ -602,6 +662,7 @@ void MediaFoundationRenderer::OnPlaybackError(PipelineStatus status,
       << "MediaFoundationRenderer OnPlaybackError: " << status << ", "
       << PrintHr(hr);
 
+  ReportErrorReason(ErrorReason::kOnPlaybackError);
   renderer_client_->OnError(status);
   StopSendingStatistics();
 }
@@ -612,6 +673,49 @@ void MediaFoundationRenderer::OnPlaybackEnded() {
 
   renderer_client_->OnEnded();
   StopSendingStatistics();
+}
+
+void MediaFoundationRenderer::OnFormatChange() {
+  DVLOG_FUNC(3);
+  OnVideoNaturalSizeChange();
+}
+
+void MediaFoundationRenderer::OnLoadedData() {
+  DVLOG_FUNC(3);
+  OnVideoNaturalSizeChange();
+  OnBufferingStateChange(
+      BufferingState::BUFFERING_HAVE_ENOUGH,
+      BufferingStateChangeReason::BUFFERING_CHANGE_REASON_UNKNOWN);
+}
+
+void MediaFoundationRenderer::OnPlaying() {
+  DVLOG_FUNC(3);
+  OnBufferingStateChange(
+      BufferingState::BUFFERING_HAVE_ENOUGH,
+      BufferingStateChangeReason::BUFFERING_CHANGE_REASON_UNKNOWN);
+  // The OnPlaying callback from MediaEngineNotifyImpl lets us know that an
+  // MF_MEDIA_ENGINE_EVENT_PLAYING message has been received. At this point we
+  // can safely start sending Statistics as any asynchronous Flush action in
+  // media engine, which would have reset the engine's statistics, will have
+  // been completed.
+  StartSendingStatistics();
+}
+
+void MediaFoundationRenderer::OnWaiting() {
+  OnBufferingStateChange(
+      BufferingState::BUFFERING_HAVE_NOTHING,
+      BufferingStateChangeReason::BUFFERING_CHANGE_REASON_UNKNOWN);
+}
+
+void MediaFoundationRenderer::OnTimeUpdate() {
+  DVLOG_FUNC(3);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+}
+
+void MediaFoundationRenderer::OnProtectionManagerWaiting(WaitingReason reason) {
+  DVLOG_FUNC(2);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  renderer_client_->OnWaiting(reason);
 }
 
 void MediaFoundationRenderer::OnBufferingStateChange(
@@ -633,6 +737,15 @@ void MediaFoundationRenderer::OnBufferingStateChange(
 
   DVLOG_FUNC(2) << "state=" << state << ", reason=" << reason;
   renderer_client_->OnBufferingStateChange(state, reason);
+}
+
+HRESULT MediaFoundationRenderer::PauseInternal() {
+  // Media Engine resets aggregate statistics when it flushes - such as a
+  // transition to the Pause state & then back to Play state. To try and
+  // avoid cases where we may get Media Engine's reset statistics call
+  // StopSendingStatistics before transitioning to Pause.
+  StopSendingStatistics();
+  return mf_media_engine_->Pause();
 }
 
 void MediaFoundationRenderer::OnVideoNaturalSizeChange() {
@@ -667,21 +780,14 @@ void MediaFoundationRenderer::OnVideoNaturalSizeChange() {
     // This invokes IMFMediaEngineEx::UpdateVideoStream() for video frames to
     // be presented. Otherwise, the Media Foundation video renderer will not
     // request video samples from our source.
-    ignore_result(UpdateVideoStream(test_rect));
+    std::ignore = UpdateVideoStream(test_rect);
+  }
+
+  if (in_frame_server_mode_) {
+    InitializeTexturePool(native_video_size_);
   }
 
   renderer_client_->OnVideoNaturalSizeChange(native_video_size_);
-}
-
-void MediaFoundationRenderer::OnTimeUpdate() {
-  DVLOG_FUNC(3);
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-}
-
-void MediaFoundationRenderer::OnWaiting(WaitingReason reason) {
-  DVLOG_FUNC(2);
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  renderer_client_->OnWaiting(reason);
 }
 
 }  // namespace media

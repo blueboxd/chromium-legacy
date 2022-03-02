@@ -6,7 +6,8 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
-#include "chromeos/network/metrics/shill_connect_result.h"
+#include "base/strings/strcat.h"
+#include "chromeos/network/metrics/connection_results.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -16,8 +17,29 @@ namespace chromeos {
 
 namespace {
 
-const char kNetworkMetricsPrefix[] = "Network.";
+const char kNetworkMetricsPrefix[] = "Network.Ash.";
 const char kAllConnectionResultSuffix[] = ".ConnectionResult.All";
+const char kUserInitiatedConnectionResultSuffix[] =
+    ".ConnectionResult.UserInitiated";
+const char kDisconnectionsWithoutUserActionSuffix[] =
+    ".DisconnectionsWithoutUserAction";
+
+const char kEnableTechnologyResultSuffix[] = ".EnabledState.Enable.Result";
+const char kDisableTechnologyResultSuffix[] = ".EnabledState.Disable.Result";
+
+const char kCellular[] = "Cellular";
+const char kCellularESim[] = "Cellular.ESim";
+const char kCellularPSim[] = "Cellular.PSim";
+
+const char kEthernet[] = "Ethernet";
+const char kEthernetEap[] = "Ethernet.Eap";
+const char kEthernetNoEap[] = "Ethernet.NoEap";
+
+const char kTether[] = "Tether";
+
+const char kVPN[] = "VPN";
+const char kVPNBuiltIn[] = "VPN.TypeBuiltIn";
+const char kVPNThirdParty[] = "VPN.TypeThirdParty";
 
 const char kWifi[] = "WiFi";
 const char kWifiOpen[] = "WiFi.SecurityOpen";
@@ -27,25 +49,43 @@ chromeos::NetworkStateHandler* GetNetworkStateHandler() {
   return NetworkHandler::Get()->network_state_handler();
 }
 
+const absl::optional<const std::string> GetTechnologyTypeSuffix(
+    const std::string& technology) {
+  // Note that Tether is a fake technology that does not correspond to shill
+  // technology type.
+  if (technology == shill::kTypeWifi)
+    return kWifi;
+  else if (technology == shill::kTypeEthernet)
+    return kEthernet;
+  else if (technology == shill::kTypeCellular)
+    return kCellular;
+  else if (technology == shill::kTypeVPN)
+    return kVPN;
+  return absl::nullopt;
+}
+
 const std::vector<std::string> GetCellularNetworkTypeHistogams(
     const NetworkState* network_state) {
-  const std::string kCellularPrefix = "Cellular";
-  const std::string kESimInfix = ".ESim";
-  const std::string kPSimInfix = ".PSim";
-
-  std::vector<std::string> cellular_histograms{kCellularPrefix};
+  std::vector<std::string> cellular_histograms{kCellular};
 
   if (network_state->eid().empty())
-    cellular_histograms.emplace_back(kCellularPrefix + kPSimInfix);
+    cellular_histograms.emplace_back(kCellularPSim);
   else
-    cellular_histograms.emplace_back(kCellularPrefix + kESimInfix);
+    cellular_histograms.emplace_back(kCellularESim);
   return cellular_histograms;
 }
 
 const std::vector<std::string> GetEthernetNetworkTypeHistograms(
     const NetworkState* network_state) {
-  // TODO(b/207589664): Determine histogram variant names for Ethernet.
-  return {};
+  std::vector<std::string> ethernet_histograms{kEthernet};
+  if (GetNetworkStateHandler()->GetEAPForEthernet(network_state->path(),
+                                                  /*connected_only=*/true)) {
+    ethernet_histograms.emplace_back(kEthernetEap);
+  } else {
+    ethernet_histograms.emplace_back(kEthernetNoEap);
+  }
+
+  return ethernet_histograms;
 }
 
 const std::vector<std::string> GetWifiNetworkTypeHistograms(
@@ -64,30 +104,25 @@ const std::vector<std::string> GetWifiNetworkTypeHistograms(
 
 const std::vector<std::string> GetTetherNetworkTypeHistograms(
     const NetworkState* network_state) {
-  // TODO(b/207589664): Determine histogram variant names for Tether.
-  return {};
+  return {kTether};
 }
 
 const std::vector<std::string> GetVpnNetworkTypeHistograms(
     const NetworkState* network_state) {
-  const std::string kVpnPrefix = "VPN";
-  const std::string kBuiltInInfix = ".TypeBuiltIn";
-  const std::string kThirdPartyInfix = ".TypeThirdParty";
-
   const std::string& vpn_provider_type = network_state->GetVpnProviderType();
 
   if (vpn_provider_type.empty())
     return {};
 
-  std::vector<std::string> vpn_histograms{kVpnPrefix};
+  std::vector<std::string> vpn_histograms{kVPN};
 
   if (vpn_provider_type == shill::kProviderThirdPartyVpn ||
       vpn_provider_type == shill::kProviderArcVpn) {
-    vpn_histograms.emplace_back(kVpnPrefix + kThirdPartyInfix);
+    vpn_histograms.emplace_back(kVPNThirdParty);
   } else if (vpn_provider_type == shill::kProviderL2tpIpsec ||
              vpn_provider_type == shill::kProviderOpenVpn ||
              vpn_provider_type == shill::kProviderWireGuard) {
-    vpn_histograms.emplace_back(kVpnPrefix + kBuiltInInfix);
+    vpn_histograms.emplace_back(kVPNBuiltIn);
   } else {
     NOTREACHED();
   }
@@ -111,9 +146,9 @@ const std::vector<std::string> GetNetworkTypeHistogramNames(
     // There should not be connections requests for kEthernetEap type service.
     // kEthernetEap exists only to store auth details for ethernet.
     case NetworkState::NetworkTechnologyType::kEthernetEap:
-      FALLTHROUGH;
+      [[fallthrough]];
     case NetworkState::NetworkTechnologyType::kUnknown:
-      FALLTHROUGH;
+      [[fallthrough]];
     default:
       return {};
   }
@@ -128,16 +163,87 @@ void NetworkMetricsHelper::LogAllConnectionResult(
   DCHECK(GetNetworkStateHandler());
   const NetworkState* network_state =
       GetNetworkStateHandler()->GetNetworkStateFromGuid(guid);
+  if (!network_state)
+    return;
 
   ShillConnectResult connect_result =
-      shill_error.has_value() ? ShillErrorToConnectResult(*shill_error)
-                              : ShillConnectResult::kSuccess;
+      shill_error ? ShillErrorToConnectResult(*shill_error)
+                  : ShillConnectResult::kSuccess;
 
   for (const auto& network_type : GetNetworkTypeHistogramNames(network_state)) {
     base::UmaHistogramEnumeration(
-        kNetworkMetricsPrefix + network_type + kAllConnectionResultSuffix,
+        base::StrCat(
+            {kNetworkMetricsPrefix, network_type, kAllConnectionResultSuffix}),
         connect_result);
   }
+}
+
+// static
+void NetworkMetricsHelper::LogUserInitiatedConnectionResult(
+    const std::string& guid,
+    const absl::optional<std::string>& network_connection_error) {
+  DCHECK(GetNetworkStateHandler());
+  const NetworkState* network_state =
+      GetNetworkStateHandler()->GetNetworkStateFromGuid(guid);
+  if (!network_state)
+    return;
+
+  UserInitiatedConnectResult connect_result =
+      network_connection_error
+          ? NetworkConnectionErrorToConnectResult(*network_connection_error)
+          : UserInitiatedConnectResult::kSuccess;
+
+  for (const auto& network_type : GetNetworkTypeHistogramNames(network_state)) {
+    base::UmaHistogramEnumeration(
+        base::StrCat({kNetworkMetricsPrefix, network_type,
+                      kUserInitiatedConnectionResultSuffix}),
+        connect_result);
+  }
+}
+
+// static
+void NetworkMetricsHelper::LogConnectionStateResult(const std::string& guid,
+                                                    ConnectionState status) {
+  DCHECK(GetNetworkStateHandler());
+  const NetworkState* network_state =
+      GetNetworkStateHandler()->GetNetworkStateFromGuid(guid);
+  if (!network_state)
+    return;
+
+  for (const auto& network_type : GetNetworkTypeHistogramNames(network_state)) {
+    base::UmaHistogramEnumeration(kNetworkMetricsPrefix + network_type +
+                                      kDisconnectionsWithoutUserActionSuffix,
+                                  status);
+  }
+}
+
+void NetworkMetricsHelper::LogEnableTechnologyResult(
+    const std::string& technology,
+    bool success) {
+  absl::optional<const std::string> suffix =
+      GetTechnologyTypeSuffix(technology);
+
+  if (!suffix)
+    return;
+
+  base::UmaHistogramBoolean(base::StrCat({kNetworkMetricsPrefix, *suffix,
+                                          kEnableTechnologyResultSuffix}),
+                            success);
+}
+
+// static
+void NetworkMetricsHelper::LogDisableTechnologyResult(
+    const std::string& technology,
+    bool success) {
+  absl::optional<const std::string> suffix =
+      GetTechnologyTypeSuffix(technology);
+
+  if (!suffix)
+    return;
+
+  base::UmaHistogramBoolean(base::StrCat({kNetworkMetricsPrefix, *suffix,
+                                          kDisableTechnologyResultSuffix}),
+                            success);
 }
 
 NetworkMetricsHelper::NetworkMetricsHelper() = default;

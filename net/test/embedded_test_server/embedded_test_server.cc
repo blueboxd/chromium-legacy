@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
@@ -35,7 +34,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/port_util.h"
 #include "net/cert/internal/extended_key_usage.h"
-#include "net/cert/pem.h"
 #include "net/cert/test_root_certs.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/next_proto.h"
@@ -56,9 +54,6 @@
 #include "net/test/test_data_directory.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_frame_builder.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/boringssl/src/include/openssl/bytestring.h"
-#include "third_party/boringssl/src/include/openssl/evp.h"
-#include "third_party/boringssl/src/include/openssl/rsa.h"
 #include "url/origin.h"
 
 namespace net {
@@ -220,22 +215,6 @@ bool MaybeCreateOCSPResponse(CertBuilder* target,
       BuildOCSPResponse(target->issuer()->GetSubject(),
                         target->issuer()->GetKey(), produced_at, responses);
   return true;
-}
-
-bssl::UniquePtr<EVP_PKEY> LoadPrivateKeyFromFile(
-    const base::FilePath& key_path) {
-  std::string key_string;
-  if (!base::ReadFileToString(key_path, &key_string))
-    return nullptr;
-  std::vector<std::string> headers;
-  headers.push_back("PRIVATE KEY");
-  PEMTokenizer pem_tokenizer(key_string, headers);
-  if (!pem_tokenizer.GetNext())
-    return nullptr;
-  CBS cbs;
-  CBS_init(&cbs, reinterpret_cast<const uint8_t*>(pem_tokenizer.data().data()),
-           pem_tokenizer.data().size());
-  return bssl::UniquePtr<EVP_PKEY>(EVP_parse_private_key(&cbs));
 }
 
 }  // namespace
@@ -436,44 +415,27 @@ bool EmbeddedTestServer::GenerateCertAndKey() {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath certs_dir(GetTestCertsDirectory());
 
-  // Load root cert and key:
-  scoped_refptr<X509Certificate> root_cert =
-      ImportCertFromFile(certs_dir, "root_ca_cert.pem");
-  if (!root_cert)
-    return false;
-
-  bssl::UniquePtr<EVP_PKEY> root_private_key(
-      LoadPrivateKeyFromFile(certs_dir.AppendASCII("root_ca_cert.pem")));
-  if (!root_private_key)
-    return false;
-
-  std::unique_ptr<CertBuilder> static_root = CertBuilder::FromStaticCert(
-      root_cert->cert_buffer(), root_private_key.get());
+  std::unique_ptr<CertBuilder> static_root = CertBuilder::FromStaticCertFile(
+      certs_dir.AppendASCII("root_ca_cert.pem"));
 
   // Will be nullptr if cert_config_.intermediate == kNone.
   std::unique_ptr<CertBuilder> intermediate;
   std::unique_ptr<CertBuilder> leaf;
 
   if (cert_config_.intermediate != IntermediateType::kNone) {
-    CertificateList orig_leaf_and_intermediate = CreateCertificateListFromFile(
-        certs_dir, "ok_cert_by_intermediate.pem", X509Certificate::FORMAT_AUTO);
-    if (orig_leaf_and_intermediate.size() != 2)
+    intermediate = CertBuilder::FromFile(
+        certs_dir.AppendASCII("intermediate_ca_cert.pem"), static_root.get());
+    if (!intermediate)
       return false;
 
-    intermediate = std::make_unique<CertBuilder>(
-        orig_leaf_and_intermediate[1]->cert_buffer(), static_root.get());
-
-    leaf = std::make_unique<CertBuilder>(
-        orig_leaf_and_intermediate[0]->cert_buffer(), intermediate.get());
+    leaf = CertBuilder::FromFile(certs_dir.AppendASCII("ok_cert.pem"),
+                                 intermediate.get());
   } else {
-    scoped_refptr<X509Certificate> orig_leaf =
-        ImportCertFromFile(certs_dir, "ok_cert.pem");
-    if (!orig_leaf)
-      return false;
-
-    leaf = std::make_unique<CertBuilder>(orig_leaf->cert_buffer(),
-                                         static_root.get());
+    leaf = CertBuilder::FromFile(certs_dir.AppendASCII("ok_cert.pem"),
+                                 static_root.get());
   }
+  if (!leaf)
+    return false;
 
   std::vector<GURL> leaf_ca_issuers_urls;
   std::vector<GURL> leaf_ocsp_urls;

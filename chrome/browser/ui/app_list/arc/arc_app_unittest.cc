@@ -67,6 +67,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
+#include "chrome/browser/ui/app_list/arc/intent.h"
 #include "chrome/browser/ui/app_list/arc/mock_arc_app_list_prefs_observer.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
@@ -1886,7 +1887,7 @@ TEST_P(ArcAppModelBuilderTest, ForceCacheIcons) {
 
   base::test::ScopedCommandLine command_line;
   command_line.GetProcessCommandLine()->AppendSwitch(
-      chromeos::switches::kArcGeneratePlayAutoInstall);
+      ash::switches::kArcGeneratePlayAutoInstall);
 
   const std::string app_id = ArcAppTest::GetAppId(fake_apps()[0]);
 
@@ -2357,7 +2358,7 @@ TEST_P(ArcPlayStoreAppTest, StartPaiDisabled) {
 
   base::test::ScopedCommandLine command_line;
   command_line.GetProcessCommandLine()->AppendSwitch(
-      chromeos::switches::kArcDisablePlayAutoInstall);
+      ash::switches::kArcDisablePlayAutoInstall);
 
   arc::ArcSessionManager* session_manager = arc::ArcSessionManager::Get();
   ASSERT_TRUE(session_manager);
@@ -2434,7 +2435,7 @@ TEST_P(ArcPlayStoreAppTest,
   // Fast App Reinstall is not expected to start when the user finishes
   // selection without the Play Store.
   base::ListValue package_list;
-  package_list.Set(0, std::make_unique<base::Value>("fake_package_name"));
+  package_list.Append("fake_package_name");
   const base::ListValue* selected_packages(&package_list);
   profile_.get()->GetTestingPrefService()->Set(
       arc::prefs::kArcFastAppReinstallPackages, *selected_packages);
@@ -2485,7 +2486,7 @@ TEST_P(ArcPlayStoreAppTest,
   EXPECT_EQ(0, app_instance()->start_fast_app_reinstall_request_count());
 
   base::ListValue package_list;
-  package_list.Set(0, std::make_unique<base::Value>("fake_package_name"));
+  package_list.Append("fake_package_name");
   const base::ListValue* selected_packages(&package_list);
   profile_.get()->GetTestingPrefService()->Set(
       arc::prefs::kArcFastAppReinstallPackages, *selected_packages);
@@ -3308,7 +3309,7 @@ TEST_P(ArcAppModelBuilderTest, PackageSyncableServiceEnabled) {
 TEST_P(ArcAppModelBuilderTest, PackageSyncableServiceDisabled) {
   base::test::ScopedCommandLine command_line;
   command_line.GetProcessCommandLine()->AppendSwitch(
-      chromeos::switches::kArcDisableAppSync);
+      ash::switches::kArcDisableAppSync);
   EXPECT_FALSE(
       SyncServiceFactory::GetAsSyncServiceImplForProfile(profile_.get())
           ->GetRegisteredDataTypesForTest()

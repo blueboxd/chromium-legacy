@@ -319,6 +319,11 @@ void ChromeAppListModelUpdater::PublishSearchResults(
   search_model_.PublishResults(std::move(ash_results), categories);
 }
 
+void ChromeAppListModelUpdater::ClearSearchResults() {
+  published_results_.clear();
+  search_model_.DeleteAllResults();
+}
+
 std::vector<ChromeSearchResult*>
 ChromeAppListModelUpdater::GetPublishedSearchResultsForTest() {
   return published_results_;
@@ -793,6 +798,10 @@ void ChromeAppListModelUpdater::RequestMoveItemToFolder(
     if (is_under_temporary_sort()) {
       EndTemporarySortAndTakeAction(EndAction::kCommitAndClearSort);
     } else {
+      if (order_delegate_) {
+        order_delegate_->SetAppListPreferredOrder(
+            ash::AppListSortOrder::kCustom);
+      }
       // NOTE: Committing temporary sort will also reset page breaks, so they
       // don't have to be sanitized again in that case.
       sync_model_sanitizer_->SanitizePageBreaksForProductivityLauncher(
@@ -830,8 +839,14 @@ void ChromeAppListModelUpdater::RequestMoveItemToRoot(
   if (!ash::features::IsProductivityLauncherEnabled())
     ClearFolderIfItHasSingleChild(old_parent);
 
-  sync_model_sanitizer_->SanitizePageBreaksForProductivityLauncher(
-      GetTopLevelItemIds(), /*reset_page_breaks=*/false);
+  if (is_under_temporary_sort()) {
+    EndTemporarySortAndTakeAction(EndAction::kCommitAndClearSort);
+  } else {
+    if (order_delegate_)
+      order_delegate_->SetAppListPreferredOrder(ash::AppListSortOrder::kCustom);
+    sync_model_sanitizer_->SanitizePageBreaksForProductivityLauncher(
+        GetTopLevelItemIds(), /*reset_page_breaks=*/false);
+  }
 }
 
 void ChromeAppListModelUpdater::RequestAppListSort(
@@ -895,6 +910,10 @@ void ChromeAppListModelUpdater::RequestPositionUpdate(
     if (temporary_sort_manager_) {
       EndTemporarySortAndTakeAction(EndAction::kCommitAndClearSort);
     } else {
+      if (order_delegate_) {
+        order_delegate_->SetAppListPreferredOrder(
+            ash::AppListSortOrder::kCustom);
+      }
       // NOTE: Committing temporary sort will also reset page breaks, so they
       // don't have to be sanitized again in that case.
       sync_model_sanitizer_->SanitizePageBreaksForProductivityLauncher(

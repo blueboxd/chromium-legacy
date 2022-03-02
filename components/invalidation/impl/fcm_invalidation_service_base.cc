@@ -30,7 +30,7 @@ void MigratePrefs(PrefService* prefs, const std::string& sender_id) {
     return;
   }
   DictionaryPrefUpdate update(prefs, prefs::kInvalidationClientIDCache);
-  update->SetString(
+  update->SetStringKey(
       sender_id,
       prefs->GetString(prefs::kFCMInvalidationClientIDCacheDeprecated));
   prefs->ClearPref(prefs::kFCMInvalidationClientIDCacheDeprecated);

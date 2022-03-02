@@ -121,12 +121,12 @@ void InitNetwork() {
           ->network_state_handler()
           ->DefaultNetwork();
 
-  auto* portal_detector = new chromeos::NetworkPortalDetectorTestImpl();
+  auto* portal_detector = new ash::NetworkPortalDetectorTestImpl();
   portal_detector->SetDefaultNetworkForTesting(default_network->guid());
 
   portal_detector->SetDetectionResultsForTesting(
       default_network->guid(),
-      chromeos::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204);
+      ash::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204);
 
   chromeos::network_portal_detector::InitializeForTesting(portal_detector);
 }
@@ -1593,7 +1593,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveApprovalSuccess) {
       1);
 }
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 // Test was originally written for http://crbug.com/753014 and subsequently
 // modified to use the remote consent flow.
 //
@@ -1625,7 +1625,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       kGetAuthTokenResultHistogramName,
       IdentityGetAuthTokenError::State::kRemoteConsentPageLoadFailure, 1);
 }
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveQueue) {
   SignIn("primary@example.com");

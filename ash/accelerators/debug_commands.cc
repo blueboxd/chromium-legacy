@@ -8,11 +8,13 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/hud_display/hud_display.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/debug_utils.h"
-#include "ash/public/cpp/toast_data.h"
+#include "ash/public/cpp/system/toast_catalog.h"
+#include "ash/public/cpp/system/toast_data.h"
 #include "ash/shell.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/touch/touch_devices_controller.h"
@@ -101,8 +103,10 @@ void HandleToggleWallpaperMode() {
 }
 
 void HandleToggleKeyboardBacklight() {
-  base::RecordAction(base::UserMetricsAction("Accel_Keyboard_Backlight"));
-  accelerators::ToggleKeyboardBacklight();
+  if (ash::features::IsKeyboardBacklightToggleEnabled()) {
+    base::RecordAction(base::UserMetricsAction("Accel_Keyboard_Backlight"));
+    accelerators::ToggleKeyboardBacklight();
+  }
 }
 
 void HandleToggleMicrophoneMute() {
@@ -178,8 +182,10 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
       HandlePrintWindowHierarchy();
       break;
     case DEBUG_SHOW_TOAST:
-      Shell::Get()->toast_manager()->Show(
-          ToastData("id", u"Toast", 5000 /* duration_ms */, u"Dismiss"));
+      Shell::Get()->toast_manager()->Show(ToastData(
+          /*id=*/"id", ToastCatalogName::kDebugCommand, /*text=*/u"Toast",
+          ToastData::kDefaultToastDurationMs,
+          /*visible_on_lock_screen=*/false, /*dismiss_text=*/u"Dismiss"));
       break;
     case DEBUG_TOGGLE_TOUCH_PAD:
       HandleToggleTouchpad();

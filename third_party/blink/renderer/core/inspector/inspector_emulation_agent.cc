@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_emulation_agent.h"
 
 #include "third_party/blink/public/common/input/web_touch_event.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/public/web/web_render_theme.h"
@@ -19,7 +20,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/loader_freeze_mode.h"
@@ -66,7 +66,8 @@ InspectorEmulationAgent::InspectorEmulationAgent(
       emulate_auto_dark_mode_(&agent_state_, /*default_value=*/false),
       auto_dark_mode_override_(&agent_state_, /*default_value=*/false),
       timezone_id_override_(&agent_state_, /*default_value=*/WTF::String()),
-      disabled_image_types_(&agent_state_, /*default_value=*/false) {}
+      disabled_image_types_(&agent_state_, /*default_value=*/false),
+      cpu_throttling_rate_(&agent_state_, /*default_value=*/1) {}
 
 InspectorEmulationAgent::~InspectorEmulationAgent() = default;
 
@@ -88,6 +89,7 @@ void InspectorEmulationAgent::Restore() {
       reinterpret_cast<char*>(save_serialized_ua_metadata_override.data()),
       save_serialized_ua_metadata_override.size()));
   serialized_ua_metadata_override_.Set(save_serialized_ua_metadata_override);
+  setCPUThrottlingRate(cpu_throttling_rate_.Get());
 
   if (!locale_override_.Get().IsEmpty())
     setLocaleOverride(locale_override_.Get());
@@ -378,6 +380,7 @@ Response InspectorEmulationAgent::setCPUThrottlingRate(double rate) {
   Response response = AssertPage();
   if (!response.IsSuccess())
     return response;
+  cpu_throttling_rate_.Set(rate);
   scheduler::ThreadCPUThrottler::GetInstance()->SetThrottlingRate(rate);
   return response;
 }
@@ -522,7 +525,7 @@ void InspectorEmulationAgent::FrameStartedLoading(LocalFrame*) {
 
 AtomicString InspectorEmulationAgent::OverrideAcceptImageHeader(
     const HashSet<String>* disabled_image_types) {
-  String header(ImageAcceptHeader());
+  String header(network_utils::ImageAcceptHeader());
   for (String type : *disabled_image_types) {
     // The header string is expected to be like
     // `image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8`

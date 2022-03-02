@@ -310,6 +310,10 @@
       name: "BlinkExtensionChromeOS",
     },
     {
+      name: "BlinkExtensionChromeOSHID",
+      depends_on: ["BlinkExtensionChromeOS"],
+    },
+    {
       name: "BlinkExtensionChromeOSWindowManagement",
       depends_on: ["BlinkExtensionChromeOS"],
     },
@@ -400,6 +404,10 @@
     },
     {
       name: "ClientHintsMetaNameAcceptCH",
+      status: "experimental",
+    },
+    {
+      name: "ClientHintThirdPartyDelegation",
       status: "experimental",
     },
     {
@@ -496,16 +504,6 @@
     {
       name: "CorsRFC1918",
     },
-    // This block isn't really used on its own. Blink doesn't really have to
-    // know about COEP:credentialless. However it is used for "declaring" the
-    // OriginTrial feature name. This is similar to:
-    // https://chromium-review.googlesource.com/c/chromium/src/+/2366778
-    // for CrossOriginOpenerPolicyReporting.
-    {
-      name: "CrossOriginEmbedderPolicyCredentialless",
-      origin_trial_feature_name: "CrossOriginEmbedderPolicyCredentiallessOriginTrial",
-      status: "experimental",
-    },
     {
       name: "CrossOriginIsolation",
       status: "stable",
@@ -515,9 +513,6 @@
       origin_trial_feature_name: "CrossOriginOpenerPolicyReporting",
       origin_trial_allows_third_party: true,
       status: "experimental",
-    },
-    {
-      name: "CrossOriginWebAssemblyModuleSharingAllowed",
     },
     {
       name: "CSS3Text",
@@ -545,12 +540,12 @@
     {
       // https://github.com/DevSDK/calc-infinity-and-NaN/blob/master/explainer.md
       name: "CSSCalcInfinityAndNaN",
-      status: "test",
+      status: "stable",
     },
     {
       // https://drafts.csswg.org/css-cascade-5/#layering
       name: "CSSCascadeLayers",
-      status: "test",
+      status: "stable",
     },
     {
       // Support case-sensitive attribute selector modifier
@@ -705,6 +700,10 @@
       //
       // https://drafts.csswg.org/mediaqueries-4/#mq-syntax
       name: "CSSMediaQueries4",
+    },
+    {
+      name: "CSSMixBlendModePlusLighter",
+      status: "test"
     },
     {
       name: "CSSModules",
@@ -899,11 +898,6 @@
       status: "experimental",
     },
     {
-      // Disable composited layer squashing in pre-CompositeAfterPaint for
-      // testing.
-      name: "DisableLayerSquashing",
-    },
-    {
       // When on, the display-capture permissions-policy is enforced.
       // When off, enforcement of this permissions-policy is skipped.
       // This is driven from the browser process by the Enterprise policy
@@ -981,10 +975,6 @@
       status: "stable",
     },
     {
-      name: "ExecCommandInJavaScript",
-      status: "test",
-    },
-    {
       name: "ExperimentalContentSecurityPolicyFeatures",
       status: "experimental",
     },
@@ -1007,6 +997,10 @@
       name: "ExperimentalJSProfiler",
       origin_trial_feature_name: "ExperimentalJSProfiler",
       status: "stable"
+    },
+    {
+      name: "ExperimentalJSProfilerMarkers",
+      status: "experimental"
     },
     {
       name: "ExperimentalPolicies",
@@ -1098,6 +1092,9 @@
       status: "experimental",
     },
     {
+      name: "FirstPartySets",
+    },
+    {
       name: "Fledge",
       origin_trial_feature_name: "Fledge",
     },
@@ -1113,12 +1110,8 @@
       // be enabled to make the whole feature work.
     },
     {
-      name: "FontAccessPersistent",
-      // TODO(crbug.com/1000486): Add when the Origin Trial dependency bug is fixed.
-      // depends_on: ["FontAccess"],
-      // No status because this blink runtime feature doesn't work by itself.
-      // It's controlled by the corresponding Chromium feature which needs to
-      // be enabled to make the whole feature work.
+      name: "FontPalette",
+      status: "test",
     },
     {
       name: "FontSrcLocalMatching",
@@ -1186,10 +1179,11 @@
     },
     {
       name: "HandwritingRecognition",
+      status: {"ChromeOS": "stable", "Lacros": "stable", "default": "experimental"},
+    },
+    {
+      name: "HidDeviceForget",
       status: "experimental",
-      // Trial also requires kHandwritingRecognitionWebPlatformApiFinch enabled.
-      origin_trial_feature_name: "HandwritingRecognition",
-      origin_trial_os: ["chromeos"]
     },
     {
       name: "HighlightAPI",
@@ -1206,7 +1200,7 @@
     },
     {
       name: "HTMLInputElementShowPicker",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "HTMLPopupElement",
@@ -1251,10 +1245,6 @@
     {
       name: "InterestCohortFeaturePolicy",
       status: "experimental",
-    },
-    {
-      name: "IntersectionObserverDocumentScrollingElementRoot",
-      status: "stable",
     },
     {
       name: "KeyboardAccessibleTooltip",
@@ -1312,16 +1302,6 @@
       status: "stable",
     },
     {
-      name: "LayoutNGGrid",
-      depends_on: ["LayoutNG"],
-      status: "stable",
-    },
-    {
-      name: "LayoutNGGridCaching",
-      depends_on: ["LayoutNGGrid"],
-      status: "stable"
-    },
-    {
       // Block fragmentation support in the grid layout algorithm.
       // https://drafts.csswg.org/css-grid-1/#pagination
       name: "LayoutNGGridFragmentation",
@@ -1332,7 +1312,7 @@
     },
     {
       name: "LayoutNGSubgrid",
-      depends_on: ["LayoutNGGrid"],
+      depends_on: ["LayoutNG"],
       status: "test"
     },
     {
@@ -1350,6 +1330,10 @@
       name: "LayoutNGTextControl",
       depends_on: ["EditingNG"],
       status: "stable",
+    },
+    {
+      name: "LayoutNGView",
+      implied_by: ["LayoutNGPrinting"],
     },
     {
       name: "LazyFrameLoading",
@@ -1433,9 +1417,6 @@
     {
       name: "MediaControlsUseCutOutByDefault",
       status: "stable",
-    },
-    {
-      name: "MediaDocumentDownloadButton",
     },
     {
       name: "MediaElementVolumeGreaterThanOne",
@@ -1560,10 +1541,6 @@
       name: "NewCanvas2DAPI",
       origin_trial_feature_name: "NewCanvas2DAPI",
       status: "experimental",
-    },
-    // Not a web exposed feature, enabled from the command line.
-    {
-      name: "NewRemotePlaybackPipeline",
     },
     {
       name: "NoIdleEncodingForWebTests",
@@ -1722,9 +1699,6 @@
       // net::features::kPartitionedCookies, which needs to be enabled to make
       // the whole feature work.
     },
-    {
-      name: "PassPaintVisualRectToCompositor",
-    },
     // This is to add an option to enable the Reveal button on password inputs while waiting ::reveal gets standardized.
     {
       name: "PasswordReveal",
@@ -1778,10 +1752,6 @@
       name: "PerMethodCanMakePaymentQuota",
       origin_trial_feature_name: "PerMethodCanMakePaymentQuota",
       status: "experimental",
-    },
-    {
-      name: "PermissionDelegation",
-      status: "test",
     },
     {
       name: "Permissions",
@@ -2076,6 +2046,10 @@
     {
       name: "ScrollUnification",
     },
+    {
+      name: "SecureContextFixForWorkers",
+      status: "experimental",
+    },
     // SecurePaymentConfirmation has shipped on some platforms, but its
     // availability is controlled by the browser process (via the
     // SecurePaymentConfirmationBrowser feature), as it requires browser
@@ -2112,11 +2086,6 @@
     },
     {
       name: "ServiceWorkerFetchEventWorkerTiming",
-      status: "experimental",
-    },
-    {
-      name: "ServiceWorkerSubresourceFilter",
-      origin_trial_feature_name: "ServiceWorkerSubresourceFilter",
       status: "experimental",
     },
     {
@@ -2214,11 +2183,6 @@
       name: "SVGTextNG",
       depends_on: ["LayoutNG"],
       status: "stable"
-    },
-    {
-      // Synchronously load web fonts inlined as data urls (crbug.com/1236283)
-      name: "SyncLoadDataUrlFonts",
-      status: "test",
     },
     {
       name: "SystemWakeLock",
@@ -2428,6 +2392,7 @@
     },
     {
       name: "WebAppDarkMode",
+      origin_trial_feature_name: "WebAppDarkMode",
       status: "experimental",
     },
     {
@@ -2480,8 +2445,8 @@
     {
       name: "WebAppWindowControlsOverlay",
       origin_trial_feature_name: "WebAppWindowControlsOverlay",
-      origin_trial_os: ["win", "mac", "linux"],
-      status: "experimental",
+      origin_trial_os: ["win", "mac", "linux", "chromeos"],
+      status: "stable",
     },
     {
       name: "WebAssemblyCSP",
@@ -2614,6 +2579,11 @@
       status: {"Android": "stable", "default": "test"},
     },
     {
+      name: "WebNFCMakeReadOnly",
+      depends_on: ["WebNFC"],
+      status: "experimental",
+    },
+    {
       name: "WebOTP",
       status: "stable",
     },
@@ -2735,6 +2705,9 @@
     {
       name: "XSLT",
       status: "stable",
+    },
+    {
+      name: "ZeroCopyTabCapture",
     },
   ],
 }

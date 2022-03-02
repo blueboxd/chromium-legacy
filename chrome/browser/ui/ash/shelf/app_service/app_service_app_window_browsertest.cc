@@ -39,8 +39,8 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/with_crosapi_param.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/services/app_service/public/cpp/instance.h"
@@ -523,7 +523,7 @@ class AppServiceAppWindowWebAppBrowserTest
   // |SetUpWebApp()| must be called after |SetUpOnMainThread()| to make sure
   // the Network Service process has been setup properly.
   std::string CreateWebApp() const {
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = GetAppURL();
     web_app_info->scope = GetAppURL().GetWithoutFilename();
 

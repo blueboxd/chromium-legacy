@@ -1233,15 +1233,6 @@ uint32_t RenderWidgetHostViewAndroid::GetCaptureSequenceNumber() const {
   return latest_capture_sequence_number_;
 }
 
-void RenderWidgetHostViewAndroid::OnInterstitialPageAttached() {
-  if (view_.parent())
-    view_.parent()->MoveToFront(&view_);
-}
-
-void RenderWidgetHostViewAndroid::OnInterstitialPageGoingAway() {
-  ResetSynchronousCompositor();
-}
-
 bool RenderWidgetHostViewAndroid::CanSynchronizeVisualProperties() {
   // When a rotation begins, the new visual properties are not all notified to
   // RenderWidgetHostViewAndroid at the same time. The process begins when
@@ -1277,6 +1268,11 @@ void RenderWidgetHostViewAndroid::UpdateWebViewBackgroundColorIfNecessary() {
   if (!using_browser_compositor_ && host()->delegate()->IsFullscreen()) {
     SetContentBackgroundColor(SK_ColorBLACK);
   }
+}
+
+void RenderWidgetHostViewAndroid::ClearFallbackSurfaceForCommitPending() {
+  delegated_frame_host_->ClearFallbackSurfaceForCommitPending();
+  local_surface_id_allocator_.Invalidate();
 }
 
 void RenderWidgetHostViewAndroid::ResetFallbackToFirstNavigationSurface() {

@@ -4,6 +4,10 @@
 
 #include "chrome/updater/util.h"
 
+#include <algorithm>
+#include <cctype>
+#include <string>
+
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -11,7 +15,9 @@
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/updater/constants.h"
@@ -22,7 +28,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #import "chrome/updater/mac/mac_util.h"
 #endif
 
@@ -91,7 +97,7 @@ std::string EscapeQueryParamValue(base::StringPiece text, bool use_plus) {
 
 absl::optional<base::FilePath> GetBaseDirectory(UpdaterScope scope) {
   absl::optional<base::FilePath> app_data_dir;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::FilePath path;
   if (!base::PathService::Get(scope == UpdaterScope::kSystem
                                   ? base::DIR_PROGRAM_FILES
@@ -101,7 +107,7 @@ absl::optional<base::FilePath> GetBaseDirectory(UpdaterScope scope) {
     return absl::nullopt;
   }
   app_data_dir = path;
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   app_data_dir = GetApplicationSupportDirectory(scope);
   if (!app_data_dir) {
     LOG(ERROR) << "Can't retrieve app data directory.";
@@ -169,7 +175,7 @@ absl::optional<tagging::TagArgs> GetTagArgs() {
 }
 
 base::CommandLine MakeElevated(base::CommandLine command_line) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   command_line.PrependWrapper("/usr/bin/sudo");
 #endif
   return command_line;
@@ -213,7 +219,7 @@ GURL AppendQueryParameter(const GURL& url,
   return url.ReplaceComponents(replacements);
 }
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 
 // TODO(crbug.com/1276188) - implement the functions below.
 absl::optional<base::FilePath> GetUpdaterFolderPath(UpdaterScope scope) {
@@ -231,5 +237,23 @@ bool PathOwnedByUser(const base::FilePath& path) {
   return false;
 }
 
-#endif  // OS_LINUX
+#endif  // BUILDFLAG(IS_LINUX)
+
+#if BUILDFLAG(IS_WIN)
+
+std::wstring GetTaskNamePrefix(UpdaterScope scope) {
+  std::wstring task_name = GetTaskDisplayName(scope);
+  task_name.erase(std::remove_if(task_name.begin(), task_name.end(), isspace),
+                  task_name.end());
+  return task_name;
+}
+
+std::wstring GetTaskDisplayName(UpdaterScope scope) {
+  return base::StrCat({base::ASCIIToWide(PRODUCT_FULLNAME_STRING), L" Task ",
+                       scope == UpdaterScope::kSystem ? L"System " : L"User ",
+                       kUpdaterVersionUtf16});
+}
+
+#endif  // BUILDFLAG(IS_WIN)
+
 }  // namespace updater

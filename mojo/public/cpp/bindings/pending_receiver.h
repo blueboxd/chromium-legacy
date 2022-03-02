@@ -65,7 +65,7 @@ class PendingReceiver {
       : state_(std::move(pipe)) {}
 
   // Disabled on NaCl since it crashes old version of clang.
-#if !defined(OS_NACL)
+#if !BUILDFLAG(IS_NACL)
   // Move conversion operator for custom receiver types. Only participates in
   // overload resolution if a typesafe conversion is supported.
   template <
@@ -77,7 +77,7 @@ class PendingReceiver {
   PendingReceiver(T&& other)
       : PendingReceiver(PendingReceiverConverter<T>::template To<Interface>(
             std::forward<T>(other))) {}
-#endif  // !defined(OS_NACL)
+#endif  // !BUILDFLAG(IS_NACL)
 
   PendingReceiver(const PendingReceiver&) = delete;
   PendingReceiver& operator=(const PendingReceiver&) = delete;
@@ -115,7 +115,7 @@ class PendingReceiver {
   // Passes ownership of this PendingReceiver's message pipe handle. After this
   // call, the PendingReceiver is no longer in a valid state and can no longer
   // be used to bind a Receiver.
-  ScopedMessagePipeHandle PassPipe() WARN_UNUSED_RESULT {
+  [[nodiscard]] ScopedMessagePipeHandle PassPipe() {
     return std::move(state_.pipe);
   }
 
@@ -138,8 +138,8 @@ class PendingReceiver {
   // Creates a new message pipe, retaining one end in the PendingReceiver
   // (making it valid) and returning the other end as its entangled
   // PendingRemote. May only be called on an invalid PendingReceiver.
-  REINITIALIZES_AFTER_MOVE PendingRemote<Interface>
-  InitWithNewPipeAndPassRemote() WARN_UNUSED_RESULT;
+  [[nodiscard]] REINITIALIZES_AFTER_MOVE PendingRemote<Interface>
+  InitWithNewPipeAndPassRemote();
 
   // For internal Mojo use only.
   internal::PendingReceiverState* internal_state() { return &state_; }

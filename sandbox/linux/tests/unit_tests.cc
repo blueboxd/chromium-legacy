@@ -15,9 +15,10 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <tuple>
+
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_util.h"
-#include "base/ignore_result.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "sandbox/linux/tests/unit_tests.h"
@@ -61,7 +62,7 @@ int CountThreads() {
 namespace sandbox {
 
 bool IsAndroid() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return true;
 #else
   return false;
@@ -85,7 +86,7 @@ static void SigAlrmHandler(int) {
   const char failure_message[] = "Timeout reached!\n";
   // Make sure that we never block here.
   if (!fcntl(2, F_SETFL, O_NONBLOCK)) {
-    ignore_result(write(2, failure_message, sizeof(failure_message) - 1));
+    std::ignore = write(2, failure_message, sizeof(failure_message) - 1);
   }
   _exit(kExitForTimeout);
 }
@@ -164,7 +165,7 @@ void UnitTests::RunTestInProcess(SandboxTestRunner* test_runner,
     struct rlimit no_core = {0};
     setrlimit(RLIMIT_CORE, &no_core);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // On Android Oreo and higher, the system applies a seccomp filter to all
     // processes. It has its own SIGSYS handler that is un-hooked here in the
     // test child process, so that the Chromium handler can be used. This
@@ -274,7 +275,7 @@ void UnitTests::DeathMessage(int status,
 
 // In official builds CHECK messages are dropped, look for SIGABRT or SIGTRAP.
 // See https://crbug.com/437312 and https://crbug.com/612507.
-#if defined(OFFICIAL_BUILD) && defined(NDEBUG) && !defined(OS_ANDROID)
+#if defined(OFFICIAL_BUILD) && defined(NDEBUG) && !BUILDFLAG(IS_ANDROID)
   if (subprocess_exited_without_matching_message) {
     static const char kSigTrapMessage[] = "Received signal 5";
     static const char kSigAbortMessage[] = "Received signal 6";
@@ -292,7 +293,7 @@ void UnitTests::DeathSEGVMessage(int status,
   std::string details(TestFailedMessage(msg));
   const char* expected_msg = static_cast<const char*>(aux);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // This hack is required for ChromeOS since its signal handler does not
   // return indicating the handled signal, but with a simple _exit(1) only.
   const bool subprocess_got_sigsegv =

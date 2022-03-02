@@ -25,8 +25,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
@@ -521,8 +519,6 @@ TEST_P(FrameThrottlingTest, ThrottledFrameCompositing) {
       To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
   auto* frame_view = frame_element->contentDocument()->View();
   EXPECT_FALSE(frame_view->CanThrottleRendering());
-  auto* frame_layout_view = frame_view->GetLayoutView();
-  EXPECT_TRUE(frame_layout_view->Layer()->CanBeComposited());
   auto* root_layer = WebView().MainFrameImpl()->GetFrameView()->RootCcLayer();
   EXPECT_EQ(0u, CcLayersByDOMElementId(root_layer, "container").size());
   EXPECT_EQ(1u, CcLayersByDOMElementId(root_layer, "inner_frame").size());
@@ -543,7 +539,6 @@ TEST_P(FrameThrottlingTest, ThrottledFrameCompositing) {
   ASSERT_TRUE(Compositor().NeedsBeginFrame());
   CompositeFrame();
   EXPECT_FALSE(frame_view->CanThrottleRendering());
-  EXPECT_TRUE(frame_layout_view->Layer()->CanBeComposited());
   EXPECT_EQ(0u, CcLayersByDOMElementId(root_layer, "container").size());
   EXPECT_EQ(1u, CcLayersByDOMElementId(root_layer, "inner_frame").size());
 }
@@ -1838,15 +1833,15 @@ TEST_P(FrameThrottlingTest, ForceUnthrottled) {
   // through the lifecycle loop, the style change will cause the ResizeObserver
   // callback to run. The ResizeObserver will dirty the iframe element by
   // setting its width to 100px. At this point, the lifecycle state of the
-  // iframe will be kCompositingAssignmentsClean, which will cause
-  // ShouldThrottleRendering() to return true.
+  // iframe will be kPrePaintClean, which will cause ShouldThrottleRendering()
+  // to return true.
   //
   // Because ResizeObserver dirtied layout, there will be a second pass through
-  // the main lifecycle loop. When the iframe element runs layout again, setting
-  // its width to 100px, it will cause the iframe's contents to overflow, so the
-  // iframe will add a horizontal scrollbar and mark its LayoutView as needing
-  // paint property update. If the iframe's lifecycle state is still
-  // kCompositingAssignmentsClean, then it will skip pre-paint on the second
+  // the main lifecycle loop. When the iframe element runs layout again,
+  // setting its width to 100px, it will cause the iframe's contents to
+  // overflow, so the iframe will add a horizontal scrollbar and mark its
+  // LayoutView as needing paint property update. If the iframe's lifecycle
+  // state is still kPrePaintClean, then it will skip pre-paint on the second
   // pass through the lifecycle loop, leaving its paint properties in a dirty
   // state (bad). If, however, the iframe's lifecycle state is reset to
   // kVisualUpdatePending prior to the second pass through the loop, then it
@@ -1859,9 +1854,6 @@ TEST_P(FrameThrottlingTest, ForceUnthrottled) {
 }
 
 TEST_P(FrameThrottlingTest, CullRectUpdate) {
-  if (!RuntimeEnabledFeatures::CullRectUpdateEnabled())
-    return;
-
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
 

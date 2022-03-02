@@ -325,7 +325,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
             case ImageSerializationTag::kEndTag:
               is_done = true;
               break;
-            case ImageSerializationTag::kCanvasColorSpaceTag:
+            case ImageSerializationTag::kPredefinedColorSpaceTag:
               if (!ReadUint32Enum<SerializedColorSpace>(&canvas_color_space))
                 return nullptr;
               break;
@@ -399,7 +399,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
             case ImageSerializationTag::kEndTag:
               is_done = true;
               break;
-            case ImageSerializationTag::kCanvasColorSpaceTag:
+            case ImageSerializationTag::kPredefinedColorSpaceTag:
               if (!ReadUint32Enum<SerializedColorSpace>(&canvas_color_space))
                 return nullptr;
               break;
@@ -429,20 +429,14 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
 
       SerializedImageDataSettings settings(canvas_color_space,
                                            image_data_storage_format);
-      base::CheckedNumeric<size_t> computed_byte_length = width;
-      computed_byte_length *= height;
-      computed_byte_length *=
-          ImageData::StorageFormatBytesPerPixel(settings.GetStorageFormat());
-      if (!computed_byte_length.IsValid() ||
-          computed_byte_length.ValueOrDie() != byte_length)
-        return nullptr;
       ImageData* image_data = ImageData::ValidateAndCreate(
           width, height, absl::nullopt, settings.GetImageDataSettings(),
           ImageData::ValidateAndCreateParams(), exception_state);
       if (!image_data)
         return nullptr;
       SkPixmap image_data_pixmap = image_data->GetSkPixmap();
-      DCHECK_EQ(image_data_pixmap.computeByteSize(), byte_length);
+      if (image_data_pixmap.computeByteSize() != byte_length)
+        return nullptr;
       memcpy(image_data_pixmap.writable_addr(), pixels, byte_length);
       return image_data;
     }
@@ -744,22 +738,8 @@ v8::MaybeLocal<v8::WasmModuleObject>
 V8ScriptValueDeserializer::GetWasmModuleFromId(v8::Isolate* isolate,
                                                uint32_t id) {
   if (id < serialized_script_value_->WasmModules().size()) {
-    ExecutionContext* execution_context = ExecutionContext::From(script_state_);
-    DCHECK(serialized_script_value_->origin());
-    UseCounter::Count(execution_context, WebFeature::kWasmModuleSharing);
-    const v8::CompiledWasmModule& wasm_module =
-        serialized_script_value_->WasmModules()[id];
-    if (!serialized_script_value_->origin()->IsSameOriginWith(
-            execution_context->GetSecurityOrigin())) {
-      UseCounter::Count(execution_context,
-                        WebFeature::kCrossOriginWasmModuleSharing);
-      AuditsIssue::ReportCrossOriginWasmModuleSharingIssue(
-          execution_context, wasm_module.source_url(),
-          serialized_script_value_->origin()->ToString(),
-          execution_context->GetSecurityOrigin()->ToString(),
-          true /* is_warning */);
-    }
-    return v8::WasmModuleObject::FromCompiledModule(isolate, wasm_module);
+    return v8::WasmModuleObject::FromCompiledModule(
+        isolate, serialized_script_value_->WasmModules()[id]);
   }
   CHECK(serialized_script_value_->WasmModules().IsEmpty());
   return v8::MaybeLocal<v8::WasmModuleObject>();

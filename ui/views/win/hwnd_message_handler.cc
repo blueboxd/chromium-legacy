@@ -439,6 +439,7 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
   GetMonitorAndRects(bounds.ToRECT(), &last_monitor_, &last_monitor_rect_,
                      &last_work_area_);
 
+  initial_bounds_valid_ = !bounds.IsEmpty();
   // Create the window.
   WindowImpl::Init(parent, bounds);
 
@@ -1646,6 +1647,12 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
       std::make_unique<ui::SessionChangeObserver>(base::BindRepeating(
           &HWNDMessageHandler::OnSessionChange, base::Unretained(this)));
 
+  // If the window was initialized with a specific size/location then we know
+  // the DPI and thus must initialize dpi_ now. See https://crbug.com/1282804
+  // for details.
+  if (initial_bounds_valid_)
+    dpi_ = display::win::ScreenWin::GetDPIForHWND(hwnd());
+
   // TODO(beng): move more of NWW::OnCreate here.
   return 0;
 }
@@ -2041,7 +2048,7 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
         return HandlePointerEventTypeTouchOrNonClient(
             message, w_param, l_param);
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     default:
       break;
   }

@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/core_probe_sink.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
@@ -29,6 +29,7 @@ class UnguessableToken;
 
 namespace gfx {
 class RectF;
+class QuadF;
 }
 
 namespace v8 {
@@ -51,7 +52,6 @@ class Element;
 class EncodedFormData;
 class Event;
 class ExecutionContext;
-class FloatQuad;
 class Frame;
 class HitTestLocation;
 class HitTestRequest;
@@ -435,7 +435,7 @@ namespace inspector_paint_event {
 void Data(perfetto::TracedValue context,
           Frame*,
           const LayoutObject*,
-          const FloatQuad& quad,
+          const gfx::QuadF& quad,
           int layer_id);
 }
 
@@ -527,7 +527,7 @@ void Data(perfetto::TracedValue context);
 }
 
 namespace inspector_invalidate_layout_event {
-void Data(perfetto::TracedValue context, LocalFrame*);
+void Data(perfetto::TracedValue context, LocalFrame*, DOMNodeId);
 }
 
 namespace inspector_recalculate_styles_event {

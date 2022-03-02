@@ -15,9 +15,9 @@
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_system_web_app_data.h"
 #include "chrome/browser/web_applications/web_app_uninstall_job.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -30,7 +30,6 @@ enum class WebappUninstallSource;
 namespace web_app {
 
 class WebAppSyncBridge;
-class FileHandlersPermissionHelper;
 class WebAppUiManager;
 class WebApp;
 class WebAppIconManager;
@@ -40,7 +39,7 @@ class WebAppUninstallJob;
 enum class WebAppUninstallJobResult;
 
 // An finalizer for the installation process, represents the last step.
-// Takes WebApplicationInfo as input, writes data to disk (e.g icons, shortcuts)
+// Takes WebAppInstallInfo as input, writes data to disk (e.g icons, shortcuts)
 // and registers an app.
 class WebAppInstallFinalizer {
  public:
@@ -75,7 +74,7 @@ class WebAppInstallFinalizer {
   // All methods below are |virtual| for testing.
 
   // Write the WebApp data to disk and register the app.
-  virtual void FinalizeInstall(const WebApplicationInfo& web_app_info,
+  virtual void FinalizeInstall(const WebAppInstallInfo& web_app_info,
                                const FinalizeOptions& options,
                                InstallFinalizedCallback callback);
 
@@ -83,7 +82,7 @@ class WebAppInstallFinalizer {
   // TODO(https://crbug.com/1196051): Chrome fails to update the manifest
   // if the app window needing update closes at the same time as Chrome.
   // Therefore, the manifest may not always update as expected.
-  virtual void FinalizeUpdate(const WebApplicationInfo& web_app_info,
+  virtual void FinalizeUpdate(const WebAppInstallInfo& web_app_info,
                               InstallFinalizedCallback callback);
 
   // Removes |webapp_uninstall_source| from |app_id|. If no more interested
@@ -149,18 +148,10 @@ class WebAppInstallFinalizer {
 
   Profile* profile() { return profile_; }
 
-  WebAppRegistrar& GetWebAppRegistrar() const;
+  const WebAppRegistrar& GetWebAppRegistrar() const;
 
  private:
   using CommitCallback = base::OnceCallback<void(bool success)>;
-  friend class FileHandlersPermissionHelper;
-
-  // FileHandlersPermissionHelper uses these getters.
-  WebAppRegistrar& registrar() const { return *registrar_; }
-  WebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
-  OsIntegrationManager& os_integration_manager() {
-    return *os_integration_manager_;
-  }
 
   void UninstallWebAppInternal(const AppId& app_id,
                                webapps::WebappUninstallSource uninstall_source,
@@ -179,7 +170,7 @@ class WebAppInstallFinalizer {
                                   OsHooksErrors os_hooks_errors);
 
   void SetWebAppManifestFieldsAndWriteData(
-      const WebApplicationInfo& web_app_info,
+      const WebAppInstallInfo& web_app_info,
       std::unique_ptr<WebApp> web_app,
       CommitCallback commit_callback);
 
@@ -200,13 +191,21 @@ class WebAppInstallFinalizer {
       std::string old_name,
       bool should_update_os_hooks,
       FileHandlerUpdateAction file_handlers_need_os_update,
-      const WebApplicationInfo& web_app_info,
+      const WebAppInstallInfo& web_app_info,
       bool success);
 
   void OnUpdateHooksFinished(InstallFinalizedCallback callback,
                              AppId app_id,
                              std::string old_name,
                              web_app::OsHooksErrors os_hooks_errors);
+
+  // Returns a value indicating whether the file handlers registered with the OS
+  // should be updated. Used to avoid unnecessary updates. TODO(estade): why
+  // does this optimization exist when other OS hooks don't have similar
+  // optimizations?
+  FileHandlerUpdateAction GetFileHandlerUpdateAction(
+      const AppId& app_id,
+      const WebAppInstallInfo& new_web_app_info);
 
   raw_ptr<WebAppRegistrar> registrar_ = nullptr;
   raw_ptr<WebAppSyncBridge> sync_bridge_ = nullptr;
@@ -223,8 +222,6 @@ class WebAppInstallFinalizer {
 
   base::RepeatingCallback<void(const AppId& app_id)>
       install_source_removed_callback_for_testing_;
-
-  std::unique_ptr<FileHandlersPermissionHelper> file_handlers_helper_;
 
   base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};
 };

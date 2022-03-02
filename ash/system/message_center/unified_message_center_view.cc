@@ -129,8 +129,12 @@ void UnifiedMessageCenterView::Init() {
 
 void UnifiedMessageCenterView::SetMaxHeight(int max_height) {
   int max_scroller_height = max_height;
-  if (notification_bar_->GetVisible())
+  if (notification_bar_->GetVisible()) {
     max_scroller_height -= kStackedNotificationBarHeight;
+    if (is_notifications_refresh_enabled_)
+      max_scroller_height -=
+          2 * kNotificationBarVerticalPadding + kMessageCenterBottomPadding;
+  }
   scroller_->ClipHeightTo(0, max_scroller_height);
 }
 
@@ -181,6 +185,10 @@ void UnifiedMessageCenterView::ExpandMessageCenter() {
 
 bool UnifiedMessageCenterView::IsNotificationBarVisible() const {
   return notification_bar_->GetVisible();
+}
+
+bool UnifiedMessageCenterView::IsScrollBarVisible() const {
+  return scroll_bar_->GetVisible();
 }
 
 void UnifiedMessageCenterView::OnNotificationSlidOut() {
@@ -453,7 +461,7 @@ void UnifiedMessageCenterView::ScrollToTarget() {
           scroll_bar_->GetMaxPosition() - last_scroll_position_from_bottom_;
       break;
     case UnifiedSystemTrayModel::NotificationTargetMode::NOTIFICATION_ID:
-      FALLTHROUGH;
+      [[fallthrough]];
     case UnifiedSystemTrayModel::NotificationTargetMode::LAST_NOTIFICATION: {
       const gfx::Rect& target_rect =
           (model_->notification_target_mode() ==
@@ -462,9 +470,8 @@ void UnifiedMessageCenterView::ScrollToTarget() {
                     model_->notification_target_id())
               : message_list_view_->GetLastNotificationBounds();
 
-      const int last_notification_offset = target_rect.height() -
-                                           scroller_->height() +
-                                           kUnifiedNotificationCenterSpacing;
+      const int last_notification_offset =
+          target_rect.height() - scroller_->height();
       if (last_notification_offset > 0) {
         // If the target notification is taller than |scroller_|, we should
         // align the top of the notification with the top of |scroller_|.
@@ -473,11 +480,6 @@ void UnifiedMessageCenterView::ScrollToTarget() {
         // Otherwise, we align the bottom of the notification with the bottom of
         // |scroller_|;
         position = target_rect.bottom() - scroller_->height();
-
-        if (model_->notification_target_mode() ==
-            UnifiedSystemTrayModel::NotificationTargetMode::LAST_NOTIFICATION) {
-          position += kUnifiedNotificationCenterSpacing;
-        }
       }
     }
   }

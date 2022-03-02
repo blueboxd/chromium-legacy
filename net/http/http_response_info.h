@@ -5,6 +5,7 @@
 #ifndef NET_HTTP_HTTP_RESPONSE_INFO_H_
 #define NET_HTTP_HTTP_RESPONSE_INFO_H_
 
+#include <set>
 #include <string>
 
 #include "base/time/time.h"
@@ -150,11 +151,6 @@ class NET_EXPORT HttpResponseInfo {
   // How this response was handled by the HTTP cache.
   CacheEntryStatus cache_entry_status;
 
-  // True if the request was fetched from cache rather than the network
-  // because of a LOAD_FROM_CACHE_IF_OFFLINE flag when the system
-  // was unable to contact the server.
-  bool server_data_unavailable;
-
   // True if the request accessed the network in the process of retrieving
   // data.
   bool network_accessed;
@@ -242,10 +238,10 @@ class NET_EXPORT HttpResponseInfo {
   // The "Vary" header data for this response.
   HttpVaryData vary_data;
 
-  // Any DNS aliases for the remote endpoint. The alias chain order is
-  // preserved in reverse, from canonical name (i.e. address record name)
-  // through to query name.
-  std::vector<std::string> dns_aliases;
+  // Any DNS aliases for the remote endpoint. Includes all known aliases, e.g.
+  // from A, AAAA, or HTTPS, not just from the address used for the connection,
+  // in no particular order.
+  std::set<std::string> dns_aliases;
 
   static std::string ConnectionInfoToString(ConnectionInfo connection_info);
 };

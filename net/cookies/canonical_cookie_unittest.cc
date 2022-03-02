@@ -341,6 +341,25 @@ TEST(CanonicalCookieTest, Create) {
   EXPECT_EQ(cookie->SourcePort(), url::PORT_INVALID);
 }
 
+// Test that a cookie string with an empty domain attribute generates a
+// canonical host cookie.
+TEST(CanonicalCookieTest, CreateHostCookieFromString) {
+  // Enable the feature flag for this test.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kCookieDomainAttributeEmptyString);
+  // Create a new canonical host cookie via empty string domain in the
+  // cookie_line.
+  GURL url("http://www.example.com/test/foo.html");
+  base::Time creation_time = base::Time::Now();
+  absl::optional<base::Time> server_time = absl::nullopt;
+  std::unique_ptr<CanonicalCookie> cookie(CanonicalCookie::Create(
+      url, "A=2; domain=; Secure", creation_time, server_time,
+      absl::nullopt /*cookie_partition_key*/));
+  EXPECT_EQ("www.example.com", cookie->Domain());
+  EXPECT_TRUE(cookie->IsHostCookie());
+}
+
 TEST(CanonicalCookieTest, CreateNonStandardSameSite) {
   GURL url("http://www.example.com/test/foo.html");
   base::Time now = base::Time::Now();
@@ -411,6 +430,53 @@ TEST(CanonicalCookieTest, CreateWithInvalidDomain) {
   EXPECT_EQ(nullptr, cookie.get());
   EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
       {CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN}));
+}
+
+TEST(CanonicalCookieTest, CreateWithDomainAsIP) {
+  GURL url("http://1.1.1.1");
+  GURL url6("http://[2606:2800:220:1:248:1893:25c8:1946]");
+
+  base::Time now = base::Time::Now();
+  absl::optional<base::Time> server_time = absl::nullopt;
+  CookieInclusionStatus status;
+
+  const struct {
+    const GURL url;
+    const std::string cookie_line;
+    const bool expectedResult;
+  } kTests[] = {
+      {url, "d=1;Domain=1.1.1.1;", true},
+      {url, "dd=1;Domain=.1.1.1.1;", true},
+      {url, "ds=1;Domain=1.1.1;", false},
+      {url, "dsd=1;Domain=.1.1.1;", false},
+      {url, "dx=1;Domain=0x01.0x1.0x1.0x1;", false},
+      {url, "dxd=1;Domain=.0x01.0x1.0x1.0x1;", false},
+      {url, "do=1;Domain=0001.0001.0001.0001;", false},
+      {url, "d10=1;Domain=16843009;", false},
+      {url, "d16=value;Domain=0x1010101;", false},
+      {url, "d8=1;Domain=0100200401;", false},
+      {url, "dm=1;Domain=00001.0x01.1.001;", false},
+      {url6, "d1ipv6=1;Domain=[2606:2800:220:1:248:1893:25c8:1946];", true},
+      {url6, "dd1ipv6=1;Domain=.[2606:2800:220:1:248:1893:25c8:1946];", true},
+      {url6, "dc1ipv6=1;Domain=[2606:2800:220:1:248:1893:25C8:1946];", true},
+      {url6, "d2ipv6=1;Domain=2606:2800:220:1:248:1893:25c8:1946;", false},
+      {url6, "dd2ipv6=1;Domain=.2606:2800:220:1:248:1893:25c8:1946;", false},
+      {url6, "dc2ipv6=1;Domain=2606:2800:220:1:248:1893:25C8:1946;", false},
+  };
+
+  for (const auto& test : kTests) {
+    std::unique_ptr<CanonicalCookie> cookie = CanonicalCookie::Create(
+        test.url, test.cookie_line, now, server_time,
+        absl::nullopt /* cookie_partition_key */, &status);
+    if (test.expectedResult) {
+      ASSERT_TRUE(cookie.get());
+      EXPECT_EQ(test.url.host(), cookie->Domain());
+    } else {
+      EXPECT_EQ(nullptr, cookie.get());
+      EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
+          {CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN}));
+    }
+  }
 }
 
 TEST(CanonicalCookieTest, CreateSameParty) {
@@ -511,6 +577,29 @@ TEST(CanonicalCookieTest, CreateWithPartitioned) {
   EXPECT_FALSE(cookie.get());
   EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
       {CookieInclusionStatus::EXCLUDE_INVALID_PARTITIONED}));
+
+  // Invalid Partitioned attribute: SameParty cookie but with a nonce.
+  auto partition_key_with_nonce =
+      absl::make_optional(CookiePartitionKey::FromURLForTesting(
+          GURL("https://toplevelsite.com"), base::UnguessableToken::Create()));
+  status = CookieInclusionStatus();
+  cookie = CanonicalCookie::Create(
+      url, "A=2; Partitioned; Path=/; Secure; SameParty", creation_time,
+      server_time, partition_key_with_nonce, &status);
+  EXPECT_TRUE(cookie.get());
+  EXPECT_TRUE(status.IsInclude());
+  EXPECT_TRUE(cookie->IsPartitioned());
+  EXPECT_EQ(partition_key_with_nonce, cookie->PartitionKey());
+
+  // No Partitioned attribute but with a nonce.
+  status = CookieInclusionStatus();
+  cookie =
+      CanonicalCookie::Create(url, "__Host-A=2; Path=/; Secure", creation_time,
+                              server_time, partition_key_with_nonce, &status);
+  EXPECT_TRUE(cookie.get());
+  EXPECT_TRUE(status.IsInclude());
+  EXPECT_TRUE(cookie->IsPartitioned());
+  EXPECT_EQ(partition_key_with_nonce, cookie->PartitionKey());
 }
 
 TEST(CanonicalCookieTest, CreateWithMaxAge) {
@@ -2434,6 +2523,20 @@ TEST(CanonicalCookieTest, IsCanonical) {
                    COOKIE_PRIORITY_LOW, false)
                    ->IsCanonical());
 
+  // Non-canonical IPv4 address as domain.
+  EXPECT_FALSE(CanonicalCookie::CreateUnsafeCookieForTesting(
+                   "A", "B", "16843009", "/path", base::Time(), base::Time(),
+                   base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
+                   COOKIE_PRIORITY_LOW, false)
+                   ->IsCanonical());
+
+  // Non-canonical IPv4 address as domain.
+  EXPECT_FALSE(CanonicalCookie::CreateUnsafeCookieForTesting(
+                   "A", "B", "0x1010101", "/path", base::Time(), base::Time(),
+                   base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
+                   COOKIE_PRIORITY_LOW, false)
+                   ->IsCanonical());
+
   // Null IPv6 address as domain.
   EXPECT_TRUE(CanonicalCookie::CreateUnsafeCookieForTesting(
                   "A", "B", "[::]", "/path", base::Time(), base::Time(),
@@ -2490,6 +2593,13 @@ TEST(CanonicalCookieTest, IsCanonical) {
   EXPECT_FALSE(CanonicalCookie::CreateUnsafeCookieForTesting(
                    "A", "B", "[2001:db8:ac10:fe01:]", "/path", base::Time(),
                    base::Time(), base::Time(), false, false,
+                   CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW, false)
+                   ->IsCanonical());
+
+  // Missing square brackets in IPv6 address as domain.
+  EXPECT_FALSE(CanonicalCookie::CreateUnsafeCookieForTesting(
+                   "A", "B", "2606:2800:220:1:248:1893:25c8:1946", "/path",
+                   base::Time(), base::Time(), base::Time(), false, false,
                    CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW, false)
                    ->IsCanonical());
 
@@ -3360,7 +3470,7 @@ TEST(CanonicalCookieTest, CreateSanitizedCookie_Logic) {
       base::Time(), false /*secure*/, false /*httponly*/,
       CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
       false /*same_party*/, absl::nullopt /*partition_key*/, &status);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   EXPECT_TRUE(double_backslash_ipv6_cookie);
   EXPECT_TRUE(double_backslash_ipv6_cookie->IsCanonical());
   EXPECT_TRUE(status.IsInclude());

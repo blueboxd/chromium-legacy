@@ -16,6 +16,7 @@
 #include "skia/ext/skia_matrix_44.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/ca_layer_result.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/video_types.h"
@@ -95,8 +96,7 @@ typedef std::vector<CALayerOverlay> CALayerOverlayList;
 // CALayerOverlay into OverlayCandidate.
 class VIZ_SERVICE_EXPORT CALayerOverlayProcessor {
  public:
-  explicit CALayerOverlayProcessor(bool enable_ca_overlay);
-
+  CALayerOverlayProcessor();
   CALayerOverlayProcessor(const CALayerOverlayProcessor&) = delete;
   CALayerOverlayProcessor& operator=(const CALayerOverlayProcessor&) = delete;
 
@@ -127,7 +127,7 @@ class VIZ_SERVICE_EXPORT CALayerOverlayProcessor {
           render_pass_backdrop_filters,
       CALayerOverlayList* ca_layer_overlays);
 
-  int ca_layer_result() { return ca_layer_result_; }
+  gfx::CALayerResult ca_layer_result() { return ca_layer_result_; }
 
  private:
   // Returns whether future candidate quads should be considered
@@ -144,11 +144,23 @@ class VIZ_SERVICE_EXPORT CALayerOverlayProcessor {
       gfx::ProtectedVideoType protected_video_type,
       CALayerOverlayList* ca_layer_overlays) const;
 
-  void SaveCALayerResult(int result);
+  void SaveCALayerResult(gfx::CALayerResult result);
 
-  const bool enable_ca_overlay_;
+  // Set to false if the APIs required for overlays are not present, or the
+  // feature has been disabled.
+  const bool overlays_allowed_;
+
+  // Controls the feature of replacying all quads with overlays is enabled.
+  const bool enable_ca_renderer_;
+
+  // Controls the feature of putting HDR videos into underlays if the
+  // CARenderer fails (so that we can use the tone mapping provided by macOS).
+  const bool enable_hdr_underlays_;
+
   size_t max_quad_list_size_ = 0;
-  int ca_layer_result_ = 0;
+
+  // The error code in ProcessForCALayerOverlays()
+  gfx::CALayerResult ca_layer_result_ = gfx::kCALayerSuccess;
 };
 
 }  // namespace viz

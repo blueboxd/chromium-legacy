@@ -6,7 +6,8 @@ load("//lib/branches.star", "branches")
 load("//lib/builders.star", "cpu")
 load("//lib/consoles.star", "consoles")
 load("//lib/try.star", "try_")
-load("//project.star", "settings")
+load("//project.star", "ACTIVE_MILESTONES", "settings")
+load("./fallback-cq.star", "fallback_cq")
 
 try_.defaults.set(
     bucket = "try",
@@ -87,7 +88,34 @@ luci.cq_group(
     ],
 )
 
-branches.exec("./fallback-cq.star")
+# Declare a CQ group that watches all branch heads, excluding the active
+# branches. SUBMIT TO CQ fails if there is no CQ group watching a branch, so
+# this allows SUBMIT TO CQ to wok regardless of the branch. The CQ group will
+# only have specific builders added to ensure that changes to non-active
+# branches makes sense (e.g. fail CLs that require testing if there isn't a
+# proper CQ group set up for the ref).
+branches.cq_group(
+    name = fallback_cq.GROUP,
+    retry_config = cq.RETRY_ALL_FAILURES,
+    watch = cq.refset(
+        repo = "https://chromium.googlesource.com/chromium/src",
+        refs = ["refs/branch-heads/.*"],
+        refs_exclude = [
+            details.ref
+            for details in ACTIVE_MILESTONES.values()
+        ],
+    ),
+    acls = [
+        acl.entry(
+            acl.CQ_COMMITTER,
+            groups = "project-chromium-committers",
+        ),
+        acl.entry(
+            acl.CQ_DRY_RUNNER,
+            groups = "project-chromium-tryjob-access",
+        ),
+    ],
+)
 
 consoles.list_view(
     name = "try",
@@ -113,7 +141,6 @@ exec("./try/tryserver.chromium.packager.star")
 exec("./try/tryserver.chromium.rust.star")
 exec("./try/tryserver.chromium.updater.star")
 exec("./try/tryserver.chromium.win.star")
-exec("./try/tryserver.infra.star")
 
 # Used for listing chrome trybots in chromium's commit-queue.cfg without also
 # adding them to chromium's cr-buildbucket.cfg. Note that the recipe these
@@ -174,6 +201,10 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
+    builder = "fuchsia-fyi-astro",
+)
+
+chrome_internal_verifier(
     builder = "ipad-device",
 )
 
@@ -228,6 +259,11 @@ chrome_internal_verifier(
 chrome_internal_verifier(
     builder = "mac-chrome-stable",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+)
+
+chrome_internal_verifier(
+    builder = "mac-arm-pgo",
+    branch_selector = branches.STANDARD_MILESTONE,
 )
 
 chrome_internal_verifier(

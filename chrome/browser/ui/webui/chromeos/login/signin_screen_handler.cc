@@ -11,7 +11,10 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/login/auth/key.h"
+#include "ash/components/login/auth/user_context.h"
 #include "ash/components/proximity_auth/screenlock_bridge.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/mojom/tray_action.mojom.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
@@ -68,8 +71,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/login/auth/key.h"
-#include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -234,8 +235,14 @@ void SigninScreenHandler::DeclareLocalizedValues(
   // Used by SAML password dialog.
   builder->Add("nextButtonText", IDS_OFFLINE_LOGIN_NEXT_BUTTON_TEXT);
 
-  builder->Add("samlNotice", IDS_LOGIN_SAML_NOTICE);
+  builder->Add("samlNotice", features::IsRedirectToDefaultIdPEnabled()
+                                 ? IDS_LOGIN_SAML_NOTICE_SHORT
+                                 : IDS_LOGIN_SAML_NOTICE);
   builder->Add("samlNoticeWithVideo", IDS_LOGIN_SAML_NOTICE_WITH_VIDEO);
+  builder->Add("samlChangeProviderMessage",
+               IDS_LOGIN_SAML_CHANGE_PROVIDER_MESSAGE);
+  builder->Add("samlChangeProviderButton",
+               IDS_LOGIN_SAML_CHANGE_PROVIDER_BUTTON);
   builder->AddF("confirmPasswordTitle", IDS_LOGIN_CONFIRM_PASSWORD_TITLE,
                 ui::GetChromeOSDeviceName());
   builder->Add("manualPasswordTitle", IDS_LOGIN_MANUAL_PASSWORD_TITLE);

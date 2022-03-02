@@ -17,6 +17,7 @@
 #include "base/thread_annotations.h"
 #include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/first_party_set_metadata.h"
 #include "net/cookies/same_party_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -27,11 +28,16 @@ namespace network {
 // updated by the component updater via |ParseAndSet|.
 class FirstPartySets {
  public:
-  FirstPartySets();
+  explicit FirstPartySets(bool enabled);
   ~FirstPartySets();
 
   FirstPartySets(const FirstPartySets&) = delete;
   FirstPartySets& operator=(const FirstPartySets&) = delete;
+
+  bool is_enabled() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return enabled_;
+  }
 
   // Stores the First-Party Set that was provided via the `kUseFirstPartySet`
   // flag/switch.
@@ -45,47 +51,41 @@ class FirstPartySets {
   // record is a set declaration in the format specified here:
   // https://github.com/privacycg/first-party-sets.
   //
-  // In case of invalid input, the members-to-owners map is cleared, but keeps
-  // any manually-specified set (i.e. a set provided on the command line).
+  // Only the first call to ParseAndSet can have any effect; subsequent
+  // invocations are ignored.
+  //
+  // If `sets_file.IsValid()` is false, then the set of sets is considered
+  // empty.
+  //
+  // In case of invalid input, the set of sets provided by the file is
+  // considered empty. Note that the FirstPartySets instance may still have some
+  // sets, from the command line or enterprise policies.
   //
   // Has no effect if `kFirstPartySets` is disabled.
   void ParseAndSet(base::File sets_file);
 
-  // Computes the SameParty context, indicating whether `site` is same-party
-  // with `top_frame_site` (if not nullptr) and `party_context`. The context
-  // includes the real context type, plus some additional "hypothetical" context
-  // types for metrics.
-  net::SamePartyContext ComputeContext(
+  // Computes the First-Party Set metadata related to the given context.
+  //
+  // `callback` may be invoked either synchronously or asynchronously.
+  void ComputeMetadata(
       const net::SchemefulSite& site,
       const net::SchemefulSite* top_frame_site,
-      const std::set<net::SchemefulSite>& party_context) const;
-
-  // Computes the "type" of the context. I.e., categorizes contexts based on
-  // whether the top frame site and resource URL are same-party; whether the top
-  // frame site was ignored; whether the `party_context` is same-party with
-  // everything else; etc.
-  //
-  // Since this metric may be used to inform decisions based on actual usage
-  // patterns of sites on the web, this infers singleton sets. That is, it
-  // treats sites that do not belong to a First-Party Set as belonging to an
-  // implictly-declared singleton First-Party Set.
-  net::FirstPartySetsContextType ComputeContextType(
-      const net::SchemefulSite& site,
-      const absl::optional<net::SchemefulSite>& top_frame_site,
-      const std::set<net::SchemefulSite>& party_context) const;
-
-  // Returns whether the `site` is a member of a non-trivial (i.e.
-  // non-singleton) First-Party Set.
-  bool IsInNontrivialFirstPartySet(const net::SchemefulSite& site) const;
+      const std::set<net::SchemefulSite>& party_context,
+      base::OnceCallback<void(net::FirstPartySetMetadata)> callback) const;
 
   int64_t size() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return sets_.size();
   }
 
-  // Returns a mapping from owner to set members. For convenience of iteration,
+  // Computes a mapping from owner to set members. For convenience of iteration,
   // the members of the set includes the owner.
-  base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>> Sets() const;
+  //
+  // `callback` may be called synchronously or asynchronously.
+  void Sets(
+      base::OnceCallback<void(
+          base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>)>
+          callback) const;
 
   // Sets the `raw_persisted_sets_`, which is a JSON-encoded
   // string representation of a map of site -> site.
@@ -94,6 +94,8 @@ class FirstPartySets {
   // JSON-encoded string representation of a map of site -> site.
   void SetOnSiteDataCleared(
       base::OnceCallback<void(const std::string&)> callback);
+  // Sets the enabled_ attribute for testing.
+  void SetEnabledForTesting(bool enabled);
 
   // Returns nullopt if First-Party Sets are disabled or if the input is not in
   // a nontrivial set.
@@ -114,6 +116,20 @@ class FirstPartySets {
       const net::SchemefulSite* top_frame_site,
       const std::set<net::SchemefulSite>& party_context,
       bool infer_singleton_sets) const;
+
+  // Computes the "type" of the context. I.e., categorizes contexts based on
+  // whether the top frame site and resource URL are same-party; whether the top
+  // frame site was ignored; whether the `party_context` is same-party with
+  // everything else; etc.
+  //
+  // Since this metric may be used to inform decisions based on actual usage
+  // patterns of sites on the web, this infers singleton sets. That is, it
+  // treats sites that do not belong to a First-Party Set as belonging to an
+  // implictly-declared singleton First-Party Set.
+  net::FirstPartySetsContextType ComputeContextType(
+      const net::SchemefulSite& site,
+      const net::SchemefulSite* top_frame_site,
+      const std::set<net::SchemefulSite>& party_context) const;
 
   // Parses the contents of `raw_sets` as a collection of First-Party Set
   // declarations, and assigns to `sets_`.
@@ -158,9 +174,17 @@ class FirstPartySets {
 
   std::string raw_persisted_sets_ GUARDED_BY_CONTEXT(sequence_checker_);
 
+  enum Progress {
+    kNotStarted,
+    kStarted,
+    kFinished,
+  };
+
   bool persisted_sets_ready_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
-  bool component_sets_ready_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
+  Progress component_sets_parse_progress_
+      GUARDED_BY_CONTEXT(sequence_checker_) = kNotStarted;
   bool manual_sets_ready_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
+  bool enabled_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
   // The callback runs after the site state clearing is completed.
   base::OnceCallback<void(const std::string&)> on_site_data_cleared_
       GUARDED_BY_CONTEXT(sequence_checker_);
@@ -181,6 +205,7 @@ class FirstPartySets {
                            ComputeSetsDiff_OwnerMemberRotate);
   FRIEND_TEST_ALL_PREFIXES(FirstPartySetsEnabledTest,
                            ComputeSetsDiff_EmptySets);
+  FRIEND_TEST_ALL_PREFIXES(PopulatedFirstPartySetsTest, ComputeContextType);
 };
 
 }  // namespace network

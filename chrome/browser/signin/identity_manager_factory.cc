@@ -45,7 +45,7 @@
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/bind.h"
 #include "chrome/browser/signin/signin_util_win.h"
 #endif
@@ -135,8 +135,7 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   params.account_manager_facade =
       GetAccountManagerFacade(profile->GetPath().value());
-  params.is_regular_profile =
-      chromeos::ProfileHelper::IsRegularProfile(profile);
+  params.is_regular_profile = ash::ProfileHelper::IsRegularProfile(profile);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -155,7 +154,7 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
   params.is_regular_profile = is_regular_profile;
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   params.reauth_callback =
       base::BindRepeating(&signin_util::ReauthWithCredentialProviderIfPossible,
                           base::Unretained(profile));

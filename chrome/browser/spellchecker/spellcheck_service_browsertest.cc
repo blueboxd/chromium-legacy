@@ -35,7 +35,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/browser_sync/browser_sync_switches.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
@@ -44,6 +43,7 @@
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -57,9 +57,9 @@
 #include "ash/constants/ash_features.h"
 #endif
 
-#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "components/spellcheck/common/spellcheck_features.h"
-#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 using content::BrowserContext;
 using content::RenderProcessHost;
@@ -73,7 +73,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   SpellcheckServiceBrowserTest& operator=(const SpellcheckServiceBrowserTest&) =
       delete;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void SetUp() override {
     // Tests were designed assuming Hunspell dictionary used and many fail when
     // Windows spellcheck is enabled by default. The feature flag needs to be
@@ -84,7 +84,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
     feature_list_.InitAndDisableFeature(spellcheck::kWinUseBrowserSpellChecker);
     InProcessBrowserTest::SetUp();
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void SetUp() override {
     // On CrOS, Language Settings Update 2 will be the norm going forward.
@@ -107,7 +107,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
     // GetEnableSpellcheckState() after InitSpellcheck(), which will wait
     // forever if the service already existed). So disable sync of the custom
     // dictionary for these tests.
-    command_line->AppendSwitchASCII(switches::kDisableSyncTypes, "Dictionary");
+    command_line->AppendSwitch(switches::kDisableSync);
     SpellcheckService::OverrideBinderForTesting(base::BindRepeating(
         &SpellcheckServiceBrowserTest::Bind, base::Unretained(this)));
   }
@@ -145,12 +145,12 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
     SpellcheckService* spellcheck =
         SpellcheckServiceFactory::GetForContext(renderer_->GetBrowserContext());
 
-#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
     if (spellcheck::UseBrowserSpellChecker()) {
       // If the Windows native spell checker is in use, initialization is async.
       RunTestRunLoop();
     }
-#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
     ASSERT_NE(nullptr, spellcheck);
   }
@@ -184,7 +184,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   }
 
   std::string GetMultilingualDictionaries() {
-    const base::ListValue* list_value =
+    const base::Value* list_value =
         prefs_->GetList(spellcheck::prefs::kSpellCheckDictionaries);
     std::vector<base::StringPiece> dictionaries;
     for (const auto& item_value : list_value->GetList()) {
@@ -262,9 +262,9 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   // Quits the RunLoop on Mojo request flow completion.
   base::OnceClosure quit_;
 
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
   base::test::ScopedFeatureList feature_list_;
-#endif  // defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 
  private:
   // Mocked RenderProcessHost.
@@ -356,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
       GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckUseSpellingService));
 }
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                        DisableSpellcheckIfDictionaryIsEmpty) {
   InitSpellcheck(true, "", "en-US");
@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
 
   EXPECT_FALSE(GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable));
 }
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Tests related to CrOS Language Settings Update 2.
@@ -550,14 +550,14 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceHostBrowserTest, CallSpellingService) {
 // Tests that we can delete a corrupted BDICT file used by hunspell. We do not
 // run this test on Mac because Mac does not use hunspell by default.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
-#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (spellcheck::UseBrowserSpellChecker()) {
     // If doing native spell checking on Windows, Hunspell dictionaries are not
     // used for en-US, so the corrupt dictionary event will never be raised.
     // Skip this test.
     return;
   }
-#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
   // Corrupted BDICT data: please do not use this BDICT data for other tests.
   const uint8_t kCorruptedBDICT[] = {
@@ -728,7 +728,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                       .GetString());
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 class SpellcheckServiceWindowsHybridBrowserTest
     : public SpellcheckServiceBrowserTest {
  public:
@@ -934,4 +934,4 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTestDelayInit,
   EXPECT_EQ(windows_spellcheck_dictionary_map_first_call,
             service->windows_spellcheck_dictionary_map_);
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)

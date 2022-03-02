@@ -19,6 +19,7 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
+#include "base/no_destructor.h"
 #include "base/process/kill.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
@@ -97,6 +98,7 @@
 #include "net/base/io_buffer.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_result.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/same_party_context.h"
 #include "net/filter/gzip_header.h"
@@ -134,7 +136,7 @@
 #include "ui/latency/latency_info.h"
 #include "ui/resources/grit/webui_generated_resources.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <combaseapi.h>
 #include <uiautomation.h>
 #include <wrl/client.h>
@@ -155,22 +157,14 @@
 namespace content {
 namespace {
 
-// Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
-bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
-                         const std::string& script,
-                         bool user_gesture,
-                         int32_t world_id,
-                         std::unique_ptr<base::Value>* result)
-    WARN_UNUSED_RESULT;
-
 // Executes the passed |script| in the frame specified by |render_frame_host|.
 // If |result| is not NULL, stores the value that the evaluation of the script
 // in |result|.  Returns true on success.
-bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
-                         const std::string& script,
-                         bool user_gesture,
-                         int32_t world_id,
-                         std::unique_ptr<base::Value>* result) {
+[[nodiscard]] bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
+                                       const std::string& script,
+                                       bool user_gesture,
+                                       int32_t world_id,
+                                       std::unique_ptr<base::Value>* result) {
   // TODO(lukasza): Only get messages from the specific |render_frame_host|.
   DOMMessageQueue dom_message_queue(render_frame_host);
 
@@ -929,7 +923,7 @@ void WaitForResizeComplete(WebContents* web_contents) {
     resize_observer.Wait();
   }
 }
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
 bool IsResizeComplete(RenderWidgetHostImpl* widget_host) {
   return !widget_host->visual_properties_ack_pending_for_testing();
 }
@@ -1001,13 +995,13 @@ void SimulateMouseClickOrTapElementWithId(content::WebContents* web_contents,
   gfx::Point point = gfx::ToFlooredPoint(
       GetCenterCoordinatesOfElementWithId(web_contents, id));
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   SimulateTapDownAt(web_contents, point);
   SimulateTapAt(web_contents, point);
 #else
   SimulateMouseClickAt(web_contents, 0, blink::WebMouseEvent::Button::kLeft,
                        point);
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 void SimulateMouseEvent(WebContents* web_contents,
@@ -1053,7 +1047,7 @@ void SimulateMouseWheelEvent(WebContents* web_contents,
   widget_host->ForwardWheelEvent(wheel_event);
 }
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 void SimulateMouseWheelCtrlZoomEvent(WebContents* web_contents,
                                      const gfx::Point& point,
                                      bool zoom_in,
@@ -1095,7 +1089,7 @@ void SimulateTouchscreenPinch(WebContents* web_contents,
           std::move(on_complete)));
 }
 
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
 
 void SimulateGesturePinchSequence(WebContents* web_contents,
                                   const gfx::Point& point,
@@ -1542,13 +1536,13 @@ double EvalJsResult::ExtractDouble() const {
   return value.GetDouble();
 }
 
-base::ListValue EvalJsResult::ExtractList() const {
+base::Value EvalJsResult::ExtractList() const {
   CHECK(error.empty())
       << "Can't ExtractList() because the script encountered a problem: "
       << error;
   CHECK(value.is_list()) << "Can't ExtractList() because script result: "
                          << value << "is not a list.";
-  return base::ListValue(value.GetList());
+  return value.Clone();
 }
 
 void PrintTo(const EvalJsResult& bar, ::std::ostream* os) {
@@ -1983,7 +1977,8 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents) {
 
 std::string GetCookies(BrowserContext* browser_context,
                        const GURL& url,
-                       net::CookieOptions::SameSiteCookieContext context) {
+                       net::CookieOptions::SameSiteCookieContext context,
+                       net::CookiePartitionKeyCollection key_collection) {
   std::string cookies;
   base::RunLoop run_loop;
   mojo::Remote<network::mojom::CookieManager> cookie_manager;
@@ -1993,7 +1988,7 @@ std::string GetCookies(BrowserContext* browser_context,
   net::CookieOptions options;
   options.set_same_site_cookie_context(context);
   cookie_manager->GetCookieList(
-      url, options, net::CookiePartitionKeyCollection(),
+      url, options, key_collection,
       base::BindOnce(
           [](std::string* cookies_out, base::RunLoop* run_loop,
              const net::CookieAccessResultList& cookies,
@@ -2008,7 +2003,8 @@ std::string GetCookies(BrowserContext* browser_context,
 
 std::vector<net::CanonicalCookie> GetCanonicalCookies(
     BrowserContext* browser_context,
-    const GURL& url) {
+    const GURL& url,
+    net::CookiePartitionKeyCollection key_collection) {
   std::vector<net::CanonicalCookie> cookies;
   base::RunLoop run_loop;
   mojo::Remote<network::mojom::CookieManager> cookie_manager;
@@ -2020,7 +2016,7 @@ std::vector<net::CanonicalCookie> GetCanonicalCookies(
   options.set_same_site_cookie_context(
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
   cookie_manager->GetCookieList(
-      url, options, net::CookiePartitionKeyCollection(),
+      url, options, key_collection,
       base::BindOnce(
           [](base::RunLoop* run_loop,
              std::vector<net::CanonicalCookie>* cookies_out,
@@ -2274,7 +2270,7 @@ ui::AXPlatformNodeDelegate* FindAccessibilityNodeInSubtree(
   return nullptr;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 template <typename T>
 Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
     ui::AXPlatformNodeDelegate* node) {
@@ -2509,7 +2505,7 @@ absl::optional<int> RenderProcessHostKillWaiter::Wait() {
 
   // Wait for the renderer kill.
   exit_watcher_.Wait();
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Getting termination status on android is not reliable. To avoid flakiness,
   // we can skip this check and just check bad message. On other platforms we
   // want to verify that the renderer got killed, rather than exiting normally.

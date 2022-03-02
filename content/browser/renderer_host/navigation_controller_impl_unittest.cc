@@ -59,7 +59,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
-#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
@@ -258,13 +257,6 @@ class NavigationControllerTest : public RenderViewHostImplTestHarness,
         contents()->GetPrimaryFrameTree().root()->navigation_request();
     CHECK(navigation_request);
     return navigation_request->common_params().url;
-  }
-
-  blink::PreviewsState GetLastNavigationPreviewsState() {
-    NavigationRequest* navigation_request =
-        contents()->GetPrimaryFrameTree().root()->navigation_request();
-    CHECK(navigation_request);
-    return navigation_request->common_params().previews_state;
   }
 
   TestRenderFrameHost* GetNavigatingRenderFrameHost() {
@@ -613,7 +605,7 @@ void CheckNavigationEntryMatchLoadParams(
   if (!load_params.virtual_url_for_data_url.is_empty()) {
     EXPECT_EQ(load_params.virtual_url_for_data_url, entry->GetVirtualURL());
   }
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_EQ(load_params.data_url_as_string, entry->GetDataURLAsString());
 #endif
   if (NavigationController::UA_OVERRIDE_INHERIT !=
@@ -703,7 +695,7 @@ TEST_F(NavigationControllerTest, LoadURLWithExtraParams_Data) {
   CheckNavigationEntryMatchLoadParams(load_url_params, entry);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_F(NavigationControllerTest, LoadURLWithExtraParams_Data_Android) {
   NavigationControllerImpl& controller = controller_impl();
   GURL url("data:,");
@@ -1013,7 +1005,7 @@ TEST_F(NavigationControllerTest, LoadURL_BackPreemptsPending) {
   // The test assumes the previous page gets deleted after navigation. Disable
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(RenderViewHostTestHarness::web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // First make some history.
   const GURL kExistingURL1("http://foo/eh");
@@ -1469,7 +1461,7 @@ TEST_F(NavigationControllerTest, RedirectsAreNotResetByCommit) {
 
 // Tests that webkit preferences are updated when user agent override changes.
 // Fails on linux-bfcache-rel: crbug.com/1244109
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #define MAYBE_GoBackWithUserAgentOverrideChange DISABLED_GoBackWithUserAgentOverrideChange
 #else
 #define MAYBE_GoBackWithUserAgentOverrideChange GoBackWithUserAgentOverrideChange
@@ -1581,7 +1573,7 @@ TEST_F(NavigationControllerTest, Back_GeneratesNewPage) {
   // The test assumes the previous page gets deleted after navigation. Disable
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(RenderViewHostTestHarness::web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
@@ -4070,7 +4062,7 @@ TEST_F(NavigationControllerTest, StaleNavigationsResurrected) {
   // navigation to page C not prune the entry to B. Disable back/forward cache
   // to ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(RenderViewHostTestHarness::web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // Start on page A.
   const GURL url_a("http://foo.com/a");

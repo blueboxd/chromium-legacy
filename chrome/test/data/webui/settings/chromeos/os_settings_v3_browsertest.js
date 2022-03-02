@@ -56,6 +56,50 @@ TEST_F(
     'OSSettingsDevicePageV3Test', 'All',
     () => mocha.grep('/^((?!arrow_key_arrangement_disabled).)*$/').run());
 
+// TODO(crbug.com/1275568): move this to the generic test lists below after the
+// feature is launched.
+var OSSettingsPeoplePageAccountManagerV3Test =
+    class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/people_page_account_manager_test.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      disabled: [
+        'chromeos::features::kArcAccountRestrictions',
+        'chromeos::features::kLacrosSupport'
+      ]
+    };
+  }
+};
+
+TEST_F('OSSettingsPeoplePageAccountManagerV3Test', 'All', () => mocha.run());
+
+var OSSettingsPeoplePageAccountManagerWithArcAccountRestrictionsEnabledV3Test =
+    class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/people_page_account_manager_test.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: [
+        'chromeos::features::kArcAccountRestrictions',
+        'chromeos::features::kLacrosSupport'
+      ]
+    };
+  }
+};
+
+TEST_F(
+    'OSSettingsPeoplePageAccountManagerWithArcAccountRestrictionsEnabledV3Test',
+    'All', () => mocha.run());
+
 var OSSettingsDevicePageKeyboardArrangementDisabledV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
@@ -102,10 +146,8 @@ var OSSettingsPeoplePageOsSyncV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
   get featureList() {
     return {
-      enabled: super.featureList.enabled.concat([
-        'chromeos::features::kSyncConsentOptional',
-        'chromeos::features::kSyncSettingsCategorization'
-      ])
+      enabled: super.featureList.enabled.concat(
+          ['chromeos::features::kSyncSettingsCategorization'])
     };
   }
 };
@@ -113,29 +155,6 @@ var OSSettingsPeoplePageOsSyncV3Test = class extends OSSettingsV3BrowserTest {
 TEST_F('OSSettingsPeoplePageOsSyncV3Test', 'AllJsTests', () => {
   mocha.run();
 });
-
-var OSSettingsPeoplePageOsSyncOptionalDisabledV3Test =
-    class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/' +
-      'os_sync_controls_optional_disabled_test.m.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: super.featureList.enabled.concat(
-          ['chromeos::features::kSyncSettingsCategorization']),
-      disabled: ['chromeos::features::kSyncConsentOptional']
-    };
-  }
-};
-
-TEST_F('OSSettingsPeoplePageOsSyncOptionalDisabledV3Test', 'AllJsTests', () => {
-  mocha.run();
-});
-
 
 // TODO(crbug.com/1234871) Move this test back into the list of tests below once
 // Bluetooth revamp is launched.
@@ -155,6 +174,28 @@ var OSSettingsOsSettingsPageV3Test = class extends OSSettingsV3BrowserTest {
 };
 
 TEST_F('OSSettingsOsSettingsPageV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// TODO(crbug.com/1234871) Move this test back into the list of tests below once
+// Bluetooth revamp is launched.
+var OSSettingsOsBluetoothDevicesSubpageV3Test =
+    class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_devices_subpage_tests.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled:
+          super.featureList.enabled.concat(['ash::features::kBluetoothRevamp'])
+    };
+  }
+};
+
+TEST_F('OSSettingsOsBluetoothDevicesSubpageV3Test', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -202,6 +243,22 @@ TEST_F('OSSettingsOsBluetoothDeviceDetailSubpageV3Test', 'AllJsTests', () => {
   mocha.run();
 });
 
+var OSSettingsSearchEngineV3Test = class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/search_engine_test.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {disabled: ['chromeos::features::kSyncSettingsCategorization']};
+  }
+};
+
+TEST_F('OSSettingsSearchEngineV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
 [['AccessibilityPage', 'os_a11y_page_tests.m.js'],
  ['AboutPage', 'os_about_page_tests.m.js'],
  ['AccountsPage', 'add_users_tests.m.js'],
@@ -224,8 +281,7 @@ TEST_F('OSSettingsOsBluetoothDeviceDetailSubpageV3Test', 'AllJsTests', () => {
  ['AppManagementPwaDetailView', 'pwa_detail_view_test.m.js'],
  ['AppManagementReducers', 'reducers_test.m.js'],
  ['AppManagementResizeLockItem', 'resize_lock_item_test.m.js'],
- // TODO(crbug/1253891): Re-enable once flakiness is fixed.
- // ['AppManagementSupportedLinksItem', 'supported_links_item_test.m.js'],
+ ['AppManagementSupportedLinksItem', 'supported_links_item_test.m.js'],
  ['AppManagementToggleRow', 'toggle_row_test.m.js'],
  ['AppManagementUninstallButton', 'uninstall_button_test.m.js'],
  ['BluetoothPage', 'bluetooth_page_tests.m.js'],
@@ -265,6 +321,7 @@ TEST_F('OSSettingsOsBluetoothDeviceDetailSubpageV3Test', 'AllJsTests', () => {
  ['LocalizedLink', 'localized_link_test.m.js'],
  ['LockScreenPage', 'lock_screen_tests.m.js'],
  ['ManageAccessibilityPage', 'manage_accessibility_page_tests.m.js'],
+ ['MultideviceCameraRollItem', 'multidevice_camera_roll_item_tests.m.js'],
  // TODO(crbug.com/1227116): Re-enable once flakiness is fixed.
  //  ['MultideviceFeatureItem', 'multidevice_feature_item_tests.m.js'],
  ['MultideviceFeatureToggle', 'multidevice_feature_toggle_tests.m.js'],
@@ -298,7 +355,6 @@ TEST_F('OSSettingsOsBluetoothDeviceDetailSubpageV3Test', 'AllJsTests', () => {
  ['NetworkSummary', 'network_summary_test.m.js'],
  ['NetworkSummaryItem', 'network_summary_item_test.m.js'],
  ['OncMojoTest', 'onc_mojo_test.m.js'],
- ['OsBluetoothDevicesSubpage', 'os_bluetooth_devices_subpage_tests.m.js'],
  ['OsBluetoothPage', 'os_bluetooth_page_tests.m.js'],
  ['OsBluetoothPairingDialog', 'os_bluetooth_pairing_dialog_tests.m.js'],
  ['OsBluetoothSummary', 'os_bluetooth_summary_tests.m.js'],
@@ -319,7 +375,6 @@ TEST_F('OSSettingsOsBluetoothDeviceDetailSubpageV3Test', 'AllJsTests', () => {
  ['NearbyShareReceiveDialog', 'nearby_share_receive_dialog_tests.m.js'],
  ['ParentalControlsPage', 'parental_controls_page_test.m.js'],
  ['PeoplePage', 'os_people_page_test.m.js'],
- ['PeoplePageAccountManager', 'people_page_account_manager_test.m.js'],
  ['PeoplePageChangePicture', 'people_page_change_picture_test.m.js'],
  [
    'PeoplePageQuickUnlock',
@@ -330,7 +385,6 @@ TEST_F('OSSettingsOsBluetoothDeviceDetailSubpageV3Test', 'AllJsTests', () => {
  ['PrivacyPage', 'os_privacy_page_test.m.js'],
  ['ResetPage', 'os_reset_page_test.m.js'],
  ['SettingsSchedulerSlider', 'settings_scheduler_slider_test.m.js'],
- ['SearchEngine', 'search_engine_test.m.js'],
  ['SearchSubpage', 'search_subpage_test.m.js'],
  ['SmartInputsPage', 'smart_inputs_page_test.m.js'],
  ['SmbPage', 'smb_shares_page_tests.m.js'],

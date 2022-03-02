@@ -31,7 +31,7 @@
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/base/buildflags.h"
 
-#if defined(OS_MAC) && __OBJC__
+#if BUILDFLAG(IS_MAC) && __OBJC__
 @class BrowserAccessibilityCocoa;
 #endif
 
@@ -48,10 +48,6 @@ class BrowserAccessibilityManager;
 // Web.
 class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
  public:
-  using AXPosition = ui::AXNodePosition::AXPositionInstance;
-  using SerializedPosition = ui::AXNodePosition::SerializedPosition;
-  using AXRange = ui::AXRange<AXPosition::element_type>;
-
   // Creates a platform specific BrowserAccessibility. Ownership passes to the
   // caller.
   static std::unique_ptr<BrowserAccessibility> Create(
@@ -119,16 +115,22 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // Iterator over platform children.
   class CONTENT_EXPORT PlatformChildIterator : public ChildIterator {
    public:
+    using iterator_category = std::bidirectional_iterator_tag;
+    using difference_type = int;
+    using value_type = BrowserAccessibility;
+    using pointer = BrowserAccessibility*;
+    using reference = BrowserAccessibility&;
+
     PlatformChildIterator(const BrowserAccessibility* parent,
                           BrowserAccessibility* child);
     PlatformChildIterator(const PlatformChildIterator& it);
     ~PlatformChildIterator() override;
     bool operator==(const ChildIterator& rhs) const override;
     bool operator!=(const ChildIterator& rhs) const override;
-    void operator++() override;
-    void operator++(int) override;
-    void operator--() override;
-    void operator--(int) override;
+    PlatformChildIterator& operator++() override;
+    PlatformChildIterator& operator++(int) override;
+    PlatformChildIterator& operator--() override;
+    PlatformChildIterator& operator--(int) override;
     gfx::NativeViewAccessible GetNativeViewAccessible() const override;
     BrowserAccessibility* get() const;
     int GetIndexInParent() const override;
@@ -155,6 +157,13 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
     PlatformChildIterator begin() { return parent_->PlatformChildrenBegin(); }
     PlatformChildIterator end() { return parent_->PlatformChildrenEnd(); }
+
+    std::reverse_iterator<PlatformChildIterator> rbegin() {
+      return std::reverse_iterator(parent_->PlatformChildrenEnd());
+    }
+    std::reverse_iterator<PlatformChildIterator> rend() {
+      return std::reverse_iterator(parent_->PlatformChildrenBegin());
+    }
 
    private:
     const BrowserAccessibility* const parent_;
@@ -421,6 +430,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool GetStringListAttribute(ax::mojom::StringListAttribute attribute,
                               std::vector<std::string>* value) const override;
   typedef base::StringPairs HtmlAttributes;
+  bool HasHtmlAttribute(const char* attribute) const override;
   const HtmlAttributes& GetHtmlAttributes() const override;
   bool GetHtmlAttribute(const char* attribute,
                         std::string* value) const override;

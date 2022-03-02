@@ -19,6 +19,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -166,6 +167,19 @@ bool GetInitialTimezoneFromRegionalData(const base::Value& region_dict,
 bool GetInitialLocaleFromRegionalData(const base::Value& region_dict,
                                       std::string* result) {
   return JoinListValuesToString(region_dict, kLocalesPath, result);
+}
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class VpdCacheReadResult {
+  kSuccess = 0,
+  KMissing = 1,
+  kParseFailed = 2,
+  kMaxValue = kParseFailed,
+};
+
+void ReportVpdCacheReadResult(VpdCacheReadResult result) {
+  base::UmaHistogramEnumeration("Enterprise.VPDCacheReadResult", result);
 }
 
 }  // namespace
@@ -372,7 +386,7 @@ bool StatisticsProviderImpl::GetMachineStatistic(const std::string& name,
 
   // Test region should override VPD values.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kCrosRegion) &&
+          ash::switches::kCrosRegion) &&
       GetRegionalInformation(name, result)) {
     return true;
   }
@@ -509,7 +523,7 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
   }
 
   base::FilePath machine_info_path;
-  base::PathService::Get(chromeos::FILE_MACHINE_INFO, &machine_info_path);
+  base::PathService::Get(FILE_MACHINE_INFO, &machine_info_path);
   if (!base::SysInfo::IsRunningOnChromeOS() &&
       !base::PathExists(machine_info_path)) {
     // Use time value to create an unique stub serial because clashes of the
@@ -528,13 +542,18 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
   }
 
   base::FilePath vpd_path;
-  base::PathService::Get(chromeos::FILE_VPD, &vpd_path);
-  if (!base::SysInfo::IsRunningOnChromeOS() && !base::PathExists(vpd_path)) {
-    std::string stub_contents = "\"ActivateDate\"=\"2000-01\"\n";
-    int bytes_written =
-        base::WriteFile(vpd_path, stub_contents.c_str(), stub_contents.size());
-    if (bytes_written < static_cast<int>(stub_contents.size())) {
-      PLOG(ERROR) << "Error writing VPD stub " << vpd_path.value();
+  base::PathService::Get(FILE_VPD, &vpd_path);
+  if (!base::PathExists(vpd_path)) {
+    if (base::SysInfo::IsRunningOnChromeOS()) {
+      ReportVpdCacheReadResult(VpdCacheReadResult::KMissing);
+      LOG(ERROR) << "Missing FILE_VPD: " << vpd_path;
+    } else {
+      std::string stub_contents = "\"ActivateDate\"=\"2000-01\"\n";
+      int bytes_written = base::WriteFile(vpd_path, stub_contents.c_str(),
+                                          stub_contents.size());
+      if (bytes_written < static_cast<int>(stub_contents.size())) {
+        PLOG(ERROR) << "Error writing VPD stub " << vpd_path.value();
+      }
     }
   }
 
@@ -544,7 +563,16 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
                                      NameValuePairsFormat::kMachineInfo);
   parser.ParseNameValuePairsFromFile(base::FilePath(kEchoCouponFile),
                                      NameValuePairsFormat::kVpdDump);
-  parser.ParseNameValuePairsFromFile(vpd_path, NameValuePairsFormat::kVpdDump);
+  bool vpd_parse_result = parser.ParseNameValuePairsFromFile(
+      vpd_path, NameValuePairsFormat::kVpdDump);
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    if (vpd_parse_result) {
+      ReportVpdCacheReadResult(VpdCacheReadResult::kSuccess);
+    } else {
+      ReportVpdCacheReadResult(VpdCacheReadResult::kParseFailed);
+      LOG(ERROR) << "Failed to parse FILE_VPD: " << vpd_path;
+    }
+  }
 
   // Ensure that the hardware class key is present with the expected
   // key name, and if it couldn't be retrieved, that the value is "unknown".
@@ -591,9 +619,8 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     region_ = std::string();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(chromeos::switches::kCrosRegion)) {
-    region_ =
-        command_line->GetSwitchValueASCII(chromeos::switches::kCrosRegion);
+  if (command_line->HasSwitch(ash::switches::kCrosRegion)) {
+    region_ = command_line->GetSwitchValueASCII(ash::switches::kCrosRegion);
     machine_info_[kRegionKey] = region_;
     VLOG(1) << "CrOS region set to '" << region_ << "'";
   }

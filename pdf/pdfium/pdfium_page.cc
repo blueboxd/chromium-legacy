@@ -32,7 +32,6 @@
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
 #include "third_party/pdfium/public/fpdf_catalog.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
@@ -42,7 +41,7 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/range/range.h"
 
-using printing::ConvertUnitDouble;
+using printing::ConvertUnitFloat;
 using printing::kPixelsPerInch;
 using printing::kPointsPerInch;
 
@@ -87,10 +86,10 @@ gfx::RectF FloatPageRectToPixelRect(FPDF_PAGE page, const gfx::RectF& input) {
     height = 1;
 
   gfx::RectF output_rect(
-      ConvertUnitDouble(min_x, kPointsPerInch, kPixelsPerInch),
-      ConvertUnitDouble(min_y, kPointsPerInch, kPixelsPerInch),
-      ConvertUnitDouble(width, kPointsPerInch, kPixelsPerInch),
-      ConvertUnitDouble(height, kPointsPerInch, kPixelsPerInch));
+      ConvertUnitFloat(min_x, kPointsPerInch, kPixelsPerInch),
+      ConvertUnitFloat(min_y, kPointsPerInch, kPixelsPerInch),
+      ConvertUnitFloat(width, kPointsPerInch, kPixelsPerInch),
+      ConvertUnitFloat(height, kPointsPerInch, kPixelsPerInch));
   return output_rect;
 }
 
@@ -1555,22 +1554,22 @@ Thumbnail PDFiumPage::GenerateThumbnail(float device_pixel_ratio) {
   gfx::Size page_size(base::saturated_cast<int>(FPDF_GetPageWidthF(page)),
                       base::saturated_cast<int>(FPDF_GetPageHeightF(page)));
   Thumbnail thumbnail(page_size, device_pixel_ratio);
+  const gfx::Size& image_size = thumbnail.image_size();
 
-  SkBitmap& sk_bitmap = thumbnail.bitmap();
   ScopedFPDFBitmap fpdf_bitmap(FPDFBitmap_CreateEx(
-      sk_bitmap.width(), sk_bitmap.height(), FPDFBitmap_BGRA,
-      sk_bitmap.getPixels(), sk_bitmap.rowBytes()));
+      image_size.width(), image_size.height(), FPDFBitmap_BGRA,
+      thumbnail.GetImageData().data(), thumbnail.stride()));
 
   // Clear the bitmap.
   FPDFBitmap_FillRect(fpdf_bitmap.get(), /*left=*/0, /*top=*/0,
-                      sk_bitmap.width(), sk_bitmap.height(),
+                      image_size.width(), image_size.height(),
                       /*color=*/0xFFFFFFFF);
 
   // The combination of the `FPDF_REVERSE_BYTE_ORDER` rendering flag and the
   // `FPDFBitmap_BGRA` format when initializing `fpdf_bitmap` results in an RGBA
   // rendering, which is the format required by HTML <canvas>.
   FPDF_RenderPageBitmap(fpdf_bitmap.get(), GetPage(), /*start_x=*/0,
-                        /*start_y=*/0, sk_bitmap.width(), sk_bitmap.height(),
+                        /*start_y=*/0, image_size.width(), image_size.height(),
                         /*rotate=*/0, FPDF_ANNOT | FPDF_REVERSE_BYTE_ORDER);
 
   return thumbnail;

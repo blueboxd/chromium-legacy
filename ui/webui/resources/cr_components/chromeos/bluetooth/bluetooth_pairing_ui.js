@@ -73,6 +73,7 @@ let RequestCodeCallback;
 let ConfirmCodeCallback;
 
 /**
+ * @implements {chromeos.bluetoothConfig.mojom.SystemPropertiesObserverInterface}
  * @implements {chromeos.bluetoothConfig.mojom.BluetoothDiscoveryDelegateInterface}
  * @implements {chromeos.bluetoothConfig.mojom.DevicePairingDelegateInterface}
  * @implements {chromeos.bluetoothConfig.mojom.KeyEnteredHandlerInterface}
@@ -109,6 +110,7 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
       selectedPageId_: {
         type: String,
         value: BluetoothPairingSubpageId.DEVICE_SELECTION_PAGE,
+        observer: 'onSelectedPageIdChanged_',
       },
 
       /**
@@ -156,6 +158,12 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
         value: '',
       },
 
+      /** @private {boolean} */
+      isBluetoothEnabled_: {
+        type: Boolean,
+        value: false,
+      },
+
       /**
        * Used to access |BluetoothPairingSubpageId| type in HTML.
        * @private {!BluetoothPairingSubpageId}
@@ -169,6 +177,16 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
 
   constructor() {
     super();
+    /**
+     * @private {!chromeos.bluetoothConfig.mojom.SystemPropertiesObserverReceiver}
+     */
+    this.systemPropertiesObserverReceiver_ =
+        new chromeos.bluetoothConfig.mojom.SystemPropertiesObserverReceiver(
+            /**
+             * @type {!chromeos.bluetoothConfig.mojom.SystemPropertiesObserverInterface}
+             */
+            (this));
+
     /**
      * @private {!chromeos.bluetoothConfig.mojom.BluetoothDiscoveryDelegateReceiver}
      */
@@ -203,17 +221,40 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
 
     /** @private {?ConfirmCodeCallback} */
     this.confirmCodeCallback_ = null;
+
+    /** @private {?function()} */
+    this.onBluetoothDiscoveryStartedCallbackForTest_ = null;
+
+    /** @private {?function()} */
+    this.handlePairDeviceResultCallbackForTest_ = null;
   }
 
   ready() {
     super.ready();
-    getBluetoothConfig().startDiscovery(
-        this.bluetoothDiscoveryDelegateReceiver_.$.bindNewPipeAndPassRemote());
+    getBluetoothConfig().observeSystemProperties(
+        this.systemPropertiesObserverReceiver_.$.bindNewPipeAndPassRemote());
 
     // If there's a specific device to pair with, immediately go to the spinner
     // page.
     if (this.pairingDeviceAddress) {
       this.selectedPageId_ = BluetoothPairingSubpageId.SPINNER_PAGE;
+    }
+  }
+
+  /** @override */
+  onPropertiesUpdated(properties) {
+    const wasBluetoothEnabled = this.isBluetoothEnabled_;
+    this.isBluetoothEnabled_ = properties.systemState ===
+        chromeos.bluetoothConfig.mojom.BluetoothSystemState.kEnabled;
+
+    if (!wasBluetoothEnabled && this.isBluetoothEnabled_) {
+      // If Bluetooth enables after being disabled, initialize the UI state.
+      this.lastFailedPairingDeviceId_ = '';
+
+      // Start discovery.
+      getBluetoothConfig().startDiscovery(
+          this.bluetoothDiscoveryDelegateReceiver_.$
+              .bindNewPipeAndPassRemote());
     }
   }
 
@@ -240,11 +281,44 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
   /** @override */
   onBluetoothDiscoveryStarted(handler) {
     this.devicePairingHandler_ = handler;
+
+    // Inform tests that onBluetoothDiscoveryStarted() has been called. This is
+    // to ensure tests don't progress until |devicePairingHandler_| has been
+    // set.
+    if (this.onBluetoothDiscoveryStartedCallbackForTest_) {
+      this.onBluetoothDiscoveryStartedCallbackForTest_();
+    }
   }
 
   /** @override */
   onBluetoothDiscoveryStopped() {
-    // TODO(crbug.com/1010321): Implement this function.
+    // Discovery will stop if Bluetooth disables. Reset the UI back to the
+    // selection page.
+    this.bluetoothDiscoveryDelegateReceiver_.$.close();
+    this.selectedPageId_ = BluetoothPairingSubpageId.DEVICE_SELECTION_PAGE;
+    this.devicePairingHandler_ = null;
+  }
+
+  /**
+   * Returns a promise that will be resolved the next time
+   * onBluetoothDiscoveryStarted() is called.
+   * @return {Promise}
+   */
+  waitForOnBluetoothDiscoveryStartedForTest() {
+    return new Promise((resolve) => {
+      this.onBluetoothDiscoveryStartedCallbackForTest_ = resolve;
+    });
+  }
+
+  /**
+   * Returns a promise that will be resolved the next time
+   * handlePairDeviceResult_() is called.
+   * @return {Promise}
+   */
+  waitForHandlePairDeviceResultForTest() {
+    return new Promise((resolve) => {
+      this.handlePairDeviceResultCallbackForTest_ = resolve;
+    });
   }
 
   /**
@@ -296,6 +370,9 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
    * @private
    */
   pairDevice_(device) {
+    assert(
+        this.devicePairingHandler_, 'devicePairingHandler_ has not been set.');
+
     this.pairingDelegateReceiver_ =
         new chromeos.bluetoothConfig.mojom.DevicePairingDelegateReceiver(this);
 
@@ -310,6 +387,12 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
             this.pairingDelegateReceiver_.$.bindNewPipeAndPassRemote())
         .then(result => {
           this.handlePairDeviceResult_(result.result);
+        })
+        .catch(() => {
+          // Pairing failed due to external issues, such as Mojo pipe
+          // disconnecting from Bluetooth disabling.
+          this.handlePairDeviceResult_(
+              chromeos.bluetoothConfig.mojom.PairingResult.kNonAuthFailure);
         });
   }
 
@@ -353,6 +436,13 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
     if (this.queuedDevicePendingPairing_) {
       this.pairDevice_(this.queuedDevicePendingPairing_);
       this.queuedDevicePendingPairing_ = null;
+    }
+
+    // Inform tests that handlePairDeviceResult_() has been called. This is
+    // to ensure tests don't progress until the correct state has been
+    // set.
+    if (this.handlePairDeviceResultCallbackForTest_) {
+      this.handlePairDeviceResultCallbackForTest_();
     }
   }
 
@@ -511,6 +601,24 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
     }
 
     this.finishPendingCallbacksForTest_();
+  }
+
+  /** @private */
+  onSelectedPageIdChanged_() {
+    // If the current page changes to the device selection page, focus the item
+    // corresponding to the last device attempted to be paired with.
+    if (this.selectedPageId_ !==
+        BluetoothPairingSubpageId.DEVICE_SELECTION_PAGE) {
+      return;
+    }
+
+    const deviceSelectionPage =
+        this.shadowRoot.querySelector('#deviceSelectionPage');
+    if (!deviceSelectionPage) {
+      return;
+    }
+
+    deviceSelectionPage.attemptFocusLastSelectedItem();
   }
 
   /** @private */

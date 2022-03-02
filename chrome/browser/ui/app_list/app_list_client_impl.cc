@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -75,6 +76,16 @@ bool IsSessionActive() {
          session_manager::SessionState::ACTIVE;
 }
 
+bool CanBeHandledAsSystemUrl(const GURL& sanitized_url,
+                             ui::PageTransition transition) {
+  if (!PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
+      !PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_GENERATED)) {
+    return false;
+  }
+  return ChromeWebUIControllerFactory::GetInstance()->CanHandleUrl(
+      sanitized_url);
+}
+
 }  // namespace
 
 AppListClientImpl::AppListClientImpl()
@@ -129,17 +140,32 @@ void AppListClientImpl::OnAppListControllerDestroyed() {
     current_model_updater_->SetActive(false);
 }
 
-void AppListClientImpl::StartZeroStateSearch(base::OnceClosure on_done,
-                                             base::TimeDelta timeout) {
-  // TODO(https://crbug.com/1269115): Refresh the zero state results.
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, std::move(on_done), timeout);
+void AppListClientImpl::StartSearch(const std::u16string& trimmed_query) {
+  // TODO(crbug.com/1269115): In the productivity launcher we handle empty
+  // queries, eg. from a user deleting a query, by re-routing them to
+  // StartZeroStateSearch. We may want to change this behavior so that ash calls
+  // StartZeroStateSearch directly.
+  if (search_controller_) {
+    if (trimmed_query.empty() &&
+        ash::features::IsProductivityLauncherEnabled()) {
+      // We use a long timeout here because the we don't have an
+      // animation-related deadline for these results, unlike a call to
+      // StartZeroStateSearch.
+      StartZeroStateSearch(base::DoNothing(), base::Seconds(1));
+    } else {
+      search_controller_->StartSearch(trimmed_query);
+    }
+    OnSearchStarted();
+  }
 }
 
-void AppListClientImpl::StartSearch(const std::u16string& trimmed_query) {
+void AppListClientImpl::StartZeroStateSearch(base::OnceClosure on_done,
+                                             base::TimeDelta timeout) {
   if (search_controller_) {
-    search_controller_->Start(trimmed_query);
+    search_controller_->StartZeroState(std::move(on_done), timeout);
     OnSearchStarted();
+  } else {
+    std::move(on_done).Run();
   }
 }
 
@@ -195,7 +221,7 @@ void AppListClientImpl::OpenSearchResult(
     RecordZeroStateSuggestionOpenTypeHistogram(result->metrics_type());
 
   if (launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox)
-    RecordOpenedResultFromSearchBox(result_type);
+    RecordOpenedResultFromSearchBox(result->metrics_type());
 
   MaybeRecordLauncherAction(launched_from);
 
@@ -209,8 +235,11 @@ void AppListClientImpl::InvokeSearchResultAction(
   if (!search_controller_)
     return;
   ChromeSearchResult* result = search_controller_->FindSearchResult(result_id);
-  if (result)
+  if (result) {
     search_controller_->InvokeResultAction(result, action);
+    if (result->display_type() == ash::SearchResultDisplayType::kContinue)
+      search_controller_->StartSearch(std::u16string());
+  }
 }
 
 void AppListClientImpl::GetSearchResultContextMenuModel(
@@ -305,8 +334,11 @@ void AppListClientImpl::GetContextMenuModel(
 
 void AppListClientImpl::OnAppListVisibilityWillChange(bool visible) {
   app_list_target_visibility_ = visible;
-  if (visible && search_controller_)
-    search_controller_->Start(std::u16string());
+  // TODO(crbug.com/1258415): This is only used in the old launcher, and can be
+  // removed once the productivity launcher is launched.
+  if (visible && search_controller_ &&
+      !ash::features::IsProductivityLauncherEnabled())
+    search_controller_->StartSearch(std::u16string());
 }
 
 void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
@@ -542,11 +574,7 @@ void AppListClientImpl::OpenURL(Profile* profile,
   if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
     const GURL sanitized_url =
         crosapi::gurl_os_handler_utils::SanitizeAshURL(url);
-    if ((PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) ||
-         PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_GENERATED)) &&
-        ChromeWebUIControllerFactory::GetInstance()->CanHandleUrl(
-            sanitized_url)) {
-      // Let our os url handler take care of the call.
+    if (CanBeHandledAsSystemUrl(sanitized_url, transition)) {
       crosapi::UrlHandlerAsh().OpenUrl(sanitized_url);
     } else {
       // Send the url to the current primary browser.
@@ -639,7 +667,7 @@ void AppListClientImpl::MaybeRecordViewShown() {
 }
 
 void AppListClientImpl::RecordOpenedResultFromSearchBox(
-    ash::AppListSearchResultType result_type) {
+    ash::SearchResultType result_type) {
   // Check whether there is any Chrome non-app browser window open and not
   // minimized.
   bool non_app_browser_open_and_not_minimzed = false;
@@ -656,14 +684,14 @@ void AppListClientImpl::RecordOpenedResultFromSearchBox(
 
   if (non_app_browser_open_and_not_minimzed) {
     UMA_HISTOGRAM_ENUMERATION(
-        "Apps.OpenedAppListSearchResultFromSearchBox."
+        "Apps.OpenedAppListSearchResultFromSearchBoxV2."
         "ExistNonAppBrowserWindowOpenAndNotMinimized",
-        result_type);
+        result_type, ash::SEARCH_RESULT_TYPE_BOUNDARY);
   } else {
     UMA_HISTOGRAM_ENUMERATION(
-        "Apps.OpenedAppListSearchResultFromSearchBox."
+        "Apps.OpenedAppListSearchResultFromSearchBoxV2."
         "NonAppBrowserWindowsEitherClosedOrMinimized",
-        result_type);
+        result_type, ash::SEARCH_RESULT_TYPE_BOUNDARY);
   }
 }
 

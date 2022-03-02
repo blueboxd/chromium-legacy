@@ -162,8 +162,6 @@ class LayerTreeHostImplClient {
   // Called when a requested image decode completes.
   virtual void NotifyImageDecodeRequestFinished() = 0;
 
-  virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
-
   // Called when a presentation time is requested. |frame_token| identifies
   // the frame that was presented. |callbacks| holds both impl side and main
   // side callbacks to be called.
@@ -328,10 +326,6 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   void RequestBeginFrameForAnimatedImages() override;
   void RequestInvalidationForAnimatedImages() override;
 
-  EventMetricsSet TakeEventsMetrics();
-  void AppendEventsMetricsFromMainThread(
-      std::vector<EventMetrics> events_metrics);
-
   base::WeakPtr<LayerTreeHostImpl> AsWeakPtr();
 
   void set_resourceless_software_draw_for_testing() {
@@ -469,6 +463,8 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
       PaintWorkletInput::PropertyKey property_key,
       PaintWorkletInput::PropertyValue property_value) override;
 
+  bool RunsOnCurrentThread() const override;
+
   void ScrollOffsetAnimationFinished() override;
 
   void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
@@ -476,13 +472,16 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
 
   virtual bool PrepareTiles();
 
-  // Returns DRAW_SUCCESS unless problems occured preparing the frame, and we
-  // should try to avoid displaying the frame. If PrepareToDraw is called,
-  // DidDrawAllLayers must also be called, regardless of whether DrawLayers is
-  // called between the two.
+  // Returns `DRAW_SUCCESS` unless problems occurred preparing the frame, and we
+  // should try to avoid displaying the frame. If `PrepareToDraw()` is called,
+  // `DidDrawAllLayers()` must also be called, regardless of whether
+  // `DrawLayers()` is called between the two.
   virtual DrawResult PrepareToDraw(FrameData* frame);
-  virtual bool DrawLayers(FrameData* frame);
-  viz::CompositorFrame GenerateCompositorFrame(FrameData* frame);
+
+  // If there is no damage, returns `absl::nullopt`; otherwise, returns set of
+  // `EventMetrics` for the frame.
+  virtual absl::optional<EventMetricsSet> DrawLayers(FrameData* frame);
+
   // Must be called if and only if PrepareToDraw was called.
   void DidDrawAllLayers(const FrameData& frame);
 
@@ -910,6 +909,7 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // Virtual for testing.
   virtual bool AnimateLayers(base::TimeTicks monotonic_time,
                              bool is_active_tree);
+  void ImageDecodeFinished(int request_id, bool decode_succeeded);
 
   bool is_likely_to_require_a_draw() const {
     return is_likely_to_require_a_draw_;
@@ -928,6 +928,8 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
       compositor_frame_reporting_controller_;
 
  private:
+  viz::CompositorFrame GenerateCompositorFrame(FrameData* frame);
+
   void CollectScrollbarUpdatesForCommit(
       CompositorCommitData* commit_data) const;
 
@@ -1000,7 +1002,6 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
 
  private:
   void SetContextVisibility(bool is_visible);
-  void ImageDecodeFinished(int request_id, bool decode_succeeded);
 
   void ShowScrollbarsForImplScroll(ElementId element_id);
 

@@ -138,7 +138,7 @@ void LayoutSVGInline::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   SVGLayoutSupport::MapLocalToAncestor(this, ancestor, transform_state, flags);
 }
 
-void LayoutSVGInline::AbsoluteQuads(Vector<FloatQuad>& quads,
+void LayoutSVGInline::AbsoluteQuads(Vector<gfx::QuadF>& quads,
                                     MapCoordinatesFlags mode) const {
   NOT_DESTROYED();
   if (IsInLayoutNGInlineFormattingContext()) {
@@ -148,7 +148,7 @@ void LayoutSVGInline::AbsoluteQuads(Vector<FloatQuad>& quads,
       const NGFragmentItem& item = *cursor.CurrentItem();
       if (item.Type() == NGFragmentItem::kSvgText) {
         quads.push_back(LocalToAbsoluteQuad(
-            FloatRect(SVGLayoutSupport::ExtendTextBBoxWithStroke(
+            gfx::QuadF(SVGLayoutSupport::ExtendTextBBoxWithStroke(
                 *this, cursor.Current().ObjectBoundingBox(cursor))),
             mode));
       }
@@ -158,7 +158,7 @@ void LayoutSVGInline::AbsoluteQuads(Vector<FloatQuad>& quads,
   for (InlineFlowBox* box : *LineBoxes()) {
     gfx::RectF box_rect(box->FrameRect());
     quads.push_back(LocalToAbsoluteQuad(
-        FloatRect(SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, box_rect)),
+        gfx::QuadF(SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, box_rect)),
         mode));
   }
 }
@@ -196,8 +196,6 @@ void LayoutSVGInline::StyleDidChange(StyleDifference diff,
 
   if (!Parent())
     return;
-  if (diff.CompositingReasonsChanged())
-    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
   if (diff.HasDifference())
     LayoutSVGResourceContainer::StyleChanged(*this, diff);
 }
@@ -224,10 +222,6 @@ void LayoutSVGInline::InsertedIntoTree() {
                                                                          false);
   if (StyleRef().HasSVGEffect())
     SetNeedsPaintPropertyUpdate();
-  if (CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(*this) !=
-      CompositingReason::kNone) {
-    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
-  }
 }
 
 void LayoutSVGInline::WillBeRemovedFromTree() {
@@ -237,10 +231,6 @@ void LayoutSVGInline::WillBeRemovedFromTree() {
   if (StyleRef().HasSVGEffect())
     SetNeedsPaintPropertyUpdate();
   LayoutInline::WillBeRemovedFromTree();
-  if (CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(*this) !=
-      CompositingReason::kNone) {
-    SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
-  }
 }
 
 }  // namespace blink

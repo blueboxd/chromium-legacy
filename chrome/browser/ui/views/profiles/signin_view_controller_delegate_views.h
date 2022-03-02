@@ -7,12 +7,14 @@
 
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/types/strong_alias.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_ui.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -59,11 +61,16 @@ class SigninViewControllerDelegateViews
   static std::unique_ptr<views::WebView> CreateSigninErrorWebView(
       Browser* browser);
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   static std::unique_ptr<views::WebView> CreateReauthConfirmationWebView(
       Browser* browser,
       signin_metrics::ReauthAccessPoint);
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+  static std::unique_ptr<views::WebView> CreateProfileCustomizationWebView(
+      Browser* browser);
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_LACROS)
   static std::unique_ptr<views::WebView> CreateEnterpriseConfirmationWebView(
       Browser* browser,
@@ -106,6 +113,9 @@ class SigninViewControllerDelegateViews
   friend SigninViewControllerDelegate;
   friend class SigninViewControllerDelegateViewsBrowserTest;
 
+  using InitializeSigninWebDialogUI =
+      base::StrongAlias<class InitializeSigninWebDialogUITag, bool>;
+
   // Creates and displays a constrained window containing |web_contents|. If
   // |wait_for_size| is true, the delegate will wait for ResizeNativeView() to
   // be called by the base class before displaying the constrained window.
@@ -122,7 +132,8 @@ class SigninViewControllerDelegateViews
       Browser* browser,
       const GURL& url,
       int dialog_height,
-      absl::optional<int> dialog_width);
+      absl::optional<int> dialog_width,
+      InitializeSigninWebDialogUI initialize_signin_web_dialog_ui);
 
   // Displays the modal dialog.
   void DisplayModal();

@@ -37,6 +37,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/soda_installer_impl.h"
 #include "chrome/browser/battery/battery_metrics.h"
+#include "chrome/browser/breadcrumbs/breadcrumbs_status.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -91,8 +92,8 @@
 #include "components/breadcrumbs/core/application_breadcrumbs_logger.h"
 #include "components/breadcrumbs/core/breadcrumb_manager.h"
 #include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
+#include "components/breadcrumbs/core/breadcrumb_persistent_storage_util.h"
 #include "components/breadcrumbs/core/breadcrumb_util.h"
-#include "components/breadcrumbs/core/features.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/timer_update_scheduler.h"
 #include "components/crash/core/common/crash_key.h"
@@ -339,12 +340,10 @@ void BrowserProcessImpl::Init() {
       base::BindRepeating(&BrowserProcessImpl::ApplyDefaultBrowserPolicy,
                           base::Unretained(this)));
 
-#if !defined(OS_ANDROID)
   // This preference must be kept in sync with external values; update them
   // whenever the preference or its controlling policy changes.
   pref_change_registrar_.Add(metrics::prefs::kMetricsReportingEnabled,
                              base::BindRepeating(&ApplyMetricsReportingPolicy));
-#endif
 
   DCHECK(!webrtc_event_log_manager_);
   webrtc_event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
@@ -1156,9 +1155,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   if (local_state_->IsManagedPreference(prefs::kDefaultBrowserSettingEnabled))
     ApplyDefaultBrowserPolicy();
 
-#if !defined(OS_ANDROID)
   ApplyMetricsReportingPolicy();
-#endif
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   ChromeJsErrorReportProcessor::Create();
@@ -1207,22 +1204,23 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   soda_installer_impl_ = std::make_unique<speech::SodaInstallerImplChromeOS>();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
+  base::FilePath user_data_dir;
+  bool result = base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  DCHECK(result);
+  if (BreadcrumbsStatus::IsEnabled()) {
     breadcrumb_manager_ = std::make_unique<breadcrumbs::BreadcrumbManager>(
         breadcrumbs::GetStartTime());
     application_breadcrumbs_logger_ =
         std::make_unique<breadcrumbs::ApplicationBreadcrumbsLogger>(
             breadcrumb_manager_.get());
 
-    base::FilePath storage_dir;
-    bool result = base::PathService::Get(chrome::DIR_USER_DATA, &storage_dir);
-    DCHECK(result);
-
     auto breadcrumb_persistent_storage_manager =
         std::make_unique<breadcrumbs::BreadcrumbPersistentStorageManager>(
-            storage_dir);
+            user_data_dir);
     application_breadcrumbs_logger_->SetPersistentStorageManager(
         std::move(breadcrumb_persistent_storage_manager));
+  } else {
+    breadcrumbs::DeleteBreadcrumbFiles(user_data_dir);
   }
 }
 

@@ -13,8 +13,10 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/first_web_contents_profiler_base.h"
 #include "chrome/browser/new_tab_page/chrome_colors/chrome_colors_service.h"
 #include "chrome/browser/new_tab_page/chrome_colors/generated_colors_info.h"
 #include "chrome/browser/profiles/profile.h"
@@ -242,6 +244,99 @@ SkBitmap GetAvailableAccountBitmap(const gfx::Image& gaia_image,
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
+void RecordProfilingFinishReason(
+    metrics::StartupProfilingFinishReason finish_reason) {
+  base::UmaHistogramEnumeration(
+      "ProfilePicker.FirstProfileTime.FirstWebContentsFinishReason",
+      finish_reason);
+}
+
+class FirstWebContentsProfilerForProfilePicker
+    : public metrics::FirstWebContentsProfilerBase {
+ public:
+  explicit FirstWebContentsProfilerForProfilePicker(
+      content::WebContents* web_contents,
+      base::TimeTicks pick_time);
+
+  FirstWebContentsProfilerForProfilePicker(
+      const FirstWebContentsProfilerForProfilePicker&) = delete;
+  FirstWebContentsProfilerForProfilePicker& operator=(
+      const FirstWebContentsProfilerForProfilePicker&) = delete;
+
+ protected:
+  // FirstWebContentsProfilerBase:
+  void RecordFinishReason(
+      metrics::StartupProfilingFinishReason finish_reason) override;
+  void RecordNavigationFinished(base::TimeTicks navigation_start) override;
+  void RecordFirstNonEmptyPaint() override;
+  bool WasStartupInterrupted() override;
+
+ private:
+  ~FirstWebContentsProfilerForProfilePicker() override;
+
+  const base::TimeTicks pick_time_;
+};
+
+FirstWebContentsProfilerForProfilePicker::
+    FirstWebContentsProfilerForProfilePicker(content::WebContents* web_contents,
+                                             base::TimeTicks pick_time)
+    : FirstWebContentsProfilerBase(web_contents), pick_time_(pick_time) {
+  DCHECK(!pick_time_.is_null());
+}
+
+FirstWebContentsProfilerForProfilePicker::
+    ~FirstWebContentsProfilerForProfilePicker() = default;
+
+void FirstWebContentsProfilerForProfilePicker::RecordFinishReason(
+    metrics::StartupProfilingFinishReason finish_reason) {
+  RecordProfilingFinishReason(finish_reason);
+}
+
+void FirstWebContentsProfilerForProfilePicker::RecordNavigationFinished(
+    base::TimeTicks navigation_start) {
+  // Nothing to record here for Profile Picker startups.
+}
+
+void FirstWebContentsProfilerForProfilePicker::RecordFirstNonEmptyPaint() {
+  const char histogram_name[] =
+      "ProfilePicker.FirstProfileTime.FirstWebContentsNonEmptyPaint";
+  base::TimeTicks paint_time = base::TimeTicks::Now();
+  base::UmaHistogramLongTimes100(histogram_name, paint_time - pick_time_);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0("startup", histogram_name,
+                                                   this, pick_time_);
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0("startup", histogram_name,
+                                                 this, paint_time);
+}
+
+bool FirstWebContentsProfilerForProfilePicker::WasStartupInterrupted() {
+  // We're assuming that no interruptions block opening an existing profile
+  // from the profile picker. We would detect this by observing really high
+  // latency on the tracked metric, and can start tracking interruptions if we
+  // find that such cases occur.
+  return false;
+}
+
+void BeginFirstWebContentsProfiling(Browser* browser,
+                                    base::TimeTicks pick_time) {
+  content::WebContents* visible_contents =
+      metrics::FirstWebContentsProfilerBase::GetVisibleContents(browser);
+  if (!visible_contents) {
+    RecordProfilingFinishReason(metrics::StartupProfilingFinishReason::
+                                    kAbandonNoInitiallyVisibleContent);
+    return;
+  }
+
+  if (visible_contents->CompletedFirstVisuallyNonEmptyPaint()) {
+    RecordProfilingFinishReason(
+        metrics::StartupProfilingFinishReason::kAbandonAlreadyPaintedContent);
+    return;
+  }
+
+  // FirstWebContentsProfilerForProfilePicker owns itself and is also bound to
+  // |visible_contents|'s lifetime by observing WebContentsDestroyed().
+  new FirstWebContentsProfilerForProfilePicker(visible_contents, pick_time);
+}
+
 }  // namespace
 
 ProfilePickerHandler::ProfilePickerHandler() = default;
@@ -383,6 +478,8 @@ void ProfilePickerHandler::HandleMainViewInitialize(
 void ProfilePickerHandler::HandleLaunchSelectedProfile(
     bool open_settings,
     const base::ListValue* args) {
+  TRACE_EVENT1("browser", "ProfilePickerHandler::HandleLaunchSelectedProfile",
+               "args", args->DebugString());
   if (args->GetList().empty())
     return;
   const base::Value& profile_path_value = args->GetList()[0];
@@ -441,10 +538,16 @@ void ProfilePickerHandler::HandleLaunchSelectedProfile(
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
+  if (!creation_time_on_startup_.is_null() &&
+      // Avoid overriding the picked time if already recorded. This can happen
+      // for example if multiple profiles are picked: https://crbug.com/1277466.
+      profile_picked_time_on_startup_.is_null()) {
+    profile_picked_time_on_startup_ = base::TimeTicks::Now();
+  }
   profiles::SwitchToProfile(
       *profile_path, /*always_create=*/false,
-      base::BindRepeating(&ProfilePickerHandler::OnSwitchToProfileComplete,
-                          weak_factory_.GetWeakPtr(), false, open_settings));
+      base::BindOnce(&ProfilePickerHandler::OnSwitchToProfileComplete,
+                     weak_factory_.GetWeakPtr(), false, open_settings));
 }
 
 void ProfilePickerHandler::HandleLaunchGuestProfile(
@@ -452,8 +555,8 @@ void ProfilePickerHandler::HandleLaunchGuestProfile(
   // TODO(crbug.com/1063856): Add check |IsGuestModeEnabled| once policy
   // checking has been added to the UI.
   profiles::SwitchToGuestProfile(
-      base::BindRepeating(&ProfilePickerHandler::OnSwitchToProfileComplete,
-                          weak_factory_.GetWeakPtr(), false, false));
+      base::BindOnce(&ProfilePickerHandler::OnSwitchToProfileComplete,
+                     weak_factory_.GetWeakPtr(), false, false));
 }
 
 void ProfilePickerHandler::HandleAskOnStartupChanged(
@@ -600,8 +703,8 @@ void ProfilePickerHandler::HandleConfirmProfileSwitch(
   // flow.
   profiles::SwitchToProfile(
       *profile_path, /*always_create=*/false,
-      base::BindRepeating(&ProfilePickerHandler::OnSwitchToProfileComplete,
-                          weak_factory_.GetWeakPtr(), false, false));
+      base::BindOnce(&ProfilePickerHandler::OnSwitchToProfileComplete,
+                     weak_factory_.GetWeakPtr(), false, false));
 }
 
 void ProfilePickerHandler::HandleCancelProfileSwitch(
@@ -663,14 +766,14 @@ void ProfilePickerHandler::OnProfileCreationSuccess(
   RecordNewProfileSpec(profile_color, create_shortcut);
   // Launch profile and close the picker.
   profiles::OpenBrowserWindowForProfile(
-      base::BindRepeating(&ProfilePickerHandler::OnSwitchToProfileComplete,
-                          weak_factory_.GetWeakPtr(), true, false),
+      base::BindOnce(&ProfilePickerHandler::OnSwitchToProfileComplete,
+                     weak_factory_.GetWeakPtr(), true, false),
       false,  // Don't create a window if one already exists.
       true,   // Create a first run window.
       false,  // There is no need to unblock all extensions because we only open
               // browser window if the Profile is not locked. Hence there is no
               // extension blocked.
-      profile, Profile::CREATE_STATUS_INITIALIZED);
+      profile);
 }
 
 void ProfilePickerHandler::HandleRecordSignInPromoImpression(
@@ -828,14 +931,21 @@ void ProfilePickerHandler::OnLoadSigninFinished(bool success) {
   FireWebUIListener("load-signin-finished", base::Value(success));
 }
 
-void ProfilePickerHandler::OnSwitchToProfileComplete(
-    bool new_profile,
-    bool open_settings,
-    Profile* profile,
-    Profile::CreateStatus profile_create_status) {
+void ProfilePickerHandler::OnSwitchToProfileComplete(bool new_profile,
+                                                     bool open_settings,
+                                                     Profile* profile) {
+  TRACE_EVENT1("browser", "ProfilePickerHandler::OnSwitchToProfileComplete",
+               "profile_path", profile->GetPath().AsUTF8Unsafe());
   Browser* browser = chrome::FindAnyBrowser(profile, false);
   DCHECK(browser);
   DCHECK(browser->window());
+
+  // Measure startup time to display first web contents if the profile picker
+  // was displayed on startup and if the initiating action is instrumented. For
+  // example we don't record pick time for profile creations.
+  if (!profile_picked_time_on_startup_.is_null()) {
+    BeginFirstWebContentsProfiling(browser, profile_picked_time_on_startup_);
+  }
 
   // Only show the profile switch IPH when the user clicked the card, and there
   // are multiple profiles.

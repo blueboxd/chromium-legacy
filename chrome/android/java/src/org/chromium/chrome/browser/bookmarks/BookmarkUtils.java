@@ -171,7 +171,10 @@ public class BookmarkUtils {
 
         BookmarkSaveFlowCoordinator bookmarkSaveFlowCoordinator =
                 new BookmarkSaveFlowCoordinator(activity, bottomSheetController,
-                        subscriptionService, new UserEducationHelper(activity, new Handler()));
+                        new CommerceSubscriptionsServiceFactory()
+                                .getForLastUsedProfile()
+                                .getSubscriptionsManager(),
+                        new UserEducationHelper(activity, new Handler()));
         bookmarkSaveFlowCoordinator.show(bookmarkId, fromExplicitTrackUi, wasBookmarkMoved);
     }
 

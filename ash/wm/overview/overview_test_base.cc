@@ -4,6 +4,8 @@
 
 #include "ash/wm/overview/overview_test_base.h"
 
+#include <tuple>
+
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/test/test_desks_templates_delegate.h"
 #include "ash/session/session_controller_impl.h"
@@ -18,11 +20,11 @@
 #include "ash/wm/overview/overview_wallpaper_controller.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 #include "ash/wm/window_preview_view.h"
-#include "base/ignore_result.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/test_utils.h"
 #include "ui/gfx/geometry/transform_util.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -194,6 +196,18 @@ void OverviewTestBase::CheckForDuplicateTraceName(const std::string& trace) {
   trace_names_.push_back(trace);
 }
 
+void OverviewTestBase::CheckA11yOverrides(const std::string& trace,
+                                          views::Widget* widget,
+                                          views::Widget* expected_previous,
+                                          views::Widget* expected_next) {
+  SCOPED_TRACE(trace);
+  views::View* contents_view = widget->GetContentsView();
+  views::ViewAccessibility& view_accessibility =
+      contents_view->GetViewAccessibility();
+  EXPECT_EQ(expected_previous, view_accessibility.GetPreviousFocus());
+  EXPECT_EQ(expected_next, view_accessibility.GetNextFocus());
+}
+
 void OverviewTestBase::CheckOverviewEnterExitHistogram(
     const std::string& trace,
     const std::vector<int>& enter_counts,
@@ -204,9 +218,9 @@ void OverviewTestBase::CheckOverviewEnterExitHistogram(
   // on the next frame presented after animation stops. Wait for the next
   // frame with a 100ms timeout for the report, regardless of whether there
   // is a next frame.
-  ignore_result(ui::WaitForNextFrameToBePresented(
+  std::ignore = ui::WaitForNextFrameToBePresented(
       Shell::GetPrimaryRootWindow()->layer()->GetCompositor(),
-      base::Milliseconds(500)));
+      base::Milliseconds(500));
 
   {
     SCOPED_TRACE(trace + ".Enter");

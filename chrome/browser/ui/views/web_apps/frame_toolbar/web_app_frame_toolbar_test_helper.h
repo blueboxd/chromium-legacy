@@ -8,10 +8,11 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "content/public/browser/web_contents.h"
 
-struct WebApplicationInfo;
+struct WebAppInstallInfo;
 class Browser;
 class BrowserNonClientFrameView;
 class BrowserView;
@@ -19,7 +20,6 @@ class GURL;
 class WebAppFrameToolbarView;
 
 namespace base {
-class ListValue;
 class ScopedTempDir;
 }  // namespace base
 
@@ -42,15 +42,15 @@ class WebAppFrameToolbarTestHelper {
                                         const GURL& start_url);
   web_app::AppId InstallAndLaunchCustomWebApp(
       Browser* browser,
-      std::unique_ptr<WebApplicationInfo> web_app_info,
+      std::unique_ptr<WebAppInstallInfo> web_app_info,
       const GURL& start_url);
 
   GURL LoadWindowControlsOverlayTestPageWithDataAndGetURL(
       net::test_server::EmbeddedTestServer* embedded_test_server,
       base::ScopedTempDir* temp_dir);
 
-  // WebContents is used to run JS to parse rectangle values into a list.
-  static base::ListValue GetXYWidthHeightListValue(
+  // WebContents is used to run JS to parse rectangle values into a list value.
+  static base::Value::ListStorage GetXYWidthHeightListValue(
       content::WebContents* web_contents,
       std::string rect_value_list,
       std::string rect_var_name);

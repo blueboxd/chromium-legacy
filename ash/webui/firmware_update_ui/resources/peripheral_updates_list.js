@@ -4,10 +4,15 @@
 
 import './firmware_shared_css.js';
 import './firmware_shared_fonts.js';
+import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
+import '/file_path.mojom-lite.js';
+import './mojom/firmware_update.mojom-lite.js';
 import './update_card.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {FirmwareUpdate, UpdateProviderInterface} from './firmware_update_types.js';
+import {FirmwareUpdate, UpdateObserverInterface, UpdateObserverReceiver, UpdateProviderInterface} from './firmware_update_types.js';
 import {getUpdateProvider} from './mojo_interface_provider.js';
 
 /**
@@ -44,11 +49,20 @@ export class PeripheralUpdateListElement extends PolymerElement {
 
   /** @private */
   observePeripheralUpdates_() {
-    this.updateProvider_.observePeripheralUpdates(this);
+    // Calling observePeripheralUpdates will trigger onUpdateListChanged.
+    /** @protected {?UpdateObserverReceiver} */
+    this.updateListObserverReceiver_ = new UpdateObserverReceiver(
+        /**
+         * @type {!UpdateObserverInterface}
+         */
+        (this));
+
+    this.updateProvider_.observePeripheralUpdates(
+        this.updateListObserverReceiver_.$.bindNewPipeAndPassRemote());
   }
 
   /**
-   * Implements DeviceObserver.onUpdateListChanged
+   * Implements UpdateObserver.onUpdateListChanged
    * @param {!Array<!FirmwareUpdate>} firmwareUpdates
    */
   onUpdateListChanged(firmwareUpdates) {

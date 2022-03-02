@@ -49,7 +49,7 @@ std::vector<Sandbox> GetSandboxTypesToTest() {
     // These sandbox types can't be spawned in a utility process.
     if (t == Sandbox::kRenderer || t == Sandbox::kGpu)
       continue;
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     if (t == Sandbox::kZygoteIntermediateSandbox)
       continue;
 #endif
@@ -111,6 +111,7 @@ class UtilityProcessSandboxBrowserTest
 #endif
       case Sandbox::kPrintCompositor:
       case Sandbox::kService:
+      case Sandbox::kServiceWithJit:
       case Sandbox::kUtility: {
         constexpr int kExpectedFullSandboxFlags =
             SandboxLinux::kPIDNS | SandboxLinux::kNetNS |

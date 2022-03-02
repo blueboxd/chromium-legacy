@@ -35,8 +35,9 @@
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/enterprise_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #endif
@@ -78,6 +79,7 @@ class ChromeConfigurator : public update_client::Configurator {
   bool IsPerUserInstall() const override;
   std::unique_ptr<update_client::ProtocolHandlerFactory>
   GetProtocolHandlerFactory() const override;
+  absl::optional<bool> IsMachineExternallyManaged() const override;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeConfigurator>;
@@ -155,7 +157,7 @@ ChromeConfigurator::ExtraRequestParams() const {
 }
 
 std::string ChromeConfigurator::GetDownloadPreference() const {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // This group policy is supported only on Windows and only for enterprises.
   return base::IsMachineExternallyManaged()
              ? base::SysWideToUTF8(
@@ -236,6 +238,10 @@ bool ChromeConfigurator::IsPerUserInstall() const {
 std::unique_ptr<update_client::ProtocolHandlerFactory>
 ChromeConfigurator::GetProtocolHandlerFactory() const {
   return configurator_impl_.GetProtocolHandlerFactory();
+}
+
+absl::optional<bool> ChromeConfigurator::IsMachineExternallyManaged() const {
+  return configurator_impl_.IsMachineExternallyManaged();
 }
 
 }  // namespace

@@ -37,6 +37,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/unguessable_token.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/data_decoder/public/mojom/resource_snapshot_for_web_bundle.mojom-blink.h"
@@ -165,7 +166,6 @@
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -178,8 +178,6 @@
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer_tree_as_text.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -209,7 +207,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/transform.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/substring_util.h"
 #include "third_party/blink/renderer/platform/fonts/mac/attributed_string_type_converter.h"
@@ -504,7 +502,7 @@ bool LocalFrame::DetachImpl(FrameDetachType type) {
   IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
       GetDocument());
 
-  loader_.DispatchUnloadEvent(nullptr, nullptr);
+  loader_.DispatchUnloadEvent(/*unload_timing_info=*/nullptr);
   if (evict_cached_session_storage_on_freeze_or_unload_) {
     // Evicts the cached data of Session Storage to avoid reusing old data in
     // the cache after the session storage has been modified by another renderer
@@ -599,7 +597,7 @@ bool LocalFrame::DetachImpl(FrameDetachType type) {
 }
 
 bool LocalFrame::DetachDocument() {
-  return Loader().DetachDocument(nullptr, nullptr);
+  return Loader().DetachDocument(/*unload_timing_info=*/nullptr);
 }
 
 void LocalFrame::CheckCompleted() {
@@ -1075,6 +1073,12 @@ void LocalFrame::SetPrinting(bool printing,
                                       : Document::kFinishingPrinting);
   View()->AdjustMediaTypeForPrinting(printing);
 
+  if (!printing) {
+    // Don't get stuck with the legacy engine when no longer printing.
+    if (Element* root = GetDocument()->documentElement())
+      root->ResetForceLegacyLayoutForPrinting();
+  }
+
   if (TextAutosizer* text_autosizer = GetDocument()->GetTextAutosizer())
     text_autosizer->UpdatePageInfo();
 
@@ -1418,16 +1422,6 @@ String LocalFrame::GetLayerTreeAsTextForTesting(unsigned flags) const {
   std::unique_ptr<JSONObject> layers;
   if (!(flags & kOutputAsLayerTree)) {
     layers = View()->CompositedLayersAsJSON(static_cast<LayerTreeFlags>(flags));
-  } else {
-    if (const auto* root_layer =
-            ContentLayoutObject()->Compositor()->RootGraphicsLayer()) {
-      if (flags & kLayerTreeIncludesAllLayers && IsMainFrame()) {
-        while (root_layer->Parent())
-          root_layer = root_layer->Parent();
-      }
-      layers = GraphicsLayerTreeAsJSON(root_layer,
-                                       static_cast<LayerTreeFlags>(flags));
-    }
   }
   return layers ? layers->ToPrettyJSONString() : String();
 }
@@ -2040,8 +2034,8 @@ void LocalFrame::SetViewportIntersectionFromParent(
 
     intersection_state.main_frame_transform.TransformRect(&transform_rect);
     gfx::Rect rect = ToEnclosingRect(
-        FloatRect(transform_rect.x(), transform_rect.y(),
-                  transform_rect.width(), transform_rect.height()));
+        gfx::RectF(transform_rect.x(), transform_rect.y(),
+                   transform_rect.width(), transform_rect.height()));
 
     // Return <0, 0, 0, 0> if there is no area.
     if (rect.IsEmpty())
@@ -2406,7 +2400,6 @@ void LocalFrame::UpdateFrameColorOverlayPrePaint() {
 }
 
 void LocalFrame::PaintFrameColorOverlay(GraphicsContext& context) {
-  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   if (frame_color_overlay_)
     frame_color_overlay_->Paint(context);
 }
@@ -2676,7 +2669,7 @@ void LocalFrame::SetInitialFocus(bool reverse) {
               : mojom::blink::FocusType::kForward);
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 void LocalFrame::GetCharacterIndexAtPoint(const gfx::Point& point) {
   HitTestLocation location(View()->ViewportToFrame(gfx::Point(point)));
   HitTestResult result = GetEventHandler().HitTestResultAtLocation(
@@ -3053,7 +3046,7 @@ bool LocalFrame::ShouldThrottleDownload() {
   return false;
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 void LocalFrame::ResetTextInputHostForTesting() {
   mojo_handler_->ResetTextInputHostForTesting();
 }

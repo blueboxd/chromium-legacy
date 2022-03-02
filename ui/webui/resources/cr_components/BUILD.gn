@@ -77,6 +77,7 @@ generate_grd("build_grdp") {
 group("preprocess") {
   public_deps = [
     ":preprocess_generated",
+    ":preprocess_generated_ts",
     ":preprocess_mojom",
     ":preprocess_src",
   ]
@@ -98,36 +99,25 @@ preprocess_if_expr("preprocess_src") {
     "chromeos/bluetooth/bluetooth_metrics_utils.js",
     "chromeos/bluetooth/cros_bluetooth_config.js",
     "chromeos/smb_shares/smb_browser_proxy.js",
-    "most_visited/browser_proxy.js",
-    "most_visited/window_proxy.js",
     "color_change_listener/browser_proxy.js",
     "color_change_listener/colors_css_updater.js",
   ]
 }
 
 preprocess_if_expr("preprocess_mojom") {
-  deps = [
-    "color_change_listener:mojom_webui_js",
-    "most_visited:mojom_webui_js",
-  ]
+  deps = [ "color_change_listener:mojom_webui_js" ]
   in_folder = "$root_gen_dir/mojom-webui/ui/webui/resources/cr_components"
   out_folder = "$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_mojom_manifest"
-  in_files = [
-    "most_visited/most_visited.mojom-webui.js",
-    "color_change_listener/color_change_listener.mojom-webui.js",
-  ]
+  in_files = [ "color_change_listener/color_change_listener.mojom-webui.js" ]
 }
 
 preprocess_if_expr("preprocess_generated") {
   deps = [ ":polymer3_elements" ]
   in_folder = target_gen_dir
-  out_folder = "$preprocess_folder"
+  out_folder = preprocess_folder
   out_manifest = "$target_gen_dir/$preprocess_gen_manifest"
   in_files = [
-    "iph_bubble/iph_bubble.ts",
-    "most_visited/most_visited.mojom-lite.js",
-    "most_visited/most_visited.js",
     "managed_dialog/managed_dialog.js",
     "managed_footnote/managed_footnote.js",
     "omnibox/cr_autocomplete_match_list.js",
@@ -228,6 +218,15 @@ preprocess_if_expr("preprocess_generated") {
       "chromeos/traffic_counters/traffic_counters.js",
     ]
   }
+}
+
+# TS files are passed to a separate target so that they are not listed in the
+# |out_manifest|.
+preprocess_if_expr("preprocess_generated_ts") {
+  deps = [ ":polymer3_elements" ]
+  in_folder = target_gen_dir
+  out_folder = preprocess_folder
+  in_files = [ "iph_bubble/iph_bubble.ts" ]
 }
 
 if (is_chromeos_ash) {
@@ -396,7 +395,6 @@ group("closure_compile") {
     "color_change_listener:closure_compile",
     "managed_dialog:closure_compile",
     "managed_footnote:closure_compile",
-    "most_visited:closure_compile",
     "omnibox:closure_compile",
   ]
 

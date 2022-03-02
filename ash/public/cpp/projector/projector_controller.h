@@ -12,6 +12,7 @@
 namespace ash {
 
 struct AnnotatorTool;
+struct NewScreencastPrecondition;
 
 // File extension of Projector metadata file. It is used to identify Projector
 // screencasts at processing pending screencasts and fetching screencast list.
@@ -30,6 +31,8 @@ enum class ASH_PUBLIC_EXPORT SpeechRecognitionAvailability {
   kSodaNotInstalled,
   // SODA binary and language packs are downloading.
   kSodaInstalling,
+  // SODA installation failed.
+  kSodaInstallationError,
   // SODA is available to be used.
   kAvailable
 };
@@ -68,13 +71,16 @@ class ASH_PUBLIC_EXPORT ProjectorController {
   // Called when there is an error in transcription.
   virtual void OnTranscriptionError() = 0;
 
+  // Called when speech recognition stopped.
+  virtual void OnSpeechRecognitionStopped() = 0;
+
   // Returns true if Projector screen recording feature is available on the
   // device. If on device speech recognition is not available on device, then
   // Projector is not eligible.
   virtual bool IsEligible() const = 0;
 
   // Returns true if we can start a new Projector session.
-  virtual bool CanStartNewSession() const = 0;
+  virtual NewScreencastPrecondition GetNewScreencastPrecondition() const = 0;
 
   // The following functions are callbacks from the annotator back to the
   // ProjectorController.

@@ -34,7 +34,7 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "v8/include/v8-forward.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/common/conflicts/remote_module_watcher_win.h"
 #endif
 
@@ -105,9 +105,11 @@ class ChromeContentRendererClient
   bool OverrideCreatePlugin(content::RenderFrame* render_frame,
                             const blink::WebPluginParams& params,
                             blink::WebPlugin** plugin) override;
+#if BUILDFLAG(ENABLE_PLUGINS)
   blink::WebPlugin* CreatePluginReplacement(
       content::RenderFrame* render_frame,
       const base::FilePath& plugin_path) override;
+#endif
   void PrepareErrorPage(content::RenderFrame* render_frame,
                         const blink::WebURLError& error,
                         const std::string& http_method,
@@ -148,7 +150,7 @@ class ChromeContentRendererClient
   std::unique_ptr<blink::WebContentSettingsClient>
   CreateWorkerContentSettingsClient(
       content::RenderFrame* render_frame) override;
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   std::unique_ptr<media::SpeechRecognitionClient> CreateSpeechRecognitionClient(
       content::RenderFrame* render_frame,
       media::SpeechRecognitionClient::OnReadyCallback callback) override;
@@ -251,7 +253,7 @@ class ChromeContentRendererClient
                                 bool is_hosted_app);
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Observes module load events and notifies the ModuleDatabase in the browser
   // process. This instance is created on the main thread but then lives on the
   // IO task runner.

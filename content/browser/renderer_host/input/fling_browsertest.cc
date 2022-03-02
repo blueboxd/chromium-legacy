@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/bind.h"
-#include "base/ignore_result.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -104,7 +105,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
 
     std::u16string ready_title(u"ready");
     TitleWatcher watcher(shell()->web_contents(), ready_title);
-    ignore_result(watcher.WaitAndGetTitle());
+    std::ignore = watcher.WaitAndGetTitle();
     SynchronizeThreads();
   }
 
@@ -308,7 +309,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
 // On Mac we don't have any touchscreen/touchpad fling events (GFS/GFC).
 // Instead, the OS keeps sending wheel events when the user lifts their fingers
 // from touchpad.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest, TouchscreenFling) {
   LoadURL(kBrowserFlingDataURL);
   SimulateTouchscreenFling(GetWidgetHost());
@@ -544,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   EXPECT_EQ(
       0, EvalJs(root->current_frame_host(), "window.scrollY").ExtractDouble());
 }
-#endif  // !defined(OS_MAC)
+#endif  // !BUILDFLAG(IS_MAC)
 
 class PhysicsBasedFlingCurveBrowserTest : public BrowserSideFlingBrowserTest {
  public:

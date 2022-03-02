@@ -27,7 +27,7 @@
 
 namespace media {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 namespace {
 bool IsSupported(const ImageProcessorBackend::PortConfig& config) {
   if (!config.fourcc.ToVAFourCC())

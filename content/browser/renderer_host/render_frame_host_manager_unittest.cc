@@ -66,14 +66,13 @@
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
-#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "ui/base/page_transition_types.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "content/public/browser/android/compositor.h"
 #endif
 
@@ -411,8 +410,7 @@ class RenderFrameHostManagerTest
         entry->ConstructCommonNavigationParams(
             *frame_entry, request_body, frame_entry->url(),
             blink::mojom::Referrer::New(referrer.url, referrer.policy),
-            navigate_type, blink::PreviewsTypes::PREVIEWS_UNSPECIFIED,
-            base::TimeTicks::Now(), base::TimeTicks::Now());
+            navigate_type, base::TimeTicks::Now(), base::TimeTicks::Now());
     blink::mojom::CommitNavigationParamsPtr commit_params =
         entry->ConstructCommitNavigationParams(
             *frame_entry, common_params->url, frame_entry->committed_origin(),
@@ -1137,7 +1135,7 @@ TEST_P(RenderFrameHostManagerTest, NavigateAfterMissingUnloadACK) {
   // deleted.  Similarly, no
   // mojo::AgentSchedulingGroupHost::DidUnloadRenderFrame message is sent.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
-      BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      BackForwardCache::TEST_REQUIRES_NO_CACHING);
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
 
@@ -1632,7 +1630,7 @@ TEST_P(RenderFrameHostManagerTest, DeleteFrameAfterUnloadACK) {
   // deleted.  Similarly, no
   // mojo::AgentSchedulingGroupHost::DidUnloadRenderFrame message is sent.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
-      BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      BackForwardCache::TEST_REQUIRES_NO_CACHING);
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
 
@@ -1683,7 +1681,7 @@ TEST_P(RenderFrameHostManagerTest, UnloadFrameAfterUnloadACK) {
   // deleted.  Similarly, no
   // mojo::AgentSchedulingGroupHost::DidUnloadRenderFrame message is sent.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
-      BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      BackForwardCache::TEST_REQUIRES_NO_CACHING);
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
 
@@ -1731,7 +1729,7 @@ TEST_P(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
   // deleted.  Similarly, no
   // mojo::AgentSchedulingGroupHost::DidUnloadRenderFrame message is sent.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
-      BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      BackForwardCache::TEST_REQUIRES_NO_CACHING);
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
 
@@ -1964,7 +1962,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
       << "This SiteInstance should be destroyable now.";
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // TODO(lukasza): https://crbug.com/1067432: Calling Compositor::Initialize()
 // DCHECKs flakily and without such call the test below consistently fails on
 // Android (DCHECKing about parent_view->GetFrameSinkId().is_valid() in
@@ -1979,7 +1977,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
 // mess with the first tab's content. Motivated by http://crbug.com/473714.
 TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
        MAYBE_TwoTabsCrashOneReloadsOneLeaves) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // TODO(lukasza): https://crbug.com/1067432: This call might DCHECK flakily
   // about !CompositorImpl::IsInitialized()..
   Compositor::Initialize();
@@ -2054,6 +2052,92 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
                          contents1->GetSiteInstance()->group()));
   EXPECT_EQ(nullptr, iframe->GetRenderFrameProxyHost(
                          contents2->GetSiteInstance()->group()));
+}
+
+// Tests two WebContents from the same origin, where one is first navigated to
+// a different origin. This different origin experiences a Renderer crash.
+// However we then navigate that WebContents back to the old origin, which still
+// has an active Renderer.
+//
+// This test confirms that for this return navigation that we identified that
+// there is no FallbackSurface for the RenderWidgetHostView to display during
+// the navigation. (https://crbug.com/1258363)
+TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
+       TwoTabsOneNavigatesAndCrashesThenNavigatesBack) {
+  const GURL kUrl1("http://www.google.com/");
+  const GURL kUrl2("http://webkit.org/");
+
+  // `contents1` and `contents2` navigate to the same page.
+  TestWebContents* contents1 = contents();
+  std::unique_ptr<TestWebContents> contents2(
+      TestWebContents::Create(browser_context(), contents1->GetSiteInstance()));
+  contents1->NavigateAndCommit(kUrl1);
+  contents2->NavigateAndCommit(kUrl1);
+  MockRenderProcessHost* rph = contents1->GetMainFrame()->GetProcess();
+  EXPECT_EQ(rph, contents2->GetMainFrame()->GetProcess());
+  EXPECT_TRUE(contents1->GetMainFrame()->GetView());
+  EXPECT_TRUE(contents2->GetMainFrame()->GetView());
+  EXPECT_TRUE(contents1->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_TRUE(contents2->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_EQ(contents1->GetSiteInstance(), contents2->GetSiteInstance());
+  TestRenderWidgetHostView* initial_view =
+      static_cast<TestRenderWidgetHostView*>(
+          contents2->GetMainFrame()->GetView());
+
+  // Navigate `content2` to a different page. This navigation should have a
+  // valid FallbackSurface for the RenderWidgetHostView to display.
+  contents2->NavigateAndCommit(kUrl2);
+  TestRenderWidgetHostView* post_nav_view =
+      static_cast<TestRenderWidgetHostView*>(
+          contents2->GetMainFrame()->GetView());
+  // Since this is a different origin we should also be using a different
+  // RenderWidgetHostView.
+  EXPECT_NE(initial_view, post_nav_view);
+  EXPECT_FALSE(
+      post_nav_view->clear_fallback_surface_for_commit_pending_called());
+  EXPECT_TRUE(post_nav_view->take_fallback_content_from_called());
+  post_nav_view->ClearFallbackSurfaceCalled();
+  EXPECT_TRUE(contents1->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_TRUE(contents2->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_NE(contents1->GetSiteInstance(), contents2->GetSiteInstance());
+  EXPECT_TRUE(contents1->GetMainFrame()->GetView());
+  EXPECT_TRUE(contents2->GetMainFrame()->GetView());
+
+  // Crash the Renderer of the tab that navigated.
+  MockRenderProcessHost* rph2 = contents2->GetMainFrame()->GetProcess();
+  EXPECT_NE(rph, rph2);
+  rph2->SimulateCrash();
+  EXPECT_TRUE(contents1->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_FALSE(contents2->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_NE(contents1->GetSiteInstance(), contents2->GetSiteInstance());
+  EXPECT_TRUE(contents1->GetMainFrame()->GetView());
+  EXPECT_FALSE(contents2->GetMainFrame()->GetView());
+
+  // Navigate `contents2` back to previous host, which still has an active
+  // Renderer. This should notify the RenderWidgetHostView that there is no
+  // new FallbackSurface to take, and that it should update it's currently
+  // cached one.
+  contents2->NavigateAndCommit(kUrl1);
+  TestRenderWidgetHostView* return_nav_view =
+      static_cast<TestRenderWidgetHostView*>(
+          contents2->GetMainFrame()->GetView());
+  // We should be reusing the original RenderWidgetHostView that `contents2`
+  // used before the navigation to `kUrl2`
+  EXPECT_EQ(initial_view, return_nav_view);
+  EXPECT_TRUE(
+      return_nav_view->clear_fallback_surface_for_commit_pending_called());
+  EXPECT_FALSE(return_nav_view->take_fallback_content_from_called());
+  return_nav_view->ClearFallbackSurfaceCalled();
+
+  EXPECT_TRUE(contents1->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_TRUE(contents2->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_EQ(contents1->GetSiteInstance(), contents2->GetSiteInstance());
+  EXPECT_TRUE(contents1->GetMainFrame()->GetView());
+  EXPECT_TRUE(contents2->GetMainFrame()->GetView());
+  // We should also be back to sharing the same RenderProcessHost.
+  MockRenderProcessHost* rph3 = contents2->GetMainFrame()->GetProcess();
+  EXPECT_NE(rph2, rph3);
+  EXPECT_EQ(rph, rph3);
 }
 
 // Ensure that we don't grant WebUI bindings to a pending RenderViewHost when
@@ -2951,8 +3035,7 @@ TEST_P(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
           *frame_entry, nullptr, frame_entry->url(),
           blink::mojom::Referrer::New(referrer.url, referrer.policy),
           blink::mojom::NavigationType::DIFFERENT_DOCUMENT,
-          blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(),
-          base::TimeTicks::Now());
+          base::TimeTicks::Now(), base::TimeTicks::Now());
   blink::mojom::CommitNavigationParamsPtr commit_params =
       entry.ConstructCommitNavigationParams(
           *frame_entry, common_params->url, frame_entry->committed_origin(),
@@ -3305,7 +3388,7 @@ TEST_P(RenderFrameHostManagerTest,
   // deleted and is in BackForwardCache instead of being in pending deletion.
   // Disabling to consider this scenario.
   contents()->GetController().GetBackForwardCache().DisableForTesting(
-      BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   const GURL kUrl1("http://www.google.com");
   const GURL kUrl2("http://www.chromium.org");

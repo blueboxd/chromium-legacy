@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "build/build_config.h"
 #include "chrome/browser/accessibility/caption_bubble_context_browser.h"
 #include "chrome/browser/accessibility/live_caption_controller_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -74,7 +75,13 @@ void LiveCaptionSpeechRecognitionHost::OnSpeechRecognitionError() {
     live_caption_controller->OnError(context_.get());
 }
 
-#if defined(OS_MAC) || defined(OS_CHROMEOS)
+void LiveCaptionSpeechRecognitionHost::OnSpeechRecognitionStopped() {
+  LiveCaptionController* live_caption_controller = GetLiveCaptionController();
+  if (live_caption_controller)
+    live_caption_controller->OnAudioStreamEnd(context_.get());
+}
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
 void LiveCaptionSpeechRecognitionHost::MediaEffectivelyFullscreenChanged(
     bool is_fullscreen) {
   LiveCaptionController* live_caption_controller = GetLiveCaptionController();

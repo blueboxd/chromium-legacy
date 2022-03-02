@@ -17,6 +17,10 @@
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
+namespace ui {
+class Layer;
+}  // namespace ui
+
 namespace views {
 class Separator;
 }  // namespace views
@@ -56,17 +60,24 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
   AppListBubbleAppsPage& operator=(const AppListBubbleAppsPage&) = delete;
   ~AppListBubbleAppsPage() override;
 
-  // Starts the launcher show animation.
-  void StartShowAnimation();
+  // Updates the continue section and recent apps.
+  void UpdateSuggestions();
 
-  // Animates `view` using a layer animation. Creates the layer if needed. The
-  // layer is pushed down by `vertical_offset` at the start of the animation and
-  // animates back to its original position. Public for testing.
-  void SlideViewIntoPosition(views::View* view, int vertical_offset);
+  // Starts the launcher show animation.
+  void AnimateShowLauncher();
 
   // Starts the launcher hide animation. None of the child views animate, but
   // this disables the scroll view gradient mask to improve performance.
-  void StartHideAnimation();
+  void AnimateHideLauncher();
+
+  // Starts the animation for showing the apps page, coming from another page.
+  void AnimateShowPage();
+
+  // Starts the animation for hiding the apps page, going to another page.
+  void AnimateHidePage();
+
+  // Resets the scroll position to the top.
+  void ResetScrollPosition();
 
   // Aborts all layer animations, which invokes their cleanup callbacks.
   void AbortAllAnimations();
@@ -82,6 +93,7 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
 
   // views::View:
   void Layout() override;
+  void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
   // view::ViewObserver:
   void OnViewVisibilityChanged(views::View* observed_view,
@@ -103,10 +115,17 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
     return scrollable_apps_grid_view_;
   }
 
+  // Which layer animates is an implementation detail.
+  ui::Layer* GetPageAnimationLayerForTest();
+
   RecentAppsView* recent_apps_for_test() { return recent_apps_; }
   views::Separator* separator_for_test() { return separator_; }
   AppListReorderUndoContainerView* reorder_undo_container_for_test() {
     return reorder_undo_container_;
+  }
+
+  ScrollViewGradientHelper* gradient_helper_for_test() {
+    return gradient_helper_.get();
   }
 
  private:
@@ -114,19 +133,17 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
 
   void UpdateSeparatorVisibility();
 
-  // Starts a vertical slide animation for `view` with `vertical_offset` as the
-  // initial offset. The view must already have a layer. Runs the `cleanup`
-  // callback when the animation ends or aborts.
-  void StartSlideInAnimation(views::View* view,
-                             int vertical_offset,
-                             base::RepeatingClosure cleanup);
-
   // Destroys the layer for `view`. Not static so it can be used with weak
   // pointers.
   void DestroyLayerForView(views::View* view);
 
   // Callback for when the apps grid view animation ends.
   void OnAppsGridViewAnimationEnded();
+
+  // Animates `view` using a layer animation. Creates the layer if needed. The
+  // layer is pushed down by `vertical_offset` at the start of the animation and
+  // animates back to its original position.
+  void SlideViewIntoPosition(views::View* view, int vertical_offset);
 
   views::ScrollView* scroll_view_ = nullptr;
   ContinueSectionView* continue_section_ = nullptr;

@@ -58,6 +58,10 @@ ContentSuggestionsSectionInformation* MostVisitedSectionInformation() {
   return EmptySectionInfo(ContentSuggestionsSectionMostVisited);
 }
 
+ContentSuggestionsSectionInformation* SingleCellSectionInformation() {
+  return EmptySectionInfo(ContentSuggestionsSectionSingleCell);
+}
+
 ContentSuggestionsMostVisitedItem* ConvertNTPTile(
     const ntp_tiles::NTPTile& tile,
     ContentSuggestionsSectionInformation* sectionInfo) {
@@ -75,20 +79,6 @@ ContentSuggestionsMostVisitedItem* ConvertNTPTile(
   suggestion.suggestionIdentifier.sectionInfo = sectionInfo;
 
   return suggestion;
-}
-
-content_suggestions::StatusCode ConvertStatusCode(ntp_snippets::Status status) {
-  switch (status.code) {
-    case ntp_snippets::StatusCode::SUCCESS:
-      return content_suggestions::StatusCodeSuccess;
-    case ntp_snippets::StatusCode::TEMPORARY_ERROR:
-      return content_suggestions::StatusCodeError;
-    case ntp_snippets::StatusCode::PERMANENT_ERROR:
-      return content_suggestions::StatusCodePermanentError;
-    case ntp_snippets::StatusCode::STATUS_CODE_COUNT:
-      NOTREACHED();
-      return content_suggestions::StatusCodeError;
-  }
 }
 
 ContentSuggestionsMostVisitedActionItem* BookmarkActionItem() {

@@ -15,9 +15,7 @@ class LayoutCounts : public EmptyLocalFrameClient {
   void DidObserveLayoutNg(uint32_t all_block_count,
                           uint32_t ng_block_count,
                           uint32_t all_call_count,
-                          uint32_t ng_call_count,
-                          uint32_t flexbox_ng_block_count,
-                          uint32_t grid_ng_block_count) override {
+                          uint32_t ng_call_count) override {
     all_call_count_ += all_call_count;
   }
 
@@ -49,11 +47,11 @@ body { margin:0; padding: 0; }
 </svg>)HTML");
   UpdateAllLifecyclePhasesForTest();
 
-  Vector<FloatQuad> quads;
+  Vector<gfx::QuadF> quads;
   auto* object = GetLayoutObjectByElementId("t");
   object->AbsoluteQuads(quads, 0);
   EXPECT_EQ(1u, quads.size());
-  FloatRect bounding = quads.back().BoundingBox();
+  gfx::RectF bounding = quads.back().BoundingBox();
   EXPECT_EQ(7.0f, bounding.x());
   EXPECT_EQ(307.0f, bounding.right());
 }

@@ -29,23 +29,19 @@
 #include "base/base_export.h"
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_types.h"
 #endif
 
 namespace cc {
 class Scheduler;
 }
-namespace base {
-namespace internal {
+namespace base::internal {
 class TimerBase;
 }
-}  // namespace base
-namespace content {
-namespace responsiveness {
+namespace content::responsiveness {
 class Calculator;
 }
-}  // namespace content
 
 namespace base {
 
@@ -122,6 +118,8 @@ struct RawPtrNoOpImpl {
 
   // This is for accounting only, used by unit tests.
   static RAW_PTR_FUNC_ATTRIBUTES void IncrementSwapCountForTest() {}
+  static RAW_PTR_FUNC_ATTRIBUTES void
+  IncrementPointerToMemberOperatorCountForTest() {}
 };
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
@@ -288,6 +286,8 @@ struct BackupRefPtrImpl {
 
   // This is for accounting only, used by unit tests.
   static RAW_PTR_FUNC_ATTRIBUTES void IncrementSwapCountForTest() {}
+  static RAW_PTR_FUNC_ATTRIBUTES void
+  IncrementPointerToMemberOperatorCountForTest() {}
 
  private:
   // We've evaluated several strategies (inline nothing, various parts, or
@@ -358,7 +358,7 @@ struct IsSupportedType<T,
 };
 #endif  // __OBJC__
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // raw_ptr<HWND__> is unsafe at runtime - if the handle happens to also
 // represent a valid pointer into a PartitionAlloc-managed region then it can
 // lead to manipulating random memory when treating it as BackupRefPtr
@@ -568,6 +568,13 @@ class TRIVIAL_ABI raw_ptr {
     return *GetForDereference();
   }
   RAW_PTR_FUNC_ATTRIBUTES T* operator->() const { return GetForDereference(); }
+
+  // Disables `(my_raw_ptr->*pmf)(...)` as a workaround for
+  // the ICE in GCC parsing the code, reported at
+  // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=103455
+  template <typename PMF>
+  void operator->*(PMF) const = delete;
+
   // Deliberately implicit, because raw_ptr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(runtime/explicit)
   RAW_PTR_FUNC_ATTRIBUTES operator T*() const { return GetForExtraction(); }

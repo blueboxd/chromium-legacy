@@ -26,32 +26,6 @@ void SmartLockAuthFactorModel::OnArrowButtonTapOrClickEvent() {
   }
 }
 
-void SmartLockAuthFactorModel::SetEasyUnlockIconState(
-    EasyUnlockIconState state) {
-  switch (state) {
-    case EasyUnlockIconState::NONE:
-      FALLTHROUGH;
-    case EasyUnlockIconState::HARDLOCKED:
-      SetSmartLockState(SmartLockState::kDisabled);
-      break;
-    case EasyUnlockIconState::LOCKED_WITH_PROXIMITY_HINT:
-      SetSmartLockState(SmartLockState::kPhoneFoundLockedAndDistant);
-      break;
-    case EasyUnlockIconState::LOCKED:
-      SetSmartLockState(SmartLockState::kPhoneNotFound);
-      break;
-    case EasyUnlockIconState::LOCKED_TO_BE_ACTIVATED:
-      SetSmartLockState(SmartLockState::kPhoneFoundLockedAndProximate);
-      break;
-    case EasyUnlockIconState::UNLOCKED:
-      SetSmartLockState(SmartLockState::kPhoneAuthenticated);
-      break;
-    case EasyUnlockIconState::SPINNER:
-      SetSmartLockState(SmartLockState::kConnectingToPhone);
-      break;
-  }
-}
-
 void SmartLockAuthFactorModel::SetSmartLockState(SmartLockState state) {
   if (state_ == state)
     return;
@@ -79,15 +53,15 @@ AuthFactorModel::AuthFactorState SmartLockAuthFactorModel::GetAuthFactorState()
 
   switch (state_) {
     case SmartLockState::kDisabled:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kInactive:
       return AuthFactorState::kUnavailable;
     case SmartLockState::kPhoneNotFound:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kConnectingToPhone:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kPhoneFoundLockedAndDistant:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kPhoneFoundUnlockedAndDistant:
       return AuthFactorState::kAvailable;
     case SmartLockState::kPhoneAuthenticated:
@@ -95,13 +69,13 @@ AuthFactorModel::AuthFactorState SmartLockAuthFactorModel::GetAuthFactorState()
     case SmartLockState::kPhoneFoundLockedAndProximate:
       return AuthFactorState::kReady;
     case SmartLockState::kPasswordReentryRequired:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kPrimaryUserAbsent:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kPhoneNotAuthenticated:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kBluetoothDisabled:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kPhoneNotLockable:
       return AuthFactorState::kErrorPermanent;
   }
@@ -119,13 +93,13 @@ int SmartLockAuthFactorModel::GetLabelId() const {
 
   switch (state_) {
     case SmartLockState::kDisabled:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kInactive:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kPasswordReentryRequired:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kPrimaryUserAbsent:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kPhoneNotAuthenticated:
       return can_use_pin_ ? IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED
                           : IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED;
@@ -136,7 +110,7 @@ int SmartLockAuthFactorModel::GetLabelId() const {
     case SmartLockState::kConnectingToPhone:
       return IDS_SMART_LOCK_LABEL_LOOKING_FOR_PHONE;
     case SmartLockState::kPhoneFoundLockedAndDistant:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kPhoneFoundUnlockedAndDistant:
       return IDS_SMART_LOCK_LABEL_PHONE_TOO_FAR;
     case SmartLockState::kPhoneNotFound:
@@ -150,8 +124,7 @@ int SmartLockAuthFactorModel::GetLabelId() const {
 }
 
 bool SmartLockAuthFactorModel::ShouldAnnounceLabel() const {
-  // TODO(crbug.com/1233614): Return 'true' depending on SmartLockState.
-  return false;
+  return true;
 }
 
 int SmartLockAuthFactorModel::GetAccessibleNameId() const {
@@ -182,7 +155,7 @@ void SmartLockAuthFactorModel::UpdateIcon(AuthIconView* icon) {
       icon->StopProgressAnimation();
       return;
     case SmartLockState::kPhoneFoundLockedAndDistant:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kPhoneFoundUnlockedAndDistant:
       icon->SetIcon(kLockScreenSmartLockBluetoothIcon,
                     AuthIconView::Color::kPrimary);
@@ -199,13 +172,13 @@ void SmartLockAuthFactorModel::UpdateIcon(AuthIconView* icon) {
       icon->StopProgressAnimation();
       return;
     case SmartLockState::kPrimaryUserAbsent:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kPhoneNotAuthenticated:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kPasswordReentryRequired:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kPhoneNotLockable:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kBluetoothDisabled:
       icon->SetIcon(kLockScreenSmartLockDisabledIcon,
                     AuthIconView::Color::kDisabled);
@@ -213,9 +186,9 @@ void SmartLockAuthFactorModel::UpdateIcon(AuthIconView* icon) {
       return;
     case SmartLockState::kPhoneAuthenticated:
       // Click to enter -- icon handled by parent view.
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kDisabled:
-      FALLTHROUGH;
+      [[fallthrough]];
     case SmartLockState::kInactive:
       // Intentionally blank.
       return;

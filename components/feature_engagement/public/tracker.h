@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -18,9 +17,9 @@
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_android.h"
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 namespace leveldb_proto {
 class ProtoDatabaseProvider;
@@ -96,11 +95,11 @@ class Tracker : public KeyedService, public base::SupportsUserData {
     bool should_show_snooze_;
   };
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Returns a Java object of the type Tracker for the given Tracker.
   static base::android::ScopedJavaLocalRef<jobject> GetJavaObject(
       Tracker* feature_engagement);
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   // Invoked when the tracker has been initialized. The |success| parameter
   // indicates that the initialization was a success and the tracker is ready to
@@ -125,8 +124,8 @@ class Tracker : public KeyedService, public base::SupportsUserData {
   // help must happen.
   // If |true| is returned, the caller *must* call Dismissed(...) when display
   // of feature enlightenment ends.
-  virtual bool ShouldTriggerHelpUI(const base::Feature& feature)
-      WARN_UNUSED_RESULT = 0;
+  [[nodiscard]] virtual bool ShouldTriggerHelpUI(
+      const base::Feature& feature) = 0;
 
   // For callers interested in showing a snooze button. For other callers, use
   // the ShouldTriggerHelpUI(..) method.

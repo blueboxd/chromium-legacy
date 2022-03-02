@@ -4,12 +4,10 @@
 
 #include "components/feed/core/v2/public/test/stub_feed_api.h"
 
-#include "base/compiler_specific.h"
-
 namespace feed {
 
 namespace {
-ALLOW_UNUSED_TYPE void EnsureStubFeedApiHasNoPureVirtualFunctions() {
+[[maybe_unused]] void EnsureStubFeedApiHasNoPureVirtualFunctions() {
   (void)StubFeedApi();
 }
 }  // namespace
@@ -18,13 +16,6 @@ WebFeedSubscriptions& StubFeedApi::subscriptions() {
   return web_feed_subscriptions_;
 }
 bool StubFeedApi::IsArticlesListVisible() {
-  return {};
-}
-bool StubFeedApi::IsActivityLoggingEnabled(
-    const StreamType& stream_type) const {
-  return {};
-}
-std::string StubFeedApi::GetClientInstanceId() const {
   return {};
 }
 std::string StubFeedApi::GetSessionId() const {

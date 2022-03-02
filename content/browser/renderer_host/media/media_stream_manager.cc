@@ -82,7 +82,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #endif
 
@@ -464,7 +464,7 @@ bool EnableChangeSourceForDevice(const MediaStreamDevice& device) {
                media::kShareThisTabInsteadButtonGetDisplayMedia)));
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 base::TimeDelta GetConditionalFocusWindow() {
   const std::string custom_window =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -893,7 +893,7 @@ MediaStreamManager::MediaStreamManager(
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     std::unique_ptr<VideoCaptureProvider> video_capture_provider)
     :
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
       conditional_focus_window_(GetConditionalFocusWindow()),
 #endif
       audio_system_(audio_system) {
@@ -913,7 +913,7 @@ MediaStreamManager::MediaStreamManager(
 
   if (!video_capture_provider) {
     scoped_refptr<base::SingleThreadTaskRunner> device_task_runner =
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
         // Windows unconditionally requires its own thread (see below).
         nullptr;
 #else
@@ -923,7 +923,7 @@ MediaStreamManager::MediaStreamManager(
 
     if (!device_task_runner) {
       video_capture_thread_.emplace("VideoCaptureThread");
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       // Use an STA Video Capture Thread to try to avoid crashes on enumeration
       // of buggy third party Direct Show modules, http://crbug.com/428958.
       video_capture_thread_->init_com_with_mta(false);
@@ -1249,18 +1249,12 @@ void MediaStreamManager::StopDevice(MediaStreamType type,
       if (request->state(type) == MEDIA_REQUEST_STATE_DONE)
         CloseDevice(type, session_id);
 
-      if (request->ui_proxy) {
-        const DesktopMediaID media_id = DesktopMediaID::Parse(device_it->id);
-        if (!media_id.is_null())
-          request->ui_proxy->OnDeviceStopped(request_it->first, media_id);
-      }
-
       device_it = devices->erase(device_it);
     }
 
     // If this request doesn't have any active devices after a device
     // has been stopped above, remove the request. Note that the request is
-    // only deleted if a device as been removed from |devices|.
+    // only deleted if a device has been removed from |devices|.
     if (devices->empty()) {
       std::string label = request_it->first;
       ++request_it;
@@ -1294,6 +1288,11 @@ void MediaStreamManager::CloseDevice(MediaStreamType type,
         if (blink::IsAudioInputMediaType(device.type) &&
             request->device_stopped_cb) {
           request->device_stopped_cb.Run(labeled_request.first, device);
+        }
+        if (request->ui_proxy) {
+          const DesktopMediaID media_id = DesktopMediaID::Parse(device.id);
+          if (!media_id.is_null())
+            request->ui_proxy->OnDeviceStopped(labeled_request.first, media_id);
         }
       }
     }
@@ -2038,7 +2037,7 @@ void MediaStreamManager::PanTiltZoomPermissionChecked(
       .Run(MediaStreamRequestResult::OK, label, audio_devices, video_devices,
            pan_tilt_zoom_allowed);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // 1. Only the first call to SetCapturedDisplaySurfaceFocus() has an
   //    effect, so a direct call to SetCapturedDisplaySurfaceFocus()
   //    before the scheduled task is executed would render the scheduled
@@ -2598,6 +2597,15 @@ void MediaStreamManager::ChangeMediaStreamSourceFromBrowser(
   if (!request)
     return;
 
+  if (request->ui_proxy) {
+    for (const MediaStreamDevice& device : request->devices) {
+      const DesktopMediaID old_media_id = DesktopMediaID::Parse(device.id);
+      if (!old_media_id.is_null()) {
+        request->ui_proxy->OnDeviceStopped(label, old_media_id);
+      }
+    }
+  }
+
   SendLogMessage(base::StringPrintf(
       "ChangeMediaStreamSourceFromBrowser({label=%s})", label.c_str()));
 
@@ -2939,7 +2947,7 @@ void MediaStreamManager::OnStreamStarted(const std::string& label) {
   }
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 void MediaStreamManager::SetCapturedDisplaySurfaceFocus(
     const std::string& label,
     bool focus,

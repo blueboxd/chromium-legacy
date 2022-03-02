@@ -85,7 +85,7 @@ constexpr char kSyncThemes[] = "syncThemes";
 
 bool IsOEMDefaultWallpaper() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDefaultWallpaperIsOem);
+      ash::switches::kDefaultWallpaperIsOem);
 }
 
 // Saves |data| as |file_name| to directory with |key|. Return false if the
@@ -127,7 +127,7 @@ const user_manager::User* GetUserFromBrowserContext(
   Profile* profile = Profile::FromBrowserContext(context);
   DCHECK(profile);
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile);
   DCHECK(user);
   return user;
 }
@@ -265,12 +265,8 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
     // When the sync settings categorization is on, the wallpaper sync status is
     // stored in the kSyncOsWallpaper pref. The pref value essentially means
     // "themes sync is on" && "apps sync is on".
-    // TODO(https://crbug.com/1243218): Figure out if we need to check
-    // IsOsSyncFeatureEnabled here.
-    bool os_wallpaper_sync_enabled =
-        sync_service->GetUserSettings()->IsOsSyncFeatureEnabled() &&
-        profile->GetPrefs()->GetBoolean(
-            chromeos::settings::prefs::kSyncOsWallpaper);
+    bool os_wallpaper_sync_enabled = profile->GetPrefs()->GetBoolean(
+        chromeos::settings::prefs::kSyncOsWallpaper);
     dict->SetBoolean(kSyncThemes, os_wallpaper_sync_enabled);
     Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
     return;
@@ -535,7 +531,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetThumbnailFunction::Run() {
     // thumbnail. We should either resize it or include a wallpaper thumbnail in
     // addition to large and small wallpaper resolutions.
     thumbnail_path = base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-        chromeos::switches::kDefaultWallpaperSmall);
+        ash::switches::kDefaultWallpaperSmall);
   }
 
   WallpaperFunctionBase::GetNonBlockingTaskRunner()->PostTask(

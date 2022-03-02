@@ -5,8 +5,8 @@
 #include "content/test/test_render_view_host.h"
 
 #include <memory>
+#include <tuple>
 
-#include "base/ignore_result.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -52,7 +52,7 @@ namespace content {
 
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
     : RenderWidgetHostViewBase(rwh), is_showing_(false), is_occluded_(false) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   frame_sink_id_ = AllocateFrameSinkId();
   GetHostFrameSinkManager()->RegisterFrameSinkId(
       frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kYes);
@@ -167,7 +167,7 @@ gfx::Rect TestRenderWidgetHostView::GetViewBounds() {
   return gfx::Rect();
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 void TestRenderWidgetHostView::SetActive(bool active) {
   // <viettrungluu@gmail.com>: Do I need to do anything here?
 }
@@ -189,8 +189,13 @@ gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
   return gfx::Rect();
 }
 
+void TestRenderWidgetHostView::ClearFallbackSurfaceForCommitPending() {
+  clear_fallback_surface_for_commit_pending_called_ = true;
+}
+
 void TestRenderWidgetHostView::TakeFallbackContentFrom(
     RenderWidgetHostView* view) {
+  take_fallback_content_from_called_ = true;
   CopyBackgroundColorIfPresentFrom(*view);
 }
 
@@ -228,6 +233,11 @@ void TestRenderWidgetHostView::OnFrameTokenChanged(
     uint32_t frame_token,
     base::TimeTicks activation_time) {
   OnFrameTokenChangedForView(frame_token, activation_time);
+}
+
+void TestRenderWidgetHostView::ClearFallbackSurfaceCalled() {
+  clear_fallback_surface_for_commit_pending_called_ = false;
+  take_fallback_content_from_called_ = false;
 }
 
 std::unique_ptr<SyntheticGestureTarget>
@@ -288,6 +298,31 @@ ui::Compositor* TestRenderWidgetHostView::GetCompositor() {
   return compositor_;
 }
 
+TestRenderWidgetHostViewChildFrame::TestRenderWidgetHostViewChildFrame(
+    RenderWidgetHost* rwh)
+    : RenderWidgetHostViewChildFrame(rwh, display::ScreenInfos()) {
+  Init();
+}
+
+void TestRenderWidgetHostViewChildFrame::Reset() {
+  last_gesture_seen_ = blink::WebInputEvent::Type::kUndefined;
+}
+
+void TestRenderWidgetHostViewChildFrame::SetCompositor(
+    ui::Compositor* compositor) {
+  compositor_ = compositor;
+}
+
+ui::Compositor* TestRenderWidgetHostViewChildFrame::GetCompositor() {
+  return compositor_;
+}
+
+void TestRenderWidgetHostViewChildFrame::ProcessGestureEvent(
+    const blink::WebGestureEvent& event,
+    const ui::LatencyInfo&) {
+  last_gesture_seen_ = event.GetType();
+}
+
 TestRenderViewHost::TestRenderViewHost(
     FrameTree* frame_tree,
     SiteInstance* instance,
@@ -305,10 +340,16 @@ TestRenderViewHost::TestRenderViewHost(
                          swapped_out,
                          false /* has_initialized_audio_host */),
       delete_counter_(nullptr) {
-  // TestRenderWidgetHostView installs itself into this->view_ in its
-  // constructor, and deletes itself when TestRenderWidgetHostView::Destroy() is
-  // called.
-  new TestRenderWidgetHostView(GetWidget());
+  if (frame_tree->type() == FrameTree::Type::kFencedFrame) {
+    // TestRenderWidgetHostViewChildFrame deletes itself in
+    // RenderWidgetHostViewChildFrame::Destroy.
+    new TestRenderWidgetHostViewChildFrame(GetWidget());
+  } else {
+    // TestRenderWidgetHostView installs itself into this->view_ in
+    // its constructor, and deletes itself when
+    // TestRenderWidgetHostView::Destroy() is called.
+    new TestRenderWidgetHostView(GetWidget());
+  }
 }
 
 TestRenderViewHost::~TestRenderViewHost() {
@@ -365,7 +406,7 @@ bool TestRenderViewHost::CreateRenderView(
     // Pretend that mojo connections of the RemoteFrame is transferred to
     // renderer process and bound in blink.
     mojo::AssociatedRemote<blink::mojom::RemoteMainFrame> remote_main_frame;
-    ignore_result(remote_main_frame.BindNewEndpointAndPassDedicatedReceiver());
+    std::ignore = remote_main_frame.BindNewEndpointAndPassDedicatedReceiver();
     proxy_host->BindRemoteMainFrameInterfaces(
         remote_main_frame.Unbind(),
         mojo::AssociatedRemote<blink::mojom::RemoteMainFrameHost>()

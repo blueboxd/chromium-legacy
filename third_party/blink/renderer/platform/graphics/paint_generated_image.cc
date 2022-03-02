@@ -4,15 +4,15 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint_generated_image.h"
 
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
 
 void PaintGeneratedImage::Draw(cc::PaintCanvas* canvas,
-                               const PaintFlags& flags,
+                               const cc::PaintFlags& flags,
                                const gfx::RectF& dest_rect,
                                const gfx::RectF& src_rect,
                                const ImageDrawOptions&) {

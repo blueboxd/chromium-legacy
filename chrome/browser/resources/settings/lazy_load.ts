@@ -16,6 +16,9 @@ import './privacy_page/privacy_review/privacy_review_history_sync_fragment.js';
 import './privacy_page/privacy_review/privacy_review_msbb_fragment.js';
 import './privacy_page/privacy_review/privacy_review_page.js';
 import './privacy_page/security_keys_subpage.js';
+import './privacy_page/security_keys_phones_subpage.js';
+import './privacy_page/security_keys_phones_list.js';
+import './privacy_page/security_keys_phones_dialog.js';
 import './privacy_page/security_page.js';
 import './site_settings/all_sites.js';
 import './site_settings/site_data_details_subpage.js';
@@ -60,6 +63,7 @@ import './languages_page/edit_dictionary_page.js';
 // </if>
 
 export {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+export {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 export {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 export {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 export {CrSliderElement} from 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
@@ -70,7 +74,7 @@ export {CountryDetailManager, CountryDetailManagerImpl, SettingsAddressEditDialo
 export {SettingsAddressRemoveConfirmationDialogElement} from './autofill_page/address_remove_confirmation_dialog.js';
 export {AutofillManagerImpl, AutofillManagerProxy, PersonalDataChangedListener} from './autofill_page/autofill_manager_proxy.js';
 export {SettingsAutofillSectionElement} from './autofill_page/autofill_section.js';
-// <if expr="chromeos or lacros">
+// <if expr="chromeos_ash or chromeos_lacros">
 export {BlockingRequestManager} from './autofill_page/blocking_request_manager.js';
 // </if>
 export {SettingsCreditCardEditDialogElement} from './autofill_page/credit_card_edit_dialog.js';
@@ -82,9 +86,9 @@ export {PasswordsSectionElement} from './autofill_page/passwords_section.js';
 export {PaymentsManagerImpl, PaymentsManagerProxy} from './autofill_page/payments_manager_proxy.js';
 export {SettingsPaymentsSectionElement} from './autofill_page/payments_section.js';
 // <if expr="_google_chrome and is_win">
-export {ChromeCleanupIdleReason} from './chrome_cleanup_page/chrome_cleanup_page.js';
+export {ChromeCleanerScannerResults, ChromeCleanupFilePath, ChromeCleanupIdleReason, SettingsChromeCleanupPageElement} from './chrome_cleanup_page/chrome_cleanup_page.js';
 export {ChromeCleanupProxy, ChromeCleanupProxyImpl} from './chrome_cleanup_page/chrome_cleanup_proxy.js';
-export {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW} from './chrome_cleanup_page/items_to_remove_list.js';
+export {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW, ItemsToRemoveListElement} from './chrome_cleanup_page/items_to_remove_list.js';
 // </if>
 export {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, ClearBrowsingDataResult, InstalledApp} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';
 export {SettingsClearBrowsingDataDialogElement} from './clear_browsing_data_dialog/clear_browsing_data_dialog.js';
@@ -98,7 +102,12 @@ export {SettingsTextareaElement} from './controls/settings_textarea.js';
 export {DownloadsBrowserProxy, DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.js';
 export {SettingsDownloadsPageElement} from './downloads_page/downloads_page.js';
 // <if expr="_google_chrome and is_win">
-export {IncompatibleApplication, IncompatibleApplicationsBrowserProxyImpl} from './incompatible_applications_page/incompatible_applications_browser_proxy.js';
+export {IncompatibleApplicationItemElement} from './incompatible_applications_page/incompatible_application_item.js';
+export {ActionTypes, IncompatibleApplication, IncompatibleApplicationsBrowserProxy, IncompatibleApplicationsBrowserProxyImpl} from './incompatible_applications_page/incompatible_applications_browser_proxy.js';
+export {SettingsIncompatibleApplicationsPageElement} from './incompatible_applications_page/incompatible_applications_page.js';
+// </if>
+// <if expr="not chromeos and not is_macosx">
+export {SettingsEditDictionaryPageElement} from './languages_page/edit_dictionary_page.js';
 // </if>
 // <if expr="not chromeos">
 export {LanguagesBrowserProxy, LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.js';
@@ -107,11 +116,16 @@ export {kMenuCloseDelay, SettingsLanguagesSubpageElement} from './languages_page
 export {LanguageHelper, LanguagesModel} from './languages_page/languages_types.js';
 // </if>
 // <if expr="not chromeos and not lacros">
-export {ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.js';
+export {BrowserProfile, ImportDataBrowserProxy, ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.js';
+export {SettingsImportDataDialogElement} from './people_page/import_data_dialog.js';
 // </if>
 // <if expr="not chromeos">
-export {ManageProfileBrowserProxyImpl, ProfileShortcutStatus} from './people_page/manage_profile_browser_proxy.js';
+export {SettingsManageProfileElement} from './people_page/manage_profile.js';
+export {ManageProfileBrowserProxy, ManageProfileBrowserProxyImpl, ProfileShortcutStatus} from './people_page/manage_profile_browser_proxy.js';
 // </if>
+export {SettingsSyncControlsElement} from './people_page/sync_controls.js';
+export {SettingsSyncEncryptionOptionsElement} from './people_page/sync_encryption_options.js';
+export {SettingsSyncPageElement} from './people_page/sync_page.js';
 export {SettingsCollapseRadioButtonElement} from './privacy_page/collapse_radio_button.js';
 export {SettingsCookiesPageElement} from './privacy_page/cookies_page.js';
 export {SettingsDoNotTrackToggleElement} from './privacy_page/do_not_track_toggle.js';
@@ -126,8 +140,9 @@ export {PrivacyReviewWelcomeFragmentElement} from './privacy_page/privacy_review
 export {SettingsSecureDnsElement} from './privacy_page/secure_dns.js';
 export {SecureDnsInputElement} from './privacy_page/secure_dns_input.js';
 export {BioEnrollDialogPage, SettingsSecurityKeysBioEnrollDialogElement} from './privacy_page/security_keys_bio_enroll_dialog.js';
-export {Ctap2Status, SampleStatus, SecurityKeysBioEnrollProxy, SecurityKeysBioEnrollProxyImpl, SecurityKeysCredentialBrowserProxy, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysPINBrowserProxy, SecurityKeysPINBrowserProxyImpl, SecurityKeysResetBrowserProxy, SecurityKeysResetBrowserProxyImpl} from './privacy_page/security_keys_browser_proxy.js';
+export {Ctap2Status, SampleStatus, SecurityKeysBioEnrollProxy, SecurityKeysBioEnrollProxyImpl, SecurityKeysCredentialBrowserProxy, SecurityKeysCredentialBrowserProxyImpl, SecurityKeysPhone, SecurityKeysPhonesBrowserProxy, SecurityKeysPhonesBrowserProxyImpl, SecurityKeysPhonesList, SecurityKeysPINBrowserProxy, SecurityKeysPINBrowserProxyImpl, SecurityKeysResetBrowserProxy, SecurityKeysResetBrowserProxyImpl} from './privacy_page/security_keys_browser_proxy.js';
 export {CredentialManagementDialogPage, SettingsSecurityKeysCredentialManagementDialogElement} from './privacy_page/security_keys_credential_management_dialog.js';
+export {SecurityKeysPhonesSubpageElement} from './privacy_page/security_keys_phones_subpage.js';
 export {ResetDialogPage, SettingsSecurityKeysResetDialogElement} from './privacy_page/security_keys_reset_dialog.js';
 export {SetPINDialogPage, SettingsSecurityKeysSetPinDialogElement} from './privacy_page/security_keys_set_pin_dialog.js';
 export {SafeBrowsingSetting, SettingsSecurityPageElement} from './privacy_page/security_page.js';
@@ -136,6 +151,7 @@ export {SettingsResetProfileDialogElement} from './reset_page/reset_profile_dial
 export {SettingsOmniboxExtensionEntryElement} from './search_engines_page/omnibox_extension_entry.js';
 export {SettingsSearchEngineDialogElement} from './search_engines_page/search_engine_dialog.js';
 export {SettingsSearchEngineEntryElement} from './search_engines_page/search_engine_entry.js';
+export {SettingsSearchEnginesListElement} from './search_engines_page/search_engines_list.js';
 export {SettingsSearchEnginesPageElement} from './search_engines_page/search_engines_page.js';
 export {AddSiteDialogElement} from './site_settings/add_site_dialog.js';
 export {AllSitesElement} from './site_settings/all_sites.js';

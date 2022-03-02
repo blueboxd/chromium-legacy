@@ -49,8 +49,8 @@ ci.gpu.linux_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.gpu.linux_builder(
@@ -59,6 +59,9 @@ ci.gpu.linux_builder(
         category = "Linux",
     ),
     tree_closing = False,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu.mac_builder(

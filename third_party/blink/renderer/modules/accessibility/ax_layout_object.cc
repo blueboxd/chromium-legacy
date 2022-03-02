@@ -189,7 +189,7 @@ static bool ShouldIgnoreListItem(Node* node) {
       IsA<HTMLOListElement>(*parent)) {
     AtomicString role = AccessibleNode::GetPropertyOrARIAAttribute(
         parent, AOMStringProperty::kRole);
-    if (!role.IsEmpty() && role != "list")
+    if (!role.IsEmpty() && role != "list" && role != "directory")
       return true;
   }
   return false;
@@ -732,9 +732,8 @@ ax::mojom::blink::ListStyle AXLayoutObject::GetListStyle() const {
 }
 
 static bool ShouldUseLayoutNG(const LayoutObject& layout_object) {
-  return (layout_object.IsInline() || layout_object.IsLayoutInline() ||
-          layout_object.IsText()) &&
-         layout_object.ContainingNGBlockFlow();
+  return layout_object.IsInline() &&
+         layout_object.IsInLayoutNGInlineFormattingContext();
 }
 
 // Get the deepest descendant that is included in the tree.
@@ -1147,6 +1146,10 @@ String AXLayoutObject::TextAlternative(
         name_sources->back().type = name_from;
         name_sources->back().text = text_alternative.value();
       }
+      // Ensure that text nodes count toward
+      // kMaxDescendantsForTextAlternativeComputation when calculating the name
+      // for their direct parent (see AXNodeObject::TextFromDescendants).
+      visited.insert(this);
       return text_alternative.value();
     }
   }
@@ -1287,7 +1290,7 @@ bool AXLayoutObject::IsDataTable() const {
   // If there are at least 20 rows, we'll call it a data table.
   HTMLTableRowsCollection* rows = table_element->rows();
   int num_rows = rows->length();
-  if (num_rows >= 20)
+  if (num_rows >= AXObjectCacheImpl::kDataTableHeuristicMinRows)
     return true;
   if (num_rows <= 0)
     return false;

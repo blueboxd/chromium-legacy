@@ -94,7 +94,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "net/base/features.h"
 #include "services/network/radio_monitor_android.h"
 #endif
@@ -173,7 +173,10 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->auth_challenge_info = request->auth_challenge_info();
   response->has_range_requested = request->extra_request_headers().HasHeader(
       net::HttpRequestHeaders::kRange);
-  response->dns_aliases = request->response_info().dns_aliases;
+  base::ranges::copy(request->response_info().dns_aliases,
+                     std::back_inserter(response->dns_aliases));
+  // [spec]: https://fetch.spec.whatwg.org/#http-network-or-cache-fetch
+  // 13. Set response’s request-includes-credentials to includeCredentials.
   response->request_include_credentials = request->allow_credentials();
 }
 
@@ -710,7 +713,7 @@ URLLoader::URLLoader(
         request.net_log_reference_info.value());
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(net::features::kRecordRadioWakeupTrigger)) {
     MaybeRecordURLLoaderCreationForWakeupTrigger(request, traffic_annotation);
   }
@@ -2514,8 +2517,13 @@ void URLLoader::SetRequestCredentials(const GURL& url) {
   }
 }
 
-// https://github.com/mikewest/credentiallessness
+// [spec]:
+// https://fetch.spec.whatwg.org/#cross-origin-embedder-policy-allows-credentials
 bool URLLoader::CoepAllowCredentials(const GURL& url) {
+  // [spec]: To check if Cross-Origin-Embedder-Policy allows credentials, given
+  //         a request request, run these steps:
+
+  // [spec]  1. If request’s mode is not "no-cors", then return true.
   switch (request_mode_) {
     case mojom::RequestMode::kCors:
     case mojom::RequestMode::kCorsWithForcedPreflight:
@@ -2527,22 +2535,29 @@ bool URLLoader::CoepAllowCredentials(const GURL& url) {
       break;
   }
 
-  mojom::CrossOriginEmbedderPolicyValue coep_policy =
-      factory_params_->client_security_state
-          ? factory_params_->client_security_state->cross_origin_embedder_policy
-                .value
-          : mojom::CrossOriginEmbedderPolicyValue::kNone;
-  if (coep_policy != mojom::CrossOriginEmbedderPolicyValue::kCredentialless)
+  // [spec]: 2. If request’s client is null, then return true.
+  if (!factory_params_->client_security_state)
     return true;
+
+  // [spec]: 3. If request’s client’s policy container’s embedder policy’s value
+  //            is not "credentialless", then return true.
+  if (factory_params_->client_security_state->cross_origin_embedder_policy
+          .value != mojom::CrossOriginEmbedderPolicyValue::kCredentialless) {
+    return true;
+  }
+
   DCHECK(base::FeatureList::IsEnabled(
       features::kCrossOriginEmbedderPolicyCredentialless));
 
-  url::Origin request_origin = url::Origin::Create(url);
+  // [spec]: 4. If request’s origin is same origin with request’s current URL’s
+  //            origin and request does not have a redirect-tainted origin, then
+  //            return true.
   url::Origin request_initiator =
       url_request_->initiator().value_or(url::Origin());
-  if (request_origin.IsSameOriginWith(request_initiator))
+  if (request_initiator.IsSameOriginWith(url))
     return true;
 
+  // [spec]: 5. Return false.
   return false;
 }
 

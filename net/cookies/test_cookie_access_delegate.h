@@ -9,9 +9,12 @@
 #include <set>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
+#include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/first_party_set_metadata.h"
 #include "net/cookies/same_party_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -37,20 +40,17 @@ class TestCookieAccessDelegate : public CookieAccessDelegate {
   bool ShouldIgnoreSameSiteRestrictions(
       const GURL& url,
       const SiteForCookies& site_for_cookies) const override;
-  SamePartyContext ComputeSamePartyContext(
+  void ComputeFirstPartySetMetadataMaybeAsync(
       const net::SchemefulSite& site,
       const net::SchemefulSite* top_frame_site,
-      const std::set<net::SchemefulSite>& party_context) const override;
-  FirstPartySetsContextType ComputeFirstPartySetsContextType(
-      const net::SchemefulSite& site,
-      const absl::optional<net::SchemefulSite>& top_frame_site,
-      const std::set<net::SchemefulSite>& party_context) const override;
-  bool IsInNontrivialFirstPartySet(
-      const net::SchemefulSite& site) const override;
+      const std::set<net::SchemefulSite>& party_context,
+      base::OnceCallback<void(FirstPartySetMetadata)> callback) const override;
   absl::optional<net::SchemefulSite> FindFirstPartySetOwner(
       const net::SchemefulSite& site) const override;
-  base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
-  RetrieveFirstPartySets() const override;
+  void RetrieveFirstPartySets(
+      base::OnceCallback<void(
+          base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>)>
+          callback) const override;
 
   // Sets the expected return value for any cookie whose Domain
   // matches |cookie_domain|. Pass the value of |cookie.Domain()| and any
@@ -72,6 +72,10 @@ class TestCookieAccessDelegate : public CookieAccessDelegate {
       const base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>&
           sets);
 
+  void set_invoke_callbacks_asynchronously(bool async) {
+    invoke_callbacks_asynchronously_ = async;
+  }
+
  private:
   // Discard any leading dot in the domain string.
   std::string GetKeyForDomainValue(const std::string& domain) const;
@@ -80,6 +84,7 @@ class TestCookieAccessDelegate : public CookieAccessDelegate {
   std::map<std::string, bool> ignore_samesite_restrictions_schemes_;
   base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
       first_party_sets_;
+  bool invoke_callbacks_asynchronously_ = false;
 };
 
 }  // namespace net

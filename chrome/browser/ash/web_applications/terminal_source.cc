@@ -123,8 +123,8 @@ void TerminalSource::StartDataRequest(
   if (path.empty())
     path = default_file_;
 
-  // Replace $i8n{themeColor} in *.html.
-  if (base::EndsWith(path, ".html", base::CompareCase::INSENSITIVE_ASCII)) {
+  // Refresh the $i8n{themeColor} replacement for css files.
+  if (base::EndsWith(path, ".css", base::CompareCase::INSENSITIVE_ASCII)) {
     replacements_["themeColor"] = net::EscapeForHTML(
         crostini::GetTerminalSettingBackgroundColor(profile_));
   }
@@ -171,7 +171,7 @@ std::string TerminalSource::GetContentSecurityPolicy(
     case network::mojom::CSPDirectiveName::StyleSrc:
       return "style-src * 'unsafe-inline'; font-src *;";
     case network::mojom::CSPDirectiveName::RequireTrustedTypesFor:
-      FALLTHROUGH;
+      [[fallthrough]];
     case network::mojom::CSPDirectiveName::TrustedTypes:
       // TODO(crbug.com/1098685): Trusted Type remaining WebUI
       // This removes require-trusted-types-for and trusted-types directives

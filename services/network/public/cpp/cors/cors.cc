@@ -12,7 +12,6 @@
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
@@ -261,7 +260,7 @@ bool ShouldCheckCors(const GURL& request_url,
   // DCHECK for a while, just in case.
   DCHECK(!request_url.SchemeIs(url::kDataScheme));
 
-  if (request_initiator->IsSameOriginWith(url::Origin::Create(request_url)))
+  if (request_initiator->IsSameOriginWith(request_url))
     return false;
   return true;
 }

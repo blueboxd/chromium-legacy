@@ -21,6 +21,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -270,8 +271,11 @@ bool IsRequestFromExtension(const WebRequestInfo& request,
 bool FromHeaderDictionary(const base::DictionaryValue* header_value,
                           std::string* name,
                           std::string* out_value) {
-  if (!header_value->GetString(keys::kHeaderNameKey, name))
+  const std::string* name_ptr =
+      header_value->FindStringKey(keys::kHeaderNameKey);
+  if (!name)
     return false;
+  *name = *name_ptr;
 
   // We require either a "value" or a "binaryValue" entry.
   const base::Value* value = header_value->FindKey(keys::kHeaderValueKey);
@@ -700,7 +704,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     if (web_contents && WebViewGuest::IsGuest(web_contents)) {
       auto* guest_web_contents =
           WebViewGuest::GetTopLevelWebContents(web_contents);
-      auto& guest_url = guest_web_contents->GetURL();
+      auto& guest_url = guest_web_contents->GetLastCommittedURL();
       if (guest_url.SchemeIs(content::kChromeUIScheme)) {
         auto* feature = FeatureProvider::GetAPIFeature("webRequestInternal");
         if (feature
@@ -2832,13 +2836,14 @@ WebRequestInternalEventHandledFunction::Run() {
       const base::DictionaryValue* credentials_value = nullptr;
       EXTENSION_FUNCTION_VALIDATE(
           auth_credentials_value->GetAsDictionary(&credentials_value));
-      std::u16string username;
-      std::u16string password;
-      EXTENSION_FUNCTION_VALIDATE(
-          credentials_value->GetString(keys::kUsernameKey, &username));
-      EXTENSION_FUNCTION_VALIDATE(
-          credentials_value->GetString(keys::kPasswordKey, &password));
-      response->auth_credentials = net::AuthCredentials(username, password);
+      const std::string* username =
+          credentials_value->FindStringKey(keys::kUsernameKey);
+      const std::string* password =
+          credentials_value->FindStringKey(keys::kPasswordKey);
+      EXTENSION_FUNCTION_VALIDATE(username);
+      EXTENSION_FUNCTION_VALIDATE(password);
+      response->auth_credentials = net::AuthCredentials(
+          base::UTF8ToUTF16(*username), base::UTF8ToUTF16(*password));
     }
   }
 

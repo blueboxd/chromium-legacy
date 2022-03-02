@@ -150,17 +150,13 @@ void MetricsRenderFrameObserver::DidObserveLayoutShift(
                                                        after_input_or_scroll);
 }
 
-void MetricsRenderFrameObserver::DidObserveLayoutNg(
-    uint32_t all_block_count,
-    uint32_t ng_block_count,
-    uint32_t all_call_count,
-    uint32_t ng_call_count,
-    uint32_t flexbox_ng_block_count,
-    uint32_t grid_ng_block_count) {
+void MetricsRenderFrameObserver::DidObserveLayoutNg(uint32_t all_block_count,
+                                                    uint32_t ng_block_count,
+                                                    uint32_t all_call_count,
+                                                    uint32_t ng_call_count) {
   if (page_timing_metrics_sender_)
     page_timing_metrics_sender_->DidObserveLayoutNg(
-        all_block_count, ng_block_count, all_call_count, ng_call_count,
-        flexbox_ng_block_count, grid_ng_block_count);
+        all_block_count, ng_block_count, all_call_count, ng_call_count);
 }
 
 void MetricsRenderFrameObserver::DidObserveLazyLoadBehavior(
@@ -173,8 +169,7 @@ void MetricsRenderFrameObserver::DidStartResponse(
     const GURL& response_url,
     int request_id,
     const network::mojom::URLResponseHead& response_head,
-    network::mojom::RequestDestination request_destination,
-    blink::PreviewsState previews_state) {
+    network::mojom::RequestDestination request_destination) {
   if (provisional_frame_resource_data_use_ &&
       blink::IsRequestDestinationFrame(request_destination)) {
     // TODO(rajendrant): This frame request might start before the provisional
@@ -595,6 +590,8 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
             : ClampDelta(perf.LargestImagePaint(), start);
     timing->paint_timing->largest_contentful_paint->type =
         perf.LargestContentfulPaintType();
+    timing->paint_timing->largest_contentful_paint->image_bpp =
+        perf.LargestContentfulPaintImageBPP();
   }
   if (perf.LargestTextPaintSize() > 0) {
     // LargestTextPaint and LargestTextPaintSize should be available at the

@@ -255,11 +255,14 @@ void CheckInstallation(UpdaterScope scope,
     }
   }
 
-  std::unique_ptr<TaskScheduler> task_scheduler =
-      TaskScheduler::CreateInstance();
-  const std::wstring task_name = GetTaskName(scope);
-  EXPECT_EQ(is_installed, task_scheduler->IsTaskRegistered(task_name.c_str()));
   if (is_installed) {
+    std::unique_ptr<TaskScheduler> task_scheduler =
+        TaskScheduler::CreateInstance();
+    const std::wstring task_name =
+        task_scheduler->FindFirstTaskName(GetTaskNamePrefix(scope));
+    EXPECT_TRUE(!task_name.empty());
+    EXPECT_TRUE(task_scheduler->IsTaskRegistered(task_name.c_str()));
+
     TaskScheduler::TaskInfo task_info;
     ASSERT_TRUE(task_scheduler->GetTaskInfo(task_name.c_str(), &task_info));
     ASSERT_EQ(task_info.exec_actions.size(), 1u);
@@ -290,8 +293,13 @@ void CheckInstallation(UpdaterScope scope,
 // Returns true is any updater process is found running in any session in the
 // system, regardless of its path.
 bool IsUpdaterRunning() {
-  ProcessFilterName filter(kUpdaterProcessName);
-  return base::ProcessIterator(&filter).NextProcessEntry();
+  return IsProcessRunning(kUpdaterProcessName);
+}
+
+void SleepFor(int seconds) {
+  VLOG(2) << "Sleeping " << seconds << " seconds...";
+  base::WaitableEvent().TimedWait(base::Seconds(seconds));
+  VLOG(2) << "Sleep complete.";
 }
 
 }  // namespace
@@ -348,7 +356,12 @@ void Clean(UpdaterScope scope) {
 
   std::unique_ptr<TaskScheduler> task_scheduler =
       TaskScheduler::CreateInstance();
-  task_scheduler->DeleteTask(GetTaskName(scope).c_str());
+  const std::wstring task_name =
+      task_scheduler->FindFirstTaskName(GetTaskNamePrefix(scope));
+  if (!task_name.empty())
+    task_scheduler->DeleteTask(task_name.c_str());
+  EXPECT_TRUE(
+      task_scheduler->FindFirstTaskName(GetTaskNamePrefix(scope)).empty());
 
   absl::optional<base::FilePath> path = GetProductPath(scope);
   EXPECT_TRUE(path);
@@ -414,6 +427,7 @@ void Uninstall(UpdaterScope scope) {
 
   // Uninstallation involves a race with the uninstall.cmd script and the
   // process exit. Sleep to allow the script to complete its work.
+  // TODO(crbug.com/1217765): Figure out a way to replace this.
   SleepFor(5);
 }
 
@@ -450,7 +464,7 @@ void ExpectNotActive(UpdaterScope /*scope*/, const std::string& id) {
 
 // Waits for all updater processes to end, including the server process holding
 // the prefs lock.
-void WaitForServerExit(UpdaterScope /*scope*/) {
+void WaitForUpdaterExit(UpdaterScope /*scope*/) {
   WaitFor(base::BindRepeating([]() { return !IsUpdaterRunning(); }));
 }
 

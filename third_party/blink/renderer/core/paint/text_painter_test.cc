@@ -31,13 +31,12 @@ class TextPainterTest : public RenderingTest {
   LineLayoutText GetLineLayoutText() { return LineLayoutText(layout_text_); }
 
   PaintInfo CreatePaintInfoForBackground() {
-    return PaintInfo(context_, CullRect(), PaintPhase::kSelfBlockBackgroundOnly,
-                     kGlobalPaintNormalPhase, 0);
+    return PaintInfo(context_, CullRect(),
+                     PaintPhase::kSelfBlockBackgroundOnly);
   }
 
   PaintInfo CreatePaintInfoForTextClip() {
-    return PaintInfo(context_, CullRect(), PaintPhase::kTextClip,
-                     kGlobalPaintNormalPhase, 0);
+    return PaintInfo(context_, CullRect(), PaintPhase::kTextClip);
   }
 
  protected:
@@ -79,7 +78,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_AllProperties) {
   GetDocument().body()->SetInlineStyleProperty(
       CSSPropertyID::kWebkitTextStrokeColor, CSSValueID::kLime);
   GetDocument().body()->SetInlineStyleProperty(
-      CSSPropertyID::kWebkitTextEmphasisColor, CSSValueID::kBlue);
+      CSSPropertyID::kTextEmphasisColor, CSSValueID::kBlue);
   GetDocument().body()->SetInlineStyleProperty(
       CSSPropertyID::kWebkitTextStrokeWidth, 4,
       CSSPrimitiveValue::UnitType::kPixels);
@@ -109,7 +108,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_UsesTextAsClip) {
   GetDocument().body()->SetInlineStyleProperty(
       CSSPropertyID::kWebkitTextStrokeColor, CSSValueID::kLime);
   GetDocument().body()->SetInlineStyleProperty(
-      CSSPropertyID::kWebkitTextEmphasisColor, CSSValueID::kBlue);
+      CSSPropertyID::kTextEmphasisColor, CSSValueID::kBlue);
   GetDocument().body()->SetInlineStyleProperty(
       CSSPropertyID::kWebkitTextStrokeWidth, 4,
       CSSPrimitiveValue::UnitType::kPixels);
@@ -134,7 +133,7 @@ TEST_F(TextPainterTest,
   GetDocument().body()->SetInlineStyleProperty(
       CSSPropertyID::kWebkitTextStrokeColor, CSSValueID::kLime);
   GetDocument().body()->SetInlineStyleProperty(
-      CSSPropertyID::kWebkitTextEmphasisColor, CSSValueID::kBlue);
+      CSSPropertyID::kTextEmphasisColor, CSSValueID::kBlue);
   GetDocument().body()->SetInlineStyleProperty(
       CSSPropertyID::kWebkitPrintColorAdjust, CSSValueID::kEconomy);
   GetDocument().GetSettings()->SetShouldPrintBackgrounds(false);
@@ -159,7 +158,7 @@ TEST_F(TextPainterTest, TextPaintingStyle_ForceBackgroundToWhite_Darkened) {
   GetDocument().body()->SetInlineStyleProperty(
       CSSPropertyID::kWebkitTextStrokeColor, "rgb(220, 255, 220)");
   GetDocument().body()->SetInlineStyleProperty(
-      CSSPropertyID::kWebkitTextEmphasisColor, "rgb(220, 220, 255)");
+      CSSPropertyID::kTextEmphasisColor, "rgb(220, 220, 255)");
   GetDocument().body()->SetInlineStyleProperty(
       CSSPropertyID::kWebkitPrintColorAdjust, CSSValueID::kEconomy);
   GetDocument().GetSettings()->SetShouldPrintBackgrounds(false);

@@ -20,12 +20,15 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_util.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/support_tool/data_collector.h"
+#include "components/feedback/pii_types.h"
+#include "components/feedback/redaction_tool.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/zlib/google/zip.h"
 
@@ -52,7 +55,16 @@ base::FilePath CreateTempDirForOutput() {
   return temp_dir.Take();
 }
 
-SupportToolHandler::SupportToolHandler() = default;
+SupportToolHandler::SupportToolHandler()
+    : task_runner_for_redaction_tool_(
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::TaskPriority::USER_VISIBLE,
+               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
+      redaction_tool_container_(
+          base::MakeRefCounted<feedback::RedactionToolContainer>(
+              task_runner_for_redaction_tool_,
+              nullptr)) {}
+
 SupportToolHandler::~SupportToolHandler() {
   CleanUp();
 }
@@ -94,9 +106,17 @@ void SupportToolHandler::CollectSupportData(
                      weak_ptr_factory_.GetWeakPtr()));
 
   for (auto& data_collector : data_collectors_) {
-    data_collector->CollectDataAndDetectPII(base::BindOnce(
-        &SupportToolHandler::OnDataCollected, weak_ptr_factory_.GetWeakPtr(),
-        collect_data_barrier_closure));
+    // DataCollectors will use `redaction_tool_container_` on
+    // `task_runner_for_redaction_tool_` to redact PII from the collected logs.
+    // All DataCollectors will use the same RedactionTool instance on the same
+    // task runner as we need to replace the same PII data with the same
+    // place-holder strings (that are stored in RedactionTool instance's data
+    // member) in all collected logs to avoid confusing the reader.
+    data_collector->CollectDataAndDetectPII(
+        base::BindOnce(&SupportToolHandler::OnDataCollected,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       collect_data_barrier_closure),
+        task_runner_for_redaction_tool_, redaction_tool_container_);
   }
 }
 
@@ -114,8 +134,10 @@ void SupportToolHandler::OnAllDataCollected() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& data_collector : data_collectors_) {
     const PIIMap& collected = data_collector->GetDetectedPII();
-    // Use std::multipmap.merge() function after migration to C++17.
-    detected_pii_.insert(collected.begin(), collected.end());
+    for (auto& pii_data : collected) {
+      detected_pii_[pii_data.first].insert(pii_data.second.begin(),
+                                           pii_data.second.end());
+    }
   }
 
   std::move(on_data_collection_done_callback_)
@@ -123,7 +145,7 @@ void SupportToolHandler::OnAllDataCollected() {
 }
 
 void SupportToolHandler::ExportCollectedData(
-    std::set<PIIType> pii_types_to_keep,
+    std::set<feedback::PIIType> pii_types_to_keep,
     base::FilePath target_path,
     SupportToolDataExportedCallback on_data_exported_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -140,14 +162,16 @@ void SupportToolHandler::ExportCollectedData(
                      target_path));
 }
 
-void SupportToolHandler::ExportIntoTempDir(std::set<PIIType> pii_types_to_keep,
-                                           base::FilePath target_path,
-                                           base::FilePath tmp_path) {
+void SupportToolHandler::ExportIntoTempDir(
+    std::set<feedback::PIIType> pii_types_to_keep,
+    base::FilePath target_path,
+    base::FilePath tmp_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (tmp_path.empty()) {
     collected_errors_.insert(
-        SupportToolError::kDataExportTempDirCreationFailed);
+        {SupportToolErrorCode::kDataExportError,
+         "Failed to create temporary directory for output."});
     std::move(on_data_export_done_callback_).Run(collected_errors_);
     return;
   }
@@ -161,7 +185,8 @@ void SupportToolHandler::ExportIntoTempDir(std::set<PIIType> pii_types_to_keep,
 
   for (auto& data_collector : data_collectors_) {
     data_collector->ExportCollectedDataWithPII(
-        pii_types_to_keep, temp_dir_,
+        pii_types_to_keep, temp_dir_, task_runner_for_redaction_tool_,
+        redaction_tool_container_,
         base::BindOnce(&SupportToolHandler::OnDataCollectorDoneExporting,
                        weak_ptr_factory_.GetWeakPtr(),
                        export_data_barrier_closure));
@@ -194,7 +219,8 @@ void SupportToolHandler::OnDataExportDone(bool success) {
   // Clean-up the temporary directory after exporting the data.
   CleanUp();
   if (!success) {
-    collected_errors_.insert(SupportToolError::kDataExportCreateArchiveFailed);
+    collected_errors_.insert({SupportToolErrorCode::kDataExportError,
+                              "Failed to archive the output files."});
   }
   std::move(on_data_export_done_callback_).Run(collected_errors_);
 }

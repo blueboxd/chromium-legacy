@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Onartu cookieak</translation>
 <translation id="2228071138934252756"><ph name="APP_NAME" /> aplikazioari kamera atzitzeko baimena emateko, kamera atzitzeko baimena aktibatu behar duzu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">Behin soilik</translation>
+<translation id="2253414712144136228">Kendu <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">Eskatu nire baimena webgune batek inguruko Bluetooth bidezko gailuak bilatu nahi dituenean (gomendatua)</translation>
 <translation id="2315043854645842844">Sistema eragileak ez du onartzen bezeroarentzako ziurtagiria hautatzea.</translation>
 <translation id="2359808026110333948">Egin aurrera</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Erakutsi informazioa</translation>
 <translation id="3123473560110926937">Webgune batzuetan blokeatu dira iragarkiak</translation>
 <translation id="3198916472715691905">Gordetako datuak: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3203366800380907218">Saretik</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> aplikazioari jakinarazpenak bidaltzeko baimena emateko, jakinarazpenak bidaltzeko baimena aktibatu behar duzu <ph name="BEGIN_LINK" />Android-en ezarpenetan<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofonoa</translation>
 <translation id="3277252321222022663">Eman sentsoreak atzitzeko baimena webguneei (gomendatua)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">Blokeatuta</translation>
 <translation id="5689516760719285838">Kokapena</translation>
 <translation id="5690795753582697420">Kamera atzitzeko baimena desaktibatuta dago Android-en ezarpenetan</translation>
-<translation id="5710871682236653961">NFC darabilten gailuak ukitzean, eskatu baimena webguneei informazioa bidali eta jasotzeko (gomendatua)</translation>
 <translation id="5719847187258001597"><ph name="ORIGIN" /> webguneak edo hari dagokion hasierako pantailako aplikazioak gorde dituen datu eta cookie guztiak garbituko dira.</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> blokeatu egin da</translation>
 <translation id="5804241973901381774">Baimenak</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">Baimenduta dago oraingo bilatzailean</translation>
 <translation id="7053983685419859001">Blokeatu</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 hautatuta}other{# hautatuta}}</translation>
-<translation id="7070090581017165256">Webgune honi buruz</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> hautatu dira. Pantailaren goialdean daude aukera erabilgarriak.</translation>
 <translation id="7141896414559753902">Ez utzi webguneei leiho gainerakorrak eta birbideratzeak erakusten (gomendatua)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Webgune bat mikrofonoa erabiltzen ari da</translation>
 <translation id="7561196759112975576">Beti</translation>
-<translation id="7572498721684305250">Blokeatu webguneak, ez dezaten bidali eta jaso informaziorik NFC darabilten gailuak ukitzen dituzunean.</translation>
 <translation id="757524316907819857">Ez utzi webguneei eduki babestua erreproduzitzen</translation>
 <translation id="7649070708921625228">Laguntza</translation>
 <translation id="7658239707568436148">Utzi</translation>

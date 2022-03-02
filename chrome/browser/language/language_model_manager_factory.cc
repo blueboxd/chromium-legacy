@@ -31,7 +31,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_prefs.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/language/android/jni_headers/LanguageBridge_jni.h"
@@ -39,7 +39,7 @@
 
 namespace {
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Records per-initialization ULP-related metrics.
 void RecordULPInitMetrics(Profile* profile,
                           const std::vector<std::string>& ulp_languages) {
@@ -52,17 +52,17 @@ void RecordULPInitMetrics(Profile* profile,
   logger.RecordInitiationUILanguageInULP(
       logger.DetermineLanguageStatus(app_locale, ulp_languages));
 
-  const std::string target_language =
+  const std::string translate_target_language =
       translate::TranslatePrefs(pref_service).GetRecentTargetLanguage();
   logger.RecordInitiationTranslateTargetInULP(
-      logger.DetermineLanguageStatus(target_language, ulp_languages));
+      logger.DetermineLanguageStatus(translate_target_language, ulp_languages));
 
   std::vector<std::string> accept_languages;
   language::LanguagePrefs(pref_service)
       .GetAcceptLanguagesList(&accept_languages);
 
   language::ULPLanguageStatus accept_language_status =
-      language::ULPLanguageStatus::kLanguageEmpty;
+      language::ULPLanguageStatus::kLanguageNotInULP;
   if (accept_languages.size() > 0) {
     accept_language_status =
         logger.DetermineLanguageStatus(accept_languages[0], ulp_languages);
@@ -148,7 +148,7 @@ void PrepareLanguageModels(Profile* const profile,
 
     // On Android, additionally create a ULPLanguageModel and populate it with
     // ULP data.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(language::kUseULPLanguagesInChrome)) {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},

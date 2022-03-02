@@ -218,7 +218,7 @@ bool UpdateOverridesList(base::ListValue* overrides_list,
           break;
         }
         // Else fall through and erase the broken pref.
-        FALLTHROUGH;
+        [[fallthrough]];
       }
       case UPDATE_REMOVE:
         overrides_list->EraseListIter(iter);
@@ -236,7 +236,8 @@ void UpdateOverridesLists(Profile* profile,
   if (overrides.empty())
     return;
   PrefService* prefs = profile->GetPrefs();
-  DictionaryPrefUpdate update(prefs, ExtensionWebUI::kExtensionURLOverrides);
+  DictionaryPrefUpdateDeprecated update(prefs,
+                                        ExtensionWebUI::kExtensionURLOverrides);
   base::DictionaryValue* all_overrides = update.Get();
   for (const auto& page_override_pair : overrides) {
     base::ListValue* page_overrides = nullptr;
@@ -320,7 +321,8 @@ void ForEachOverrideList(
     Profile* profile,
     base::RepeatingCallback<void(base::ListValue*)> callback) {
   PrefService* prefs = profile->GetPrefs();
-  DictionaryPrefUpdate update(prefs, ExtensionWebUI::kExtensionURLOverrides);
+  DictionaryPrefUpdateDeprecated update(prefs,
+                                        ExtensionWebUI::kExtensionURLOverrides);
   base::DictionaryValue* all_overrides = update.Get();
 
   // DictionaryValue::Iterator cannot be used to modify the list. Generate the
@@ -356,8 +358,9 @@ std::vector<GURL> GetOverridesForChromeURL(
   DCHECK(url.SchemeIs(content::kChromeUIScheme));
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  const base::DictionaryValue* overrides = profile->GetPrefs()->GetDictionary(
-      ExtensionWebUI::kExtensionURLOverrides);
+  const base::DictionaryValue* overrides =
+      &base::Value::AsDictionaryValue(*profile->GetPrefs()->GetDictionary(
+          ExtensionWebUI::kExtensionURLOverrides));
 
   const base::ListValue* url_list = nullptr;
   if (!overrides || !overrides->GetList(url.host_piece(), &url_list))
@@ -450,8 +453,8 @@ bool ExtensionWebUI::HandleChromeURLOverride(
 bool ExtensionWebUI::HandleChromeURLOverrideReverse(
     GURL* url, content::BrowserContext* browser_context) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  const base::DictionaryValue* overrides =
-      profile->GetPrefs()->GetDictionary(kExtensionURLOverrides);
+  const base::DictionaryValue* overrides = &base::Value::AsDictionaryValue(
+      *profile->GetPrefs()->GetDictionary(kExtensionURLOverrides));
   if (!overrides)
     return false;
 
@@ -537,7 +540,7 @@ void ExtensionWebUI::RegisterOrActivateChromeURLOverrides(
   if (overrides.empty())
     return;
   PrefService* prefs = profile->GetPrefs();
-  DictionaryPrefUpdate update(prefs, kExtensionURLOverrides);
+  DictionaryPrefUpdateDeprecated update(prefs, kExtensionURLOverrides);
   base::Value* all_overrides = update.Get();
   for (const auto& page_override_pair : overrides) {
     base::Value* page_overrides_weak =

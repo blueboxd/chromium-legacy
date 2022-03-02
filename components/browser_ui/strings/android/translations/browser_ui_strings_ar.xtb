@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">السماح بملفات تعريف الارتباط</translation>
 <translation id="2228071138934252756">‏للسماح لتطبيق <ph name="APP_NAME" /> بالوصول إلى الكاميرا، يُرجى أيضًا تفعيل الكاميرا في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">مرة واحدة فقط</translation>
+<translation id="2253414712144136228">إزالة <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">طلب الإذن عند محاولة موقع إلكتروني العثور على أجهزة البلوتوث المجاورة (إجراء موصَى به)</translation>
 <translation id="2315043854645842844">لا يدعم نظام التشغيل تحديد الشهادة من جانب العميل.</translation>
 <translation id="2359808026110333948">متابعة</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">عرض المعلومات</translation>
 <translation id="3123473560110926937">حظر الإعلانات في بعض المواقع</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> من البيانات المخزّنة</translation>
+<translation id="3203366800380907218">من الويب</translation>
 <translation id="321187648315454507">‏للسماح لتطبيق <ph name="APP_NAME" /> بإرسال الإشعارات إليك، يُرجى أيضًا تفعيل الإشعارات في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">الميكروفون</translation>
 <translation id="3277252321222022663">يمكنك السماح للمواقع بالوصول إلى أجهزة الاستشعار (مُقترَح).</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">الحظر</translation>
 <translation id="5689516760719285838">الموقع الجغرافي</translation>
 <translation id="5690795753582697420">‏تم إيقاف الكاميرا في إعدادات Android.</translation>
-<translation id="5710871682236653961">‏السؤال قبل السماح للمواقع الإلكترونية بإرسال المعلومات وتلقّيها عند النقر على أجهزة NFC (مستحسن)</translation>
 <translation id="5719847187258001597">سيؤدي هذا الإجراء إلى محو جميع البيانات وملفات تعريف الارتباط المُخزّنة من خلال <ph name="ORIGIN" /> أو من خلال التطبيق على الشاشة الرئيسية.</translation>
 <translation id="5771720122942595109">تم حظر <ph name="PERMISSION_1" />.</translation>
 <translation id="5804241973901381774">الأذونات</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">تم منح الإذن لمحرّك البحث الحالي</translation>
 <translation id="7053983685419859001">حظر</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{تم اختيار عنصر واحد}zero{تم اختيار # عنصر}two{تم اختيار عنصرين (#)}few{تم اختيار # عناصر}many{تم اختيار # عنصرًا}other{تم اختيار # عنصر}}</translation>
-<translation id="7070090581017165256">لمحة عن هذا الموقع الإلكتروني</translation>
 <translation id="7087918508125750058">تم اختيار <ph name="ITEM_COUNT" /> عنصر، ويمكنك الاطّلاع على الخيارات في الجزء العلوي من الشاشة.</translation>
 <translation id="7141896414559753902">منع المواقع الإلكترونية من عرض النوافذ المنبثقة وعمليات إعادة التوجيه (مُوصى به)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> كيلوبايت</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">هناك موقع إلكتروني يستخدم الميكروفون.</translation>
 <translation id="7561196759112975576">دومًا</translation>
-<translation id="7572498721684305250">‏حظر المواقع الإلكترونية من إرسال المعلومات وتلقّيها عند النقر على أجهزة NFC.</translation>
 <translation id="757524316907819857">منع المواقع الإلكترونية من تشغيل المحتوى المحمي</translation>
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7658239707568436148">إلغاء</translation>

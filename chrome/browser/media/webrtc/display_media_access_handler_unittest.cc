@@ -12,27 +12,28 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_callback.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/webrtc/fake_desktop_media_picker_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/policy/dlp/mock_dlp_content_manager.h"
-#endif
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/mock_dlp_content_manager.h"
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -75,7 +76,8 @@ class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
                       : blink::mojom::MediaStreamType::NO_SERVICE,
         blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
         /*disable_local_echo=*/false,
-        /*request_pan_tilt_zoom_permission=*/false);
+        /*request_pan_tilt_zoom_permission=*/false,
+        /*region_capture_capable=*/false);
   }
 
   content::MediaStreamRequest MakeMediaDeviceUpdateRequest(bool request_audio) {
@@ -125,7 +127,8 @@ class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
       const content::DesktopMediaID& fake_desktop_media_id_response,
       blink::mojom::MediaStreamRequestResult* request_result,
       blink::MediaStreamDevices* devices_result,
-      bool request_audio) {
+      bool request_audio,
+      bool expect_result = true) {
     SetTestFlags({{true /* expect_screens */, true /* expect_windows*/,
                    true /* expect_tabs */, /* expect_current_tab, */ false,
                    request_audio,
@@ -134,11 +137,24 @@ class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
     content::MediaStreamRequest request = MakeRequest(request_audio);
 
     base::RunLoop wait_loop;
-    content::MediaResponseCallback callback =
-        MakeCallback(&wait_loop, request_result, devices_result);
+    content::MediaResponseCallback callback;
+    if (expect_result) {
+      callback = MakeCallback(&wait_loop, request_result, devices_result);
+    } else {
+      base::MockCallback<content::MediaResponseCallback> mock_callback =
+          base::MockCallback<content::MediaResponseCallback>();
+      EXPECT_CALL(mock_callback, Run).Times(0);
+      callback = mock_callback.Get();
+    }
+
     access_handler_->HandleRequest(web_contents(), request, std::move(callback),
                                    nullptr /* extension */);
-    wait_loop.Run();
+    if (expect_result) {
+      wait_loop.Run();
+    } else {
+      wait_loop.RunUntilIdle();
+    }
+
     EXPECT_TRUE(test_flags_[0].picker_created);
 
     access_handler_.reset();
@@ -198,7 +214,7 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGiven) {
                                          content::DesktopMediaID::kFakeId),
                  &result, &devices, false /* request_audio */);
 // TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {
@@ -223,7 +239,7 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGivenToRequestWithAudio) {
                                         true /* audio_share */);
   ProcessRequest(fake_media_id, &result, &devices, true /* request_audio */);
 // TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {
@@ -251,14 +267,14 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionDenied) {
   EXPECT_EQ(0u, devices.size());
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 TEST_F(DisplayMediaAccessHandlerTest, DlpRestricted) {
   const content::DesktopMediaID media_id(content::DesktopMediaID::TYPE_SCREEN,
                                          content::DesktopMediaID::kFakeId);
 
   // Setup Data Leak Prevention restriction.
   policy::MockDlpContentManager mock_dlp_content_manager;
-  policy::ScopedDlpContentManagerForTesting scoped_dlp_content_manager(
+  policy::ScopedDlpContentObserverForTesting scoped_dlp_content_observer(
       &mock_dlp_content_manager);
   EXPECT_CALL(mock_dlp_content_manager, CheckScreenShareRestriction)
       .WillOnce([](const content::DesktopMediaID& media_id,
@@ -275,7 +291,57 @@ TEST_F(DisplayMediaAccessHandlerTest, DlpRestricted) {
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED, result);
   EXPECT_EQ(0u, devices.size());
 }
-#endif
+
+TEST_F(DisplayMediaAccessHandlerTest, DlpNotRestricted) {
+  const content::DesktopMediaID media_id(content::DesktopMediaID::TYPE_SCREEN,
+                                         content::DesktopMediaID::kFakeId);
+
+  // Setup Data Leak Prevention restriction.
+  policy::MockDlpContentManager mock_dlp_content_manager;
+  policy::ScopedDlpContentObserverForTesting scoped_dlp_content_manager(
+      &mock_dlp_content_manager);
+  EXPECT_CALL(mock_dlp_content_manager, CheckScreenShareRestriction)
+      .WillOnce([](const content::DesktopMediaID& media_id,
+                   const std::u16string& application_title,
+                   base::OnceCallback<void(bool)> callback) {
+        std::move(callback).Run(/*should_proceed=*/true);
+      });
+
+  blink::mojom::MediaStreamRequestResult result =
+      blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED;
+  blink::MediaStreamDevices devices;
+  ProcessRequest(media_id, &result, &devices, /*request_audio=*/false);
+
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
+  EXPECT_EQ(1u, devices.size());
+}
+
+TEST_F(DisplayMediaAccessHandlerTest, DlpWebContentsDestroyed) {
+  const content::DesktopMediaID media_id(content::DesktopMediaID::TYPE_SCREEN,
+                                         content::DesktopMediaID::kFakeId);
+
+  // Setup Data Leak Prevention restriction.
+  policy::MockDlpContentManager mock_dlp_content_manager;
+  policy::ScopedDlpContentObserverForTesting scoped_dlp_content_manager(
+      &mock_dlp_content_manager);
+  EXPECT_CALL(mock_dlp_content_manager, CheckScreenShareRestriction)
+      .WillOnce([&](const content::DesktopMediaID& media_id,
+                    const std::u16string& application_title,
+                    base::OnceCallback<void(bool)> callback) {
+        DeleteContents();
+        std::move(callback).Run(/*should_proceed=*/true);
+      });
+
+  blink::mojom::MediaStreamRequestResult result =
+      blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED;
+  blink::MediaStreamDevices devices;
+  ProcessRequest(media_id, &result, &devices, /*request_audio=*/false,
+                 /*expect_result=*/false);
+
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED, result);
+  EXPECT_EQ(0u, devices.size());
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 TEST_F(DisplayMediaAccessHandlerTest, UpdateMediaRequestStateWithClosing) {
   const int render_process_id =
@@ -294,7 +360,8 @@ TEST_F(DisplayMediaAccessHandlerTest, UpdateMediaRequestStateWithClosing) {
       render_process_id, render_frame_id, page_request_id,
       GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
       std::string(), std::string(), audio_stream_type, video_stream_type,
-      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false,
+      /*region_capture_capable=*/false);
   content::MediaResponseCallback callback;
   access_handler_->HandleRequest(web_contents(), request, std::move(callback),
                                  nullptr /* extension */);
@@ -332,7 +399,8 @@ TEST_F(DisplayMediaAccessHandlerTest, CorrectHostAsksForPermissions) {
       render_process_id, render_frame_id, page_request_id,
       GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
       std::string(), std::string(), audio_stream_type, video_stream_type,
-      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false,
+      /*region_capture_capable=*/false);
   content::MediaResponseCallback callback;
   content::WebContents* test_web_contents = web_contents();
   std::unique_ptr<content::NavigationSimulator> navigation =
@@ -366,7 +434,8 @@ TEST_F(DisplayMediaAccessHandlerTest, CorrectHostAsksForPermissionsNormalURLs) {
       render_process_id, render_frame_id, page_request_id,
       GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
       std::string(), std::string(), audio_stream_type, video_stream_type,
-      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false,
+      /*region_capture_capable=*/false);
   content::MediaResponseCallback callback;
   content::WebContents* test_web_contents = web_contents();
   std::unique_ptr<content::NavigationSimulator> navigation =
@@ -393,7 +462,8 @@ TEST_F(DisplayMediaAccessHandlerTest, WebContentsDestroyed) {
       false, blink::MEDIA_GENERATE_STREAM, std::string(), std::string(),
       blink::mojom::MediaStreamType::NO_SERVICE,
       blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
-      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false,
+      /*region_capture_capable=*/false);
   content::MediaResponseCallback callback;
   access_handler_->HandleRequest(web_contents(), request, std::move(callback),
                                  nullptr /* extension */);
@@ -434,7 +504,8 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
         std::string(), std::string(), blink::mojom::MediaStreamType::NO_SERVICE,
         blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
         /*disable_local_echo=*/false,
-        /*request_pan_tilt_zoom_permission=*/false);
+        /*request_pan_tilt_zoom_permission=*/false,
+        /*region_capture_capable=*/false);
     content::MediaResponseCallback callback = base::BindOnce(
         [](base::RunLoop* wait_loop,
            blink::mojom::MediaStreamRequestResult* request_result,
@@ -454,7 +525,7 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
   EXPECT_TRUE(test_flags_[0].picker_created);
   EXPECT_TRUE(test_flags_[0].picker_deleted);
 // TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {
@@ -500,7 +571,7 @@ TEST_F(DisplayMediaAccessHandlerTest,
       /*expected_number_of_devices=*/2u);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 TEST_F(DisplayMediaAccessHandlerTest, ChangeSourceDlpRestricted) {
   const content::DesktopMediaID media_id(
       content::DesktopMediaID::TYPE_WEB_CONTENTS,
@@ -508,7 +579,7 @@ TEST_F(DisplayMediaAccessHandlerTest, ChangeSourceDlpRestricted) {
 
   // Setup Data Leak Prevention restriction.
   policy::MockDlpContentManager mock_dlp_content_manager;
-  policy::ScopedDlpContentManagerForTesting scoped_dlp_content_manager_(
+  policy::ScopedDlpContentObserverForTesting scoped_dlp_content_observer(
       &mock_dlp_content_manager);
   EXPECT_CALL(mock_dlp_content_manager, CheckScreenShareRestriction)
       .WillOnce([](const content::DesktopMediaID& media_id,
@@ -523,7 +594,30 @@ TEST_F(DisplayMediaAccessHandlerTest, ChangeSourceDlpRestricted) {
       blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
       /*expected_number_of_devices=*/0u);
 }
-#endif
+
+TEST_F(DisplayMediaAccessHandlerTest, ChangeSourceDlpNotRestricted) {
+  const content::DesktopMediaID media_id(
+      content::DesktopMediaID::TYPE_WEB_CONTENTS,
+      content::DesktopMediaID::kNullId, GetWebContentsMediaCaptureId());
+
+  // Setup Data Leak Prevention restriction.
+  policy::MockDlpContentManager mock_dlp_content_manager;
+  policy::ScopedDlpContentObserverForTesting scoped_dlp_content_manager(
+      &mock_dlp_content_manager);
+  EXPECT_CALL(mock_dlp_content_manager, CheckScreenShareRestriction)
+      .WillOnce([](const content::DesktopMediaID& media_id,
+                   const std::u16string& application_title,
+                   base::OnceCallback<void(bool)> callback) {
+        std::move(callback).Run(/*should_proceed=*/true);
+      });
+
+  ChangeSourceRequestTest(
+      /*with_audio=*/false,
+      /*expected_result=*/
+      blink::mojom::MediaStreamRequestResult::OK,
+      /*expected_number_of_devices=*/1u);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 TEST_F(DisplayMediaAccessHandlerTest, ChangeSourceWithPendingPickerRequest) {
   SetTestFlags({MakePickerTestFlags(false /*request_audio*/),
@@ -542,7 +636,7 @@ TEST_F(DisplayMediaAccessHandlerTest, ChangeSourceWithPendingPickerRequest) {
   EXPECT_TRUE(test_flags_[0].picker_created);
   EXPECT_TRUE(test_flags_[0].picker_deleted);
 // TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {
@@ -581,7 +675,7 @@ TEST_F(DisplayMediaAccessHandlerTest,
 
   wait_loop[0].Run();
 // TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {
@@ -621,7 +715,7 @@ TEST_F(DisplayMediaAccessHandlerTest,
   EXPECT_TRUE(test_flags_[0].picker_created);
   EXPECT_TRUE(test_flags_[0].picker_deleted);
 // TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {

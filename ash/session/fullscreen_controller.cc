@@ -18,6 +18,8 @@
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/url_matcher/url_matcher.h"
+#include "components/url_matcher/url_util.h"
 
 namespace ash {
 
@@ -99,8 +101,9 @@ void FullscreenController::MaybeShowNotification() {
 void FullscreenController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kFullscreenAlertEnabled, true,
                                 PrefRegistry::PUBLIC);
-  registry->RegisterListPref(prefs::kFullscreenNotificationUrlExemptList,
-                             PrefRegistry::PUBLIC);
+  registry->RegisterListPref(
+      prefs::kKeepFullscreenWithoutNotificationUrlAllowList,
+      PrefRegistry::PUBLIC);
 }
 
 void FullscreenController::SuspendImminent(
@@ -144,6 +147,36 @@ void FullscreenController::LidEventReceived(
   // turns off "Sleep when cover is closed".
   if (state == chromeos::PowerManagerClient::LidState::OPEN)
     MaybeShowNotification();
+}
+
+// static
+bool FullscreenController::ShouldExitFullscreenBeforeLock() {
+  // Check whether it is allowed to keep full screen on unlock.
+  if (!features::IsFullscreenAfterUnlockAllowed())
+    return true;
+
+  // Nothing to do if the active window is not in full screen mode.
+  WindowState* active_window_state = WindowState::ForActiveWindow();
+  if (!active_window_state || !active_window_state->IsFullscreen())
+    return false;
+
+  // Always exit full screen if the allowlist policy is unset.
+  auto* prefs = Shell::Get()->session_controller()->GetPrimaryUserPrefService();
+  const auto* url_allow_list =
+      prefs->GetList(prefs::kKeepFullscreenWithoutNotificationUrlAllowList);
+  if (url_allow_list->GetList().size() == 0)
+    return true;
+
+  // Get the URL of the active window from the shell delegate.
+  const GURL& url =
+      Shell::Get()->shell_delegate()->GetLastCommittedURLForWindowIfAny(
+          active_window_state->window());
+
+  // Check if it is allowed by user pref to keep full screen for the active URL.
+  url_matcher::URLMatcher url_matcher;
+  url_matcher::util::AddAllowFilters(
+      &url_matcher, &base::Value::AsListValue(*url_allow_list));
+  return url_matcher.MatchURL(url).empty();
 }
 
 }  // namespace ash

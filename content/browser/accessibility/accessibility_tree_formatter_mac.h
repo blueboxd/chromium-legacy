@@ -27,10 +27,18 @@ class CONTENT_EXPORT AccessibilityTreeFormatterMac
   base::Value BuildNode(ui::AXPlatformNodeDelegate* node) const override;
 
   std::string EvaluateScript(
+      const AXTreeSelector& selector,
+      const ui::AXInspectScenario& scenario) const override;
+  std::string EvaluateScript(
       ui::AXPlatformNodeDelegate* root,
       const std::vector<ui::AXScriptInstruction>& instructions,
       size_t start_index,
       size_t end_index) const override;
+  std::string EvaluateScript(
+      id platform_root,
+      const std::vector<ui::AXScriptInstruction>& instructions,
+      size_t start_index,
+      size_t end_index) const;
 
   // AccessibilityTreeFormatterMac
   base::Value BuildNode(const id node) const;
@@ -61,13 +69,6 @@ class CONTENT_EXPORT AccessibilityTreeFormatterMac
 
   base::Value PopulateLocalPosition(const id node,
                                     const NSRect& root_rect) const;
-  base::Value PopulateTextPosition(
-      const BrowserAccessibility::AXPosition& position,
-      const ui::AXTreeIndexerMac*) const;
-  base::Value PopulateTextMarkerRange(id marker_range,
-                                      const ui::AXTreeIndexerMac*) const;
-  base::Value PopulateObject(id, const ui::AXTreeIndexerMac*) const;
-  base::Value PopulateArray(NSArray*, const ui::AXTreeIndexerMac*) const;
 
   std::string ProcessTreeForOutput(
       const base::DictionaryValue& node) const override;

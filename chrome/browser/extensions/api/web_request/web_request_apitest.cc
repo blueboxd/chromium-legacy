@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -495,8 +496,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestPublicSession) {
 
 // Test that a request to an OpenSearch description document (OSDD) generates
 // an event with the expected details.
-// Flaky on Windows: https://crbug.com/1218893
-#if defined(OS_WIN)
+// Flaky on Windows and Mac: https://crbug.com/1218893
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #define MAYBE_WebRequestTestOSDD DISABLED_WebRequestTestOSDD
 #else
 #define MAYBE_WebRequestTestOSDD WebRequestTestOSDD
@@ -537,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 // Test that the webRequest events are dispatched with the expected details when
 // a frame or tab is immediately removed after starting a request.
 // Flaky on Linux/Mac. See crbug.com/780369 for detail.
-#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_WebRequestUnloadImmediately DISABLED_WebRequestUnloadImmediately
 #else
 #define MAYBE_WebRequestUnloadImmediately WebRequestUnloadImmediately
@@ -577,7 +578,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
   // Pass "debug" as a custom arg to debug test flakiness.
   ASSERT_TRUE(RunExtensionTest("webrequest",
                                {.page_url = "test_auth_required.html",
-                                .custom_arg = "debug",
+                                .custom_arg = R"({"debug": true})",
                                 .open_in_incognito = GetEnableIncognito()},
                                {.allow_in_incognito = GetEnableIncognito()}))
       << message_;
@@ -594,7 +595,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
   // Pass "debug" as a custom arg to debug test flakiness.
   ASSERT_TRUE(RunExtensionTest("webrequest",
                                {.page_url = "test_auth_required_async.html",
-                                .custom_arg = "debug",
+                                .custom_arg = R"({"debug": true})",
                                 .open_in_incognito = GetEnableIncognito()},
                                {.allow_in_incognito = GetEnableIncognito()}))
       << message_;
@@ -624,7 +625,7 @@ INSTANTIATE_TEST_SUITE_P(Incognito,
 // This test times out regularly on win_rel trybots. See http://crbug.com/122178
 // Also on Linux/ChromiumOS debug, ASAN and MSAN builds.
 // https://crbug.com/670415
-#if defined(OS_WIN) || !defined(NDEBUG) || defined(ADDRESS_SANITIZER) || \
+#if BUILDFLAG(IS_WIN) || !defined(NDEBUG) || defined(ADDRESS_SANITIZER) || \
     defined(MEMORY_SANITIZER)
 #define MAYBE_WebRequestBlocking DISABLED_WebRequestBlocking
 #else
@@ -687,8 +688,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestRedirects) {
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestRedirectsWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("webrequest", {.page_url = "test_redirects.html",
-                                              .custom_arg = "useExtraHeaders"}))
+  ASSERT_TRUE(RunExtensionTest("webrequest",
+                               {.page_url = "test_redirects.html",
+                                .custom_arg = R"({"useExtraHeaders": true})"}))
       << message_;
 }
 
@@ -730,7 +732,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest",
                                {.page_url = "test_subresource_redirects.html",
-                                .custom_arg = "useExtraHeaders"}))
+                                .custom_arg = R"({"useExtraHeaders": true})"}))
       << message_;
 }
 
@@ -1877,7 +1879,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // Create a profile that will be destroyed later.
   base::ScopedAllowBlockingForTesting allow_blocking;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
+  ash::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   Profile* temp_profile =
@@ -4700,6 +4702,15 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiFencedFrameTest, Load) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(
       RunExtensionTest("webrequest", {.page_url = "test_fenced_frames.html"}))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiFencedFrameTest,
+                       DeclarativeSendMessage) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest(
+      "webrequest", {.page_url = "test_fenced_frames_send_message.html",
+                     .custom_arg = !GetParam() ? R"({"mparch": true})" : ""}))
       << message_;
 }
 

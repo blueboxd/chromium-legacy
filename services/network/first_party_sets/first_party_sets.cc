@@ -9,7 +9,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -24,6 +26,7 @@
 #include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/first_party_set_metadata.h"
 #include "net/cookies/same_party_context.h"
 #include "services/network/first_party_sets/first_party_set_parser.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -78,7 +81,7 @@ std::string ReadSetsFile(base::File sets_file) {
 
 }  // namespace
 
-FirstPartySets::FirstPartySets() = default;
+FirstPartySets::FirstPartySets(bool enabled) : enabled_(enabled) {}
 
 FirstPartySets::~FirstPartySets() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -86,7 +89,7 @@ FirstPartySets::~FirstPartySets() {
 
 void FirstPartySets::SetManuallySpecifiedSet(const std::string& flag_value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!net::cookie_util::IsFirstPartySetsEnabled())
+  if (!enabled_)
     return;
 
   manually_specified_set_ = CanonicalizeSet(base::SplitString(
@@ -99,8 +102,24 @@ void FirstPartySets::SetManuallySpecifiedSet(const std::string& flag_value) {
 
 void FirstPartySets::ParseAndSet(base::File sets_file) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!net::cookie_util::IsFirstPartySetsEnabled())
+  if (!enabled_ || component_sets_parse_progress_ != Progress::kNotStarted) {
+    if (sets_file.IsValid()) {
+      auto delete_file =
+          base::BindOnce([](base::File) {}, std::move(sets_file));
+      base::ThreadPool::PostTask(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+          std::move(delete_file));
+    }
     return;
+  }
+
+  component_sets_parse_progress_ = Progress::kStarted;
+
+  if (!sets_file.IsValid()) {
+    OnReadSetsFile("");
+    return;
+  }
+
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ReadSetsFile, std::move(sets_file)),
@@ -110,8 +129,8 @@ void FirstPartySets::ParseAndSet(base::File sets_file) {
 
 void FirstPartySets::OnReadSetsFile(const std::string& raw_sets) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!net::cookie_util::IsFirstPartySetsEnabled())
-    return;
+  DCHECK_EQ(component_sets_parse_progress_, Progress::kStarted);
+  DCHECK(enabled_);
 
   bool is_v1_format = raw_sets.find('[') < raw_sets.find('{');
   if (is_v1_format) {
@@ -127,7 +146,7 @@ void FirstPartySets::OnReadSetsFile(const std::string& raw_sets) {
                             is_v1_format);
 
   ApplyManuallySpecifiedSet();
-  component_sets_ready_ = true;
+  component_sets_parse_progress_ = Progress::kFinished;
   ClearSiteDataOnChangedSetsIfReady();
 }
 
@@ -156,10 +175,11 @@ bool FirstPartySets::IsContextSamePartyWithSite(
   return base::ranges::all_of(party_context, is_owned_by_site_owner);
 }
 
-net::SamePartyContext FirstPartySets::ComputeContext(
+void FirstPartySets::ComputeMetadata(
     const net::SchemefulSite& site,
     const net::SchemefulSite* top_frame_site,
-    const std::set<net::SchemefulSite>& party_context) const {
+    const std::set<net::SchemefulSite>& party_context,
+    base::OnceCallback<void(net::FirstPartySetMetadata)> callback) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::ElapsedTimer timer;
 
@@ -173,16 +193,23 @@ net::SamePartyContext FirstPartySets::ComputeContext(
       ContextTypeFromBool(IsContextSamePartyWithSite(
           site, top_frame_site, {}, true /* infer_singleton_sets */));
 
+  net::SamePartyContext context(context_type, ancestors, top_resource);
+
   UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
       "Cookie.FirstPartySets.ComputeContext.Latency", timer.Elapsed(),
       base::Microseconds(1), base::Milliseconds(100), 50);
 
-  return net::SamePartyContext(context_type, ancestors, top_resource);
+  net::FirstPartySetsContextType first_party_sets_context_type =
+      ComputeContextType(site, top_frame_site, party_context);
+
+  std::move(callback).Run(net::FirstPartySetMetadata(
+      context, base::OptionalOrNullptr(FindOwner(site)),
+      first_party_sets_context_type));
 }
 
 net::FirstPartySetsContextType FirstPartySets::ComputeContextType(
     const net::SchemefulSite& site,
-    const absl::optional<net::SchemefulSite>& top_frame_site,
+    const net::SchemefulSite* top_frame_site,
     const std::set<net::SchemefulSite>& party_context) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   constexpr bool infer_singleton_sets = true;
@@ -195,7 +222,7 @@ net::FirstPartySetsContextType FirstPartySets::ComputeContextType(
       party_context, [&](const net::SchemefulSite& middle_site) {
         return *FindOwner(middle_site, infer_singleton_sets) == *site_owner;
       });
-  if (!top_frame_site.has_value()) {
+  if (top_frame_site == nullptr) {
     return is_homogeneous
                ? net::FirstPartySetsContextType::kTopFrameIgnoredHomogeneous
                : net::FirstPartySetsContextType::kTopFrameIgnoredMixed;
@@ -236,14 +263,10 @@ const absl::optional<net::SchemefulSite> FirstPartySets::FindOwner(
   return FindOwner(site, /*infer_singleton_sets=*/false);
 }
 
-bool FirstPartySets::IsInNontrivialFirstPartySet(
-    const net::SchemefulSite& site) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return FindOwner(site, /*infer_singleton_sets=*/false).has_value();
-}
-
-base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
-FirstPartySets::Sets() const {
+void FirstPartySets::Sets(
+    base::OnceCallback<
+        void(base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>)>
+        callback) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>> sets;
 
@@ -258,7 +281,7 @@ FirstPartySets::Sets() const {
     }
   }
 
-  return sets;
+  std::move(callback).Run(sets);
 }
 
 void FirstPartySets::ApplyManuallySpecifiedSet() {
@@ -315,6 +338,11 @@ void FirstPartySets::SetOnSiteDataCleared(
   ClearSiteDataOnChangedSetsIfReady();
 }
 
+void FirstPartySets::SetEnabledForTesting(bool enabled) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  enabled_ = enabled;
+}
+
 base::flat_set<net::SchemefulSite> FirstPartySets::ComputeSetsDiff(
     const base::flat_map<net::SchemefulSite, net::SchemefulSite>& old_sets)
     const {
@@ -338,8 +366,9 @@ base::flat_set<net::SchemefulSite> FirstPartySets::ComputeSetsDiff(
 
 void FirstPartySets::ClearSiteDataOnChangedSetsIfReady() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!persisted_sets_ready_ || !component_sets_ready_ || !manual_sets_ready_ ||
-      on_site_data_cleared_.is_null())
+  if (!persisted_sets_ready_ ||
+      component_sets_parse_progress_ != Progress::kFinished ||
+      !manual_sets_ready_ || on_site_data_cleared_.is_null())
     return;
 
   base::flat_set<net::SchemefulSite> diff = ComputeSetsDiff(

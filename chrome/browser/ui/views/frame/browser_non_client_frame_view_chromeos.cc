@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/base/tablet_state.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -48,6 +49,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/chromeos/styles/cros_styles.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
@@ -65,6 +67,7 @@
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/session_util.h"
@@ -238,25 +241,47 @@ bool BrowserNonClientFrameViewChromeOS::CanUserExitFullscreen() const {
 
 SkColor BrowserNonClientFrameViewChromeOS::GetCaptionColor(
     BrowserFrameActiveState active_state) const {
-  bool active = ShouldPaintAsActive(active_state);
+  // Web apps apply a theme color if specified by the extension/manifest.
+  absl::optional<SkColor> frame_theme_color =
+      browser_view()->browser()->app_controller()->GetThemeColor();
+  const SkColor frame_color =
+      frame_theme_color.value_or(GetFrameColor(active_state));
+  const SkColor active_caption_color =
+      views::FrameCaptionButton::GetButtonColor(frame_color);
 
-  SkColor active_color =
-      views::FrameCaptionButton::GetButtonColor(chromeos::kDefaultFrameColor);
+  if (ShouldPaintAsActive(active_state))
+    return active_caption_color;
 
-  // Web apps apply a theme color if specified by the extension.
-  Browser* browser = browser_view()->browser();
-  absl::optional<SkColor> theme_color =
-      browser->app_controller()->GetThemeColor();
-  if (theme_color)
-    active_color = views::FrameCaptionButton::GetButtonColor(*theme_color);
-
-  if (active)
-    return active_color;
-
-  // Add the container for extra web-app buttons (e.g app menu button).
   const float inactive_alpha_ratio =
       views::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
-  return SkColorSetA(active_color, inactive_alpha_ratio * SK_AlphaOPAQUE);
+  return SkColorSetA(active_caption_color,
+                     inactive_alpha_ratio * SK_AlphaOPAQUE);
+}
+
+SkColor BrowserNonClientFrameViewChromeOS::GetFrameColor(
+    BrowserFrameActiveState active_state) const {
+  if (!UsePackagedAppHeaderStyle(browser_view()->browser()))
+    return BrowserNonClientFrameView::GetFrameColor(active_state);
+
+  absl::optional<SkColor> color;
+  if (browser_view()->GetIsWebAppType())
+    color = browser_view()->browser()->app_controller()->GetThemeColor();
+
+  SkColor fallback_color = chromeos::kDefaultFrameColor;
+
+  if (chromeos::features::IsDarkLightModeEnabled() && GetWidget()) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    bool use_debug_colors = base::FeatureList::IsEnabled(
+        ash::features::kSemanticColorsDebugOverride);
+#else
+    bool use_debug_colors = false;
+#endif
+    fallback_color = cros_styles::ResolveColor(
+        cros_styles::ColorName::kBgColor,
+        GetNativeTheme()->ShouldUseDarkColors(), use_debug_colors);
+  }
+
+  return color.value_or(fallback_color);
 }
 
 TabSearchBubbleHost*
@@ -890,27 +915,10 @@ bool BrowserNonClientFrameViewChromeOS::GetHideCaptionButtonsForFullscreen()
 
 void BrowserNonClientFrameViewChromeOS::OnUpdateFrameColor() {
   aura::Window* window = frame()->GetNativeWindow();
-  absl::optional<SkColor> active_color, inactive_color;
-  if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
-    active_color = GetFrameColor(BrowserFrameActiveState::kActive);
-    inactive_color = GetFrameColor(BrowserFrameActiveState::kInactive);
-  } else if (browser_view()->GetIsWebAppType()) {
-    active_color = browser_view()->browser()->app_controller()->GetThemeColor();
-  } else if (!browser_view()->browser()->is_type_app() &&
-             !browser_view()->browser()->is_type_app_popup()) {
-    // TODO(crbug.com/836128): Remove when System Web Apps flag is removed, as
-    // the above web-app branch will render the theme color.
-    active_color = SK_ColorWHITE;
-  }
-
-  if (active_color) {
-    window->SetProperty(chromeos::kFrameActiveColorKey, *active_color);
-    window->SetProperty(chromeos::kFrameInactiveColorKey,
-                        inactive_color.value_or(*active_color));
-  } else {
-    window->ClearProperty(chromeos::kFrameActiveColorKey);
-    window->ClearProperty(chromeos::kFrameInactiveColorKey);
-  }
+  window->SetProperty(chromeos::kFrameActiveColorKey,
+                      GetFrameColor(BrowserFrameActiveState::kActive));
+  window->SetProperty(chromeos::kFrameInactiveColorKey,
+                      GetFrameColor(BrowserFrameActiveState::kInactive));
 
   if (frame_header_)
     frame_header_->UpdateFrameColors();

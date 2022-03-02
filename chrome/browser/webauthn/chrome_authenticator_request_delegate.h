@@ -44,12 +44,12 @@ class FidoDiscoveryFactory;
 class ChromeWebAuthenticationDelegate
     : public content::WebAuthenticationDelegate {
  public:
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Returns a configuration struct for instantiating the macOS WebAuthn
   // platform authenticator for the given Profile.
   static TouchIdAuthenticatorConfig TouchIdAuthenticatorConfigForProfile(
       Profile* profile);
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
   ~ChromeWebAuthenticationDelegate() override;
 
@@ -63,10 +63,14 @@ class ChromeWebAuthenticationDelegate
   bool SupportsResidentKeys(
       content::RenderFrameHost* render_frame_host) override;
   bool IsFocused(content::WebContents* web_contents) override;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_WIN)
+  void OperationSucceeded(content::BrowserContext* browser_context,
+                          bool used_win_api) override;
+#endif
+#if BUILDFLAG(IS_MAC)
   absl::optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig(
       content::BrowserContext* browser_context) override;
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ChromeOSGenerateRequestIdCallback GetGenerateRequestIdCallback(
       content::RenderFrameHost* render_frame_host) override;
@@ -170,6 +174,7 @@ class ChromeAuthenticatorRequestDelegate
   void OnStartOver() override;
   void OnModelDestroyed(AuthenticatorRequestDialogModel* model) override;
   void OnCancelRequest() override;
+  void OnManageDevicesClicked() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,
@@ -189,10 +194,6 @@ class ChromeAuthenticatorRequestDelegate
   // caBLE extension. This extension contains website-chosen BLE pairing
   // information that will be broadcast by the device.
   bool ShouldPermitCableExtension(const url::Origin& origin);
-
-  // GetCablePairings returns any known caBLE pairing data.
-  virtual std::vector<std::unique_ptr<device::cablev2::Pairing>>
-  GetCablePairings();
 
   void HandleCablePairingEvent(device::cablev2::PairingEvent pairing);
 

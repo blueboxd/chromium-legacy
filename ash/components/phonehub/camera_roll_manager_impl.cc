@@ -17,7 +17,9 @@
 #include "ash/components/phonehub/util/histogram_util.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "chromeos/services/secure_channel/public/cpp/client/connection_manager.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -59,11 +61,13 @@ CameraRollManagerImpl::CameraRollManagerImpl(
       thumbnail_decoder_(std::make_unique<CameraRollThumbnailDecoderImpl>()) {
   message_receiver->AddObserver(this);
   multidevice_setup_client_->AddObserver(this);
+  connection_manager_->AddObserver(this);
 }
 
 CameraRollManagerImpl::~CameraRollManagerImpl() {
   message_receiver_->RemoveObserver(this);
   multidevice_setup_client_->RemoveObserver(this);
+  connection_manager_->RemoveObserver(this);
 }
 
 void CameraRollManagerImpl::DownloadItem(
@@ -159,8 +163,7 @@ void CameraRollManagerImpl::OnPhoneStatusSnapshotReceived(
     proto::PhoneStatusSnapshot phone_status_snapshot) {
   UpdateCameraRollAccessStateAndNotifyIfNeeded(
       phone_status_snapshot.properties().camera_roll_access_state());
-  if (!is_android_feature_enabled_ || !is_android_storage_granted_ ||
-      !IsCameraRollSettingEnabled()) {
+  if (!is_android_storage_granted_ || !IsCameraRollSettingEnabled()) {
     ClearCurrentItems();
     CancelPendingThumbnailRequests();
     resetViewRefreshingFlagIfNeeded();
@@ -174,8 +177,7 @@ void CameraRollManagerImpl::OnPhoneStatusUpdateReceived(
     proto::PhoneStatusUpdate phone_status_update) {
   UpdateCameraRollAccessStateAndNotifyIfNeeded(
       phone_status_update.properties().camera_roll_access_state());
-  if (!is_android_feature_enabled_ || !is_android_storage_granted_ ||
-      !IsCameraRollSettingEnabled()) {
+  if (!is_android_storage_granted_ || !IsCameraRollSettingEnabled()) {
     ClearCurrentItems();
     CancelPendingThumbnailRequests();
     resetViewRefreshingFlagIfNeeded();
@@ -201,6 +203,14 @@ void CameraRollManagerImpl::SendFetchCameraRollItemsRequest() {
   // thumbnails will be invalidated anyway when the new response is received.
   CancelPendingThumbnailRequests();
 
+  // Do not update the timestamp if it is already set. It means that there's an
+  // in-progress request. We want to measure the time it takes from the first
+  // time we request an update to when the UI is updated. This is the time the
+  // user spends waiting.
+  if (!fetch_items_request_start_timestamp_) {
+    fetch_items_request_start_timestamp_ = base::TimeTicks::Now();
+  }
+
   proto::FetchCameraRollItemsRequest request;
   request.set_max_item_count(kMaxCameraRollItemCount);
   for (const CameraRollItem& current_item : current_items()) {
@@ -213,10 +223,15 @@ void CameraRollManagerImpl::OnItemThumbnailsDecoded(
     CameraRollThumbnailDecoder::BatchDecodeResult result,
     const std::vector<CameraRollItem>& items) {
   resetViewRefreshingFlagIfNeeded();
-  if (result == CameraRollThumbnailDecoder::BatchDecodeResult::kSuccess) {
+  if (result == CameraRollThumbnailDecoder::BatchDecodeResult::kCompleted) {
+    if (fetch_items_request_start_timestamp_) {
+      base::UmaHistogramMediumTimes(
+          "PhoneHub.CameraRoll.Latency.RefreshItems",
+          base::TimeTicks::Now() - *fetch_items_request_start_timestamp_);
+      fetch_items_request_start_timestamp_.reset();
+    }
     SetCurrentItems(items);
   }
-  // TODO(http://crbug.com/1221297): log and handle failed decode requests.
 }
 
 void CameraRollManagerImpl::CancelPendingThumbnailRequests() {
@@ -259,14 +274,18 @@ void CameraRollManagerImpl::OnFeatureStatesChanged(
   }
 }
 
+void CameraRollManagerImpl::OnConnectionStatusChanged() {
+  if (connection_manager_->GetStatus() ==
+      secure_channel::ConnectionManager::Status::kDisconnected) {
+    ClearCurrentItems();
+    CancelPendingThumbnailRequests();
+  }
+}
+
 void CameraRollManagerImpl::UpdateCameraRollAccessStateAndNotifyIfNeeded(
     const proto::CameraRollAccessState& access_state) {
-  bool updated_feature_enabled = access_state.feature_enabled();
   bool updated_storage_granted = access_state.storage_permission_granted();
-
-  if (is_android_feature_enabled_ != updated_feature_enabled ||
-      is_android_storage_granted_ != updated_storage_granted) {
-    is_android_feature_enabled_ = updated_feature_enabled;
+  if (is_android_storage_granted_ != updated_storage_granted) {
     is_android_storage_granted_ = updated_storage_granted;
 
     util::LogCameraRollAndroidHasStorageAccessPermission(
@@ -282,11 +301,7 @@ void CameraRollManagerImpl::OnCameraRollOnboardingUiDismissed() {
 }
 
 void CameraRollManagerImpl::ComputeAndUpdateUiState() {
-  if (!is_android_feature_enabled_) {
-    ui_state_ = CameraRollUiState::SHOULD_HIDE;
-    NotifyCameraRollViewUiStateUpdated();
-    return;
-  } else if (!is_android_storage_granted_) {
+  if (!is_android_storage_granted_) {
     ui_state_ = CameraRollUiState::NO_STORAGE_PERMISSION;
     NotifyCameraRollViewUiStateUpdated();
     return;

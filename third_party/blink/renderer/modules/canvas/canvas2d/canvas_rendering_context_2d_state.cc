@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
@@ -57,9 +56,12 @@ bool StringToNumWithUnit(String spacing,
   const CSSParserToken* result = range.begin();
   range.Consume();
   // If there is more than 1 dimension token or |spacing| is not a valid
-  // dimension token, return immediately.
-  if (!range.AtEnd() || result->GetType() != kDimensionToken)
+  // dimension token, or unit is not a valid CSS length unit, return
+  // immediately.
+  if (!range.AtEnd() || result->GetType() != kDimensionToken ||
+      !CSSPrimitiveValue::IsLength(result->GetUnitType())) {
     return false;
+  }
   *number_spacing = result->NumericValue();
   *unit = result->GetUnitType();
   return true;
@@ -75,8 +77,8 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState()
       unparsed_font_(defaultFont),
       unparsed_css_filter_(defaultFilter),
       text_align_(kStartTextAlign),
-      unparsed_letter_spacing_(defaultSpacing),
-      unparsed_word_spacing_(defaultSpacing),
+      parsed_letter_spacing_(defaultSpacing),
+      parsed_word_spacing_(defaultSpacing),
       realized_font_(false),
       is_transform_invertible_(true),
       has_clip_(false),
@@ -85,15 +87,15 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState()
       stroke_style_dirty_(true),
       line_dash_dirty_(false),
       image_smoothing_quality_(cc::PaintFlags::FilterQuality::kLow) {
-  fill_flags_.setStyle(PaintFlags::kFill_Style);
+  fill_flags_.setStyle(cc::PaintFlags::kFill_Style);
   fill_flags_.setAntiAlias(true);
-  image_flags_.setStyle(PaintFlags::kFill_Style);
+  image_flags_.setStyle(cc::PaintFlags::kFill_Style);
   image_flags_.setAntiAlias(true);
-  stroke_flags_.setStyle(PaintFlags::kStroke_Style);
+  stroke_flags_.setStyle(cc::PaintFlags::kStroke_Style);
   stroke_flags_.setStrokeWidth(1);
-  stroke_flags_.setStrokeCap(PaintFlags::kButt_Cap);
+  stroke_flags_.setStrokeCap(cc::PaintFlags::kButt_Cap);
   stroke_flags_.setStrokeMiter(10);
-  stroke_flags_.setStrokeJoin(PaintFlags::kMiter_Join);
+  stroke_flags_.setStrokeJoin(cc::PaintFlags::kMiter_Join);
   stroke_flags_.setAntiAlias(true);
   SetImageSmoothingEnabled(true);
 }
@@ -426,10 +428,10 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilterForOffscreenCanvas(
 
   // We can't reuse m_fillFlags and m_strokeFlags for the filter, since these
   // incorporate the global alpha, which isn't applicable here.
-  PaintFlags fill_flags_for_filter;
+  cc::PaintFlags fill_flags_for_filter;
   fill_style_->ApplyToFlags(fill_flags_for_filter);
   fill_flags_for_filter.setColor(fill_style_->PaintColor());
-  PaintFlags stroke_flags_for_filter;
+  cc::PaintFlags stroke_flags_for_filter;
   stroke_style_->ApplyToFlags(stroke_flags_for_filter);
   stroke_flags_for_filter.setColor(stroke_style_->PaintColor());
 
@@ -498,10 +500,10 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
 
   // We can't reuse m_fillFlags and m_strokeFlags for the filter, since these
   // incorporate the global alpha, which isn't applicable here.
-  PaintFlags fill_flags_for_filter;
+  cc::PaintFlags fill_flags_for_filter;
   fill_style_->ApplyToFlags(fill_flags_for_filter);
   fill_flags_for_filter.setColor(fill_style_->PaintColor());
-  PaintFlags stroke_flags_for_filter;
+  cc::PaintFlags stroke_flags_for_filter;
   stroke_style_->ApplyToFlags(stroke_flags_for_filter);
   stroke_flags_for_filter.setColor(stroke_style_->PaintColor());
 
@@ -696,11 +698,11 @@ void CanvasRenderingContext2DState::UpdateFilterQuality(
   image_flags_.setFilterQuality(filter_quality);
 }
 
-const PaintFlags* CanvasRenderingContext2DState::GetFlags(
+const cc::PaintFlags* CanvasRenderingContext2DState::GetFlags(
     PaintType paint_type,
     ShadowMode shadow_mode,
     ImageType image_type) const {
-  PaintFlags* flags;
+  cc::PaintFlags* flags;
   switch (paint_type) {
     case kStrokePaintType:
       UpdateLineDash();
@@ -711,7 +713,7 @@ const PaintFlags* CanvasRenderingContext2DState::GetFlags(
       NOTREACHED();
       // no break on purpose: flags needs to be assigned to avoid compiler warning
       // about uninitialized variable.
-      FALLTHROUGH;
+      [[fallthrough]];
     case kFillPaintType:
       UpdateFillStyle();
       flags = &fill_flags_;
@@ -771,7 +773,7 @@ bool CanvasRenderingContext2DState::PatternIsAccelerated(
 void CanvasRenderingContext2DState::SetLetterSpacing(
     const String& letter_spacing) {
   DCHECK(realized_font_);
-  if (unparsed_letter_spacing_ == letter_spacing)
+  if (parsed_letter_spacing_ == letter_spacing)
     return;
   float num_spacing;
   CSSPrimitiveValue::UnitType unit;
@@ -783,13 +785,16 @@ void CanvasRenderingContext2DState::SetLetterSpacing(
 
   letter_spacing_unit_ = unit;
   letter_spacing_ = num_spacing;
-  unparsed_letter_spacing_ = letter_spacing;
+  StringBuilder builder;
+  builder.AppendNumber(num_spacing);
+  builder.Append(CSSPrimitiveValue::UnitTypeToString(unit));
+  parsed_letter_spacing_ = builder.ToString();
   SetFont(GetFontDescription(), font_.GetFontSelector());
 }
 
 void CanvasRenderingContext2DState::SetWordSpacing(const String& word_spacing) {
   DCHECK(realized_font_);
-  if (unparsed_word_spacing_ == word_spacing)
+  if (parsed_word_spacing_ == word_spacing)
     return;
   float num_spacing;
   CSSPrimitiveValue::UnitType unit;
@@ -801,7 +806,10 @@ void CanvasRenderingContext2DState::SetWordSpacing(const String& word_spacing) {
 
   word_spacing_unit_ = unit;
   word_spacing_ = num_spacing;
-  unparsed_word_spacing_ = word_spacing;
+  StringBuilder builder;
+  builder.AppendNumber(num_spacing);
+  builder.Append(CSSPrimitiveValue::UnitTypeToString(unit));
+  parsed_word_spacing_ = builder.ToString();
   SetFont(GetFontDescription(), font_.GetFontSelector());
 }
 

@@ -48,6 +48,7 @@ class StackingBarLabelButton : public PillButton {
             text,
             PillButton::Type::kIconlessAccentFloating,
             /*icon=*/nullptr,
+            kNotificationPillButtonHorizontalSpacing,
             /*use_light_colors=*/!features::IsNotificationsRefreshEnabled(),
             /*rounded_highlight_path=*/
             features::IsNotificationsRefreshEnabled()),
@@ -110,7 +111,10 @@ class StackedNotificationBar::StackedNotificationBarIcon
       return;
 
     SkColor accent_color =
-        color_provider->GetColor(ui::kColorNotificationHeaderForeground);
+        features::IsNotificationsRefreshEnabled()
+            ? AshColorProvider::Get()->GetContentLayerColor(
+                  AshColorProvider::ContentLayerType::kIconColorPrimary)
+            : color_provider->GetColor(ui::kColorNotificationHeaderForeground);
     gfx::Image masked_small_icon = notification->GenerateMaskedSmallIcon(
         kStackedNotificationIconSize, accent_color,
         color_provider->GetColor(ui::kColorNotificationIconBackground),
@@ -265,7 +269,12 @@ StackedNotificationBar::StackedNotificationBar(
 
   message_center::MessageCenter::Get()->AddObserver(this);
 
-  count_label_->SetEnabledColor(message_center_style::kCountLabelColor);
+  SkColor label_color =
+      features::IsNotificationsRefreshEnabled()
+          ? AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kIconColorPrimary)
+          : message_center_style::kCountLabelColor;
+  count_label_->SetEnabledColor(label_color);
   count_label_->SetFontList(views::Label::GetDefaultFontList().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
 

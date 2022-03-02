@@ -15,6 +15,108 @@
 
 namespace chromium_android_linker {
 
+namespace {
+
+// Implements the old method of finding library and RELRO ranges by providing a
+// callback for use with dl_iterate_phdr(3). Data from the field has shown that
+// this method makes library loading significantly slower than
+// android_dlopen_ext(), it was replaced by the exuivalent one:
+// NativeLibInfo::FindRelroAndLibraryRangesInElf().
+class LibraryRangeFinder {
+ public:
+  explicit LibraryRangeFinder(uintptr_t address) : load_address_(address) {}
+
+  uintptr_t load_address() const { return load_address_; }
+  size_t load_size() const { return load_size_; }
+  uintptr_t relro_start() const { return relro_start_; }
+  size_t relro_size() const { return relro_size_; }
+
+  static int VisitLibraryPhdrs(dl_phdr_info* info,
+                               [[maybe_unused]] size_t size,
+                               void* data);
+
+ private:
+  uintptr_t load_address_;
+  size_t load_size_ = 0;
+  uintptr_t relro_start_ = 0;
+  size_t relro_size_ = 0;
+};
+
+// Callback for dl_iterate_phdr(). From program headers (phdr(s)) of a loaded
+// library determines its load address, and in case it is equal to
+// |load_address()|, extracts the RELRO and size information from
+// corresponding phdr(s).
+// static
+int LibraryRangeFinder::VisitLibraryPhdrs(dl_phdr_info* info,
+                                          [[maybe_unused]] size_t size,
+                                          void* data) {
+  auto* finder = reinterpret_cast<LibraryRangeFinder*>(data);
+  ElfW(Addr) lookup_address = static_cast<ElfW(Addr)>(finder->load_address());
+
+  // Use max and min vaddr to compute the library's load size.
+  auto min_vaddr = std::numeric_limits<ElfW(Addr)>::max();
+  ElfW(Addr) max_vaddr = 0;
+  ElfW(Addr) min_relro_vaddr = ~0;
+  ElfW(Addr) max_relro_vaddr = 0;
+
+  bool is_matching = false;
+  for (int i = 0; i < info->dlpi_phnum; ++i) {
+    const ElfW(Phdr)* phdr = &info->dlpi_phdr[i];
+    switch (phdr->p_type) {
+      case PT_LOAD:
+        // See if this segment's load address matches the value passed to
+        // android_dlopen_ext as |extinfo.reserved_addr|.
+        //
+        // Here and below, the virtual address in memory is computed by
+        //     address == info->dlpi_addr + program_header->p_vaddr
+        // that is, the p_vaddr fields is relative to the object base address.
+        // See dl_iterate_phdr(3) for details.
+        if (lookup_address == info->dlpi_addr + phdr->p_vaddr)
+          is_matching = true;
+
+        if (phdr->p_vaddr < min_vaddr)
+          min_vaddr = phdr->p_vaddr;
+        if (phdr->p_vaddr + phdr->p_memsz > max_vaddr)
+          max_vaddr = phdr->p_vaddr + phdr->p_memsz;
+        break;
+      case PT_GNU_RELRO:
+        min_relro_vaddr = PAGE_START(phdr->p_vaddr);
+        max_relro_vaddr = phdr->p_vaddr + phdr->p_memsz;
+
+        // As of 2020-11 in libmonochrome.so RELRO is covered by a LOAD segment.
+        // It is not clear whether this property is going to be guaranteed in
+        // the future. Include the RELRO segment as part of the 'load size'.
+        // This way a potential future change in layout of LOAD segments would
+        // not open address space for racy mmap(MAP_FIXED).
+        if (min_relro_vaddr < min_vaddr)
+          min_vaddr = min_relro_vaddr;
+        if (max_vaddr < max_relro_vaddr)
+          max_vaddr = max_relro_vaddr;
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Fill out size and relro information if there was a match.
+  if (is_matching) {
+    int page_size = sysconf(_SC_PAGESIZE);
+    if (page_size != PAGE_SIZE)
+      abort();
+
+    finder->load_size_ = PAGE_END(max_vaddr) - PAGE_START(min_vaddr);
+    finder->relro_size_ =
+        PAGE_END(max_relro_vaddr) - PAGE_START(min_relro_vaddr);
+    finder->relro_start_ = info->dlpi_addr + PAGE_START(min_relro_vaddr);
+
+    return 1;
+  }
+
+  return 0;
+}
+
+}  // namespace
+
 // These tests get linked with base_unittests and leave JNI uninitialized. The
 // tests must not execute any parts relying on initialization with JNI_Onload().
 

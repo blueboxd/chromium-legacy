@@ -7,10 +7,10 @@
 #include <stddef.h>
 
 #include <cctype>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/ignore_result.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -48,7 +48,6 @@
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
-#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/navigation/navigation_params.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
@@ -77,11 +76,11 @@
 #include "ui/native_theme/native_theme_features.h"
 #include "v8/include/v8.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_impl_win.h"
 #include "content/test/dwrite_font_fake_sender_win.h"
 #endif
@@ -461,7 +460,7 @@ void RenderViewTest::SetUp() {
   agent_scheduling_group_ = MockAgentSchedulingGroup::Create(*render_thread_);
   render_widget_host_ = CreateRenderWidgetHost();
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // This needs to happen sometime before PlatformInitialize.
   // This isn't actually necessary for most tests: most tests are able to
   // connect to their browser process which runs the real proxy host. However,
@@ -470,7 +469,7 @@ void RenderViewTest::SetUp() {
   SetDWriteFontProxySenderForTesting(CreateFakeCollectionSender());
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   autorelease_pool_ = std::make_unique<base::mac::ScopedNSAutoreleasePool>();
 #endif
   command_line_ =
@@ -514,8 +513,8 @@ void RenderViewTest::SetUp() {
   main_frame_params->routing_id = render_thread_->GetNextRoutingID();
   main_frame_params->frame = TestRenderFrame::CreateStubFrameReceiver();
   // Ignoring the returned PendingReceiver because it is not bound to anything
-  ignore_result(
-      main_frame_params->interface_broker.InitWithNewPipeAndPassReceiver());
+  std::ignore =
+      main_frame_params->interface_broker.InitWithNewPipeAndPassReceiver();
   policy_container_host_ = std::make_unique<MockPolicyContainerHost>();
   main_frame_params->policy_container =
       policy_container_host_->CreatePolicyContainerForBlink();
@@ -561,7 +560,7 @@ void RenderViewTest::TearDown() {
   mojo::Remote<blink::mojom::LeakDetector> leak_detector;
   mojo::GenericPendingReceiver receiver(
       leak_detector.BindNewPipeAndPassReceiver());
-  ignore_result(binders_.TryBind(&receiver));
+  std::ignore = binders_.TryBind(&receiver);
 
   // Close the main |view_| as well as any other windows that might have been
   // opened by the test.
@@ -582,11 +581,11 @@ void RenderViewTest::TearDown() {
 
   RenderThreadImpl::SetRendererBlinkPlatformImplForTesting(nullptr);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   ClearDWriteFontProxySenderForTesting();
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   autorelease_pool_.reset();
 #endif
 
@@ -765,9 +764,8 @@ void RenderViewTest::Reload(const GURL& url) {
   auto common_params = blink::mojom::CommonNavigationParams::New(
       url, absl::nullopt, blink::mojom::Referrer::New(),
       ui::PAGE_TRANSITION_LINK, blink::mojom::NavigationType::RELOAD,
-      blink::NavigationDownloadPolicy(), false, GURL(),
-      blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET",
-      nullptr, network::mojom::SourceLocation::New(),
+      blink::NavigationDownloadPolicy(), false, GURL(), base::TimeTicks::Now(),
+      "GET", nullptr, network::mojom::SourceLocation::New(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
       false /* has_text_fragment_token */,
       network::mojom::CSPDisposition::CHECK, std::vector<int>(), std::string(),
@@ -902,9 +900,8 @@ void RenderViewTest::GoToOffset(int offset,
       url, absl::nullopt, blink::mojom::Referrer::New(),
       ui::PAGE_TRANSITION_FORWARD_BACK,
       blink::mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT,
-      blink::NavigationDownloadPolicy(), false, GURL(),
-      blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET",
-      nullptr, network::mojom::SourceLocation::New(),
+      blink::NavigationDownloadPolicy(), false, GURL(), base::TimeTicks::Now(),
+      "GET", nullptr, network::mojom::SourceLocation::New(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
       false /* has_text_fragment_token */,
       network::mojom::CSPDisposition::CHECK, std::vector<int>(), std::string(),

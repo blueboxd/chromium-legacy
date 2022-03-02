@@ -16,7 +16,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser.h"
@@ -180,18 +179,6 @@ class TabGroupEditorBubbleDelegate : public ui::DialogModelDelegate {
 
   void MoveGroupToNewWindowPressed() {
     browser_->tab_strip_model()->delegate()->MoveGroupToNewWindow(group_);
-    dialog_model()->host()->Close();
-  }
-
-  void SendFeedbackPressed() {
-    base::RecordAction(
-        base::UserMetricsAction("TabGroups_TabGroupBubble_SendFeedback"));
-    chrome::ShowFeedbackPage(
-        browser_, chrome::FeedbackSource::kFeedbackSourceDesktopTabGroups,
-        /*description_template=*/std::string(),
-        /*description_placeholder_text=*/std::string(),
-        /*category_tag=*/std::string(),
-        /*extra_diagnostics=*/std::string());
     dialog_model()->host()->Close();
   }
 
@@ -581,18 +568,6 @@ void TabGroupEditorBubbleView::CloseGroupPressed() {
 
 void TabGroupEditorBubbleView::MoveGroupToNewWindowPressed() {
   browser_->tab_strip_model()->delegate()->MoveGroupToNewWindow(group_);
-  GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
-}
-
-void TabGroupEditorBubbleView::SendFeedbackPressed() {
-  base::RecordAction(
-      base::UserMetricsAction("TabGroups_TabGroupBubble_SendFeedback"));
-  chrome::ShowFeedbackPage(
-      browser_, chrome::FeedbackSource::kFeedbackSourceDesktopTabGroups,
-      /*description_template=*/std::string(),
-      /*description_placeholder_text=*/std::string(),
-      /*category_tag=*/std::string(),
-      /*extra_diagnostics=*/std::string());
   GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
 }
 

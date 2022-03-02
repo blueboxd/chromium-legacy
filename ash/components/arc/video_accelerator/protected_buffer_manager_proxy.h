@@ -26,9 +26,18 @@ class GpuArcProtectedBufferManagerProxy
   ~GpuArcProtectedBufferManagerProxy() override;
 
   // arc::mojom::ProtectedBufferManager implementation.
+  void DeprecatedGetProtectedSharedMemoryFromHandle(
+      mojo::ScopedHandle dummy_handle,
+      DeprecatedGetProtectedSharedMemoryFromHandleCallback callback) override;
   void GetProtectedSharedMemoryFromHandle(
       mojo::ScopedHandle dummy_handle,
       GetProtectedSharedMemoryFromHandleCallback callback) override;
+  void GetProtectedNativePixmapHandleFromHandle(
+      mojo::ScopedHandle dummy_handle,
+      GetProtectedNativePixmapHandleFromHandleCallback callback) override;
+  void IsProtectedNativePixmapHandle(
+      mojo::ScopedHandle dummy_handle,
+      IsProtectedNativePixmapHandleCallback callback) override;
 
  private:
   scoped_refptr<arc::ProtectedBufferManager> protected_buffer_manager_;

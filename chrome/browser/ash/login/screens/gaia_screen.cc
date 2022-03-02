@@ -18,6 +18,8 @@ namespace {
 constexpr char kUserActionBack[] = "back";
 constexpr char kUserActionCancel[] = "cancel";
 constexpr char kUserActionStartEnrollment[] = "startEnrollment";
+constexpr char kUserActionReloadDefault[] = "reloadDefault";
+constexpr char kUserActionSAMLVideoTimeout[] = "samlVideoTimeout";
 
 }  // namespace
 
@@ -32,6 +34,8 @@ std::string GaiaScreen::GetResultString(Result result) {
       return "EnterpriseEnroll";
     case Result::START_CONSUMER_KIOSK:
       return "StartConsumerKiosk";
+    case Result::SAML_VIDEO_TIMEOUT:
+      return "SAMLVideoTimeout";
   }
 }
 
@@ -96,6 +100,12 @@ void GaiaScreen::OnUserAction(const std::string& action_id) {
     exit_callback_.Run(Result::CANCEL);
   } else if (action_id == kUserActionStartEnrollment) {
     exit_callback_.Run(Result::ENTERPRISE_ENROLL);
+  } else if (action_id == kUserActionReloadDefault) {
+    DCHECK(features::IsRedirectToDefaultIdPEnabled());
+    LoadOnline(EmptyAccountId());
+  } else if (action_id == kUserActionSAMLVideoTimeout) {
+    DCHECK(features::IsRedirectToDefaultIdPEnabled());
+    exit_callback_.Run(Result::SAML_VIDEO_TIMEOUT);
   } else {
     BaseScreen::OnUserAction(action_id);
   }

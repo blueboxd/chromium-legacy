@@ -5,6 +5,8 @@
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
+// cros_bluetooth_config.mojom-lite.js depends on url.mojom.Url.
+import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
 // TODO(crbug.com/1010321): Use cros_bluetooth_config.mojom-webui.js instead
 // as non-module JS is deprecated.
 import 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-lite.js';
@@ -106,6 +108,8 @@ export class FakeBluetoothConfig {
     this.pendingForgetRequest_ = null;
 
     /**
+     * The last pairing handler created. If defined, indicates discovery in is
+     * progress. If null, indicates no discovery is occurring.
      * @private {?FakeDevicePairingHandler}
      */
     this.lastPairingHandler_ = null;
@@ -236,6 +240,21 @@ export class FakeBluetoothConfig {
          */
         (Object.assign({}, this.systemProperties_));
     this.notifyObserversPropertiesUpdated_();
+
+    // If discovery is in progress and Bluetooth is no longer enabled, stop
+    // discovery and any pairing that may be occurring.
+    if (!this.lastPairingHandler_) {
+      return;
+    }
+
+    if (systemState ===
+        chromeos.bluetoothConfig.mojom.BluetoothSystemState.kEnabled) {
+      return;
+    }
+
+    this.lastPairingHandler_.rejectPairDevice();
+    this.lastPairingHandler_ = null;
+    this.notifyDiscoveryStopped_();
   }
 
   /**
@@ -440,6 +459,14 @@ export class FakeBluetoothConfig {
             this.lastPairingHandler_);
     this.lastDiscoveryDelegate_.onBluetoothDiscoveryStarted(
         devicePairingHandlerReciever.$.bindNewPipeAndPassRemote());
+  }
+
+  /**
+   * @private
+   * Notifies the last delegate that device discovery has stopped.
+   */
+  notifyDiscoveryStopped_() {
+    this.lastDiscoveryDelegate_.onBluetoothDiscoveryStopped();
   }
 
   /**

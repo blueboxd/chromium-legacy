@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_new_script_fetcher.h"
 
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
 #include "content/browser/service_worker/service_worker_new_script_loader.h"
@@ -103,6 +104,11 @@ void ServiceWorkerNewScriptFetcher::StartScriptLoadingWithNewResourceID(
   // service worker.
   uint32_t options = network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
 
+  // Notify to DevTools that the request for fetching the service worker script
+  // is about to start. It fires `Network.onRequestWillBeSent` event.
+  devtools_instrumentation::OnServiceWorkerMainScriptRequestWillBeSent(
+      requesting_frame_id_, version_->reporting_source(), request);
+
   mojo::MakeSelfOwnedReceiver(
       ServiceWorkerNewScriptLoader::CreateAndStart(
           request_id_, options, request,
@@ -164,6 +170,9 @@ void ServiceWorkerNewScriptFetcher::OnComplete(
   // header and the body.
   if (status.error_code == net::OK) {
     mojo::ReportBadMessage("SWNSF_BAD_OK");
+    // Do not continue with further script processing, but let the |callback_|
+    // hang. This renderer process would be killed soon anyways.
+    return;
   }
   std::move(callback_).Run(/*main_script_load_params=*/nullptr);
 }

@@ -72,8 +72,10 @@ class WallpaperControllerClientImpl
   void FetchImagesForCollection(
       const std::string& collection_id,
       FetchImagesForCollectionCallback callback) override;
-  bool SaveWallpaperToDriveFs(const AccountId& account_id,
-                              const base::FilePath& origin) override;
+  void SaveWallpaperToDriveFs(
+      const AccountId& account_id,
+      const base::FilePath& origin,
+      base::OnceCallback<void(bool)> wallpaper_saved_callback) override;
   base::FilePath GetWallpaperPathFromDriveFs(
       const AccountId& account_id) override;
   void GetFilesId(const AccountId& account_id,
@@ -176,10 +178,12 @@ class WallpaperControllerClientImpl
                                bool success,
                                const backdrop::Image& image,
                                const std::string& next_resume_token);
-  void OnFetchImagesForCollection(FetchImagesForCollectionCallback callback,
-                                  bool success,
-                                  const std::string& collection_id,
-                                  const std::vector<backdrop::Image>& images);
+  void OnFetchImagesForCollection(
+      FetchImagesForCollectionCallback callback,
+      std::unique_ptr<wallpaper_handlers::BackdropImageInfoFetcher> fetcher,
+      bool success,
+      const std::string& collection_id,
+      const std::vector<backdrop::Image>& images);
 
   void ObserveVolumeManagerForAccountId(const AccountId& account_id);
 
@@ -199,15 +203,14 @@ class WallpaperControllerClientImpl
   std::unique_ptr<wallpaper_handlers::BackdropSurpriseMeImageFetcher>
       surprise_me_image_fetcher_;
 
-  std::unique_ptr<wallpaper_handlers::BackdropImageInfoFetcher>
-      images_info_fetcher_;
-
   base::ScopedMultiSourceObservation<file_manager::VolumeManager,
                                      file_manager::VolumeManagerObserver>
       volume_manager_observation_{this};
   base::ScopedObservation<session_manager::SessionManager,
                           session_manager::SessionManagerObserver>
       session_observation_{this};
+
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   base::WeakPtrFactory<WallpaperControllerClientImpl> weak_factory_{this};
   base::WeakPtrFactory<WallpaperControllerClientImpl> storage_weak_factory_{

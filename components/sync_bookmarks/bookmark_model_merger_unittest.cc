@@ -107,12 +107,8 @@ class UpdateResponseDataBuilder {
                             const std::string& title,
                             const syncer::UniquePosition& unique_position) {
     data_.id = GetFakeServerIdFromGUID(guid);
-    data_.parent_id = GetFakeServerIdFromGUID(parent_guid);
     data_.originator_client_item_id = guid.AsLowercaseString();
 
-    // Note that proto field |parent_guid| is not currently populated here
-    // because the code doesn't actually need it, and besides legacy data coming
-    // from the server may not include it.
     sync_pb::BookmarkSpecifics* bookmark_specifics =
         data_.specifics.mutable_bookmark();
     bookmark_specifics->set_legacy_canonicalized_title(title);
@@ -120,6 +116,7 @@ class UpdateResponseDataBuilder {
     bookmark_specifics->set_type(sync_pb::BookmarkSpecifics::FOLDER);
     *bookmark_specifics->mutable_unique_position() = unique_position.ToProto();
     bookmark_specifics->set_guid(guid.AsLowercaseString());
+    bookmark_specifics->set_parent_guid(parent_guid.AsLowercaseString());
   }
 
   UpdateResponseDataBuilder& SetUrl(const GURL& url) {
@@ -1013,7 +1010,6 @@ TEST(BookmarkModelMergerTest, ShouldMergeFolderByGUIDAndNotSemantics) {
 }
 
 TEST(BookmarkModelMergerTest, ShouldIgnoreChildrenForNonFolderNodes) {
-  const std::string kParentId = "parent_id";
   const std::string kChildId = "child_id";
   const std::string kParentTitle = "Parent Title";
   const std::string kChildTitle = "Child Title";
@@ -1811,7 +1807,6 @@ TEST(BookmarkModelMergerTest, ShouldLogMetricsForkDescendantOfRootNode) {
   // -------- The remote model --------
   // root node
   //  | - bookmark (url1/Title1)
-  //  | - bookmark (url2/Title2)
   syncer::UpdateResponseDataList updates;
   updates.push_back(CreateBookmarkBarNodeUpdateData());
   updates.back().entity.id = kRootNodeId;
@@ -1820,27 +1815,18 @@ TEST(BookmarkModelMergerTest, ShouldLogMetricsForkDescendantOfRootNode) {
 
   updates.push_back(CreateUpdateResponseData(
       /*guid=*/base::GUID::GenerateRandomV4(),
-      /*parent_guid=*/base::GUID::GenerateRandomV4(), "Title1",
+      base::GUID::ParseLowercase(bookmarks::BookmarkNode::kRootNodeGuid),
+      "Title1",
       /*url=*/"http://url1",
       /*is_folder=*/false,
       /*unique_position=*/MakeRandomPosition()));
-  updates.back().entity.parent_id = kRootNodeId;
-  updates.push_back(CreateUpdateResponseData(
-      /*guid=*/base::GUID::GenerateRandomV4(),
-      /*parent_guid=*/base::GUID::GenerateRandomV4(), "Title2",
-      /*url=*/"http://url2",
-      /*is_folder=*/false,
-      /*unique_position=*/MakeRandomPosition()));
-  updates.back().entity.parent_id = kRootNodeId;
 
   base::HistogramTester histogram_tester;
   Merge(std::move(updates), bookmark_model.get());
   histogram_tester.ExpectUniqueSample(
       "Sync.ProblematicServerSideBookmarksDuringMerge",
-      /*sample=*/
-      ExpectedRemoteBookmarkUpdateError::
-          kDescendantOfRootNodeWithoutPermanentFolder,
-      /*count=*/2);
+      /*sample=*/ExpectedRemoteBookmarkUpdateError::kMissingParentEntity,
+      /*count=*/1);
 }
 
 TEST(BookmarkModelMergerTest, ShouldRemoveMatchingDuplicatesByGUID) {
@@ -2027,7 +2013,6 @@ TEST(BookmarkModelMergerTest, ShouldRemoveDifferentFolderDuplicatesByGUID) {
       /*guid=*/base::GUID::GenerateRandomV4(), /*parent_guid=*/kGuid,
       "Some title",
       /*url=*/"", /*is_folder=*/true, MakeRandomPosition()));
-  updates.back().entity.parent_id = "Id1";
 
   updates.push_back(CreateUpdateResponseData(
       /*guid=*/kGuid, /*parent_guid=*/BookmarkBarGuid(), kTitle2,
@@ -2038,7 +2023,6 @@ TEST(BookmarkModelMergerTest, ShouldRemoveDifferentFolderDuplicatesByGUID) {
       /*guid=*/base::GUID::GenerateRandomV4(), /*parent_guid=*/kGuid,
       "Some title 2",
       /*url=*/"", /*is_folder=*/true, MakeRandomPosition()));
-  updates.back().entity.parent_id = "Id2";
 
   base::HistogramTester histogram_tester;
   std::unique_ptr<SyncedBookmarkTracker> tracker =
@@ -2189,7 +2173,6 @@ TEST(BookmarkModelMergerTest, ShouldRemoveDifferentTypeDuplicatesByGUID) {
       /*guid=*/base::GUID::GenerateRandomV4(), /*parent_guid=*/kGuid,
       "Some title",
       /*url=*/"", /*is_folder=*/true, MakeRandomPosition()));
-  updates.back().entity.parent_id = "Id1";
 
   updates.push_back(CreateUpdateResponseData(
       /*guid=*/kGuid, /*parent_guid=*/BookmarkBarGuid(), kTitle,

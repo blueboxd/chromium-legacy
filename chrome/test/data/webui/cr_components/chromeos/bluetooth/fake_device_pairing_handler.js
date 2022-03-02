@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// cros_bluetooth_config.mojom-lite.js depends on url.mojom.Url.
+import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
 // TODO(crbug.com/1010321): Use cros_bluetooth_config.mojom-webui.js instead
 // as non-module JS is deprecated.
 import 'chrome://resources/mojo/chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom-lite.js';
@@ -28,6 +30,11 @@ export class FakeDevicePairingHandler {
      */
     this.pairDeviceCallback_ = null;
 
+    /**
+     * @private {?function()}
+     */
+    this.pairDeviceRejectCallback_ = null;
+
     /** @private {number} */
     this.pairDeviceCalledCount_ = 0;
 
@@ -39,6 +46,12 @@ export class FakeDevicePairingHandler {
 
     /** @private {?chromeos.bluetoothConfig.mojom.KeyEnteredHandlerRemote} */
     this.lastKeyEnteredHandlerRemote_ = null;
+
+    /** @private {?function()} */
+    this.waitForPairDeviceCallback_ = null;
+
+    /** @private {?function()} */
+    this.finishRequestConfirmPasskeyCallback_ = null;
   }
 
   /** @override */
@@ -47,8 +60,25 @@ export class FakeDevicePairingHandler {
     this.devicePairingDelegate_ = delegate;
     let promise = new Promise((resolve, reject) => {
       this.pairDeviceCallback_ = resolve;
+      this.pairDeviceRejectCallback_ = reject;
     });
+
+    if (this.waitForPairDeviceCallback_) {
+      this.waitForPairDeviceCallback_();
+    }
+
     return promise;
+  }
+
+  /**
+   * Returns a promise that will be resolved the next time
+   * pairDevice() is called.
+   * @return {Promise}
+   */
+  waitForPairDevice() {
+    return new Promise((resolve) => {
+      this.waitForPairDeviceCallback_ = resolve;
+    });
   }
 
   /**
@@ -60,6 +90,7 @@ export class FakeDevicePairingHandler {
    * passkey/PIN authentication.
    */
   requireAuthentication(authType, opt_pairingCode) {
+    assert(this.devicePairingDelegate_, 'devicePairingDelegate_ was not set.');
     switch (authType) {
       case PairingAuthType.REQUEST_PIN_CODE:
         this.devicePairingDelegate_.requestPinCode()
@@ -98,6 +129,17 @@ export class FakeDevicePairingHandler {
   }
 
   /**
+   * Returns a promise that will be resolved the next time
+   * finishRequestConfirmPasskey_() is called.
+   * @return {Promise}
+   */
+  waitForFinishRequestConfirmPasskey_() {
+    return new Promise((resolve) => {
+      this.finishRequestConfirmPasskeyCallback_ = resolve;
+    });
+  }
+
+  /**
    * @return {!chromeos.bluetoothConfig.mojom.KeyEnteredHandlerPendingReceiver}
    * @private
    */
@@ -128,6 +170,10 @@ export class FakeDevicePairingHandler {
    */
   finishRequestConfirmPasskey_(confirmed) {
     this.confirmPasskeyResult_ = confirmed;
+
+    if (this.finishRequestConfirmPasskeyCallback_) {
+      this.finishRequestConfirmPasskeyCallback_();
+    }
   }
 
   /**
@@ -143,6 +189,16 @@ export class FakeDevicePairingHandler {
       result: success ? chromeos.bluetoothConfig.mojom.PairingResult.kSuccess :
                         chromeos.bluetoothConfig.mojom.PairingResult.kAuthFailed
     });
+  }
+
+  /**
+   * Simulates pairing failing due to an exception, such as the Mojo pipe
+   * disconnecting.
+   */
+  rejectPairDevice() {
+    if (this.pairDeviceRejectCallback_) {
+      this.pairDeviceRejectCallback_();
+    }
   }
 
   /**

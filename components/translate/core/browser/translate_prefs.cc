@@ -157,14 +157,14 @@ const char TranslatePrefs::kPrefTranslateAcceptedCount[] =
 const char TranslatePrefs::kPrefAlwaysTranslateListDeprecated[] =
     "translate_whitelists";
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 const char TranslatePrefs::kPrefTranslateAutoAlwaysCount[] =
     "translate_auto_always_count";
 const char TranslatePrefs::kPrefTranslateAutoNeverCount[] =
     "translate_auto_never_count";
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const char TranslatePrefs::kPrefExplicitLanguageAskShown[] =
     "translate_explicit_language_ask_shown";
 #endif
@@ -245,7 +245,7 @@ void TranslatePrefs::ResetToDefaults() {
   prefs_->ClearPref(kPrefTranslateAcceptedCount);
   prefs_->ClearPref(prefs::kPrefTranslateRecentTarget);
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   prefs_->ClearPref(kPrefTranslateAutoAlwaysCount);
   prefs_->ClearPref(kPrefTranslateAutoNeverCount);
 #endif
@@ -450,7 +450,7 @@ void TranslatePrefs::RearrangeLanguage(
       // To avoid code duplication, set |offset| to max int and re-use the logic
       // to move |language| up in the list as far as possible.
       offset = std::numeric_limits<int>::max();
-      FALLTHROUGH;
+      [[fallthrough]];
     case kUp:
       if (pos == languages.begin())
         return;
@@ -800,7 +800,7 @@ void TranslatePrefs::ResetTranslationAcceptedCount(base::StringPiece language) {
   update.Get()->SetIntKey(language, 0);
 }
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 int TranslatePrefs::GetTranslationAutoAlwaysCount(
     base::StringPiece language) const {
   const base::Value* dict =
@@ -845,9 +845,9 @@ void TranslatePrefs::ResetTranslationAutoNeverCount(
   DictionaryPrefUpdate update(prefs_, kPrefTranslateAutoNeverCount);
   update.Get()->SetIntKey(language, 0);
 }
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 bool TranslatePrefs::GetExplicitLanguageAskPromptShown() const {
   return prefs_->GetBoolean(kPrefExplicitLanguageAskShown);
 }
@@ -863,7 +863,7 @@ bool TranslatePrefs::GetAppLanguagePromptShown() const {
 void TranslatePrefs::SetAppLanguagePromptShown() {
   prefs_->SetBoolean(language::prefs::kAppLanguagePromptShown, true);
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 void TranslatePrefs::GetLanguageList(
     std::vector<std::string>* const languages) const {
@@ -903,9 +903,9 @@ bool TranslatePrefs::CanTranslateLanguage(
 
 // static
 bool TranslatePrefs::IsDetailedLanguageSettingsEnabled() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return base::FeatureList::IsEnabled(language::kDetailedLanguageSettings);
-#elif defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#elif BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   return base::FeatureList::IsEnabled(
       language::kDesktopDetailedLanguageSettings);
 #else
@@ -990,7 +990,7 @@ void TranslatePrefs::RegisterProfilePrefs(
   registry->RegisterListPref(translate::prefs::kBlockedLanguages,
                              TranslatePrefs::GetDefaultBlockedLanguages(),
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   registry->RegisterDictionaryPref(
       kPrefTranslateAutoAlwaysCount,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
@@ -999,7 +999,7 @@ void TranslatePrefs::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(
       kPrefExplicitLanguageAskShown, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

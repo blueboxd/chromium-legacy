@@ -416,7 +416,7 @@ class NoStatePrefetchBrowserTest
   }
 
   void OpenDestURLViaClickNewForegroundTab(GURL& dest_url) const {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     OpenURLWithJSImpl("MetaShiftClick", dest_url, GURL(), true);
 #else
     OpenURLWithJSImpl("CtrlShiftClick", dest_url, GURL(), true);
@@ -1050,7 +1050,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimultaneous) {
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       GetActiveWebContents(),
-      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   GURL first_url = src_server()->GetURL("/hung");
 
   // Start the first prefetch directly instead of via PrefetchFromFile for the
@@ -1380,7 +1380,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, IssuesIdlePriorityRequests) {
   WaitForRequestCount(script_url, 1);
   monitor.WaitForUrls();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On Android requests from prerenders do not get downgraded
   // priority. See: https://crbug.com/652746.
   constexpr net::RequestPriority kExpectedPriority = net::HIGHEST;
@@ -1747,7 +1747,7 @@ IN_PROC_BROWSER_TEST_F(SpeculationNoStatePrefetchBrowserTest,
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+      content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   UseHttpsSrcServer();
   GetNoStatePrefetchManager()->mutable_config().abandon_time_to_live =
       base::Milliseconds(500);

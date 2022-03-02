@@ -57,12 +57,10 @@ class MODULES_EXPORT VideoEncoderTraits {
   using MediaEncoder = media::VideoEncoder;
 
   // Can't be a virtual method, because it's used from base ctor.
-  static const char* GetNameForDevTools();
   static const char* GetName();
 };
 
-class MODULES_EXPORT VideoEncoder final
-    : public EncoderBase<VideoEncoderTraits> {
+class MODULES_EXPORT VideoEncoder : public EncoderBase<VideoEncoderTraits> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -78,7 +76,7 @@ class MODULES_EXPORT VideoEncoder final
   // ScriptWrappable override.
   bool HasPendingActivity() const override;
 
- private:
+ protected:
   using Base = EncoderBase<VideoEncoderTraits>;
   using ParsedConfig = VideoEncoderTraits::ParsedConfig;
 
@@ -93,7 +91,7 @@ class MODULES_EXPORT VideoEncoder final
   void ProcessReconfigure(Request* request) override;
   void ResetInternal() override;
 
-  void UpdateEncoderLog(std::string encoder_name, bool is_hw_accelerated);
+  void OnMediaEncoderCreated(std::string encoder_name, bool is_hw_accelerated);
   static std::unique_ptr<media::VideoEncoder> CreateSoftwareVideoEncoder(
       VideoEncoder* self,
       media::VideoCodec codec);
@@ -102,15 +100,17 @@ class MODULES_EXPORT VideoEncoder final
                             ExceptionState&) override;
   bool VerifyCodecSupport(ParsedConfig*, ExceptionState&) override;
 
+  // Virtual for UTs.
+  virtual std::unique_ptr<media::VideoEncoder> CreateMediaVideoEncoder(
+      const ParsedConfig& config,
+      media::GpuVideoAcceleratorFactories* gpu_factories);
+
   void ContinueConfigureWithGpuFactories(
       Request* request,
       media::GpuVideoAcceleratorFactories* gpu_factories);
   std::unique_ptr<media::VideoEncoder> CreateAcceleratedVideoEncoder(
       media::VideoCodecProfile profile,
       const media::VideoEncoder::Options& options,
-      media::GpuVideoAcceleratorFactories* gpu_factories);
-  std::unique_ptr<media::VideoEncoder> CreateMediaVideoEncoder(
-      const ParsedConfig& config,
       media::GpuVideoAcceleratorFactories* gpu_factories);
   bool CanReconfigure(ParsedConfig& original_config,
                       ParsedConfig& new_config) override;

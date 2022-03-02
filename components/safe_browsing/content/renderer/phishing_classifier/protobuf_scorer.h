@@ -53,11 +53,11 @@ class ProtobufModelScorer : public Scorer {
       const override;
 
 // TODO(crbug/1278502): This is disabled as a temporary measure due to crashes.
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB) && !defined(OS_CHROMEOS) && \
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB) && !BUILDFLAG(IS_CHROMEOS) && \
     !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   void ApplyVisualTfLiteModel(
       const SkBitmap& bitmap,
-      base::OnceCallback<void(std::vector<double>)> callback) const override;
+      base::OnceCallback<void(std::vector<double>)> callback) override;
 #endif
 
   int model_version() const override;

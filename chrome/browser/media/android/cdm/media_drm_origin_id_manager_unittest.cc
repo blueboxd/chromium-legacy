@@ -104,7 +104,7 @@ class MediaDrmOriginIdManagerTest : public testing::Test {
     return profile_->GetTestingPrefService()->FindPreference(path);
   }
 
-  const base::DictionaryValue* GetDictionary(const std::string& path) const {
+  const base::Value* GetDictionary(const std::string& path) const {
     return profile_->GetTestingPrefService()->GetDictionary(path);
   }
 

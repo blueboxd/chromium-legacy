@@ -118,6 +118,7 @@ ReadCTAPMakeCredentialResponse(FidoTransportProtocol transport_used,
 }
 
 absl::optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
+    FidoTransportProtocol transport_used,
     const absl::optional<cbor::Value>& cbor) {
   if (!cbor || !cbor->is_map())
     return absl::nullopt;
@@ -140,6 +141,8 @@ absl::optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
   auto signature = it->second.GetBytestring();
   AuthenticatorGetAssertionResponse response(std::move(*auth_data),
                                              std::move(signature));
+
+  response.transport_used = transport_used;
 
   it = response_map.find(CBOR(0x01));
   if (it != response_map.end()) {
@@ -281,6 +284,8 @@ absl::optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
         options.supports_cred_protect = true;
       } else if (extension_str == kExtensionCredBlob) {
         cred_blob_extension_seen = true;
+      } else if (extension_str == kExtensionMinPINLength) {
+        options.supports_min_pin_length_extension = true;
       }
       extensions.push_back(extension_str);
     }

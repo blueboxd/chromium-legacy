@@ -13,9 +13,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/location.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -25,10 +23,13 @@
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_dialog.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "chrome/browser/webauthn/cablev2_devices.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/common/pref_names.h"
@@ -36,10 +37,7 @@
 #include "components/device_event_log/device_event_log.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/prefs/scoped_user_pref_update.h"
-#include "components/sync_device_info/device_info.h"
-#include "components/sync_device_info/device_info_sync_service.h"
-#include "components/sync_device_info/device_info_tracker.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
@@ -50,14 +48,16 @@
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
+#include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/window_open_disposition.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "device/fido/mac/authenticator.h"
 #include "device/fido/mac/credential_metadata.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "device/fido/win/authenticator.h"
 #endif
 
@@ -77,7 +77,7 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
     const std::string& relying_party_id) {
   const Profile* profile = Profile::FromBrowserContext(browser_context);
   const PrefService* prefs = profile->GetPrefs();
-  const base::ListValue* permit_attestation =
+  const base::Value* permit_attestation =
       prefs->GetList(prefs::kSecurityKeyPermitAttestation);
   return std::any_of(permit_attestation->GetList().begin(),
                      permit_attestation->GetList().end(),
@@ -86,93 +86,18 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
                      });
 }
 
-std::string Base64(base::span<const uint8_t> in) {
-  std::string ret;
-  base::Base64Encode(
-      base::StringPiece(reinterpret_cast<const char*>(in.data()), in.size()),
-      &ret);
-  return ret;
-}
+#if BUILDFLAG(IS_WIN)
+// kWebAuthnLastOperationWasNativeAPI is a boolean preference that records
+// whether the last successful operation used the Windows native API. If so
+// then we'll try and jump directly to it next time.
+const char kWebAuthnLastOperationWasNativeAPI[] =
+    "webauthn.last_op_used_native_api";
+#endif
 
-absl::optional<std::string> GetString(const base::Value& dict,
-                                      const char* key) {
-  const base::Value* v = dict.FindKey(key);
-  if (!v || !v->is_string()) {
-    return absl::nullopt;
-  }
-  return v->GetString();
-}
-
-template <size_t N>
-bool CopyBytestring(std::array<uint8_t, N>* out,
-                    absl::optional<std::string> value) {
-  if (!value) {
-    return false;
-  }
-
-  std::string bytes;
-  if (!base::Base64Decode(*value, &bytes) || bytes.size() != N) {
-    return false;
-  }
-
-  std::copy(bytes.begin(), bytes.end(), out->begin());
-  return true;
-}
-
-bool CopyBytestring(std::vector<uint8_t>* out,
-                    absl::optional<std::string> value) {
-  if (!value) {
-    return false;
-  }
-
-  std::string bytes;
-  if (!base::Base64Decode(*value, &bytes)) {
-    return false;
-  }
-
-  out->clear();
-  out->insert(out->begin(), bytes.begin(), bytes.end());
-  return true;
-}
-
-bool CopyString(std::string* out, absl::optional<std::string> value) {
-  if (!value) {
-    return false;
-  }
-  *out = *value;
-  return true;
-}
-
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 const char kWebAuthnTouchIdMetadataSecretPrefName[] =
     "webauthn.touchid.metadata_secret";
 #endif
-
-const char kWebAuthnCablePairingsPrefName[] = "webauthn.cablev2_pairings";
-
-// The |kWebAuthnCablePairingsPrefName| preference contains a list of dicts,
-// where each dict has these keys:
-const char kPairingPrefName[] = "name";
-const char kPairingPrefContactId[] = "contact_id";
-const char kPairingPrefTunnelServer[] = "tunnel_server";
-const char kPairingPrefId[] = "id";
-const char kPairingPrefSecret[] = "secret";
-const char kPairingPrefPublicKey[] = "pub_key";
-const char kPairingPrefTime[] = "time";
-
-// DeleteCablePairingByPublicKey erases any pairing with the given public key
-// from |list|.
-void DeleteCablePairingByPublicKey(base::ListValue* list,
-                                   const std::string& public_key_base64) {
-  list->EraseListValueIf([&public_key_base64](const auto& value) {
-    if (!value.is_dict()) {
-      return false;
-    }
-    const base::Value* pref_public_key = value.FindKey(kPairingPrefPublicKey);
-    return pref_public_key && pref_public_key->is_string() &&
-           pref_public_key->GetString() == public_key_base64;
-  });
-}
 
 }  // namespace
 
@@ -232,7 +157,24 @@ bool ChromeWebAuthenticationDelegate::IsFocused(
   return web_contents->GetVisibility() == content::Visibility::VISIBLE;
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_WIN)
+void ChromeWebAuthenticationDelegate::OperationSucceeded(
+    content::BrowserContext* browser_context,
+    bool used_win_api) {
+  // If a registration or assertion operation was successful, record whether the
+  // Windows native API was used for it. If so we'll jump directly to the native
+  // UI for the next operation.
+  Profile* const profile = Profile::FromBrowserContext(browser_context);
+  if (profile->IsOffTheRecord()) {
+    return;
+  }
+
+  profile->GetPrefs()->SetBoolean(kWebAuthnLastOperationWasNativeAPI,
+                                  used_win_api);
+}
+#endif
+
+#if BUILDFLAG(IS_MAC)
 // static
 ChromeWebAuthenticationDelegate::TouchIdAuthenticatorConfig
 ChromeWebAuthenticationDelegate::TouchIdAuthenticatorConfigForProfile(
@@ -261,7 +203,7 @@ ChromeWebAuthenticationDelegate::GetTouchIdAuthenticatorConfig(
   return TouchIdAuthenticatorConfigForProfile(
       Profile::FromBrowserContext(browser_context));
 }
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 content::WebAuthenticationDelegate::ChromeOSGenerateRequestIdCallback
@@ -286,7 +228,7 @@ absl::optional<bool> ChromeWebAuthenticationDelegate::
     return *testing_api_override;
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // TODO(crbug.com/908622): Enable platform authenticators in Incognito on
   // Windows once the API allows triggering an adequate warning dialog.
   if (render_frame_host->GetBrowserContext()->IsOffTheRecord()) {
@@ -319,12 +261,14 @@ ChromeWebAuthenticationDelegate::MaybeGetRequestProxy(
 // static
 void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_WIN)
+  registry->RegisterBooleanPref(kWebAuthnLastOperationWasNativeAPI, false);
+#endif
+#if BUILDFLAG(IS_MAC)
   registry->RegisterStringPref(kWebAuthnTouchIdMetadataSecretPrefName,
                                std::string());
 #endif
-
-  registry->RegisterListPref(kWebAuthnCablePairingsPrefName);
+  cablev2::RegisterProfilePrefs(registry);
 }
 
 ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
@@ -455,7 +399,7 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     return;
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (authenticator->IsWinNativeApiAuthenticator() &&
       static_cast<const device::WinWebAuthnApiAuthenticator*>(authenticator)
           ->ShowsPrivacyNotice()) {
@@ -463,7 +407,7 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     std::move(callback).Run(true);
     return;
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   weak_dialog_model_->RequestAttestationPermission(is_enterprise_attestation,
                                                    std::move(callback));
@@ -500,7 +444,24 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
     DCHECK(phone_names_.empty());
     DCHECK(phone_public_keys_.empty());
 
-    paired_phones = GetCablePairings();
+    std::unique_ptr<cablev2::KnownDevices> known_devices =
+        cablev2::KnownDevices::FromProfile(
+            Profile::FromBrowserContext(GetBrowserContext()));
+    if (g_observer) {
+      known_devices->synced_devices =
+          g_observer->GetCablePairingsFromSyncedDevices();
+    }
+    paired_phones = cablev2::MergeDevices(std::move(known_devices),
+                                          &icu::Locale::getDefault());
+
+    // The debug log displays in reverse order, so the headline is emitted after
+    // the names.
+    for (const auto& pairing : paired_phones) {
+      FIDO_LOG(DEBUG) << "• " << pairing->name << " " << pairing->last_updated
+                      << " priority:" << pairing->channel_priority;
+    }
+    FIDO_LOG(DEBUG) << "Found " << paired_phones.size() << " caBLEv2 devices";
+
     if (!paired_phones.empty()) {
       for (size_t i = 0; i < paired_phones.size(); i++) {
         const auto& phone = paired_phones[i];
@@ -522,17 +483,14 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
 
   const bool android_accessory_possible =
       base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) ||
-      (cablev2_extension_provided &&
-       base::FeatureList::IsEnabled(device::kWebAuthCableServerLink)) ||
+      cablev2_extension_provided ||
       (!cable_extension_permitted &&
        base::FeatureList::IsEnabled(device::kWebAuthCableSecondFactor));
 
   absl::optional<std::array<uint8_t, device::cablev2::kQRKeySize>>
       qr_generator_key;
   absl::optional<std::string> qr_string;
-  if (non_extension_cablev2_enabled ||
-      (cablev2_extension_provided &&
-       base::FeatureList::IsEnabled(device::kWebAuthCableServerLink))) {
+  if (non_extension_cablev2_enabled || cablev2_extension_provided) {
     // A QR key is generated for all caBLEv2 cases but whether the QR code is
     // displayed is up to the UI.
     qr_generator_key.emplace();
@@ -618,13 +576,21 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     return;
   }
 
-  weak_dialog_model_->AddObserver(this);
-
-  weak_dialog_model_->StartFlow(std::move(data), is_conditional_);
-
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(GetRenderFrameHost());
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+
+  bool last_used_native_api = false;
+#if BUILDFLAG(IS_WIN)
+  PrefService* const prefs =
+      user_prefs::UserPrefs::Get(web_contents->GetBrowserContext());
+  last_used_native_api = prefs->GetBoolean(kWebAuthnLastOperationWasNativeAPI);
+#endif
+
+  weak_dialog_model_->AddObserver(this);
+  weak_dialog_model_->StartFlow(std::move(data), is_conditional_,
+                                last_used_native_api);
+
+  Browser* const browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser) {
     browser->window()->UpdatePageActionIcon(PageActionIconType::kWebAuthn);
   }
@@ -742,6 +708,19 @@ void ChromeAuthenticatorRequestDelegate::OnCancelRequest() {
   std::move(cancel_callback_).Run();
 }
 
+void ChromeAuthenticatorRequestDelegate::OnManageDevicesClicked() {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(GetRenderFrameHost());
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (browser) {
+    NavigateParams params(browser,
+                          GURL("chrome://settings/securityKeys/phones"),
+                          ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL);
+    params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    Navigate(&params);
+  }
+}
+
 content::RenderFrameHost*
 ChromeAuthenticatorRequestDelegate::GetRenderFrameHost() const {
   content::RenderFrameHost* ret =
@@ -771,211 +750,19 @@ bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
 
   const GURL test_site("https://webauthndemo.appspot.com");
   DCHECK(test_site.is_valid());
-  return origin.IsSameOriginWith(url::Origin::Create(test_site));
-}
-
-// NameForDisplay removes line-breaking characters from |raw_name| to ensure
-// that the transport-selection UI isn't too badly broken by nonsense names.
-static std::string NameForDisplay(base::StringPiece raw_name) {
-  std::u16string unicode_name = base::UTF8ToUTF16(raw_name);
-  base::StringPiece16 trimmed_name =
-      base::TrimWhitespace(unicode_name, base::TRIM_ALL);
-  // These are all the Unicode mandatory line-breaking characters
-  // (https://www.unicode.org/reports/tr14/tr14-32.html#Properties).
-  constexpr char16_t kLineTerminators[] = {0x0a, 0x0b, 0x0c, 0x0d, 0x85, 0x2028,
-                                           0x2029,
-                                           // Array must be NUL terminated.
-                                           0};
-  std::u16string nonbreaking_name;
-  base::RemoveChars(trimmed_name, kLineTerminators, &nonbreaking_name);
-  return base::UTF16ToUTF8(nonbreaking_name);
-}
-
-// PairingFromSyncedDevice extracts the caBLEv2 information from Sync's
-// DeviceInfo (if any) into a caBLEv2 pairing. It may return nullptr.
-static std::unique_ptr<device::cablev2::Pairing> PairingFromSyncedDevice(
-    syncer::DeviceInfo* device,
-    const base::Time& now) {
-  if (device->last_updated_timestamp() < now) {
-    const base::TimeDelta age = now - device->last_updated_timestamp();
-    if (age.InHours() > 24 * 14) {
-      // Entries older than 14 days are dropped. If changing this, consider
-      // updating |cablev2::sync::IDIsValid| too so that the mobile-side is
-      // aligned.
-      return nullptr;
-    }
-  }
-
-  const absl::optional<syncer::DeviceInfo::PhoneAsASecurityKeyInfo>&
-      maybe_paask_info = device->paask_info();
-  if (!maybe_paask_info) {
-    return nullptr;
-  }
-
-  const syncer::DeviceInfo::PhoneAsASecurityKeyInfo& paask_info =
-      *maybe_paask_info;
-  auto pairing = std::make_unique<device::cablev2::Pairing>();
-  pairing->name = NameForDisplay(device->client_name());
-
-  const absl::optional<device::cablev2::tunnelserver::KnownDomainID>
-      tunnel_server_domain = device::cablev2::tunnelserver::ToKnownDomainID(
-          paask_info.tunnel_server_domain);
-  if (!tunnel_server_domain) {
-    // It's possible that a phone is running a more modern version of Chrome
-    // and uses an assigned tunnel server domain that is unknown to this code.
-    return nullptr;
-  }
-
-  pairing->tunnel_server_domain =
-      device::cablev2::tunnelserver::DecodeDomain(*tunnel_server_domain);
-  pairing->contact_id = paask_info.contact_id;
-  pairing->peer_public_key_x962 = paask_info.peer_public_key_x962;
-  pairing->secret.assign(paask_info.secret.begin(), paask_info.secret.end());
-  pairing->last_updated = device->last_updated_timestamp();
-
-  // The pairing ID from sync is zero-padded to the standard length.
-  pairing->id.assign(device::cablev2::kPairingIDSize, 0);
-  static_assert(device::cablev2::kPairingIDSize >= sizeof(paask_info.id), "");
-  memcpy(pairing->id.data(), &paask_info.id, sizeof(paask_info.id));
-
-  // The channel priority is only approximate and exists to help testing and
-  // development. I.e. we want the development or Canary install on a device to
-  // shadow the stable channel so that it's possible to test things. This code
-  // is matching the string generated by |FormatUserAgentForSync|.
-  const std::string& user_agent = device->sync_user_agent();
-  if (user_agent.find("-devel") != std::string::npos) {
-    pairing->channel_priority = 5;
-  } else if (user_agent.find("(canary)") != std::string::npos) {
-    pairing->channel_priority = 4;
-  } else if (user_agent.find("(dev)") != std::string::npos) {
-    pairing->channel_priority = 3;
-  } else if (user_agent.find("(beta)") != std::string::npos) {
-    pairing->channel_priority = 2;
-  } else if (user_agent.find("(stable)") != std::string::npos) {
-    pairing->channel_priority = 1;
-  } else {
-    pairing->channel_priority = 0;
-  }
-
-  return pairing;
-}
-
-static std::vector<std::unique_ptr<device::cablev2::Pairing>>
-GetCablePairingsFromSyncedDevices(Profile* profile) {
-  if (g_observer) {
-    return g_observer->GetCablePairingsFromSyncedDevices();
-  }
-
-  std::vector<std::unique_ptr<device::cablev2::Pairing>> ret;
-  syncer::DeviceInfoSyncService* const sync_service =
-      DeviceInfoSyncServiceFactory::GetForProfile(profile);
-  if (!sync_service) {
-    return ret;
-  }
-
-  syncer::DeviceInfoTracker* const tracker =
-      sync_service->GetDeviceInfoTracker();
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> devices =
-      tracker->GetAllDeviceInfo();
-
-  const base::Time now = base::Time::Now();
-  for (const auto& device : devices) {
-    std::unique_ptr<device::cablev2::Pairing> pairing =
-        PairingFromSyncedDevice(device.get(), now);
-    if (!pairing) {
-      continue;
-    }
-    ret.emplace_back(std::move(pairing));
-  }
-
-  return ret;
-}
-
-std::vector<std::unique_ptr<device::cablev2::Pairing>>
-ChromeAuthenticatorRequestDelegate::GetCablePairings() {
-  Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
-  if (profile->IsOffTheRecord()) {
-    // For Incognito windows we collect the devices from the parent profile.
-    // The |AuthenticatorRequestDialogModel| will notice that it's an OTR
-    // profile and display a confirmation interstitial for makeCredential calls.
-    profile = profile->GetOriginalProfile();
-  }
-
-  std::vector<std::unique_ptr<device::cablev2::Pairing>> ret =
-      GetCablePairingsFromSyncedDevices(profile);
-  std::sort(ret.begin(), ret.end(),
-            device::cablev2::Pairing::CompareByMostRecentFirst);
-
-  PrefService* const prefs = profile->GetPrefs();
-  const base::ListValue* pref_pairings =
-      prefs->GetList(kWebAuthnCablePairingsPrefName);
-
-  for (const auto& pairing : pref_pairings->GetList()) {
-    if (!pairing.is_dict()) {
-      continue;
-    }
-
-    auto out_pairing = std::make_unique<device::cablev2::Pairing>();
-    if (!CopyString(&out_pairing->name, GetString(pairing, kPairingPrefName)) ||
-        !CopyString(&out_pairing->tunnel_server_domain,
-                    GetString(pairing, kPairingPrefTunnelServer)) ||
-        !CopyBytestring(&out_pairing->contact_id,
-                        GetString(pairing, kPairingPrefContactId)) ||
-        !CopyBytestring(&out_pairing->id, GetString(pairing, kPairingPrefId)) ||
-        !CopyBytestring(&out_pairing->secret,
-                        GetString(pairing, kPairingPrefSecret)) ||
-        !CopyBytestring(&out_pairing->peer_public_key_x962,
-                        GetString(pairing, kPairingPrefPublicKey))) {
-      continue;
-    }
-
-    out_pairing->name = NameForDisplay(out_pairing->name);
-    ret.emplace_back(std::move(out_pairing));
-  }
-
-  // All the pairings from sync come first in |ret|, sorted by most recent
-  // first, followed by pairings from prefs, which are known to have unique
-  // public keys within themselves. A stable sort by public key will group
-  // together any pairings for the same Chrome instance, preferring recent sync
-  // records, then |std::unique| will delete all but the first.
-  std::stable_sort(ret.begin(), ret.end(),
-                   device::cablev2::Pairing::CompareByPublicKey);
-  ret.erase(std::unique(ret.begin(), ret.end(),
-                        device::cablev2::Pairing::EqualPublicKeys),
-            ret.end());
-
-  // ret now contains only a single entry per Chrome install. There can still be
-  // multiple entries for a given name, however. Sort by most recent and then by
-  // channel. That means that, considering all the entries for a given name,
-  // Sync entries on unstable channels have top priority. Within a given
-  // channel, the most recent entry has priority.
-
-  std::sort(ret.begin(), ret.end(),
-            device::cablev2::Pairing::CompareByMostRecentFirst);
-  std::stable_sort(ret.begin(), ret.end(),
-                   device::cablev2::Pairing::CompareByLeastStableChannelFirst);
-
-  // The debug log displays in reverse order, so the headline is emitted after
-  // the names.
-  for (const auto& pairing : ret) {
-    FIDO_LOG(DEBUG) << "• " << pairing->name << " " << pairing->last_updated
-                    << " priority:" << pairing->channel_priority;
-  }
-  FIDO_LOG(DEBUG) << "Found " << ret.size() << " caBLEv2 devices";
-
-  return ret;
+  return origin.IsSameOriginWith(test_site);
 }
 
 void ChromeAuthenticatorRequestDelegate::HandleCablePairingEvent(
     device::cablev2::PairingEvent event) {
+  PrefService* const prefs =
+      Profile::FromBrowserContext(GetBrowserContext())->GetPrefs();
+
   if (auto* failed_contact_index = absl::get_if<size_t>(&event)) {
     // A pairing was reported to be invalid. Delete it unless it came from Sync,
     // in which case there's nothing to be done.
-    ListPrefUpdate update(
-        Profile::FromBrowserContext(GetBrowserContext())->GetPrefs(),
-        kWebAuthnCablePairingsPrefName);
-    DeleteCablePairingByPublicKey(
-        update.Get(), Base64(phone_public_keys_[*failed_contact_index]));
+    cablev2::DeletePairingByPublicKey(
+        prefs, phone_public_keys_[*failed_contact_index]);
 
     if (weak_dialog_model_) {
       // Contact the next phone with the same name, if any, given that no
@@ -986,47 +773,14 @@ void ChromeAuthenticatorRequestDelegate::HandleCablePairingEvent(
     return;
   }
 
-  // This is called when doing a QR-code pairing with a phone and the phone
-  // sends long-term pairing information during the handshake. The pairing
-  // information is saved in preferences for future operations.
-  if (!base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
-    NOTREACHED();
-    return;
-  }
+  // `existing_names` is built without calling `cablev2::MergeDevices` because
+  // that function will discard linked entries with duplicate public keys, which
+  // can hide some names that we would still like to avoid colliding with.
+  std::unique_ptr<cablev2::KnownDevices> known_devices =
+      cablev2::KnownDevices::FromProfile(
+          Profile::FromBrowserContext(GetBrowserContext()));
 
-  // For Incognito/Guest profiles, pairings will only last for the duration of
-  // that session. While an argument could be made that it's safe to persist
-  // such pairing for longer, this seems like the safe option initially.
-  ListPrefUpdate update(
-      Profile::FromBrowserContext(GetBrowserContext())->GetPrefs(),
-      kWebAuthnCablePairingsPrefName);
-
-  // Otherwise the event is a new pairing.
   auto& pairing =
       *absl::get_if<std::unique_ptr<device::cablev2::Pairing>>(&event);
-  // Find any existing entries with the same public key and replace them. The
-  // handshake protocol requires the phone to prove possession of the public
-  // key so it's not possible for an evil phone to displace another's pairing.
-  std::string public_key_base64 = Base64(pairing->peer_public_key_x962);
-  DeleteCablePairingByPublicKey(update.Get(), public_key_base64);
-
-  auto dict = std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
-  dict->SetKey(kPairingPrefPublicKey,
-               base::Value(std::move(public_key_base64)));
-  dict->SetKey(kPairingPrefTunnelServer,
-               base::Value(pairing->tunnel_server_domain));
-  dict->SetKey(kPairingPrefName, base::Value(std::move(pairing->name)));
-  dict->SetKey(kPairingPrefContactId, base::Value(Base64(pairing->contact_id)));
-  dict->SetKey(kPairingPrefId, base::Value(Base64(pairing->id)));
-  dict->SetKey(kPairingPrefSecret, base::Value(Base64(pairing->secret)));
-
-  base::Time::Exploded now;
-  base::Time::Now().UTCExplode(&now);
-  dict->SetKey(kPairingPrefTime,
-               // RFC 3339 time format.
-               base::Value(base::StringPrintf(
-                   "%04d-%02d-%02dT%02d:%02d:%02dZ", now.year, now.month,
-                   now.day_of_month, now.hour, now.minute, now.second)));
-
-  update->Append(std::move(dict));
+  cablev2::AddPairing(prefs, std::move(pairing), known_devices->Names());
 }

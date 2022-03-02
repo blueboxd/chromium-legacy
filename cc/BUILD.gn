@@ -82,6 +82,10 @@ cc_component("cc") {
     "layers/content_layer_client.h",
     "layers/deadline_policy.cc",
     "layers/deadline_policy.h",
+    "layers/document_transition_content_layer.cc",
+    "layers/document_transition_content_layer.h",
+    "layers/document_transition_content_layer_impl.cc",
+    "layers/document_transition_content_layer_impl.h",
     "layers/draw_mode.h",
     "layers/draw_properties.cc",
     "layers/draw_properties.h",
@@ -128,10 +132,6 @@ cc_component("cc") {
     "layers/scrollbar_layer_base.h",
     "layers/scrollbar_layer_impl_base.cc",
     "layers/scrollbar_layer_impl_base.h",
-    "layers/shared_element_layer.cc",
-    "layers/shared_element_layer.h",
-    "layers/shared_element_layer_impl.cc",
-    "layers/shared_element_layer_impl.h",
     "layers/solid_color_layer.cc",
     "layers/solid_color_layer.h",
     "layers/solid_color_layer_impl.cc",
@@ -550,6 +550,7 @@ cc_test_static_library("test_support") {
     "test/layer_tree_pixel_test.h",
     "test/layer_tree_test.cc",
     "test/layer_tree_test.h",
+    "test/lottie_test_data.cc",
     "test/lottie_test_data.h",
     "test/mock_latency_info_swap_promise_monitor.cc",
     "test/mock_latency_info_swap_promise_monitor.h",
@@ -837,7 +838,6 @@ cc_test("cc_unittests") {
   ]
 
   if (skia_support_skottie) {
-    data = [ "//components/viz/test/data/" ]
     sources += [
       "paint/skottie_mru_resource_provider_unittest.cc",
       "paint/skottie_resource_metadata_unittest.cc",
@@ -882,10 +882,16 @@ cc_test("cc_unittests") {
     "//ui/gl",
     "//ui/gl:test_support",
   ]
+
+  data = [ "//components/viz/test/data/" ]
   data_deps = [
     "//testing/buildbot/filters:cc_unittests_filters",
     "//third_party/mesa_headers",
   ]
+
+  if (is_android && enable_chrome_android_internal) {
+    data_deps += [ "//clank/build/bot/filters:cc_unittests_filters" ]
+  }
 
   if (is_fuchsia) {
     additional_manifest_fragments = [

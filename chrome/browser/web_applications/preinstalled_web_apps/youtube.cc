@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/web_applications/preinstalled_app_install_features.h"
 #include "chrome/browser/web_applications/preinstalled_web_apps/preinstalled_web_app_definition_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/grit/preinstalled_web_apps_resources.h"
 
 namespace web_app {
@@ -18,11 +18,11 @@ ExternalInstallOptions GetConfigForYouTube() {
   ExternalInstallOptions options(
       /*install_url=*/GURL(
           "https://www.youtube.com/s/notifications/manifest/cr_install.html"),
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
       /*user_display_mode=*/DisplayMode::kStandalone,
 #else
       /*user_display_mode=*/DisplayMode::kBrowser,
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
       /*install_source=*/ExternalInstallSource::kExternalDefault);
 
   options.user_type_allowlist = {"unmanaged", "managed"};
@@ -32,7 +32,7 @@ ExternalInstallOptions GetConfigForYouTube() {
   options.load_and_await_service_worker_registration = false;
   options.only_use_app_info_factory = true;
   options.app_info_factory = base::BindRepeating([]() {
-    auto info = std::make_unique<WebApplicationInfo>();
+    auto info = std::make_unique<WebAppInstallInfo>();
     info->title = u"YouTube";
     info->start_url = GURL("https://www.youtube.com/?feature=ytca");
     info->scope = GURL("https://www.youtube.com/");

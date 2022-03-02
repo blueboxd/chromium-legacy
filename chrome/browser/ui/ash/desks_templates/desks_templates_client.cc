@@ -31,7 +31,8 @@ namespace {
 
 DesksTemplatesClient* g_desks_templates_client_instance = nullptr;
 
-// Histogram names
+// TODO(https://crbug.com/1284774): Remove metrics from this file.
+// Histogram names.
 constexpr char kWindowCountHistogramName[] = "Ash.DeskTemplate.WindowCount";
 constexpr char kTabCountHistogramName[] = "Ash.DeskTemplate.TabCount";
 constexpr char kWindowAndTabCountHistogramName[] =
@@ -199,7 +200,8 @@ void DesksTemplatesClient::LaunchDeskTemplate(
 }
 
 void DesksTemplatesClient::LaunchAppsFromTemplate(
-    std::unique_ptr<ash::DeskTemplate> desk_template) {
+    std::unique_ptr<ash::DeskTemplate> desk_template,
+    base::TimeDelta delay) {
   DCHECK(desk_template);
   const app_restore::RestoreData* restore_data =
       desk_template->desk_restore_data();
@@ -208,6 +210,7 @@ void DesksTemplatesClient::LaunchAppsFromTemplate(
 
   MaybeCreateAppLaunchHandler();
   DCHECK(app_launch_handler_);
+  app_launch_handler_->set_delay(delay);
   app_launch_handler_->SetRestoreDataAndLaunch(restore_data->Clone());
 
   RecordLaunchFromTemplateHistogram();
@@ -245,7 +248,17 @@ void DesksTemplatesClient::SetPolicyPreconfiguredTemplate(
 
 void DesksTemplatesClient::RemovePolicyPreconfiguredTemplate(
     const AccountId& account_id) {
+  Profile* profile =
+      ash::ProfileHelper::Get()->GetProfileByAccountId(account_id);
+  if (!IsSupportedProfile(profile))
+    return;
+
+  DCHECK(profile);
+
   preconfigured_desk_templates_json_.erase(account_id);
+
+  if (profile == active_profile_)
+    GetDeskModel()->RemovePolicyDeskTemplates();
 }
 
 void DesksTemplatesClient::MaybeCreateAppLaunchHandler() {
@@ -339,7 +352,7 @@ void DesksTemplatesClient::OnCreateAndActivateNewDesk(
     return;
   }
 
-  LaunchAppsFromTemplate(std::move(desk_template));
+  LaunchAppsFromTemplate(std::move(desk_template), base::TimeDelta());
   std::move(callback).Run(std::string(""));
 }
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import './shimless_rma_shared_css.js';
 import './base_page.js';
 
@@ -44,10 +45,28 @@ export class WrapupFinalizePage extends WrapupFinalizePageBase {
 
   static get properties() {
     return {
+      /**
+       * Set by shimless_rma.js.
+       * @type {boolean}
+       */
+      allButtonsDisabled: Boolean,
+
       /** @protected */
       finalizationMessage_: {
         type: String,
         value: '',
+      },
+
+      /** @protected {boolean} */
+      shouldShowSpinner_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /** @protected {boolean} */
+      shouldShowRetryButton_: {
+        type: Boolean,
+        value: false,
       },
     };
   }
@@ -74,18 +93,17 @@ export class WrapupFinalizePage extends WrapupFinalizePageBase {
    * @param {number} progress
    */
   onFinalizationUpdated(status, progress) {
-    if (status === FinalizationStatus.kInProgress) {
-      this.finalizationMessage_ = this.i18n(
-          finalizationStatusTextKeys[status], Math.round(progress * 100));
-    } else {
-      this.finalizationMessage_ = this.i18n(finalizationStatusTextKeys[status]);
-    }
+    this.finalizationMessage_ = this.i18n(finalizationStatusTextKeys[status]);
     this.finalizationComplete_ = status === FinalizationStatus.kComplete ||
         status === FinalizationStatus.kFailedNonBlocking;
     this.dispatchEvent(new CustomEvent(
         'disable-next-button',
         {bubbles: true, composed: true, detail: !this.finalizationComplete_},
         ));
+    this.shouldShowSpinner_ = status === FinalizationStatus.kInProgress;
+    this.shouldShowRetryButton_ =
+        status === FinalizationStatus.kFailedBlocking ||
+        status === FinalizationStatus.kFailedNonBlocking;
   }
 
   /** @return {!Promise<!StateResult>} */
@@ -95,6 +113,25 @@ export class WrapupFinalizePage extends WrapupFinalizePageBase {
     } else {
       return Promise.reject(new Error('Finalization is not complete.'));
     }
+  }
+
+  /** @private */
+  onRetryFinalizationButtonClicked_() {
+    if (!this.shouldShowRetryButton_) {
+      console.error('Finalization has not failed.');
+      return;
+    }
+
+    this.dispatchEvent(new CustomEvent(
+        'transition-state',
+        {
+          bubbles: true,
+          composed: true,
+          detail: (() => {
+            return this.shimlessRmaService_.retryFinalization();
+          })
+        },
+        ));
   }
 }
 

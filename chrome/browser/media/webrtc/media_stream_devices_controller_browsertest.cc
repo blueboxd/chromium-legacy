@@ -164,7 +164,8 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
     return content::MediaStreamRequest(
         render_process_id, render_frame_id, 0, example_url(), false,
         request_type, audio_id, video_id, audio_type, video_type,
-        /*disable_local_echo=*/false, request_pan_tilt_zoom_permission);
+        /*disable_local_echo=*/false, request_pan_tilt_zoom_permission,
+        /*region_capture_capable=*/false);
   }
 
   content::MediaStreamRequest CreateRequest(
@@ -610,7 +611,7 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   std::unique_ptr<content::MediaStreamUI> video_stream_ui =
       dispatcher->GetMediaStreamCaptureIndicator()->RegisterMediaStream(
           GetWebContents(), video_devices);
-  video_stream_ui->OnStarted(base::OnceClosure(),
+  video_stream_ui->OnStarted(base::RepeatingClosure(),
                              content::MediaStreamUI::SourceCallback(),
                              /*label=*/std::string(), /*screen_capture_ids=*/{},
                              content::MediaStreamUI::StateChangeCallback());

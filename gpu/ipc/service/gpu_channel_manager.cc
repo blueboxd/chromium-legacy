@@ -8,6 +8,12 @@
 #include <memory>
 #include <utility>
 
+#include "build/build_config.h"
+
+#if BUILDFLAG(IS_WIN)
+#include <dxgi1_3.h>
+#endif
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
@@ -44,7 +50,7 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "third_party/skia/include/core/SkGraphics.h"
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/gl/gl_angle_util_win.h"
 #endif
 #include "ui/gl/gl_bindings.h"
@@ -57,14 +63,14 @@
 namespace gpu {
 
 namespace {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Amount of time we expect the GPU to stay powered up without being used.
 const int kMaxGpuIdleTimeMs = 40;
 // Maximum amount of time we keep pinging the GPU waiting for the client to
 // draw.
 const int kMaxKeepAliveTimeMs = 200;
 #endif
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void TrimD3DResources() {
   // Graphics drivers periodically allocate internal memory buffers in
   // order to speed up subsequent rendering requests. These memory allocations
@@ -635,7 +641,7 @@ GpuChannelManager::GetPeakMemoryUsage(uint32_t sequence_num,
   return allocation_per_source;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void GpuChannelManager::DidAccessGpu() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -752,7 +758,7 @@ void GpuChannelManager::HandleMemoryPressure(
 
   if (gr_shader_cache_)
     gr_shader_cache_->PurgeMemory(memory_pressure_level);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   TrimD3DResources();
 #endif
 }
@@ -768,7 +774,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
 
   scoped_refptr<gl::GLSurface> surface = default_offscreen_surface();
   bool use_virtualized_gl_contexts = false;
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Virtualize GpuPreference::kLowPower contexts by default on OS X to prevent
   // performance regressions when enabling FCM.
   // http://crbug.com/180463

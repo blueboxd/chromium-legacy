@@ -7,13 +7,9 @@
 
 #include <vector>
 
+#include "ui/aura/window_observer.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
-
-namespace views {
-class TableLayout;
-class UniqueWidgetPtr;
-}  // namespace views
 
 namespace ash {
 
@@ -23,7 +19,7 @@ class DeskTemplate;
 
 // A view that acts as the content view of the desks templates widget.
 // TODO(richui): Add details and ASCII.
-class DesksTemplatesGridView : public views::View {
+class DesksTemplatesGridView : public views::View, public aura::WindowObserver {
  public:
   METADATA_HEADER(DesksTemplatesGridView);
 
@@ -36,7 +32,7 @@ class DesksTemplatesGridView : public views::View {
   // overview mode. This does not show the widget.
   // TODO(sammiequon): We might want this view to be part of the DesksWidget
   // depending on the animations.
-  static views::UniqueWidgetPtr CreateDesksTemplatesGridWidget(
+  static std::unique_ptr<views::Widget> CreateDesksTemplatesGridWidget(
       aura::Window* root);
 
   const std::vector<DesksTemplatesItemView*>& grid_items() const {
@@ -53,8 +49,11 @@ class DesksTemplatesGridView : public views::View {
   bool IsTemplateNameBeingModified() const;
 
   // views::View:
+  void Layout() override;
   void AddedToWidget() override;
-  void RemovedFromWidget() override;
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
 
  private:
   friend class DesksTemplatesEventHandler;
@@ -63,12 +62,6 @@ class DesksTemplatesGridView : public views::View {
   // Updates the visibility state of the hover buttons on all the `grid_items_`
   // as a result of mouse and gesture events.
   void OnLocatedEvent(ui::LocatedEvent* event, bool is_touch);
-
-  // Owned by the views hierarchy.
-  // TODO(richui): This is temporary until we decide what is the best way to
-  // layout the grid which may be 2x3 or 3x2 depending on the display size and
-  // needs to support animations when items are added or removed.
-  views::TableLayout* layout_ = nullptr;
 
   // The views representing templates. They're owned by views hierarchy.
   std::vector<DesksTemplatesItemView*> grid_items_;

@@ -5,14 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GEOMETRY_PHYSICAL_RECT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GEOMETRY_PHYSICAL_RECT_H_
 
-#include "base/compiler_specific.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace WTF {
 class TextStream;
@@ -95,8 +94,8 @@ struct CORE_EXPORT PhysicalRect {
     return Contains(point.left, point.top);
   }
 
-  WARN_UNUSED_RESULT bool Intersects(const PhysicalRect&) const;
-  WARN_UNUSED_RESULT bool IntersectsInclusively(const PhysicalRect&) const;
+  [[nodiscard]] bool Intersects(const PhysicalRect&) const;
+  [[nodiscard]] bool IntersectsInclusively(const PhysicalRect&) const;
 
   // Whether all edges of the rect are at full-pixel boundaries.
   // i.e.: ToEnclosingRect(this)) == this
@@ -186,13 +185,7 @@ struct CORE_EXPORT PhysicalRect {
   constexpr explicit operator gfx::RectF() const {
     return gfx::RectF(offset.left, offset.top, size.width, size.height);
   }
-  constexpr explicit operator FloatRect() const {
-    return FloatRect(offset.left, offset.top, size.width, size.height);
-  }
 
-  static PhysicalRect EnclosingRect(const FloatRect& rect) {
-    return EnclosingRect(ToGfxRectF(rect));
-  }
   static PhysicalRect EnclosingRect(const gfx::RectF& rect) {
     PhysicalOffset offset(LayoutUnit::FromFloatFloor(rect.x()),
                           LayoutUnit::FromFloatFloor(rect.y()));
@@ -204,10 +197,6 @@ struct CORE_EXPORT PhysicalRect {
   // This is faster than EnclosingRect(). Can be used in situation that we
   // prefer performance to accuracy and haven't observed problems caused by the
   // tiny error (< LayoutUnit::Epsilon()).
-  static PhysicalRect FastAndLossyFromFloatRect(const FloatRect& rect) {
-    return PhysicalRect(LayoutUnit(rect.x()), LayoutUnit(rect.y()),
-                        LayoutUnit(rect.width()), LayoutUnit(rect.height()));
-  }
   static PhysicalRect FastAndLossyFromRectF(const gfx::RectF& rect) {
     return PhysicalRect(LayoutUnit(rect.x()), LayoutUnit(rect.y()),
                         LayoutUnit(rect.width()), LayoutUnit(rect.height()));

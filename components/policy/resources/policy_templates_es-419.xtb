@@ -96,6 +96,7 @@
 <translation id="1099282607296956954">Permite el aislamiento de todos los sitios</translation>
 <translation id="1105572260329131950">Usar los íconos predeterminados para conexiones seguras</translation>
 <translation id="1110426799149444997">Inhabilitar la búsqueda parcial de <ph name="GOOGLE_LENS_PRODUCT_NAME" /></translation>
+<translation id="1111781754511998498">Projector</translation>
 <translation id="1117535567637097036">Los controladores de protocolo establecidos mediante esta política no se usan cuando se controlan intents en Android.</translation>
 <translation id="1118093128235245168">Permite que los sitios soliciten al usuario que otorgue acceso a un dispositivo USB conectado</translation>
 <translation id="111910763555783249">Configuración de notificaciones</translation>
@@ -129,6 +130,7 @@
             * ntlm
             Si no completas esta opción, se usarán los tres esquemas.</translation>
 <translation id="1153306961094113710">Permitir la depuración remota</translation>
+<translation id="115699958189272121">Informar los eventos de <ph name="CHROME_REMOTE_DESKTOP_PRODUCT_NAME" /></translation>
 <translation id="1158844608156732189">Configuración de Kerberos (una línea por cada elemento del array), consulta https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.</translation>
 <translation id="1160479894929412407">Permitir el protocolo QUIC</translation>
 <translation id="1160939557934457296">Inhabilita continuar desde la página de advertencia de Navegación segura.</translation>
@@ -212,7 +214,6 @@
       Si no estableces la política o el valor que genera la sustitución no es un nombre de host válido, no se configurará ningún nombre de host en la solicitud de DHCP.</translation>
 <translation id="1257550411839719984">Establecer el directorio de descarga predeterminado</translation>
 <translation id="1265053460044691532">Permite limitar el tiempo durante el cual un usuario autenticado mediante SAML puede acceder sin conexión.</translation>
-<translation id="1268548671627260798">Lista de URLs que están exentas de la notificación sobre la pantalla completa</translation>
 <translation id="127264587838521316">Habilita las solicitudes de instalación de extensiones de <ph name="PRODUCT_NAME" /></translation>
 <translation id="1272798957154751008">Habilitar la migración de los dispositivos Chromad a la administración de la nube</translation>
 <translation id="1274997165432133392">Cookies y otros datos de sitios</translation>
@@ -339,6 +340,7 @@
       Si no habilitas o no estableces la política, <ph name="PRODUCT_NAME" /> hará que la opción Imprimir como imagen no esté disponible para los usuarios en el menú Vista previa de impresión y los archivos PDF se imprimirán del modo habitual, sin rasterizarse en imágenes antes de su envío a destino.</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivo</translation>
 <translation id="1438739959477268107">Configuración predeterminada de generación de claves</translation>
+<translation id="1440408958042020947">Permitir el acceso de los usuarios que habilitaron Phone Hub a las fotos y los videos tomados recientemente del teléfono</translation>
 <translation id="1449083855104537880">Si estableces el valor "True" para la política, se mostrarán las opciones de accesibilidad en el menú de la bandeja del sistema. Si estableces el valor "False", no se mostrarán las opciones en el menú.
 
       Si configuras la política, los usuarios no podrán cambiarla. Si no la configuras, no se mostrarán las opciones de accesibilidad en el menú, pero los usuarios podrán hacerlas aparecer mediante la página Configuración.
@@ -462,6 +464,11 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="1553532014072799546">Lista blanca de límites de tiempo por app</translation>
 <translation id="1553956579506604198">Impide la instalación de extensiones externas</translation>
 <translation id="1555248923316727072">Configuración de la administración de identidades de usuarios con Saml</translation>
+<translation id="1558723461519082860">Esta política le da a Projector permiso para crear y transcribir grabaciones de pantalla y subirlas a Drive.
+
+      Si habilitas la política, se activará Projector.
+      Si inhabilitas la política, se desactivará Projector.
+      Si no estableces la política, se desactivará Projector de forma predeterminada.</translation>
 <translation id="1561424797596341174">Anulaciones de políticas en compilaciones de depuración del host de acceso remoto</translation>
 <translation id="1561967320164410511">U2F más extensiones para atestación individual</translation>
 <translation id="1567718448549957373">Si habilitas esta política o no la estableces, se podrán recibir desafíos de autenticación <ph name="BASIC_AUTH" /> en las solicitudes HTTP no seguras.
@@ -469,6 +476,7 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
       Si inhabilitas la política, se prohíbe que las solicitudes HTTP no seguras usen el esquema de autenticación <ph name="BASIC_AUTH" />; solo se permitirán las solicitudes HTTPS seguras.
 
       Si se establece la política de <ph name="AUTH_SCHEMES_POLICY_NAME" /> y no incluye <ph name="BASIC_AUTH" />, se ignora esta política y se prohíbe siempre <ph name="BASIC_AUTH" />.</translation>
+<translation id="1574258262373444557">No usar <ph name="AES_KL_NAME" /> como el algoritmo de encriptación para la encriptación del almacenamiento de datos del usuario</translation>
 <translation id="1575015449587326319">Política de configuración para el Conector de Chrome Enterprise OnFileDownloaded</translation>
 <translation id="1583248206450240930">Utilizar <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
 <translation id="1587042984081085960">Esta política permite que un administrador especifique si una página puede enviar solicitudes XHR síncronas cuando el usuario la abandona (la cierra o pasa a otra página).
@@ -487,6 +495,23 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="159946228300522107">Si estableces la política como verdadera, Chrome maximizará la primera ventana que se muestre en la primera ejecución.
 
       Si la estableces como falsa o no la estableces, Chrome maximizará la primera ventana siempre que el tamaño de la pantalla lo permita.</translation>
+<translation id="1600107337865729434">Esta política permite el agrupamiento en clústeres de agentes con clave de origen de forma predeterminada.
+
+      El encabezado del HTTP Origin-Agent-Cluster controla si un documento está
+      aislado en un clúster de agentes con clave de origen o bien en un
+      clúster con clave de sitio. Esto tiene repercusiones en la seguridad ya que un
+      clúster de agentes con clave de origen permite el aislamiento de documentos por origen. La consecuencia
+      visible de esto para el desarrollador es que el descriptor de acceso de document.domain ya no podrá
+      establecerse.
+
+      El comportamiento predeterminado cuando no se establece un encabezado Origin-Agent-Cluster
+      cambia en M101 de clave de sitio a clave de origen. Si habilitas
+      o no estableces la política, el navegador seguirá la nueva configuración predeterminada
+      de esa versión en adelante. Si la inhabilitas, se revierte este cambio y
+      los documentos que no contengan encabezados Origin-Agent-Cluster se asignarán a
+      los clústeres de agentes con clave de sitio. Como consecuencia, el descriptor de acceso de document.domain
+      podrá establecerse de forma predeterminada. Esto coincide con el comportamiento heredado.
+      </translation>
 <translation id="1600340610556453828">Si inhabilitas la política, <ph name="PRODUCT_OS_NAME" /> desactivará la conexión Wi-Fi y los usuarios no podrán cambiar esta acción.
 
       Si la habilitas o no la estableces, los usuarios podrán activar o desactivar la conexión Wi-Fi.</translation>
@@ -583,6 +608,7 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="167514072300004091">Si estableces la política en 3, los sitios web podrán solicitar acceso a dispositivos USB conectados. Si la estableces en 2, se negará el acceso a dispositivos USB conectados.
 
       Si no la estableces, los sitios web podrán solicitar acceso, pero los usuarios podrán cambiar esta configuración.</translation>
+<translation id="1678137412645922426">Controlar el uso de <ph name="AES_KL_NAME" /> para la encriptación del almacenamiento de datos del usuario (en caso de ser compatible)</translation>
 <translation id="1682063842123336408">Indica el espacio libre en disco (expresado en GB) que se necesita para instalar <ph name="PLUGIN_VM_NAME" />.
 
       Si no estableces esta política, fallará la instalación de <ph name="PLUGIN_VM_NAME" /> cuando el espacio libre en disco disponible en el dispositivo sea inferior a 20 GB (valor predeterminado).
@@ -720,6 +746,7 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
           Esta política es opcional. Si no se establece, la solicitud de búsqueda instantánea se enviará mediante el método GET.
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
+<translation id="1850439894606905202">De forma predeterminada, los documentos se ubican en clústeres de agentes con clave de sitio. document.domain aún puede establecerse.</translation>
 <translation id="1852294065645015766">Permitir la reproducción automática de contenido multimedia</translation>
 <translation id="1859859319036806634">Advertencia: El resguardo de la versión de TLS se quitará de <ph name="PRODUCT_NAME" /> después de la versión 52 (alrededor de septiembre de 2016), y esta política dejará de funcionar.
 
@@ -793,6 +820,7 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="1962864958436828230">Establecer el límite de tamaño mínimo para los datos del portapapeles mediante la restricción destinada a evitar la filtración de datos</translation>
 <translation id="1964634611280150550">Modo incógnito inhabilitado</translation>
 <translation id="1964802606569741174">Esta política no tiene efecto en la app de YouTube de Android. Si se debe aplicar el modo de seguridad en YouTube, se debe inhabilitar la instalación de la app de YouTube de Android.</translation>
+<translation id="1967334955994230472">Inhabilitar Projector</translation>
 <translation id="1969212217917526199">Anula las políticas en compilaciones de depuración del host de acceso remoto.
 
           El valor se analiza como un diccionario JSON de asignaciones de nombre de política a valor de política.</translation>
@@ -830,6 +858,7 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="199764499252435679">Habilitar las actualizaciones de componentes en <ph name="PRODUCT_NAME" /></translation>
 <translation id="1998504583649140526">Configuración de solicitudes de red privada</translation>
 <translation id="1999000620918508488">Fuerza la pantalla de acceso para ocultar o mostrar la información del sistema.</translation>
+<translation id="2000937390924915996">No ejecutar la limpieza automática del disco durante el acceso</translation>
 <translation id="2001420846508294174">Si estableces la política, se determinarán las reglas para seleccionar la impresora predeterminada en <ph name="PRODUCT_NAME" /> y se anularán las reglas predeterminadas. Los usuarios eligen la impresora la primera vez que realizan una impresión, cuando <ph name="PRODUCT_NAME" /> busca una impresora que coincida con los atributos especificados. En caso de no haber una coincidencia perfecta, podrá determinarse que <ph name="PRODUCT_NAME" /> seleccione cualquier impresora que coincida con la política, en función del orden en el que se detectaron.
 
       Si no estableces la política o la estableces según los atributos cuando no hay coincidencias, la impresora PDF integrada será la predeterminada. Si no hay impresora PDF, <ph name="PRODUCT_NAME" /> no seleccionará ninguna como predeterminada.
@@ -837,11 +866,6 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
       Las impresoras conectadas a <ph name="CLOUD_PRINT_NAME" /> se consideran <ph name="PRINTER_TYPE_CLOUD" />; el resto de las impresoras se clasifican como <ph name="PRINTER_TYPE_LOCAL" />.
 
       Nota: Si se omite algún campo, cualquier valor será válido. Por ejemplo, si no se especifica la conectividad, la vista previa de impresión iniciará la búsqueda de todo tipo de impresoras, <ph name="PRINTER_TYPE_LOCAL" /> y <ph name="PRINTER_TYPE_CLOUD" />. Los patrones de las expresiones regulares deben seguir la sintaxis de JavaScript RegExp, y las coincidencias distinguen entre mayúsculas y minúsculas.</translation>
-<translation id="2003441790537575907">Si habilitas la política o no la estableces, <ph name="LEGACY_EXTENSION_DISABLE_API" /> bloqueará los puntos de extensiones heredados del proceso del navegador.
-
-      Si la inhabilitas, se reducirá la estabilidad y la seguridad de <ph name="PRODUCT_NAME" />, ya que se permitirá cargar código desconocido y potencialmente hostil en el proceso del navegador <ph name="PRODUCT_NAME" />. Desactiva la política solo si hay problemas de compatibilidad con software de terceros que deba ejecutarse en el proceso del navegador <ph name="PRODUCT_NAME" />.
-
-      Nota: Obtén más información sobre las políticas de mitigación de procesos ( https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies ).</translation>
 <translation id="2005506794355327448">La acción que se debe tomar cuando la tapa esté cerrada.</translation>
 <translation id="2006530844219044261">Administración de energía</translation>
 <translation id="2008514891623783266">La política que controla la IP de WebRTC</translation>
@@ -914,6 +938,7 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="2070744136203607632">No realizar comprobaciones de intercepción de DNS</translation>
 <translation id="2073552873076775140">Permitir el acceso a <ph name="PRODUCT_NAME" /></translation>
 <translation id="2075732129949889165">Playbook de Ansible de Crostini</translation>
+<translation id="2076158466157390917">Controlar la limpieza automática del disco durante el acceso</translation>
 <translation id="2077129598763517140">Usar aceleración de hardware cuando esté disponible</translation>
 <translation id="2077273864382355561">Demora de pantalla apagada con batería</translation>
 <translation id="2082205219176343977">Configura la versión mínima permitida de Chrome para el dispositivo.</translation>
@@ -1818,6 +1843,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Los patrones de URL no deben entrar en conflicto con <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME" />. Si una URL se ajusta a ambas políticas, no prevalece ninguna de las dos.
 
       Para obtener información detallada sobre los patrones de <ph name="URL_LABEL" /> válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. <ph name="WILDCARD_VALUE" /> no es un valor aceptado para esta política.</translation>
+<translation id="305106159605171619">Se inhabilita la reducción de usuario-agente, y las pruebas de campo o de origen no la habilitan</translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="3064530882228745118">Usar la búsqueda de CNAME durante la autenticación de Kerberos</translation>
 <translation id="3066446511111537292">Permite que los usuarios afiliados de este dispositivo apliquen la transferencia de ADB</translation>
@@ -2022,6 +2048,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="328347261792478720">De forma predeterminada, el navegador mostrará recomendaciones de contenido multimedia personalizadas para el usuario. Si inhabilitas esta política, el usuario no verá estas recomendaciones. Si la habilitas o no la estableces, el usuario verá las recomendaciones de contenido multimedia.</translation>
 <translation id="3284094172359247914">Controla el uso de la API de WebUSB</translation>
 <translation id="3288595667065905535">Canal de versión</translation>
+<translation id="3291318845269544294">Habilitar Projector</translation>
 <translation id="3294430356898755483">Si estableces la política, los administradores podrán configurar una lista de impresoras para sus usuarios. Los usuarios eligen la impresora la primera vez que realizan una impresión.
 
       Esta política permite hacer lo siguiente:
@@ -2086,6 +2113,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
           El valor de la política debe especificarse en milisegundos. Los valores deben ser menores o iguales que la demora de inactividad.
 
           Solo se muestra el mensaje de advertencia si la acción de inactividad es salir de la cuenta o apagar el dispositivo.</translation>
+<translation id="3360280740977649313">Controla las políticas para Projector.</translation>
 <translation id="3363360928811201045">Agregar restricciones en cuentas administradas</translation>
 <translation id="3373381043600809954">Habilita <ph name="PRODUCT_NAME" /></translation>
 <translation id="3374587000313305002">Configura el directorio que empleará <ph name="PRODUCT_NAME" /> para almacenar datos del usuario.
@@ -2287,6 +2315,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="3606571057705314194">Selector de perfiles inhabilitado en el inicio</translation>
 <translation id="3627678165642179114">Habilita o inhabilita el servicio web de revisión ortográfica.</translation>
 <translation id="3628480121685794414">Permitir impresión simple</translation>
+<translation id="3634125384445314047">Permitir el acceso a las fotos y los videos tomados recientemente del teléfono mediante Phone Hub</translation>
 <translation id="3643284063603988867">Habilita la función "Recordar contraseña"</translation>
 <translation id="3646859102161347133">Establece el tipo de lupa.</translation>
 <translation id="3647212518036289905">Si estableces la política, esta especificará qué biblioteca GSSAPI se debe usar para la autenticación HTTP. Puedes establecerla asignándole un nombre de biblioteca o una ruta completa.
@@ -2551,9 +2580,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
           Si no la estableces, inicialmente las teclas especiales estarán inhabilitadas en la pantalla de acceso, pero el usuario podrá habilitarlas en cualquier momento.</translation>
 <translation id="3927291637826333102">Permitir que estos orígenes capturen pestañas, ventanas y escritorios</translation>
-<translation id="3942041691320538491">Si le asignas a la política el valor "0" (la opción predeterminada), podrás acceder a las herramientas para desarrolladores y la Consola de JavaScript, aunque no podrás hacerlo en el contexto de extensiones instaladas por una política empresarial. Si le asignas a la política el valor "1", podrás acceder a las herramientas para desarrolladores y la Consola de JavaScript en todos los contextos, incluido el de extensiones instaladas por una política empresarial. Si le asignas a la política el valor "2", no podrás acceder a las herramientas para desarrolladores ni inspeccionar elementos de sitios web.
-
-      Esta configuración también desactivará las combinaciones de teclas y las entradas del menú contextual o de cualquier menú que permiten abrir las herramientas para desarrolladores o la Consola de JavaScript.</translation>
 <translation id="3943930334592166130">Esta política controla si se le solicita al usuario que seleccione un certificado de cliente cuando más de un certificado coincide con <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_POLICY_NAME" />.
       Si habilitas esta política, se le solicitará al usuario que seleccione un certificado de cliente cada vez que la política de selección automática coincida con múltiples certificados.
       Si inhabilitas esta política o no la estableces, solo se le solicitará al usuario que haga una elección cuando ningún certificado coincida con la selección automática.</translation>
@@ -2573,6 +2599,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="3964298692570794635">Permite contenido no seguro en estos sitios</translation>
 <translation id="3965339130942650562">Está ejecutado el tiempo de espera para salir del navegador cuando el usuario se encuentre inactivo</translation>
 <translation id="396536755218079668">Usuarios supervisados</translation>
+<translation id="3968218878014278212">Permitir la habilitación de Eche</translation>
 <translation id="3971673686578912106">Si habilitas la política, se activará <ph name="PLUGIN_VM_NAME" /> para el dispositivo, siempre y cuando lo permitan otras opciones de configuración. Para ejecutar <ph name="PLUGIN_VM_NAME" />, <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> y <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> deben ser verdaderos, y se debe establecer <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> o <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" />.
 
       Si inhabilitas la política o no la estableces, no se activará <ph name="PLUGIN_VM_NAME" /> para el dispositivo.</translation>
@@ -2765,11 +2792,6 @@ Si la estableces como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificac
       Si inhabilitas la política o no la estableces, los usuarios podrán transferir archivos a Drive por conexión móvil.</translation>
 <translation id="4248277954659222481">Permite la reproducción automática de contenido multimedia en una lista de patrones de URL permitidos</translation>
 <translation id="4250680216510889253">No</translation>
-<translation id="4257545866869267519">Configura una lista de direcciones URL que estén exentas de la notificación sobre la pantalla completa. La notificación se muestra cuando el dispositivo sale del modo de suspensión, aumenta el brillo o se desbloquea la pantalla y una ventana está en modo de pantalla completa. De esta forma, los usuarios sabrán que están en modo de pantalla completa, lo que reduce el riesgo de una suplantación de identidad.
-
-          Esta política permite desactivar la notificación para direcciones URL específicas que se consideran fuentes confiables. Se establece al especificar una lista de patrones de URL que cumplen con el siguiente formato ( https://www.chromium.org/administrators/url-blocklist-filter-format ). P. ej., es posible inhabilitar las notificaciones por completo al especificar el carácter comodín <ph name="WILDCARD_VALUE" /> que coincida con todas las URLs.
-
-          Si estableces esta política como una lista vacía o no la estableces, ninguna URL queda exenta de la notificación sobre la pantalla completa.</translation>
 <translation id="4260027436474745627">Si estableces la política, cada uno de los orígenes designados en una lista de elementos separados por comas se ejecutará en un proceso dedicado. El proceso de cada origen designado solo podrá incluir documentos de ese origen y sus subdominios. Por ejemplo, si especificas https://a1.example.com/, se permitirá https://a2.a1.example.com/ en el mismo proceso, pero no así https://example.com o https://b.example.com.
 
       A partir de <ph name="PRODUCT_NAME" /> 77, también puedes especificar un rango de orígenes para aislarlos mediante un comodín. Por ejemplo, si especificas https://[*.]corp.example.com, se otorgará su propio proceso dedicado a cada origen dentro de https://corp.example.com, incluidos https://corp.example.com, https://a1.corp.example.com y https://a2.a1.corp.example.com.
@@ -3409,6 +3431,7 @@ Si estableces esta política, <ph name="PRODUCT_OS_NAME" /> solo permitirá que 
       Si estableces la política como falsa o no la estableces, <ph name="PRODUCT_NAME" /> utilizará la configuración para comprobar la actual revocación en línea.</translation>
 <translation id="5078623750797048009">Habilitar las anotaciones en archivos PDF</translation>
 <translation id="5081204761483900654">Sesiones de invitado administradas y restringidas</translation>
+<translation id="5082296146261894974">Permitir a los usuarios hacer clic en la notificación de Phone Hub para iniciar la aplicación Eche</translation>
 <translation id="5082572440690475059">Permite el acceso de lectura a través de la API de File System en estos sitios</translation>
 <translation id="5085647276663819155">Inhabilitar vista previa de impresión</translation>
 <translation id="5090791951240382356">Permitir la combinación de políticas de diccionarios con diferentes fuentes</translation>
@@ -3631,11 +3654,11 @@ Si la estableces como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificac
           Si está configurada en verdadero o si no está configurada, este usuario podrá crear y administrar usuarios supervisados.</translation>
 <translation id="5369937289900051171">Solo impresión a color</translation>
 <translation id="5370279767682621504">Habilitar la compatibilidad con HTTP/0.9 en puertos no predeterminados</translation>
+<translation id="5370765433640162225">Si estableces esta política como verdadera, se ejecuta la limpieza automática durante el acceso para asegurar que haya espacio disponible en el disco.
+      La limpieza solo se ejecutará cuando sea estrictamente necesario, pero igual afectará el tiempo de acceso.
+      Si la estableces como falsa (la configuración predeterminada), no se afecta el tiempo de acceso.</translation>
 <translation id="5371152055157582429">Los usuarios pueden personalizar el fondo de la página Nueva pestaña</translation>
 <translation id="5377606826822211923">Controla la forma en que el usuario usa las apps para Android de fuentes no confiables</translation>
-<translation id="5377668121137111316">Si estableces el valor "True" para la política, se activará el teclado en pantalla. Si estableces el valor "False", se desactivará el teclado en pantalla.
-
-      Si configuras la política, los usuarios no podrán cambiarla. Si no la configuras, el teclado en pantalla estará desactivado al principio, pero los usuarios podrán activarlo en cualquier momento.</translation>
 <translation id="537786648513450280">Controla la forma en que se usan las apps para Android de fuentes no confiables</translation>
 <translation id="5379858577608862519">Especifica si se permite la redirección de puertos a los contenedores de Crostini.
 
@@ -3862,6 +3885,12 @@ Si la estableces como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificac
 
       Si no se configura esta política, la acción predeterminada no se permite para los usuarios administrados por empresas y sí se permite para los usuarios no administrados.</translation>
 <translation id="5584132346604748282">Controla los servicios de ubicación de Google para Android</translation>
+<translation id="5585384603219625331">Esta política controla si la implementación de <ph name="AES_KL_NAME" /> está habilitada en Chrome OS para la encriptación del almacenamiento de datos del usuario para las casas de usuarios de <ph name="DM_CRYPT" /> (en caso de ser compatible).
+
+       Esta política solo se aplica a las casas de usuarios que usen <ph name="DM_CRYPT" /> para la encriptación. Las casas heredadas de usuarios (las que no usan <ph name="DM_CRYPT" />) no son compatibles con <ph name="AES_KL_NAME" /> y utilizarán <ph name="AES_NI_NAME" /> de forma predeterminada.
+
+       Si cambia el valor de la política, se accederá a las casas de usuarios de <ph name="DM_CRYPT" /> existentes con la implementación de encriptación configurada según la política, ya que las implementaciones de <ph name="AES_ALGORITHM_NAME" /> son compatibles.
+       Si inhabilitas la política o no la estableces, la encriptación del almacenamiento del usuario para las casas de usuarios de <ph name="DM_CRYPT" /> utilizarán <ph name="AES_NI_NAME" /> de forma predeterminada.</translation>
 <translation id="5586942249556966598">No hacer nada</translation>
 <translation id="5598417829613725146">Canvas (compatible a partir de la versión 90)</translation>
 <translation id="5599461642204007579">Configuración de la administración de <ph name="MS_AD_NAME" /></translation>
@@ -3910,13 +3939,6 @@ Si la estableces como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificac
       Si no estableces esta política, los usuarios podrán activar o desactivar el corrector ortográfico en la configuración de idiomas. </translation>
 <translation id="5655553344896004108">Permitir el uso de la API de U2F Security Key que se dio de baja</translation>
 <translation id="5656177735561364047">Habilita la función de portapapeles compartido</translation>
-<translation id="5657576769650058122">Si habilitas la política, se mantendrá activado el teclado virtual en pantalla (un dispositivo de entrada del Sistema operativo Chrome). Si inhabilitas la política, se mantendrá desactivado el teclado.
-
-      Si estableces la política, los usuarios no podrán cambiarla. (Podrán activar o desactivar un teclado en pantalla de accesibilidad que tenga prioridad sobre el teclado virtual. Consulta la política VirtualKeyboardEnabled).
-
-      Si no estableces la política, se desactivará el teclado, pero los usuarios podrán cambiar esta configuración.
-
-       Nota: Es posible que también se incluyan reglas heurísticas para la forma en que se muestra el teclado.</translation>
 <translation id="5657752663637568277">Esta política controla si se muestran las advertencias de baja de <ph name="CLOUD_PRINT_NAME" /> a los usuarios en el diálogo de la vista previa de impresión o en las páginas de configuración.
       Si estableces esta política como verdadera, se ocultarán las advertencias de baja.
       Si la estableces como falsa o no la estableces, se mostrarán las advertencias de baja.</translation>
@@ -3954,7 +3976,7 @@ Si la estableces como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificac
       Si inhabilitas la política, se abrirán los archivos PDF, a menos que los usuarios desactiven el complemento de PDF.
 
       Si estableces esta política, los usuarios no podrán cambiarla en <ph name="PRODUCT_NAME" />. Si no la estableces, los usuarios podrán elegir si desean abrir los archivos PDF de forma externa o no.</translation>
-<translation id="570062449808736508">Cuando esta política se establece con una string no vacía, WebView leerá las restricciones de URL del proveedor de contenido con el nombre de la autoridad proporcionado.</translation>
+<translation id="5705828032077475554">Informar las sesiones de CRD</translation>
 <translation id="5708969689202733975">Configurar los modos de desbloqueo rápido permitidos</translation>
 <translation id="5714563837055244378">Permitir que Android comparta aplicaciones web</translation>
 <translation id="5715617256528927547">Si estableces la política, se especificará la duración (expresada en horas) de almacenamiento en caché del Objeto de directiva de grupo (GPO). Este valor indica el tiempo máximo en el que pueden reutilizarse los GPO antes de que se vuelvan a descargar. En lugar de volverlos a descargar en cada recuperación de la política, el sistema volverá a utilizar los almacenados en caché, siempre que no cambien de versión.
@@ -4028,6 +4050,7 @@ Si la estableces como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificac
       Si se establece como falsa o no se establece, se inhabilitarán las funciones de Web Components v0 de forma predeterminada, a partir de la versión M80.
 
       Después de Chrome 84, se quitará esta política.</translation>
+<translation id="575647238840663288">De forma predeterminada, es posible que los documentos se ubiquen en clústeres de agentes con clave de origen . document.domain no puede establecerse para esos documentos.</translation>
 <translation id="5756680608782814094">Envía información sobre los VPD de un dispositivo.
 
       Si estableces el valor "False" para la política o no la estableces, no se enviará la información.
@@ -4156,12 +4179,7 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
       En <ph name="MS_WIN_NAME" /> o <ph name="MAC_OS_NAME" />, esta política solo tiene efecto si también se habilita <ph name="PRINT_PDF_AS_IMAGE_AVAILABILITY_POLICY_NAME" />.</translation>
 <translation id="5929855945144989709">Permitir que los dispositivos ejecuten máquinas virtuales en Chrome OS</translation>
 <translation id="5932767795525445337">Esta política también se puede usar para fijar apps de Android.</translation>
-<translation id="5934763632608026594">Si estableces esta política, permitirá controlar la configuración de la administración de aplicaciones web para <ph name="PRODUCT_NAME" />.
-
-      Esta política permite que un administrador especifique la configuración para las aplicaciones web instaladas mediante <ph name="WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME" />. Es posible establecer una configuración predeterminada usando el ID especial <ph name="DEFAULT_SCOPE" />, que se aplicará a todas las aplicaciones web que no tengan una configuración personalizada en esta política.
-
-      El campo <ph name="RUN_ON_OS_LOGIN_FIELD" /> especifica si se puede ejecutar una aplicación web durante el acceso al SO. Si este campo se establece como <ph name="BLOCKED" />, no se ejecutará la aplicación web durante el acceso al SO, y el usuario no podrá habilitar esta acción más tarde. Si este campo se establece como <ph name="RUN_WINDOWED" />, se ejecutará la aplicación web durante el acceso al SO, y el usuario no podrá inhabilitar esta acción más tarde. Si este campo se establece como <ph name="ALLOWED" />, el usuario podrá configurar la aplicación web para que se ejecute durante el acceso al SO. La configuración determinada solo permite los valores <ph name="ALLOWED" /> y <ph name="BLOCKED" />.
-      </translation>
+<translation id="5945312246863177268">No permitir a los usuarios hacer clic en la notificación de Phone Hub para iniciar la aplicación Eche</translation>
 <translation id="5946082169633555022">Canal beta</translation>
 <translation id="5946329690214660966">Establecer un cronograma personalizado para buscar actualizaciones</translation>
 <translation id="5950069117106131681">Si habilitas la política, se activarán los encabezados y pies de página en la vista previa de impresión. Si inhabilitas la política, se desactivarán en la vista previa de impresión.
@@ -4296,9 +4314,15 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
 
       Nota: Estas restricciones se aplican a las descargas que se inician desde el contenido de páginas web o con la opción "Descargar vínculo" del menú. No se aplican a la acción de descargar la página que se muestra actualmente ni a la opción para guardar como PDF desde las opciones de impresión. Obtén más información sobre la Navegación segura ( https://developers.google.com/safe-browsing ).</translation>
 <translation id="6123052603197028610">No permite que las consultas que se envíen a los servidores de Google recuperen marcas de tiempo</translation>
+<translation id="6130229425991722726">Si le asignas a la política el valor "0" (la opción predeterminada), podrás acceder a las herramientas para desarrolladores y la Consola de JavaScript, aunque no podrás hacerlo en el contexto de extensiones instaladas por una política empresarial. Si le asignas a la política el valor "1", podrás acceder a las herramientas para desarrolladores y la Consola de JavaScript en todos los contextos, incluido el de extensiones instaladas por una política empresarial. Si le asignas a la política el valor "2", no podrás acceder a las herramientas para desarrolladores ni inspeccionar elementos de sitios web.
+
+      Esta configuración también desactivará las combinaciones de teclas y las entradas del menú contextual o de cualquier menú que permiten abrir las herramientas para desarrolladores o la Consola de JavaScript.
+
+      A partir de la versión 99 de <ph name="PRODUCT_NAME" />, esta configuración controla los puntos de entrada de la función "Ver el código fuente de la página". Si estableces esta política como "DeveloperToolsDisallowed" (valor 2), los usuarios no podrán ver los códigos fuente de las páginas mediante una combinación de teclas ni el menú contextual. Para bloquear la vista de los códigos fuente, debes agregar "ver fuente:*" a la política <ph name="URL_BLOCKLIST_POLICY_NAME" />.</translation>
 <translation id="6132506775968708399">Bloquea cookies de terceros</translation>
 <translation id="6133088669883929098">Permitir que todos los sitios utilicen la generación de claves</translation>
 <translation id="6135398260575578389">Se activó la Navegación segura en el modo mejorado. Este modo es más seguro, pero requiere que compartas con Google más datos sobre la navegación.</translation>
+<translation id="6135552820180449830">Crosh (compatible a partir de la versión 99)</translation>
 <translation id="6138636318340561140">Verifica en tiempo real el estado de la Navegación segura de las URL</translation>
 <translation id="6141402445226505817">Usar siempre la detección amplia de la zona horaria</translation>
 <translation id="6142501278956229253">Valor de DPI en la rasterización de archivos PDF para la impresión</translation>
@@ -4550,6 +4574,7 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
       Si la estableces como verdadera o no la estableces, se informará la configuración de red del dispositivo.</translation>
 <translation id="6401669939808766804">Salir de la cuenta de usuario</translation>
 <translation id="640244877779556713">Habilita la sugerencia de emojis</translation>
+<translation id="6404064917675764807">No informar eventos de sesiones CRD</translation>
 <translation id="6407093060083181305">Configura la lista de extensiones que se permiten instalar</translation>
 <translation id="640827304541402854">Inhabilitar el cruce seguro de firewall desde hosts de acceso remoto</translation>
 <translation id="6412352702230183710">Permitir solo hosts de mensajería nativa a nivel del sistema</translation>
@@ -4703,7 +4728,6 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
       Ten en cuenta que se puede anular esta política con las políticas EnabledPlugins y DisabledPluginsExceptions.
 
       Si no se configura esta política, el usuario podrá usar cualquier complemento instalado en el sistema, excepto aquellos que sean peligrosos, obsoletos o incompatibles por el código.</translation>
-<translation id="6573305661369899995">Establece una fuente externa de restrcicciones de URL</translation>
 <translation id="6575944031719151455">Si estableces la política, esta especificará la lista de cuentas locales del dispositivo que se muestran en la pantalla de acceso. Se usan identificadores para diferenciar las diversas cuentas locales del dispositivo.
 
       Si no estableces la política o la defines con una lista vacía, no habrá ninguna cuenta local del dispositivo.</translation>
@@ -4744,6 +4768,11 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
 <translation id="66265932317331474">Envía información de la CPU</translation>
 <translation id="6628120204569232711">Informar el estado de almacenamiento</translation>
 <translation id="663685822663765995">Restringir el modo de impresión a color</translation>
+<translation id="6640355849038068978">Si habilitas esta configuración, los usuarios podrán iniciar la aplicación Eche, por ejemplo, haciendo clic en una notificación de Phone Hub.
+
+      Si inhabilitas esta configuración, los usuarios no podrán iniciar la aplicación Eche.
+
+      Si no estableces esta política, se podrá utilizar el valor predeterminado tanto para usuarios administrados por una empresa como para aquellos no administrados.</translation>
 <translation id="6641981670621198190">Inhabilitar la admisión de API gráficas en 3D</translation>
 <translation id="6642682198621199507">Si estableces la política, podrás crear una lista de los sitios que reciben automáticamente permiso para acceder a todos los puertos en serie disponibles.
 
@@ -4909,6 +4938,11 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
       Si no la estableces, se desactivará el modo de contraste alto en la pantalla de acceso. Los usuarios podrán activarlo en cualquier momento y su estado para la pantalla de acceso se mantendrá entre los diferentes usuarios.
 
           Nota: Si se especifica <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" />, anulará esta política.</translation>
+<translation id="6833462729740272863">Configura una lista de direcciones URL que pueden permanecer en modo pantalla completa sin mostrar una notificación cuando el dispositivo sale de la pantalla de bloqueo.
+
+          En general, el modo pantalla completa se desactiva al salir de la pantalla de bloqueo, a fin de reducir el riesgo de una suplantación de la identidad. Esta política permite especificar direcciones URL que se consideran fuentes confiables, las cuales pueden permanecer en modo pantalla completa cuando el dispositivo esté desbloqueado. Se establece al especificar una lista de patrones de URL que cumplen con el siguiente formato ( https://www.chromium.org/administrators/url-blocklist-filter-format ). P. ej., es posible permanecer siempre en modo pantalla completa cuando el dispositivo esté desbloqueado e inhabilitar las notificaciones por completo al especificar el caracter comodín <ph name="WILDCARD_VALUE" /> que coincida con todas las direcciones URL.
+
+          Si estableces esta política como una lista vacía o no la estableces, ninguna URL puede permanecer en modo pantalla completa sin mostrar notificaciones.</translation>
 <translation id="6833988859168635883">Página de inicio, página principal y página Nueva pestaña</translation>
 <translation id="6835883744948188639">Mostrar un mensaje recurrente al usuario para indicarle que se recomienda llevar a cabo el reinicio</translation>
 <translation id="683688607121170501">Esta configuración permite que los usuarios cambien entre Cuentas de Google en el área de contenido de la ventana del navegador y en apps de Android después de acceder en el dispositivo con <ph name="PRODUCT_OS_NAME" />.
@@ -5793,6 +5827,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Nota: Para controlar qué sitios web pueden ejecutar <ph name="FLASH_PLUGIN_NAME" />, consulta las siguientes políticas: <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />, <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> y <ph name="PLUGINS_BLOCKED_FOR_URLS_POLICY_NAME" />.</translation>
 <translation id="780629758750905699">Permitir agregar cuentas de Family Link al dispositivo</translation>
+<translation id="7807120658089613760">Inhabilitar la cámara; la configuración del navegador y del SO; el escaneo; Web Store, y las funciones de Canvas, Explorar y Crosh</translation>
 <translation id="7807139251387225825">Lista de tipos que deben excluirse de la sincronización</translation>
 <translation id="781268256210530471">Configuración de los complementos</translation>
 <translation id="7814528532170362496">Esta política controla la verificación de URL en tiempo real para identificar URL no seguras.
@@ -6120,6 +6155,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="8219813789911069300">Bloquear descargas con contenido malicioso (recomendado)</translation>
 <translation id="8220023426952118761">Tasa de descarga deseada en kbit/s.</translation>
 <translation id="8220156281401380422">Configura la lista de mensajería nativa permitida</translation>
+<translation id="822055204938220476">Lista de direcciones URL que pueden permanecer en modo pantalla completa sin mostrar una notificación</translation>
 <translation id="8229912067600517877">Habilitar las Herramientas para desarrolladores</translation>
 <translation id="8238421250255592181">Función experimental booleana que indica si el teclado en pantalla puede proporcionar la función de autocompletar.</translation>
 <translation id="8239109177194627162">Inhabilitar Autocompletar para las tarjetas de crédito</translation>
@@ -6287,6 +6323,11 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
           Esta política proporciona un valor de resguardo para las políticas <ph name="IDLE_ACTION_AC_POLICY_NAME" /> y <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> más específicas. Cuando se configura esta política, se utiliza su valor si no se establece la política más específica correspondiente.
 
           Si no se configura, no se verá afectado el comportamiento de las políticas más específicas.</translation>
+<translation id="8349255653850367353">Si se habilita esta configuración, los usuarios que habilitaron la función Phone Hub podrán ver y descargar las fotos y los videos tomados recientemente del teléfono en Chrome OS.
+
+      Si la inhabilitas, los usuarios no podrán usar esta función. Si se inhabilita la política <ph name="PHONE_HUB_ALLOWED_POLICY_NAME" />, los usuarios tampoco podrán usar esta función.
+
+      Si no estableces esta política, se podrá utilizar el valor predeterminado tanto para usuarios administrados por una empresa como para aquellos no administrados.</translation>
 <translation id="8357681633047935212">Limitar la duración de la sesión de usuario</translation>
 <translation id="8357989008292691856">Lista de usuarios que tienen permitido acceder</translation>
 <translation id="8359734107661430198">Habilitar la API ExampleDeprecatedFeature hasta el 02/09/2008</translation>
@@ -6363,7 +6404,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="8455529558077979314">Configuración de la pantalla de privacidad</translation>
 <translation id="8455551509936646199">El día de la semana en el que debe reiniciarse el dispositivo (según su zona horaria local). Solo se utiliza cuando la frecuencia ("frequency") es semanal ("WEEKLY").</translation>
 <translation id="8461914792118322307">Proxy</translation>
-<translation id="8463569949213141467">Inhabilitar la cámara; la configuración del navegador y del SO; el escaneo; Web Store, y las funciones de Canvas y Explorar</translation>
 <translation id="8465065632133292531">Parámetros para URL instantánea que utiliza POST</translation>
 <translation id="8470317291588703478">No aplicar de manera forzosa el modo restringido de YouTube</translation>
 <translation id="847472800012384958">No permitir que ningún sitio muestre ventanas emergentes</translation>
@@ -6475,6 +6515,10 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="8544465954173828789">Permite que los mensajes SMS se sincronicen desde el teléfono con la Chromebook</translation>
 <translation id="8566842294717252664">Ocultar ícono de Web Store en la página Nueva pestaña y el Selector de aplicaciones</translation>
 <translation id="8571314270766672278">Revierte y restablece el dispositivo en el cambio a una versión inferior del canal (intenta preservar la inscripción)</translation>
+<translation id="8571871284943706125">Informa los eventos de sesiones de CRD en los dispositivos inscriptos para los usuarios afiliados.
+
+      Si inhabilitas la política o no la estableces, no se informarán los eventos.
+      Si la habilitas, los eventos de CRD se informarán, en caso de que el usuario esté afiliado.</translation>
 <translation id="857369585509260201">Esta política dejó de estar disponible; considera usar la política BrowserSignin en su lugar.
 
       Si se establece esta política como verdadera, el usuario deberá acceder a <ph name="PRODUCT_NAME" /> con su perfil antes de usar el navegador. El valor predeterminado de BrowserGuestModeEnabled se establecerá como "false". Debes tener en cuenta que, una vez habilitada esta política, se bloquearán los perfiles a los que no se haya accedido, y no podrás ingresar a ellos. Para obtener más información, consulta el artículo del Centro de ayuda.
@@ -6527,6 +6571,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="8626826495474944836">Solicitar el aislamiento de sitios para todos los sitios</translation>
 <translation id="8631434304112909927">hasta la versión <ph name="UNTIL_VERSION" /></translation>
 <translation id="8631437968147930597">Lista de apps para tomar notas permitidas en la pantalla de bloqueo de <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="8634062512783775032">Usar <ph name="AES_KL_NAME" /> como el algoritmo de encriptación para la encriptación del almacenamiento de datos del usuario (en caso de ser compatible)</translation>
 <translation id="8637566476051166626">Puertos de red habilitados de forma explícita</translation>
 <translation id="8643838501942693770">Permite las cookies de terceros, pero también que el usuario cambie esta configuración</translation>
 <translation id="8648844602494595665">Esta política controla el tratamiento para el ícono de bloqueo en el cuadro multifunción.
@@ -6547,6 +6592,11 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
       En <ph name="MS_WIN_NAME" />, esta funcionalidad solo estará disponible en instancias que están vinculadas a un dominio de <ph name="MS_AD_NAME" />, están inscritas en <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" /> o se ejecutan en Windows 10 Pro. En <ph name="MAC_OS_NAME" />, esta funcionalidad solo está disponible en instancias administradas mediante MDM o vinculadas a un dominio a través de MCX.</translation>
 <translation id="8671119576957984818">Habilitar el centro para compartir el escritorio</translation>
+<translation id="8671314659400112135">Si habilitas la política o no la estableces, <ph name="PRODUCT_NAME" /> podrá aplicar la mitigación adicional de seguridad del punto de extensión para bloquear los puntos de extensión heredados en el proceso del navegador.
+
+      Si la inhabilitas, se reducirá la estabilidad y la seguridad de <ph name="PRODUCT_NAME" />, ya que se permitirá cargar código desconocido y potencialmente hostil en el proceso del navegador de <ph name="PRODUCT_NAME" />. Desactiva la política solo si hay problemas de compatibilidad con software de terceros que deba ejecutarse en el proceso del navegador de <ph name="PRODUCT_NAME" />.
+
+      Nota: Obtén más información sobre las políticas de mitigación de procesos ( https://chromium.googlesource.com/chromium/src/+/HEAD/docs/design/sandbox.md#Process-mitigation-policies ).</translation>
 <translation id="8672321184841719703">Versión de destino para las actualizaciones automáticas</translation>
 <translation id="867410340948518937">U2F (segundo factor universal)</translation>
 <translation id="8676959842615154675">Si habilitas la política, el host de acceso remoto comparará el nombre del usuario local con el que está asociado el host y el nombre de la Cuenta de Google registrado como el propietario del host ("juanperez" si el host le pertenece a "juanperez@ejemplo.com"). No se iniciará el host si el nombre del propietario del host es diferente del nombre del usuario local con el que está asociado el host. Para asociar de forma forzosa la Cuenta de Google del propietario con un dominio específico, utiliza la política con <ph name="REMOTE_ACCESS_HOST_DOMAIN_POLICY_NAME" />.
@@ -6596,6 +6646,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="8705895771006864851">Si estableces la política como verdadera, los usuarios podrán utilizar la funcionalidad de traducción cuando corresponda. Verán una barra de herramientas de traducción integrada en <ph name="PRODUCT_NAME" /> y se agregará una opción de traducción al menú contextual que aparece al hacer clic con el botón derecho. Si estableces la política como falsa, se desactivarán todas las funciones de traducción integradas.
 
       Si estableces la política, los usuarios no podrán cambiar esta función. Si no la estableces, los usuarios podrán cambiar la configuración.</translation>
+<translation id="8707790573162457301">Ejecutar la limpieza automática del disco durante el acceso</translation>
 <translation id="8713535263782304771">Inhabilitar la Navegación segura</translation>
 <translation id="8715885991031124968">Permite los diálogos de JavaScript que se envían desde un submarco de otro origen</translation>
 <translation id="8720547069538712402">Permitir que el usuario habilite o inhabilite el corrector ortográfico</translation>
@@ -6755,6 +6806,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Si no la estableces o ingresas una string vacía, el dispositivo utilizará la zona horaria que esté activa actualmente, pero los usuarios podrán cambiarla.</translation>
 <translation id="8880294585549584028">Permite el acceso de escritura a archivos y directorios en estos sitios</translation>
 <translation id="8882006618241293596">Bloquear el complemento <ph name="FLASH_PLUGIN_NAME" /> en estos sitios</translation>
+<translation id="8882255181490012651">No permitir el acceso de los usuarios que habilitaron Phone Hub a las fotos y los videos tomados recientemente del teléfono</translation>
 <translation id="8887709920496070892">El período sin intervención del usuario después del cual se muestra un diálogo de advertencia (en milisegundos).</translation>
 <translation id="8890438048579188548">Oculta las advertencias de baja de <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="8892286064305622118">Espacio libre en disco que se requiere para <ph name="PLUGIN_VM_NAME" /></translation>
@@ -6817,6 +6869,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="8948062138228904066">Lista de servidores de autenticación habilitados</translation>
 <translation id="8951350807133946005">Configurar el directorio de caché de disco</translation>
 <translation id="8955719471735800169">Volver al principio</translation>
+<translation id="8956312248048980644">Permitir el agrupamiento en clústeres de agentes con clave de origen de forma predeterminada</translation>
 <translation id="8959992920425111821">Configuración predeterminada</translation>
 <translation id="8967125680876068695">Las Apps de Chrome dejaron de estar disponibles en Windows, Mac y Linux.
       Si se habilita esta política, <ph name="PRODUCT_NAME" /> seguirá permitiendo que se ejecuten las Apps de Chrome en estas plataformas hasta la fecha final en la que se quite su compatibilidad con todas las plataformas (junio de 2022).

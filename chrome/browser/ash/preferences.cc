@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/components/pcie_peripheral/pcie_peripheral_manager.h"
+#include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/timezone/timezone_resolver.h"
 #include "ash/constants/ash_features.h"
@@ -37,8 +37,6 @@
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/ash/sync/ash_turn_sync_on_helper.h"
-#include "chrome/browser/ash/sync/sync_consent_optional_field_trial.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ash/system/timezone_resolver_manager.h"
 #include "chrome/browser/ash/system/timezone_util.h"
@@ -146,14 +144,12 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kLoginScreenWebUILazyLoading, false);
 
   RegisterLocalStatePrefs(registry);
-  sync_consent_optional_field_trial::RegisterLocalStatePrefs(registry);
 }
 
 // static
 void Preferences::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // Some classes register their own prefs.
-  AshTurnSyncOnHelper::RegisterProfilePrefs(registry);
   input_method::InputMethodSyncer::RegisterProfilePrefs(registry);
   crosapi::browser_util::RegisterProfilePrefs(registry);
 
@@ -363,10 +359,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterStringPref(::prefs::kUserTimezone, current_timezone_id);
 
   registry->RegisterBooleanPref(
-      ::prefs::kResolveTimezoneByGeolocation, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
-
-  registry->RegisterBooleanPref(
       ::prefs::kResolveTimezoneByGeolocationMigratedToMethod, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 
@@ -423,6 +415,10 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(::prefs::kHatsArcGamesDeviceIsSelected, false);
 
+  registry->RegisterInt64Pref(::prefs::kHatsAudioSurveyCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsAudioDeviceIsSelected, false);
+
   registry->RegisterBooleanPref(::prefs::kPinUnlockFeatureNotificationShown,
                                 false);
   registry->RegisterBooleanPref(
@@ -467,9 +463,9 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(::prefs::kSettingsShowOSBanner, true);
 
   // This pref is a per-session pref and must not be synced.
-  registry->RegisterStringPref(::prefs::kLoginExtensionApiLaunchExtensionId,
-                               std::string(),
-                               PrefRegistry::NO_REGISTRATION_FLAGS);
+  registry->RegisterBooleanPref(
+      ::prefs::kLoginExtensionApiCanLockManagedGuestSession, false,
+      PrefRegistry::NO_REGISTRATION_FLAGS);
 
   registry->RegisterBooleanPref(prefs::kLoginDisplayPasswordButtonEnabled,
                                 true);
@@ -571,9 +567,6 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   for (auto* remap_pref : kLanguageRemapPrefs)
     pref_change_registrar_.Add(remap_pref, callback);
 
-  // Deprecated 7/2021
-  // TODO(https://crbug.com/783367) Remove outdated prefs.
-  prefs->ClearPref(::prefs::kResolveTimezoneByGeolocation);
 }
 
 void Preferences::Init(Profile* profile, const user_manager::User* user) {
@@ -1048,9 +1041,10 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     if (value &&
         prefs_->IsManagedPreference(::prefs::kParentAccessCodeConfig) &&
         user_->IsChild()) {
-      user_manager::known_user::SetPref(
-          user_->GetAccountId(), ::prefs::kKnownUserParentAccessCodeConfig,
-          value->Clone());
+      user_manager::KnownUser known_user(g_browser_process->local_state());
+      known_user.SetPath(user_->GetAccountId(),
+                         ::prefs::kKnownUserParentAccessCodeConfig,
+                         value->Clone());
       parent_access::ParentAccessService::Get().LoadConfigForUser(user_);
     } else {
       user_manager::known_user::RemovePref(
@@ -1079,8 +1073,8 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       reason == REASON_PREF_CHANGED) {
     const bool value = g_browser_process->local_state()->GetBoolean(
         prefs::kLocalStateDevicePeripheralDataAccessEnabled);
-    if (PciePeripheralManager::IsInitialized()) {
-      PciePeripheralManager::Get()->SetPcieTunnelingAllowedState(value);
+    if (PeripheralNotificationManager::IsInitialized()) {
+      PeripheralNotificationManager::Get()->SetPcieTunnelingAllowedState(value);
     }
     PciguardClient::Get()->SendExternalPciDevicesPermissionState(value);
   }

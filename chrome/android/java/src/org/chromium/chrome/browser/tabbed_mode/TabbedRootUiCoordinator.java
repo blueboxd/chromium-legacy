@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.continuous_search.ContinuousSearchContainerCoordinator;
 import org.chromium.chrome.browser.continuous_search.ContinuousSearchContainerCoordinator.HeightObserver;
-import org.chromium.chrome.browser.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedFollowIntroController;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -100,7 +99,6 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController.StatusBarColorProvider;
 import org.chromium.chrome.browser.ui.tablet.emptybackground.EmptyBackgroundViewWrapper;
-import org.chromium.chrome.browser.version.ChromeVersionInfo;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.AddToHomescreenIPHController;
 import org.chromium.chrome.browser.webapps.AddToHomescreenMostVisitedTileClickObserver;
@@ -114,6 +112,7 @@ import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.TouchEventObserver;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.messages.MessageDispatcherProvider;
+import org.chromium.components.version_info.VersionInfo;
 import org.chromium.components.webapps.bottomsheet.PwaBottomSheetController;
 import org.chromium.components.webapps.bottomsheet.PwaBottomSheetControllerFactory;
 import org.chromium.content_public.browser.WebContents;
@@ -654,10 +653,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 profile = Profile.fromWebContents(webContents);
             } else {
                 profile = Profile.getLastUsedRegularProfile();
+                webContents = null;
             }
 
-            WebContentsDarkModeMessageController.attemptToSendMessage(
-                    mActivity, profile, new SettingsLauncherImpl(), mMessageDispatcher);
+            WebContentsDarkModeMessageController.attemptToSendMessage(mActivity, profile,
+                    webContents, new SettingsLauncherImpl(), mMessageDispatcher);
         }
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED)) {
@@ -893,12 +893,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
     private boolean maybeShowPromo() {
         // Only one promo can be shown in one run to avoid nagging users too much.
         if (SigninPromoUtil.launchSigninPromoIfNeeded(mActivity,
-                    SyncConsentActivityLauncherImpl.get(),
-                    ChromeVersionInfo.getProductMajorVersion())) {
-            return true;
-        }
-        if (DataReductionPromoScreen.launchDataReductionPromo(
-                    mActivity, mTabModelSelectorSupplier.get().isIncognitoSelected())) {
+                    SyncConsentActivityLauncherImpl.get(), VersionInfo.getProductMajorVersion())) {
             return true;
         }
         if (DefaultBrowserPromoUtils.prepareLaunchPromoIfNeeded(mActivity, mWindowAndroid)) {

@@ -30,13 +30,13 @@
 #include "base/types/pass_key.h"
 #include "third_party/blink/public/common/input/pointer_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
-#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
-#include "third_party/blink/renderer/core/css/style_recalc.h"
+#include "third_party/blink/renderer/core/css/style_recalc_change.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/element_data.h"
@@ -45,15 +45,17 @@
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/region_capture_crop_id.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace gfx {
+class QuadF;
 class Vector2dF;
 }
 
@@ -80,7 +82,6 @@ class ElementInternals;
 class ElementIntersectionObserverData;
 class ElementRareData;
 class ExceptionState;
-class FloatQuad;
 class FocusOptions;
 class GetInnerHTMLOptions;
 class HTMLFieldSetElement;
@@ -246,17 +247,17 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                                      const AtomicString& local_name) const;
 
   void setAttribute(AtomicString name,
-                    AtomicString value,
+                    String value,
                     ExceptionState& exception_state = ASSERT_NO_EXCEPTION) {
     WTF::AtomicStringTable::WeakResult weak_lowercase_name =
         WeakLowercaseIfNecessary(name);
-    SetAttributeHinted(std::move(name), weak_lowercase_name, value,
+    SetAttributeHinted(std::move(name), weak_lowercase_name, std::move(value),
                        exception_state);
   }
 
   // Trusted Types variant for explicit setAttribute() use.
   void setAttribute(AtomicString name,
-                    const V8TrustedString* trusted_string,
+                    const V8TrustedType* trusted_string,
                     ExceptionState& exception_state) {
     WTF::AtomicStringTable::WeakResult weak_lowercase_name =
         WeakLowercaseIfNecessary(name);
@@ -275,7 +276,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                                  ExceptionState&);
   void setAttributeNS(const AtomicString& namespace_uri,
                       const AtomicString& qualified_name,
-                      const V8TrustedString* trusted_string,
+                      String value,
+                      ExceptionState& exception_state);
+  void setAttributeNS(const AtomicString& namespace_uri,
+                      const AtomicString& qualified_name,
+                      const V8TrustedType* trusted_string,
                       ExceptionState& exception_state);
 
   bool toggleAttribute(const AtomicString&, ExceptionState&);
@@ -314,6 +319,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // This variant will not update the potentially invalid attributes. To be used
   // when not interested in style attribute or one of the SVG attributes.
   AttributeCollection AttributesWithoutUpdate() const;
+  // Similar to AttributesWithoutUpdate(), but with only the style attribute
+  // exempt (ie., SVG attributes are always synchronized, for simplicity).
+  // The style attribute is special because it is so frequently updated from
+  // JavaScript and also easily identifiable (it is a single attribute).
+  AttributeCollection AttributesWithoutStyleUpdate() const;
 
   void scrollIntoView(const V8UnionBooleanOrScrollIntoViewOptions* arg);
   void scrollIntoView(bool align_to_top = true);
@@ -354,7 +364,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       DocumentUpdateReason reason = DocumentUpdateReason::kUnknown) const;
 
   DOMRectList* getClientRects();
-  FloatRect GetBoundingClientRectNoLifecycleUpdate() const;
+  gfx::RectF GetBoundingClientRectNoLifecycleUpdate() const;
   DOMRect* getBoundingClientRect();
 
   const AtomicString& computedRole();
@@ -568,6 +578,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void RebuildLayoutTree(WhitespaceAttacher&);
   void HandleSubtreeModifications();
   void PseudoStateChanged(CSSSelector::PseudoType);
+  void PseudoStateChangedForTesting(CSSSelector::PseudoType);
   void SetAnimationStyleChange(bool);
   void SetNeedsAnimationStyleRecalc();
 
@@ -778,7 +789,15 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   virtual void BeginParsingChildren() { SetIsFinishedParsingChildren(false); }
 
-  PseudoElement* GetPseudoElement(PseudoId) const;
+  // Returns the pseudo element for the given PseudoId type.
+  // |document_transition_tag| is used to uniquely identify a pseudo element
+  // from a set of pseudo elements which share the same |pseudo_id|. The current
+  // usage of this ID is limited to pseudo elements generated for a
+  // DocumentTransition. See
+  // third_party/blink/renderer/core/document_transition/README.md
+  PseudoElement* GetPseudoElement(
+      PseudoId,
+      const AtomicString& document_transition_tag = g_null_atom) const;
   LayoutObject* PseudoElementLayoutObject(PseudoId) const;
 
   bool PseudoElementStylesDependOnFontMetrics() const;
@@ -876,6 +895,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       return false;
     return StyleShouldForceLegacyLayout() || ShouldForceLegacyLayoutForChild();
   }
+
+  void ResetForceLegacyLayoutForPrinting();
 
   virtual void BuildPendingResource() {}
 
@@ -1023,6 +1044,19 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SaveIntrinsicSize(ResizeObserverSize* size);
   const ResizeObserverSize* LastIntrinsicSize() const;
 
+  // Returns a unique pseudo element for the given |pseudo_id| and
+  // |document_transition_tag| originating from this DOM element.
+  // This pseudo element may be directly associated with this element or nested
+  // inside a hierarchy of pseudo elements.
+  PseudoElement* GetNestedPseudoElement(
+      PseudoId pseudo_id,
+      const AtomicString& document_transition_tag) const;
+
+  void RecalcTransitionPseudoTreeStyle(
+      const Vector<AtomicString>& document_transition_tags);
+  void RebuildTransitionPseudoLayoutTree(
+      const Vector<AtomicString>& document_transition_tags);
+
  protected:
   const ElementData* GetElementData() const { return element_data_.Get(); }
   UniqueElementData& EnsureUniqueElementData();
@@ -1116,6 +1150,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
  private:
   friend class AXObject;
+  struct AffectedByPseudoStateChange;
 
   void ScrollLayoutBoxBy(const ScrollToOptions*);
   void ScrollLayoutBoxTo(const ScrollToOptions*);
@@ -1179,9 +1214,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   inline void CheckForEmptyStyleChange(const Node* node_before_change,
                                        const Node* node_after_change);
 
-  void UpdatePseudoElement(PseudoId,
-                           const StyleRecalcChange,
-                           const StyleRecalcContext&);
+  PseudoElement* UpdatePseudoElement(
+      PseudoId,
+      const StyleRecalcChange,
+      const StyleRecalcContext&,
+      const AtomicString& document_transition_tag = g_null_atom);
 
   enum class StyleUpdatePhase {
     kRecalc,
@@ -1196,8 +1233,10 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // when there is no StyleRecalcContext available.
   void UpdateFirstLetterPseudoElement(StyleUpdatePhase);
 
-  inline PseudoElement* CreatePseudoElementIfNeeded(PseudoId,
-                                                    const StyleRecalcContext&);
+  inline PseudoElement* CreatePseudoElementIfNeeded(
+      PseudoId,
+      const StyleRecalcContext&,
+      const AtomicString& document_transition_tag = g_null_atom);
   void AttachPseudoElement(PseudoId, AttachContext&);
   void DetachPseudoElement(PseudoId, bool performing_reattach);
 
@@ -1247,6 +1286,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void SynchronizeAllAttributes() const;
   void SynchronizeAttribute(const QualifiedName&) const;
+  void SynchronizeAllAttributesExceptStyle() const;
 
   void UpdateId(const AtomicString& old_id, const AtomicString& new_id);
   void UpdateId(TreeScope&,
@@ -1254,7 +1294,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                 const AtomicString& new_id);
   void UpdateName(const AtomicString& old_name, const AtomicString& new_name);
 
-  void ClientQuads(Vector<FloatQuad>& quads) const;
+  void ClientQuads(Vector<gfx::QuadF>& quads) const;
 
   NodeType getNodeType() const final;
   bool ChildTypeAllowed(NodeType) const final;
@@ -1288,11 +1328,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       WTF::AtomicStringTable::WeakResult hint) const;
   void SetAttributeHinted(AtomicString name,
                           WTF::AtomicStringTable::WeakResult hint,
-                          const AtomicString& value,
+                          String value,
                           ExceptionState& = ASSERT_NO_EXCEPTION);
   void SetAttributeHinted(AtomicString name,
                           WTF::AtomicStringTable::WeakResult hint,
-                          const V8TrustedString* trusted_string,
+                          const V8TrustedType* trusted_string,
                           ExceptionState& exception_state);
   std::pair<wtf_size_t, const QualifiedName> LookupAttributeQNameHinted(
       AtomicString name,
@@ -1402,6 +1442,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   DisplayLockContext* GetDisplayLockContextFromRareData() const;
 
+  void PseudoStateChanged(CSSSelector::PseudoType pseudo,
+                          AffectedByPseudoStateChange&&);
+
   Member<ElementData> element_data_;
 };
 
@@ -1424,7 +1467,6 @@ template <>
 struct DowncastTraits<Element> {
   static bool AllowFrom(const Node& node) { return node.IsElementNode(); }
 };
-
 
 inline bool IsDisabledFormControl(const Node* node) {
   auto* element = DynamicTo<Element>(node);
@@ -1467,6 +1509,13 @@ inline AttributeCollection Element::Attributes() const {
 inline AttributeCollection Element::AttributesWithoutUpdate() const {
   if (!GetElementData())
     return AttributeCollection();
+  return GetElementData()->Attributes();
+}
+
+inline AttributeCollection Element::AttributesWithoutStyleUpdate() const {
+  if (!GetElementData())
+    return AttributeCollection();
+  SynchronizeAllAttributesExceptStyle();
   return GetElementData()->Attributes();
 }
 

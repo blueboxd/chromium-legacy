@@ -352,9 +352,11 @@ void HTMLElement::CollectStyleForPresentationAttribute(
         EqualIgnoringASCIICase(value, "until-found")) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kContentVisibility, CSSValueID::kHidden);
+      UseCounter::Count(GetDocument(), WebFeature::kHiddenUntilFoundAttribute);
     } else {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kDisplay,
                                               CSSValueID::kNone);
+      UseCounter::Count(GetDocument(), WebFeature::kHiddenAttribute);
     }
   } else if (name == html_names::kDraggableAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kDraggableAttribute);
@@ -1127,6 +1129,10 @@ void HTMLElement::setSpellcheck(bool enable) {
 
 void HTMLElement::click() {
   DispatchSimulatedClick(nullptr, SimulatedClickCreationScope::kFromScript);
+  if (IsA<HTMLInputElement>(this)) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kHTMLInputElementSimulatedClick);
+  }
 }
 
 void HTMLElement::AccessKeyAction(SimulatedClickCreationScope creation_scope) {

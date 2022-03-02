@@ -57,7 +57,7 @@ namespace network_time {
 
 // Network time queries are enabled on all desktop platforms except ChromeOS,
 // which uses tlsdated to set the system time.
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_IOS)
 const base::Feature kNetworkTimeServiceQuerying{
     "NetworkTimeServiceQuerying", base::FEATURE_DISABLED_BY_DEFAULT};
 #else
@@ -180,7 +180,7 @@ NetworkTimeTracker::NetworkTimeTracker(
       tick_clock_(std::move(tick_clock)),
       pref_service_(pref_service),
       time_query_completed_(false) {
-  const base::DictionaryValue* time_mapping =
+  const base::Value* time_mapping =
       pref_service_->GetDictionary(prefs::kNetworkTimeMapping);
   absl::optional<double> time_js = time_mapping->FindDoubleKey(kPrefTime);
   absl::optional<double> ticks_js = time_mapping->FindDoubleKey(kPrefTicks);
@@ -289,7 +289,7 @@ void NetworkTimeTracker::SetPublicKeyForTesting(base::StringPiece key) {
 }
 
 bool NetworkTimeTracker::QueryTimeServiceForTesting() {
-  CheckTime();
+  CheckTime(CheckTimeType::ON_DEMAND);
   return time_fetcher_ != nullptr;
 }
 
@@ -397,7 +397,7 @@ bool NetworkTimeTracker::StartTimeFetch(base::OnceClosure closure) {
   // Cancel any fetches that are scheduled for the future, and try to
   // start one now.
   timer_.Stop();
-  CheckTime();
+  CheckTime(CheckTimeType::ON_DEMAND);
 
   // CheckTime() does not necessarily start a fetch; for example, time
   // queries might be disabled or network time might already be
@@ -410,7 +410,7 @@ bool NetworkTimeTracker::StartTimeFetch(base::OnceClosure closure) {
   return true;
 }
 
-void NetworkTimeTracker::CheckTime() {
+void NetworkTimeTracker::CheckTime(CheckTimeType check_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::TimeDelta interval = kCheckTimeInterval.Get();
@@ -469,7 +469,7 @@ void NetworkTimeTracker::CheckTime() {
   time_fetcher_->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&NetworkTimeTracker::OnURLLoaderComplete,
-                     base::Unretained(this)),
+                     base::Unretained(this), check_type),
       max_response_size_);
 
   fetch_started_ = tick_clock_->NowTicks();
@@ -592,6 +592,7 @@ void NetworkTimeTracker::RecordClockSkewHistograms(
 }
 
 void NetworkTimeTracker::OnURLLoaderComplete(
+    CheckTimeType check_type,
     std::unique_ptr<std::string> response_body) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(time_fetcher_);
@@ -628,7 +629,10 @@ void NetworkTimeTracker::QueueCheckTime(base::TimeDelta delay) {
   FetchBehavior behavior = kFetchBehavior.Get();
   if (behavior == FETCHES_IN_BACKGROUND_ONLY ||
       behavior == FETCHES_IN_BACKGROUND_AND_ON_DEMAND) {
-    timer_.Start(FROM_HERE, delay, this, &NetworkTimeTracker::CheckTime);
+    timer_.Start(
+        FROM_HERE, delay,
+        base::BindRepeating(&NetworkTimeTracker::CheckTime,
+                            base::Unretained(this), CheckTimeType::BACKGROUND));
   }
 }
 

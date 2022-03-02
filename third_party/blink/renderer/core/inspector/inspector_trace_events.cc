@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
@@ -392,6 +391,10 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoGrammarError)
     DEFINE_STRING_MAPPING(PseudoHas)
     DEFINE_STRING_MAPPING(PseudoRelativeLeftmost)
+    DEFINE_STRING_MAPPING(PseudoTransition)
+    DEFINE_STRING_MAPPING(PseudoTransitionContainer);
+    DEFINE_STRING_MAPPING(PseudoTransitionNewContent);
+    DEFINE_STRING_MAPPING(PseudoTransitionOldContent);
 #undef DEFINE_STRING_MAPPING
   }
 
@@ -658,7 +661,7 @@ void inspector_layout_event::BeginData(perfetto::TracedValue context,
   SetCallStack(dict);
 }
 
-static void CreateQuad(perfetto::TracedValue context, const FloatQuad& quad) {
+static void CreateQuad(perfetto::TracedValue context, const gfx::QuadF& quad) {
   auto array = std::move(context).WriteArray();
   array.Append(quad.p1().x());
   array.Append(quad.p1().y());
@@ -689,7 +692,7 @@ static void CreateLayoutRoot(perfetto::TracedValue context,
   auto dict = std::move(context).WriteDictionary();
   SetGeneratingNodeInfo(dict, layout_root.object, "nodeId");
   dict.Add("depth", static_cast<int>(layout_root.depth));
-  Vector<FloatQuad> quads;
+  Vector<gfx::QuadF> quads;
   layout_root.object->AbsoluteQuads(quads);
   if (quads.size() > kMaxQuads)
     quads.Shrink(kMaxQuads);
@@ -1108,7 +1111,7 @@ void inspector_xhr_load_event::Data(perfetto::TracedValue trace_context,
 void inspector_paint_event::Data(perfetto::TracedValue context,
                                  Frame* frame,
                                  const LayoutObject* layout_object,
-                                 const FloatQuad& quad,
+                                 const gfx::QuadF& quad,
                                  int layer_id) {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("frame", IdentifiersFactory::FrameId(frame));
@@ -1345,9 +1348,11 @@ void inspector_update_counters_event::Data(perfetto::TracedValue context) {
 }
 
 void inspector_invalidate_layout_event::Data(perfetto::TracedValue context,
-                                             LocalFrame* frame) {
+                                             LocalFrame* frame,
+                                             DOMNodeId nodeId) {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("frame", IdentifiersFactory::FrameId(frame));
+  dict.Add("nodeId", nodeId);
   SetCallStack(dict);
 }
 

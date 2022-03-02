@@ -11,6 +11,7 @@
 <translation id="1049743911850919806">Incognito</translation>
 <translation id="10614374240317010">Nooit opgeslagen</translation>
 <translation id="107147699690128016">Als je de bestandsextensie wijzigt, wordt het bestand mogelijk in een andere app geopend. Daardoor kan het een gevaar vormen voor je apparaat.</translation>
+<translation id="1089606299949659462">Beoordeling voltooid</translation>
 <translation id="1095761715416917775">Zorg dat je altijd toegang hebt tot je gesynchroniseerde gegevens</translation>
 <translation id="1100066534610197918">Open in nieuw tabblad in groep</translation>
 <translation id="1103142993930332957">Wil je Chrome helpen verbeteren?</translation>
@@ -83,12 +84,14 @@
 <translation id="1414981605391750300">Contact opnemen met Google. Dit kan even duren…</translation>
 <translation id="1416550906796893042">Appversie</translation>
 <translation id="1430915738399379752">Afdrukken</translation>
+<translation id="1436784010935106834">Verwijderd</translation>
 <translation id="1448440926884431741">Orden je gevolgde producten in Bookmarks</translation>
 <translation id="1450753235335490080">Kan <ph name="CONTENT_TYPE" /> niet delen</translation>
 <translation id="1466383950273130737">Kies de taal voor Chromium</translation>
 <translation id="147113415845704694">Probeer 'Wat voor weer wordt het vandaag?'</translation>
 <translation id="1477626028522505441">Downloaden van <ph name="FILE_NAME" /> is mislukt door serverproblemen.</translation>
 <translation id="148482509007564431">Proces voor bookmark opslaan</translation>
+<translation id="1488775391433859242">Je kunt deze telefoon gebruiken om in te loggen op de computer waarop deze QR-code wordt getoond.</translation>
 <translation id="1492417797159476138">Je hebt deze gebruikersnaam al opgeslagen voor deze site</translation>
 <translation id="1493287004536771723">Je volgt <ph name="SITE_NAME" /></translation>
 <translation id="1506061864768559482">Zoekmachine</translation>
@@ -187,7 +190,7 @@ Tik op een woord om te zoeken. Je kunt je zoekopdracht verfijnen door te tikken 
 <translation id="2111511281910874386">Ga naar pagina</translation>
 <translation id="2122601567107267586">Kan app niet openen</translation>
 <translation id="2126426811489709554">Mogelijk gemaakt door Chrome</translation>
-<translation id="2131665479022868825"><ph name="DATA" /> bespaard</translation>
+<translation id="2132122640199389833">Alle gekoppelde apparaten verwijderen</translation>
 <translation id="213279576345780926"><ph name="TAB_TITLE" /> gesloten</translation>
 <translation id="2139186145475833000">Toevoegen aan startscherm</translation>
 <translation id="2141396931810938595">Gebaseerd op je gebruik</translation>
@@ -203,12 +206,13 @@ Tik op een woord om te zoeken. Je kunt je zoekopdracht verfijnen door te tikken 
 <translation id="2172905120685242547">Venster sluiten?</translation>
 <translation id="2175927920773552910">QR-code</translation>
 <translation id="218608176142494674">Delen</translation>
-<translation id="2195339740518523951">Gebruik het hoogste beveiligingsniveau van Chrome</translation>
 <translation id="2200113223741723867">Delen van gebruiksgegevens beheren</translation>
 <translation id="2218567645332692482">Upgrade navigaties naar HTTPS en krijg een waarschuwing als er sites worden geladen die dit niet ondersteunen</translation>
 <translation id="2227444325776770048">Doorgaan als <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">Leeg venster</translation>
+<translation id="223356358902285214">Web- en app-activiteit</translation>
 <translation id="2239812875700136898">Beheer je artikelen met de knop 'Opties voor Discover'</translation>
+<translation id="2248941474044011069">Je wachtwoorden worden versleuteld op je apparaat voordat ze worden opgeslagen in Google Wachtwoordmanager</translation>
 <translation id="2259659629660284697">Wachtwoorden exporteren…</translation>
 <translation id="2276696007612801991">Log in met je Google-account om je wachtwoorden te checken</translation>
 <translation id="2278052315791335171">Als je dit wachtwoord verwijdert, wordt je account op <ph name="SITE" /> niet verwijderd</translation>
@@ -243,6 +247,7 @@ Tik op een woord om te zoeken. Je kunt je zoekopdracht verfijnen door te tikken 
 <translation id="2450907520913474542">Bekijk informatie over onderwerpen op websites zonder de pagina te verlaten. 'Tikken om te zoeken' stuurt een woord en contextuele informatie voor het woord naar Google Zoeken, waarna er definities, afbeeldingen, zoekresultaten en andere gegevens worden weergegeven.
 
 Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden om je zoekopdracht te verfijnen. Als je je zoekopdracht wilt bewerken, open je het deelvenster. Tik dan op het icoon voor openen in een nieuw tabblad en breng je wijzigingen aan in het zoekvak.</translation>
+<translation id="2453860139492968684">Voltooien</translation>
 <translation id="2459390580524506445">Geavanceerde gesproken zoekopdrachten</translation>
 <translation id="2461822463642141190">Huidig</translation>
 <translation id="247737702124049222">Afbeeldingsbeschrijvingen staan aan</translation>
@@ -265,6 +270,7 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="2534582914273493287">URL's die je bezoekt, worden naar Google gestuurd</translation>
 <translation id="2536728043171574184">Een offline exemplaar van deze pagina bekijken</translation>
 <translation id="2546283357679194313">Cookies en sitegegevens</translation>
+<translation id="2549516196460093976">Je kunt deze tablet gebruiken om in te loggen op de computer waarop deze QR-code wordt getoond.</translation>
 <translation id="2558692642259318568">Probeer de incognitomodus om te browsen zonder je activiteit op het apparaat op te slaan</translation>
 <translation id="2561519700418191927">Videovoorbeelden</translation>
 <translation id="2567385386134582609">AFBEELDING</translation>
@@ -363,7 +369,6 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="3037517125981011456">Toont prompts om in te loggen bij Chrome</translation>
 <translation id="3046945242843292318">Ga de volgende keer sneller naar deze site</translation>
 <translation id="3055259925215945098">Bookmark verplaatst</translation>
-<translation id="305593374596241526">Locatie staat uit. Je kunt deze aanzetten in de <ph name="BEGIN_LINK" />instellingen van Android<ph name="END_LINK" />.</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> bookmark}other{<ph name="BOOKMARKS_COUNT_MANY" /> bookmarks}}</translation>
 <translation id="3062802207422175757">Artikelen over je interesses in Chrome</translation>
 <translation id="3066573403916685335">Naar beneden</translation>
@@ -407,7 +412,6 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="3284510035090979597">Proactieve hulp</translation>
 <translation id="3285080554353377245">Video's over hoe je Chrome kunt gebruiken</translation>
 <translation id="3288003805934695103">Laad de pagina opnieuw</translation>
-<translation id="32895400574683172">Meldingen zijn toegestaan</translation>
 <translation id="3290991969712132877">Voeg deze pagina via de knop 'Meer opties' aan je startscherm toe om hier sneller te komen</translation>
 <translation id="3295530008794733555">Surf sneller en verbruik minder data</translation>
 <translation id="3297344142967351106">Spraakassistent</translation>
@@ -451,6 +455,7 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="3563767357928833671">Content van klembord weergegeven</translation>
 <translation id="3566923219790363270">Chrome wordt nog voorbereid voor VR. Start Chrome later opnieuw op.</translation>
 <translation id="3568688522516854065">Log in en zet de synchronisatie aan om de tabbladen van je andere apparaten te bekijken</translation>
+<translation id="357465026686164600">Telefoon als beveiligingssleutel</translation>
 <translation id="3577473026931028326">Er is iets misgegaan. Probeer het opnieuw.</translation>
 <translation id="3587482841069643663">Alles</translation>
 <translation id="3587596251841506391">Bijdragen aan veiliger internet</translation>
@@ -515,11 +520,11 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="3976396876660209797">Verwijder de snelkoppeling en maak deze opnieuw</translation>
 <translation id="3985215325736559418">Wil je <ph name="FILE_NAME" /> opnieuw downloaden?</translation>
 <translation id="3987993985790029246">Link kop.</translation>
-<translation id="3988213473815854515">Locatie is toegestaan</translation>
 <translation id="3988466920954086464">Instant-zoekresultaten bekijken in dit venster</translation>
 <translation id="4000212216660919741">Homepage voor offline</translation>
 <translation id="4016425174436051808">Volgen is mislukt. Er is iets misgegaan.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# uur}other{# uur}}</translation>
+<translation id="4035877632587724847">Niet toestaan</translation>
 <translation id="4045764304651014138">Gebruiksgegevens</translation>
 <translation id="405399507749852140">Krijg meldingen bij een prijsdaling op een site</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -543,7 +548,6 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="4170011742729630528">De service is niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="4179980317383591987"><ph name="AMOUNT" /> gebruikt</translation>
 <translation id="4181841719683918333">Talen</translation>
-<translation id="4183868528246477015">Zoeken met Google Lens <ph name="BEGIN_NEW" />Nieuw<ph name="END_NEW" /></translation>
 <translation id="4195643157523330669">Openen op nieuw tabblad</translation>
 <translation id="4196597275619698563">Kaart maken</translation>
 <translation id="4198423547019359126">Geen beschikbare downloadlocaties</translation>
@@ -577,10 +581,10 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="4411535500181276704">Lite-versie</translation>
 <translation id="4415276339145661267">Je Google-account beheren</translation>
 <translation id="4425140285732600465">Prijs wordt gevolgd. Krijg meldingen bij een prijsdaling op een site.</translation>
-<translation id="4427306783828095590">Geoptimaliseerde beveiliging die je nog beter beschermt tegen phishing en malware</translation>
 <translation id="4450672886426705087">Zoekresultaten van Google.</translation>
 <translation id="4452411734226507615">Tabblad <ph name="TAB_TITLE" /> sluiten</translation>
 <translation id="4452548195519783679">Bookmark gemaakt in <ph name="FOLDER_NAME" /></translation>
+<translation id="4461614516424362539">Als je een ander apparaat koppelt via een QR-code, kan het apparaat deze telefoon gebruiken als beveiligingssleutel. Als je het verwijdert, moet je een QR-code scannen om het opnieuw te koppelen.</translation>
 <translation id="4472118726404937099">Log in en zet de synchronisatie aan om verschillende apparaten te synchroniseren en te personaliseren</translation>
 <translation id="4479839115899251637">Verwijderen uit leeslijst</translation>
 <translation id="4479972344484327217"><ph name="MODULE" /> installeren voor Chrome…</translation>
@@ -651,6 +655,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 
 <ph name="BEGIN_LINK" />Reset de synchronisatie<ph name="END_LINK" /> als je deze instelling wilt wijzigen.</translation>
 <translation id="4807098396393229769">Naam op pas</translation>
+<translation id="481574578487123132">Gekoppelde apparaten</translation>
 <translation id="4818017973810341238">Verificatie van Digital Asset Links mislukt voor <ph name="VIOLATED_URL" /></translation>
 <translation id="4831037795716408498">Content downloaden</translation>
 <translation id="4834007576107377210">Bekijk de instructies van je zoekmachine voor het verwijderen van je zoekgeschiedenis (indien van toepassing)</translation>
@@ -658,6 +663,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4837753911714442426">Afdrukopties voor de pagina openen</translation>
 <translation id="4842092870884894799">Pop-upvenster voor wachtwoord genereren wordt getoond</translation>
 <translation id="4842515939542199281">Tik op de microfoon om met je stem te zoeken</translation>
+<translation id="4844633725025837809">Voor extra beveiliging versleutel je je wachtwoorden op je apparaat voordat ze worden opgeslagen in Google Wachtwoordmanager</translation>
 <translation id="4850886885716139402">Weergave</translation>
 <translation id="4860895144060829044">Bellen</translation>
 <translation id="4864369630010738180">Inloggen...</translation>
@@ -683,6 +689,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4941179133499732445">Tik op de microfoon om te zoeken met je stem</translation>
 <translation id="4943703118917034429">Virtual reality</translation>
 <translation id="4943872375798546930">Geen resultaten</translation>
+<translation id="4950924971025849764">Als je bent ingelogd op hetzelfde Google-account, kunnen andere apparaten deze telefoon gebruiken als beveiligingssleutel.</translation>
 <translation id="4957722034734105353">Meer informatie...</translation>
 <translation id="4961107849584082341">Vertaal deze pagina in een andere taal</translation>
 <translation id="4971735654804503942">Snellere, proactieve beveiliging tegen gevaarlijke websites, downloads en extensies. Stuurt een waarschuwing over wachtwoordlekken. Vereist dat browsegegevens naar Google worden verstuurd.</translation>
@@ -769,6 +776,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5483197086164197190">Navigeren in Chrome</translation>
 <translation id="5487521232677179737">Gegevens wissen</translation>
 <translation id="549025011754480756">Met je stem zoeken</translation>
+<translation id="5492637351392383067">Versleuteling op het apparaat</translation>
 <translation id="5514904542973294328">Uitgezet door de beheerder van dit apparaat</translation>
 <translation id="5515439363601853141">Ontgrendelen om je wachtwoord te bekijken</translation>
 <translation id="5517095782334947753">Je hebt bookmarks, geschiedenis, wachtwoorden en andere instellingen van <ph name="FROM_ACCOUNT" />.</translation>
@@ -780,9 +788,9 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="555816257274242153">Prijs volgen gestopt</translation>
 <translation id="5561549206367097665">Wachten op netwerk…</translation>
 <translation id="5568069709869097550">Kan niet aanmelden</translation>
-<translation id="55737423895878184">Locatie en meldingen zijn toegestaan</translation>
 <translation id="5578795271662203820">Zoeken op <ph name="SEARCH_ENGINE" /> naar afbeelding</translation>
 <translation id="5581519193887989363">Je kunt altijd in de <ph name="BEGIN_LINK1" />instellingen<ph name="END_LINK1" /> bepalen wat je wilt synchroniseren.</translation>
+<translation id="5590372121997663538">Deze computer onthouden</translation>
 <translation id="5599455543593328020">Incognitomodus</translation>
 <translation id="5599941490345670218">De Google Assistent kan acties voor je afronden op websites</translation>
 <translation id="5620163320393916465">Geen opgeslagen wachtwoorden</translation>
@@ -803,7 +811,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5697688514913266141">Je bestand wordt opgeslagen in <ph name="BEGIN_BOLD" /><ph name="DIRECTORY" /><ph name="END_BOLD" />. <ph name="BEGIN_LINK2" />Bewerken<ph name="END_LINK2" /></translation>
 <translation id="570347048394355941">Overschakelen naar tabblad</translation>
 <translation id="572328651809341494">Recente tabbladen</translation>
-<translation id="5723735397759933332">In de Lite-versie kun je nu meer data besparen door afbeeldingen op HTTPS-pagina's te optimaliseren.</translation>
 <translation id="5726692708398506830">Alles op de pagina vergroten</translation>
 <translation id="5748802427693696783">Overgeschakeld naar standaardtabbladen</translation>
 <translation id="5749068826913805084">Chrome heeft toegang tot de opslag nodig om deze bestanden te kunnen downloaden.</translation>
@@ -864,6 +871,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5995726099713306770">Pagina opnieuw downloaden?</translation>
 <translation id="6000066717592683814">Google blijven gebruiken</translation>
 <translation id="6000203700195075278">Opnieuw volgen</translation>
+<translation id="6002122790816966947">Je apparaten</translation>
 <translation id="6005538289190791541">Voorgesteld wachtwoord</translation>
 <translation id="6032091552407840792">Deze proef is alleen actief in <ph name="BEGIN_LINK" />bepaalde regio's<ph name="END_LINK" />.</translation>
 <translation id="6033245666633565791">Met <ph name="BEGIN_LINK" />Privacy Sandbox<ph name="END_LINK" /> ontwikkelt Chrome nieuwe technologieën om je te beschermen tegen tracking op verschillende sites terwijl het open web behouden blijft.
@@ -983,16 +991,19 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties te bekijken
 <translation id="6590471736817333463">Bespaar tot 60% data</translation>
 <translation id="6590680911007613645">Zorg ervoor dat het wachtwoord dat je opslaat, overeenkomt met je wachtwoord voor <ph name="SITE" /></translation>
 <translation id="6593061639179217415">Desktopsite</translation>
+<translation id="6594121454516132231">Bekijk hoe Chrome je wil beschermen tegen tracking op verschillende sites terwijl het open web behouden blijft</translation>
 <translation id="6595046016124923392">Afbeeldingen worden naar Google gestuurd om de beschrijvingen voor je te verbeteren.</translation>
 <translation id="6600954340915313787">Gekopieerd naar Chrome</translation>
 <translation id="661266467055912436">Verbetert de beveiliging voor jou en alle andere internetgebruikers.</translation>
 <translation id="6618554661997243500">Tik op de startknop om je populaire sites en recente artikelen te bekijken</translation>
 <translation id="6627583120233659107">Map bewerken</translation>
 <translation id="6633067410344541938">Incognitomodus ontgrendelen</translation>
+<translation id="6636623428211296678">Bekijk hieronder meer instellingen of rond nu af</translation>
 <translation id="663674369910034433">Bekijk <ph name="BEGIN_LINK1" />Synchronisatie<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />Google-services<ph name="END_LINK2" /> voor meer instellingen over privacy, beveiliging en gegevensverzameling.</translation>
 <translation id="6640207029842583248">Altijd blokkeren</translation>
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="6643649862576733715">Sorteren op hoeveelheid bespaarde data</translation>
+<translation id="6645629752388991326">Bepaal welke apparaten kunnen inloggen door dit apparaat als beveiligingssleutel te gebruiken.</translation>
 <translation id="6648459603387803038">Je beheerder kan je browserinstellingen op afstand wijzigen. Activiteit op dit apparaat kan ook buiten Chrome worden beheerd.</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> andere}other{<ph name="CONTACT_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> andere}}</translation>
 <translation id="6649642165559792194">Afbeelding bekijken <ph name="BEGIN_NEW" />Nieuw<ph name="END_NEW" /></translation>
@@ -1009,6 +1020,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties te bekijken
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="671481426037969117">Je <ph name="FQDN" />-timer is afgelopen. Deze begint morgen opnieuw.</translation>
 <translation id="6715020873764921614">Wil je <ph name="FILE_NAME" /> (<ph name="FILE_SIZE" />) toch downloaden?</translation>
+<translation id="6719634564325948108">Verbinding maken via een QR-code?</translation>
 <translation id="6738516213925468394">Je gegevens zijn op <ph name="TIME" /> versleuteld met je <ph name="BEGIN_LINK" />wachtwoordzin voor synchronisatie<ph name="END_LINK" />. Geef deze op om de synchronisatie te starten.</translation>
 <translation id="6738867403308150051">Downloaden...</translation>
 <translation id="6751521182688001123">Open snel een nieuw tabblad. Tik en houd vast om deze snelkoppeling te bewerken.</translation>
@@ -1025,6 +1037,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties te bekijken
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, tabblad, geselecteerd</translation>
 <translation id="6828070228333235514">Prijs volgen stoppen</translation>
+<translation id="6833996806551876956">Proef voor privacy-sandbox</translation>
 <translation id="6846298663435243399">Laden…</translation>
 <translation id="6850409657436465440">Je download wordt nog uitgevoerd</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> tabbladen gesloten</translation>
@@ -1069,6 +1082,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties te bekijken
 <translation id="707155805709242880">Kies hieronder wat je wilt synchroniseren</translation>
 <translation id="7077143737582773186">SD-kaart</translation>
 <translation id="7080806333218412752">Stuurt URL's naar Safe Browsing om deze te checken. Stuurt ook een klein gedeelte pagina's, downloads, extensie-activiteit en systeeminformatie om nieuwe dreigingen te kunnen detecteren. Koppelt deze gegevens tijdelijk aan je Google-account als je bent ingelogd om je te beschermen binnen de Google-apps.</translation>
+<translation id="7085332316435785646">Kies of je de Chrome-geschiedenis wilt opnemen voor meer gepersonaliseerde functies in Google-services</translation>
 <translation id="7088681679121566888">Chrome is up-to-date</translation>
 <translation id="7093803425429738190">Emoji toevoegen</translation>
 <translation id="7106762743910369165">Je browser wordt beheerd door je organisatie</translation>
@@ -1246,7 +1260,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties te bekijken
 <translation id="8035133914807600019">Nieuwe map…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagen resterend</translation>
 <translation id="8037801708772278989">Zojuist gecheckt</translation>
-<translation id="8040831032425909005">Icoon voor snelle acties en zoekwidget</translation>
 <translation id="804335162455518893">SD-kaart niet gevonden</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> incognitotabblad}other{<ph name="TAB_COUNT_NORMAL" /> incognitotabbladen}}</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB beschikbaar</translation>
@@ -1351,7 +1364,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties te bekijken
 <translation id="8560602726703398413">Bekijk je leeslijst in Bookmarks</translation>
 <translation id="8562452229998620586">Opgeslagen wachtwoorden zie je hier.</translation>
 <translation id="856481929701340285">Desktopversie opvragen</translation>
-<translation id="8569404424186215731">sinds <ph name="DATE" /></translation>
 <translation id="8570677896027847510">Bestand kan niet beveiligd worden gedownload</translation>
 <translation id="8571213806525832805">Afgelopen 4 weken</translation>
 <translation id="8572344201470131220">Afbeelding gekopieerd</translation>
@@ -1428,7 +1440,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties te bekijken
 <translation id="8998729206196772491">Je logt in met een account dat wordt beheerd door <ph name="MANAGED_DOMAIN" /> waarmee je de eigenaar beheer geeft over je Chrome-gegevens. Je gegevens worden permanent gekoppeld aan dit account. Als je uitlogt van Chrome, worden je gegevens van dit apparaat verwijderd. Ze blijven echter opgeslagen in je Google-account.</translation>
 <translation id="9022774213089566801">Veelbezocht</translation>
 <translation id="9028914725102941583">Zet de synchronisatie aan om content op apparaten te delen</translation>
-<translation id="9040142327097499898">Meldingen zijn toegestaan. Locatie staat uit voor dit apparaat.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# video's}}</translation>
 <translation id="9042893549633094279">Privacy en beveiliging</translation>
 <translation id="9050666287014529139">Wachtwoordzin</translation>

@@ -16,7 +16,7 @@ import {
   PerfInformation,
   Resolution,
 } from './type.js';
-import {GAHelperInterface} from './untrusted_helper_interfaces.js';
+import {GAHelperInterface} from './untrusted_ga_helper.js';
 import * as util from './util.js';
 import {WaitableEvent} from './waitable_event.js';
 
@@ -29,8 +29,8 @@ let baseDimen: Map<number, string|number>|null = null;
 
 const ready = new WaitableEvent();
 
-const gaHelper = util.createUntrustedJSModule('/js/untrusted_ga_helper.js') as
-    Promise<GAHelperInterface>;
+const gaHelper = util.createUntrustedJSModule<GAHelperInterface>(
+    '/js/untrusted_ga_helper.js');
 
 /**
  * Send the event to GA backend.
@@ -39,11 +39,15 @@ const gaHelper = util.createUntrustedJSModule('/js/untrusted_ga_helper.js') as
  */
 async function sendEvent(
     event: UniversalAnalytics.FieldsObject, dimen?: Map<number, unknown>) {
-  const assignDimension = (e, d) => {
-    for (const [key, value] of d.entries()) {
-      e[`dimension${key}`] = value;
-    }
-  };
+  const assignDimension =
+      (e: UniversalAnalytics.FieldsObject, d: Map<number, unknown>) => {
+        for (const [key, value] of d.entries()) {
+          // The TypeScript definition for UniversalAnalytics.FieldsObject
+          // manually listed out dimension1 ~ dimension200, and TypeScript don't
+          // recognize accessing it using []. Force the type here.
+          (e as Record<string, unknown>)[`dimension${key}`] = value;
+        }
+      };
 
   assert(baseDimen !== null);
   assignDimension(event, baseDimen);
@@ -71,26 +75,81 @@ export async function setMetricsEnabled(enabled: boolean): Promise<void> {
   await (await gaHelper).setMetricsEnabled(GA_ID, enabled);
 }
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
+
+/**
+ * All dimensions for GA metrics.
+ *
+ * The following two documents should also be updated when the dimensions is
+ * updated.
+ *
+ * * Camera App PDD (Privacy Design Document): go/cca-metrics-pdd.
+ * * CCA GA Events & Dimensions sheet: go/cca-metrics-schema.
+ */
+enum MetricDimension {
+  BOARD = 1,
+  OS_VERSION = 2,
+  // Obsolete 'sound' state.
+  // SOUND = 3,
+  MIRROR = 4,
+  GRID = 5,
+  TIMER = 6,
+  MICROPHONE = 7,
+  MAXIMIZED = 8,
+  TALL_ORIENTATION = 9,
+  RESOLUTION = 10,
+  FPS = 11,
+  INTENT_RESULT = 12,
+  SHOULD_HANDLE_RESULT = 13,
+  SHOULD_DOWN_SCALE = 14,
+  IS_SECURE = 15,
+  ERROR_NAME = 16,
+  FILENAME = 17,
+  FUNC_NAME = 18,
+  LINE_NO = 19,
+  COL_NO = 20,
+  SHUTTER_TYPE = 21,
+  IS_VIDEO_SNAPSHOT = 22,
+  EVER_PAUSED = 23,
+  SUPPORT_PAN = 24,
+  SUPPORT_TILT = 25,
+  SUPPORT_ZOOM = 26,
+  DOC_RESULT = 27,
+  RECORD_TYPE = 28,
+  GIF_RESULT = 29,
+  DURATION = 30,
+  SCHEMA_VERSION = 31,
+  LAUNCH_TYPE = 32,
+  DOC_FIX_TYPE = 33,
+}
 
 /**
  * Initializes metrics with parameters.
  */
 export async function initMetrics(): Promise<void> {
   const board = loadTimeData.getBoard();
-  const boardName = /^(x86-)?(\w*)/.exec(board)[0];
-  const match = navigator.appVersion.match(/CrOS\s+\S+\s+([\d.]+)/);
-  const osVer = match ? match[1] : '';
-  baseDimen = new Map<number, string|number>([
-    [1, boardName],
-    [2, osVer],
-    [31, SCHEMA_VERSION],
+  const boardName = (() => {
+    const match = /^(x86-)?(\w*)/.exec(board);
+    assert(match !== null);
+    return match[0];
+  })();
+  const osVer = (() => {
+    const match = navigator.appVersion.match(/CrOS\s+\S+\s+([\d.]+)/);
+    if (match === null) {
+      return '';
+    }
+    return match[1];
+  })();
+  baseDimen = new Map<MetricDimension, string|number>([
+    [MetricDimension.BOARD, boardName],
+    [MetricDimension.OS_VERSION, osVer],
+    [MetricDimension.SCHEMA_VERSION, SCHEMA_VERSION],
   ]);
 
   const GA_LOCAL_STORAGE_KEY = 'google-analytics.analytics.user-id';
   const clientId = localStorage.getString(GA_LOCAL_STORAGE_KEY);
 
-  const setClientId = (id) => {
+  const setClientId = (id: string) => {
     localStorage.set(GA_LOCAL_STORAGE_KEY, id);
   };
 
@@ -125,7 +184,7 @@ export function sendLaunchEvent({launchType}: LaunchEventParam): void {
         eventLabel: '',
       },
       new Map([
-        [32, launchType],
+        [MetricDimension.LAUNCH_TYPE, launchType],
       ]));
 }
 
@@ -249,31 +308,35 @@ export function sendCaptureEvent({
         eventLabel: facing,
         eventValue: duration,
       },
-      new Map<number, unknown>([
+      new Map<MetricDimension, unknown>([
         // Skips 3rd dimension for obsolete 'sound' state.
-        [4, condState([State.MIRROR])],
+        [MetricDimension.MIRROR, condState([State.MIRROR])],
         [
-          5,
+          MetricDimension.GRID,
           condState(
               [State.GRID_3x3, State.GRID_4x4, State.GRID_GOLDEN], State.GRID),
         ],
-        [6, condState([State.TIMER_3SEC, State.TIMER_10SEC], State.TIMER)],
-        [7, condState([State.MIC], Mode.VIDEO, true)],
-        [8, condState([State.MAX_WND])],
-        [9, condState([State.TALL])],
-        [10, resolution.toString()],
-        [11, condState([State.FPS_30, State.FPS_60], Mode.VIDEO, true)],
-        [12, intentResult],
-        [21, shutterType],
-        [22, isVideoSnapshot],
-        [23, everPaused],
-        [27, docResult],
-        [28, recordType],
-        [29, gifResult],
-        [30, duration],
-        // This is included in baseDimen.
-        // [31, SCHEMA_VERSION]
-        [32, docFixType ?? ''],
+        [
+          MetricDimension.TIMER,
+          condState([State.TIMER_3SEC, State.TIMER_10SEC], State.TIMER),
+        ],
+        [MetricDimension.MICROPHONE, condState([State.MIC], Mode.VIDEO, true)],
+        [MetricDimension.MAXIMIZED, condState([State.MAX_WND])],
+        [MetricDimension.TALL_ORIENTATION, condState([State.TALL])],
+        [MetricDimension.RESOLUTION, resolution.toString()],
+        [
+          MetricDimension.FPS,
+          condState([State.FPS_30, State.FPS_60], Mode.VIDEO, true),
+        ],
+        [MetricDimension.INTENT_RESULT, intentResult],
+        [MetricDimension.SHUTTER_TYPE, shutterType],
+        [MetricDimension.IS_VIDEO_SNAPSHOT, isVideoSnapshot],
+        [MetricDimension.EVER_PAUSED, everPaused],
+        [MetricDimension.DOC_RESULT, docResult],
+        [MetricDimension.RECORD_TYPE, recordType],
+        [MetricDimension.GIF_RESULT, gifResult],
+        [MetricDimension.DURATION, duration],
+        [MetricDimension.DOC_FIX_TYPE, docFixType ?? ''],
       ]));
 }
 
@@ -308,7 +371,7 @@ export function sendPerfEvent({event, duration, perfInfo = {}}: PerfEventParam):
         eventValue: Math.round(duration),
       },
       new Map([
-        [10, `${resolution}`],
+        [MetricDimension.RESOLUTION, `${resolution}`],
       ]));
 }
 
@@ -325,7 +388,7 @@ export interface IntentEventParam {
  */
 export function sendIntentEvent({intent, result}: IntentEventParam): void {
   const {mode, shouldHandleResult, shouldDownScale, isSecure} = intent;
-  const getBoolValue = (b) => b ? '1' : '0';
+  const getBoolValue = (b: boolean) => b ? '1' : '0';
   sendEvent(
       {
         eventCategory: 'intent',
@@ -333,10 +396,13 @@ export function sendIntentEvent({intent, result}: IntentEventParam): void {
         eventLabel: result,
       },
       new Map([
-        [12, result],
-        [13, getBoolValue(shouldHandleResult)],
-        [14, getBoolValue(shouldDownScale)],
-        [15, getBoolValue(isSecure)],
+        [MetricDimension.INTENT_RESULT, result],
+        [
+          MetricDimension.SHOULD_HANDLE_RESULT,
+          getBoolValue(shouldHandleResult),
+        ],
+        [MetricDimension.SHOULD_DOWN_SCALE, getBoolValue(shouldDownScale)],
+        [MetricDimension.IS_SECURE, getBoolValue(isSecure)],
       ]));
 }
 
@@ -363,11 +429,11 @@ export function sendErrorEvent(
         eventLabel: level,
       },
       new Map([
-        [16, errorName],
-        [17, fileName],
-        [18, funcName],
-        [19, lineNo],
-        [20, colNo],
+        [MetricDimension.ERROR_NAME, errorName],
+        [MetricDimension.FILENAME, fileName],
+        [MetricDimension.FUNC_NAME, funcName],
+        [MetricDimension.LINE_NO, lineNo],
+        [MetricDimension.COL_NO, colNo],
       ]));
 }
 
@@ -416,8 +482,8 @@ export function sendOpenPTZPanelEvent(
         eventAction: 'open-panel',
       },
       new Map([
-        [24, capabilities.pan],
-        [25, capabilities.tilt],
-        [26, capabilities.zoom],
+        [MetricDimension.SUPPORT_PAN, capabilities.pan],
+        [MetricDimension.SUPPORT_TILT, capabilities.tilt],
+        [MetricDimension.SUPPORT_ZOOM, capabilities.zoom],
       ]));
 }

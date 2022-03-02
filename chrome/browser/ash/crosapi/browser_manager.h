@@ -84,6 +84,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Virtual for testing.
   virtual bool IsRunningOrWillRun() const;
 
+  // Returns true if Lacros is terminated.
+  bool IsTerminated() const { return is_terminated_; }
+
   // Opens the browser window in lacros-chrome.
   // If lacros-chrome is not yet launched, it triggers to launch. If this is
   // called again during the setup phase of the launch process, it will be
@@ -97,7 +100,11 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // class, so there's no way for callers to handle such error cases properly.
   // This design often leads the flakiness behavior of the product and testing,
   // so should be avoided.
-  void NewWindow(bool incognito);
+  // If `should_trigger_session_restore` is true, a new window opening should be
+  // treated like the start of a new session (with potential session restore,
+  // startup URLs, etc). Otherwise, don't restore the session and instead open a
+  // new window with the default blank tab.
+  void NewWindow(bool incognito, bool should_trigger_session_restore);
 
   // Returns true if crosapi interface supports NewWindowForDetachingTab API.
   bool NewWindowForDetachingTabSupported() const;
@@ -138,6 +145,14 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Similar to NewWindow(), but restores a tab recently closed.
   // See crosapi::mojom::BrowserService::RestoreTab for more details
   void RestoreTab();
+
+  // Returns true if crosapi interface supports HandleTabScrubbing API.
+  bool HandleTabScrubbingSupported() const;
+
+  // Triggers tab switching in Lacros via horizontal 3-finger swipes.
+  //
+  // |x_offset| is in DIP coordinates.
+  void HandleTabScrubbing(float x_offset);
 
   // Initialize resources and start Lacros. This class provides two approaches
   // to fulfill different requirements.
@@ -430,6 +445,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Tracks whether an updated browser component is available. Used to determine
   // if an update should be loaded prior to starting the browser.
   bool update_available_ = false;
+
+  // Tracks whether lacros-chrome is terminated.
+  bool is_terminated_ = false;
 
   // Helps set up and manage the mojo connections between lacros-chrome and
   // ash-chrome in testing environment. Only applicable when

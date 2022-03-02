@@ -27,14 +27,14 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
-#include "chrome/browser/web_launch/web_launch_files_helper.h"
+#include "chrome/browser/web_applications/web_launch_params_helper.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "extensions/common/constants.h"
 #include "ui/display/scoped_display_for_new_windows.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #endif
 
@@ -82,7 +82,7 @@ content::WebContents* WebAppLaunchProcess::Run() {
   bool is_file_handling = false;
   std::tie(launch_url, is_file_handling) = GetLaunchUrl(share_target);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // TODO(crbug.com/1265381): URL Handlers allows web apps to be opened with
   // associated origin URLs. There's no utility function to test whether a URL
   // is in a web app's extended scope at the moment.
@@ -119,7 +119,9 @@ content::WebContents* WebAppLaunchProcess::Run() {
   MaybeEnqueueWebLaunchParams(launch_url, is_file_handling, web_contents,
                               navigate_result.did_navigate);
 
-  RecordMetrics(launch_url, web_contents);
+  RecordMetrics(params_.app_id, params_.container,
+                apps::GetAppLaunchSource(params_.launch_source), launch_url,
+                web_contents);
 
   return web_contents;
 }
@@ -295,8 +297,8 @@ WebAppLaunchProcess::NavigateResult WebAppLaunchProcess::MaybeNavigateBrowser(
   if (share_target) {
     // TODO(crbug.com/1213776): Expose share target in the LaunchParams and
     // don't navigate if navigate_existing_client: never is in effect.
-    NavigateParams nav_params =
-        NavigateParamsForShareTarget(browser, *share_target, *params_.intent);
+    NavigateParams nav_params = NavigateParamsForShareTarget(
+        browser, *share_target, *params_.intent, params_.launch_files);
     nav_params.disposition = navigation_disposition;
     return {
         .web_contents = NavigateWebAppUsingParams(params_.app_id, nav_params),
@@ -346,40 +348,13 @@ void WebAppLaunchProcess::MaybeEnqueueWebLaunchParams(
     content::WebContents* web_contents,
     bool is_navigating) {
   if (is_file_handling || web_app_->launch_handler().has_value()) {
-    web_launch::WebLaunchFilesHelper::EnqueueLaunchParams(
-        web_contents, provider_.registrar().GetAppScope(web_app_->app_id()),
+    WebLaunchParamsHelper::EnqueueLaunchParams(
+        web_contents, provider_.registrar(), web_app_->app_id(),
         /*await_navigation=*/is_navigating, launch_url,
         /*launch_dir=*/{},
         is_file_handling ? params_.launch_files
                          : std::vector<base::FilePath>());
   }
-}
-
-void WebAppLaunchProcess::RecordMetrics(const GURL& launch_url,
-                                        content::WebContents* web_contents) {
-  // TODO(crbug.com/1014328): Populate WebApp metrics instead of Extensions.
-  if (params_.container == apps::mojom::LaunchContainer::kLaunchContainerTab) {
-    UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType",
-                              extensions::LAUNCH_TYPE_REGULAR, 100);
-  } else if (params_.container ==
-             apps::mojom::LaunchContainer::kLaunchContainerWindow) {
-    RecordAppWindowLaunch(&profile_, params_.app_id);
-  }
-  UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchSource",
-                            apps::GetAppLaunchSource(params_.launch_source));
-  UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchContainer",
-                            params_.container);
-
-  // Record the launch time in the site engagement service. A recent web
-  // app launch will provide an engagement boost to the origin.
-  site_engagement::SiteEngagementService::Get(&profile_)
-      ->SetLastShortcutLaunchTime(web_contents, launch_url);
-  provider_.sync_bridge().SetAppLastLaunchTime(params_.app_id,
-                                               base::Time::Now());
-  // Refresh the app banner added to homescreen event. The user may have
-  // cleared their browsing data since installing the app, which removes the
-  // event and will potentially permit a banner to be shown for the site.
-  RecordAppBanner(web_contents, launch_url);
 }
 
 }  // namespace web_app

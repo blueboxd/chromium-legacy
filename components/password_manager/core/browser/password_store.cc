@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
@@ -53,23 +54,23 @@ bool FormSupportsPSL(const PasswordFormDigest& digest) {
 
 // Helper function which invokes |notifying_callback| and |completion_callback|
 // when changes are received.
-void InvokeCallbackOnChanges(
-    base::OnceCallback<void(PasswordStoreChangeList changes)>
-        notifying_callback,
+void InvokeCallbacksForSuspectedChanges(
+    PasswordStoreChangeListReply notifying_callback,
     base::OnceCallback<void(bool)> completion_callback,
-    PasswordStoreChangeList changes) {
+    absl::optional<PasswordStoreChangeList> changes) {
   DCHECK(notifying_callback);
-  bool is_change_empty = changes.empty();
+  // Two cases *presumably* have changes that need to be reported:
+  // 1. `changes` contains a non-empty PasswordStoreChangeList.
+  // 2. `changes` contains no PasswordStoreChangeList at all because the
+  //    backend can't compute it. A full list will be requested instead.
+  // Only if `changes` contains an empty PasswordStoreChangeList, Chrome knows
+  // for certain that no changes have happened:
+  bool completed = !changes.has_value() || !changes->empty();
+
+  // In any case, we want to indicate the completed operation:
   std::move(notifying_callback).Run(std::move(changes));
   if (completion_callback)
-    std::move(completion_callback).Run(!is_change_empty);
-}
-
-LoginsResult GetLoginsOrEmptyListOnFailure(LoginsResultOrError result) {
-  if (absl::holds_alternative<PasswordStoreBackendError>(result)) {
-    return {};
-  }
-  return std::move(absl::get<LoginsResult>(result));
+    std::move(completion_callback).Run(completed);
 }
 
 }  // namespace
@@ -87,8 +88,9 @@ bool PasswordStore::Init(
   DCHECK(main_task_runner_);
   prefs_ = prefs;
   affiliated_match_helper_ = std::move(affiliated_match_helper);
+  sync_enabled_or_disabled_cb_ = std::move(sync_enabled_or_disabled_cb);
 
-  // TODO(crbug.bom/1226042): Backend might be null in tests, remove this after
+  // TODO(crbug.com/1226042): Backend might be null in tests, remove this after
   // tests switch to MockPasswordStoreInterface.
   if (backend_) {
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
@@ -96,7 +98,11 @@ bool PasswordStore::Init(
     backend_->InitBackend(
         base::BindRepeating(&PasswordStore::NotifyLoginsChangedOnMainSequence,
                             this),
-        std::move(sync_enabled_or_disabled_cb),
+        base::BindPostTask(
+            main_task_runner_,
+            base::BindRepeating(
+                &PasswordStore::NotifySyncEnabledOrDisabledOnMainSequence,
+                this)),
         base::BindOnce(&PasswordStore::OnInitCompleted, this));
   }
   return true;
@@ -138,10 +144,11 @@ void PasswordStore::UpdateLoginWithPrimaryKey(
         base::flat_map<InsecureType, InsecurityMetadata>();
   }
 
-  auto barrier_callback = base::BarrierCallback<PasswordStoreChangeList>(
-      2, base::BindOnce(&JoinPasswordStoreChanges)
-             .Then(base::BindOnce(
-                 &PasswordStore::NotifyLoginsChangedOnMainSequence, this)));
+  auto barrier_callback =
+      base::BarrierCallback<absl::optional<PasswordStoreChangeList>>(
+          2, base::BindOnce(&JoinPasswordStoreChanges)
+                 .Then(base::BindOnce(
+                     &PasswordStore::NotifyLoginsChangedOnMainSequence, this)));
 
   backend_->RemoveLoginAsync(old_primary_key, barrier_callback);
   backend_->AddLoginAsync(new_form_with_correct_password_issues,
@@ -187,7 +194,7 @@ void PasswordStore::RemoveLoginsCreatedBetween(
       base::BindOnce(&PasswordStore::NotifyLoginsChangedOnMainSequence, this);
   backend_->RemoveLoginsCreatedBetweenAsync(
       delete_begin, delete_end,
-      base::BindOnce(&InvokeCallbackOnChanges, std::move(callback),
+      base::BindOnce(&InvokeCallbacksForSuspectedChanges, std::move(callback),
                      std::move(completion)));
 }
 
@@ -314,6 +321,11 @@ bool PasswordStore::IsAbleToSavePasswords() const {
 
 void PasswordStore::ShutdownOnUIThread() {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+
+  // Prevent in-flight tasks posted from the backend to invoke the callback
+  // after shutdown.
+  sync_enabled_or_disabled_cb_ = base::DoNothing();
+
   // The AffiliationService must be destroyed from the main sequence.
   affiliated_match_helper_.reset();
   if (backend_) {
@@ -350,20 +362,61 @@ void PasswordStore::OnInitCompleted(bool success) {
 }
 
 void PasswordStore::NotifyLoginsChangedOnMainSequence(
-    PasswordStoreChangeList changes) {
+    absl::optional<PasswordStoreChangeList> changes) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-
-  if (changes.empty())
-    return;
 
   // Don't propagate reference to this store after its shutdown. No caller
   // should expect any notifications from a shut down store in any case.
   if (!backend_)
     return;
 
-  for (auto& observer : observers_) {
-    observer.OnLoginsChanged(this, changes);
+#if BUILDFLAG(IS_ANDROID)
+  if (!changes.has_value()) {
+    // If the changes aren't provided, the store propagates the latest logins.
+    backend_->GetAllLoginsAsync(base::BindOnce(
+        &PasswordStore::NotifyLoginsRetainedOnMainSequence, this));
+    return;
   }
+#else
+  DCHECK(changes.has_value())
+      << "Non-Android platforms can always compute changes!";
+#endif
+
+  if (changes->empty())
+    return;
+
+  for (auto& observer : observers_) {
+    observer.OnLoginsChanged(this, changes.value());
+  }
+}
+
+void PasswordStore::NotifyLoginsRetainedOnMainSequence(
+    LoginsResultOrError result) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  // Don't propagate reference to this store after its shutdown. No caller
+  // should expect any notifications from a shut down store in any case.
+  if (!backend_)
+    return;
+
+  // Clients don't expect errors yet, so just wait for the next notification.
+  if (absl::holds_alternative<PasswordStoreBackendError>(result)) {
+    return;
+  }
+
+  std::vector<PasswordForm> retained_logins;
+  retained_logins.reserve(absl::get<LoginsResult>(result).size());
+  for (auto& login : absl::get<LoginsResult>(result)) {
+    retained_logins.push_back(std::move(*login));
+  }
+
+  for (auto& observer : observers_) {
+    observer.OnLoginsRetained(this, retained_logins);
+  }
+}
+
+void PasswordStore::NotifySyncEnabledOrDisabledOnMainSequence() {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  sync_enabled_or_disabled_cb_.Run();
 }
 
 void PasswordStore::UnblocklistInternal(
@@ -392,9 +445,10 @@ void PasswordStore::UnblocklistInternal(
   if (completion)
     notify_callback = std::move(notify_callback).Then(std::move(completion));
 
-  auto barrier_callback = base::BarrierCallback<PasswordStoreChangeList>(
-      forms_to_remove.size(), base::BindOnce(&JoinPasswordStoreChanges)
-                                  .Then(std::move(notify_callback)));
+  auto barrier_callback =
+      base::BarrierCallback<absl::optional<PasswordStoreChangeList>>(
+          forms_to_remove.size(), base::BindOnce(&JoinPasswordStoreChanges)
+                                      .Then(std::move(notify_callback)));
 
   for (const auto& form : forms_to_remove) {
     backend_->RemoveLoginAsync(form, barrier_callback);

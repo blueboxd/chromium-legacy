@@ -83,10 +83,10 @@
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/strings/string_split.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace {
 
@@ -151,7 +151,7 @@ class ForcedSigninDiceTurnSyncOnHelperDelegate
   }
 };
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 
 // Returns a list of valid signin domains that were passed in
 // |email_domains_parameter| as an argument to the gcpw signin dialog.
@@ -307,7 +307,6 @@ InlineSigninHelper::InlineSigninHelper(
     base::WeakPtr<InlineLoginHandlerImpl> handler,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     Profile* profile,
-    Profile::CreateStatus create_status,
     const GURL& current_url,
     const std::string& email,
     const std::string& gaia_id,
@@ -319,7 +318,6 @@ InlineSigninHelper::InlineSigninHelper(
     : gaia_auth_fetcher_(this, gaia::GaiaSource::kChrome, url_loader_factory),
       handler_(handler),
       profile_(profile),
-      create_status_(create_status),
       current_url_(current_url),
       email_(email),
       gaia_id_(gaia_id),
@@ -346,24 +344,23 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
     // TODO(https://crbug.com/1205147): In case of reauth, wait until cookies
     // are set before opening a browser window.
     profiles::OpenBrowserWindowForProfile(
-        base::BindRepeating(
+        base::BindOnce(
             &InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened,
             base::Unretained(this), result),
-        true, false, true, profile_, create_status_);
+        true, false, true, profile_);
   } else {
-    OnClientOAuthSuccessAndBrowserOpened(result, profile_, create_status_);
+    OnClientOAuthSuccessAndBrowserOpened(result, profile_);
   }
 }
 
 void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     const ClientOAuthResult& result,
-    Profile* /*profile*/,
-    Profile::CreateStatus /*status*/) {
+    Profile* /*profile*/) {
   HandlerSigninReason reason = GetHandlerSigninReason(current_url_);
   if (reason == HandlerSigninReason::kFetchLstOnly) {
     // Constants are only available on Windows for the Google Credential
     // Provider for Windows.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     std::string json_retval;
     base::Value args(base::Value::Type::DICTIONARY);
     args.SetKey(credential_provider::kKeyEmail, base::Value(email_));
@@ -377,7 +374,7 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     handler_->SendLSTFetchResultsMessage(args);
 #else
     NOTREACHED() << "Google Credential Provider is only available on Windows";
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
     return;
   }
@@ -518,7 +515,7 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
     params.SetBoolean("dontResizeNonEmbeddedPages", true);
 
   content::WebContents* contents = web_ui()->GetWebContents();
-  const GURL& current_url = contents->GetURL();
+  const GURL& current_url = contents->GetLastCommittedURL();
   HandlerSigninReason reason = GetHandlerSigninReason(current_url);
 
   const GURL& url = GaiaUrls::GetInstance()->embedded_signin_url();
@@ -526,7 +523,7 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
                    GaiaUrls::GetInstance()->oauth2_chrome_client_id());
   params.SetString("gaiaPath", url.path().substr(1));
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (reason == HandlerSigninReason::kFetchLstOnly) {
     std::string email_domains;
     if (net::GetValueForKeyInQuery(
@@ -576,7 +573,7 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
       flow = "enterprisefsi";
       break;
     case HandlerSigninReason::kFetchLstOnly: {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       // Treat a sign in request that specifies a gaia id that must be validated
       // as a reauth request. We only get a gaia id from GCPW when trying to
       // reauth an existing user on the system.
@@ -599,30 +596,22 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   LogHistogramValue(signin_metrics::HISTOGRAM_SHOWN);
 }
 
-void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
-                                           const std::string& password,
-                                           const std::string& gaia_id,
-                                           const std::string& auth_code,
-                                           bool skip_for_now,
-                                           bool trusted,
-                                           bool trusted_found,
-                                           bool choose_what_to_sync,
-                                           base::Value edu_login_params) {
+void InlineLoginHandlerImpl::CompleteLogin(const CompleteLoginParams& params) {
   content::WebContents* contents = web_ui()->GetWebContents();
-  const GURL& current_url = contents->GetURL();
+  const GURL& current_url = contents->GetLastCommittedURL();
 
-  if (skip_for_now) {
+  if (params.skip_for_now) {
     SyncSetupFailed();
     return;
   }
 
   // This value exists only for webview sign in.
-  if (trusted_found)
-    confirm_untrusted_signin_ = !trusted;
+  if (params.trusted_found)
+    confirm_untrusted_signin_ = !params.trusted_value;
 
-  DCHECK(!email.empty());
-  DCHECK(!gaia_id.empty());
-  DCHECK(!auth_code.empty());
+  DCHECK(!params.email.empty());
+  DCHECK(!params.gaia_id.empty());
+  DCHECK(!params.auth_code.empty());
 
   content::StoragePartition* partition =
       signin::GetSigninPartition(contents->GetBrowserContext());
@@ -636,11 +625,13 @@ void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
   Profile* profile = Profile::FromWebUI(web_ui());
   if (reason == HandlerSigninReason::kFetchLstOnly ||
       !profile->IsSystemProfile()) {
-    FinishCompleteLogin(FinishCompleteLoginParams(
-                            this, partition, current_url, base::FilePath(),
-                            confirm_untrusted_signin_, email, gaia_id, password,
-                            auth_code, choose_what_to_sync, false),
-                        profile, Profile::CREATE_STATUS_CREATED);
+    FinishCompleteLogin(
+        FinishCompleteLoginParams(this, partition, current_url,
+                                  base::FilePath(), confirm_untrusted_signin_,
+                                  params.email, params.gaia_id, params.password,
+                                  params.auth_code, params.choose_what_to_sync,
+                                  /*is_force_sign_in_with_usermanager=*/false),
+        profile);
     return;
   }
 
@@ -649,7 +640,8 @@ void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
   DCHECK(signin_util::IsForceSigninEnabled());
 
   ProfileManager* manager = g_browser_process->profile_manager();
-  base::FilePath path = profiles::GetPathOfProfileWithEmail(manager, email);
+  base::FilePath path =
+      profiles::GetPathOfProfileWithEmail(manager, params.email);
   if (path.empty())
     path = ProfilePicker::GetForceSigninProfilePath();
   if (path.empty())
@@ -657,13 +649,14 @@ void InlineLoginHandlerImpl::CompleteLogin(const std::string& email,
 
   // Switch to the profile and finish the login. Pass the profile path so it can
   // be marked as unlocked.
-  FinishCompleteLoginParams params(
-      this, partition, current_url, path, confirm_untrusted_signin_, email,
-      gaia_id, password, auth_code, choose_what_to_sync, true);
-  ProfileManager::CreateCallback callback =
-      base::BindRepeating(&InlineLoginHandlerImpl::FinishCompleteLogin, params);
+  FinishCompleteLoginParams finish_login_params(
+      this, partition, current_url, path, confirm_untrusted_signin_,
+      params.email, params.gaia_id, params.password, params.auth_code,
+      params.choose_what_to_sync, /*is_force_sign_in_with_usermanager=*/true);
+  base::OnceCallback<void(Profile*)> callback = base::BindOnce(
+      &InlineLoginHandlerImpl::FinishCompleteLogin, finish_login_params);
   // Browser window will be opened after ClientOAuthSuccess.
-  profiles::LoadProfileAsync(path, callback);
+  profiles::LoadProfileAsync(path, std::move(callback));
 }
 
 InlineLoginHandlerImpl::FinishCompleteLoginParams::FinishCompleteLoginParams(
@@ -699,8 +692,7 @@ InlineLoginHandlerImpl::FinishCompleteLoginParams::
 // static
 void InlineLoginHandlerImpl::FinishCompleteLogin(
     const FinishCompleteLoginParams& params,
-    Profile* profile,
-    Profile::CreateStatus status) {
+    Profile* profile) {
   DCHECK(params.handler);
   HandlerSigninReason reason = GetHandlerSigninReason(params.url);
 
@@ -709,7 +701,7 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
   std::string validate_email;
   net::GetValueForKeyInQuery(params.url, "validateEmail", &validate_email);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (reason == HandlerSigninReason::kFetchLstOnly) {
     std::string validate_gaia_id;
     net::GetValueForKeyInQuery(
@@ -783,7 +775,7 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
   // InlineSigninHelper will delete itself.
   new InlineSigninHelper(
       params.handler->GetWeakPtr(),
-      params.partition->GetURLLoaderFactoryForBrowserProcess(), profile, status,
+      params.partition->GetURLLoaderFactoryForBrowserProcess(), profile,
       params.url, params.email, params.gaia_id, params.password,
       params.auth_code, signin_scoped_device_id,
       params.confirm_untrusted_signin,
@@ -799,12 +791,12 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
 
 void InlineLoginHandlerImpl::HandleLoginError(const SigninUIError& error) {
   content::WebContents* contents = web_ui()->GetWebContents();
-  const GURL& current_url = contents->GetURL();
+  const GURL& current_url = contents->GetLastCommittedURL();
   HandlerSigninReason reason = GetHandlerSigninReason(current_url);
 
   if (reason == HandlerSigninReason::kFetchLstOnly) {
     base::Value error_value(base::Value::Type::DICTIONARY);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // If the error contains an integer error code, send it as part of the
     // result.
     if (error.type() ==

@@ -337,15 +337,18 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
-    public void testRedirectFromFormSubmit_NoUserGesture_OnIntentRedirectChain() {
+    public void testRedirectFromFormSubmit_NoUserGesture_OnIntentRedirectChain() throws Exception {
         mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME));
 
-        RedirectHandler redirectHandler = new RedirectHandler() {
-            @Override
-            public boolean isOnEffectiveIntentRedirectChain() {
-                return true;
-            }
-        };
+        RedirectHandler redirectHandler = RedirectHandler.create();
+
+        redirectHandler.updateIntent(
+                Intent.parseUri("http://example.test", Intent.URI_INTENT_SCHEME),
+                !IS_CUSTOM_TAB_INTENT, !SEND_TO_EXTERNAL_APPS,
+                IS_CCT_EXTERNAL_LINK_HANDLING_ENABLED, !INTENT_STARTED_TASK);
+        redirectHandler.updateNewUrlLoading(
+                PageTransition.LINK | PageTransition.FROM_API, false, false, 0, 0, true);
+        redirectHandler.updateNewUrlLoading(PageTransition.FORM_SUBMIT, false, false, 0, 0, false);
 
         // If the redirect is not associated with a user gesture but came from an incoming intent,
         // then allow those to launch external intents.
@@ -356,7 +359,7 @@ public class ExternalNavigationHandlerTest {
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
-        checkUrl("http://youtube.com://")
+        checkUrl("http://youtube.com")
                 .withPageTransition(PageTransition.FORM_SUBMIT)
                 .withIsRedirect(true)
                 .withHasUserGesture(false)
@@ -529,22 +532,30 @@ public class ExternalNavigationHandlerTest {
     public void testIntentScheme() {
         String url = "intent:wtai://wp/#Intent;action=android.settings.SETTINGS;"
                 + "component=package/class;end";
-        String urlWithSel = "intent:wtai://wp/#Intent;SEL;action=android.settings.SETTINGS;"
-                + "component=package/class;end";
+
         String urlWithNullData = "intent:#Intent;package=com.google.zxing.client.android;"
                 + "action=android.settings.SETTINGS;end";
 
         checkUrl(url).expecting(
                 OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT, START_OTHER_ACTIVITY);
 
-        // http://crbug.com/370399
+        checkUrl(urlWithNullData)
+                .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+    }
+
+    // http://crbug.com/1254422
+    @Test
+    @SmallTest
+    public void testIntentSelectorRemoved() {
+        String urlWithSel = "intent:wtai://wp/#Intent;SEL;action=android.settings.SETTINGS;"
+                + "component=package/class;end";
+
         checkUrl(urlWithSel)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
 
-        checkUrl(urlWithNullData)
-                .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
-                        START_OTHER_ACTIVITY);
+        Assert.assertNull(mDelegate.startActivityIntent.getSelector());
     }
 
     @Test
@@ -2003,6 +2014,7 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testAutofillAssistantIntentWithFallback_InRegular() {
         RedirectHandler redirectHandler = RedirectHandler.create();
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0, true);
 
         mDelegate.setIsIntentToAutofillAssistant(true);
         checkUrl(AUTOFILL_ASSISTANT_INTENT_URL_WITH_FALLBACK)
@@ -2067,6 +2079,7 @@ public class ExternalNavigationHandlerTest {
         mDelegate.add(new IntentActivity("https://someapp.com", "someapp"));
 
         RedirectHandler redirectHandler = RedirectHandler.create();
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0, true);
 
         mUrlHandler.mIsGoogleReferrer = true;
         mDelegate.setIsIntentToAutofillAssistant(true);
@@ -2334,6 +2347,14 @@ public class ExternalNavigationHandlerTest {
         Assert.assertEquals("target.package", mDelegate.startActivityIntent.getPackage());
     }
 
+    @Test
+    @SmallTest
+    public void testBlockNonExportedActivity() {
+        mDelegate.add(new IntentActivity(YOUTUBE_URL, YOUTUBE_PACKAGE_NAME, false));
+
+        checkUrl(YOUTUBE_URL).expecting(OverrideUrlLoadingResultType.NO_OVERRIDE, IGNORE);
+    }
+
     private static List<ResolveInfo> makeResolveInfos(ResolveInfo... infos) {
         return Arrays.asList(infos);
     }
@@ -2342,6 +2363,7 @@ public class ExternalNavigationHandlerTest {
         ActivityInfo ai = new ActivityInfo();
         ai.packageName = packageName;
         ai.name = "Name: " + packageName;
+        ai.exported = true;
         ResolveInfo ri = new ResolveInfo();
         ri.activityInfo = ai;
         return ri;
@@ -2352,17 +2374,23 @@ public class ExternalNavigationHandlerTest {
         ResolveInfo info = newResolveInfo(packageName);
         info.filter = new IntentFilter(Intent.ACTION_VIEW);
         info.filter.addDataAuthority(activity.mUrlPrefix, null);
+        info.activityInfo.exported = activity.isExported();
         return info;
     }
 
     private static class IntentActivity {
         private String mUrlPrefix;
         private String mPackageName;
-        private boolean mIsWebApk;
+        private boolean mIsExported;
 
         public IntentActivity(String urlPrefix, String packageName) {
+            this(urlPrefix, packageName, true);
+        }
+
+        public IntentActivity(String urlPrefix, String packageName, boolean isExported) {
             mUrlPrefix = urlPrefix;
             mPackageName = packageName;
+            mIsExported = isExported;
         }
 
         public String urlPrefix() {
@@ -2371,6 +2399,10 @@ public class ExternalNavigationHandlerTest {
 
         public String packageName() {
             return mPackageName;
+        }
+
+        public boolean isExported() {
+            return mIsExported;
         }
 
         public boolean isSpecialized() {

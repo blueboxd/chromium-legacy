@@ -76,10 +76,19 @@ var CrSettingsBasicPageTest = class extends CrSettingsBrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/basic_page_test.js&host=webui-test';
   }
+
+  /** @override */
+  get featureListInternal() {
+    return {enabled: ['features::kPrivacyReview']};
+  }
 };
 
-TEST_F('CrSettingsBasicPageTest', 'All', function() {
+TEST_F('CrSettingsBasicPageTest', 'BasicPage', function() {
   runMochaSuite('SettingsBasicPage');
+});
+
+TEST_F('CrSettingsBasicPageTest', 'PrivacyReviewPromo', function() {
+  runMochaSuite('PrivacyReviewPromo');
 });
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
@@ -485,9 +494,17 @@ var CrSettingsPrivacyReviewPageTest = class extends CrSettingsBrowserTest {
   }
 };
 
-TEST_F('CrSettingsPrivacyReviewPageTest', 'PrivacyReviewPageTests', function() {
-  runMochaSuite('PrivacyReviewPage');
-});
+// TODO(crbug.com/1281967): Flaky on debug Linux builds.
+GEN('#if defined(OS_LINUX) && !defined(NDEBUG)');
+GEN('#define MAYBE_PrivacyReviewPageTests DISABLED_PrivacyReviewPageTests');
+GEN('#else');
+GEN('#define MAYBE_PrivacyReviewPageTests PrivacyReviewPageTests');
+GEN('#endif');
+TEST_F(
+    'CrSettingsPrivacyReviewPageTest', 'MAYBE_PrivacyReviewPageTests',
+    function() {
+      runMochaSuite('PrivacyReviewPage');
+    });
 
 
 TEST_F(
@@ -578,6 +595,7 @@ TEST_F('CrSettingsAdvancedPageTest', 'MAYBE_Load', function() {
  ['SearchPage', 'search_page_test.js'],
  ['Search', 'search_settings_test.js'],
  ['SecurityKeysSubpage', 'security_keys_subpage_test.js'],
+ ['SecurityKeysPhonesSubpage', 'security_keys_phones_subpage_test.js'],
  ['SecureDns', 'secure_dns_test.js'],
  ['SiteData', 'site_data_test.js'],
  ['SiteDataDetails', 'site_data_details_subpage_tests.js'],
@@ -637,6 +655,7 @@ GEN('#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
 [['PeoplePageManageProfile', 'people_page_manage_profile_test.js'],
  ['Languages', 'languages_tests.js'],
+ ['RelaunchConfirmationDialog', 'relaunch_confirmation_dialog_test.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)');
 

@@ -86,7 +86,8 @@ void ChromeZoomLevelPrefs::SetDefaultZoomLevelPref(double level) {
   if (blink::PageZoomValuesEqual(level, host_zoom_map_->GetDefaultZoomLevel()))
     return;
 
-  DictionaryPrefUpdate update(pref_service_, prefs::kPartitionDefaultZoomLevel);
+  DictionaryPrefUpdateDeprecated update(pref_service_,
+                                        prefs::kPartitionDefaultZoomLevel);
   update->SetDoubleKey(partition_key_, level);
   // For unregistered paths, OnDefaultZoomLevelChanged won't be called, so
   // set this manually.
@@ -97,7 +98,7 @@ void ChromeZoomLevelPrefs::SetDefaultZoomLevelPref(double level) {
 }
 
 double ChromeZoomLevelPrefs::GetDefaultZoomLevelPref() const {
-  const base::DictionaryValue* default_zoom_level_dictionary =
+  const base::Value* default_zoom_level_dictionary =
       pref_service_->GetDictionary(prefs::kPartitionDefaultZoomLevel);
   return default_zoom_level_dictionary->FindDoubleKey(partition_key_)
       .value_or(0.0);
@@ -120,8 +121,8 @@ void ChromeZoomLevelPrefs::OnZoomLevelChanged(
   if (change.mode != content::HostZoomMap::ZOOM_CHANGED_FOR_HOST)
     return;
   double level = change.zoom_level;
-  DictionaryPrefUpdate update(pref_service_,
-                              prefs::kPartitionPerHostZoomLevels);
+  DictionaryPrefUpdateDeprecated update(pref_service_,
+                                        prefs::kPartitionPerHostZoomLevels);
   base::DictionaryValue* host_zoom_dictionaries = update.Get();
   DCHECK(host_zoom_dictionaries);
 
@@ -204,8 +205,8 @@ void ChromeZoomLevelPrefs::ExtractPerHostZoomLevels(
   // Sanitize prefs to remove entries that match the default zoom level and/or
   // have an empty host.
   {
-    DictionaryPrefUpdate update(pref_service_,
-                                prefs::kPartitionPerHostZoomLevels);
+    DictionaryPrefUpdateDeprecated update(pref_service_,
+                                          prefs::kPartitionPerHostZoomLevels);
     base::DictionaryValue* host_zoom_dictionaries = update.Get();
     base::DictionaryValue* partition_dictionary = nullptr;
     host_zoom_dictionaries->GetDictionary(partition_key_,
@@ -228,7 +229,8 @@ void ChromeZoomLevelPrefs::InitHostZoomMap(
   // Initialize the HostZoomMap with per-host zoom levels from the persisted
   // zoom-level preference values.
   const base::DictionaryValue* host_zoom_dictionaries =
-      pref_service_->GetDictionary(prefs::kPartitionPerHostZoomLevels);
+      &base::Value::AsDictionaryValue(
+          *pref_service_->GetDictionary(prefs::kPartitionPerHostZoomLevels));
   const base::DictionaryValue* host_zoom_dictionary = nullptr;
   if (host_zoom_dictionaries->GetDictionary(partition_key_,
                                             &host_zoom_dictionary)) {

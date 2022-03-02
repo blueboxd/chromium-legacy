@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/ignore_result.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -107,7 +107,7 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
 
     std::u16string ready_title(u"ready");
     TitleWatcher watcher(shell()->web_contents(), ready_title);
-    ignore_result(watcher.WaitAndGetTitle());
+    std::ignore = watcher.WaitAndGetTitle();
 
     // Wait for the hit test data to be ready after initiating URL loading
     // before returning
@@ -175,7 +175,7 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
 // Disabled on MacOS because it doesn't support touch input.
 // Disabled on Android due to flakiness, see https://crbug.com/376668.
 // Flaky on Windows: crbug.com/804009
-#if defined(OS_MAC) || defined(OS_ANDROID) || defined(OS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
 #define MAYBE_Scroll3DTransformedScroller DISABLED_Scroll3DTransformedScroller
 #else
 #define MAYBE_Scroll3DTransformedScroller Scroll3DTransformedScroller

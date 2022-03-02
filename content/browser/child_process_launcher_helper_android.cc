@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <tuple>
 
 #include "base/android/apk_assets.h"
 #include "base/android/application_status_listener.h"
 #include "base/android/jni_array.h"
 #include "base/bind.h"
 #include "base/i18n/icu_util.h"
-#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/task/post_task.h"
@@ -133,7 +133,7 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     const auto& region = files_to_register->GetRegionAt(i);
     bool auto_close = files_to_register->OwnsFD(fd);
     if (auto_close) {
-      ignore_result(files_to_register->ReleaseFD(fd).release());
+      std::ignore = files_to_register->ReleaseFD(fd).release();
     }
 
     ScopedJavaLocalRef<jobject> j_file_info =
@@ -143,10 +143,11 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     env->SetObjectArrayElement(j_file_infos.obj(), i, j_file_info.obj());
   }
 
+  AddRef();  // Balanced by OnChildProcessStarted.
   java_peer_.Reset(Java_ChildProcessLauncherHelperImpl_createAndStart(
       env, reinterpret_cast<intptr_t>(this), j_argv, j_file_infos,
       can_use_warm_up_connection));
-  AddRef();  // Balanced by OnChildProcessStarted.
+
   client_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(

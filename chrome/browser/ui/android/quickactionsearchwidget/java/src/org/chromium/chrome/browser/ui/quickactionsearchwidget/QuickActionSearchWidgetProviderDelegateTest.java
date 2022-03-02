@@ -604,7 +604,6 @@ public class QuickActionSearchWidgetProviderDelegateTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1281655")
     public void resizeDinoWidgetToFillTargetCellArea_repositionContentRTL() {
         final Configuration c = new Configuration(mContext.getResources().getConfiguration());
         c.setLayoutDirection(Locale.forLanguageTag("ar")); // arabic

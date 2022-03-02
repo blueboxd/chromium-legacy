@@ -106,7 +106,7 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
           // stack about stream video quads. Investigate alternative solutions.
           if (use_stream_video_draw_quad || dcomp_surface)
             return VideoFrameResourceType::STREAM_TEXTURE;
-          FALLTHROUGH;
+          [[fallthrough]];
         case GL_TEXTURE_2D:
         case GL_TEXTURE_RECTANGLE_ARB:
           return (format == PIXEL_FORMAT_XRGB)
@@ -166,7 +166,7 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
 
     case PIXEL_FORMAT_UYVY:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I422:
     case PIXEL_FORMAT_I444:
@@ -924,12 +924,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       transfer_resource.format = viz::GetResourceFormat(buffer_formats[i]);
       transfer_resource.ycbcr_info = video_frame->ycbcr_info();
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       transfer_resource.is_backed_by_surface_texture =
           video_frame->metadata().texture_owner;
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
       transfer_resource.wants_promotion_hint =
           video_frame->metadata().wants_promotion_hint;
 #endif

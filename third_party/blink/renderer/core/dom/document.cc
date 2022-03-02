@@ -79,6 +79,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_registration_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_interest_cohort.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_observable_array_css_style_sheet.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_elementcreationoptions_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlscriptelement_svgscriptelement.h"
@@ -246,6 +247,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/loader/cookie_jar.h"
@@ -279,7 +281,6 @@
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -656,7 +657,12 @@ Document* Document::CreateForTest() {
 Document::Document(const DocumentInit& initializer,
                    DocumentClassFlags document_classes)
     : ContainerNode(nullptr, kCreateDocument),
-      TreeScope(*this),
+      TreeScope(
+          *this,
+          static_cast<V8ObservableArrayCSSStyleSheet::SetAlgorithmCallback>(
+              &Document::OnAdoptedStyleSheetSet),
+          static_cast<V8ObservableArrayCSSStyleSheet::DeleteAlgorithmCallback>(
+              &Document::OnAdoptedStyleSheetDelete)),
       is_initial_empty_document_(initializer.IsInitialEmptyDocument()),
       is_prerendering_(initializer.IsPrerendering()),
       evaluate_media_queries_on_style_recalc_(false),
@@ -1991,7 +1997,7 @@ static void AssertLayoutTreeUpdated(Node& root,
           (allow_dirty_container_subtrees && element->GetLayoutObject() &&
            element->GetLayoutObject()
                ->StyleRef()
-               .IsContainerForContainerQueries())) {
+               .IsContainerForContainerQueries(*element))) {
         node = FlatTreeTraversal::NextSkippingChildren(*node);
         continue;
       }
@@ -2316,6 +2322,13 @@ void Document::UpdateStyleAndLayoutTreeForSubtree(const Node* node) {
   }
 }
 
+void Document::UpdateStyleAndLayoutForRange(const Range* range,
+                                            DocumentUpdateReason reason) {
+  DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
+      range, DisplayLockContext::ForcedPhase::kLayout);
+  UpdateStyleAndLayout(reason);
+}
+
 void Document::UpdateStyleAndLayoutForNode(const Node* node,
                                            DocumentUpdateReason reason) {
   DCHECK(node);
@@ -2505,11 +2518,9 @@ void Document::LayoutUpdated() {
 
     frame->Client()->DidObserveLayoutNg(
         layout_blocks_counter_, layout_blocks_counter_ng_,
-        layout_calls_counter_, layout_calls_counter_ng_,
-        layout_flexbox_counter_ng_, layout_grid_counter_ng_);
+        layout_calls_counter_, layout_calls_counter_ng_);
     layout_blocks_counter_ = layout_blocks_counter_ng_ = layout_calls_counter_ =
-        layout_calls_counter_ng_ = layout_flexbox_counter_ng_ =
-            layout_grid_counter_ng_ = 0;
+        layout_calls_counter_ng_ = 0;
   }
 
   Markers().InvalidateRectsForAllTextMatchMarkers();
@@ -2526,18 +2537,6 @@ void Document::AttachCompositorTimeline(
     return;
 
   GetPage()->GetChromeClient().AttachCompositorAnimationTimeline(timeline,
-                                                                 GetFrame());
-}
-
-void Document::DetachCompositorTimeline(
-    CompositorAnimationTimeline* timeline) const {
-  if (!Platform::Current()->IsThreadedAnimationEnabled() ||
-      !GetSettings()->GetAcceleratedCompositingEnabled())
-    return;
-
-  // During Document::Shutdown() the timeline needs to be unconditionally
-  // detached.
-  GetPage()->GetChromeClient().DetachCompositorAnimationTimeline(timeline,
                                                                  GetFrame());
 }
 
@@ -2588,33 +2587,28 @@ void Document::GetPageDescription(uint32_t page_index,
                                   WebPrintPageDescription* description) {
   scoped_refptr<const ComputedStyle> style = StyleForPage(page_index);
 
-  double width = description->size.Width();
-  double height = description->size.Height();
   switch (style->GetPageSizeType()) {
     case PageSizeType::kAuto:
       break;
     case PageSizeType::kLandscape:
-      if (width < height)
-        std::swap(width, height);
+      if (description->size.width() < description->size.height())
+        description->size.Transpose();
       break;
     case PageSizeType::kPortrait:
-      if (width > height)
-        std::swap(width, height);
+      if (description->size.width() > description->size.height())
+        description->size.Transpose();
       break;
-    case PageSizeType::kFixed: {
-      FloatSize size = style->PageSize();
-      width = size.width();
-      height = size.height();
+    case PageSizeType::kFixed:
+      description->size = style->PageSize();
       break;
-    }
     default:
       NOTREACHED();
   }
-  description->size = WebDoubleSize(width, height);
 
   // The percentage is calculated with respect to the width even for margin top
   // and bottom.
   // http://www.w3.org/TR/CSS2/box.html#margin-properties
+  float width = description->size.width();
   if (!style->MarginTop().IsAuto())
     description->margin_top = IntValueForLength(style->MarginTop(), width);
   if (!style->MarginRight().IsAuto())
@@ -2657,16 +2651,6 @@ void Document::SetIsXrOverlay(bool val, Element* overlay_element) {
   // The DOM overlay may change the effective root element. Need to update
   // compositing inputs to avoid a mismatch in CompositingRequirementsUpdater.
   GetLayoutView()->Layer()->SetNeedsCompositingInputsUpdate();
-
-  // Ensure that the graphics layer tree gets fully rebuilt on changes,
-  // similar to HTMLVideoElement::DidEnterFullscreen(). This may not be
-  // strictly necessary if the compositing changes are based on visibility
-  // settings, but helps ensure consistency in case it's changed to
-  // detaching layers or re-rooting the graphics layer tree.
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    auto* compositor = GetLayoutView()->Compositor();
-    compositor->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
-  }
 }
 
 void Document::ScheduleUseShadowTreeUpdate(SVGUseElement& element) {
@@ -2699,10 +2683,11 @@ void Document::Initialize() {
   DCHECK(!ax_object_cache_ || this != &AXObjectCacheOwner());
 
   UpdateForcedColors();
-  layout_view_ = MakeGarbageCollected<LayoutView>(this);
+  scoped_refptr<ComputedStyle> style = GetStyleResolver().StyleForViewport();
+  layout_view_ = LayoutObjectFactory::CreateView(*this, *style);
   SetLayoutObject(layout_view_);
 
-  layout_view_->SetStyle(GetStyleResolver().StyleForViewport());
+  layout_view_->SetStyle(style);
 
   AttachContext context;
   AttachLayoutTree(context);
@@ -2793,12 +2778,10 @@ void Document::Shutdown() {
   CancelPendingJavaScriptUrls();
   http_refresh_scheduler_->Cancel();
 
-  DetachCompositorTimeline(Timeline().CompositorTimeline());
+  GetDocumentAnimations().DetachCompositorTimelines();
 
   if (GetFrame()->IsLocalRoot())
     GetPage()->GetChromeClient().AttachRootLayer(nullptr, GetFrame());
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    layout_view_->CleanUpCompositor();
 
   MutationObserver::CleanSlotChangeList(*this);
 
@@ -3011,6 +2994,12 @@ void Document::DisplayNoneChangedForFrame() {
   documentElement()->SetNeedsStyleRecalc(
       kLocalStyleChange,
       StyleChangeReasonForTracing::Create(style_change_reason::kFrame));
+}
+
+bool Document::WillPrintSoon() {
+  loading_for_print_ =
+      EnsureLazyLoadImageObserver().LoadAllImagesAndBlockLoadEvent();
+  return loading_for_print_;
 }
 
 void Document::SetPrinting(PrintingState state) {
@@ -3498,8 +3487,6 @@ void Document::ImplicitClose() {
     return;
   }
 
-  fetcher_->ScheduleWarnUnusedPreloads();
-
   if (GetStyleEngine().HaveRenderBlockingStylesheetsLoaded())
     UpdateStyleAndLayout(DocumentUpdateReason::kUnknown);
 
@@ -3578,6 +3565,9 @@ bool Document::CheckCompletedInternal() {
   if (LoadEventStillNeeded())
     ImplicitClose();
 
+  DCHECK(fetcher_);
+  fetcher_->ScheduleWarnUnusedPreloads();
+
   // The readystatechanged or load event may have disconnected this frame.
   if (!GetFrame() || !GetFrame()->IsAttached())
     return false;
@@ -3606,6 +3596,9 @@ bool Document::CheckCompletedInternal() {
     GetFrame()->GetFrameScheduler()->OnLoad();
 
     DetectJavascriptFrameworksOnLoad(*this);
+  } else if (loading_for_print_) {
+    loading_for_print_ = false;
+    GetFrame()->Client()->DispatchDidFinishLoadForPrinting();
   }
 
   if (auto* view = View()) {
@@ -3729,12 +3722,7 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   return false;
 }
 
-void Document::DispatchUnloadEvents(
-    SecurityOrigin* committing_origin,
-    absl::optional<Document::UnloadEventTiming>* unload_timing) {
-  // TODO(crbug.com/1161996): Remove this VLOG once the investigation is done.
-  VLOG(1) << "Document::DispatchUnloadEvents() URL = " << Url();
-
+void Document::DispatchUnloadEvents(UnloadEventTimingInfo* unload_timing_info) {
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   PageDismissalScope in_page_dismissal;
   if (parser_)
@@ -3810,24 +3798,22 @@ void Document::DispatchUnloadEvents(
 
   GetFrame()->Loader().SaveScrollAnchor();
 
-  // TODO(crbug.com/1161996): Remove this VLOG once the investigation is done.
-  VLOG(1) << "Actually dispatching an UnloadEvent: URL = " << Url();
-
   load_event_progress_ = kUnloadEventInProgress;
   Event& unload_event = *Event::Create(event_type_names::kUnload);
   const base::TimeTicks unload_event_start = base::TimeTicks::Now();
   dom_window_->DispatchEvent(unload_event, this);
   const base::TimeTicks unload_event_end = base::TimeTicks::Now();
 
-  if (unload_timing) {
+  if (unload_timing_info) {
     // Record unload event timing when navigating cross-document.
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, unload_histogram,
         ("DocumentEventTiming.UnloadDuration", 0, 10000000, 50));
     unload_histogram.CountMicroseconds(unload_event_end - unload_event_start);
 
-    auto& timing = unload_timing->emplace();
-    timing.can_request = committing_origin->CanRequest(Url());
+    auto& timing = unload_timing_info->unload_timing.emplace();
+    timing.can_request =
+        unload_timing_info->new_document_origin->CanRequest(Url());
     timing.unload_event_start = unload_event_start;
     timing.unload_event_end = unload_event_end;
   }
@@ -4941,6 +4927,27 @@ void Document::NotifyFocusedElementChanged(Element* old_focused_element,
                                                  new_focused_element);
 }
 
+// This forwards to the TreeScope implementation.
+void Document::OnAdoptedStyleSheetSet(
+    ScriptState* script_state,
+    V8ObservableArrayCSSStyleSheet& observable_array,
+    uint32_t index,
+    Member<CSSStyleSheet>& sheet,
+    ExceptionState& exception_state) {
+  TreeScope::OnAdoptedStyleSheetSet(script_state, observable_array, index,
+                                    sheet, exception_state);
+}
+
+// This forwards to the TreeScope implementation.
+void Document::OnAdoptedStyleSheetDelete(
+    ScriptState* script_state,
+    V8ObservableArrayCSSStyleSheet& observable_array,
+    uint32_t index,
+    ExceptionState& exception_state) {
+  TreeScope::OnAdoptedStyleSheetDelete(script_state, observable_array, index,
+                                       exception_state);
+}
+
 void Document::SetSequentialFocusNavigationStartingPoint(Node* node) {
   if (!dom_window_)
     return;
@@ -5504,7 +5511,7 @@ void Document::SetCookieManager(
 
 const AtomicString& Document::referrer() const {
   if (Loader())
-    return Loader()->GetReferrer().referrer;
+    return Loader()->GetReferrer();
   return g_null_atom;
 }
 
@@ -5683,10 +5690,7 @@ void Document::setDomain(const String& raw_domain,
   }
 }
 
-// https://html.spec.whatwg.org/C#dom-document-lastmodified
-String Document::lastModified() const {
-  base::Time::Exploded exploded;
-  bool found_date = false;
+absl::optional<base::Time> Document::lastModifiedTime() const {
   AtomicString http_last_modified = override_last_modified_;
   if (http_last_modified.IsEmpty()) {
     if (DocumentLoader* document_loader = Loader()) {
@@ -5695,18 +5699,16 @@ String Document::lastModified() const {
     }
   }
   if (!http_last_modified.IsEmpty()) {
-    absl::optional<base::Time> date_value = ParseDate(http_last_modified);
-    if (date_value) {
-      date_value.value().LocalExplode(&exploded);
-      found_date = true;
-    }
+    return ParseDate(http_last_modified);
   }
-  // FIXME: If this document came from the file system, the HTML5
-  // specificiation tells us to read the last modification date from the file
-  // system.
-  if (!found_date) {
-    base::Time::Now().LocalExplode(&exploded);
-  }
+  return absl::nullopt;
+}
+
+// https://html.spec.whatwg.org/C#dom-document-lastmodified
+String Document::lastModified() const {
+  const base::Time time = lastModifiedTime().value_or(base::Time::Now());
+  base::Time::Exploded exploded;
+  time.LocalExplode(&exploded);
   return String::Format("%02d/%02d/%04d %02d:%02d:%02d", exploded.month,
                         exploded.day_of_month, exploded.year, exploded.hour,
                         exploded.minute, exploded.second);
@@ -5887,7 +5889,7 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
                     break;
                   case mojom::blink::PermissionStatus::DENIED:
                     document->expressly_denied_storage_access_ = true;
-                    FALLTHROUGH;
+                    [[fallthrough]];
                   case mojom::blink::PermissionStatus::ASK:
                   default:
                     FireRequestStorageAccessHistogram(
@@ -7230,24 +7232,23 @@ Node* EventTargetNodeForDocument(Document* doc) {
   return node;
 }
 
-void Document::AdjustFloatQuadsForScrollAndAbsoluteZoom(
-    Vector<FloatQuad>& quads,
+void Document::AdjustQuadsForScrollAndAbsoluteZoom(
+    Vector<gfx::QuadF>& quads,
     const LayoutObject& layout_object) const {
   if (!View())
     return;
 
-  for (wtf_size_t i = 0; i < quads.size(); ++i) {
-    AdjustForAbsoluteZoom::AdjustFloatQuad(quads[i], layout_object);
-  }
+  for (auto& quad : quads)
+    AdjustForAbsoluteZoom::AdjustQuad(quad, layout_object);
 }
 
-void Document::AdjustFloatRectForScrollAndAbsoluteZoom(
-    FloatRect& rect,
+void Document::AdjustRectForScrollAndAbsoluteZoom(
+    gfx::RectF& rect,
     const LayoutObject& layout_object) const {
   if (!View())
     return;
 
-  AdjustForAbsoluteZoom::AdjustFloatRect(rect, layout_object);
+  AdjustForAbsoluteZoom::AdjustRectF(rect, layout_object);
 }
 
 void Document::SetThreadedParsingEnabledForTesting(bool enabled) {
@@ -7496,16 +7497,16 @@ bool Document::SetPseudoStateForTesting(Element& element,
   auto& set = UserActionElements();
   if (pseudo == ":focus") {
     set.SetFocused(&element, matches);
-    element.PseudoStateChanged(CSSSelector::kPseudoFocus);
+    element.PseudoStateChangedForTesting(CSSSelector::kPseudoFocus);
   } else if (pseudo == ":focus-within") {
     set.SetHasFocusWithin(&element, matches);
-    element.PseudoStateChanged(CSSSelector::kPseudoFocusWithin);
+    element.PseudoStateChangedForTesting(CSSSelector::kPseudoFocusWithin);
   } else if (pseudo == ":active") {
     set.SetActive(&element, matches);
-    element.PseudoStateChanged(CSSSelector::kPseudoActive);
+    element.PseudoStateChangedForTesting(CSSSelector::kPseudoActive);
   } else if (pseudo == ":hover") {
     set.SetHovered(&element, matches);
-    element.PseudoStateChanged(CSSSelector::kPseudoHover);
+    element.PseudoStateChangedForTesting(CSSSelector::kPseudoHover);
   } else {
     return false;
   }

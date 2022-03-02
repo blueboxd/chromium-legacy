@@ -31,7 +31,7 @@
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/prefs_export.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #endif
 
@@ -40,7 +40,7 @@ class PrefNotifierImpl;
 class PrefObserver;
 class PrefRegistry;
 class PrefStore;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 class PrefServiceAndroid;
 #endif
 
@@ -233,8 +233,8 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // Note that |path| must point to a registered preference. In that case, these
   // functions will never return NULL.
   const base::Value* Get(const std::string& path) const;
-  const base::DictionaryValue* GetDictionary(const std::string& path) const;
-  const base::ListValue* GetList(const std::string& path) const;
+  const base::Value* GetDictionary(const std::string& path) const;
+  const base::Value* GetList(const std::string& path) const;
 
   // Removes a user pref and restores the pref to its default value.
   void ClearPref(const std::string& path);
@@ -380,7 +380,7 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   void AddPrefObserverAllPrefs(PrefObserver* obs);
   void RemovePrefObserverAllPrefs(PrefObserver* obs);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 #endif
 
@@ -476,7 +476,7 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // of registered preferences are.
   mutable PreferenceMap prefs_map_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Manage and fetch the java object that wraps this PrefService on
   // android.
   std::unique_ptr<PrefServiceAndroid> pref_service_android_;

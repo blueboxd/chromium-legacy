@@ -57,7 +57,7 @@ class MediaStreamUIProxy::Core {
   void OnDeviceStopped(const std::string& label,
                        const DesktopMediaID& media_id);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   void SetFocus(const DesktopMediaID& media_id,
                 bool focus,
                 bool is_from_microtask,
@@ -159,8 +159,8 @@ void MediaStreamUIProxy::Core::OnStarted(
   }
 
   *window_id =
-      ui_->OnStarted(base::BindOnce(&Core::ProcessStopRequestFromUI,
-                                    weak_factory_for_ui_.GetWeakPtr()),
+      ui_->OnStarted(base::BindRepeating(&Core::ProcessStopRequestFromUI,
+                                         weak_factory_for_ui_.GetWeakPtr()),
                      device_change_cb, label, screen_share_ids,
                      base::BindRepeating(&Core::ProcessStateChangeFromUI,
                                          weak_factory_for_ui_.GetWeakPtr()));
@@ -174,7 +174,7 @@ void MediaStreamUIProxy::Core::OnDeviceStopped(const std::string& label,
   }
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 void MediaStreamUIProxy::Core::SetFocus(const DesktopMediaID& media_id,
                                         bool focus,
                                         bool is_from_microtask,
@@ -340,7 +340,7 @@ void MediaStreamUIProxy::OnDeviceStopped(const std::string& label,
                                 label, media_id));
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 void MediaStreamUIProxy::SetFocus(const DesktopMediaID& media_id,
                                   bool focus,
                                   bool is_from_microtask,
@@ -364,6 +364,10 @@ void MediaStreamUIProxy::ProcessAccessRequestResponse(
 
 void MediaStreamUIProxy::ProcessStopRequestFromUI() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Careful when changing the following lines: upstream, this function is
+  // wrapped into a RepeatingClosure, which allows duplicating it and enabling
+  // multiple potentital sources to stop the stream; however only the first
+  // invocation should actually stop the stream.
   if (stop_callback_)
     std::move(stop_callback_).Run();
 }

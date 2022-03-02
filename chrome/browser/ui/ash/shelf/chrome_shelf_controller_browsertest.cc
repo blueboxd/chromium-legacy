@@ -11,9 +11,11 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_menu_constants.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_test_api.h"
+#include "ash/public/cpp/system_tray_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -89,12 +91,13 @@
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -228,6 +231,30 @@ ash::ShelfID CreateAppShortcutItem(const ash::ShelfID& shelf_id) {
       ash::STATUS_CLOSED, controller->shelf_model()->item_count(),
       ash::TYPE_PINNED_APP, /*title=*/u"");
 }
+
+// A class that waits for the child removal to occur on a parent view.
+class ChildRemovalWaiter : public views::ViewObserver {
+ public:
+  explicit ChildRemovalWaiter(views::View* parent_view)
+      : parent_view_(parent_view) {
+    parent_view_->AddObserver(this);
+  }
+  ChildRemovalWaiter(const ChildRemovalWaiter&) = delete;
+  ChildRemovalWaiter& operator=(const ChildRemovalWaiter&) = delete;
+  ~ChildRemovalWaiter() override { parent_view_->RemoveObserver(this); }
+
+  void WaitForChildRemoval() { run_loop_.Run(); }
+
+  // views::ViewObserver:
+  void OnChildViewRemoved(views::View* observed_view,
+                          views::View* child) override {
+    run_loop_.Quit();
+  }
+
+ private:
+  views::View* const parent_view_;
+  base::RunLoop run_loop_;
+};
 
 }  // namespace
 
@@ -439,7 +466,7 @@ class ShelfWebAppBrowserTest : public ShelfAppBrowserTest {
   }
 
   web_app::AppId InstallWebApp(const GURL& start_url) {
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
     return web_app::test::InstallWebApp(browser()->profile(),
@@ -469,8 +496,6 @@ class ShelfWebAppBrowserTest : public ShelfAppBrowserTest {
     ASSERT_TRUE(https_server()->Start());
     cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
 
-    os_hooks_suppress_ =
-        web_app::OsIntegrationManager::ScopedSuppressOsHooksForTesting();
     web_app::test::WaitUntilReady(
         web_app::WebAppProvider::GetForTest(browser()->profile()));
   }
@@ -478,7 +503,7 @@ class ShelfWebAppBrowserTest : public ShelfAppBrowserTest {
  private:
   net::EmbeddedTestServer https_server_;
   content::ContentMockCertVerifier cert_verifier_;
-  web_app::ScopedOsHooksSuppress os_hooks_suppress_;
+  web_app::OsIntegrationManager::ScopedSuppressForTesting os_hooks_suppress_;
 };
 
 // Test that we can launch a platform app and get a running item.
@@ -1682,7 +1707,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->BrowserAppLauncher()
       ->LaunchAppWithParams(apps::AppLaunchParams(
-          extension->id(), extensions::LaunchContainer::kLaunchContainerTab,
+          extension->id(), apps::mojom::LaunchContainer::kLaunchContainerTab,
           WindowOpenDisposition::NEW_WINDOW,
           apps::mojom::LaunchSource::kFromTest));
 
@@ -2184,6 +2209,95 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_GE(time_after_launch, time_launch);
 }
 
+// Verifies that closing a launched (unpinned) system app through the shelf app
+// icon's context menu works as expected.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, CloseSystemAppByShelfContextMenu) {
+  // Prepare for launching the setting app.
+  auto& system_web_app_manager =
+      web_app::WebAppProvider::GetForTest(browser()->profile())
+          ->system_web_app_manager();
+  system_web_app_manager.InstallSystemAppsForTesting();
+
+  // Record the default shelf item count.
+  const int default_item_count = shelf_model()->item_count();
+
+  // Verify that the setting app does not exist in the shelf model by default.
+  ash::RootWindowController* controller = ash::RootWindowController::ForWindow(
+      browser()->window()->GetNativeWindow());
+  ash::ShelfView* shelf_view = controller->shelf()->GetShelfViewForTesting();
+  ash::ShelfModel* model = shelf_view->model();
+  EXPECT_EQ(-1, model->ItemIndexByAppID(web_app::kOsSettingsAppId));
+
+  // Open the system tray then click at the quick setting button.
+  std::unique_ptr<ash::SystemTrayTestApi> tray_test_api =
+      ash::SystemTrayTestApi::Create();
+  tray_test_api->ShowBubble();
+  tray_test_api->ClickBubbleView(ash::VIEW_ID_SETTINGS_BUTTON_VIEW);
+
+  // Flush mojo calls in order to create the browser window for the launched
+  // system app.
+  FlushMojoCallsForAppService();
+
+  Browser* app_browser = BrowserList::GetInstance()->GetLastActive();
+  EXPECT_EQ(web_app::kOsSettingsAppId,
+            ash::ShelfID::Deserialize(
+                app_browser->window()->GetNativeWindow()->GetProperty(
+                    ash::kShelfIDKey))
+                .app_id);
+
+  // Wait until the web contents finish loading.
+  EXPECT_TRUE(
+      WaitForLoadStop(app_browser->tab_strip_model()->GetActiveWebContents()));
+
+  // Wait until the shelf app icon addition animation finishes.
+  ash::ShelfViewTestAPI shelf_test_api(shelf_view);
+  shelf_test_api.RunMessageLoopUntilAnimationsDone();
+
+  // Verify that the shelf item count increases by one.
+  EXPECT_EQ(default_item_count + 1, model->item_count());
+
+  // Verify that the shelf item of the setting app is placed at the end of the
+  // shelf model.
+  const int setting_app_item_index =
+      model->ItemIndexByAppID(web_app::kOsSettingsAppId);
+  EXPECT_EQ(model->item_count() - 1, setting_app_item_index);
+
+  // Get the setting app's shelf app button.
+  const ash::ShelfID setting_app_id = model->items()[setting_app_item_index].id;
+  views::View* setting_app_icon = shelf_view->GetShelfAppButton(setting_app_id);
+
+  ash::ShelfViewTestAPI test_api(shelf_view);
+  base::RunLoop run_loop;
+  test_api.SetShelfContextMenuCallback(run_loop.QuitClosure());
+
+  // Right mouse click at `setting_app_icon`.
+  ui::test::EventGenerator event_generator(controller->GetRootWindow());
+  event_generator.MoveMouseTo(
+      setting_app_icon->GetBoundsInScreen().CenterPoint());
+  event_generator.PressRightButton();
+
+  // Wait until the context menu shows.
+  run_loop.Run();
+
+  ash::ShelfMenuModelAdapter* shelf_menu_model_adapter =
+      shelf_view->shelf_menu_model_adapter_for_testing();
+  ASSERT_TRUE(shelf_menu_model_adapter->IsShowingMenu());
+
+  // Click at the menu item whose command is ash::MENU_CLOSE.
+  event_generator.MoveMouseTo(shelf_menu_model_adapter->root_for_testing()
+                                  ->GetMenuItemByID(ash::MENU_CLOSE)
+                                  ->GetBoundsInScreen()
+                                  .CenterPoint());
+  event_generator.ClickLeftButton();
+
+  ChildRemovalWaiter removal_waiter(shelf_view);
+  removal_waiter.WaitForChildRemoval();
+  shelf_test_api.RunMessageLoopUntilAnimationsDone();
+
+  // Verify that the shelf item count decreases.
+  EXPECT_EQ(default_item_count, model->item_count());
+}
+
 // Check that the window's ShelfID property matches that of the active tab.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDAndActiveTab) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -2428,7 +2542,7 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
   web_app::ServiceWorkerRegistrationWaiter registration_waiter(profile(), url);
-  AddTabAtIndex(1, url, ui::PAGE_TRANSITION_LINK);
+  ASSERT_TRUE(AddTabAtIndex(1, url, ui::PAGE_TRANSITION_LINK));
   registration_waiter.AwaitRegistration();
   // Install PWA.
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
@@ -2451,10 +2565,10 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest,
                        WindowedShortcutAppsHaveActivityIndicatorSet) {
   // Start server and open test page.
   ASSERT_TRUE(embedded_test_server()->Start());
-  AddTabAtIndex(
+  ASSERT_TRUE(AddTabAtIndex(
       1,
       GURL(embedded_test_server()->GetURL("/banners/manifest_test_page.html")),
-      ui::PAGE_TRANSITION_LINK);
+      ui::PAGE_TRANSITION_LINK));
   // Install shortcut app.
   chrome::SetAutoAcceptWebAppDialogForTesting(true, true);
   web_app::WebAppTestInstallWithOsHooksObserver install_observer(profile());
@@ -2484,7 +2598,8 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppPolicy) {
 
   // Set policy to pin the web app.
   base::DictionaryValue entry;
-  entry.SetKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey, base::Value(app_url.spec()));
+  entry.SetKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey,
+               base::Value(app_url.spec()));
   base::ListValue policy_value;
   policy_value.Append(std::move(entry));
   profile()->GetPrefs()->Set(prefs::kPolicyPinnedLauncherApps, policy_value);
@@ -2502,7 +2617,7 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppPolicy) {
 IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppPolicyUpdate) {
   // Install web app.
   GURL app_url = GURL("https://example.org/");
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->start_url = app_url;
   web_app_info->scope = app_url;
   web_app_info->title = u"Example";
@@ -2553,7 +2668,8 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppPolicyNonExistentApp) {
 
   // Set policy to pin the non existent web app.
   base::DictionaryValue entry;
-  entry.SetKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey, base::Value(app_url.spec()));
+  entry.SetKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey,
+               base::Value(app_url.spec()));
   base::ListValue policy_value;
   policy_value.Append(std::move(entry));
   profile()->GetPrefs()->Set(prefs::kPolicyPinnedLauncherApps, policy_value);
@@ -2566,7 +2682,7 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppPolicyNonExistentApp) {
 }
 
 IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WebAppInstallForceList) {
-  constexpr char kAppUrl[] = "https://example.site/";
+  constexpr char kAppUrl[] = "https://example.site";
   base::RunLoop run_loop;
   web_app::WebAppProvider::GetForTest(browser()->profile())
       ->policy_manager()

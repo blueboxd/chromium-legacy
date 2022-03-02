@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/ntp/feed_header_view_controller.h"
 
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
+#import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -33,8 +33,9 @@ const CGFloat kHeaderMenuButtonInsetSides = 2;
 // TODO(crbug.com/1085419): Get card width from Mulder.
 const CGFloat kDiscoverFeedContentWith = 430;
 // The height of the header container. The content is unaffected.
-const CGFloat kFeedHeaderHeight = 40;
-
+// TODO(crbug.com/1277504): Only keep the WC header after launch.
+const CGFloat kWebChannelsHeaderHeight = 52;
+const CGFloat kDiscoverFeedHeaderHeight = 40;
 // * Values below are exclusive to Web Channels.
 // The width of the feed selector segments.
 const CGFloat kHeaderSegmentWidth = 150;
@@ -58,18 +59,30 @@ const CGFloat kMenuButtonSize = 28;
 // Segmented control for toggling between the two feeds.
 @property(nonatomic, strong) UISegmentedControl* segmentedControl;
 
+// Currently selected feed.
+// TODO(crbug.com/1277974): Reassign this value instead of recreating feed
+// header when NTP coordinator's restart is improved.
+@property(nonatomic, assign) FeedType selectedFeed;
+
 @end
 
 @implementation FeedHeaderViewController
 
-- (instancetype)init {
-  return [super initWithNibName:nil bundle:nil];
+- (instancetype)initWithSelectedFeed:(FeedType)selectedFeed {
+  self = [super initWithNibName:nil bundle:nil];
+  if (self) {
+    _selectedFeed = selectedFeed;
+  }
+  return self;
 }
 
 - (void)viewDidLoad {
   [super viewDidLoad];
 
   self.container = [[UIView alloc] init];
+
+  self.view.backgroundColor =
+      [[UIColor colorNamed:kBackgroundColor] colorWithAlphaComponent:0.95];
 
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
   self.container.translatesAutoresizingMaskIntoConstraints = NO;
@@ -169,8 +182,8 @@ const CGFloat kMenuButtonSize = 28;
   segmentedControl.backgroundColor = [UIColor colorNamed:kGrey100Color];
 
   // Set selected feed and tap action.
-  // TODO(crbug.com/1275271): Add selected feed enum
-  segmentedControl.selectedSegmentIndex = 0;
+  segmentedControl.selectedSegmentIndex =
+      static_cast<NSInteger>(self.selectedFeed);
   [segmentedControl addTarget:self
                        action:@selector(onSegmentSelected:)
              forControlEvents:UIControlEventValueChanged];
@@ -182,7 +195,6 @@ const CGFloat kMenuButtonSize = 28;
 - (void)applyHeaderConstraints {
   // Anchor container and menu button.
   [NSLayoutConstraint activateConstraints:@[
-    [self.view.heightAnchor constraintEqualToConstant:kFeedHeaderHeight],
     [self.container.topAnchor constraintEqualToAnchor:self.view.topAnchor],
     [self.container.bottomAnchor
         constraintEqualToAnchor:self.view.bottomAnchor],
@@ -200,6 +212,8 @@ const CGFloat kMenuButtonSize = 28;
   if (IsWebChannelsEnabled()) {
     // Anchor segmented control.
     [NSLayoutConstraint activateConstraints:@[
+      [self.view.heightAnchor
+          constraintEqualToConstant:kWebChannelsHeaderHeight],
       [self.segmentedControl.centerXAnchor
           constraintEqualToAnchor:self.container.centerXAnchor],
       [self.segmentedControl.centerYAnchor
@@ -210,6 +224,8 @@ const CGFloat kMenuButtonSize = 28;
   } else {
     // Anchors title label.
     [NSLayoutConstraint activateConstraints:@[
+      [self.view.heightAnchor
+          constraintEqualToConstant:kDiscoverFeedHeaderHeight],
       [self.titleLabel.leadingAnchor
           constraintEqualToAnchor:self.container.leadingAnchor
                          constant:kTitleHorizontalMargin],
@@ -222,7 +238,16 @@ const CGFloat kMenuButtonSize = 28;
 }
 
 - (void)onSegmentSelected:(UISegmentedControl*)segmentedControl {
-  // TODO(crbug.com/1275271): Handle feed change.
+  switch (segmentedControl.selectedSegmentIndex) {
+    case 0:
+      [self.feedControlDelegate handleFeedSelected:FeedType::kDiscoverFeed];
+      break;
+    case 1:
+      [self.feedControlDelegate handleFeedSelected:FeedType::kFollowingFeed];
+      break;
+    default:
+      return;
+  }
 }
 
 @end

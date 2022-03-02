@@ -16,7 +16,6 @@
 #include "ash/components/arc/mojom/intent_helper.mojom.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -25,8 +24,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
-#include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_service/app_icon/dip_px_util.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -54,6 +51,7 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/permission_utils.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "extensions/grit/extensions_browser_resources.h"
@@ -71,27 +69,9 @@
 
 namespace {
 
-void CompleteWithCompressed(apps::LoadIconCallback callback,
-                            std::vector<uint8_t> data) {
-  if (data.empty()) {
-    std::move(callback).Run(std::make_unique<apps::IconValue>());
-    return;
-  }
-  auto iv = std::make_unique<apps::IconValue>();
-  iv->icon_type = apps::IconType::kCompressed;
-  iv->compressed = std::move(data);
-  iv->is_placeholder_icon = false;
-  std::move(callback).Run(std::move(iv));
-}
-
 void UpdateIconImage(apps::LoadIconCallback callback, apps::IconValuePtr iv) {
   if (iv->icon_type == apps::IconType::kCompressed) {
-    iv->uncompressed.MakeThreadSafe();
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&apps::EncodeImageToPngBytes, iv->uncompressed,
-                       /*rep_icon_scale=*/1.0f),
-        base::BindOnce(&CompleteWithCompressed, std::move(callback)));
+    ConvertUncompressedIconToCompressedIcon(std::move(iv), std::move(callback));
     return;
   }
   std::move(callback).Run(std::move(iv));
@@ -113,9 +93,9 @@ void OnArcAppIconCompletelyLoaded(apps::IconType icon_type,
 
   switch (icon_type) {
     case apps::IconType::kCompressed:
-      FALLTHROUGH;
+      [[fallthrough]];
     case apps::IconType::kUncompressed:
-      FALLTHROUGH;
+      [[fallthrough]];
     case apps::IconType::kStandard: {
       iv->uncompressed =
           icon->is_adaptive_icon()
@@ -139,6 +119,7 @@ void OnArcAppIconCompletelyLoaded(apps::IconType icon_type,
   UpdateIconImage(std::move(callback), std::move(iv));
 }
 
+// TODO(crbug.com/1253250): Remove and use GetPermissionType
 apps::mojom::PermissionType GetAppServicePermissionType(
     arc::mojom::AppPermission arc_permission_type) {
   switch (arc_permission_type) {
@@ -154,6 +135,24 @@ apps::mojom::PermissionType GetAppServicePermissionType(
       return apps::mojom::PermissionType::kContacts;
     case arc::mojom::AppPermission::STORAGE:
       return apps::mojom::PermissionType::kStorage;
+  }
+}
+
+apps::PermissionType GetPermissionType(
+    arc::mojom::AppPermission arc_permission_type) {
+  switch (arc_permission_type) {
+    case arc::mojom::AppPermission::CAMERA:
+      return apps::PermissionType::kCamera;
+    case arc::mojom::AppPermission::LOCATION:
+      return apps::PermissionType::kLocation;
+    case arc::mojom::AppPermission::MICROPHONE:
+      return apps::PermissionType::kMicrophone;
+    case arc::mojom::AppPermission::NOTIFICATIONS:
+      return apps::PermissionType::kNotifications;
+    case arc::mojom::AppPermission::CONTACTS:
+      return apps::PermissionType::kContacts;
+    case arc::mojom::AppPermission::STORAGE:
+      return apps::PermissionType::kStorage;
   }
 }
 
@@ -185,6 +184,7 @@ bool GetArcPermissionType(
   }
 }
 
+// TODO(crbug.com/1253250): Remove and use CreatePermissions
 void UpdateAppPermissions(
     const base::flat_map<arc::mojom::AppPermission,
                          arc::mojom::PermissionStatePtr>& new_permissions,
@@ -199,6 +199,19 @@ void UpdateAppPermissions(
 
     permissions->push_back(std::move(permission));
   }
+}
+
+apps::Permissions CreatePermissions(
+    const base::flat_map<arc::mojom::AppPermission,
+                         arc::mojom::PermissionStatePtr>& new_permissions) {
+  apps::Permissions permissions;
+  for (const auto& new_permission : new_permissions) {
+    permissions.push_back(std::make_unique<apps::Permission>(
+        GetPermissionType(new_permission.first),
+        std::make_unique<apps::PermissionValue>(new_permission.second->granted),
+        new_permission.second->managed));
+  }
+  return permissions;
 }
 
 absl::optional<arc::UserInteractionType> GetUserInterationType(
@@ -567,8 +580,7 @@ void ArcApps::Initialize() {
     instance_registry_observation_.Observe(instance_registry);
   }
 
-  if (base::FeatureList::IsEnabled(ash::features::kWebApkGenerator) &&
-      web_app::AreWebAppsEnabled(profile_)) {
+  if (web_app::AreWebAppsEnabled(profile_)) {
     web_apk_manager_ = std::make_unique<apps::WebApkManager>(profile_);
   }
 
@@ -1212,11 +1224,15 @@ void ArcApps::OnAppLastLaunchTimeUpdated(const std::string& app_id) {
   if (!app_info) {
     return;
   }
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = apps::mojom::AppType::kArc;
-  app->app_id = app_id;
+  apps::mojom::AppPtr mojom_app = apps::mojom::App::New();
+  mojom_app->app_type = apps::mojom::AppType::kArc;
+  mojom_app->app_id = app_id;
+  mojom_app->last_launch_time = app_info->last_launch_time;
+  PublisherBase::Publish(std::move(mojom_app), subscribers_);
+
+  std::unique_ptr<App> app = std::make_unique<App>(AppType::kArc, app_id);
   app->last_launch_time = app_info->last_launch_time;
-  PublisherBase::Publish(std::move(app), subscribers_);
+  AppPublisher::Publish(std::move(app));
 }
 
 void ArcApps::OnPackageInstalled(
@@ -1306,77 +1322,6 @@ void ArcApps::OnIntentFiltersUpdated(
     for (const auto& app_id : prefs->GetAppsForPackage(package_name.value())) {
       GetAppInfoAndPublish(app_id);
     }
-  }
-}
-
-void ArcApps::OnPreferredAppsChanged() {
-  mojo::Remote<apps::mojom::AppService>& app_service = proxy()->AppService();
-  if (!app_service.is_bound()) {
-    return;
-  }
-
-  auto* intent_helper_bridge =
-      arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);
-  if (!intent_helper_bridge) {
-    return;
-  }
-
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
-  if (!prefs) {
-    return;
-  }
-
-  const std::vector<arc::IntentFilter>& added_preferred_apps =
-      intent_helper_bridge->GetAddedPreferredApps();
-
-  for (auto& added_preferred_app : added_preferred_apps) {
-    constexpr bool kFromPublisher = true;
-    // TODO(crbug.com/853604): Currently only handles one App ID per package.
-    // If need to handle multiple activities per package, will need to
-    // update ARC to send through the corresponding activity and ensure this
-    // activity matches with the main_activity that stored in app_service.
-    // Will add an activity field in the arc::mojom::intent_filter.
-    // Also need to make sure this still work with the Chrome set preference
-    // because the intent filter uplifted for each package doesn't contain
-    // activity info.
-    std::string app_id =
-        prefs->GetAppIdByPackageName(added_preferred_app.package_name());
-
-    if (app_id.empty()) {
-      LOG(ERROR) << "Cannot get app id for package "
-                 << added_preferred_app.package_name()
-                 << " to add preferred app.";
-      continue;
-    }
-    app_service->AddPreferredApp(
-        apps::mojom::AppType::kArc, app_id,
-        apps_util::ConvertArcToAppServiceIntentFilter(added_preferred_app),
-        /*intent=*/nullptr, kFromPublisher);
-  }
-
-  const std::vector<arc::IntentFilter>& deleted_preferred_apps =
-      intent_helper_bridge->GetDeletedPreferredApps();
-
-  for (auto& deleted_preferred_app : deleted_preferred_apps) {
-    // TODO(crbug.com/853604): Currently only handles one App ID per package.
-    // If need to handle multiple activities per package, will need to
-    // update ARC to send through the corresponding activity and ensure this
-    // activity matches with the main_activity that stored in app_service.
-    // Will add an activity field in the arc::mojom::intent_filter.
-    // Also need to make sure this still work with the Chrome set preference
-    // because the intent filter uplifted for each package doesn't contain
-    // activity info.
-    std::string app_id =
-        prefs->GetAppIdByPackageName(deleted_preferred_app.package_name());
-    if (app_id.empty()) {
-      LOG(ERROR) << "Cannot get app id by package "
-                 << deleted_preferred_app.package_name()
-                 << " to delete preferred app.";
-      continue;
-    }
-    app_service->RemovePreferredAppForFilter(
-        apps::mojom::AppType::kArc, app_id,
-        apps_util::ConvertArcToAppServiceIntentFilter(deleted_preferred_app));
   }
 }
 
@@ -1573,16 +1518,29 @@ std::unique_ptr<App> ArcApps::CreateApp(
     const std::string& app_id,
     const ArcAppListPrefs::AppInfo& app_info,
     bool update_icon) {
+  auto install_reason = ConvertMojomInstallReasonToInstallReason(
+      GetInstallReason(prefs, app_id, app_info));
   std::unique_ptr<App> app = AppPublisher::MakeApp(
       AppType::kArc, app_id,
       app_info.suspended ? Readiness::kDisabledByPolicy : Readiness::kReady,
-      app_info.name);
+      app_info.name, install_reason,
+      install_reason == InstallReason::kSystem ? InstallSource::kSystem
+                                               : InstallSource::kPlayStore);
 
   app->publisher_id = app_info.package_name;
 
   if (update_icon) {
     app->icon_key = std::move(
         *icon_key_factory_.CreateIconKey(GetIconEffects(app_id, app_info)));
+  }
+
+  app->last_launch_time = app_info.last_launch_time;
+  app->install_time = app_info.install_time;
+
+  std::unique_ptr<ArcAppListPrefs::PackageInfo> package =
+      prefs->GetPackage(app_info.package_name);
+  if (package) {
+    app->permissions = CreatePermissions(package->permissions);
   }
 
   // TODO(crbug.com/1253250): Add other fields for the App struct.

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -178,8 +179,11 @@ bool AreLocalAndRemotePasswordsEqual(
 // merge.
 bool ShouldRecoverPasswordsDuringMerge() {
   // Delete the local undecryptable copy when this is MacOS only.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   return true;
+#elif BUILDFLAG(IS_LINUX)
+  return base::FeatureList::IsEnabled(
+      features::kSyncUndecryptablePasswordsLinux);
 #else
   return false;
 #endif
@@ -314,7 +318,6 @@ absl::optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
   // 3. |F| exists in both the local and the remote models --> both versions
   //    should be merged by accepting the most recently created one, and update
   //    local and remote models accordingly.
-
   base::AutoReset<bool> processing_changes(&is_processing_remote_sync_changes_,
                                            true);
 
@@ -328,7 +331,9 @@ absl::optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
     return syncer::ModelError(FROM_HERE,
                               "Failed to load entries from password store.");
   }
-  if (read_result == FormRetrievalResult::kEncrytionServiceFailure) {
+  if (read_result == FormRetrievalResult::kEncrytionServiceFailure ||
+      read_result ==
+          FormRetrievalResult::kEncryptionServiceFailureWithPartialData) {
     if (!ShouldRecoverPasswordsDuringMerge()) {
       metrics_util::LogPasswordSyncState(
           metrics_util::NOT_SYNCING_FAILED_DECRYPTION);
@@ -795,6 +800,7 @@ void PasswordSyncBridge::ApplyStopSyncChanges(
   }
   if (!password_store_sync_->IsAccountStore()) {
     password_store_sync_->GetMetadataStore()->DeleteAllSyncMetadata();
+    sync_enabled_or_disabled_cb_.Run();
     return;
   }
   // For the account store, the data should be deleted too. So do the following:

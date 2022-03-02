@@ -372,7 +372,7 @@ class AXPosition {
     const AXTreeManager* manager =
         AXTreeManagerMap::GetInstance().GetManager(tree_id());
     if (manager)
-      return manager->GetNodeFromTree(tree_id(), anchor_id());
+      return manager->GetNodeFromTree(anchor_id());
 
     return nullptr;
   }
@@ -4097,10 +4097,18 @@ class AXPosition {
       return std::vector<int32_t>();
     DCHECK(GetAnchor());
 
-    // Embedded object replacement characters are not represented in the
-    // "kWordStarts" attribute so we need to special case them here.
-    if (IsEmptyObjectReplacedByCharacter())
-      return {0};
+    // An embedded object replacement character is exposed in a node's text
+    // representation when a control, such as a text field, is empty. Since the
+    // control has no text, no word start offsets are present in the
+    // `ax::mojom::IntListAttribute::kWordStarts` attribute, so we need to
+    // special case them here.
+    if (IsEmptyObjectReplacedByCharacter()) {
+      // Using braces ensures that the vector will contain the given value, and
+      // not create a vector of size 0.
+      static const base::NoDestructor<std::vector<int32_t>>
+          embedded_word_starts{{0}};
+      return *embedded_word_starts;
+    }
 
     return GetAnchor()->GetIntListAttribute(
         ax::mojom::IntListAttribute::kWordStarts);
@@ -4116,11 +4124,16 @@ class AXPosition {
     //
     // Since the whole text exposed inside of an embedded object is of
     // length 1 (the embedded object replacement character), the word end offset
-    // is positioned at 1. Because we want to treat the embedded object
-    // replacement characters as ordinary characters, it wouldn't be consistent
-    // to assume they have no length and return 0 instead of 1.
-    if (IsEmptyObjectReplacedByCharacter())
-      return {1};
+    // is positioned at 1. Because we want to treat embedded object replacement
+    // characters as ordinary characters, it wouldn't be consistent to assume
+    // they have no length and return 0 instead of 1.
+    if (IsEmptyObjectReplacedByCharacter()) {
+      // Using braces ensures that the vector will contain the given value, and
+      // not create a vector of size 1.
+      static const base::NoDestructor<std::vector<int32_t>> embedded_word_ends{
+          {1}};
+      return *embedded_word_ends;
+    }
 
     return GetAnchor()->GetIntListAttribute(
         ax::mojom::IntListAttribute::kWordEnds);

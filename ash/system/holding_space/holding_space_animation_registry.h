@@ -8,20 +8,30 @@
 #include "ash/ash_export.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
+#include "ash/system/progress_indicator/progress_indicator_animation_registry.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/scoped_observation.h"
 
 namespace ash {
 
+class HoldingSpaceProgressIconAnimation;
 class HoldingSpaceProgressRingAnimation;
 
-// A lazily initialized singleton registry for holding space animations. Since
-// registered animations are owned by the singleton, they can be shared across
-// different UI components as well have a lifetime which is decoupled from UI
-// component lifetime. Note that the singleton may only exist while `Shell` is
-// alive and will automatically delete itself when `Shell` is being destroyed.
-class ASH_EXPORT HoldingSpaceAnimationRegistry : public ShellObserver {
+// A lazily initialized singleton registry for holding space animations.
+//
+// Since registered animations are owned by the singleton, they can be shared
+// across different UI components as well have a lifetime which is decoupled
+// from UI component lifetime. Note that the singleton may only exist while
+// `Shell` is alive and will automatically delete itself when `Shell` is being
+// destroyed.
+//
+// Supported animation types:
+//   * Progress icon animation - see `ProgressIndicatorAnimationRegistry`.
+//   * Progress ring animation - see `ProgressIndicatorAnimationRegistry`.
+class ASH_EXPORT HoldingSpaceAnimationRegistry
+    : public ProgressIndicatorAnimationRegistry,
+      public ShellObserver {
  public:
   HoldingSpaceAnimationRegistry(const HoldingSpaceAnimationRegistry&) = delete;
   HoldingSpaceAnimationRegistry& operator=(
@@ -33,25 +43,17 @@ class ASH_EXPORT HoldingSpaceAnimationRegistry : public ShellObserver {
   // when `Shell` is being destroyed.
   static HoldingSpaceAnimationRegistry* GetInstance();
 
-  using ProgressRingAnimationChangedCallbackList =
-      base::RepeatingCallbackList<void(HoldingSpaceProgressRingAnimation*)>;
-
-  // Adds the specified `callback` to be notified of changes to the progress
-  // ring animation associated with the specified `key`. The `callback` will
-  // continue to receive events so long as both `this` and the returned
-  // subscription exist.
-  ProgressRingAnimationChangedCallbackList::Subscription
-  AddProgressRingAnimationChangedCallbackForKey(
+  // ProgressIndicatorAnimationRegistry:
+  base::CallbackListSubscription AddProgressIconAnimationChangedCallbackForKey(
       const void* key,
-      ProgressRingAnimationChangedCallbackList::CallbackType callback);
-
-  // Returns the progress ring animation registered for the specified `key`.
-  // For cumulative progress, the animation is keyed on a pointer to the holding
-  // space controller. For individual item progress, the animation is keyed on a
-  // pointer to the holding space item itself.
-  // NOTE: This may return `nullptr` if no such animation is registered.
+      ProgressIconAnimationChangedCallbackList::CallbackType callback) override;
+  base::CallbackListSubscription AddProgressRingAnimationChangedCallbackForKey(
+      const void* key,
+      ProgressRingAnimationChangedCallbackList::CallbackType callback) override;
+  HoldingSpaceProgressIconAnimation* GetProgressIconAnimationForKey(
+      const void* key) override;
   HoldingSpaceProgressRingAnimation* GetProgressRingAnimationForKey(
-      const void* key);
+      const void* key) override;
 
  private:
   HoldingSpaceAnimationRegistry();
@@ -59,11 +61,11 @@ class ASH_EXPORT HoldingSpaceAnimationRegistry : public ShellObserver {
   // ShellObserver:
   void OnShellDestroying() override;
 
-  // The delegate responsible for creating and curating progress ring animations
-  // based on holding space model state.
-  class ProgressRingAnimationDelegate;
-  std::unique_ptr<ProgressRingAnimationDelegate>
-      progress_ring_animation_delegate_;
+  // The delegate responsible for creating and curating progress indicator
+  // animations based on holding space model state.
+  class ProgressIndicatorAnimationDelegate;
+  std::unique_ptr<ProgressIndicatorAnimationDelegate>
+      progress_indicator_animation_delegate_;
 
   base::ScopedObservation<Shell,
                           ShellObserver,

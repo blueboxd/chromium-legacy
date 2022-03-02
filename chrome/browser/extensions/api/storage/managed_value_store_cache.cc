@@ -188,9 +188,8 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemasOnFileTaskRunner(
 
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    std::string schema_file;
-    if (!(*it)->manifest()->GetString(
-            manifest_keys::kStorageManagedSchema, &schema_file)) {
+    if (!(*it)->manifest()->FindStringPath(
+            manifest_keys::kStorageManagedSchema)) {
       // TODO(joaodasilva): Remove this. http://crbug.com/325349
       (*components)[(*it)->id()] = policy::Schema();
       continue;
@@ -327,7 +326,7 @@ void ManagedValueStoreCache::OnPolicyUpdated(const policy::PolicyNamespace& ns,
 // static
 policy::PolicyDomain ManagedValueStoreCache::GetPolicyDomain(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  return chromeos::ProfileHelper::IsSigninProfile(profile)
+  return ash::ProfileHelper::IsSigninProfile(profile)
              ? policy::POLICY_DOMAIN_SIGNIN_EXTENSIONS
              : policy::POLICY_DOMAIN_EXTENSIONS;
 #else

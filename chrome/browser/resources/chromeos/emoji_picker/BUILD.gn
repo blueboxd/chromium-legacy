@@ -9,12 +9,14 @@ import("//ui/webui/resources/tools/generate_grd.gni")
 
 component_js_files = [
   "emoji_button.js",
+  "emoji_category_button.js",
   "emoji_group_button.js",
   "emoji_group.js",
   "emoji_picker.js",
   "emoji_search.js",
   "emoji_variants.js",
   "icons.js",
+  "text_group_button.js",
 ]
 
 resources_grd_file = "$target_gen_dir/resources.grd"
@@ -27,6 +29,7 @@ generate_grd("build_grd") {
     ":build_mojo_grdp",
     ":build_preprocessed_grdp",
     ":emoji_data",
+    ":emoticon_data",
   ]
   grd_prefix = "emoji_picker"
   out_grd = resources_grd_file
@@ -34,6 +37,7 @@ generate_grd("build_grd") {
     "constants.js",
     "events.js",
     "index.html",
+    "metadata_extension.js",
     "store.js",
     "types.js",
     "emoji_picker_api_proxy.js",
@@ -119,6 +123,32 @@ action_foreach("emoji_data") {
          ] + rebase_path(keyword_xmls, root_build_dir)
 }
 
+action_foreach("emoticon_data") {
+  script = "tools/emoticon_data.py"
+
+  metadata_json =
+      [ "//third_party/emoji-metadata/src/emoji_14_0_ordering.json" ]
+  keyword_xmls = [
+    # later keywords will override earlier keywords for a particular emoji.
+    "//third_party/cldr/src/common/annotations/en.xml",
+    "//third_party/cldr/src/common/annotations/en_001.xml",
+    "//third_party/cldr/src/common/annotationsDerived/en.xml",
+    "//third_party/cldr/src/common/annotationsDerived/en_001.xml",
+  ]
+  merged_json = "$target_gen_dir/emoticon_{{source_name_part}}.json"
+
+  sources = metadata_json
+  inputs = keyword_xmls
+  outputs = [ merged_json ]
+  args = [
+           "--metadata",
+           "{{source}}",
+           "--output",
+           rebase_path(merged_json, root_build_dir),
+           "--keywords",
+         ] + rebase_path(keyword_xmls, root_build_dir)
+}
+
 js_library("emoji_picker") {
   deps = [
     ":constants",
@@ -128,6 +158,7 @@ js_library("emoji_picker") {
     ":emoji_search",
     ":events",
     ":store",
+    ":text_group_button",
     ":types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
@@ -139,6 +170,14 @@ js_library("emoji_picker_api_proxy") {
   deps = [
     "//chrome/browser/ui/webui/chromeos/emoji:mojo_bindings_webui_js",
     "//ui/webui/resources/js:cr.m",
+  ]
+}
+
+js_library("emoji_category_button") {
+  deps = [
+    ":icons",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
   ]
 }
 
@@ -204,6 +243,14 @@ js_library("store") {
   deps = [ ":types" ]
 }
 
+js_library("text_group_button") {
+  deps = [
+    ":types",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+  ]
+}
+
 js_type_check("closure_compile") {
   is_polymer3 = true
   closure_flags = default_closure_args + mojom_js_args + [
@@ -215,6 +262,7 @@ js_type_check("closure_compile") {
   deps = [
     ":constants",
     ":emoji_button",
+    ":emoji_category_button",
     ":emoji_group",
     ":emoji_group_button",
     ":emoji_picker",
@@ -224,6 +272,7 @@ js_type_check("closure_compile") {
     ":events",
     ":icons",
     ":store",
+    ":text_group_button",
     ":types",
   ]
 }

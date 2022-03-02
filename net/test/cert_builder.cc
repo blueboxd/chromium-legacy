@@ -86,6 +86,24 @@ CertBuilder::CertBuilder(CRYPTO_BUFFER* orig_cert, CertBuilder* issuer)
     : CertBuilder(orig_cert, issuer, /*unique_subject_key_identifier=*/true) {}
 
 // static
+std::unique_ptr<CertBuilder> CertBuilder::FromFile(
+    const base::FilePath& cert_and_key_file,
+    CertBuilder* issuer) {
+  scoped_refptr<X509Certificate> cert = ImportCertFromFile(cert_and_key_file);
+  if (!cert)
+    return nullptr;
+
+  bssl::UniquePtr<EVP_PKEY> private_key(
+      LoadPrivateKeyFromFile(cert_and_key_file));
+  if (!private_key)
+    return nullptr;
+
+  auto builder = base::WrapUnique(new CertBuilder(cert->cert_buffer(), issuer));
+  builder->key_ = std::move(private_key);
+  return builder;
+}
+
+// static
 std::unique_ptr<CertBuilder> CertBuilder::FromStaticCert(CRYPTO_BUFFER* cert,
                                                          EVP_PKEY* key) {
   std::unique_ptr<CertBuilder> builder = base::WrapUnique(
@@ -99,6 +117,21 @@ std::unique_ptr<CertBuilder> CertBuilder::FromStaticCert(CRYPTO_BUFFER* cert,
       x509_util::CryptoBufferAsStringPiece(cert), &subject_tlv));
   builder->subject_tlv_ = std::string(subject_tlv);
   return builder;
+}
+
+// static
+std::unique_ptr<CertBuilder> CertBuilder::FromStaticCertFile(
+    const base::FilePath& cert_and_key_file) {
+  scoped_refptr<X509Certificate> cert = ImportCertFromFile(cert_and_key_file);
+  if (!cert)
+    return nullptr;
+
+  bssl::UniquePtr<EVP_PKEY> private_key(
+      LoadPrivateKeyFromFile(cert_and_key_file));
+  if (!private_key)
+    return nullptr;
+
+  return CertBuilder::FromStaticCert(cert->cert_buffer(), private_key.get());
 }
 
 CertBuilder::~CertBuilder() = default;
@@ -130,6 +163,24 @@ void CertBuilder::CreateSimpleChain(
   (*out_leaf)->SetSubjectAltName(kHostname);
   (*out_leaf)->EraseExtension(CrlDistributionPointsOid());
   (*out_leaf)->EraseExtension(AuthorityInfoAccessOid());
+}
+
+void CertBuilder::CreateSimpleChain(std::unique_ptr<CertBuilder>* out_leaf,
+                                    std::unique_ptr<CertBuilder>* out_root) {
+  const char kHostname[] = "www.example.com";
+  base::FilePath certs_dir = GetTestCertsDirectory();
+
+  auto orig_root = ImportCertFromFile(certs_dir, "root_ca_cert.pem");
+  ASSERT_TRUE(orig_root);
+  auto orig_leaf = ImportCertFromFile(certs_dir, "ok_cert.pem");
+  ASSERT_TRUE(orig_leaf);
+
+  // Build slightly modified variants of |orig_certs|.
+  *out_root = std::make_unique<CertBuilder>(orig_root->cert_buffer(), nullptr);
+
+  *out_leaf =
+      std::make_unique<CertBuilder>(orig_leaf->cert_buffer(), out_root->get());
+  (*out_leaf)->SetSubjectAltName(kHostname);
 }
 
 void CertBuilder::SetExtension(const der::Input& oid,

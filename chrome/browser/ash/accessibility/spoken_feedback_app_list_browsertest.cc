@@ -49,7 +49,7 @@ class TestSearchResult : public ChromeSearchResult {
   TestSearchResult(const std::string& id, double relevance) {
     set_id(id);
     SetTitle(base::UTF8ToUTF16(id));
-    set_relevance(relevance);
+    SetDisplayScore(relevance);
   }
 
   TestSearchResult(const TestSearchResult&) = delete;
@@ -103,7 +103,9 @@ class TestSearchProvider : public app_list::SearchProvider {
     SwapResults(&results);
   }
 
-  ChromeSearchResult::ResultType ResultType() override { return result_type_; }
+  ChromeSearchResult::ResultType ResultType() const override {
+    return result_type_;
+  }
 
   void set_count(size_t count) { count_ = count; }
   void set_best_match_count(size_t count) { best_match_count_ = count; }
@@ -335,6 +337,9 @@ class SpokenFeedbackAppListSearchProductivityLauncherTest
         std::make_unique<app_list::SearchControllerImplNew>(
             app_list_client->GetModelUpdaterForTest(), app_list_client, nullptr,
             browser()->profile());
+    // Disable ranking, which may override the explicitly set relevance scores
+    // and best match status of results.
+    search_controller->disable_ranking_for_test();
     InitializeTestSearchProviders(search_controller.get(), &apps_provider_,
                                   &web_provider_);
     ASSERT_TRUE(apps_provider_);

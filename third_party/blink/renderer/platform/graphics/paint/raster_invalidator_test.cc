@@ -41,9 +41,10 @@ class RasterInvalidatorTest : public testing::Test,
 
   void FinishCycle(const PaintChunkSubset& chunks) {
     ClearGeometryMapperCache();
+    ++sequence_number_;
     for (const auto& chunk : chunks) {
       const_cast<PaintChunk&>(chunk).client_is_just_created = false;
-      chunk.properties.ClearChangedTo(PropertyTreeState::Root());
+      chunk.properties.ClearChangedToRoot(sequence_number_);
     }
   }
 
@@ -53,6 +54,7 @@ class RasterInvalidatorTest : public testing::Test,
   }
 
   RasterInvalidator invalidator_;
+  int sequence_number_ = 1;
 };
 
 INSTANTIATE_PAINT_TEST_SUITE_P(RasterInvalidatorTest);
@@ -165,6 +167,38 @@ TEST_P(RasterInvalidatorTest, LayerOffsetChangeWithCachedSubsequence) {
           ChunkInvalidation(chunks, 0, PaintInvalidationReason::kPaintProperty),
           ChunkInvalidation(chunks, 0, PaintInvalidationReason::kPaintProperty,
                             -new_layer_offset, base::DoNothing())));
+  FinishCycle(chunks);
+}
+
+TEST_P(RasterInvalidatorTest, LayerStateChangeWithCachedSubsequence) {
+  auto t1 = Create2DTranslation(t0(), 100, 50);
+  PropertyTreeState chunk_state(*t1, c0(), e0());
+  PaintChunkSubset chunks(
+      TestPaintArtifact().Chunk(0).Properties(chunk_state).Build());
+
+  invalidator_.Generate(base::DoNothing(), chunks, kDefaultLayerOffset,
+                        kDefaultLayerBounds, DefaultPropertyTreeState());
+  FinishCycle(chunks);
+
+  invalidator_.SetTracksRasterInvalidations(true);
+  auto new_layer_state = chunk_state;
+  PaintChunkSubset new_chunks(TestPaintArtifact()
+                                  .Chunk(0)
+                                  .Properties(chunk_state)
+                                  .IsMovedFromCachedSubsequence()
+                                  .Build());
+
+  invalidator_.Generate(base::DoNothing(), new_chunks, kDefaultLayerOffset,
+                        kDefaultLayerBounds, new_layer_state);
+  // Change of layer state causes change of chunk0's transform to layer.
+  auto old_mapper = [](gfx::Rect& r) { r.Offset(100, 50); };
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(ChunkInvalidation(
+                      chunks, 0, PaintInvalidationReason::kPaintProperty,
+                      -kDefaultLayerOffset, base::BindRepeating(old_mapper)),
+                  ChunkInvalidation(chunks, 0,
+                                    PaintInvalidationReason::kPaintProperty)));
   FinishCycle(chunks);
 }
 

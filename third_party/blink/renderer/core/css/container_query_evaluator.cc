@@ -6,7 +6,7 @@
 #include "third_party/blink/renderer/core/css/container_query.h"
 #include "third_party/blink/renderer/core/css/css_container_values.h"
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
-#include "third_party/blink/renderer/core/css/style_recalc.h"
+#include "third_party/blink/renderer/core/css/style_recalc_context.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -63,9 +63,9 @@ Element* ContainerQueryEvaluator::FindContainer(
 
   // TODO(crbug.com/1213888): Cache results.
   for (Element* element = container; element;
-       element = LayoutTreeBuilderTraversal::ParentElement(*element)) {
+       element = element->ParentOrShadowHostElement()) {
     if (const ComputedStyle* style = element->GetComputedStyle()) {
-      if (style->IsContainerForContainerQueries() &&
+      if (style->IsContainerForContainerQueries(*element) &&
           Matches(*style, container_selector)) {
         return element;
       }

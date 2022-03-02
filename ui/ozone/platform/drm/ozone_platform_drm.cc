@@ -44,8 +44,8 @@
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
 #include "ui/ozone/platform/drm/host/host_drm_device.h"
+#include "ui/ozone/platform/drm/mojom/drm_device.mojom.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
-#include "ui/ozone/public/mojom/drm_device.mojom.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 #include "ui/ozone/public/platform_screen.h"
@@ -188,7 +188,7 @@ class OzonePlatformDrm : public OzonePlatform {
                                                                    usage);
   }
 
-  void InitializeUI(const InitParams& args) override {
+  bool InitializeUI(const InitParams& args) override {
     // Ozone drm can operate in two modes configured at runtime.
     //   1. single-process mode where host and viz components
     //      communicate via in-process mojo. Single-process mode can be single
@@ -228,6 +228,8 @@ class OzonePlatformDrm : public OzonePlatform {
     cursor_factory_ = std::make_unique<BitmapCursorFactory>();
 
     host_drm_device_->SetDisplayManager(display_manager_.get());
+
+    return true;
   }
 
   void InitializeGPU(const InitParams& args) override {

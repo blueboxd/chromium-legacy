@@ -18,6 +18,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/nearby_share/arc_nearby_share_uma.h"
@@ -80,6 +81,12 @@ static int64_t CalculateRequiredSpace(const base::FilePath share_dir,
   return shared_files_size - free_disk_space;
 }
 
+base::FilePath GetUserCacheFilePath(Profile* const profile) {
+  DCHECK(profile);
+  base::FilePath file_path = file_manager::util::GetShareCacheFilePath(profile);
+  return file_path.Append(kArcNearbyShareDirname);
+}
+
 }  // namespace
 
 NearbyShareSessionImpl::NearbyShareSessionImpl(
@@ -124,12 +131,17 @@ NearbyShareSessionImpl::NearbyShareSessionImpl(
 NearbyShareSessionImpl::~NearbyShareSessionImpl() = default;
 
 // static
-base::FilePath NearbyShareSessionImpl::GetUserCacheFilePath(
-    const Profile* profile) {
+void NearbyShareSessionImpl::DeleteShareCacheFilePaths(Profile* const profile) {
   DCHECK(profile);
+
+  // Up until M99, shared files were stored in <user_cache_dir>/.NearbyShare.
+  // We should remove this obsolete directory path if it is still present.
   base::FilePath cache_base_path;
   chrome::GetUserCacheDirectory(profile->GetPath(), &cache_base_path);
-  return cache_base_path.Append(kArcNearbyShareDirname);
+  DeletePathAndFiles(cache_base_path.Append(kArcNearbyShareDirname));
+
+  // Delete the current user cache file path.
+  DeletePathAndFiles(GetUserCacheFilePath(profile));
 }
 
 void NearbyShareSessionImpl::OnNearbyShareClosed(
@@ -226,7 +238,7 @@ apps::mojom::IntentPtr NearbyShareSessionImpl::ConvertShareIntentInfoToIntent()
       return nullptr;
     }
     return apps_util::CreateShareIntentFromFiles(
-        absl::nullopt, share_file_paths, share_file_mime_types, std::string(),
+        profile_, share_file_paths, share_file_mime_types, std::string(),
         share_info_->title);
   }
 
@@ -350,21 +362,8 @@ void NearbyShareSessionImpl::ShowNearbyShareBubbleInArcWindow(
     return;
   }
 
-  backend_task_runner_->PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::BindOnce(&NearbyShareSessionImpl::ConvertShareIntentInfoToIntent,
-                     base::Unretained(this)),
-      base::BindOnce(
-          &NearbyShareSessionImpl::OnConvertedShareIntentInfoToIntent,
-          weak_ptr_factory_.GetWeakPtr()));
-}
+  auto intent = ConvertShareIntentInfoToIntent();
 
-void NearbyShareSessionImpl::OnConvertedShareIntentInfoToIntent(
-    apps::mojom::IntentPtr intent) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(arc_window_);
-
-  DVLOG(1) << __func__;
   if (!intent) {
     LOG(ERROR) << "No share info found.";
     ShowErrorDialog();

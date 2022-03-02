@@ -4,6 +4,7 @@
 
 #include "net/dns/host_resolver.h"
 
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -69,11 +70,8 @@ class FailingRequestImpl : public HostResolver::ResolveHostRequest,
     return *nullopt_result;
   }
 
-  const absl::optional<std::vector<std::string>>& GetDnsAliasResults()
-      const override {
-    static const base::NoDestructor<absl::optional<std::vector<std::string>>>
-        nullopt_result;
-    return *nullopt_result;
+  const std::set<std::string>* GetDnsAliasResults() const override {
+    return nullptr;
   }
 
   ResolveErrorInfo GetResolveErrorInfo() const override {
@@ -225,20 +223,17 @@ HostResolver::CreateStandaloneContextResolver(
 }
 
 // static
-AddressFamily HostResolver::DnsQueryTypeToAddressFamily(
-    DnsQueryType dns_query_type) {
-  switch (dns_query_type) {
-    case DnsQueryType::UNSPECIFIED:
-      return ADDRESS_FAMILY_UNSPECIFIED;
-    case DnsQueryType::A:
-      return ADDRESS_FAMILY_IPV4;
-    case DnsQueryType::AAAA:
-      return ADDRESS_FAMILY_IPV6;
-    default:
-      // |dns_query_type| should be an address type (A or AAAA) or UNSPECIFIED.
-      NOTREACHED();
-      return ADDRESS_FAMILY_UNSPECIFIED;
-  }
+AddressFamily HostResolver::DnsQueryTypeSetToAddressFamily(
+    DnsQueryTypeSet dns_query_types) {
+  DCHECK(HasAddressType(dns_query_types));
+  // If the set of query types contains A and AAAA, defer the choice of address
+  // family. Otherwise, pick the corresponding address family.
+  if (dns_query_types.HasAll({DnsQueryType::A, DnsQueryType::AAAA}))
+    return ADDRESS_FAMILY_UNSPECIFIED;
+  if (dns_query_types.Has(DnsQueryType::AAAA))
+    return ADDRESS_FAMILY_IPV6;
+  DCHECK(dns_query_types.Has(DnsQueryType::A));
+  return ADDRESS_FAMILY_IPV4;
 }
 
 // static
@@ -270,14 +265,7 @@ int HostResolver::SquashErrorCode(int error) {
 std::vector<HostResolverEndpointResult>
 HostResolver::AddressListToEndpointResults(const AddressList& address_list) {
   HostResolverEndpointResult connection_endpoint;
-
   connection_endpoint.ip_endpoints = address_list.endpoints();
-
-  // AddressList always assumes a single alias name. Not completely accurate to
-  // assume it is valid for both address families, but only as inaccurate as
-  // AddressList has always been.
-  connection_endpoint.ipv4_alias_name = address_list.GetCanonicalName();
-  connection_endpoint.ipv6_alias_name = address_list.GetCanonicalName();
 
   std::vector<HostResolverEndpointResult> list;
   list.push_back(std::move(connection_endpoint));

@@ -172,7 +172,10 @@ KeyframeEffect::KeyframeEffect(Element* target,
 
   // fix target for css animations and transitions
   if (target && target->IsPseudoElement()) {
-    target_element_ = target->parentElement();
+    // The |target_element_| is used to target events in script when
+    // animating pseudo elements. This requires using the DOM element that the
+    // pseudo element originates from.
+    target_element_ = DynamicTo<PseudoElement>(target)->OriginatingElement();
     DCHECK(!target_element_->IsPseudoElement());
     target_pseudo_ = target->tagName();
   }
@@ -472,7 +475,7 @@ const CSSProperty** TransformProperties() {
 }  // namespace
 
 bool KeyframeEffect::UpdateBoxSizeAndCheckTransformAxisAlignment(
-    const FloatSize& box_size) {
+    const gfx::SizeF& box_size) {
   static const auto** properties = TransformProperties();
   bool preserves_axis_alignment = true;
   bool has_transform = false;

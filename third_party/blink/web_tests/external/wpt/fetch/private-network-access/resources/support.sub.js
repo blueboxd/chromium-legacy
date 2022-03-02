@@ -128,27 +128,22 @@ function sourceResolveOptions({ server, treatAsPublic }) {
   return options;
 }
 
-// Computes the URL of a preflight handler configured with the given options.
+// Computes options to pass to `resolveUrl()` for `resources/preflight.py`.
 //
 // `server` identifies the server from which to load the resource.
 // `behavior` specifies the behavior of the target server. It may contain:
 //   - `preflight`: The result of calling one of `PreflightBehavior`'s methods.
 //   - `response`: The result of calling one of `ResponseBehavior`'s methods.
-//   - `redirect`: A URL to which the target should redirect GET requests.
-function preflightUrl({ server, behavior }) {
+function targetResolveOptions({ server, behavior }) {
   const options = {...server};
   if (behavior) {
-    const { preflight, response, redirect } = behavior;
+    const { preflight, response } = behavior;
     options.searchParams = {
       ...preflight,
       ...response,
     };
-    if (redirect !== undefined) {
-      options.searchParams.redirect = redirect;
-    }
   }
-
-  return resolveUrl("resources/preflight.py", options);
+  return options;
 }
 
 // Methods generate behavior specifications for how `resources/preflight.py`
@@ -211,7 +206,7 @@ const FetchTestResult = {
 //     // Optional. Passed to `sourceResolveOptions()`.
 //     source,
 //
-//     // Optional. Passed to `preflightUrl()`.
+//     // Optional. Passed to `targetResolveOptions()`.
 //     target,
 //
 //     // Optional. Passed to `fetch()`.
@@ -225,7 +220,8 @@ async function fetchTest(t, { source, target, fetchOptions, expected }) {
   const sourceUrl =
       resolveUrl("resources/fetcher.html", sourceResolveOptions(source));
 
-  const targetUrl = preflightUrl(target);
+  const targetUrl =
+      resolveUrl("resources/preflight.py", targetResolveOptions(target));
 
   const iframe = await appendIframe(t, document, sourceUrl);
   const reply = futureMessage();
@@ -268,7 +264,7 @@ const XhrTestResult = {
 //     // Optional. Passed to `sourceResolveOptions()`.
 //     source,
 //
-//     // Optional. Passed to `preflightUrl()`.
+//     // Optional. Passed to `targetResolveOptions()`.
 //     target,
 //
 //     // Optional. Method to use when sending the request. Defaults to "GET".
@@ -282,7 +278,8 @@ async function xhrTest(t, { source, target, method, expected }) {
   const sourceUrl =
       resolveUrl("resources/xhr-sender.html", sourceResolveOptions(source));
 
-  const targetUrl = preflightUrl(target);
+  const targetUrl =
+      resolveUrl("resources/preflight.py", targetResolveOptions(target));
 
   const iframe = await appendIframe(t, document, sourceUrl);
   const reply = futureMessage();
@@ -350,7 +347,8 @@ async function workerScriptTest(t, { source, target, expected }) {
   const sourceUrl =
       resolveUrl("resources/worker-fetcher.html", sourceResolveOptions(source));
 
-  const targetUrl = preflightUrl(target);
+  const targetUrl =
+      resolveUrl("resources/preflight.py", targetResolveOptions(target));
   targetUrl.searchParams.append("body", "postMessage({ loaded: true })")
   targetUrl.searchParams.append("mime-type", "application/javascript")
 
@@ -369,7 +367,8 @@ async function sharedWorkerScriptTest(t, { source, target, expected }) {
   const sourceUrl = resolveUrl("resources/shared-worker-fetcher.html",
                                sourceResolveOptions(source));
 
-  const targetUrl = preflightUrl(target);
+  const targetUrl =
+      resolveUrl("resources/preflight.py", targetResolveOptions(target));
   targetUrl.searchParams.append(
       "body", "onconnect = (e) => e.ports[0].postMessage({ loaded: true })")
 
@@ -391,7 +390,8 @@ const WorkerFetchTestResult = {
 };
 
 async function workerFetchTest(t, { source, target, expected }) {
-  const targetUrl = preflightUrl(target);
+  const targetUrl =
+      resolveUrl("resources/preflight.py", targetResolveOptions(target));
 
   const sourceUrl =
       resolveUrl("resources/fetcher.js", sourceResolveOptions(source));
@@ -411,7 +411,8 @@ async function workerFetchTest(t, { source, target, expected }) {
 }
 
 async function sharedWorkerFetchTest(t, { source, target, expected }) {
-  const targetUrl = preflightUrl(target);
+  const targetUrl =
+      resolveUrl("resources/preflight.py", targetResolveOptions(target));
 
   const sourceUrl =
       resolveUrl("resources/shared-fetcher.js", sourceResolveOptions(source));

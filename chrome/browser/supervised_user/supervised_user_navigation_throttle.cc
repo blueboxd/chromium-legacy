@@ -80,7 +80,7 @@ int GetHistogramValueForFilteringBehavior(
           // Should never happen, only used for requests from Webview
           NOTREACHED();
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case SupervisedUserURLFilter::INVALID:
       NOTREACHED();
   }
@@ -171,7 +171,7 @@ SupervisedUserNavigationThrottle::CheckURL() {
         skip_manual_parent_filter);
   } else {
     got_result = url_filter_->GetFilteringBehaviorForSubFrameURLWithAsyncChecks(
-        url, navigation_handle()->GetWebContents()->GetURL(),
+        url, navigation_handle()->GetWebContents()->GetVisibleURL(),
         base::BindOnce(&SupervisedUserNavigationThrottle::OnCheckDone,
                        weak_ptr_factory_.GetWeakPtr(), url));
   }

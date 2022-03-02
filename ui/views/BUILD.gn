@@ -609,6 +609,8 @@ component("views") {
       "accessibility/ax_virtual_view_mac.mm",
       "cocoa/drag_drop_client_mac.h",
       "cocoa/drag_drop_client_mac.mm",
+      "cocoa/native_widget_mac_event_monitor.h",
+      "cocoa/native_widget_mac_event_monitor.mm",
       "cocoa/native_widget_mac_ns_window_host.mm",
       "cocoa/text_input_host.h",
       "cocoa/text_input_host.mm",
@@ -980,6 +982,7 @@ source_set("test_support") {
     "//ipc:test_support",
     "//mojo/core/embedder",
     "//skia",
+    "//ui/accessibility",
     "//ui/base",
     "//ui/base:test_support",
     "//ui/base/clipboard:clipboard_test_support",
@@ -1036,7 +1039,6 @@ source_set("test_support") {
       "test/widget_test_aura.cc",
     ]
     deps += [
-      "//ui/accessibility",
       "//ui/aura",
       "//ui/aura:test_support",
       "//ui/wm",
@@ -1434,22 +1436,6 @@ source_set("views_interactive_ui_tests") {
       "//ui/events/platform",
       "//ui/platform_window",
       "//ui/platform_window/wm",
-    ]
-  }
-
-  # TODO(1239521): x11 interactive ui tests should probably have own target.
-  # At the moment, it's impossible to move this test file under X11 directory
-  # as it will result in a gn dependency problem.
-  if (ozone_platform_x11 && !is_chromeos_ash && !is_chromecast) {
-    sources += [
-      "widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
-    ]
-    deps += [
-      "//ui/base/x",
-      "//ui/base/x:test_support",
-      "//ui/gfx/x",
-      "//ui/ozone",
-      "//ui/platform_window/x11",
     ]
   }
 

@@ -122,7 +122,7 @@ bool ChromeOmniboxClient::IsPasteAndGoEnabled() const {
 }
 
 bool ChromeOmniboxClient::IsDefaultSearchProviderEnabled() const {
-  const base::DictionaryValue* url_dict = profile_->GetPrefs()->GetDictionary(
+  const base::Value* url_dict = profile_->GetPrefs()->GetDictionary(
       DefaultSearchManager::kDefaultSearchProviderDataPrefName);
   return !url_dict->FindBoolPath(DefaultSearchManager::kDisabledByPolicy)
               .value_or(false);
@@ -446,4 +446,11 @@ void ChromeOmniboxClient::OnSuccessfulNavigation(
     return;
 
   shortcuts_backend->AddOrUpdateShortcut(text, match);
+}
+
+// static
+void ChromeOmniboxClient::OnFinishedNavigation(Profile* profile) {
+  AutocompleteActionPredictor* action_predictor =
+      predictors::AutocompleteActionPredictorFactory::GetForProfile(profile);
+  action_predictor->OnFinishedNavigation();
 }

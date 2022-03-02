@@ -24,9 +24,9 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/startup/infobar_utils.h"
@@ -164,11 +164,11 @@ class StartupWebAppCreator
     GURL protocol_url;
     base::CommandLine::StringVector args = command_line_.GetArgs();
     for (const auto& arg : args) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       GURL potential_protocol(base::AsStringPiece16(arg));
 #else
       GURL potential_protocol(arg);
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
       // protocol_url is checked for validity later with getting the provider
       // and consulting the os_integration_manager. However because that process
       // has a wait for "on_registry_ready()", `potential_protocol` checks for
@@ -358,7 +358,7 @@ void FinalizeWebAppLaunch(absl::optional<LaunchMode> app_launch_mode,
       break;
     case apps::mojom::LaunchContainer::kLaunchContainerPanelDeprecated:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
     case apps::mojom::LaunchContainer::kLaunchContainerNone:
       DCHECK(!browser->is_type_app());
       mode = LaunchMode::kUnknownWebApp;

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -22,7 +23,7 @@
 namespace blink {
 
 class ReadableStreamBytesConsumer::Fulfilled final
-    : public NewScriptFunction::Callable {
+    : public ScriptFunction::Callable {
  public:
   explicit Fulfilled(ReadableStreamBytesConsumer* consumer)
       : consumer_(consumer) {}
@@ -58,7 +59,7 @@ class ReadableStreamBytesConsumer::Fulfilled final
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(consumer_);
-    NewScriptFunction::Callable::Trace(visitor);
+    ScriptFunction::Callable::Trace(visitor);
   }
 
  private:
@@ -66,7 +67,7 @@ class ReadableStreamBytesConsumer::Fulfilled final
 };
 
 class ReadableStreamBytesConsumer::Rejected final
-    : public NewScriptFunction::Callable {
+    : public ScriptFunction::Callable {
  public:
   explicit Rejected(ReadableStreamBytesConsumer* consumer)
       : consumer_(consumer) {}
@@ -78,7 +79,7 @@ class ReadableStreamBytesConsumer::Rejected final
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(consumer_);
-    NewScriptFunction::Callable::Trace(visitor);
+    ScriptFunction::Callable::Trace(visitor);
   }
 
  private:
@@ -132,9 +133,9 @@ BytesConsumer::Result ReadableStreamBytesConsumer::BeginRead(
       script_promise = ScriptPromise::Reject(script_state_, exception_state);
 
     script_promise
-        .Then(MakeGarbageCollected<NewScriptFunction>(
+        .Then(MakeGarbageCollected<ScriptFunction>(
                   script_state_, MakeGarbageCollected<Fulfilled>(this)),
-              MakeGarbageCollected<NewScriptFunction>(
+              MakeGarbageCollected<ScriptFunction>(
                   script_state_, MakeGarbageCollected<Rejected>(this)))
         .MarkAsHandled();
   }
@@ -174,6 +175,16 @@ void ReadableStreamBytesConsumer::ClearClient() {
 void ReadableStreamBytesConsumer::Cancel() {
   if (state_ == PublicState::kClosed || state_ == PublicState::kErrored)
     return;
+  // BytesConsumer::Cancel can be called with ScriptForbiddenScope (e.g.,
+  // in ExecutionContextLifecycleObserver::ContextDestroyed()). We don't run
+  // ReadableStreamDefaultReader::cancel in such a case.
+  if (!ScriptForbiddenScope::IsScriptForbidden()) {
+    ScriptState::Scope scope(script_state_);
+    ExceptionState exception_state(script_state_->GetIsolate(),
+                                   ExceptionState::kUnknownContext, "", "");
+    reader_->cancel(script_state_, exception_state);
+    // We ignore exceptions as we can do nothing here.
+  }
   state_ = PublicState::kClosed;
   ClearClient();
   reader_ = nullptr;

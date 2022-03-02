@@ -51,24 +51,6 @@ bool ReadLaunchDimension(const extensions::Manifest* manifest,
   return true;
 }
 
-bool HasValidComponentBookmarkAppURL(const GURL& url) {
-  // For component Bookmark Apps we additionally accept chrome:// and
-  // chrome-untrusted://.
-  //
-  // Making chrome-untrusted:// work with URLPattern has many side-effects e.g.
-  // it makes chrome-untrusted:// URLs scriptable. Given that
-  // chrome-untrusted:// support is only needed temporarily until Bookmark Apps
-  // are deprecated, we simply check the parsed URL scheme, rather than adding
-  // chrome-untrusted:// to URLPattern and dealing with all the side-effects.
-  if (url.SchemeIs(content::kChromeUIScheme))
-    return true;
-  if (url.SchemeIs(content::kChromeUIUntrustedScheme))
-    return true;
-
-  URLPattern pattern(Extension::kValidBookmarkAppSchemes);
-  return pattern.IsValidScheme(url.scheme());
-}
-
 static base::LazyInstance<AppLaunchInfo>::DestructorAtExit
     g_empty_app_launch_info = LAZY_INSTANCE_INITIALIZER;
 
@@ -81,7 +63,7 @@ const AppLaunchInfo& GetAppLaunchInfo(const Extension* extension) {
 }  // namespace
 
 AppLaunchInfo::AppLaunchInfo()
-    : launch_container_(LaunchContainer::kLaunchContainerTab),
+    : launch_container_(apps::mojom::LaunchContainer::kLaunchContainerTab),
       launch_width_(0),
       launch_height_(0) {}
 
@@ -100,7 +82,7 @@ const GURL& AppLaunchInfo::GetLaunchWebURL(const Extension* extension) {
 }
 
 // static
-extensions::LaunchContainer AppLaunchInfo::GetLaunchContainer(
+apps::mojom::LaunchContainer AppLaunchInfo::GetLaunchContainer(
     const Extension* extension) {
   return GetAppLaunchInfo(extension).launch_container_;
 }
@@ -185,27 +167,10 @@ bool AppLaunchInfo::LoadLaunchURL(Extension* extension, std::u16string* error) {
       return false;
     }
 
-    if (!extension->from_bookmark()) {
-      URLPattern pattern(Extension::kValidWebExtentSchemes);
-      // For non-Bookmark Apps, we only accept kValidWebExtentSchemes.
-      if (!pattern.IsValidScheme(url.scheme())) {
-        set_launch_web_url_error();
-        return false;
-      }
-    } else if (extension->location() !=
-               mojom::ManifestLocation::kExternalComponent) {
-      // For non-component Bookmark Apps we only accept
-      // kValidBookmarkAppSchemes.
-      URLPattern pattern(Extension::kValidBookmarkAppSchemes);
-      if (!pattern.IsValidScheme(url.scheme())) {
-        set_launch_web_url_error();
-        return false;
-      }
-    } else {
-      if (!HasValidComponentBookmarkAppURL(url)) {
-        set_launch_web_url_error();
-        return false;
-      }
+    URLPattern pattern(Extension::kValidWebExtentSchemes);
+    if (!pattern.IsValidScheme(url.scheme())) {
+      set_launch_web_url_error();
+      return false;
     }
 
     launch_web_url_ = url;
@@ -221,10 +186,7 @@ bool AppLaunchInfo::LoadLaunchURL(Extension* extension, std::u16string* error) {
   }
 
   // If there is no extent, we default the extent based on the launch URL.
-  // Skip this step if the extension is from a bookmark app, as they are
-  // permissionless.
-  if (extension->web_extent().is_empty() && !launch_web_url_.is_empty() &&
-      !extension->from_bookmark()) {
+  if (extension->web_extent().is_empty() && !launch_web_url_.is_empty()) {
     URLPattern pattern(Extension::kValidWebExtentSchemes);
     if (!pattern.SetScheme("*")) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -278,9 +240,10 @@ bool AppLaunchInfo::LoadLaunchContainer(Extension* extension,
       tmp_launcher_container->GetString();
 
   if (launch_container_string == values::kLaunchContainerPanelDeprecated) {
-    launch_container_ = LaunchContainer::kLaunchContainerPanelDeprecated;
+    launch_container_ =
+        apps::mojom::LaunchContainer::kLaunchContainerPanelDeprecated;
   } else if (launch_container_string == values::kLaunchContainerTab) {
-    launch_container_ = LaunchContainer::kLaunchContainerTab;
+    launch_container_ = apps::mojom::LaunchContainer::kLaunchContainerTab;
   } else {
     *error = errors::kInvalidLaunchContainer;
     return false;
@@ -289,7 +252,8 @@ bool AppLaunchInfo::LoadLaunchContainer(Extension* extension,
   // TODO(manucornet): Remove this special behavior now that panels are
   // deprecated.
   bool can_specify_initial_size =
-      launch_container_ == LaunchContainer::kLaunchContainerPanelDeprecated;
+      launch_container_ ==
+      apps::mojom::LaunchContainer::kLaunchContainerPanelDeprecated;
 
   // Validate the container width if present.
   if (!ReadLaunchDimension(extension->manifest(),

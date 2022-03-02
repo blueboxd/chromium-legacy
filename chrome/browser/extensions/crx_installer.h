@@ -376,9 +376,6 @@ class CrxInstaller : public SandboxedUnpackerClient, public ProfileObserver {
 
   // Prevent Profile destruction until the CrxInstaller is done.
   std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive_;
-  // ... but |profile_| could still get destroyed early, if Chrome shuts down
-  // completely. We need to perform some cleanup if that happens.
-  base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};
 
   // The extension being installed.
   scoped_refptr<const Extension> extension_;

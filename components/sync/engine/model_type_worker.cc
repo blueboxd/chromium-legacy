@@ -78,7 +78,7 @@ void AdaptClientTagForFullUpdateData(ModelType model_type,
   // entities. This code manually asks the bridge to create the client tags for
   // each entity, so that we can use ClientTagBasedModelTypeProcessor for
   // AUTOFILL_WALLET_DATA or AUTOFILL_WALLET_OFFER.
-  if (data->parent_id == "0") {
+  if (data->legacy_parent_id == "0") {
     // Ignore the permanent root node as that one should have no client tag
     // hash.
     return;
@@ -434,7 +434,7 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   data.creation_time = ProtoTimeToTime(update_entity.ctime());
   data.modification_time = ProtoTimeToTime(update_entity.mtime());
   data.name = update_entity.name();
-  data.parent_id = update_entity.parent_id_string();
+  data.legacy_parent_id = update_entity.parent_id_string();
   data.server_defined_unique_tag = update_entity.server_defined_unique_tag();
 
   // Populate |originator_cache_guid| and |originator_client_item_id|. This is
@@ -450,6 +450,10 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     AdaptTitleForBookmark(update_entity, &data.specifics,
                           specifics_were_encrypted);
     AdaptGuidForBookmark(update_entity, &data.specifics);
+    // Note that the parent GUID in specifics cannot be adapted/populated here,
+    // because the logic requires access to tracked entities. Hence, it is
+    // done by BookmarkModelTypeProcessor, with logic implemented in
+    // components/sync_bookmarks/parent_guid_preprocessing.cc.
   } else if (model_type == AUTOFILL_WALLET_DATA ||
              model_type == AUTOFILL_WALLET_OFFER) {
     AdaptClientTagForFullUpdateData(model_type, &data);
@@ -469,11 +473,11 @@ void ModelTypeWorker::ApplyUpdates(StatusController* status) {
   if (!entries_pending_decryption_.empty() &&
       (!encryption_enabled_ || cryptographer_->CanEncrypt())) {
     DCHECK(BlockForEncryption());
-    for (auto& key_and_info : unknown_encryption_keys_by_name_) {
-      key_and_info.second.get_updates_while_should_have_been_known++;
+    for (auto& [key, info] : unknown_encryption_keys_by_name_) {
+      info.get_updates_while_should_have_been_known++;
       // If the key is now missing for too long, drop pending updates encrypted
       // with it. This eventually unblocks a worker having undecryptable data.
-      MaybeDropPendingUpdatesEncryptedWith(key_and_info.first);
+      MaybeDropPendingUpdatesEncryptedWith(key);
     }
   }
 
@@ -497,7 +501,7 @@ void ModelTypeWorker::SendPendingUpdatesToProcessorIfReady() {
          !model_type_state_.encryption_key_name().empty());
   DCHECK(entries_pending_decryption_.empty());
 
-  DVLOG(1) << ModelTypeToString(type_) << ": "
+  DVLOG(1) << ModelTypeToDebugString(type_) << ": "
            << base::StringPrintf("Delivering %" PRIuS " applicable updates.",
                                  pending_updates_.size());
 
@@ -655,7 +659,7 @@ bool ModelTypeWorker::UpdateTypeEncryptionKeyName() {
     if (model_type_state_.encryption_key_name().empty()) {
       return false;
     }
-    DLOG(WARNING) << ModelTypeToString(type_)
+    DLOG(WARNING) << ModelTypeToDebugString(type_)
                   << " : Had encryption disabled but non-empty encryption key "
                   << model_type_state_.encryption_key_name()
                   << ". Setting key to empty.";
@@ -671,7 +675,7 @@ bool ModelTypeWorker::UpdateTypeEncryptionKeyName() {
 
   std::string default_key_name = cryptographer_->GetDefaultEncryptionKeyName();
   DCHECK(!default_key_name.empty());
-  DVLOG(1) << ModelTypeToString(type_) << ": Updating encryption key "
+  DVLOG(1) << ModelTypeToDebugString(type_) << ": Updating encryption key "
            << model_type_state_.encryption_key_name() << " -> "
            << default_key_name;
   model_type_state_.set_encryption_key_name(default_key_name);
@@ -734,9 +738,9 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnServerId() {
     }
     // Try to insert. If we already saw an item with the same server id,
     // this will fail but give us its iterator.
-    auto it_and_success =
+    auto [it, success] =
         id_to_index.emplace(candidate.entity.id, pending_updates_.size());
-    if (it_and_success.second) {
+    if (success) {
       // New server id, append at the end. Note that we already inserted
       // the correct index (|pending_updates_.size()|) above.
       pending_updates_.push_back(std::move(candidate));
@@ -745,7 +749,7 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnServerId() {
 
     // Duplicate! Overwrite the existing update if |candidate| has a more recent
     // version.
-    const size_t existing_index = it_and_success.first->second;
+    const size_t existing_index = it->second;
     UpdateResponseData& existing_update = pending_updates_[existing_index];
     if (candidate.response_version >= existing_update.response_version) {
       existing_update = std::move(candidate);
@@ -767,9 +771,9 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnClientTagHash() {
     }
     // Try to insert. If we already saw an item with the same client tag hash,
     // this will fail but give us its iterator.
-    auto it_and_success = tag_to_index.emplace(candidate.entity.client_tag_hash,
-                                               pending_updates_.size());
-    if (it_and_success.second) {
+    auto [it, success] = tag_to_index.emplace(candidate.entity.client_tag_hash,
+                                              pending_updates_.size());
+    if (success) {
       // New client tag hash, append at the end. Note that we already inserted
       // the correct index (|pending_updates_.size()|) above.
       pending_updates_.push_back(std::move(candidate));
@@ -778,7 +782,7 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnClientTagHash() {
 
     // Duplicate! Overwrite the existing update if |candidate| has a more recent
     // version.
-    const size_t existing_index = it_and_success.first->second;
+    const size_t existing_index = it->second;
     UpdateResponseData& existing_update = pending_updates_[existing_index];
     if (candidate.response_version >= existing_update.response_version) {
       existing_update = std::move(candidate);
@@ -803,10 +807,10 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnOriginatorClientItemId() {
     }
     // Try to insert. If we already saw an item with the same originator item
     // ID, this will fail but give us its iterator.
-    auto it_and_success = id_to_index.emplace(
+    auto [it, success] = id_to_index.emplace(
         base::ToLowerASCII(candidate.entity.originator_client_item_id),
         pending_updates_.size());
-    if (it_and_success.second) {
+    if (success) {
       // New item ID, append at the end. Note that we already inserted the
       // correct index (|pending_updates_.size()|) above.
       pending_updates_.push_back(std::move(candidate));
@@ -815,7 +819,7 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnOriginatorClientItemId() {
 
     // Duplicate! Overwrite the existing update if |candidate| has a more recent
     // version.
-    const size_t existing_index = it_and_success.first->second;
+    const size_t existing_index = it->second;
     UpdateResponseData& existing_update = pending_updates_[existing_index];
     if (candidate.response_version >= existing_update.response_version) {
       existing_update = std::move(candidate);
@@ -864,8 +868,8 @@ void ModelTypeWorker::MaybeDropPendingUpdatesEncryptedWith(
 std::vector<ModelTypeWorker::UnknownEncryptionKeyInfo>
 ModelTypeWorker::RemoveKeysNoLongerUnknown() {
   std::set<std::string> keys_blocking_updates;
-  for (const auto& id_and_update : entries_pending_decryption_) {
-    const std::string key_name = GetEncryptionKeyName(id_and_update.second);
+  for (const auto& [id, update] : entries_pending_decryption_) {
+    const std::string key_name = GetEncryptionKeyName(update);
     DCHECK(!key_name.empty());
     keys_blocking_updates.insert(key_name);
   }

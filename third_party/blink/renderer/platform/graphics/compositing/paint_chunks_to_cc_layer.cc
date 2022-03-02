@@ -342,8 +342,8 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode& target_clip) {
     if (!state_stack_.size() || state_stack_.back().type != StateEntry::kClip) {
       // TODO(crbug.com/803649): We still have clip hierarchy issues with
       // fragment clips. See crbug.com/1240080 for the test case. Will change
-      // the above condition to DCHECK after both CompositeAfterPaint and
-      // LayoutNGBlockFragmentation are fully launched.
+      // the above condition to DCHECK after LayoutNGBlockFragmentation is fully
+      // launched.
 #if DCHECK_IS_ON()
       DLOG(ERROR) << "Error: Chunk has a clip that escaped its layer's or "
                   << "effect's clip.\ntarget_clip:\n"
@@ -459,8 +459,8 @@ void ConversionContext::SwitchToEffect(
     if (!state_stack_.size()) {
       // TODO(crbug.com/803649): We still have clip hierarchy issues with
       // fragment clips. See crbug.com/1240080 for the test case. Will change
-      // the above condition to DCHECK after both CompositeAfterPaint and
-      // LayoutNGBlockFragmentation are fully launched.
+      // the above condition to DCHECK after LayoutNGBlockFragmentation is fully
+      // launched.
 #if DCHECK_IS_ON()
       DLOG(ERROR) << "Error: Chunk has an effect that escapes layer's effect.\n"
                   << "target_effect:\n"
@@ -542,7 +542,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
     // alpha value, but that breaks slimming paint reftests.
     auto alpha = base::ClampFloor<uint8_t>(255 * effect.Opacity());
     if (has_other_effects) {
-      PaintFlags flags;
+      cc::PaintFlags flags;
       flags.setBlendMode(effect.BlendMode());
       flags.setAlpha(alpha);
       save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &flags);
@@ -554,7 +554,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
     // The size parameter is only used to computed the origin of zoom
     // operation, which we never generate.
     gfx::SizeF empty;
-    PaintFlags filter_flags;
+    cc::PaintFlags filter_flags;
     filter_flags.setImageFilter(cc::RenderSurfaceFilters::BuildImageFilter(
         effect.Filter().AsCcFilterOperations(), empty));
     save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &filter_flags);
@@ -911,20 +911,15 @@ static void UpdateNonFastScrollableRegion(
     return;
 
   // Skip the scroll hit test rect if it is for scrolling this cc::Layer.
-  // This is only needed for CompositeAfterPaint because
-  // pre-CompositeAfterPaint does not paint scroll hit test data for
-  // composited scrollers.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    if (const auto scroll_translation = hit_test_data.scroll_translation) {
-      const auto* scroll_node = scroll_translation->ScrollNode();
-      DCHECK(scroll_node);
-      // TODO(crbug.com/1222613): Remove this when we fix the root cause.
-      if (!scroll_node)
-        return;
-      auto scroll_element_id = scroll_node->GetCompositorElementId();
-      if (layer.element_id() == scroll_element_id)
-        return;
-    }
+  if (const auto scroll_translation = hit_test_data.scroll_translation) {
+    const auto* scroll_node = scroll_translation->ScrollNode();
+    DCHECK(scroll_node);
+    // TODO(crbug.com/1222613): Remove this when we fix the root cause.
+    if (!scroll_node)
+      return;
+    auto scroll_element_id = scroll_node->GetCompositorElementId();
+    if (layer.element_id() == scroll_element_id)
+      return;
   }
 
   FloatClipRect rect(gfx::RectF(hit_test_data.scroll_hit_test_rect));

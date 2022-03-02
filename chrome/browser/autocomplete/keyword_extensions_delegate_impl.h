@@ -17,9 +17,8 @@
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/keyword_extensions_delegate.h"
 #include "components/omnibox/browser/keyword_provider.h"
-#include "components/omnibox/browser/omnibox_watcher.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "components/omnibox/browser/omnibox_input_watcher.h"
+#include "components/omnibox/browser/omnibox_suggestions_watcher.h"
 #include "extensions/buildflags/buildflags.h"
 
 #if !BUILDFLAG(ENABLE_EXTENSIONS)
@@ -28,9 +27,10 @@
 
 class Profile;
 
-class KeywordExtensionsDelegateImpl : public KeywordExtensionsDelegate,
-                                      public content::NotificationObserver,
-                                      public OmniboxWatcher::Observer {
+class KeywordExtensionsDelegateImpl
+    : public KeywordExtensionsDelegate,
+      public OmniboxInputWatcher::Observer,
+      public OmniboxSuggestionsWatcher::Observer {
  public:
   KeywordExtensionsDelegateImpl(Profile* profile, KeywordProvider* provider);
 
@@ -55,13 +55,12 @@ class KeywordExtensionsDelegateImpl : public KeywordExtensionsDelegate,
   void EnterExtensionKeywordMode(const std::string& extension_id) override;
   void MaybeEndExtensionKeywordMode() override;
 
-  // OmniboxWatcher::Observer:
+  // OmniboxInputWatcher::Observer:
   void OnOmniboxInputEntered() override;
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // OmniboxSuggestionsWatcher::Observer:
+  void OnOmniboxSuggestionsReady(
+      extensions::api::omnibox::SendSuggestions::Params* suggestions) override;
+  void OnOmniboxDefaultSuggestionChanged() override;
 
   ACMatches* matches() { return &provider_->matches_; }
   void set_done(bool done) {
@@ -93,14 +92,15 @@ class KeywordExtensionsDelegateImpl : public KeywordExtensionsDelegate,
   // The owner of this class.
   raw_ptr<KeywordProvider> provider_;
 
-  content::NotificationRegistrar registrar_;
-
   // We need our input IDs to be unique across all profiles, so we keep a global
   // UID that each provider uses.
   static int global_input_uid_;
 
-  base::ScopedObservation<OmniboxWatcher, OmniboxWatcher::Observer>
-      omnibox_observation_{this};
+  base::ScopedObservation<OmniboxInputWatcher, OmniboxInputWatcher::Observer>
+      omnibox_input_observation_{this};
+  base::ScopedObservation<OmniboxSuggestionsWatcher,
+                          OmniboxSuggestionsWatcher::Observer>
+      omnibox_suggestions_observation_{this};
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_KEYWORD_EXTENSIONS_DELEGATE_IMPL_H_

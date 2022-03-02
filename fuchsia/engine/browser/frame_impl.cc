@@ -326,8 +326,10 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
 
   // TODO(http://crbug.com/1254073): Deprecate autoplay_policy in
   // CreateFrameParams.
-  if (params.has_autoplay_policy())
-    content_area_settings_.set_autoplay_policy(params.autoplay_policy());
+  if (params_for_popups_.has_autoplay_policy()) {
+    content_area_settings_.set_autoplay_policy(
+        params_for_popups_.autoplay_policy());
+  }
 }
 
 FrameImpl::~FrameImpl() {
@@ -833,7 +835,7 @@ void FrameImpl::PostMessage(std::string origin,
 
 void FrameImpl::SetNavigationEventListener(
     fidl::InterfaceHandle<fuchsia::web::NavigationEventListener> listener) {
-  SetNavigationEventListener2(std::move(listener), {});
+  SetNavigationEventListener2(std::move(listener), /*flags=*/{});
 }
 
 void FrameImpl::SetNavigationEventListener2(
@@ -1272,9 +1274,6 @@ bool FrameImpl::CanOverscrollContent() {
 
 void FrameImpl::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage()) {
     return;

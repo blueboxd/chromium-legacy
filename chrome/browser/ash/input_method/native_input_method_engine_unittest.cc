@@ -26,7 +26,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/ash/fake_ime_keyboard.h"
 #include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/ime_keyboard.h"
 #include "ui/base/ime/ash/input_method_ash.h"
 #include "ui/base/ime/ash/mock_ime_input_context_handler.h"
 #include "ui/base/ime/ash/mock_input_method_manager.h"
@@ -51,6 +53,7 @@ using ::testing::StrictMock;
 
 constexpr char kEngineIdUs[] = "xkb:us::eng";
 constexpr char kEngineIdEs[] = "xkb:es::spa";
+constexpr char kEngineIdPinyin[] = "zh-t-i0-pinyin";
 
 class FakeSuggesterSwitch : public AssistiveSuggesterSwitch {
  public:
@@ -117,18 +120,25 @@ class MockInputMethod : public ime::mojom::InputMethod {
   mojo::Receiver<ime::mojom::InputMethod> receiver_{this};
 };
 
-void SetPhysicalTypingAutocorrectEnabled(Profile& profile, bool enabled) {
+void SetInputMethodOptions(Profile& profile,
+                           bool autocorrect_enabled,
+                           bool predictive_writing_enabled) {
   base::Value input_method_setting(base::Value::Type::DICTIONARY);
   input_method_setting.SetPath(
       std::string(kEngineIdUs) + ".physicalKeyboardAutoCorrectionLevel",
-      base::Value(enabled ? 1 : 0));
+      base::Value(autocorrect_enabled ? 1 : 0));
+  input_method_setting.SetPath(
+      std::string(kEngineIdUs) + ".physicalKeyboardEnablePredictiveWriting",
+      base::Value(predictive_writing_enabled));
   profile.GetPrefs()->Set(::prefs::kLanguageInputMethodSpecificSettings,
                           input_method_setting);
 }
 
-void SetPhysicalTypingPredictiveWritingEnabled(Profile& profile, bool enabled) {
-  profile.GetPrefs()->SetBoolean(prefs::kAssistPredictiveWritingEnabled,
-                                 enabled);
+void SetPinyinLayoutPrefs(Profile& profile, const std::string& layout) {
+  base::Value input_method_setting(base::Value::Type::DICTIONARY);
+  input_method_setting.SetStringPath("pinyin.xkbLayout", layout);
+  profile.GetPrefs()->Set(::prefs::kLanguageInputMethodSpecificSettings,
+                          input_method_setting);
 }
 
 class TestInputEngineManager : public ime::mojom::InputEngineManager {
@@ -172,20 +182,18 @@ class TestInputMethodManager : public MockInputMethodManager {
     receiver_.Bind(std::move(receiver));
   }
 
+  ImeKeyboard* GetImeKeyboard() override { return &ime_keyboard_; }
+
  private:
+  FakeImeKeyboard ime_keyboard_;
   TestInputEngineManager test_input_engine_manager_;
   mojo::Receiver<ime::mojom::InputEngineManager> receiver_;
 };
 
-// TODO(crbug.com/1148157): Refactor NativeInputMethodEngine etc. to avoid
-// hidden dependencies on globals such as ImeBridge.
 class NativeInputMethodEngineTest : public ::testing::Test {
  public:
   void SetUp() override {
     EnableDefaultFeatureList();
-
-    // Needed by NativeInputMethodEngine to interact with the input field.
-    ui::IMEBridge::Initialize();
 
     // Needed by NativeInputMethodEngine for the virtual keyboard.
     keyboard_controller_client_test_helper_ =
@@ -205,6 +213,7 @@ class NativeInputMethodEngineTest : public ::testing::Test {
 
   void EnableDefaultFeatureList() {
     EnableFeatureList({
+        features::kSystemChinesePhysicalTyping,
         features::kAssistPersonalInfo,
         features::kAssistPersonalInfoEmail,
         features::kAssistPersonalInfoName,
@@ -242,8 +251,8 @@ class NativeInputMethodEngineTest : public ::testing::Test {
 TEST_F(NativeInputMethodEngineTest,
        DoesNotLaunchImeServiceIfAutocorrectAndPredictiveWritingAreOff) {
   TestingProfile testing_profile;
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, false);
-  SetPhysicalTypingPredictiveWritingEnabled(testing_profile, false);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/false,
+                        /*predictive_writing_enabled=*/false);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -260,8 +269,8 @@ TEST_F(NativeInputMethodEngineTest,
 
 TEST_F(NativeInputMethodEngineTest, LaunchesImeServiceIfAutocorrectIsOn) {
   TestingProfile testing_profile;
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, true);
-  SetPhysicalTypingPredictiveWritingEnabled(testing_profile, false);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/true,
+                        /*predictive_writing_enabled=*/false);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -279,8 +288,8 @@ TEST_F(NativeInputMethodEngineTest, LaunchesImeServiceIfAutocorrectIsOn) {
 TEST_F(NativeInputMethodEngineTest,
        PredictiveWritingDoesNotLaunchImeServiceWithMultiWordFlagDisabled) {
   TestingProfile testing_profile;
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, false);
-  SetPhysicalTypingPredictiveWritingEnabled(testing_profile, true);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/false,
+                        /*predictive_writing_enabled=*/true);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -299,8 +308,8 @@ TEST_F(NativeInputMethodEngineTest,
        PredictiveWritingDoesNotLaunchImeServiceWithNonEnUsEngineId) {
   TestingProfile testing_profile;
   EnableDefaultFeatureListWithMultiWord();
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, false);
-  SetPhysicalTypingPredictiveWritingEnabled(testing_profile, true);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/false,
+                        /*predictive_writing_enabled=*/true);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -319,8 +328,8 @@ TEST_F(NativeInputMethodEngineTest,
        PredictiveWritingDoesNotLaunchImeServiceWithLacrosEnabled) {
   TestingProfile testing_profile;
   EnableDefaultFeatureListWithMultiWordAndLacros();
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, false);
-  SetPhysicalTypingPredictiveWritingEnabled(testing_profile, true);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/false,
+                        /*predictive_writing_enabled=*/true);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -339,8 +348,8 @@ TEST_F(NativeInputMethodEngineTest,
        PredictiveWritingLaunchesImeServiceWithEnglishEngineId) {
   TestingProfile testing_profile;
   EnableDefaultFeatureListWithMultiWord();
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, false);
-  SetPhysicalTypingPredictiveWritingEnabled(testing_profile, true);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/false,
+                        /*predictive_writing_enabled=*/true);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -365,9 +374,11 @@ TEST_F(NativeInputMethodEngineTest, TogglesImeServiceWhenAutocorrectChanges) {
                     /*extension_id=*/"", &testing_profile);
   engine.Enable(kEngineIdUs);
 
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, true);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/true,
+                        /*predictive_writing_enabled=*/false);
   EXPECT_TRUE(engine.IsConnectedForTesting());
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, false);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/false,
+                        /*predictive_writing_enabled=*/false);
   EXPECT_FALSE(engine.IsConnectedForTesting());
 
   InputMethodManager::Shutdown();
@@ -375,7 +386,8 @@ TEST_F(NativeInputMethodEngineTest, TogglesImeServiceWhenAutocorrectChanges) {
 
 TEST_F(NativeInputMethodEngineTest, EnableInitializesConnection) {
   TestingProfile testing_profile;
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, true);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/true,
+                        /*predictive_writing_enabled=*/false);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -395,7 +407,8 @@ TEST_F(NativeInputMethodEngineTest, EnableInitializesConnection) {
 
 TEST_F(NativeInputMethodEngineTest, FocusCallsRightMojoFunctions) {
   TestingProfile testing_profile;
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, true);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/true,
+                        /*predictive_writing_enabled=*/false);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -435,11 +448,37 @@ TEST_F(NativeInputMethodEngineTest, FocusCallsRightMojoFunctions) {
   InputMethodManager::Shutdown();
 }
 
+TEST_F(NativeInputMethodEngineTest, FocusUpdatesXkbLayout) {
+  TestingProfile testing_profile;
+  SetPinyinLayoutPrefs(testing_profile, "Colemak");
+
+  testing::StrictMock<MockInputMethod> mock_input_method;
+  InputMethodManager::Initialize(
+      new TestInputMethodManager(&mock_input_method));
+  NativeInputMethodEngine engine;
+  engine.Initialize(std::make_unique<StubInputMethodEngineObserver>(),
+                    /*extension_id=*/"", &testing_profile);
+
+  ui::IMEEngineHandlerInterface::InputContext input_context(
+      ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
+      ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_MOUSE,
+      /*should_do_learning=*/true);
+  engine.Enable(kEngineIdPinyin);
+  engine.FocusIn(input_context);
+
+  EXPECT_EQ(InputMethodManager::Get()
+                ->GetImeKeyboard()
+                ->GetCurrentKeyboardLayoutName(),
+            "us(colemak)");
+
+  InputMethodManager::Shutdown();
+}
+
 TEST_F(NativeInputMethodEngineTest,
        FocusCallsPassPredictiveWritingPrefWhenEnabled) {
   TestingProfile testing_profile;
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, true);
-  SetPhysicalTypingPredictiveWritingEnabled(testing_profile, true);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/true,
+                        /*predictive_writing_enabled=*/true);
   EnableDefaultFeatureListWithMultiWord();
 
   testing::StrictMock<MockInputMethod> mock_input_method;
@@ -483,7 +522,8 @@ TEST_F(NativeInputMethodEngineTest,
 
 TEST_F(NativeInputMethodEngineTest, HandleAutocorrectChangesAutocorrectRange) {
   TestingProfile testing_profile;
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, true);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/true,
+                        /*predictive_writing_enabled=*/false);
 
   testing::NiceMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -513,7 +553,8 @@ TEST_F(NativeInputMethodEngineTest, HandleAutocorrectChangesAutocorrectRange) {
 TEST_F(NativeInputMethodEngineTest,
        SurroundingTextChangeConvertsToUtf8Correctly) {
   TestingProfile testing_profile;
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, true);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/true,
+                        /*predictive_writing_enabled=*/false);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -554,7 +595,8 @@ TEST_F(NativeInputMethodEngineTest,
 
 TEST_F(NativeInputMethodEngineTest, ProcessesDeadKeysCorrectly) {
   TestingProfile testing_profile;
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, true);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/true,
+                        /*predictive_writing_enabled=*/false);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -609,7 +651,8 @@ TEST_F(NativeInputMethodEngineTest, ProcessesDeadKeysCorrectly) {
 
 TEST_F(NativeInputMethodEngineTest, ProcessesNamedKeysCorrectly) {
   TestingProfile testing_profile;
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, true);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/true,
+                        /*predictive_writing_enabled=*/false);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -665,7 +708,8 @@ TEST_F(NativeInputMethodEngineTest, ProcessesNamedKeysCorrectly) {
 
 TEST_F(NativeInputMethodEngineTest, DoesNotSendUnhandledNamedKeys) {
   TestingProfile testing_profile;
-  SetPhysicalTypingAutocorrectEnabled(testing_profile, true);
+  SetInputMethodOptions(testing_profile, /*autocorrect_enabled=*/true,
+                        /*predictive_writing_enabled=*/false);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -700,8 +744,6 @@ TEST_F(NativeInputMethodEngineTest, DoesNotSendUnhandledNamedKeys) {
   InputMethodManager::Shutdown();
 }
 
-// TODO(crbug.com/1148157): Refactor NativeInputMethodEngine etc. to avoid
-// hidden dependencies on globals such as ImeBridge.
 class NativeInputMethodEngineWithRenderViewHostTest
     : public content::RenderViewHostTestHarness {
   void SetUp() override {
@@ -713,9 +755,6 @@ class NativeInputMethodEngineWithRenderViewHostTest
                               features::kAssistPersonalInfoEmail,
                               features::kAssistPersonalInfoName},
         /*disabled_features=*/{});
-
-    // Needed by NativeInputMethodEngine to interact with the input field.
-    ui::IMEBridge::Initialize();
 
     // Needed by NativeInputMethodEngine for the virtual keyboard.
     keyboard_controller_client_test_helper_ =
@@ -745,7 +784,8 @@ TEST_F(NativeInputMethodEngineWithRenderViewHostTest,
                                                              url);
 
   auto* testing_profile = static_cast<TestingProfile*>(browser_context());
-  SetPhysicalTypingAutocorrectEnabled(*testing_profile, true);
+  SetInputMethodOptions(*testing_profile, /*autocorrect_enabled=*/true,
+                        /*predictive_writing_enabled=*/false);
 
   testing::NiceMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(

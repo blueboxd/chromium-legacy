@@ -77,24 +77,40 @@
 # execution. The browser is restarted even after expected test
 # failures.
 [ win ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
-[ mac ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
+# ASTC textures are expected to be supported on M1 Macs.
+[ mac no-passthrough ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
+[ mac passthrough angle-opengl ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
+[ mac passthrough angle-metal amd ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
+[ mac passthrough angle-metal intel ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
+[ mac passthrough angle-metal nvidia ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_astc [ Skip ]
 [ win ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
-[ mac ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
+# ETC textures are expected to be supported on M1 Macs.
+[ mac no-passthrough ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
+[ mac passthrough angle-opengl ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
+[ mac passthrough angle-metal amd ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
+[ mac passthrough angle-metal intel ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
+[ mac passthrough angle-metal nvidia ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_etc [ Skip ]
 [ win ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
-[ mac ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
+# ETC textures are expected to be supported on M1 Macs.
+[ mac no-passthrough ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
+[ mac passthrough angle-opengl ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
+[ mac passthrough angle-metal amd ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
+[ mac passthrough angle-metal intel ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
+[ mac passthrough angle-metal nvidia ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_etc1 [ Skip ]
 [ win ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
 [ mac ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
 [ fuchsia ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Skip ]
 [ win ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
-[ mac ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ linux ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ android ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 [ fuchsia ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
-[ mac ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+# BPTC textures are supported on macOS only on the Metal backend.
+[ mac no-passthrough ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+[ mac passthrough angle-opengl ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 crbug.com/808744 [ android ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/808744 [ fuchsia ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
@@ -112,6 +128,7 @@ crbug.com/1099955 [ swiftshader-gl angle-disabled mac   ] WebglExtension_EXT_sha
 crbug.com/1099955 [ swiftshader-gl angle-disabled win   ] WebglExtension_EXT_shader_texture_lod [ Skip ]
 crbug.com/1099955 [ swiftshader-gl angle-disabled linux ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 crbug.com/1099955 [ swiftshader-gl angle-disabled win   ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+crbug.com/1280666 [ swiftshader-gl angle-disabled mac ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 crbug.com/1099955 [ angle-swiftshader no-swiftshader-gl linux ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/1099955 [ angle-swiftshader no-swiftshader-gl mac   ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 crbug.com/1099955 [ angle-swiftshader no-swiftshader-gl win   ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
@@ -152,6 +169,8 @@ crbug.com/867718 [ win angle-d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Sk
 # Extensions not available on angle-vulkan
 crbug.com/1187260 [ angle-vulkan passthrough ] WebglExtension_WEBGL_debug_shaders [ Skip ]
 crbug.com/1187260 [ angle-swiftshader passthrough ] WebglExtension_WEBGL_debug_shaders [ Skip ]
+crbug.com/angleproject/6748 [ angle-vulkan passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
+crbug.com/angleproject/6748 [ angle-swiftshader passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
 
 # Extensions not available on angle-metal
 crbug.com/angleproject/4846 [ mac angle-metal passthrough ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
@@ -234,6 +253,10 @@ crbug.com/1218708 [ fuchsia ] conformance/rendering/many-draw-calls.html [ Skip 
 # Fails when dcheck_always_on set to true
 [ fuchsia ] deqp/data/gles2/shaders/preprocessor.html [ Skip ]
 
+# Causes the render process to hang
+crbug.com/1280692 [ fuchsia fuchsia-board-astro ] conformance/context/context-creation-and-destruction.html [ Skip ]
+crbug.com/1280692 [ fuchsia fuchsia-board-sherlock ] conformance/context/context-creation-and-destruction.html [ Skip ]
+
 # Linux AMD RX 5500 XT
 # Caused kernel panics on drivers from around November 2020, can likely be
 # re-enabled once newer drivers are obtained.
@@ -270,7 +293,6 @@ crbug.com/1043953 [ chromeos chromeos-board-amd64-generic ] conformance/textures
 # ========================
 # Fails on all platforms
 
-crbug.com/1081973 conformance/buffers/buffer-data-and-buffer-sub-data.html [ Failure ]
 crbug.com/1082533 [ mac intel ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
 # TODO(crbug.com/1136231): Uncomment suppressions for s3tc-and-rgtc.html below
 # under crbug.com/963205 and crbug.com/964321 once these two failures are fixed.
@@ -325,6 +347,7 @@ crbug.com/angleproject/6358 conformance/programs/program-test.html [ Failure ]
 
 # Win / AMD / Passthrough command decoder / D3D11
 crbug.com/772037 [ win amd angle-d3d11 passthrough ] conformance/textures/misc/texture-sub-image-cube-maps.html [ RetryOnFailure ]
+crbug.com/1282819 [ win amd-0x6613 angle-d3d11 passthrough ] conformance/canvas/canvas-test.html [ Failure ]
 
 # Vulkan / Passthrough command decoder
 crbug.com/angleproject/4931 [ win nvidia angle-vulkan passthrough ] conformance/textures/misc/texture-mips.html [ Failure ]
@@ -341,11 +364,15 @@ crbug.com/angleproject/6228 [ win intel angle-vulkan passthrough ] conformance/m
 ####################
 
 # Astro specific issues
+crbug.com/1261867 [ fuchsia fuchsia-board-astro ] conformance/context/context-no-alpha-fbo-with-alpha.html [ Failure ]
+crbug.com/1261867 [ fuchsia fuchsia-board-astro ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]
 crbug.com/1145858 [ fuchsia fuchsia-board-astro ] conformance/extensions/ext-disjoint-timer-query.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
 crbug.com/1145926 [ fuchsia fuchsia-board-astro ] conformance/ogles/GL/faceforward/faceforward_001_to_006.html [ Failure ]
 crbug.com/1145926 [ fuchsia fuchsia-board-astro ] conformance/ogles/GL/step/step_001_to_006.html [ Failure ]
+crbug.com/1261867 [ fuchsia fuchsia-board-astro ] conformance/rendering/color-mask-preserved-during-implicit-clears.html [ Failure ]
+crbug.com/1261867 [ fuchsia fuchsia-board-astro ] conformance/rendering/scissor-rect-repeated-rendering.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
@@ -353,6 +380,8 @@ crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bit
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
+crbug.com/1261867 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/copy-tex-image-2d-formats.html [ Failure ]
+crbug.com/1261867 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/tex-input-validation.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
@@ -362,7 +391,6 @@ crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex
 crbug.com/1145861 [ fuchsia fuchsia-board-astro ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 # OOM on hardware devices
 crbug.com/1145951 [ fuchsia fuchsia-board-astro ] conformance/rendering/multisample-corruption.html [ Failure ]
-crbug.com/1145951 [ fuchsia fuchsia-board-astro ] conformance/context/context-creation-and-destruction.html [ Failure ]
 crbug.com/1145951 [ fuchsia fuchsia-board-astro ] conformance/rendering/preservedrawingbuffer-leak.html [ Failure ]
 # Specific build issue
 crbug.com/1146483 [ fuchsia fuchsia-board-astro ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
@@ -395,18 +423,32 @@ crbug.com/1136414 [ fuchsia fuchsia-board-qemu-x64 ] conformance/ogles/GL/mat/ma
 # [ fuchsia ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
 
 # Sherlock failures
-crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]
-crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/context/context-no-alpha-fbo-with-alpha.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/context/context-no-alpha-fbo-with-alpha.html [ Failure ]
 crbug.com/1145858 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/extensions/ext-disjoint-timer-query.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
-crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/rendering/color-mask-preserved-during-implicit-clears.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/rendering/color-mask-preserved-during-implicit-clears.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/rendering/scissor-rect-repeated-rendering.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
+crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
 crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
+crbug.com/1261867 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/misc/copy-tex-image-2d-formats.html [ Failure ]
+crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/misc/texture-npot-video.html [ Failure ]
+crbug.com/1261867 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
 crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
 crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
+crbug.com/1268138 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
+crbug.com/1261867 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/misc/tex-input-validation.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
+crbug.com/1145861 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
 
 ####################
 # Win failures     #
@@ -502,16 +544,18 @@ crbug.com/1159126 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/more/gls
 crbug.com/1159126 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/ogles/GL/abs/abs_001_to_006.html [ RetryOnFailure ]
 
 # Vulkan / Win / Passthrough command decoder
-crbug.com/angleproject/3469 [ win angle-vulkan passthrough nvidia ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
-
-# Note: the following test crashes so it's skipped.  http://anglebug.com/3352
 crbug.com/angleproject/2921 [ win angle-vulkan passthrough ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Failure ]
 crbug.com/angleproject/3111 [ win angle-vulkan passthrough ] deqp/data/gles2/shaders/swizzles.html [ Failure ]
 crbug.com/angleproject/4334 [ win angle-vulkan passthrough ] conformance/textures/misc/canvas-teximage-after-multiple-drawimages.html [ Failure ]
+
+# Vulkan / Win (32-bit) / Passthrough command decoder
 crbug.com/1216686 [ win angle-vulkan passthrough ] conformance/glsl/bugs/complex-glsl-does-not-crash.html [ Failure ]
 crbug.com/1216686 [ win angle-vulkan passthrough ] conformance/glsl/misc/shader-uniform-packing-restrictions.html [ Failure ]
+crbug.com/1216686 [ win angle-swiftshader passthrough ] conformance/glsl/bugs/complex-glsl-does-not-crash.html [ Failure ]
+crbug.com/1216686 [ win angle-swiftshader passthrough ] conformance/glsl/misc/shader-uniform-packing-restrictions.html [ Failure ]
 
 # Vulkan / Win / NVIDIA / Passthrough command decoder
+crbug.com/angleproject/3469 [ win angle-vulkan passthrough nvidia ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
 crbug.com/963205 [ win nvidia angle-vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc-srgb.html [ Failure ]
 # crbug.com/964321 [ win nvidia angle-vulkan passthrough ] conformance/extensions/s3tc-and-rgtc.html [ RetryOnFailure ]
 crbug.com/1051576 [ win nvidia angle-vulkan passthrough ] conformance/extensions/webgl-compressed-texture-size-limit.html [ Failure ]
@@ -541,14 +585,13 @@ crbug.com/844311 [ mac no-swiftshader-gl ] conformance/glsl/misc/fragcolor-fragd
 
 # Mac AMD failures
 crbug.com/642822 [ mac amd ] conformance/rendering/clipping-wide-points.html [ Failure ]
-crbug.com/929009 [ mac amd release-x64 angle-opengl ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
 crbug.com/1203167 [ mac amd angle-disabled ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
 crbug.com/1203167 [ mac amd angle-opengl ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
 crbug.com/1203167 [ mac amd angle-metal ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
 crbug.com/1230781 [ mac amd-0x6821 ] conformance/canvas/to-data-url-test.html [ Failure ]
 crbug.com/1230781 [ mac amd-0x679e ] conformance/canvas/to-data-url-test.html [ Failure ]
 crbug.com/1236072 [ mac amd-0x679e angle-opengl ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
-crbug.com/1227774 [ mac amd debug-x64 angle-opengl ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
+crbug.com/1227774 [ mac amd angle-opengl ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
 crbug.com/1276186 [ mac amd-0x679e angle-opengl ] conformance/rendering/clear-default-framebuffer-with-scissor-test.html [ Failure ]
 
 # TODO(kbr): uncomment the following expectation after test has
@@ -651,6 +694,9 @@ crbug.com/998498 [ linux amd passthrough ] conformance/textures/misc/tex-input-v
 crbug.com/965594 [ linux amd angle-opengl passthrough ] conformance/more/conformance/quickCheckAPI-S_V.html [ RetryOnFailure ]
 crbug.com/angleproject/5213 [ linux amd-0x6613 angle-opengl passthrough ] conformance/context/deleted-object-behavior.html [ Failure ]
 crbug.com/angleproject/5213 [ linux amd-0x6613 angle-opengl passthrough ] conformance/renderbuffers/renderbuffer-initialization.html [ Failure ]
+
+# Linux AMD RX 5500 XT
+crbug.com/1147232 [ linux amd-0x7340 angle-opengl passthrough ] conformance/textures/misc/texture-size-limit.html [ Failure ]
 
 ####################
 # Android failures #
@@ -759,6 +805,7 @@ crbug.com/1175226 [ android android-pixel-4 no-passthrough no-swiftshader-gl ] c
 crbug.com/1179432 [ android android-pixel-4 no-passthrough ] conformance/rendering/polygon-offset.html [ RetryOnFailure ]
 crbug.com/1191030 [ android android-pixel-4 ] conformance/textures/misc/video-rotation.html [ Failure ]
 crbug.com/1187332 [ android android-pixel-4 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/1278904 [ android android-pixel-4 android-chromium ] conformance/textures/misc/texture-npot-video.html [ RetryOnFailure ]
 
 # Misc failures
 crbug.com/angleproject/2988 [ android angle-opengles ] conformance/context/context-size-change.html [ Failure ]

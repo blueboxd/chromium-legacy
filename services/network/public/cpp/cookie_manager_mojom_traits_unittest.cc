@@ -10,7 +10,9 @@
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/same_party_context.h"
 #include "services/network/public/cpp/cookie_manager_mojom_traits.h"
+#include "services/network/public/mojom/cookie_manager.mojom-shared.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -449,6 +451,34 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookiePartitionKeyCollection) {
     EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
                 mojom::CookiePartitionKeyCollection>(original, copied));
     EXPECT_TRUE(copied.ContainsAllKeys());
+  }
+}
+
+TEST(CookieManagerTraitsTest, RoundTrips_SamePartyContext) {
+  {
+    net::SamePartyContext same_party(net::SamePartyContext::Type::kSameParty);
+    net::SamePartyContext copy;
+
+    EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::SamePartyContext>(
+        same_party, copy));
+    EXPECT_EQ(copy.context_type(), net::SamePartyContext::Type::kSameParty);
+    EXPECT_EQ(copy.ancestors_for_metrics_only(),
+              net::SamePartyContext::Type::kSameParty);
+    EXPECT_EQ(copy.top_resource_for_metrics_only(),
+              net::SamePartyContext::Type::kSameParty);
+  }
+
+  {
+    net::SamePartyContext cross_party(net::SamePartyContext::Type::kCrossParty);
+    net::SamePartyContext copy;
+
+    EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::SamePartyContext>(
+        cross_party, copy));
+    EXPECT_EQ(copy.context_type(), net::SamePartyContext::Type::kCrossParty);
+    EXPECT_EQ(copy.ancestors_for_metrics_only(),
+              net::SamePartyContext::Type::kCrossParty);
+    EXPECT_EQ(copy.top_resource_for_metrics_only(),
+              net::SamePartyContext::Type::kCrossParty);
   }
 }
 

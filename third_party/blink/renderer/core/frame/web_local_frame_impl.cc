@@ -109,7 +109,6 @@
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_double_size.h"
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url_error.h"
@@ -244,13 +243,11 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -265,6 +262,11 @@
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "third_party/blink/public/web/win/web_font_family_names.h"
+#include "third_party/blink/renderer/core/layout/layout_font_accessor_win.h"
+#endif
 
 namespace blink {
 
@@ -382,7 +384,7 @@ class ChromePrintContext : public PrintContext {
         current_height += page_size_in_pixels.width() + 1;
       }
 
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
       // Account for the disabling of scaling in spoolPage. In the context of
       // SpoolAllPagesWithBoundariesForTesting the scale HAS NOT been
       // pre-applied.
@@ -410,7 +412,7 @@ class ChromePrintContext : public PrintContext {
     float scale = printed_page_width_ / page_rect.width();
 
     AffineTransform transform;
-#if defined(OS_POSIX) && !defined(OS_MAC)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
     transform.Scale(scale);
 #endif
     transform.Translate(static_cast<float>(-page_rect.x()),
@@ -425,10 +427,9 @@ class ChromePrintContext : public PrintContext {
         frame_view->GetLayoutView()->FirstFragment().LocalBorderBoxProperties();
 
     auto* builder = MakeGarbageCollected<PaintRecordBuilder>(context);
-    frame_view->PaintContentsOutsideOfLifecycle(
+    frame_view->PaintOutsideOfLifecycle(
         builder->Context(),
-        kGlobalPaintNormalPhase | kGlobalPaintFlattenCompositingLayers |
-            kGlobalPaintAddUrlMetadata,
+        PaintFlag::kOmitCompositingInfo | PaintFlag::kAddUrlMetadata,
         CullRect(page_rect));
     {
       ScopedPaintChunkProperties scoped_paint_chunk_properties(
@@ -567,13 +568,12 @@ class PaintPreviewContext : public PrintContext {
 
     // This calls BeginRecording on |builder| with dimensions specified by the
     // CullRect.
-    GlobalPaintFlags flags =
-        kGlobalPaintNormalPhase | kGlobalPaintFlattenCompositingLayers;
+    PaintFlags flags = PaintFlag::kOmitCompositingInfo;
     if (include_linked_destinations)
-      flags |= kGlobalPaintAddUrlMetadata;
+      flags |= PaintFlag::kAddUrlMetadata;
 
-    frame_view->PaintContentsOutsideOfLifecycle(builder->Context(), flags,
-                                                CullRect(bounds));
+    frame_view->PaintOutsideOfLifecycle(builder->Context(), flags,
+                                        CullRect(bounds));
     if (include_linked_destinations) {
       // Add anchors.
       ScopedPaintChunkProperties scoped_paint_chunk_properties(
@@ -669,6 +669,21 @@ bool WebLocalFrameImpl::ConsumeTransientUserActivation(
 bool WebLocalFrameImpl::LastActivationWasRestricted() const {
   return GetFrame()->LastActivationWasRestricted();
 }
+
+#if BUILDFLAG(IS_WIN)
+WebFontFamilyNames WebLocalFrameImpl::GetWebFontFamilyNames() const {
+  FontFamilyNames font_family_names;
+  GetFontsUsedByFrame(*GetFrame(), font_family_names);
+  WebFontFamilyNames result;
+  for (const String& font_family_name : font_family_names.primary_fonts)
+    result.primary_family_names.push_back(font_family_name);
+  for (const String& font_family_name : font_family_names.fallback_fonts) {
+    if (!font_family_names.primary_fonts.Contains(font_family_name))
+      result.fallback_family_names.push_back(font_family_name);
+  }
+  return result;
+}
+#endif
 
 WebLocalFrame* WebLocalFrame::FrameForContext(v8::Local<v8::Context> context) {
   return WebLocalFrameImpl::FromFrame(ToLocalFrameIfNotDetached(context));
@@ -1353,7 +1368,7 @@ WebString WebLocalFrameImpl::SelectionAsText() const {
 
   String text = GetFrame()->Selection().SelectedText(
       TextIteratorBehavior::EmitsObjectReplacementCharacterBehavior());
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   ReplaceNewlinesWithWindowsStyleNewlines(text);
 #endif
   ReplaceNBSPWithSpace(text);
@@ -1740,6 +1755,10 @@ WebPlugin* WebLocalFrameImpl::GetPluginToPrint(
   WebPluginContainerImpl* plugin_container =
       GetPluginToPrintHelper(constrain_to_node);
   return plugin_container ? plugin_container->Plugin() : nullptr;
+}
+
+bool WebLocalFrameImpl::WillPrintSoon() {
+  return GetFrame()->GetDocument()->WillPrintSoon();
 }
 
 uint32_t WebLocalFrameImpl::PrintBegin(const WebPrintParams& print_params,
@@ -2208,7 +2227,6 @@ void WebLocalFrameImpl::UpdateDevToolsOverlaysPrePaint() {
 }
 
 void WebLocalFrameImpl::PaintDevToolsOverlays(GraphicsContext& context) {
-  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   if (dev_tools_agent_)
     dev_tools_agent_->PaintOverlays(context);
 }
@@ -2236,10 +2254,6 @@ void WebLocalFrameImpl::CreateFrameView() {
     base_background_color = Color::kTransparent;
 
   GetFrame()->CreateView(initial_size, base_background_color);
-  if (is_main_frame) {
-    GetFrame()->View()->SetInitialViewportSize(
-        web_view->GetPageScaleConstraintsSet().InitialViewportSize());
-  }
   if (web_view->ShouldAutoResize() && GetFrame()->IsLocalRoot()) {
     GetFrame()->View()->EnableAutoSizeMode(web_view->MinAutoSize(),
                                            web_view->MaxAutoSize());
@@ -2299,6 +2313,10 @@ void WebLocalFrameImpl::DidFinish() {
     plugin->DidFinishLoading();
 
   Client()->DidFinishLoad();
+}
+
+void WebLocalFrameImpl::DidFinishLoadForPrinting() {
+  Client()->DidFinishLoadForPrinting();
 }
 
 HitTestResult WebLocalFrameImpl::HitTestResultForVisualViewportPos(
@@ -2630,7 +2648,7 @@ void WebLocalFrameImpl::ShowContextMenu(
   params.selection_rect =
       LocalRootFrameWidget()->BlinkSpaceToEnclosedDIPs(data.selection_rect);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // The Samsung Email app relies on the context menu being shown after the
   // javascript onselectionchanged is triggered.
   // See crbug.com/729488
@@ -2879,14 +2897,6 @@ void WebLocalFrameImpl::ScrollFocusedEditableElementIntoRect(
 
 void WebLocalFrameImpl::ResetHasScrolledFocusedEditableIntoView() {
   has_scrolled_focused_editable_node_into_rect_ = false;
-}
-
-bool WebLocalFrameImpl::ServiceWorkerSubresourceFilterEnabled() {
-  if (GetFrame() && GetFrame()->GetDocument()) {
-    return RuntimeEnabledFeatures::ServiceWorkerSubresourceFilterEnabled(
-        GetFrame()->GetDocument()->GetExecutionContext());
-  }
-  return false;
 }
 
 }  // namespace blink

@@ -35,13 +35,14 @@ class DriveSearchProvider : public SearchProvider {
   DriveSearchProvider& operator=(const DriveSearchProvider&) = delete;
 
   // SearchProvider:
-  ash::AppListSearchResultType ResultType() override;
+  ash::AppListSearchResultType ResultType() const override;
   void Start(const std::u16string& query) override;
 
  private:
   void SetSearchResults(drive::FileError error,
                         std::vector<drivefs::mojom::QueryItemPtr> paths);
   std::unique_ptr<FileResult> MakeResult(const base::FilePath& path,
+                                         double relevance,
                                          FileResult::Type type);
 
   base::TimeTicks query_start_time_;

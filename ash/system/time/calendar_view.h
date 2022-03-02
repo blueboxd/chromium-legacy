@@ -97,10 +97,10 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   // The header of each month view which shows the month's name. If the year of
   // this month is not the same as the current month, the year is also shown in
   // this view.
-  class MonthYearHeaderView;
+  class MonthHeaderLabelView;
 
-  // The types to create the `MonthYearHeaderView` which are in corresponding to
-  // the 3 months: `previous_month_`, `current_month_` and `next_month_`.
+  // The types to create the `MonthHeaderLabelView` which are in corresponding
+  // to the 3 months: `previous_month_`, `current_month_` and `next_month_`.
   enum LabelType { PREVIOUS, CURRENT, NEXT };
 
   friend class CalendarViewTest;
@@ -177,6 +177,9 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   // ScrollView callback.
   void OnContentsScrolled();
 
+  // Adjusts the Chrome Vox box position for date cells in the scroll view.
+  void AdjustDateCellVoxBounds();
+
   // Unowned.
   UnifiedSystemTrayController* controller_;
 
@@ -210,6 +213,7 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   views::Button* settings_button_ = nullptr;
   IconButton* up_button_ = nullptr;
   IconButton* down_button_ = nullptr;
+  views::View* event_list_container_ = nullptr;
   CalendarEventListView* event_list_ = nullptr;
 
   // If it `is_resetting_scroll_`, we don't calculate the scroll position and we

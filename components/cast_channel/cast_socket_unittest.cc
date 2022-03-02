@@ -349,20 +349,6 @@ class TestSocketFactory : public net::ClientSocketFactory {
         std::move(nested_socket), net::HostPortPair(), net::SSLConfig(),
         ssl_socket_data_provider_.get());
   }
-  std::unique_ptr<net::ProxyClientSocket> CreateProxyClientSocket(
-      std::unique_ptr<net::StreamSocket> stream_socket,
-      const std::string& user_agent,
-      const net::HostPortPair& endpoint,
-      const net::ProxyServer& proxy_server,
-      net::HttpAuthController* http_auth_controller,
-      bool tunnel,
-      bool using_spdy,
-      net::NextProto negotiated_protocol,
-      net::ProxyDelegate* proxy_delegate,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
 
   net::IPEndPoint ip_;
   // Simulated connect data
@@ -1066,7 +1052,7 @@ TEST_F(MockCastSocketTest, TestOpenChannelClosedSocket) {
 }
 
 // https://crbug.com/874491, flaky on Win and Mac
-#if defined(OS_WIN) || defined(OS_APPLE)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
 #define MAYBE_TestConnectEndToEndWithRealSSL \
   DISABLED_TestConnectEndToEndWithRealSSL
 #else

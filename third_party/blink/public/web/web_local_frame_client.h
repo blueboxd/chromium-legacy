@@ -424,6 +424,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   // The frame's document and all of its subresources succeeded to load.
   virtual void DidFinishLoad() {}
 
+  // The frame's document and all of its subresources succeeded to load for
+  // printing.
+  virtual void DidFinishLoadForPrinting() {}
+
   // The navigation resulted in no change to the documents within the page.
   // For example, the navigation may have just resulted in scrolling to a named
   // anchor or a PopState event may have been dispatched.
@@ -568,9 +572,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidObserveLayoutNg(uint32_t all_block_count,
                                   uint32_t ng_block_count,
                                   uint32_t all_call_count,
-                                  uint32_t ng_call_count,
-                                  uint32_t flexbox_ng_block_count,
-                                  uint32_t grid_ng_block_count) {}
+                                  uint32_t ng_call_count) {}
 
   enum class LazyLoadBehavior {
     kDeferredImage,    // An image is being deferred by the lazy load feature.

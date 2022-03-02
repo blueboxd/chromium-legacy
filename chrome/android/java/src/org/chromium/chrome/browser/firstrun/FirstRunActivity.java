@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 
@@ -29,11 +28,8 @@ import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
-import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.fonts.FontPreloader;
 import org.chromium.chrome.browser.metrics.UmaUtils;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.SigninFirstRunFragment;
 import org.chromium.chrome.browser.signin.services.FREMobileIdentityConsistencyFieldTrial;
@@ -177,19 +173,9 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         assert areNativeAndPoliciesInitialized();
         mFirstRunFlowSequencer.updateFirstRunProperties(mFreProperties);
 
-        BooleanSupplier showDataReductionPromo =
-                () -> mFreProperties.getBoolean(SHOW_DATA_REDUCTION_PAGE);
         BooleanSupplier showSearchEnginePromo =
                 () -> mFreProperties.getBoolean(SHOW_SEARCH_ENGINE_PAGE);
         BooleanSupplier showSyncConsent = () -> mFreProperties.getBoolean(SHOW_SYNC_CONSENT_PAGE);
-
-        // An optional Data Saver page.
-        if (!FREMobileIdentityConsistencyFieldTrial.isEnabled()
-                && showDataReductionPromo.getAsBoolean()) {
-            mPages.add(new FirstRunPage<>(
-                    DataReductionProxyFirstRunFragment.class, showDataReductionPromo));
-            mFreProgressStates.add(MobileFreProgress.DATA_SAVER_SHOWN);
-        }
 
         // An optional page to select a default search engine.
         if (showSearchEnginePromo.getAsBoolean()) {
@@ -202,15 +188,6 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         // according to the situation.
         mPages.add(new FirstRunPage<>(SyncConsentFirstRunFragment.class, showSyncConsent));
         mFreProgressStates.add(MobileFreProgress.SYNC_CONSENT_SHOWN);
-
-        // An optional Data Saver page, this page will be hidden if users click the |Settings|
-        // link on the sync consent page.
-        if (FREMobileIdentityConsistencyFieldTrial.isEnabled()
-                && showDataReductionPromo.getAsBoolean()) {
-            mPages.add(new FirstRunPage<>(
-                    DataReductionProxyFirstRunFragment.class, showDataReductionPromo));
-            mFreProgressStates.add(MobileFreProgress.DATA_SAVER_SHOWN);
-        }
 
         if (mPagerAdapter != null) {
             mPagerAdapter.notifyDataSetChanged();
@@ -482,24 +459,9 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         if (mFreProperties.getBoolean(OPEN_ADVANCED_SYNC_SETTINGS)) {
             recordFreProgressHistogram(MobileFreProgress.SYNC_CONSENT_SETTINGS_LINK_CLICK);
         }
-        recordFreProgressHistogram(TextUtils.isEmpty(mResultSyncConsentAccountName)
-                        ? MobileFreProgress.SYNC_CONSENT_DISMISSED
-                        : MobileFreProgress.SYNC_CONSENT_ACCEPTED);
 
         FirstRunFlowSequencer.markFlowAsCompleted(mResultSyncConsentAccountName,
                 mFreProperties.getBoolean(OPEN_ADVANCED_SYNC_SETTINGS));
-
-        if (DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo()) {
-            if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
-                DataReductionProxyUma
-                        .dataReductionProxyUIAction(DataReductionProxyUma.ACTION_FRE_ENABLED);
-                DataReductionPromoUtils.saveFrePromoOptOut(false);
-            } else {
-                DataReductionProxyUma
-                        .dataReductionProxyUIAction(DataReductionProxyUma.ACTION_FRE_DISABLED);
-                DataReductionPromoUtils.saveFrePromoOptOut(true);
-            }
-        }
 
         if (sObserver != null) sObserver.onUpdateCachedEngineName(this);
 
@@ -544,12 +506,14 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     public void refuseSync() {
         mResultSyncConsentAccountName = null;
         mFreProperties.putBoolean(OPEN_ADVANCED_SYNC_SETTINGS, false);
+        recordFreProgressHistogram(MobileFreProgress.SYNC_CONSENT_DISMISSED);
     }
 
     @Override
     public void acceptSync(String accountName, boolean openSettings) {
         mResultSyncConsentAccountName = accountName;
         mFreProperties.putBoolean(OPEN_ADVANCED_SYNC_SETTINGS, openSettings);
+        recordFreProgressHistogram(MobileFreProgress.SYNC_CONSENT_ACCEPTED);
     }
 
     @Override

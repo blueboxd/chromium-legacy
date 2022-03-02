@@ -34,7 +34,6 @@
 #include "chrome/browser/page_load_metrics/observers/page_anchors_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/portal_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/prefetch_proxy_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/previews_ukm_observer.h"
 #include "chrome/browser/page_load_metrics/observers/protocol_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/scheme_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/security_state_page_load_metrics_observer.h"
@@ -57,7 +56,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/page_load_metrics/observers/android_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/offline_measurements_page_load_metrics_observer.h"
 #else
@@ -126,7 +125,6 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
         std::make_unique<MultiTabLoadingPageLoadMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<OptimizationGuidePageLoadMetricsObserver>());
-    tracker->AddObserver(std::make_unique<previews::PreviewsUKMObserver>());
     tracker->AddObserver(
         std::make_unique<ServiceWorkerPageLoadMetricsObserver>());
     tracker->AddObserver(
@@ -161,16 +159,16 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
     if (portal_observer)
       tracker->AddObserver(std::move(portal_observer));
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     tracker->AddObserver(std::make_unique<AndroidPageLoadMetricsObserver>());
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
         loading_predictor_observer =
             LoadingPredictorPageLoadMetricsObserver::CreateIfNeeded(
                 web_contents());
     if (loading_predictor_observer)
       tracker->AddObserver(std::move(loading_predictor_observer));
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
     tracker->AddObserver(
         std::make_unique<SessionRestorePageLoadMetricsObserver>());
 #endif
@@ -191,7 +189,7 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
   if (translate_observer)
     tracker->AddObserver(std::move(translate_observer));
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   std::unique_ptr<OfflineMeasurementsPageLoadMetricsObserver>
       offline_measurements_observer =
           OfflineMeasurementsPageLoadMetricsObserver::CreateIfNeeded();

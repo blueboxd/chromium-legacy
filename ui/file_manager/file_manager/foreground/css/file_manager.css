@@ -533,10 +533,7 @@ html.pointer-active .dialog-header.files-ng cr-button:not(:active):hover {
 }
 
 .dialog-header.files-ng button[menu-shown] {
-  /* TODO(crbug.com/1275388): use blend() instead */
-  background: linear-gradient(var(--cros-ripple-color),
-                              var(--cros-ripple-color)),
-              var(--cros-ripple-color);
+  background: var(--cros-icon-button-pressed-color);
 }
 
 .dialog-header.files-ng button:not([menu-shown]):not(:active):hover {
@@ -549,10 +546,7 @@ html.pointer-active .dialog-header.files-ng button:not([menu-shown]):not(:active
 }
 
 .dialog-header.files-ng button:active {
-  /* TODO(crbug.com/1275388): use blend() instead */
-  background: linear-gradient(var(--cros-ripple-color),
-                              var(--cros-ripple-color)),
-              var(--cros-ripple-color);
+  background: var(--cros-icon-button-pressed-color);
 }
 
 html.focus-outline-visible .dialog-header.files-ng cr-button:not(:active):focus,
@@ -803,11 +797,9 @@ body:not(.check-select) #selection-menu-button {
 }
 
 #cloud-import-details {
-  background-color: white;
-  border-radius: 2px;
-  box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 14%),
-              0 1px 10px 0 rgba(0, 0, 0, 12%),
-              0 2px 4px -1px rgba(0, 0, 0, 40%);
+  background-color: var(--cros-bg-color-elevation-3);
+  border-radius: 12px;
+  box-shadow: var(--cros-elevation-3-shadow);
   line-height: 1.5em;
   position: absolute;
   top: 42px;  /* Positioned just overlapping the top of the toolbar */
@@ -818,7 +810,7 @@ body:not(.check-select) #selection-menu-button {
 
 /* These horizontal positions for #cloud-import-details are fallback value.
    Usually, these positions are calculated based on the position of dropdown.
-   These fallback values will be used when the cloud import penel is shown
+   These fallback values will be used when the cloud import panel is shown
    before the toolbar buttons are fully laid out. */
 html[dir='ltr'] #cloud-import-details {
   right: 148px;  /* Positioned in relation to the cloud-import toolbar button */
@@ -834,13 +826,14 @@ html[dir='rtl'] #cloud-import-details {
 }
 
 #cloud-import-details .banner {
-  background-color: rgb(55, 71, 79);
-  border-radius: 2px 2px 0 0;
-  color: white;
+  background-color: var(--cros-color-prominent);
+  border-radius: 12px 12px 0 0;
+  color: var(--cros-button-label-color-primary);
   padding: 20px;
 }
 
 #cloud-import-details .banner .title {
+  font-family: 'Google Sans';
   font-size: 122%;
   font-weight: 500;
   margin-bottom: 5px;
@@ -859,6 +852,7 @@ html[dir='rtl'] #cloud-import-details {
 }
 
 #cloud-import-details .status iron-icon {
+  --iron-icon-fill-color: var(--cros-icon-color-primary);
   display: block;
   height: 16px;
   opacity: .6;
@@ -866,22 +860,22 @@ html[dir='rtl'] #cloud-import-details {
 }
 
 #cloud-import-details .status .content {
-  color: #646464;
+  color: var(--cros-text-color-secondary);
   flex: 1;
   padding-inline-start: 10px;
 }
 
 #cloud-import-details .status .content::first-line {
-  color: #333;
+  color: var(--cros-text-color-primary);
   font-size: 110%;
 }
 
 #cloud-import-details .status a[is='action-link'] {
-  color: rgb(51, 103, 214);
+  color: var(--cros-link-color);
 }
 
 #cloud-import-details .progress {
-  background-color: #E0E0E0;
+  background-color: var(--cros-highlight-color);
   border-radius: 2px;
   height: 4px;
   margin-top: 14px;
@@ -889,7 +883,7 @@ html[dir='rtl'] #cloud-import-details {
 }
 
 #cloud-import-details .progress .value {
-  background-color: rgb(26, 194, 34);
+  background-color: var(--cros-icon-color-prominent);
   border-radius: 2px;
   height: 4px;
   transition: width 100ms linear;
@@ -897,23 +891,45 @@ html[dir='rtl'] #cloud-import-details {
 }
 
 #cloud-import-details cr-button {
-  --ink-color: white;
+  --active-bg: transparent;
+  --active-shadow:
+    0 1px 2px var(--cros-button-active-shadow-color-key-secondary),
+    0 1px 3px var(--cros-button-active-shadow-color-ambient-secondary);
+  --active-shadow-action:
+    0 1px 2px var(--cros-button-active-shadow-color-key-primary),
+    0 1px 3px var(--cros-button-active-shadow-color-ambient-primary);
+  --bg-action: var(--cros-button-background-color-primary);
+  --border-color: var(--cros-button-stroke-color-secondary);
+  --disabled-bg-action:
+    var(--cros-button-background-color-primary-disabled);
+  --disabled-bg: var(--cros-button-background-color-primary-disabled);
+  --disabled-border-color:
+    var(--cros-button-stroke-color-secondary-disabled);
+  --disabled-text-color: var(--cros-button-label-color-secondary-disabled);
+  --hover-bg-action:
+    var(--cros-button-background-color-primary-hover-preblended);
+  --hover-bg-color: var(--cros-button-background-color-secondary-hover);
+  --hover-border-color: var(--cros-button-stroke-color-secondary-hover);
+  --ink-color: var(--cros-button-ripple-color-secondary);
+  --ripple-opacity-action: var(--cros-button-primary-ripple-opacity);
+  --ripple-opacity: var(--cros-button-secondary-ripple-opacity);
+  --text-color-action: var(--cros-button-label-color-primary);
+  --text-color: var(--cros-button-label-color-secondary);
   align-self: flex-end;
-  border: none;
   box-shadow: none;
-  color: white;
   font-weight: 500;
   margin-top: 20px;
   padding: 0;
   text-transform: uppercase;
 }
 
-#cloud-import-details cr-button.import {
-  background-color: rgb(51, 103, 214);
+#cloud-import-details cr-button.action-button {
+  --ink-color: var(--cros-button-ripple-color-primary);
 }
 
-#cloud-import-details cr-button.cancel {
-  background-color: rgb(219, 68, 55);
+#cloud-import-details cr-button.cancel-button {
+  /* no margin needed because the cancel button is in a new row */
+  margin-inline-end: 0;
 }
 
 #files-selected-label {
@@ -1120,18 +1136,16 @@ html.focus-outline-visible .dialog-header.files-ng cr-toggle:focus {
 /* Container for the ok/cancel buttons. */
 .dialog-footer {
   align-items: center;
-  border-top: 1px solid rgb(225, 225, 225);
+  background-color: var(--cros-bg-color);
+  border-top: 1px solid var(--cros-separator-color);
   display: flex;
   flex: none;
   flex-direction: row;
   outline: none;
-}
-
-body.files-ng .dialog-footer {
   padding: 16px 24px;
 }
 
-body.files-ng .dialog-footer #filename-input-box {
+.dialog-footer #filename-input-box {
   margin-inline-end: 16px;
   margin-inline-start: 16px;
   max-width: 320px;
@@ -1144,7 +1158,7 @@ body.files-ng .dialog-footer #filename-input-box {
 }
 
 /* Copy style from paper-button for buttons on the footer. */
-body.files-ng .dialog-footer button {
+.dialog-footer button {
   border: 0;
   border-image: none;
   border-radius: 4px;
@@ -1172,12 +1186,6 @@ body.files-ng .dialog-footer button {
   border-image: none;  /* Overrides the definition of common.css. */
 }
 
-.dialog-footer button:active {
-  box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 14%),
-              0 1px 10px 0 rgba(0, 0, 0, 12%),
-              0 2px 4px -1px rgba(0, 0, 0, 40%);
-}
-
 .dialog-footer cr-button,
 .dialog-footer button {
   height: 32px;
@@ -1189,42 +1197,54 @@ body.files-ng .dialog-footer button {
 .dialog-footer cr-button[disabled]:hover,
 .dialog-footer button[disabled],
 .dialog-footer button[disabled]:hover {
-  background-color: rgb(234, 234, 234);
-  color: rgb(168, 168, 168);
-}
-
-body.files-ng .dialog-footer cr-button[disabled],
-body.files-ng .dialog-footer cr-button[disabled]:hover,
-body.files-ng .dialog-footer button[disabled],
-body.files-ng .dialog-footer button[disabled]:hover {
   background-color:
       var(--cros-button-background-color-primary-disabled);
   color: var(--cros-button-label-color-primary-disabled);
 }
 
-body.files-ng .dialog-footer .primary,
-body.files-ng .dialog-footer .primary:hover {
+.dialog-footer .primary {
   background-color: var(--cros-button-background-color-primary);
   color: var(--cros-button-label-color-primary);
 }
 
-body.files-ng .dialog-footer .secondary {
-  background-color: var(--cros-button-background-color-secondary);
+.dialog-footer .primary:hover {
+   background: var(--cros-button-background-color-primary-hover-preblended);
+}
+
+.dialog-footer .primary paper-ripple {
+  --paper-ripple-opacity: var(--cros-button-primary-ripple-opacity);
+  color: var(--cros-button-ripple-color-primary);
+}
+
+.dialog-footer .primary:active {
+  box-shadow: 0 1px 2px var(--cros-button-active-shadow-color-key-primary),
+              0 1px 3px var(--cros-button-active-shadow-color-ambient-primary);
+}
+
+.dialog-footer .secondary {
+  background: transparent;
   border: 1px solid var(--cros-button-stroke-color-secondary);
   color: var(--cros-button-label-color-secondary);
   margin-inline-end: 8px;
 }
 
-body.files-ng .dialog-footer .secondary:hover {
+.dialog-footer .secondary:hover {
   background: var(--cros-button-background-color-secondary-hover);
+  border: 1px solid var(--cros-button-stroke-color-secondary-hover);
 }
 
-body.files-ng .dialog-footer .select {
-  background: -webkit-image-set(
-     url(../images/common/disclosure_arrow_dk_grey_down.png) 1x,
-     url(../images/common/2x/disclosure_arrow_dk_grey_down.png) 2x) no-repeat
-     calc(100% - 10px) transparent;
-  background-color: var(--google-grey-100);
+.dialog-footer .secondary paper-ripple {
+  --paper-ripple-opacity: var(--cros-button-secondary-ripple-opacity);
+  color: var(--cros-button-ripple-color-secondary);
+}
+
+.dialog-footer .secondary:active {
+  box-shadow: 0 1px 2px var(--cros-button-active-shadow-color-key-secondary),
+              0 1px 3px var(--cros-button-active-shadow-color-ambient-secondary);
+}
+
+.dialog-footer .select {
+  background-color: var(--cros-textfield-background-color);
   border: 0;
   border-radius: 4px;
   cursor: pointer;
@@ -1237,12 +1257,24 @@ body.files-ng .dialog-footer .select {
   position: relative;
 }
 
-body.files-ng .dialog-footer div.select:not(:active):focus {
-  box-shadow: 0 0 0 2px rgba(var(--cros-focus-ring-color-rgb),
-              50%);
+.dialog-footer .select::after {
+  -webkit-mask-image: url(../images/files/ui/sort_desc.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  background-color: var(--cros-icon-color-primary);
+  content: '';
+  height: 32px;
+  position: absolute;
+  right: 0;
+  width: 32px;
 }
 
-body.files-ng .dialog-footer div.select > span {
+.dialog-footer div.select:not(:active):focus {
+  box-shadow: 0 0 0 2px var(--cros-focus-ring-color);
+}
+
+.dialog-footer div.select > span {
+  color: var(--cros-text-color-primary);
   display: inline-block;
   line-height: 32px;
   max-width: 100%;
@@ -1252,11 +1284,11 @@ body.files-ng .dialog-footer div.select > span {
   white-space: nowrap;
 }
 
-body.files-ng .dialog-footer div.select > div.options {
-  background-color: white;
+.dialog-footer div.select > div.options {
+  background-color: var(--cros-bg-color-elevation-2);
   border-radius: 4px;
   bottom: calc(100% + 2px);
-  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 50%);
+  box-shadow: var(--cros-elevation-2-shadow);
   left: 0;
   min-width: max-content;
   padding: 8px 0;
@@ -1265,32 +1297,33 @@ body.files-ng .dialog-footer div.select > div.options {
   z-index: 550;
 }
 
-body.files-ng .dialog-footer div.select > div.options:not([expanded]) {
+.dialog-footer div.select > div.options:not([expanded]) {
   display: none;
 }
 
-body.files-ng .dialog-footer div.select > div.options option {
+.dialog-footer div.select > div.options option {
+  color: var(--cros-menu-label-color);
   line-height: 32px;
   min-height: 32px;
   padding: 0 12px 0 16px;
   vertical-align: middle;
 }
 
-body.files-ng .dialog-footer div.select > div.options option:hover,
-body.files-ng .dialog-footer div.select > div.options:not(:hover) option.selected {
-  background-color: rgba(0, 0, 0, 6%);
+.dialog-footer div.select > div.options option:hover,
+.dialog-footer div.select > div.options:not(:hover) option.selected {
+  background-color: var(--cros-menu-item-background-hover);
 }
 
 .dialog-footer select:hover {
   border-image: none;
 }
 
-/* Draw outline using box-shadow to make them rounded. */
-.dialog-footer .primary:focus:not(:active),
-.dialog-footer .secondary:focus:not(:active),
-.dialog-footer select:focus:not(:active),
+html.focus-outline-visible .dialog-footer .primary:focus,
+html.focus-outline-visible .dialog-footer .secondary:focus,
+html.focus-outline-visible .dialog-footer select:focus,
 html.focus-outline-visible #cloud-import-details cr-button:focus {
-  box-shadow: 0 0 0 2px rgba(51, 103, 214, 50%);
+  outline: 2px solid var(--cros-focus-ring-color);
+  outline-offset: 2px;
 }
 
 .progressable:not([progress]) .progress-bar,
@@ -1774,16 +1807,12 @@ html[dir='rtl'] .badge {
 }
 
 .copied .badge {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/cloud_import_syncing.png) 1x,
-      url(../images/files/ui/2x/cloud_import_syncing.png) 2x);
+  background-image: url(../images/files/ui/cloud_import_syncing.svg);
   display: block;
 }
 
 .imported .badge {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/service_drive.png) 1x,
-      url(../images/files/ui/2x/service_drive.png) 2x);
+  background-image: url(../images/volumes/service_drive.svg);
   display: block;
 }
 
@@ -1815,19 +1844,27 @@ body.files-ng #default-task-dialog.bottom-shadow::after {
   width: 100%
 }
 
-body.files-ng #default-tasks-list li {
+#default-tasks-list li {
   height: 40px;
   line-height: 40px;
 }
 
-body.files-ng #default-tasks-list > li > * {
+#default-tasks-list > li > .icon {
+  -webkit-mask-position: 16px center;
+  -webkit-mask-repeat: no-repeat;
   background-position: 16px center;
   background-repeat: no-repeat;
   background-size: 20px;
-  padding-inline-start: 52px;
+  height: 100%;
 }
 
-html[dir='rtl'] body.files-ng #default-tasks-list > li > * {
+#default-tasks-list > li > .label {
+  padding-inline-start: 52px;
+  position: absolute;
+}
+
+html[dir='rtl'] #default-tasks-list > li > .icon {
+  -webkit-mask-position-x: calc(100% - 16px);
   background-position-x: calc(100% - 16px);
 }
 
@@ -2120,13 +2157,8 @@ body.check-select #list-container list li[selected] .detail-thumbnail
   opacity: 0;
 }
 
-#tasks-menu cr-menu-item:not(.change-default) {
-  background-position: left 10px center;
-  padding-inline-start: 32px;
-}
-
-html[dir='rtl'] #tasks-menu cr-menu-item:not(.change-default) {
-  background-position: right 10px center;
+#tasks-menu cr-menu-item.change-default .icon.start {
+  display: none;
 }
 
 #action-bar {
@@ -2411,10 +2443,7 @@ body.files-ng #list-container .table-header-cell:first-child
 }
 
 .table-header-label .sort-icon:active {
-  /* TODO(crbug.com/1275388): use blend() instead */
-  background: linear-gradient(var(--cros-ripple-color),
-                              var(--cros-ripple-color)),
-              var(--cros-ripple-color);
+  background: var(--cros-icon-button-pressed-color);
 }
 
 html:not(.pointer-active) .table-header-label .sort-icon:hover,
@@ -2497,10 +2526,7 @@ body.files-ng .table-header-splitter  {
 }
 
 .table-header-splitter .splitter-icon:active {
-  /* TODO(crbug.com/1275388): use blend() instead */
-  background: linear-gradient(var(--cros-ripple-color),
-                              var(--cros-ripple-color)),
-              var(--cros-ripple-color);
+  background: var(--cros-icon-button-pressed-color);
 }
 
 html:not(.pointer-active) .table-header-splitter .splitter-icon:hover {
@@ -2622,11 +2648,11 @@ body.files-ng #list-container
 }
 
 list.autocomplete-suggestions {
-  background-color: white;
+  background-color: var(--cros-bg-color-elevation-2);
   border-radius: 3px;
-  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 50%);
+  box-shadow: var(--cros-elevation-2-shadow);
   box-sizing: border-box;  /* To match the width with the search box's. */
-  color: rgb(90, 90, 90);
+  color: var(--cros-menu-label-color);
   flex: none;
   margin-inline-start: -36px;
   margin-top: 10px;
@@ -2643,6 +2669,11 @@ list.autocomplete-suggestions > li {
   height: 32px;
 }
 
+/* "search drive" row */
+list.autocomplete-suggestions > li:first-of-type {
+  color: var(--cros-text-color-secondary);
+}
+
 list.autocomplete-suggestions > li > div.detail-icon {
   flex: none;
   height: 32px;
@@ -2656,19 +2687,19 @@ list.autocomplete-suggestions > li > div.detail-text {
 }
 
 list.autocomplete-suggestions > li > div.detail-text em {
-  color: rgb(150, 150, 150);
   font-style: normal;
 }
 
 list.autocomplete-suggestions > li > div[search-icon] {
-  background: -webkit-image-set(
-      url(../images/files/ui/search.png) 1x,
-      url(../images/files/ui/2x/search.png) 2x) center no-repeat;
+  -webkit-mask-image: url(../images/files/ui/search.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  background-color: currentColor;
 }
 
 list.autocomplete-suggestions > [selected],
 list.autocomplete-suggestions > [lead] {
-  background-color: rgba(0, 0, 0, 8%);
+  background-color: var(--cros-menu-item-background-hover);
 }
 
 #gear-menu > cr-menu-item:not(.menuitem-button),

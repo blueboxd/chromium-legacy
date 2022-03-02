@@ -117,7 +117,8 @@ void WebUIImpl::WebUIRenderFrameCreated(RenderFrameHost* render_frame_host) {
 }
 
 void WebUIImpl::RenderFrameReused(RenderFrameHost* render_frame_host) {
-  if (!render_frame_host->GetParent()) {
+  // This is expected to be called only for outermost main frames.
+  if (!render_frame_host->GetParentOrOuterDocument()) {
     GURL site_url = render_frame_host->GetSiteInstance()->GetSiteURL();
     GetContentClient()->browser()->LogWebUIUrl(site_url);
   }
@@ -133,8 +134,9 @@ void WebUIImpl::RenderFrameDeleted() {
 
 void WebUIImpl::SetUpMojoConnection() {
   // TODO(nasko): WebUI mojo might be useful to be registered for
-  // subframes as well, though at this time there is no such usage.
-  if (frame_host_->GetParent())
+  // subframes as well, though at this time there is no such usage but currently
+  // this is expected to be called only for outermost main frames.
+  if (frame_host_->GetParentOrOuterDocument())
     return;
 
   frame_host_->GetFrameBindingsControl()->BindWebUI(
@@ -143,7 +145,8 @@ void WebUIImpl::SetUpMojoConnection() {
 }
 
 void WebUIImpl::TearDownMojoConnection() {
-  if (frame_host_->GetParent())
+  // This is expected to be called only for outermost main frames.
+  if (frame_host_->GetParentOrOuterDocument())
     return;
 
   remote_.reset();

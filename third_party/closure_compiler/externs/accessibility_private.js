@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -317,6 +317,35 @@ chrome.accessibilityPrivate.SelectToSpeakPanelAction = {
 };
 
 /**
+ * @enum {string}
+ */
+chrome.accessibilityPrivate.SetNativeChromeVoxResponse = {
+  SUCCESS: 'success',
+  TALKBACK_NOT_INSTALLED: 'talkbackNotInstalled',
+  WINDOW_NOT_FOUND: 'windowNotFound',
+  FAILURE: 'failure',
+};
+
+/**
+ * @enum {string}
+ */
+chrome.accessibilityPrivate.DictationBubbleIconType = {
+  HIDDEN: 'hidden',
+  STANDBY: 'standby',
+  MACRO_SUCCESS: 'macroSuccess',
+  MACRO_FAIL: 'macroFail',
+};
+
+/**
+ * @typedef {{
+ *   visible: boolean,
+ *   icon: !chrome.accessibilityPrivate.DictationBubbleIconType,
+ *   text: (string|undefined)
+ * }}
+ */
+chrome.accessibilityPrivate.DictationBubbleProperties;
+
+/**
  * Property to indicate whether event source should default to touch.
  * @type {number}
  */
@@ -410,8 +439,10 @@ chrome.accessibilityPrivate.setPointScanState = function(state) {};
 /**
  * Sets current ARC app to use native ARC support.
  * @param {boolean} enabled True for ChromeVox (native), false for TalkBack.
+ * @param {function(!chrome.accessibilityPrivate.SetNativeChromeVoxResponse): void}
+ *     callback
  */
-chrome.accessibilityPrivate.setNativeChromeVoxArcSupportForCurrentApp = function(enabled) {};
+chrome.accessibilityPrivate.setNativeChromeVoxArcSupportForCurrentApp = function(enabled, callback) {};
 
 /**
  * Sends a fabricated key event.
@@ -532,6 +563,13 @@ chrome.accessibilityPrivate.showConfirmationDialog = function(title, description
  *     string.
  */
 chrome.accessibilityPrivate.getLocalizedDomKeyStringForKeyCode = function(keyCode, callback) {};
+
+/**
+ * Updates Dictation's bubble UI.
+ * @param {!chrome.accessibilityPrivate.DictationBubbleProperties} properties
+ *     Properties for the updated Dictation bubble UI.
+ */
+chrome.accessibilityPrivate.updateDictationBubble = function(properties) {};
 
 /**
  * Fired whenever ChromeVox should output introduction.

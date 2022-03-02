@@ -17,9 +17,9 @@
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_url_data_source.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/url_constants.h"
 #include "ui/webui/webui_allowlist.h"
@@ -90,14 +90,14 @@ UnittestingSystemAppDelegate::UnittestingSystemAppDelegate(
     SystemAppType type,
     const std::string& name,
     const GURL& url,
-    WebApplicationInfoFactory info_factory)
+    WebAppInstallInfoFactory info_factory)
     : web_app::SystemWebAppDelegate(type, name, url, nullptr),
       info_factory_(info_factory) {}
 
 UnittestingSystemAppDelegate::~UnittestingSystemAppDelegate() = default;
 
-std::unique_ptr<WebApplicationInfo>
-UnittestingSystemAppDelegate::GetWebAppInfo() const {
+std::unique_ptr<WebAppInstallInfo> UnittestingSystemAppDelegate::GetWebAppInfo()
+    const {
   return info_factory_.Run();
 }
 
@@ -115,8 +115,13 @@ bool UnittestingSystemAppDelegate::ShouldReuseExistingWindow() const {
 bool UnittestingSystemAppDelegate::ShouldShowNewWindowMenuOption() const {
   return show_new_window_menu_option_;
 }
-bool UnittestingSystemAppDelegate::ShouldIncludeLaunchDirectory() const {
-  return include_launch_directory_;
+base::FilePath UnittestingSystemAppDelegate::GetLaunchDirectory(
+    const apps::AppLaunchParams& params) const {
+  // When set to include a launch directory, use the directory of the first
+  // file.
+  return include_launch_directory_ && !params.launch_files.empty()
+             ? params.launch_files[0].DirName()
+             : base::FilePath();
 }
 
 std::vector<int> UnittestingSystemAppDelegate::GetAdditionalSearchTerms()
@@ -128,6 +133,9 @@ bool UnittestingSystemAppDelegate::ShouldShowInLauncher() const {
 }
 bool UnittestingSystemAppDelegate::ShouldShowInSearch() const {
   return show_in_search_;
+}
+bool UnittestingSystemAppDelegate::ShouldHandleFileOpenIntents() const {
+  return handles_file_open_intents_;
 }
 bool UnittestingSystemAppDelegate::ShouldCaptureNavigations() const {
   return capture_navigations_;
@@ -197,6 +205,9 @@ void UnittestingSystemAppDelegate::SetShouldShowInLauncher(bool value) {
 void UnittestingSystemAppDelegate::SetShouldShowInSearch(bool value) {
   show_in_search_ = value;
 }
+void UnittestingSystemAppDelegate::SetShouldHandleFileOpenIntents(bool value) {
+  handles_file_open_intents_ = value;
+}
 void UnittestingSystemAppDelegate::SetShouldCaptureNavigations(bool value) {
   capture_navigations_ = value;
 }
@@ -265,8 +276,8 @@ TestSystemWebAppInstallation::TestSystemWebAppInstallation() {
 
 TestSystemWebAppInstallation::~TestSystemWebAppInstallation() = default;
 
-std::unique_ptr<WebApplicationInfo> GenerateWebApplicationInfoForTestApp() {
-  auto info = std::make_unique<WebApplicationInfo>();
+std::unique_ptr<WebAppInstallInfo> GenerateWebAppInstallInfoForTestApp() {
+  auto info = std::make_unique<WebAppInstallInfo>();
   // the pwa.html is arguably wrong, but the manifest version uses it
   // incorrectly as well, and it's a lot of work to fix it. App ids are
   // generated from this, and it's important to keep it stable across the
@@ -280,9 +291,9 @@ std::unique_ptr<WebApplicationInfo> GenerateWebApplicationInfoForTestApp() {
   return info;
 }
 
-std::unique_ptr<WebApplicationInfo>
-GenerateWebApplicationInfoForTestAppUntrusted() {
-  auto info = GenerateWebApplicationInfoForTestApp();
+std::unique_ptr<WebAppInstallInfo>
+GenerateWebAppInstallInfoForTestAppUntrusted() {
+  auto info = GenerateWebAppInstallInfoForTestApp();
   info->start_url = GURL("chrome-untrusted://test-system-app/pwa.html");
   info->scope = GURL("chrome-untrusted://test-system-app/");
   return info;
@@ -301,7 +312,7 @@ TestSystemWebAppInstallation::SetUpTabbedMultiWindowApp() {
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::TERMINAL, "Terminal",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
   delegate->SetShouldReuseExistingWindow(false);
   delegate->SetShouldHaveTabStrip(true);
 
@@ -316,7 +327,7 @@ TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp() {
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::SETTINGS, "OSSettings",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
   delegate->SetUrlInSystemAppScope(GURL("http://example.com/in-scope"));
 
   return base::WrapUnique(
@@ -331,7 +342,7 @@ TestSystemWebAppInstallation::SetUpAppThatReceivesLaunchFiles(
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::MEDIA, "Media",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
 
   if (include_launch_directory == IncludeLaunchDirectory::kYes) {
     delegate->SetShouldIncludeLaunchDirectory(true);
@@ -354,7 +365,7 @@ TestSystemWebAppInstallation::SetUpAppWithEnabledOriginTrials(
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::MEDIA, "Media",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
 
   delegate->SetEnabledOriginTrials(origin_to_trials);
   return base::WrapUnique(
@@ -368,7 +379,7 @@ TestSystemWebAppInstallation::SetUpAppNotShownInLauncher() {
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::MEDIA, "Test",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
 
   delegate->SetShouldShowInLauncher(false);
 
@@ -383,8 +394,22 @@ TestSystemWebAppInstallation::SetUpAppNotShownInSearch() {
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::MEDIA, "Test",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
   delegate->SetShouldShowInSearch(false);
+
+  return base::WrapUnique(
+      new TestSystemWebAppInstallation(std::move(delegate)));
+}
+
+// static
+std::unique_ptr<TestSystemWebAppInstallation>
+TestSystemWebAppInstallation::SetUpAppThatHandlesFileOpenIntents() {
+  std::unique_ptr<UnittestingSystemAppDelegate> delegate =
+      std::make_unique<UnittestingSystemAppDelegate>(
+          SystemAppType::MEDIA, "Test",
+          GURL("chrome://test-system-app/pwa.html"),
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
+  delegate->SetShouldHandleFileOpenIntents(true);
 
   return base::WrapUnique(
       new TestSystemWebAppInstallation(std::move(delegate)));
@@ -397,7 +422,7 @@ TestSystemWebAppInstallation::SetUpAppWithAdditionalSearchTerms() {
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::MEDIA, "Test",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
   delegate->SetAdditionalSearchTerms({IDS_SETTINGS_SECURITY});
 
   return base::WrapUnique(
@@ -411,7 +436,7 @@ TestSystemWebAppInstallation::SetUpAppThatCapturesNavigation() {
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::HELP, "Test",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
   delegate->SetShouldCaptureNavigations(true);
 
   auto* installation = new TestSystemWebAppInstallation(std::move(delegate));
@@ -423,7 +448,7 @@ TestSystemWebAppInstallation::SetUpAppThatCapturesNavigation() {
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::SETTINGS, "Initiating App", kInitiatingAppUrl,
           base::BindLambdaForTesting([]() {
-            auto info = std::make_unique<WebApplicationInfo>();
+            auto info = std::make_unique<WebAppInstallInfo>();
             // the pwa.html is arguably wrong, but the manifest
             // version uses it incorrectly as well, and it's a lot of
             // work to fix it. App ids are generated from this, and
@@ -451,8 +476,7 @@ TestSystemWebAppInstallation::SetUpChromeUntrustedApp() {
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::SETTINGS, "Test",
           GURL("chrome-untrusted://test-system-app/pwa.html"),
-          base::BindRepeating(
-              &GenerateWebApplicationInfoForTestAppUntrusted))));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestAppUntrusted))));
 }
 
 // static
@@ -462,7 +486,7 @@ TestSystemWebAppInstallation::SetUpNonResizeableAndNonMaximizableApp() {
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::MEDIA, "Test",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
   delegate->SetShouldAllowResize(false);
   delegate->SetShouldAllowMaximize(false);
 
@@ -477,7 +501,7 @@ TestSystemWebAppInstallation::SetUpAppWithBackgroundTask() {
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::MEDIA, "Test",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
 
   SystemAppBackgroundTaskInfo background_task(
       base::Days(1), GURL("chrome://test-system-app/page2.html"), true);
@@ -495,7 +519,7 @@ TestSystemWebAppInstallation::SetupAppWithAllowScriptsToCloseWindows(
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::MEDIA, "Test",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
   /* The default value of allow_scripts_to_close_windows is false. */
   if (value) {
     delegate->SetShouldAllowScriptsToCloseWindows(value);
@@ -511,7 +535,7 @@ TestSystemWebAppInstallation::SetUpAppWithTabStrip(bool has_tab_strip) {
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::MEDIA, "Test",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
   delegate->SetShouldHaveTabStrip(has_tab_strip);
 
   return base::WrapUnique(
@@ -526,7 +550,7 @@ TestSystemWebAppInstallation::SetUpAppWithDefaultBounds(
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::MEDIA, "Test",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
   delegate->SetDefaultBounds(
       base::BindLambdaForTesting([&](Browser*) { return default_bounds; }));
 
@@ -541,7 +565,7 @@ TestSystemWebAppInstallation::SetUpAppWithNewWindowMenuItem() {
       std::make_unique<UnittestingSystemAppDelegate>(
           SystemAppType::FILE_MANAGER, "Test",
           GURL("chrome://test-system-app/pwa.html"),
-          base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+          base::BindRepeating(&GenerateWebAppInstallInfoForTestApp));
   delegate->SetShouldShowNewWindowMenuOption(true);
   delegate->SetShouldReuseExistingWindow(false);
 
@@ -557,8 +581,8 @@ TestSystemWebAppInstallation::SetUpAppWithShortcuts() {
           SystemAppType::SHORTCUT_CUSTOMIZATION, "Shortcuts",
           GURL("chrome://test-system-app/pwa.html"),
           base::BindLambdaForTesting([]() {
-            std::unique_ptr<WebApplicationInfo> info =
-                GenerateWebApplicationInfoForTestApp();
+            std::unique_ptr<WebAppInstallInfo> info =
+                GenerateWebAppInstallInfoForTestApp();
             info->title = u"Shortcuts";
             {
               WebAppShortcutsMenuItemInfo menu_item;
@@ -594,7 +618,7 @@ CreateSystemAppDelegateWithWindowConfig(
     SystemWebAppWindowConfig window_config) {
   auto* delegate = new UnittestingSystemAppDelegate(
       type, "Test App", app_url, base::BindLambdaForTesting([=]() {
-        auto info = std::make_unique<WebApplicationInfo>();
+        auto info = std::make_unique<WebAppInstallInfo>();
         info->start_url = app_url;
         info->scope = app_url.DeprecatedGetOriginAsURL();
         info->title = u"Test System App";

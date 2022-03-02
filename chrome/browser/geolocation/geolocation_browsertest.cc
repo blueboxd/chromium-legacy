@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,7 +16,6 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -31,8 +29,6 @@
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/test/permission_request_observer.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -65,7 +61,7 @@ std::string RunScript(content::RenderFrameHost* render_frame_host,
 // Note: NavigateToURLBlockUntilNavigationsComplete doesn't seem to work for
 // multiple embedded iframes, as notifications seem to be 'batched'. Instead, we
 // load and wait one single frame here by calling a javascript function.
-class IFrameLoader : public content::NotificationObserver {
+class IFrameLoader : public content::WebContentsObserver {
  public:
   IFrameLoader(Browser* browser, int iframe_id, const GURL& url);
 
@@ -74,16 +70,14 @@ class IFrameLoader : public content::NotificationObserver {
 
   ~IFrameLoader() override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // content::WebContentsObserver
+  void DidStopLoading() override;
+  void DomOperationResponse(content::RenderFrameHost* render_frame_host,
+                            const std::string& json_string) override;
 
   const GURL& iframe_url() const { return iframe_url_; }
 
  private:
-  content::NotificationRegistrar registrar_;
-
   // If true the navigation has completed.
   bool navigation_completed_;
 
@@ -94,6 +88,8 @@ class IFrameLoader : public content::NotificationObserver {
 
   // The URL for the iframe we just loaded.
   GURL iframe_url_;
+  base::RunLoop run_loop;
+  base::OnceClosure quit_closure_;
 };
 
 IFrameLoader::IFrameLoader(Browser* browser, int iframe_id, const GURL& url)
@@ -101,20 +97,18 @@ IFrameLoader::IFrameLoader(Browser* browser, int iframe_id, const GURL& url)
       javascript_completed_(false) {
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  content::NavigationController* controller = &web_contents->GetController();
-  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
-                 content::Source<content::NavigationController>(controller));
-  registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                 content::NotificationService::AllSources());
+  content::WebContentsObserver::Observe(web_contents);
   std::string script(base::StringPrintf(
       "window.domAutomationController.send(addIFrame(%d, \"%s\"));",
       iframe_id, url.spec().c_str()));
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16(script), base::NullCallback());
-  content::RunMessageLoop();
+
+  quit_closure_ = run_loop.QuitWhenIdleClosure();
+  run_loop.Run();
 
   EXPECT_EQ(base::StringPrintf("\"%d\"", iframe_id), javascript_response_);
-  registrar_.RemoveAll();
+  content::WebContentsObserver::Observe(nullptr);
   // Now that we loaded the iframe, let's fetch its src.
   script = base::StringPrintf(
       "window.domAutomationController.send(getIFrameSrc(%d))", iframe_id);
@@ -124,18 +118,19 @@ IFrameLoader::IFrameLoader(Browser* browser, int iframe_id, const GURL& url)
 IFrameLoader::~IFrameLoader() {
 }
 
-void IFrameLoader::Observe(int type,
-                           const content::NotificationSource& source,
-                           const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_LOAD_STOP) {
-    navigation_completed_ = true;
-  } else if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
-    content::Details<std::string> dom_op_result(details);
-    javascript_response_ = *dom_op_result.ptr();
-    javascript_completed_ = true;
-  }
+void IFrameLoader::DidStopLoading() {
+  navigation_completed_ = true;
   if (javascript_completed_ && navigation_completed_)
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    std::move(quit_closure_).Run();
+}
+
+void IFrameLoader::DomOperationResponse(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& json_string) {
+  javascript_response_ = json_string;
+  javascript_completed_ = true;
+  if (javascript_completed_ && navigation_completed_)
+    std::move(quit_closure_).Run();
 }
 
 }  // namespace
@@ -209,8 +204,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
 
   // Calls watchPosition in JavaScript and accepts or denies the resulting
   // permission request. Returns |true| if the expected behavior happened.
-  bool WatchPositionAndGrantPermission() WARN_UNUSED_RESULT;
-  bool WatchPositionAndDenyPermission() WARN_UNUSED_RESULT;
+  [[nodiscard]] bool WatchPositionAndGrantPermission();
+  [[nodiscard]] bool WatchPositionAndDenyPermission();
 
   // Calls watchPosition in JavaScript and observes whether the permission
   // request is shown without interacting with it. Callers should set
@@ -466,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForAllowedOrigin) {
 }
 
 // Crashes on Win only.  http://crbug.com/1014506
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_PromptForOffTheRecord DISABLED_PromptForOffTheRecord
 #else
 #define MAYBE_PromptForOffTheRecord PromptForOffTheRecord

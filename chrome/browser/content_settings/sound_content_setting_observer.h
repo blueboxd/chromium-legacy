@@ -15,6 +15,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+namespace content {
+class Page;
+}
+
 class SoundContentSettingObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<SoundContentSettingObserver>,
@@ -37,8 +41,7 @@ class SoundContentSettingObserver
   // content::WebContentsObserver implementation.
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
+  void PrimaryPageChanged(content::Page& page) override;
   void OnAudioStateChanged(bool audible) override;
 
   // content_settings::Observer implementation.
@@ -65,7 +68,7 @@ class SoundContentSettingObserver
   // Determine the reason why audio was blocked on the page.
   MuteReason GetSiteMutedReason();
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Update the autoplay policy on the attached |WebContents|.
   void UpdateAutoplayPolicy();
 

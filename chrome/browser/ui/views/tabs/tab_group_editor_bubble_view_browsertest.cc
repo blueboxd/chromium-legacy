@@ -44,7 +44,7 @@ class TabGroupEditorBubbleViewDialogBrowserTest : public DialogBrowserTest {
   }
 };
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_InvokeUi_default DISABLED_InvokeUi_default
 #else
 #define MAYBE_InvokeUi_default InvokeUi_default
@@ -179,21 +179,8 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
       active_browser->tab_strip_model()->group_model()->ListTabGroups().size());
 }
 
-class TabGroupEditorBubbleViewDialogBrowserTestWithFreezingEnabled
-    : public TabGroupEditorBubbleViewDialogBrowserTest {
- public:
-  TabGroupEditorBubbleViewDialogBrowserTestWithFreezingEnabled() {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kTabGroupsCollapseFreezing}, {});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(
-    TabGroupEditorBubbleViewDialogBrowserTestWithFreezingEnabled,
-    CollapsingGroupFreezesAllTabs) {
+IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
+                       CollapsingGroupFreezesAllTabs) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   InProcessBrowserTest::AddBlankTabAndShow(browser());
   InProcessBrowserTest::AddBlankTabAndShow(browser());

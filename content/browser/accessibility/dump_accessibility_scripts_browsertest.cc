@@ -19,7 +19,7 @@ using ui::AXPropertyFilter;
 using ui::AXScriptInstruction;
 using ui::AXTreeFormatter;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 
 constexpr const char kMacAction[]{"mac/action"};
 constexpr const char kMacAttributes[]{"mac/attributes"};
@@ -134,7 +134,7 @@ struct TestPassToString {
 // Scripting supported on Mac only.
 //
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 
 INSTANTIATE_TEST_SUITE_P(All,
                          DumpAccessibilityScriptTest,
@@ -193,6 +193,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXAutocompleteValue) {
   RunTypedTest<kMacAttributes>("ax-autocomplete-value.html");
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXBlockQuoteLevel) {
+  RunTypedTest<kMacAttributes>("ax-block-quote-level.html");
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXColumnHeaderUIElements) {
   RunTypedTest<kMacAttributes>("ax-column-header-ui-elements.html");
 }
@@ -201,12 +205,20 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXDetailsElements) {
   RunTypedTest<kMacAttributes>("ax-details-elements.html");
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXDOMClassList) {
+  RunTypedTest<kMacAttributes>("ax-dom-class-list.html");
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXDOMIdentifier) {
   RunTypedTest<kMacAttributes>("ax-dom-identifier.html");
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXHasPopup) {
   RunTypedTest<kMacAttributes>("ax-has-popup.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXDropEffects) {
+  RunTypedTest<kMacAttributes>("ax-drop-effects.html");
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXInvalid) {

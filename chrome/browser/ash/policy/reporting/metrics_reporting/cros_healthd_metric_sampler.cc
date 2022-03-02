@@ -32,11 +32,41 @@ ThunderboltSecurityLevel TranslateThunderboltSecurityLevel(
   NOTREACHED();
 }
 
+MemoryEncryptionState TranslateMemoryEncryptionState(
+    cros_healthd::EncryptionState encryption_state) {
+  switch (encryption_state) {
+    case cros_healthd::EncryptionState::kUnknown:
+      return MEMORY_ENCRYPTION_STATE_UNKNOWN;
+    case cros_healthd::EncryptionState::kEncryptionDisabled:
+      return MEMORY_ENCRYPTION_STATE_DISABLED;
+    case cros_healthd::EncryptionState::kTmeEnabled:
+      return MEMORY_ENCRYPTION_STATE_TME;
+    case cros_healthd::EncryptionState::kMktmeEnabled:
+      return MEMORY_ENCRYPTION_STATE_MKTME;
+  }
+
+  NOTREACHED();
+}
+
+MemoryEncryptionAlgorithm TranslateMemoryEncryptionAlgorithm(
+    cros_healthd::CryptoAlgorithm encryption_algorithm) {
+  switch (encryption_algorithm) {
+    case cros_healthd::CryptoAlgorithm::kUnknown:
+      return MEMORY_ENCRYPTION_ALGORITHM_UNKNOWN;
+    case cros_healthd::CryptoAlgorithm::kAesXts128:
+      return MEMORY_ENCRYPTION_ALGORITHM_AES_XTS_128;
+    case cros_healthd::CryptoAlgorithm::kAesXts256:
+      return MEMORY_ENCRYPTION_ALGORITHM_AES_XTS_256;
+  }
+
+  NOTREACHED();
+}
+
 void HandleBusResult(MetricCallback callback,
                      CrosHealthdMetricSampler::MetricType metric_type,
+                     MetricData metric_data,
                      cros_healthd::TelemetryInfoPtr result) {
   bool anything_reported = false;
-  MetricData metric_data;
   const auto& bus_result = result->bus_result;
 
   if (!bus_result.is_null()) {
@@ -69,15 +99,15 @@ void HandleBusResult(MetricCallback callback,
   }
 
   if (anything_reported) {
-    std::move(callback).Run(metric_data);
+    std::move(callback).Run(std::move(metric_data));
   }
 }
 
 void HandleCpuResult(MetricCallback callback,
                      CrosHealthdMetricSampler::MetricType metric_type,
+                     MetricData metric_data,
                      cros_healthd::TelemetryInfoPtr result) {
   bool anything_reported = false;
-  MetricData metric_data;
   const auto& cpu_result = result->cpu_result;
 
   if (!cpu_result.is_null()) {
@@ -100,7 +130,7 @@ void HandleCpuResult(MetricCallback callback,
           auto* const keylocker_info_out = metric_data.mutable_info_data()
                                                ->mutable_cpu_info()
                                                ->mutable_keylocker_info();
-          auto* keylocker_info = cpu_info->keylocker_info.get();
+          const auto* const keylocker_info = cpu_info->keylocker_info.get();
           if (keylocker_info) {
             keylocker_info_out->set_supported(true);
             keylocker_info_out->set_configured(
@@ -118,26 +148,189 @@ void HandleCpuResult(MetricCallback callback,
   }
 
   if (anything_reported) {
-    std::move(callback).Run(metric_data);
+    std::move(callback).Run(std::move(metric_data));
+  }
+}
+void HandleBootPerformanceResult(
+    MetricCallback callback,
+    CrosHealthdMetricSampler::MetricType metric_type,
+    chromeos::cros_healthd::mojom::TelemetryInfoPtr result) {
+  MetricData metric_data;
+  auto* const boot_info_out = metric_data.mutable_telemetry_data()
+                                  ->mutable_boot_performance_telemetry();
+
+  const auto& boot_performance_result = result->boot_performance_result;
+  if (!boot_performance_result.is_null()) {
+    switch (boot_performance_result->which()) {
+      case chromeos::cros_healthd::mojom::BootPerformanceResult::Tag::ERROR: {
+        DVLOG(1) << "cros_healthd: Error getting Boot Performance info: "
+                 << boot_performance_result->get_error()->msg;
+        break;
+      }
+
+      case chromeos::cros_healthd::mojom::BootPerformanceResult::Tag::
+          BOOT_PERFORMANCE_INFO: {
+        const auto& boot_performance_info =
+            boot_performance_result->get_boot_performance_info();
+        if (boot_performance_info.is_null()) {
+          DVLOG(1) << "Null BootPerformanceInfo from cros_healthd";
+          break;
+        }
+
+        // Gather boot performance info.
+        boot_info_out->set_boot_up_seconds(
+            (int64_t)boot_performance_info->boot_up_seconds);
+        boot_info_out->set_boot_up_timestamp_seconds(
+            (int64_t)boot_performance_info->boot_up_timestamp);
+        boot_info_out->set_shutdown_seconds(
+            (int64_t)boot_performance_info->shutdown_seconds);
+        boot_info_out->set_shutdown_timestamp_seconds(
+            (int64_t)boot_performance_info->shutdown_timestamp);
+        boot_info_out->set_shutdown_reason(
+            boot_performance_info->shutdown_reason);
+
+        std::move(callback).Run(metric_data);
+
+        break;
+      }
+    }
+  }
+}
+
+void HandleAudioResult(MetricCallback callback,
+                       CrosHealthdMetricSampler::MetricType metric_type,
+                       MetricData metric_data,
+                       chromeos::cros_healthd::mojom::TelemetryInfoPtr result) {
+  bool anything_reported = false;
+  auto* const audio_info_out =
+      metric_data.mutable_telemetry_data()->mutable_audio_telemetry();
+  const auto& audio_result = result->audio_result;
+
+  if (!audio_result.is_null()) {
+    switch (audio_result->which()) {
+      case chromeos::cros_healthd::mojom::AudioResult::Tag::ERROR: {
+        DVLOG(1) << "CrosHealthD: Error getting audio telemetry: "
+                 << audio_result->get_error()->msg;
+        break;
+      }
+
+      case chromeos::cros_healthd::mojom::AudioResult::Tag::AUDIO_INFO: {
+        const auto& audio_info = audio_result->get_audio_info();
+        if (audio_info.is_null()) {
+          DVLOG(1) << "CrosHealthD: No audio info received";
+          break;
+        }
+
+        if (metric_type == CrosHealthdMetricSampler::MetricType::kTelemetry) {
+          audio_info_out->set_output_mute(audio_info->output_mute);
+          audio_info_out->set_input_mute(audio_info->input_mute);
+          audio_info_out->set_output_volume(audio_info->output_volume);
+          audio_info_out->set_output_device_name(
+              audio_info->output_device_name);
+          audio_info_out->set_input_gain(audio_info->input_gain);
+          audio_info_out->set_input_device_name(audio_info->input_device_name);
+          anything_reported = true;
+        }
+        break;
+      }
+    }
+  }
+
+  if (anything_reported) {
+    std::move(callback).Run(std::move(metric_data));
+  }
+}
+
+void HandleMemoryResult(MetricCallback callback,
+                        CrosHealthdMetricSampler::MetricType metric_type,
+                        MetricData metric_data,
+                        cros_healthd::TelemetryInfoPtr result) {
+  bool anything_reported = false;
+  const auto& memory_result = result->memory_result;
+
+  if (!memory_result.is_null()) {
+    switch (memory_result->which()) {
+      case cros_healthd::MemoryResult::Tag::ERROR: {
+        DVLOG(1) << "cros_healthd: Error getting memory info: "
+                 << memory_result->get_error()->msg;
+        break;
+      }
+
+      case cros_healthd::MemoryResult::Tag::MEMORY_INFO: {
+        const auto& memory_info = memory_result->get_memory_info();
+        if (memory_result.is_null()) {
+          DVLOG(1) << "Null MemoryInfo from cros_healthd";
+          break;
+        }
+
+        // Gather memory info.
+        if (metric_type == CrosHealthdMetricSampler::MetricType::kInfo) {
+          auto* const memory_encryption_info_out =
+              metric_data.mutable_info_data()
+                  ->mutable_memory_info()
+                  ->mutable_tme_info();
+          const auto* const memory_encryption_info =
+              memory_info->memory_encryption_info.get();
+
+          if (memory_encryption_info) {
+            memory_encryption_info_out->set_encryption_state(
+                TranslateMemoryEncryptionState(
+                    memory_encryption_info->encryption_state));
+            memory_encryption_info_out->set_encryption_algorithm(
+                TranslateMemoryEncryptionAlgorithm(
+                    memory_encryption_info->active_algorithm));
+            memory_encryption_info_out->set_max_keys(
+                memory_encryption_info->max_key_number);
+            memory_encryption_info_out->set_key_length(
+                memory_encryption_info->key_length);
+          } else {
+            // If encryption info isn't set, mark it as disabled.
+            memory_encryption_info_out->set_encryption_state(
+                MEMORY_ENCRYPTION_STATE_DISABLED);
+          }
+          anything_reported = true;
+        }
+        break;
+      }
+    }
+  }
+
+  if (anything_reported) {
+    std::move(callback).Run(std::move(metric_data));
   }
 }
 
 void OnHealthdInfoReceived(MetricCallback callback,
                            cros_healthd::ProbeCategoryEnum probe_category,
                            CrosHealthdMetricSampler::MetricType metric_type,
+                           MetricData metric_data,
                            cros_healthd::TelemetryInfoPtr result) {
-  if (!result) {
-    DVLOG(1) << "cros_healthd: null telemetry result";
-    return;
-  }
+  DCHECK(result);
 
   switch (probe_category) {
-    case cros_healthd::ProbeCategoryEnum::kCpu: {
-      HandleCpuResult(std::move(callback), metric_type, std::move(result));
+    case cros_healthd::ProbeCategoryEnum::kAudio: {
+      HandleAudioResult(std::move(callback), metric_type,
+                        std::move(metric_data), std::move(result));
       break;
     }
     case cros_healthd::ProbeCategoryEnum::kBus: {
-      HandleBusResult(std::move(callback), metric_type, std::move(result));
+      HandleBusResult(std::move(callback), metric_type, std::move(metric_data),
+                      std::move(result));
+      break;
+    }
+    case cros_healthd::ProbeCategoryEnum::kCpu: {
+      HandleCpuResult(std::move(callback), metric_type, std::move(metric_data),
+                      std::move(result));
+      break;
+    }
+    case cros_healthd::ProbeCategoryEnum::kMemory: {
+      HandleMemoryResult(std::move(callback), metric_type,
+                         std::move(metric_data), std::move(result));
+      break;
+    }
+    case cros_healthd::ProbeCategoryEnum::kBootPerformance: {
+      HandleBootPerformanceResult(std::move(callback), metric_type,
+                                  std::move(result));
       break;
     }
     default: {
@@ -158,9 +351,14 @@ CrosHealthdMetricSampler::~CrosHealthdMetricSampler() = default;
 void CrosHealthdMetricSampler::Collect(MetricCallback callback) {
   auto healthd_callback =
       base::BindOnce(OnHealthdInfoReceived, std::move(callback),
-                     probe_category_, metric_type_);
+                     probe_category_, metric_type_, std::move(metric_data_));
+  metric_data_.Clear();
   chromeos::cros_healthd::ServiceConnection::GetInstance()->ProbeTelemetryInfo(
       std::vector<cros_healthd::ProbeCategoryEnum>{probe_category_},
       std::move(healthd_callback));
+}
+
+void CrosHealthdMetricSampler::SetMetricData(MetricData metric_data) {
+  metric_data_ = std::move(metric_data);
 }
 }  // namespace reporting

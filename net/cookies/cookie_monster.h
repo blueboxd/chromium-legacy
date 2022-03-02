@@ -18,6 +18,7 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
+#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -25,6 +26,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/base/schemeful_site.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_constants.h"
@@ -153,13 +155,15 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // monster's existence. If |store| is NULL, then no backing store will be
   // updated. |net_log| must outlive the CookieMonster and can be null.
   CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                NetLog* net_log);
+                NetLog* net_log,
+                bool first_party_sets_enabled);
 
   // Only used during unit testing.
   // |net_log| must outlive the CookieMonster.
   CookieMonster(scoped_refptr<PersistentCookieStore> store,
                 base::TimeDelta last_access_threshold,
-                NetLog* net_log);
+                NetLog* net_log,
+                bool first_party_sets_enabled);
 
   CookieMonster(const CookieMonster&) = delete;
   CookieMonster& operator=(const CookieMonster&) = delete;
@@ -655,6 +659,15 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // cookies. Returns whether stats were recorded.
   bool DoRecordPeriodicStats();
 
+  // Records periodic stats related to First-Party Sets usage. Note that since
+  // First-Party Sets presents a potentially asynchronous interface, these stats
+  // may be collected asynchronously w.r.t. the rest of the stats collected by
+  // `RecordPeriodicStats`.
+  // TODO(https://crbug.com/1266014): don't assume that the sets can all fit in
+  // memory at once.
+  void RecordPeriodicFirstPartySetsStats(
+      base::flat_map<SchemefulSite, std::set<SchemefulSite>> sets) const;
+
   // Defers the callback until the full coookie database has been loaded. If
   // it's already been loaded, runs the callback synchronously.
   void DoCookieCallback(base::OnceClosure callback);
@@ -750,6 +763,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::Time last_statistic_record_time_;
 
   bool persist_session_cookies_;
+
+  bool first_party_sets_enabled_;
 
   base::ThreadChecker thread_checker_;
 

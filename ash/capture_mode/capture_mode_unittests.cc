@@ -10,8 +10,6 @@
 #include "ash/accessibility/magnifier/magnifier_glass.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/capture_mode/capture_label_view.h"
-#include "ash/capture_mode/capture_mode_advanced_settings_test_api.h"
-#include "ash/capture_mode/capture_mode_advanced_settings_view.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_button.h"
 #include "ash/capture_mode/capture_mode_constants.h"
@@ -19,7 +17,7 @@
 #include "ash/capture_mode/capture_mode_menu_group.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/capture_mode_session.h"
-#include "ash/capture_mode/capture_mode_settings_entry_view.h"
+#include "ash/capture_mode/capture_mode_settings_test_api.h"
 #include "ash/capture_mode/capture_mode_settings_view.h"
 #include "ash/capture_mode/capture_mode_source_view.h"
 #include "ash/capture_mode/capture_mode_toggle_button.h"
@@ -37,10 +35,13 @@
 #include "ash/display/output_protection_delegate.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/projector/projector_annotation_tray.h"
 #include "ash/projector/projector_controller_impl.h"
+#include "ash/projector/projector_metrics.h"
 #include "ash/projector/test/mock_projector_client.h"
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/public/cpp/holding_space/holding_space_test_api.h"
+#include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/public/cpp/projector/projector_session.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -90,6 +91,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/insets.h"
@@ -298,11 +300,6 @@ class CaptureModeSessionTestApi {
     return session_->capture_mode_settings_view_;
   }
 
-  CaptureModeAdvancedSettingsView* capture_mode_advanced_settings_view() const {
-    EXPECT_TRUE(features::AreImprovedScreenCaptureSettingsEnabled());
-    return session_->capture_mode_advanced_settings_view_;
-  }
-
   views::Widget* capture_mode_settings_widget() const {
     return session_->capture_mode_settings_widget_.get();
   }
@@ -450,15 +447,6 @@ class CaptureModeTest : public AshTestBase {
     auto* controller = CaptureModeController::Get();
     DCHECK(controller->IsActive());
     return GetCaptureModeBarView()->close_button();
-  }
-
-  views::ToggleButton* GetMicrophoneToggle() const {
-    auto* controller = CaptureModeController::Get();
-    DCHECK(controller->IsActive());
-    DCHECK(GetCaptureModeSettingsView());
-    return GetCaptureModeSettingsView()
-        ->microphone_view()
-        ->toggle_button_view();
   }
 
   aura::Window* GetDimensionsLabelWindow() const {
@@ -1781,14 +1769,15 @@ TEST_F(CaptureModeTest, CursorUpdatedOnDisplayRotation) {
   // Use image capture icon as the mouse cursor icon in image capture mode.
   const ui::Cursor landscape_cursor = cursor_manager->GetCursor();
   EXPECT_EQ(CursorType::kCustom, landscape_cursor.type());
-  CaptureModeSessionTestApi test_api(controller->capture_mode_session());
-  EXPECT_TRUE(test_api.IsUsingCustomCursor(CaptureModeType::kImage));
+  CaptureModeSessionTestApi session_test_api(
+      controller->capture_mode_session());
+  EXPECT_TRUE(session_test_api.IsUsingCustomCursor(CaptureModeType::kImage));
 
   // Rotate the screen.
   orientation_test_api.SetDisplayRotation(
       display::Display::ROTATE_270, display::Display::RotationSource::ACTIVE);
   const ui::Cursor portrait_cursor = cursor_manager->GetCursor();
-  EXPECT_TRUE(test_api.IsUsingCustomCursor(CaptureModeType::kImage));
+  EXPECT_TRUE(session_test_api.IsUsingCustomCursor(CaptureModeType::kImage));
   EXPECT_NE(landscape_cursor, portrait_cursor);
 }
 
@@ -2665,7 +2654,8 @@ TEST_F(CaptureModeRecordingSizeTest, CaptureAtPixelsFullscreen) {
                    ->GetNumberOfVideoEncoderReconfigures());
 }
 
-TEST_F(CaptureModeRecordingSizeTest, CaptureAtPixelsRegion) {
+// The test is flaky. https://crbug.com/1287724.
+TEST_F(CaptureModeRecordingSizeTest, DISABLED_CaptureAtPixelsRegion) {
   float dsf = 1.6f;
   SetDeviceScaleFactor(dsf);
   auto* controller = StartVideoRecording(CaptureModeSource::kRegion);
@@ -2710,7 +2700,8 @@ TEST_F(CaptureModeRecordingSizeTest, CaptureAtPixelsRegion) {
                    ->GetNumberOfVideoEncoderReconfigures());
 }
 
-TEST_F(CaptureModeRecordingSizeTest, CaptureAtPixelsWindow) {
+// The test is flaky. https://crbug.com/1287724.
+TEST_F(CaptureModeRecordingSizeTest, DISABLED_CaptureAtPixelsWindow) {
   float dsf = 1.6f;
   SetDeviceScaleFactor(dsf);
   auto* controller = StartVideoRecording(CaptureModeSource::kWindow);
@@ -3683,59 +3674,6 @@ TEST_F(CaptureModeTest, KeyboardNavigationSpaceToClickButtons) {
   EXPECT_FALSE(controller->IsActive());
 }
 
-TEST_F(CaptureModeTest, KeyboardNavigationSettingsMenuBehavior) {
-  // This test is specific to the old settings view.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kImprovedScreenCaptureSettings);
-
-  using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
-
-  // Use window capture mode to avoid having to tab through the selection
-  // region.
-  auto* controller =
-      StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kImage);
-  auto* event_generator = GetEventGenerator();
-
-  // Tests that pressing tab closes the settings menu if it was opened with a
-  // button click.
-  ClickOnView(GetSettingsButton(), event_generator);
-  ASSERT_TRUE(GetCaptureModeSettingsWidget());
-  SendKey(ui::VKEY_TAB, event_generator);
-  EXPECT_FALSE(GetCaptureModeSettingsWidget());
-
-  // Tab until we reach the settings button and press space to open the settings
-  // menu.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, 6);
-  CaptureModeSessionTestApi test_api(controller->capture_mode_session());
-  ASSERT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
-  ASSERT_EQ(0u, test_api.GetCurrentFocusIndex());
-  SendKey(ui::VKEY_SPACE, event_generator);
-  ASSERT_TRUE(GetCaptureModeSettingsWidget());
-
-  // Verify that at this point, the focus cycler is in a pending state.
-  EXPECT_EQ(FocusGroup::kPendingSettings, test_api.GetCurrentFocusGroup());
-  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
-
-  // The next tab should focus the microphone settings entry. Pressing space
-  // should toggle the setting.
-  SendKey(ui::VKEY_TAB, event_generator);
-  ASSERT_FALSE(controller->enable_audio_recording());
-  SendKey(ui::VKEY_SPACE, event_generator);
-  EXPECT_TRUE(controller->enable_audio_recording());
-
-  // Tests that the next tab will keep the menu open and move focus to the
-  // settings button.
-  SendKey(ui::VKEY_TAB, event_generator);
-  EXPECT_TRUE(GetCaptureModeSettingsWidget());
-  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
-  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
-
-  // Tests that pressing escape will close the menu and clear focus.
-  SendKey(ui::VKEY_ESCAPE, event_generator);
-  EXPECT_FALSE(GetCaptureModeSettingsWidget());
-}
-
 // Tests that functionality to create and adjust a region with keyboard
 // shortcuts works as intended.
 TEST_F(CaptureModeTest, KeyboardNavigationSelectRegion) {
@@ -4156,24 +4094,20 @@ TEST_F(CaptureModeTest, SettingsMenuVisibilityBasic) {
 // the bar/menu, on other buttons) affects whether the settings menu should
 // close or not.
 TEST_F(CaptureModeTest, SettingsMenuVisibilityClicking) {
-  // This test is specific to the old settings view.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kImprovedScreenCaptureSettings);
-
   UpdateDisplay("800x700");
 
   auto* event_generator = GetEventGenerator();
   auto* controller = StartImageRegionCapture();
   EXPECT_TRUE(controller->IsActive());
 
-  // Test clicking on the settings menu and toggling settings doesn't close the
+  // Test clicking on the option of settings menu doesn't close the
   // settings menu.
   ClickOnView(GetSettingsButton(), event_generator);
   ClickOnView(GetCaptureModeSettingsView(), event_generator);
   EXPECT_TRUE(GetCaptureModeSettingsWidget());
   EXPECT_TRUE(GetSettingsButton()->GetToggled());
-  ClickOnView(GetMicrophoneToggle(), event_generator);
+  CaptureModeSettingsTestApi test_api;
+  ClickOnView(test_api.GetAudioOffOption(), event_generator);
   EXPECT_TRUE(GetCaptureModeSettingsWidget());
   EXPECT_TRUE(GetSettingsButton()->GetToggled());
 
@@ -4213,11 +4147,6 @@ TEST_F(CaptureModeTest, SettingsMenuVisibilityClicking) {
 
 // Tests the settings menu functionality when in region mode.
 TEST_F(CaptureModeTest, SettingsMenuVisibilityDrawingRegion) {
-  // This test is specific to the old settings view.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kImprovedScreenCaptureSettings);
-
   UpdateDisplay("800x700");
 
   auto* event_generator = GetEventGenerator();
@@ -4268,37 +4197,6 @@ TEST_F(CaptureModeTest, SettingsMenuVisibilityDrawingRegion) {
       gfx::Vector2d(0, -50));
   EXPECT_EQ(0.1f, capture_bar_layer->GetTargetOpacity());
   EXPECT_FALSE(GetCaptureModeSettingsWidget());
-}
-
-// Tests that toggling the microphone setting updates the state in the
-// controller, and persists between sessions.
-TEST_F(CaptureModeTest, AudioRecordingSetting) {
-  // This test is specific to the old settings view.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kImprovedScreenCaptureSettings);
-
-  auto* controller = StartImageRegionCapture();
-  auto* event_generator = GetEventGenerator();
-
-  // Test that the audio recording preference is defaulted to false, so the
-  // toggle should start in the off position.
-  EXPECT_FALSE(controller->enable_audio_recording());
-
-  // Test that toggling on the micophone updates the preference in the
-  // controller, as well as displaying the toggle as on.
-  ClickOnView(GetSettingsButton(), event_generator);
-  EXPECT_FALSE(GetMicrophoneToggle()->GetIsOn());
-  ClickOnView(GetMicrophoneToggle(), event_generator);
-  EXPECT_TRUE(controller->enable_audio_recording());
-  EXPECT_TRUE(GetMicrophoneToggle()->GetIsOn());
-
-  // Test that the user selected audio preference for audio recording is
-  // remembered between sessions.
-  SendKey(ui::VKEY_ESCAPE, event_generator);
-  EXPECT_TRUE(controller->enable_audio_recording());
-  StartImageRegionCapture();
-  EXPECT_TRUE(controller->enable_audio_recording());
 }
 
 TEST_F(CaptureModeTest, CaptureFolderSetting) {
@@ -4767,6 +4665,14 @@ TEST_F(CaptureModeCursorOverlayTest, OverlayBoundsAccountForCursorScaleFactor) {
 // TODO(afakhry): Add more cursor overlay tests.
 
 // Test fixture to verify capture mode + projector integration.
+
+namespace {
+
+constexpr char kProjectorCreationFlowHistogramName[] =
+    "Ash.Projector.CreationFlow.ClamshellMode";
+
+}  // namespace
+
 class ProjectorCaptureModeIntegrationTests
     : public CaptureModeTest,
       public ::testing::WithParamInterface<CaptureModeSource> {
@@ -4785,6 +4691,11 @@ class ProjectorCaptureModeIntegrationTests
     CaptureModeTest::SetUp();
     auto* projector_controller = ProjectorController::Get();
     projector_controller->SetClient(&projector_client_);
+    ON_CALL(projector_client_, StopSpeechRecognition)
+        .WillByDefault(testing::Invoke([]() {
+          ProjectorController::Get()->OnSpeechRecognitionStopped();
+        }));
+
     // Simulate the availability of speech recognition.
     projector_controller->OnSpeechRecognitionAvailabilityChanged(
         SpeechRecognitionAvailability::kAvailable);
@@ -4884,6 +4795,7 @@ class ProjectorCaptureModeIntegrationTests
   base::test::ScopedFeatureList scoped_feature_list_;
   MockProjectorClient projector_client_;
   std::unique_ptr<aura::Window> window_;
+  base::HistogramTester histogram_tester_;
 };
 
 // static
@@ -4898,7 +4810,6 @@ TEST_F(ProjectorCaptureModeIntegrationTests, EntryPoint) {
   // forces it enabled.
   EXPECT_FALSE(controller->enable_audio_recording());
 
-  base::HistogramTester histogram_tester;
   StartProjectorModeSession();
   EXPECT_TRUE(controller->IsActive());
   auto* session = controller->capture_mode_session();
@@ -4907,51 +4818,37 @@ TEST_F(ProjectorCaptureModeIntegrationTests, EntryPoint) {
 
   constexpr char kEntryPointHistogram[] =
       "Ash.CaptureModeController.EntryPoint.ClamshellMode";
-  histogram_tester.ExpectBucketCount(kEntryPointHistogram,
-                                     CaptureModeEntryType::kProjector, 1);
+  histogram_tester_.ExpectBucketCount(kEntryPointHistogram,
+                                      CaptureModeEntryType::kProjector, 1);
 }
 
-// Tests that when the advanced capture mode settings are enabled, a simplified
-// view of the settings are shown.
-TEST_F(ProjectorCaptureModeIntegrationTests, WithAdvancedSettings) {
-  base::test::ScopedFeatureList scoped_feature_list{
-      features::kImprovedScreenCaptureSettings};
-
+// Tests that the settings view is simplified in projector mode.
+TEST_F(ProjectorCaptureModeIntegrationTests, CaptureModeSettings) {
   auto* controller = CaptureModeController::Get();
   StartProjectorModeSession();
   auto* event_generator = GetEventGenerator();
 
   ClickOnView(GetSettingsButton(), event_generator);
 
-  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeSettingsTestApi test_api;
 
   // The "Save-to" menu group should never be added.
   CaptureModeMenuGroup* save_to_menu_group = test_api.GetSaveToMenuGroup();
   EXPECT_FALSE(save_to_menu_group);
 
-  // The audio-off option should be disabled, unchecked and not interactable
-  // (even when clicked).
-  views::View* audio_off_option = test_api.GetAudioOffOption();
-  EXPECT_FALSE(audio_off_option->GetEnabled());
+  // The audio-off option should never be added.
+  EXPECT_FALSE(test_api.GetAudioOffOption());
+
   CaptureModeMenuGroup* audio_input_menu_group =
       test_api.GetAudioInputMenuGroup();
   EXPECT_TRUE(audio_input_menu_group->IsOptionChecked(kAudioMicrophone));
-  EXPECT_FALSE(audio_input_menu_group->IsOptionChecked(kAudioOff));
-  ClickOnView(audio_off_option, event_generator);
-  EXPECT_TRUE(audio_input_menu_group->IsOptionChecked(kAudioMicrophone));
-  EXPECT_FALSE(audio_input_menu_group->IsOptionChecked(kAudioOff));
   EXPECT_TRUE(controller->enable_audio_recording());
 }
 
-// Tests the keyboard navigation for projector mode with advanced capture mode
-// settings enabled. The `image_toggle_button_` in `CaptureModeTypeView` and the
-// `Off` audio input option in `CaptureModeAdvancedSettingsView` are disabled in
-// projector mode, thus they should be skipped while tabbing though.
-TEST_F(ProjectorCaptureModeIntegrationTests,
-       KeyboardNavigationWithAdvancedSettings) {
-  base::test::ScopedFeatureList scoped_feature_list{
-      features::kImprovedScreenCaptureSettings};
-  ASSERT_TRUE(features::AreImprovedScreenCaptureSettingsEnabled());
+// Tests the keyboard navigation for projector mode. The `image_toggle_button_`
+// in `CaptureModeTypeView` and the `Off` audio input option in
+// `CaptureModeSettingsView` are not available in projector mode.
+TEST_F(ProjectorCaptureModeIntegrationTests, KeyboardNavigationBasic) {
   auto* controller = CaptureModeController::Get();
   // Use `kFullscreen` here to minimize the number of tabs to reach the setting
   // button.
@@ -4961,9 +4858,8 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
   using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
   CaptureModeSessionTestApi test_api(controller->capture_mode_session());
 
-  EXPECT_FALSE(GetImageToggleButton()->GetEnabled());
-  // Tab once, check the image toggle button is skipped and the current focused
-  // view is the video toggle button.
+  EXPECT_FALSE(GetImageToggleButton());
+  // Tab once, check the current focused view is the video toggle button.
   auto* event_generator = GetEventGenerator();
   SendKey(ui::VKEY_TAB, event_generator);
   EXPECT_EQ(test_api.GetCurrentFocusedView()->GetView(),
@@ -4974,17 +4870,17 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
   SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/4);
   SendKey(ui::VKEY_SPACE, event_generator);
   EXPECT_EQ(FocusGroup::kPendingSettings, test_api.GetCurrentFocusGroup());
-  CaptureModeAdvancedSettingsView* settings_menu =
-      test_api.capture_mode_advanced_settings_view();
+  CaptureModeSettingsView* settings_menu =
+      test_api.capture_mode_settings_view();
   ASSERT_TRUE(settings_menu);
 
-  CaptureModeAdvancedSettingsTestApi advanced_settings_test_api;
-  // Tab twice, check the `Off` option is skipped and remains disabled. The
-  // current focused view is the `Microphone` option.
+  CaptureModeSettingsTestApi settings_test_api;
+  // The `Off` option should not be visible.
+  EXPECT_FALSE(settings_test_api.GetAudioOffOption());
+  // Tab twice, the current focused view is the `Microphone` option.
   SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/2);
-  EXPECT_FALSE(advanced_settings_test_api.GetAudioOffOption()->GetEnabled());
   EXPECT_EQ(test_api.GetCurrentFocusedView()->GetView(),
-            advanced_settings_test_api.GetMicrophoneOption());
+            settings_test_api.GetMicrophoneOption());
 }
 
 TEST_F(ProjectorCaptureModeIntegrationTests, BarButtonsState) {
@@ -4992,10 +4888,9 @@ TEST_F(ProjectorCaptureModeIntegrationTests, BarButtonsState) {
   StartProjectorModeSession();
   EXPECT_TRUE(controller->IsActive());
 
-  // The image toggle button should be disabled, whereas the video toggle button
-  // should be enabled and active.
-  EXPECT_FALSE(GetImageToggleButton()->GetEnabled());
-  EXPECT_FALSE(GetImageToggleButton()->GetToggled());
+  // The image toggle button shouldn't be available, whereas the video toggle
+  // button should be enabled and active.
+  EXPECT_FALSE(GetImageToggleButton());
   EXPECT_TRUE(GetVideoToggleButton()->GetEnabled());
   EXPECT_TRUE(GetVideoToggleButton()->GetToggled());
 }
@@ -5005,12 +4900,18 @@ TEST_F(ProjectorCaptureModeIntegrationTests, StartEndRecording) {
   controller->SetSource(CaptureModeSource::kFullscreen);
   StartProjectorModeSession();
   EXPECT_TRUE(controller->IsActive());
+  histogram_tester_.ExpectUniqueSample(kProjectorCreationFlowHistogramName,
+                                       ProjectorCreationFlow::kSessionStarted,
+                                       /*count=*/1);
 
   // Hit Enter to begin recording. The recording session should be marked for
   // projector.
   PressAndReleaseKey(ui::VKEY_RETURN);
   EXPECT_CALL(projector_client_, StartSpeechRecognition());
   WaitForRecordingToStart();
+  histogram_tester_.ExpectBucketCount(kProjectorCreationFlowHistogramName,
+                                      ProjectorCreationFlow::kRecordingStarted,
+                                      /*count=*/1);
 
   EXPECT_FALSE(controller->IsActive());
   EXPECT_TRUE(controller->is_recording_in_progress());
@@ -5019,6 +4920,15 @@ TEST_F(ProjectorCaptureModeIntegrationTests, StartEndRecording) {
 
   EXPECT_CALL(projector_client_, StopSpeechRecognition());
   controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
+
+  histogram_tester_.ExpectBucketCount(kProjectorCreationFlowHistogramName,
+                                      ProjectorCreationFlow::kRecordingEnded,
+                                      /*count=*/1);
+  histogram_tester_.ExpectBucketCount(kProjectorCreationFlowHistogramName,
+                                      ProjectorCreationFlow::kSessionStopped,
+                                      /*count=*/1);
+  histogram_tester_.ExpectTotalCount(kProjectorCreationFlowHistogramName,
+                                     /*count=*/4);
 }
 
 TEST_F(ProjectorCaptureModeIntegrationTests,
@@ -5035,6 +4945,17 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
   EXPECT_FALSE(controller->IsActive());
   EXPECT_FALSE(ProjectorSession::Get()->is_active());
   EXPECT_FALSE(controller->is_recording_in_progress());
+}
+
+TEST_F(ProjectorCaptureModeIntegrationTests,
+       ProjectorSessionNeverStartsWhenVideoRecordingIsOnGoing) {
+  auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
+                                         CaptureModeType::kVideo);
+  controller->StartVideoRecordingImmediatelyForTesting();
+  EXPECT_TRUE(controller->is_recording_in_progress());
+  EXPECT_FALSE(ProjectorSession::Get()->is_active());
+  EXPECT_NE(ProjectorController::Get()->GetNewScreencastPrecondition().state,
+            NewScreencastPreconditionState::kEnabled);
 }
 
 namespace {
@@ -5089,6 +5010,17 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
     // Prepare for next iteration by resetting things back to default.
     test_delegate->ResetAllowancesToDefault();
   }
+  histogram_tester_.ExpectBucketCount(kProjectorCreationFlowHistogramName,
+                                      ProjectorCreationFlow::kSessionStarted,
+                                      /*count=*/3);
+  histogram_tester_.ExpectBucketCount(kProjectorCreationFlowHistogramName,
+                                      ProjectorCreationFlow::kRecordingAborted,
+                                      /*count=*/3);
+  histogram_tester_.ExpectBucketCount(kProjectorCreationFlowHistogramName,
+                                      ProjectorCreationFlow::kSessionStopped,
+                                      /*count=*/3);
+  histogram_tester_.ExpectTotalCount(kProjectorCreationFlowHistogramName,
+                                     /*count=*/9);
 }
 
 TEST_F(ProjectorCaptureModeIntegrationTests,
@@ -5124,6 +5056,18 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
     // Prepare for next iteration by resetting things back to default.
     test_delegate->ResetAllowancesToDefault();
   }
+
+  histogram_tester_.ExpectBucketCount(kProjectorCreationFlowHistogramName,
+                                      ProjectorCreationFlow::kSessionStarted,
+                                      /*count=*/3);
+  histogram_tester_.ExpectBucketCount(kProjectorCreationFlowHistogramName,
+                                      ProjectorCreationFlow::kRecordingAborted,
+                                      /*count=*/3);
+  histogram_tester_.ExpectBucketCount(kProjectorCreationFlowHistogramName,
+                                      ProjectorCreationFlow::kSessionStopped,
+                                      /*count=*/3);
+  histogram_tester_.ExpectTotalCount(kProjectorCreationFlowHistogramName,
+                                     /*count=*/9);
 }
 
 TEST_F(ProjectorCaptureModeIntegrationTests, RecordingOverlayWidget) {
@@ -5199,6 +5143,78 @@ TEST_P(ProjectorCaptureModeIntegrationTests, RecordingOverlayWidgetBounds) {
   VerifyOverlayWindow(overlay_window, capture_source);
 }
 
+namespace {
+
+// Defines a class that intercepts the events at the post-target handling phase
+// and caches the last event target to which the event was routed.
+class EventTargetCatcher : public ui::EventHandler {
+ public:
+  EventTargetCatcher() {
+    Shell::GetPrimaryRootWindow()->AddPostTargetHandler(this);
+  }
+  EventTargetCatcher(const EventTargetCatcher&) = delete;
+  EventTargetCatcher& operator=(const EventTargetCatcher&) = delete;
+  ~EventTargetCatcher() override {
+    Shell::GetPrimaryRootWindow()->RemovePostTargetHandler(this);
+  }
+
+  ui::EventTarget* last_event_target() { return last_event_target_; }
+
+  // ui::EventHandler:
+  void OnEvent(ui::Event* event) override {
+    ui::EventHandler::OnEvent(event);
+    last_event_target_ = event->target();
+  }
+
+ private:
+  ui::EventTarget* last_event_target_ = nullptr;
+};
+
+}  // namespace
+
+TEST_F(ProjectorCaptureModeIntegrationTests, RecordingOverlayWidgetTargeting) {
+  auto* controller = CaptureModeController::Get();
+  controller->SetSource(CaptureModeSource::kFullscreen);
+  StartProjectorModeSession();
+  EXPECT_TRUE(controller->IsActive());
+
+  PressAndReleaseKey(ui::VKEY_RETURN);
+  WaitForRecordingToStart();
+  CaptureModeTestApi test_api;
+  RecordingOverlayController* overlay_controller =
+      test_api.GetRecordingOverlayController();
+
+  auto* projector_controller = ProjectorControllerImpl::Get();
+  projector_controller->OnMarkerPressed();
+  EXPECT_TRUE(overlay_controller->is_enabled());
+  auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
+  VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/true);
+
+  // Clicking anywhere outside the projector shelf pod should be targeted to the
+  // overlay widget window.
+  EventTargetCatcher event_target_catcher;
+  auto* event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(gfx::Point(10, 10));
+  event_generator->ClickLeftButton();
+  EXPECT_EQ(overlay_window, event_target_catcher.last_event_target());
+
+  // Now move the mouse over the projector shelf pod, the overlay should not
+  // consume the event, and it should instead go through to that pod.
+  auto* root_window = Shell::GetPrimaryRootWindow();
+  ProjectorAnnotationTray* annotations_tray =
+      RootWindowController::ForWindow(root_window)
+          ->GetStatusAreaWidget()
+          ->projector_annotation_tray();
+  EXPECT_TRUE(annotations_tray->visible_preferred());
+  event_generator->MoveMouseTo(
+      annotations_tray->GetBoundsInScreen().CenterPoint());
+  EXPECT_EQ(annotations_tray->GetWidget()->GetNativeWindow(),
+            event_target_catcher.last_event_target());
+
+  // The overlay status hasn't changed.
+  VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/true);
+}
+
 // Tests that neither preview notification nor recording in tote is shown if in
 // projector mode.
 TEST_P(ProjectorCaptureModeIntegrationTests,
@@ -5212,6 +5228,112 @@ TEST_P(ProjectorCaptureModeIntegrationTests,
   EXPECT_TRUE(holding_space_api.GetScreenCaptureViews().empty());
 }
 
+// Tests that metrics are recorded correctly for capture configuration entering
+// from projector in both clamshell and tablet mode.
+TEST_P(ProjectorCaptureModeIntegrationTests,
+       ProjectorCaptureConfigurationMetrics) {
+  const auto capture_source = GetParam();
+  constexpr char kProjectorCaptureConfigurationHistogramBase[] =
+      "Ash.CaptureModeController.Projector.CaptureConfiguration";
+  ash::CaptureModeTestApi test_api;
+
+  const bool kTabletEnabledStates[]{false, true};
+
+  for (const bool tablet_enabled : kTabletEnabledStates) {
+    if (tablet_enabled) {
+      SwitchToTabletMode();
+      EXPECT_TRUE(Shell::Get()->IsInTabletMode());
+    } else {
+      EXPECT_FALSE(Shell::Get()->IsInTabletMode());
+    }
+
+    histogram_tester_.ExpectBucketCount(
+        GetCaptureModeHistogramName(
+            kProjectorCaptureConfigurationHistogramBase),
+        GetConfiguration(CaptureModeType::kVideo, capture_source), 0);
+
+    StartRecordingForProjectorFromSource(capture_source);
+    WaitForSeconds(1);
+    test_api.StopVideoRecording();
+    EXPECT_FALSE(CaptureModeController::Get()->is_recording_in_progress());
+
+    histogram_tester_.ExpectBucketCount(
+        GetCaptureModeHistogramName(
+            kProjectorCaptureConfigurationHistogramBase),
+        GetConfiguration(CaptureModeType::kVideo, capture_source), 1);
+
+    WaitForCaptureFileToBeSaved();
+  }
+}
+
+// Tests that metrics are recorded correctly for capture region adjustment
+// entering from projector in both clamshell and tablet mode.
+TEST_F(ProjectorCaptureModeIntegrationTests,
+       ProjectorCaptureRegionAdjustmentTest) {
+  constexpr char kProjectorCaptureRegionAdjustmentHistogramBase[] =
+      "Ash.CaptureModeController.Projector.CaptureRegionAdjusted";
+  auto histogram_name = GetCaptureModeHistogramName(
+      kProjectorCaptureRegionAdjustmentHistogramBase);
+  histogram_tester_.ExpectBucketCount(
+      GetCaptureModeHistogramName(
+          kProjectorCaptureRegionAdjustmentHistogramBase),
+      0, 0);
+
+  auto resize_and_reset_region = [](ui::test::EventGenerator* event_generator,
+                                    const gfx::Point& top_right) {
+    // Enlarges the region and then resize it back to its original size.
+    event_generator->set_current_screen_location(top_right);
+    event_generator->DragMouseTo(top_right + gfx::Vector2d(50, 50));
+    event_generator->DragMouseTo(top_right);
+  };
+
+  auto move_and_reset_region = [](ui::test::EventGenerator* event_generator,
+                                  const gfx::Point& drag_point) {
+    // Moves the region and then moves it back to its original position.
+    event_generator->set_current_screen_location(drag_point);
+    event_generator->DragMouseTo(drag_point + gfx::Vector2d(-50, -50));
+    event_generator->DragMouseTo(drag_point);
+  };
+
+  ash::CaptureModeTestApi test_api;
+  auto* event_generator = GetEventGenerator();
+  const gfx::Rect target_region(gfx::Rect(100, 100, 200, 200));
+  auto top_right = target_region.top_right();
+
+  const bool kTabletEnabledStates[] = {false, true};
+  for (const bool tablet_enabled : kTabletEnabledStates) {
+    if (tablet_enabled) {
+      SwitchToTabletMode();
+      EXPECT_TRUE(Shell::Get()->IsInTabletMode());
+    } else {
+      EXPECT_FALSE(Shell::Get()->IsInTabletMode());
+    }
+
+    StartProjectorModeSession();
+    test_api.SetUserSelectedRegion(target_region);
+
+    // Resize the region twice by dragging the top right of the region out and
+    // then back again.
+    resize_and_reset_region(event_generator, top_right);
+
+    // Move the region twice by dragging within the region.
+    const gfx::Point drag_point(300, 300);
+    move_and_reset_region(event_generator, drag_point);
+
+    test_api.PerformCapture();
+    WaitForSeconds(1);
+    test_api.StopVideoRecording();
+    EXPECT_FALSE(CaptureModeController::Get()->is_recording_in_progress());
+
+    histogram_tester_.ExpectBucketCount(
+        GetCaptureModeHistogramName(
+            kProjectorCaptureRegionAdjustmentHistogramBase),
+        4, 1);
+
+    WaitForCaptureFileToBeSaved();
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          ProjectorCaptureModeIntegrationTests,
                          testing::Values(CaptureModeSource::kFullscreen,
@@ -5219,18 +5341,16 @@ INSTANTIATE_TEST_SUITE_P(All,
                                          CaptureModeSource::kWindow));
 
 // -----------------------------------------------------------------------------
-// CaptureModeAdvancedSettingsTest:
+// CaptureModeSettingsTest:
 
-// Test fixture for CaptureMode advanced settings view.
-class CaptureModeAdvancedSettingsTest : public CaptureModeTest {
+// Test fixture for CaptureMode settings view.
+class CaptureModeSettingsTest : public CaptureModeTest {
  public:
-  CaptureModeAdvancedSettingsTest() = default;
-  ~CaptureModeAdvancedSettingsTest() override = default;
+  CaptureModeSettingsTest() = default;
+  ~CaptureModeSettingsTest() override = default;
 
   // CaptureModeTest:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kImprovedScreenCaptureSettings);
     CaptureModeTest::SetUp();
     FakeFolderSelectionDialogFactory::Start();
   }
@@ -5240,11 +5360,10 @@ class CaptureModeAdvancedSettingsTest : public CaptureModeTest {
     CaptureModeTest::TearDown();
   }
 
-  CaptureModeAdvancedSettingsView* GetCaptureModeAdvancedSettingsView() const {
+  CaptureModeSettingsView* GetCaptureModeSettingsView() const {
     auto* session = CaptureModeController::Get()->capture_mode_session();
     DCHECK(session);
-    return CaptureModeSessionTestApi(session)
-        .capture_mode_advanced_settings_view();
+    return CaptureModeSessionTestApi(session).capture_mode_settings_view();
   }
 
   UserNudgeController* GetUserNudgeController() const {
@@ -5255,13 +5374,10 @@ class CaptureModeAdvancedSettingsTest : public CaptureModeTest {
 
   void WaitForSettingsMenuToBeRefreshed() {
     base::RunLoop run_loop;
-    CaptureModeAdvancedSettingsTestApi().SetOnSettingsMenuRefreshedCallback(
+    CaptureModeSettingsTestApi().SetOnSettingsMenuRefreshedCallback(
         run_loop.QuitClosure());
     run_loop.Run();
   }
-
- protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 enum class NudgeDismissalCause {
@@ -5274,7 +5390,7 @@ enum class NudgeDismissalCause {
 // Test fixture to test that various causes that lead to the dismissal of the
 // user nudge, they dismiss it forever.
 class CaptureModeNudgeDismissalTest
-    : public CaptureModeAdvancedSettingsTest,
+    : public CaptureModeSettingsTest,
       public ::testing::WithParamInterface<NudgeDismissalCause> {
  public:
   // Starts a session appropriate for the test param.
@@ -5351,7 +5467,7 @@ INSTANTIATE_TEST_SUITE_P(
                     NudgeDismissalCause::kCaptureViaClickOnScreen,
                     NudgeDismissalCause::kCaptureViaLabelButton));
 
-TEST_F(CaptureModeAdvancedSettingsTest, NudgeChangesRootWithBar) {
+TEST_F(CaptureModeSettingsTest, NudgeChangesRootWithBar) {
   UpdateDisplay("800x700,801+0-800x700");
 
   auto* event_generator = GetEventGenerator();
@@ -5373,7 +5489,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, NudgeChangesRootWithBar) {
       session->current_root());
 }
 
-TEST_F(CaptureModeAdvancedSettingsTest, NudgeBehaviorWhenSelectingRegion) {
+TEST_F(CaptureModeSettingsTest, NudgeBehaviorWhenSelectingRegion) {
   UpdateDisplay("800x700,801+0-800x700");
 
   auto* event_generator = GetEventGenerator();
@@ -5400,7 +5516,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, NudgeBehaviorWhenSelectingRegion) {
       session->current_root());
 }
 
-TEST_F(CaptureModeAdvancedSettingsTest, NudgeDoesNotShowForAllUserTypes) {
+TEST_F(CaptureModeSettingsTest, NudgeDoesNotShowForAllUserTypes) {
   struct {
     std::string trace;
     user_manager::UserType user_type;
@@ -5434,7 +5550,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, NudgeDoesNotShowForAllUserTypes) {
 
 // Tests that it's possbile to take a screenshot using the keyboard shortcut at
 // the login screen without any crashes. https://crbug.com/1266728.
-TEST_F(CaptureModeAdvancedSettingsTest, TakeScreenshotAtLoginScreen) {
+TEST_F(CaptureModeSettingsTest, TakeScreenshotAtLoginScreen) {
   ClearLogin();
   PressAndReleaseKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN);
   WaitForCaptureFileToBeSaved();
@@ -5442,7 +5558,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, TakeScreenshotAtLoginScreen) {
 
 // Tests that clicking on audio input buttons updates the state in the
 // controller, and persists between sessions.
-TEST_F(CaptureModeAdvancedSettingsTest, AudioInputSettingsMenu) {
+TEST_F(CaptureModeSettingsTest, AudioInputSettingsMenu) {
   auto* controller = StartImageRegionCapture();
   auto* event_generator = GetEventGenerator();
 
@@ -5450,7 +5566,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, AudioInputSettingsMenu) {
   ClickOnView(GetSettingsButton(), event_generator);
   EXPECT_FALSE(controller->enable_audio_recording());
 
-  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeSettingsTestApi test_api;
   CaptureModeMenuGroup* audio_input_menu_group =
       test_api.GetAudioInputMenuGroup();
   EXPECT_TRUE(audio_input_menu_group->IsOptionChecked(kAudioOff));
@@ -5471,13 +5587,13 @@ TEST_F(CaptureModeAdvancedSettingsTest, AudioInputSettingsMenu) {
   EXPECT_TRUE(controller->enable_audio_recording());
 }
 
-TEST_F(CaptureModeAdvancedSettingsTest, SelectFolderFromDialog) {
+TEST_F(CaptureModeSettingsTest, SelectFolderFromDialog) {
   auto* controller = StartImageRegionCapture();
   auto* event_generator = GetEventGenerator();
   ClickOnView(GetSettingsButton(), event_generator);
 
   // Initially there should only be an option for the default downloads folder.
-  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeSettingsTestApi test_api;
   EXPECT_TRUE(test_api.GetDefaultDownloadsOption());
   EXPECT_FALSE(test_api.GetCustomFolderOptionIfAny());
   CaptureModeMenuGroup* save_to_menu_group = test_api.GetSaveToMenuGroup();
@@ -5515,26 +5631,26 @@ TEST_F(CaptureModeAdvancedSettingsTest, SelectFolderFromDialog) {
 
 // Tests that folder selection dialog can be opened without crash while in
 // window capture mode.
-TEST_F(CaptureModeAdvancedSettingsTest, SelectFolderInWindowCaptureMode) {
+TEST_F(CaptureModeSettingsTest, SelectFolderInWindowCaptureMode) {
   std::unique_ptr<aura::Window> window1(
       CreateTestWindow(gfx::Rect(0, 0, 200, 300)));
   StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kImage);
   auto* event_generator = GetEventGenerator();
   ClickOnView(GetSettingsButton(), event_generator);
 
-  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeSettingsTestApi test_api;
   ClickOnView(test_api.GetSelectFolderMenuItem(), event_generator);
   EXPECT_TRUE(IsFolderSelectionDialogShown());
 }
 
-TEST_F(CaptureModeAdvancedSettingsTest, DismissDialogWithoutSelection) {
+TEST_F(CaptureModeSettingsTest, DismissDialogWithoutSelection) {
   auto* controller = StartImageRegionCapture();
   const auto old_capture_folder = controller->GetCurrentCaptureFolder();
 
   // Open the settings menu, and click the "Select folder" menu item.
   auto* event_generator = GetEventGenerator();
   ClickOnView(GetSettingsButton(), event_generator);
-  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeSettingsTestApi test_api;
   ClickOnView(test_api.GetSelectFolderMenuItem(), event_generator);
   EXPECT_TRUE(IsFolderSelectionDialogShown());
 
@@ -5553,7 +5669,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, DismissDialogWithoutSelection) {
             new_capture_folder.is_default_downloads_folder);
 }
 
-TEST_F(CaptureModeAdvancedSettingsTest, AcceptUpdatedCustomFolderFromDialog) {
+TEST_F(CaptureModeSettingsTest, AcceptUpdatedCustomFolderFromDialog) {
   // Begin a new session with a pre-configured custom folder.
   auto* controller = CaptureModeController::Get();
   const base::FilePath custom_folder(CreateCustomFolder("test"));
@@ -5565,7 +5681,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, AcceptUpdatedCustomFolderFromDialog) {
   auto* event_generator = GetEventGenerator();
   ClickOnView(GetSettingsButton(), event_generator);
   WaitForSettingsMenuToBeRefreshed();
-  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeSettingsTestApi test_api;
   EXPECT_TRUE(test_api.GetDefaultDownloadsOption());
   auto* custom_folder_view = test_api.GetCustomFolderOptionIfAny();
   EXPECT_TRUE(custom_folder_view);
@@ -5595,7 +5711,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, AcceptUpdatedCustomFolderFromDialog) {
   EXPECT_FALSE(capture_folder.is_default_downloads_folder);
 }
 
-TEST_F(CaptureModeAdvancedSettingsTest,
+TEST_F(CaptureModeSettingsTest,
        InitializeSettingsViewWithUnavailableCustomFolder) {
   // Begin a new session with a pre-configured unavailable custom folder.
   auto* controller = CaptureModeController::Get();
@@ -5613,7 +5729,7 @@ TEST_F(CaptureModeAdvancedSettingsTest,
   ClickOnView(GetSettingsButton(), event_generator);
   WaitForSettingsMenuToBeRefreshed();
 
-  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeSettingsTestApi test_api;
   EXPECT_TRUE(test_api.GetDefaultDownloadsOption());
   auto* custom_folder_view = test_api.GetCustomFolderOptionIfAny();
   EXPECT_TRUE(custom_folder_view);
@@ -5641,7 +5757,7 @@ TEST_F(CaptureModeAdvancedSettingsTest,
             save_to_menu_group->GetOptionLabelForTesting(kCustomFolder));
 }
 
-TEST_F(CaptureModeAdvancedSettingsTest, DeleteCustomFolderFromDialog) {
+TEST_F(CaptureModeSettingsTest, DeleteCustomFolderFromDialog) {
   // Begin a new session with a pre-configured custom folder.
   auto* controller = CaptureModeController::Get();
   const base::FilePath custom_folder(CreateCustomFolder("test"));
@@ -5655,7 +5771,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, DeleteCustomFolderFromDialog) {
   ClickOnView(GetSettingsButton(), event_generator);
   WaitForSettingsMenuToBeRefreshed();
 
-  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeSettingsTestApi test_api;
   EXPECT_TRUE(test_api.GetDefaultDownloadsOption());
   auto* custom_folder_view = test_api.GetCustomFolderOptionIfAny();
   EXPECT_TRUE(custom_folder_view);
@@ -5681,8 +5797,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, DeleteCustomFolderFromDialog) {
   EXPECT_TRUE(save_to_menu_group->IsOptionChecked(kDownloadsFolder));
 }
 
-TEST_F(CaptureModeAdvancedSettingsTest,
-       AcceptDefaultDownloadsFolderFromDialog) {
+TEST_F(CaptureModeSettingsTest, AcceptDefaultDownloadsFolderFromDialog) {
   // Begin a new session with a pre-configured custom folder.
   auto* controller = CaptureModeController::Get();
   controller->SetCustomCaptureFolder(
@@ -5692,7 +5807,7 @@ TEST_F(CaptureModeAdvancedSettingsTest,
   auto* event_generator = GetEventGenerator();
   ClickOnView(GetSettingsButton(), event_generator);
   WaitForSettingsMenuToBeRefreshed();
-  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeSettingsTestApi test_api;
   ClickOnView(test_api.GetSelectFolderMenuItem(), event_generator);
 
   // Selecting the same folder as the default downloads folder should result in
@@ -5709,7 +5824,7 @@ TEST_F(CaptureModeAdvancedSettingsTest,
   EXPECT_TRUE(save_to_menu_group->IsOptionChecked(kDownloadsFolder));
 }
 
-TEST_F(CaptureModeAdvancedSettingsTest, SwitchWhichFolderToUserFromOptions) {
+TEST_F(CaptureModeSettingsTest, SwitchWhichFolderToUserFromOptions) {
   // Begin a new session with a pre-configured custom folder.
   auto* controller = CaptureModeController::Get();
   const base::FilePath custom_path((CreateCustomFolder("test")));
@@ -5721,7 +5836,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, SwitchWhichFolderToUserFromOptions) {
 
   // Clicking the "Downloads" option will set it as the folder of choice, but
   // won't clear the custom folder.
-  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeSettingsTestApi test_api;
   ClickOnView(test_api.GetDefaultDownloadsOption(), event_generator);
   CaptureModeMenuGroup* save_to_menu_group = test_api.GetSaveToMenuGroup();
   EXPECT_TRUE(save_to_menu_group->IsOptionChecked(kDownloadsFolder));
@@ -5745,8 +5860,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, SwitchWhichFolderToUserFromOptions) {
 // Tests that when there's no overlap betwwen capture label widget and settings
 // widget, capture label widget is shown/hidden correctly after open/close the
 // folder selection window.
-TEST_F(CaptureModeAdvancedSettingsTest,
-       CaptureLabelViewNotOverlapsWithSettingsView) {
+TEST_F(CaptureModeSettingsTest, CaptureLabelViewNotOverlapsWithSettingsView) {
   // Update the display size to make sure capture label widget will not
   // overlap with settings widget
   UpdateDisplay("1200x1000");
@@ -5766,7 +5880,7 @@ TEST_F(CaptureModeAdvancedSettingsTest,
 
   // Open folder selection window, check that both capture label widget and
   // settings widget are invisible.
-  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeSettingsTestApi test_api;
   auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
   ClickOnView(test_api.GetSelectFolderMenuItem(), event_generator);
   EXPECT_TRUE(IsFolderSelectionDialogShown());
@@ -5791,8 +5905,7 @@ TEST_F(CaptureModeAdvancedSettingsTest,
 // label widget is shown/hidden correctly after open/close the folder selection
 // window, open/close settings menu. Regression test for
 // https://crbug.com/1279606.
-TEST_F(CaptureModeAdvancedSettingsTest,
-       CaptureLabelViewOverlapsWithSettingsView) {
+TEST_F(CaptureModeSettingsTest, CaptureLabelViewOverlapsWithSettingsView) {
   // Update display size to make capture label widget overlap with settings
   // widget.
   UpdateDisplay("1100x700");
@@ -5810,7 +5923,7 @@ TEST_F(CaptureModeAdvancedSettingsTest,
   EXPECT_TRUE(settings_widget->IsVisible());
 
   // Open folder selection window, capture label widget is invisible.
-  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeSettingsTestApi test_api;
   auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
   ClickOnView(test_api.GetSelectFolderMenuItem(), event_generator);
   EXPECT_TRUE(IsFolderSelectionDialogShown());
@@ -5830,33 +5943,36 @@ TEST_F(CaptureModeAdvancedSettingsTest,
 }
 
 // Tests the basic keyboard navigation functions for the settings menu.
-TEST_F(CaptureModeAdvancedSettingsTest, KeyboardNavigationForSettingsMenu) {
+TEST_F(CaptureModeSettingsTest, KeyboardNavigationForSettingsMenu) {
   auto* controller =
       StartCaptureSession(CaptureModeSource::kRegion, CaptureModeType::kImage);
 
   using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
-  CaptureModeSessionTestApi test_api(controller->capture_mode_session());
+  CaptureModeSessionTestApi session_test_api(
+      controller->capture_mode_session());
 
   // Tab six times to focus the settings button.
   auto* event_generator = GetEventGenerator();
   SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/6);
-  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
-  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(FocusGroup::kSettingsClose,
+            session_test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, session_test_api.GetCurrentFocusIndex());
 
   // Enter space to open the settings menu. The current focus group should be
   // `kPendingSettings`.
   SendKey(ui::VKEY_SPACE, event_generator);
-  ASSERT_TRUE(GetCaptureModeAdvancedSettingsView());
-  EXPECT_EQ(FocusGroup::kPendingSettings, test_api.GetCurrentFocusGroup());
+  ASSERT_TRUE(GetCaptureModeSettingsView());
+  EXPECT_EQ(FocusGroup::kPendingSettings,
+            session_test_api.GetCurrentFocusGroup());
 
-  CaptureModeAdvancedSettingsTestApi advanced_settings_test_api;
+  CaptureModeSettingsTestApi settings_test_api;
   CaptureModeMenuGroup* audio_input_menu_group =
-      advanced_settings_test_api.GetAudioInputMenuGroup();
+      settings_test_api.GetAudioInputMenuGroup();
   // Tab once to focus the first item on the settings menu (`Audio input`
   // header).
   SendKey(ui::VKEY_TAB, event_generator);
-  EXPECT_EQ(FocusGroup::kSettingsMenu, test_api.GetCurrentFocusGroup());
-  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(FocusGroup::kSettingsMenu, session_test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, session_test_api.GetCurrentFocusIndex());
 
   // Tab once to focus the `Off` option on the settings menu. Check `Off` option
   // is the checked option not the `Microphone`.
@@ -5885,15 +6001,16 @@ TEST_F(CaptureModeAdvancedSettingsTest, KeyboardNavigationForSettingsMenu) {
   // Now tab once to focus on the settings button and enter space on it to close
   // the settings menu.
   SendKey(ui::VKEY_TAB, event_generator);
-  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
-  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(FocusGroup::kSettingsClose,
+            session_test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, session_test_api.GetCurrentFocusIndex());
   SendKey(ui::VKEY_SPACE, event_generator);
-  EXPECT_FALSE(GetCaptureModeAdvancedSettingsView());
+  EXPECT_FALSE(GetCaptureModeSettingsView());
 }
 
 // Tests that the disabled option in the settings menu will be skipped while
 // tabbing through.
-TEST_F(CaptureModeAdvancedSettingsTest,
+TEST_F(CaptureModeSettingsTest,
        KeyboardNavigationForSettingsMenuWithDisabledOption) {
   // Begin a new session with a pre-configured unavailable custom folder.
   auto* controller = CaptureModeController::Get();
@@ -5902,24 +6019,24 @@ TEST_F(CaptureModeAdvancedSettingsTest,
   StartImageRegionCapture();
 
   using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
-  CaptureModeSessionTestApi test_api(controller->capture_mode_session());
+  CaptureModeSessionTestApi session_test_api(
+      controller->capture_mode_session());
 
   // Tab six times to focus the settings button and enter space to open the
   // setting menu.
   auto* event_generator = GetEventGenerator();
   SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/6);
   SendKey(ui::VKEY_SPACE, event_generator);
-  EXPECT_EQ(FocusGroup::kPendingSettings, test_api.GetCurrentFocusGroup());
-  CaptureModeAdvancedSettingsView* settings_menu =
-      GetCaptureModeAdvancedSettingsView();
+  EXPECT_EQ(FocusGroup::kPendingSettings,
+            session_test_api.GetCurrentFocusGroup());
+  CaptureModeSettingsView* settings_menu = GetCaptureModeSettingsView();
   ASSERT_TRUE(settings_menu);
 
   // Since the custom folder is unavailable, the `kCustomFolder` should be
   // disabled and won't be returned via
-  // `CaptureModeAdvancedSettingsViews::GetHighlightableItems`.
-  CaptureModeAdvancedSettingsTestApi advanced_settings_test_api;
-  auto* custom_folder_view =
-      advanced_settings_test_api.GetCustomFolderOptionIfAny();
+  // `CaptureModeSettingsViews::GetHighlightableItems`.
+  CaptureModeSettingsTestApi settings_test_api;
+  auto* custom_folder_view = settings_test_api.GetCustomFolderOptionIfAny();
   ASSERT_TRUE(custom_folder_view);
   EXPECT_FALSE(custom_folder_view->GetEnabled());
 
@@ -5934,20 +6051,20 @@ TEST_F(CaptureModeAdvancedSettingsTest,
 
   // Tab five times to focus the default `Downloads` option.
   SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/5);
-  EXPECT_EQ(test_api.GetCurrentFocusedView()->GetView(),
-            advanced_settings_test_api.GetDefaultDownloadsOption());
+  EXPECT_EQ(session_test_api.GetCurrentFocusedView()->GetView(),
+            settings_test_api.GetDefaultDownloadsOption());
 
   // Tab once to check the disabled `kCustomFolder` option is skipped and now
   // the `Select folder...` menu item gets focused.
   SendKey(ui::VKEY_TAB, event_generator);
-  EXPECT_EQ(test_api.GetCurrentFocusedView()->GetView(),
-            advanced_settings_test_api.GetSelectFolderMenuItem());
+  EXPECT_EQ(session_test_api.GetCurrentFocusedView()->GetView(),
+            settings_test_api.GetSelectFolderMenuItem());
 }
 
 // Tests that selecting the default `Downloads` folder as the custom folder via
 // keyboard navigation doesn't lead to a crash. Regression test for
 // https://crbug.com/1269373.
-TEST_F(CaptureModeAdvancedSettingsTest,
+TEST_F(CaptureModeSettingsTest,
        KeyboardNavigationForRemovingCustomFolderOption) {
   // Begin a new session with a pre-configured custom folder.
   auto* controller = CaptureModeController::Get();
@@ -5965,8 +6082,7 @@ TEST_F(CaptureModeAdvancedSettingsTest,
   SendKey(ui::VKEY_SPACE, event_generator);
   WaitForSettingsMenuToBeRefreshed();
   EXPECT_EQ(FocusGroup::kPendingSettings, test_api.GetCurrentFocusGroup());
-  CaptureModeAdvancedSettingsView* settings_menu =
-      GetCaptureModeAdvancedSettingsView();
+  CaptureModeSettingsView* settings_menu = GetCaptureModeSettingsView();
   ASSERT_TRUE(settings_menu);
 
   // Tab seven times to focus the `Select folder...` menu item and enter space
@@ -6003,22 +6119,22 @@ TEST_F(CaptureModeAdvancedSettingsTest,
 // Tests that first time selecting a custom folder via keyboard navigation.
 // After the custom folder is selected, tabbing one more time will move focus
 // from the settings menu to the settings button.
-TEST_F(CaptureModeAdvancedSettingsTest,
-       KeyboardNavigationForAddingCustomFolderOption) {
+TEST_F(CaptureModeSettingsTest, KeyboardNavigationForAddingCustomFolderOption) {
   auto* controller = CaptureModeController::Get();
   StartImageRegionCapture();
 
   using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
-  CaptureModeSessionTestApi test_api(controller->capture_mode_session());
+  CaptureModeSessionTestApi session_test_api(
+      controller->capture_mode_session());
 
   // Tab six times to focus the settings button, then enter space to open the
   // setting menu.
   auto* event_generator = GetEventGenerator();
   SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/6);
   SendKey(ui::VKEY_SPACE, event_generator);
-  EXPECT_EQ(FocusGroup::kPendingSettings, test_api.GetCurrentFocusGroup());
-  CaptureModeAdvancedSettingsView* settings_menu =
-      GetCaptureModeAdvancedSettingsView();
+  EXPECT_EQ(FocusGroup::kPendingSettings,
+            session_test_api.GetCurrentFocusGroup());
+  CaptureModeSettingsView* settings_menu = GetCaptureModeSettingsView();
   ASSERT_TRUE(settings_menu);
 
   // Tab six times to focus the `Select folder...` menu item and enter space
@@ -6028,8 +6144,8 @@ TEST_F(CaptureModeAdvancedSettingsTest,
   EXPECT_TRUE(IsFolderSelectionDialogShown());
   // The current focus group is `FocusGroup::kSettingsMenu` and focus index is
   // 5u.
-  EXPECT_EQ(FocusGroup::kSettingsMenu, test_api.GetCurrentFocusGroup());
-  EXPECT_EQ(5u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(FocusGroup::kSettingsMenu, session_test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(5u, session_test_api.GetCurrentFocusIndex());
 
   // Select the custom folder. Wait for the settings menu to be refreshed. The
   // custom folder option should be added to the settings menu and checked.
@@ -6038,8 +6154,8 @@ TEST_F(CaptureModeAdvancedSettingsTest,
   auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
   dialog_factory->AcceptPath(custom_folder);
   WaitForSettingsMenuToBeRefreshed();
-  CaptureModeAdvancedSettingsTestApi advanced_test_api;
-  EXPECT_TRUE(advanced_test_api.GetCustomFolderOptionIfAny());
+  CaptureModeSettingsTestApi settings_test_api;
+  EXPECT_TRUE(settings_test_api.GetCustomFolderOptionIfAny());
 
   // Press space to ensure the selection window can be opened after the custom
   // folder is added to the settings menu.
@@ -6049,8 +6165,9 @@ TEST_F(CaptureModeAdvancedSettingsTest,
 
   // Tab once to make sure the focus gets moved to settings button.
   SendKey(ui::VKEY_TAB, event_generator);
-  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
-  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(FocusGroup::kSettingsClose,
+            session_test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, session_test_api.GetCurrentFocusIndex());
 }
 
 // -----------------------------------------------------------------------------
@@ -6058,15 +6175,15 @@ TEST_F(CaptureModeAdvancedSettingsTest,
 
 // Test fixture to verify screen capture histograms depending on the test
 // param (true for tablet mode, false for clamshell mode).
-class CaptureModeHistogramTest : public CaptureModeAdvancedSettingsTest,
+class CaptureModeHistogramTest : public CaptureModeSettingsTest,
                                  public ::testing::WithParamInterface<bool> {
  public:
   CaptureModeHistogramTest() = default;
   ~CaptureModeHistogramTest() override = default;
 
-  // CaptureModeAdvancedSettingsTest:
+  // CaptureModeSettingsTest:
   void SetUp() override {
-    CaptureModeAdvancedSettingsTest::SetUp();
+    CaptureModeSettingsTest::SetUp();
     if (GetParam())
       SwitchToTabletMode();
   }
@@ -6150,7 +6267,7 @@ TEST_P(CaptureModeHistogramTest, CaptureModeSwitchToDefaultReasonMetric) {
   auto* event_generator = GetEventGenerator();
   OpenView(GetSettingsButton(), event_generator);
   WaitForSettingsMenuToBeRefreshed();
-  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeSettingsTestApi test_api;
   CaptureModeMenuGroup* save_to_menu_group = test_api.GetSaveToMenuGroup();
   EXPECT_TRUE(save_to_menu_group->IsOptionChecked(kDownloadsFolder));
   histogram_tester.ExpectBucketCount(

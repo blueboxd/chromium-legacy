@@ -2,7 +2,7 @@ Name: Crashpad
 Short Name: crashpad
 URL: https://crashpad.chromium.org/
 Version: unknown
-Revision: 3b8a7cf594da2e3454fb230f98a60808837da217
+Revision: 50ed179e9a66937857acf7bc5eba356500f8b122
 License: Apache 2.0
 License File: crashpad/LICENSE
 Security Critical: yes
@@ -36,6 +36,7 @@ $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
  - codereview.settings has been excluded.
+ - infra/ has been excluded.
  - MultiprocessExec.MultiprocessExec is disabled when OS_POSIX and
    BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) are defined. crbug.com/1153544
    (crashpad/test/BUILD.gn, crashpad/test/multiprocess_exec_test.cc)
@@ -44,4 +45,4 @@ Local Modifications:
    (crashpad/util/BUILD.gn, crashpad/util/linux/memory_map_test.cc)
  - CloseMultipleNowOrOnExec has been updated to invoke the new
    base::subtle::ResetFDOwnership() API
- - [M98 CP] - b714b223ad7f ios: Actually merge memory snapshot data
+ - FALLTHROUGH macro has been replaced with C++17 attribute [[fallthrough]]

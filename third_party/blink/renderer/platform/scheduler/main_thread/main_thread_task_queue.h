@@ -36,10 +36,6 @@ namespace main_thread_scheduler_impl_unittest {
 class MainThreadSchedulerImplTest;
 }
 
-namespace task_queue_throttler_unittest {
-class TaskQueueThrottlerTest;
-}
-
 class FrameSchedulerImpl;
 class MainThreadSchedulerImpl;
 class WakeUpBudgetPool;
@@ -490,6 +486,21 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     return task_queue_->GetQueuePriority();
   }
 
+  bool IsQueueEnabled() const { return task_queue_->IsQueueEnabled(); }
+  bool IsEmpty() const { return task_queue_->IsEmpty(); }
+
+  bool HasTaskToRunImmediatelyOrReadyDelayedTask() const {
+    return task_queue_->HasTaskToRunImmediatelyOrReadyDelayedTask();
+  }
+
+  void SetBlameContext(base::trace_event::BlameContext* blame_context) {
+    task_queue_->SetBlameContext(blame_context);
+  }
+
+  void SetShouldReportPostedTasksWhenDisabled(bool should_report) {
+    task_queue_->SetShouldReportPostedTasksWhenDisabled(should_report);
+  }
+
   base::WeakPtr<MainThreadTaskQueue> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -498,11 +509,6 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
  protected:
   void SetFrameSchedulerForTest(FrameSchedulerImpl* frame_scheduler);
-
-  // Returns the underlying task queue. Only to be used for tests that need to
-  // test functionality of the task queue specifically without the wrapping
-  // MainThreadTaskQueue (ex TaskQueueThrottlerTest).
-  TaskQueue* GetTaskQueueForTest() { return task_queue_.get(); }
 
   // TODO(kdillon): Remove references to TaskQueueImpl once TaskQueueImpl
   // inherits from TaskQueue.
@@ -522,8 +528,6 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   friend class base::sequence_manager::SequenceManager;
   friend class blink::scheduler::main_thread_scheduler_impl_unittest::
       MainThreadSchedulerImplTest;
-  friend class blink::scheduler::task_queue_throttler_unittest::
-      TaskQueueThrottlerTest;
 
   // Clear references to main thread scheduler and frame scheduler and dispatch
   // appropriate notifications. This is the common part of ShutdownTaskQueue and
@@ -559,6 +563,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
   // The WakeUpBudgetPool for this TaskQueue, if any.
   WakeUpBudgetPool* wake_up_budget_pool_{nullptr};  // NOT OWNED
+
+  std::unique_ptr<TaskQueue::OnTaskPostedCallbackHandle>
+      on_ipc_task_posted_callback_handle_;
 
   base::WeakPtrFactory<MainThreadTaskQueue> weak_ptr_factory_{this};
 };

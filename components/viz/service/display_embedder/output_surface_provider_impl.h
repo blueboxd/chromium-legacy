@@ -18,7 +18,7 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "components/viz/service/display_embedder/output_device_backing.h"
 #endif
 
@@ -42,7 +42,7 @@ class VIZ_SERVICE_EXPORT OutputSurfaceProviderImpl
       GpuServiceImpl* gpu_service_impl,
       gpu::CommandBufferTaskExecutor* task_executor,
       gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
-      std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
       bool headless);
   // Software compositing only.
@@ -76,10 +76,10 @@ class VIZ_SERVICE_EXPORT OutputSurfaceProviderImpl
   const raw_ptr<GpuServiceImpl> gpu_service_impl_;
   const raw_ptr<gpu::CommandBufferTaskExecutor> task_executor_;
   const raw_ptr<gpu::GpuChannelManagerDelegate> gpu_channel_manager_delegate_;
-  std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  const raw_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   const raw_ptr<gpu::ImageFactory> image_factory_;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Used for software compositing output on Windows.
   OutputDeviceBacking output_device_backing_;
 #endif

@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/i18n/string_search.h"
 #include "base/memory/raw_ptr.h"
 #include "base/win/scoped_safearray.h"
@@ -304,7 +306,7 @@ HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnitImpl(
         break;
       }
     }
-      FALLTHROUGH;
+      [[fallthrough]];
     case TextUnit_Document:
       SetStart(start()->CreatePositionAtStartOfContent()->AsLeafTextPosition());
       SetEnd(start()->CreatePositionAtEndOfContent());

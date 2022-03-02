@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 
 #include <memory>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/contains.h"
 #include "base/hash/hash.h"
-#include "base/ignore_result.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -263,8 +263,7 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
     // never have a RenderFrameHost as a parent.
     RenderFrameProxyHost* parent_proxy =
         frame_tree_node_->parent()
-            ->frame_tree_node()
-            ->render_manager()
+            ->browsing_context_state()
             ->GetRenderFrameProxyHost(site_instance_group_.get());
     CHECK(parent_proxy);
 
@@ -346,8 +345,7 @@ RenderFrameProxyHost::GetRemoteAssociatedInterfaces() {
     } else {
       // The channel may not be initialized in some tests environments. In this
       // case we set up a dummy interface provider.
-      ignore_result(
-          remote_interfaces.BindNewEndpointAndPassDedicatedReceiver());
+      std::ignore = remote_interfaces.BindNewEndpointAndPassDedicatedReceiver();
     }
     remote_associated_interfaces_ =
         std::make_unique<blink::AssociatedInterfaceProvider>(
@@ -610,9 +608,8 @@ void RenderFrameProxyHost::RouteMessageEvent(
       // proxy wasn't created), use an empty |translated_source_token| (see
       // https://crbug.com/485520 for discussion on why this is ok).
       RenderFrameProxyHost* source_proxy_in_target_site_instance_group =
-          source_rfh->frame_tree_node()
-              ->render_manager()
-              ->GetRenderFrameProxyHost(target_site_instance->group());
+          source_rfh->browsing_context_state()->GetRenderFrameProxyHost(
+              target_site_instance->group());
       if (source_proxy_in_target_site_instance_group) {
         translated_source_token =
             source_proxy_in_target_site_instance_group->GetFrameToken();
@@ -769,11 +766,10 @@ void RenderFrameProxyHost::AdvanceFocus(
   RenderFrameHostImpl* source_rfh = RenderFrameHostImpl::FromFrameToken(
       GetProcess()->GetID(), source_frame_token);
   RenderFrameProxyHost* source_proxy =
-      source_rfh ? source_rfh->frame_tree_node()
-                       ->render_manager()
-                       ->GetRenderFrameProxyHost(
-                           target_rfh->GetSiteInstance()->group())
-                 : nullptr;
+      source_rfh
+          ? source_rfh->browsing_context_state()->GetRenderFrameProxyHost(
+                target_rfh->GetSiteInstance()->group())
+          : nullptr;
 
   target_rfh->AdvanceFocus(focus_type, source_proxy);
   frame_tree_node_->current_frame_host()->delegate()->OnAdvanceFocus(

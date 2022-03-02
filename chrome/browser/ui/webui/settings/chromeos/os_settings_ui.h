@@ -8,10 +8,9 @@
 #include <memory>
 
 #include "base/time/time.h"
-#include "chrome/browser/ui/webui/app_management/app_management.mojom-forward.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share.mojom.h"
 #include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"
-#include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_page_handler_factory.h"
+#include "chrome/browser/ui/webui/settings/ash/app_management/app_management_page_handler_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_apps_page/mojom/app_notification_handler.mojom-forward.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/user_action_recorder.mojom-forward.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
@@ -22,6 +21,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
+#include "ui/webui/resources/cr_components/app_management/app_management.mojom-forward.h"
 
 namespace user_prefs {
 class PrefRegistrySyncable;

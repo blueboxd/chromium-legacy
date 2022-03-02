@@ -31,13 +31,13 @@ const base::Feature kBetterTelemetryAcrossReports{
     base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kClientSideDetectionDocumentScanning{
-    "ClientSideDetectionDocumentScanning", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ClientSideDetectionDocumentScanning", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kClientSideDetectionForAndroid{
     "ClientSideDetectionModelOnAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable only for Android
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const base::Feature kClientSideDetectionModelIsFlatBuffer{
     "ClientSideDetectionModelIsFlatBuffer", base::FEATURE_ENABLED_BY_DEFAULT};
 #else
@@ -90,7 +90,7 @@ const base::Feature kTailoredSecurityIntegration{
 
 const base::Feature kOmitNonUserGesturesFromReferrerChain{
     "SafeBrowsingOmitNonUserGesturesFromReferrerChain",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPasswordProtectionForSignedInUsers {
   "SafeBrowsingPasswordProtectionForSignedInUsers",
@@ -114,12 +114,8 @@ const base::Feature kSafeBrowsingDisableConsumerCsdForEnterprise{
     "SafeBrowsingDisableConsumerCsdForEnterprise",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kRealTimeUrlLookupReferrerChainForEnterprise{
-    "SafeBrowsingRealTimeUrlLookupReferrerChainForEnterprise",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kSafeBrowsingPageLoadToken{
-    "SafeBrowsingPageLoadToken", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SafeBrowsingPageLoadToken", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature
     kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid{
@@ -128,6 +124,10 @@ const base::Feature
 
 const base::Feature kSafeBrowsingRemoveCookiesInAuthRequests{
     "SafeBrowsingRemoveCookiesInAuthRequests",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSendSampledPingsForProtegoAllowlistDomains{
+    "SafeBrowsingSendSampledPingsForProtegoAllowlistDomains",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
@@ -173,10 +173,10 @@ constexpr struct {
     {&kFileTypePoliciesTag, true},
     {&kOmitNonUserGesturesFromReferrerChain, true},
     {&kPasswordProtectionForSignedInUsers, true},
-    {&kRealTimeUrlLookupReferrerChainForEnterprise, true},
     {&kSafeBrowsingPageLoadToken, true},
     {&kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid, true},
     {&kSafeBrowsingRemoveCookiesInAuthRequests, true},
+    {&kSendSampledPingsForProtegoAllowlistDomains, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

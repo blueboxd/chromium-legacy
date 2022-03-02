@@ -15,6 +15,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -43,6 +44,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
+#include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
@@ -59,7 +61,7 @@
 #include "chrome/browser/ui/signin_view_controller.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -227,7 +229,7 @@ void ShowBookmarkManagerForNode(Browser* browser, int64_t node_id) {
   OpenBookmarkManagerForNode(browser, node_id);
 }
 
-void ShowHistory(Browser* browser) {
+void ShowHistory(Browser* browser, const std::string& host_name) {
   // History UI should not be shown in Incognito mode, instead history
   // disclaimer bubble should show up. This also updates the behavior of history
   // keyboard shortcts in Incognito.
@@ -239,7 +241,17 @@ void ShowHistory(Browser* browser) {
   }
 
   base::RecordAction(UserMetricsAction("ShowHistory"));
-  ShowSingletonTabIgnorePathOverwriteNTP(browser, GURL(kChromeUIHistoryURL));
+  GURL url = GURL(kChromeUIHistoryURL);
+  if (!host_name.empty()) {
+    url = url.Resolve(base::StringPrintf(
+        "/?q=%s",
+        net::EscapeQueryParamValue(host_name, /*use_plus=*/false).c_str()));
+  }
+  ShowSingletonTabIgnorePathOverwriteNTP(browser, url);
+}
+
+void ShowHistory(Browser* browser) {
+  ShowHistory(browser, std::string());
 }
 
 void ShowDownloads(Browser* browser) {
@@ -434,7 +446,7 @@ void ShowEnterpriseManagementPageInTabbedBrowser(Browser* browser) {
 
 void ShowAppManagementPage(Profile* profile,
                            const std::string& app_id,
-                           AppManagementEntryPoint entry_point) {
+                           ash::settings::AppManagementEntryPoint entry_point) {
   // This histogram is also declared and used at chrome/browser/resources/
   // settings/chrome_os/os_apps_page/app_management_page/constants.js.
   constexpr char kAppManagementEntryPointsHistogramName[] =

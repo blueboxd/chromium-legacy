@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Permitir cookies</translation>
 <translation id="2228071138934252756">Para permitir que a app <ph name="APP_NAME" /> aceda à câmara, ative também a câmara nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">Apenas uma vez</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> Remover</translation>
 <translation id="2289270750774289114">Perguntar quando um site pretende detetar dispositivos Bluetooth próximos (recomendado)</translation>
 <translation id="2315043854645842844">O sistema operativo não suporta a seleção do certificado do lado do cliente.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Mostrar informações</translation>
 <translation id="3123473560110926937">Bloqueado em alguns sites.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
+<translation id="3203366800380907218">Da Web</translation>
 <translation id="321187648315454507">Para permitir que a app <ph name="APP_NAME" /> lhe envie notificações, ative também as notificações nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Microfone</translation>
 <translation id="3277252321222022663">Permitir que os sites acedam aos sensores (recomendado)</translation>
@@ -180,7 +182,6 @@
 <translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5689516760719285838">Local</translation>
 <translation id="5690795753582697420">A câmara está desativada nas Definições do Android</translation>
-<translation id="5710871682236653961">Perguntar antes de permitir que os sites enviem e recebam informações quando toca em dispositivos NFC (recomendado)</translation>
 <translation id="5719847187258001597">Esta ação limpa todos os dados e cookies armazenados por <ph name="ORIGIN" /> ou pela respetiva app no seu ecrã principal.</translation>
 <translation id="5771720122942595109">Bloqueio de <ph name="PERMISSION_1" />.</translation>
 <translation id="5804241973901381774">Permissões</translation>
@@ -239,7 +240,6 @@
 <translation id="7016516562562142042">Permitido para o motor de pesquisa atual</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selecionado}one{# selecionados}other{# selecionados}}</translation>
-<translation id="7070090581017165256">Acerca deste site</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> selecionado(s). Opções disponíveis junto à parte superior do ecrã.</translation>
 <translation id="7141896414559753902">Impedir que os sites apresentem pop-ups e redirecionamentos (recomendado).</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +254,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Um site está a utilizar o seu microfone.</translation>
 <translation id="7561196759112975576">Sempre</translation>
-<translation id="7572498721684305250">Impedir que os sites enviem e recebam informações quando toca em dispositivos NFC</translation>
 <translation id="757524316907819857">Impedir que os sites reproduzam conteúdos protegidos</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>

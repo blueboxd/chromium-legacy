@@ -17,10 +17,12 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/single_thread_task_executor.h"
@@ -40,6 +42,45 @@
 #include "chrome/updater/util.h"
 
 namespace updater {
+
+// base::CommandLine can't be used because it enforces that all switches are
+// lowercase, but ksadmin has case-sensitive switches. This argument parser
+// converts an argv set into a map of switch name to switch value; for example
+// `ksadmin --register --productid com.goog.chrome -v 1.2.3.4 e` to
+// `{"register": "", "productid": "com.goog.chrome", "v": "1.2.3.4", "e": ""}`.
+std::map<std::string, std::string> ParseCommandLine(int argc,
+                                                    const char* argv[]) {
+  std::map<std::string, std::string> result;
+  std::string last_arg;
+  for (int i = 1; i < argc; ++i) {
+    std::string arg(argv[i]);
+    bool new_key = last_arg.empty();
+    if (base::StartsWith(arg, "--")) {
+      new_key = true;
+      arg = arg.substr(2);
+    } else if (base::StartsWith(arg, "-")) {
+      // Multiple short options could be combined together. For example,
+      // command `ksadmin -pP com.google.Chrome` should print Chrome ticket.
+      // Split the option substring into switches character by character.
+      for (const char ch : arg.substr(1)) {
+        last_arg = ch;
+        result[last_arg] = "";
+      }
+      continue;
+    }
+    if (new_key) {
+      result[last_arg] = "";
+      last_arg = arg;
+    } else {
+      result[last_arg] = arg;
+      last_arg = "";
+    }
+  }
+  if (!last_arg.empty())
+    result[last_arg] = "";
+  return result;
+}
+
 namespace {
 
 constexpr char kCommandDelete[] = "delete";
@@ -63,37 +104,6 @@ constexpr char kCommandVersionKey[] = "version-key";
 constexpr char kCommandVersionPath[] = "version-path";
 constexpr char kCommandXCPath[] = "xcpath";
 
-// base::CommandLine can't be used because it enforces that all switches are
-// lowercase, but ksadmin has case-sensitive switches. This argument parser
-// converts an argv set into a map of switch name to switch value; for example
-// `ksadmin --register --productid com.goog.chrome -v 1.2.3.4 e` to
-// `{"register": "", "productid": "com.goog.chrome", "v": "1.2.3.4", "e": ""}`.
-std::map<std::string, std::string> ParseCommandLine(int argc, char* argv[]) {
-  std::map<std::string, std::string> result;
-  std::string last_arg;
-  for (int i = 1; i < argc; ++i) {
-    std::string arg(argv[i]);
-    bool new_key = last_arg.empty();
-    for (const std::string& prefix : {"--", "-"}) {
-      if (base::StartsWith(arg, prefix)) {
-        new_key = true;
-        arg = arg.substr(prefix.length());
-        break;
-      }
-    }
-    if (new_key) {
-      result[last_arg] = "";
-      last_arg = arg;
-    } else {
-      result[last_arg] = arg;
-      last_arg = "";
-    }
-  }
-  if (!last_arg.empty())
-    result[last_arg] = "";
-  return result;
-}
-
 bool HasSwitch(const std::string& arg,
                const std::map<std::string, std::string>& switches) {
   if (base::Contains(switches, arg))
@@ -114,9 +124,44 @@ bool HasSwitch(const std::string& arg,
   return false;
 }
 
+std::string SwitchValue(const std::string& arg,
+                        const std::map<std::string, std::string>& switches) {
+  if (base::Contains(switches, arg))
+    return switches.at(arg);
+  const static std::map<std::string, std::string> aliases = {
+      {kCommandBrandKey, "b"},    {kCommandBrandPath, "B"},
+      {kCommandProductId, "P"},   {kCommandTag, "g"},
+      {kCommandTagKey, "K"},      {kCommandTagPath, "H"},
+      {kCommandVersion, "v"},     {kCommandVersionKey, "e"},
+      {kCommandVersionPath, "a"}, {kCommandXCPath, "x"},
+  };
+  if (!base::Contains(aliases, arg))
+    return "";
+  const std::string& alias = aliases.at(arg);
+  return base::Contains(switches, alias) ? switches.at(alias) : "";
+}
+
+std::string KeystoneTicketStorePath(UpdaterScope scope) {
+  return GetKeystoneFolderPath(scope)
+      ->Append(FILE_PATH_LITERAL("TicketStore"))
+      .Append(FILE_PATH_LITERAL("Keystone.ticketstore"))
+      .value();
+}
+
 UpdaterScope Scope(const std::map<std::string, std::string>& switches) {
-  return HasSwitch(kCommandSystemStore, switches) ? UpdaterScope::kSystem
-                                                  : UpdaterScope::kUser;
+  if (HasSwitch(kCommandSystemStore, switches))
+    return UpdaterScope::kSystem;
+  if (HasSwitch(kCommandUserStore, switches))
+    return UpdaterScope::kUser;
+
+  base::FilePath executable_path;
+  if (!base::PathService::Get(base::FILE_EXE, &executable_path))
+    return UpdaterScope::kUser;
+
+  return base::StartsWith(executable_path.value(),
+                          GetKeystoneFolderPath(UpdaterScope::kSystem)->value())
+             ? UpdaterScope::kSystem
+             : UpdaterScope::kUser;
 }
 
 class KSAdminApp : public App {
@@ -138,7 +183,7 @@ class KSAdminApp : public App {
   void PrintUsage(const std::string& error_message);
   void PrintVersion();
   void PrintTickets();
-  void PrintKeystoneTickets();
+  void PrintKeystoneTickets(const std::string& app_id);
 
   UpdaterScope Scope() const;
   bool HasSwitch(const std::string& arg) const;
@@ -255,19 +300,7 @@ bool KSAdminApp::HasSwitch(const std::string& arg) const {
 }
 
 std::string KSAdminApp::SwitchValue(const std::string& arg) const {
-  if (base::Contains(switches_, arg))
-    return switches_.at(arg);
-  const static std::map<std::string, std::string> aliases = {
-      {kCommandBrandKey, "b"},    {kCommandBrandPath, "B"},
-      {kCommandProductId, "P"},   {kCommandTag, "g"},
-      {kCommandTagKey, "K"},      {kCommandTagPath, "H"},
-      {kCommandVersion, "v"},     {kCommandVersionKey, "e"},
-      {kCommandVersionPath, "a"}, {kCommandXCPath, "x"},
-  };
-  if (!base::Contains(aliases, arg))
-    return "";
-  const std::string& alias = aliases.at(arg);
-  return base::Contains(switches_, alias) ? switches_.at(alias) : "";
+  return updater::SwitchValue(arg, switches_);
 }
 
 UpdaterScope KSAdminApp::Scope() const {
@@ -280,13 +313,9 @@ void KSAdminApp::Delete() {
 }
 
 NSDictionary<NSString*, KSTicket*>* KSAdminApp::LoadTicketStore() {
-  return [KSTicketStore
-      readStoreWithPath:base::SysUTF8ToNSString(
-                            GetKeystoneFolderPath(Scope())
-                                ->Append(FILE_PATH_LITERAL("TicketStore"))
-                                .Append(
-                                    FILE_PATH_LITERAL("Keystone.ticketstore"))
-                                .AsUTF8Unsafe())];
+  return
+      [KSTicketStore readStoreWithPath:base::SysUTF8ToNSString(
+                                           KeystoneTicketStorePath(Scope()))];
 }
 
 int KSAdminApp::PrintKeystoneTag(const std::string& app_id) {
@@ -347,26 +376,43 @@ void KSAdminApp::PrintVersion() {
   Shutdown(0);
 }
 
-void KSAdminApp::PrintKeystoneTickets() {
+void KSAdminApp::PrintKeystoneTickets(const std::string& app_id) {
+  // Print all tickets if `app_id` is empty. Otherwise only print ticket for
+  // the given app id.
   @autoreleasepool {
     NSDictionary<NSString*, KSTicket*>* store = LoadTicketStore();
-    if (store.count > 0) {
-      for (NSString* key in store) {
-        printf("%s\n",
-               base::SysNSStringToUTF8([store[key] description]).c_str());
+    if (app_id.empty()) {
+      if (store.count > 0) {
+        for (NSString* key in store) {
+          printf("%s\n",
+                 base::SysNSStringToUTF8([store[key] description]).c_str());
+        }
+        return;
       }
     } else {
-      printf("No tickets\n");
+      KSTicket* ticket = [store
+          objectForKey:[base::SysUTF8ToNSString(app_id) lowercaseString]];
+      if (ticket) {
+        printf("%s\n", base::SysNSStringToUTF8([ticket description]).c_str());
+        return;
+      }
     }
+
+    printf("No tickets.\n");
   }
 }
 
 void KSAdminApp::PrintTickets() {
+  const std::string app_id = SwitchValue(kCommandProductId);
   service_proxy_->GetAppStates(base::BindOnce(
-      [](base::OnceCallback<void()> fallback_cb,
+      [](const std::string& app_id, base::OnceCallback<void()> fallback_cb,
          base::OnceCallback<void(int)> done_cb,
          const std::vector<updater::UpdateService::AppState>& states) {
         for (const updater::UpdateService::AppState& state : states) {
+          if (!app_id.empty() &&
+              !base::EqualsCaseInsensitiveASCII(app_id, state.app_id)) {
+            continue;
+          }
           KSTicket* ticket =
               [[[KSTicket alloc] initWithAppState:state] autorelease];
           printf("%s\n", base::SysNSStringToUTF8([ticket description]).c_str());
@@ -379,7 +425,7 @@ void KSAdminApp::PrintTickets() {
         }
         std::move(done_cb).Run(0);
       },
-      base::BindOnce(&KSAdminApp::PrintKeystoneTickets, this),
+      app_id, base::BindOnce(&KSAdminApp::PrintKeystoneTickets, this, app_id),
       base::BindOnce(&KSAdminApp::Shutdown, this)));
 }
 
@@ -410,7 +456,7 @@ void KSAdminApp::FirstTaskRun() {
 
 }  // namespace
 
-int KSAdminAppMain(int argc, char* argv[]) {
+int KSAdminAppMain(int argc, const char* argv[]) {
   base::AtExitManager exit_manager;
   base::CommandLine::Init(argc, argv);
   std::map<std::string, std::string> command_line =

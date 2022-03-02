@@ -124,6 +124,7 @@ class EventClientImpl;
 class EventRewriterControllerImpl;
 class EventTransformationHandler;
 class WindowRestoreController;
+class FirmwareUpdateNotificationController;
 class FloatController;
 class FocusCycler;
 class FrameThrottlingController;
@@ -163,6 +164,7 @@ class OverviewController;
 class ParentAccessController;
 class PartialMagnifierController;
 class PciePeripheralNotificationController;
+class UsbPeripheralNotificationController;
 class PeripheralBatteryListener;
 class PeripheralBatteryNotifier;
 class PersistentDesksBarController;
@@ -411,6 +413,12 @@ class ASH_EXPORT Shell : public SessionObserver,
   EventTransformationHandler* event_transformation_handler() {
     return event_transformation_handler_.get();
   }
+
+  FirmwareUpdateNotificationController*
+  firmware_update_notification_controller() {
+    return firmware_update_notification_controller_.get();
+  }
+
   FloatController* float_controller() { return float_controller_.get(); }
   ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
   AshFocusRules* focus_rules() { return focus_rules_; }
@@ -602,6 +610,12 @@ class ASH_EXPORT Shell : public SessionObserver,
   pcie_peripheral_notification_controller() {
     return pcie_peripheral_notification_controller_.get();
   }
+
+  UsbPeripheralNotificationController*
+  usb_peripheral_notification_controller() {
+    return usb_peripheral_notification_controller_.get();
+  }
+
   OcclusionTrackerPauser* occlusion_tracker_pauser() {
     return occlusion_tracker_pauser_.get();
   }
@@ -667,7 +681,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   friend class AcceleratorControllerTest;
   friend class AshTestHelper;
   friend class RootWindowController;
-  friend class ScopedRootWindowForNewWindows;
   friend class ShellTestApi;
   friend class SmsObserverTest;
 
@@ -742,6 +755,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DisplayHighlightController> display_highlight_controller_;
   std::unique_ptr<DisplaySpeakerController> display_speaker_controller_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
+  std::unique_ptr<FirmwareUpdateNotificationController>
+      firmware_update_notification_controller_;
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<FloatController> float_controller_;
   std::unique_ptr<HoldingSpaceController> holding_space_controller_;
@@ -768,6 +783,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ParentAccessController> parent_access_controller_;
   std::unique_ptr<PciePeripheralNotificationController>
       pcie_peripheral_notification_controller_;
+  std::unique_ptr<UsbPeripheralNotificationController>
+      usb_peripheral_notification_controller_;
   std::unique_ptr<PersistentDesksBarController>
       persistent_desks_bar_controller_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;

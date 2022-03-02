@@ -67,6 +67,7 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
   void ShowDateSettings() override;
   void ShowSetTimeDialog() override;
   void ShowDisplaySettings() override;
+  void ShowDarkModeSettings() override;
   void ShowStorageSettings() override;
   void ShowPowerSettings() override;
   void ShowPrivacyAndSecuritySettings() override;
@@ -92,8 +93,10 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
   void ShowArcVpnCreate(const std::string& app_id) override;
   void ShowNetworkSettings(const std::string& network_id) override;
   void ShowMultiDeviceSetup() override;
+  void ShowFirmwareUpdate() override;
   void RequestRestartForUpdate() override;
   void SetLocaleAndExit(const std::string& locale_iso_code) override;
+  void ShowAccessCodeCastingDialog() override;
 
  protected:
   // Used by mocks in tests.

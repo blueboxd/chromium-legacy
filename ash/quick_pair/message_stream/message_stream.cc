@@ -4,6 +4,7 @@
 
 #include "ash/quick_pair/message_stream/message_stream.h"
 
+#include "ash/quick_pair/common/fast_pair/fast_pair_metrics.h"
 #include "ash/quick_pair/common/logging.h"
 #include "ash/services/quick_pair/quick_pair_process.h"
 #include "ash/services/quick_pair/quick_pair_process_manager.h"
@@ -65,6 +66,7 @@ void MessageStream::Receive() {
 
 void MessageStream::ReceiveDataSuccess(int buffer_size,
                                        scoped_refptr<net::IOBuffer> io_buffer) {
+  RecordMessageStreamReceiveResult(/*success=*/true);
   receive_retry_counter_ = 0;
 
   if (!io_buffer->data()) {
@@ -89,6 +91,8 @@ void MessageStream::ReceiveDataSuccess(int buffer_size,
 void MessageStream::ReceiveDataError(device::BluetoothSocket::ErrorReason error,
                                      const std::string& error_message) {
   QP_LOG(INFO) << __func__ << ": Error: " << error_message;
+  RecordMessageStreamReceiveResult(/*success=*/false);
+  RecordMessageStreamReceiveError(error);
 
   if (error == device::BluetoothSocket::ErrorReason::kDisconnected) {
     OnSocketDisconnected();
@@ -98,9 +102,31 @@ void MessageStream::ReceiveDataError(device::BluetoothSocket::ErrorReason error,
   Receive();
 }
 
+void MessageStream::Disconnect(base::OnceClosure on_disconnect_callback) {
+  // If we already have disconnected the socket, then we can run the callback.
+  // This can happen since the socket might have disconnected previously but
+  // we kept the MessageStream instance alive to preserve messages from the
+  // corresponding device.
+  if (!socket_) {
+    std::move(on_disconnect_callback).Run();
+    return;
+  }
+
+  socket_->Disconnect(base::BindOnce(
+      &MessageStream::OnSocketDisconnectedWithCallback,
+      weak_ptr_factory_.GetWeakPtr(), std::move(on_disconnect_callback)));
+}
+
 void MessageStream::OnSocketDisconnected() {
+  socket_ = nullptr;
   for (auto& obs : observers_)
     obs.OnDisconnected(device_address_);
+}
+
+void MessageStream::OnSocketDisconnectedWithCallback(
+    base::OnceClosure on_disconnect_callback) {
+  OnSocketDisconnected();
+  std::move(on_disconnect_callback).Run();
 }
 
 void MessageStream::ParseMessageStreamSuccess(

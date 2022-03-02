@@ -11,6 +11,7 @@
 #include "components/app_restore/features.h"
 #include "components/app_restore/full_restore_info.h"
 #include "components/app_restore/full_restore_read_handler.h"
+#include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
@@ -18,6 +19,8 @@
 
 namespace app_restore {
 namespace {
+
+const char kCrxAppPrefix[] = "_crx_";
 
 // Always use the full restore ARC data if ARC apps for desks templates is not
 // enabled.
@@ -182,6 +185,35 @@ int32_t GetArcRestoreWindowIdForSessionId(int32_t session_id) {
   }
   return DeskTemplateReadHandler::Get()->GetArcRestoreWindowIdForSessionId(
       session_id);
+}
+
+std::string GetAppIdFromAppName(const std::string& app_name) {
+  std::string prefix(kCrxAppPrefix);
+  if (app_name.substr(0, prefix.length()) != prefix)
+    return std::string();
+  return app_name.substr(prefix.length());
+}
+
+const std::string GetLacrosWindowId(aura::Window* window) {
+  const std::string* lacros_window_id =
+      window->GetProperty(app_restore::kLacrosWindowId);
+  DCHECK(lacros_window_id);
+  return *lacros_window_id;
+}
+
+void OnLacrosWindowAdded(aura::Window* const window,
+                         uint32_t browser_session_id,
+                         uint32_t restored_browser_session_id) {
+  if (window->GetProperty(aura::client::kAppType) !=
+      static_cast<int>(ash::AppType::LACROS)) {
+    return;
+  }
+
+  full_restore::FullRestoreReadHandler::GetInstance()
+      ->OnLacrosBrowserWindowAdded(window, restored_browser_session_id);
+
+  full_restore::FullRestoreSaveHandler::GetInstance()
+      ->OnLacrosBrowserWindowAdded(window, browser_session_id);
 }
 
 }  // namespace app_restore

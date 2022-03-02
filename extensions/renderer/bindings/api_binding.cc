@@ -483,7 +483,7 @@ void APIBinding::DecorateTemplateWithProperties(
 
     std::string type;
     CHECK(dict->GetString("type", &type));
-    if (type != "object" && !dict->HasKey(kValueKey)) {
+    if (type != "object" && !dict->FindKey(kValueKey)) {
       // TODO(devlin): What does a fundamental property not having a value mean?
       // It doesn't seem useful, and looks like it's only used by runtime.id,
       // which is set by custom bindings. Investigate, and remove.
@@ -524,8 +524,9 @@ void APIBinding::GetEventObject(
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = info.Holder()->CreationContext();
-  if (!binding::IsContextValidOrThrowError(context))
+  v8::Local<v8::Context> context;
+  if (!info.Holder()->GetCreationContext().ToLocal(&context) ||
+      !binding::IsContextValidOrThrowError(context))
     return;
 
   CHECK(info.Data()->IsExternal());
@@ -556,8 +557,9 @@ void APIBinding::GetCustomPropertyObject(
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = info.Holder()->CreationContext();
-  if (!binding::IsContextValid(context))
+  v8::Local<v8::Context> context;
+  if (!info.Holder()->GetCreationContext().ToLocal(&context) ||
+      !binding::IsContextValid(context))
     return;
 
   v8::Context::Scope context_scope(context);
@@ -631,7 +633,7 @@ void APIBinding::HandleCall(const std::string& name,
         return;  // Our work here is done.
       case APIBindingHooks::RequestResult::ARGUMENTS_UPDATED:
         updated_args = true;
-        FALLTHROUGH;
+        [[fallthrough]];
       case APIBindingHooks::RequestResult::NOT_HANDLED:
         break;  // Handle in the default manner.
     }

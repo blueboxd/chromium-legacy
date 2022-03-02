@@ -274,15 +274,15 @@ gfx::RectF LayoutNGSVGText::VisualRectInLocalSVGCoordinates() const {
   return SVGLayoutSupport::ComputeVisualRectForText(*this, box);
 }
 
-void LayoutNGSVGText::AbsoluteQuads(Vector<FloatQuad>& quads,
+void LayoutNGSVGText::AbsoluteQuads(Vector<gfx::QuadF>& quads,
                                     MapCoordinatesFlags mode) const {
   NOT_DESTROYED();
-  quads.push_back(LocalToAbsoluteQuad(FloatRect(StrokeBoundingBox()), mode));
+  quads.push_back(LocalToAbsoluteQuad(gfx::QuadF(StrokeBoundingBox()), mode));
 }
 
-FloatRect LayoutNGSVGText::LocalBoundingBoxRectForAccessibility() const {
+gfx::RectF LayoutNGSVGText::LocalBoundingBoxRectForAccessibility() const {
   NOT_DESTROYED();
-  return FloatRect(StrokeBoundingBox());
+  return StrokeBoundingBox();
 }
 
 bool LayoutNGSVGText::NodeAtPoint(HitTestResult& result,
@@ -308,7 +308,8 @@ PositionWithAffinity LayoutNGSVGText::PositionForPoint(
     if (!text)
       continue;
     float distance =
-        FloatRect(descendant->ObjectBoundingBox()).SquaredDistanceTo(point);
+        (descendant->ObjectBoundingBox().ClosestPoint(point) - point)
+            .LengthSquared();
     if (distance >= min_distance)
       continue;
     min_distance = distance;

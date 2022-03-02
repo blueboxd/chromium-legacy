@@ -35,7 +35,7 @@ base::FilePath GetProfilePath(const base::DictionaryValue& root,
       !root.GetString(profile_name + ".Path", &path16))
     return base::FilePath();
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::ReplaceSubstringsAfterOffset(&path16, 0, u"/", u"\\");
 #endif
   base::FilePath path = base::FilePath::FromUTF16Unsafe(path16);
@@ -68,20 +68,22 @@ std::vector<FirefoxDetail> GetFirefoxDetailsFromDictionary(
 
   for (int i = 0; ; ++i) {
     std::string current_profile = base::StringPrintf("Profile%d", i);
-    if (!root.HasKey(current_profile)) {
+    if (!root.FindKey(current_profile)) {
       // Profiles are contiguously numbered. So we exit when we can't
       // find the i-th one.
       break;
     }
 
-    std::u16string path;
-    if (!root.GetString(current_profile + ".Path", &path))
+    if (!root.FindPath(current_profile + ".Path"))
       continue;
 
     FirefoxDetail details;
     details.path = GetProfilePath(root, current_profile);
     std::u16string name;
-    root.GetString(current_profile + ".Name", &name);
+    if (const std::string* name_utf8 =
+            root.FindStringPath(current_profile + ".Name")) {
+      name = base::UTF8ToUTF16(*name_utf8);
+    }
     // Make the profile name more presentable by replacing dashes with spaces.
     base::ReplaceChars(name, u"-", u" ", &name);
     details.name = name;
@@ -98,7 +100,7 @@ std::vector<FirefoxDetail> GetFirefoxDetailsFromDictionary(
   return profile_details;
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // Find the "*.app" component of the path and build up from there.
 // The resulting path will be .../Firefox.app/Contents/MacOS.
 // We do this because we don't trust LastAppDir to always be
@@ -131,7 +133,7 @@ bool ComposeMacAppPath(const std::string& path_from_file,
              << "installation path: missing /*.app/ directory.";
   return false;
 }
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 
 bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,
                                          int* version,
@@ -158,15 +160,15 @@ bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,
         // UTF-8, what does Firefox do?  If it puts raw bytes in the
         // file, we could go straight from bytes -> filepath;
         // otherwise, we're out of luck here.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
         // Extract path from "LastAppDir=/actual/path"
         size_t separator_pos = line.find_first_of('=');
         const std::string& path_from_ini = line.substr(separator_pos + 1);
         if (!ComposeMacAppPath(path_from_ini, app_path))
           return false;
-#else  // !OS_MAC
+#else   // BUILDFLAG(IS_MAC)
         *app_path = base::FilePath::FromUTF8Unsafe(line.substr(equal + 1));
-#endif  // OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
       }
     }
   }

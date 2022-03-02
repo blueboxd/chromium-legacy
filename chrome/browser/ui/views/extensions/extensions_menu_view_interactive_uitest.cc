@@ -21,9 +21,9 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
-#include "chrome/browser/ui/views/extensions/extensions_toolbar_browsertest.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_interactive_uitest.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/hover_button_controller.h"
@@ -52,8 +52,7 @@
 
 using ::testing::ElementsAre;
 
-class ExtensionsMenuViewInteractiveUITest
-    : public ExtensionsToolbarBrowserTest {
+class ExtensionsMenuViewInteractiveUITest : public ExtensionsToolbarUITest {
  public:
   static base::flat_set<ExtensionsMenuItemView*> GetExtensionsMenuItemViews() {
     return ExtensionsMenuView::GetExtensionsMenuViewForTesting()
@@ -63,7 +62,7 @@ class ExtensionsMenuViewInteractiveUITest
   void ShowUi(const std::string& name) override {
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     // The extensions menu can appear offscreen on Linux, so verifying bounds
     // makes the tests flaky.
     set_should_verify_dialog_bounds(false);
@@ -115,7 +114,7 @@ class ExtensionsMenuViewInteractiveUITest
   }
 
   bool VerifyUi() override {
-    EXPECT_TRUE(ExtensionsToolbarBrowserTest::VerifyUi());
+    EXPECT_TRUE(ExtensionsToolbarUITest::VerifyUi());
 
     if (ui_test_name_ == "ReloadPageBubble") {
       ExtensionsToolbarContainer* const container =
@@ -158,7 +157,7 @@ class ExtensionsMenuViewInteractiveUITest
     }
 
     // Use default implementation for other tests.
-    ExtensionsToolbarBrowserTest::DismissUi();
+    ExtensionsToolbarUITest::DismissUi();
   }
 
   void DismissUninstallDialog() {
@@ -264,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewInteractiveUITest, InvokeUi_default) {
 // Invokes the UI shown when a user has to reload a page in order to run an
 // extension.
 // TODO(https://crbug.com/1184437): Very flaky on Linux and Windows.
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
 #define MAYBE_InvokeUi_ReloadPageBubble DISABLED_InvokeUi_ReloadPageBubble
 #else
 #define MAYBE_InvokeUi_ReloadPageBubble InvokeUi_ReloadPageBubble
@@ -487,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewInteractiveUITest,
 
 // Failing on Mac. https://crbug.com/1176703
 // Flaky on Linux. https://crbug.com/1202112
-#if defined(OS_MAC) || defined(OS_LINUX)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #define MAYBE_PinningDisabledInIncognito DISABLED_PinningDisabledInIncognito
 #else
 #define MAYBE_PinningDisabledInIncognito PinningDisabledInIncognito
@@ -627,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewInteractiveUITest,
       browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
 }
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 // TODO(crbug.com/1251961): Flaky on Linux (CFI)
 #define MAYBE_ClickingContextMenuButton DISABLED_ClickingContextMenuButton
 #else
@@ -664,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewInteractiveUITest,
   ShowAndVerifyUi();
 }
 
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // TODO(crbug.com/1164612): Flaky on Linux and Lacros.
 #define MAYBE_InvokeUi_UninstallDialog_Accept \
   DISABLED_InvokeUi_UninstallDialog_Accept
@@ -676,7 +675,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewInteractiveUITest,
   ShowAndVerifyUi();
 }
 
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // TODO(crbug.com/1173344): Flaky on Linux.
 #define MAYBE_InvokeUi_UninstallDialog_Cancel \
   DISABLED_InvokeUi_UninstallDialog_Cancel

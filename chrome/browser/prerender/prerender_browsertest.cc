@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "chrome/browser/prerender/prerender_utils.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "content/public/test/browser_test.h"
@@ -19,13 +20,22 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "chrome/test/base/android/android_browser_test.h"
 #else
 #include "chrome/test/base/in_process_browser_test.h"
 #endif
 
 namespace {
+
+namespace {
+
+// This is equal to content::PrerenderHost::FinalStatus::kActivated.
+// TODO(crbug.com/1274021): Replace this with the FinalStatus enum value
+// once it is exposed.
+const int kFinalStatusActivated = 0;
+
+}  // namespace
 
 class PrerenderBrowserTest : public PlatformBrowserTest {
  public:
@@ -64,6 +74,8 @@ class PrerenderBrowserTest : public PlatformBrowserTest {
 
 // An end-to-end test of prerendering and activating.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAndActivate) {
+  base::HistogramTester histogram_tester;
+
   // Navigate to an initial page.
   GURL url = embedded_test_server()->GetURL("/empty.html");
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), url));
@@ -81,6 +93,44 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAndActivate) {
   navigation_manager.WaitForNavigationFinished();
   EXPECT_TRUE(navigation_manager.was_prerendered_page_activation());
   EXPECT_TRUE(navigation_manager.was_successful());
+
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+      kFinalStatusActivated, 1);
+}
+
+// An end-to-end test of prerendering triggered by an embedder and activation.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderTriggeredByEmbedderAndActivate) {
+  base::HistogramTester histogram_tester;
+
+  GURL prerender_url = embedded_test_server()->GetURL("/simple.html");
+
+  // Start embedder triggered prerendering.
+  std::unique_ptr<content::PrerenderHandle> prerender_handle =
+      GetActiveWebContents()->StartPrerendering(
+          prerender_url, content::PrerenderTriggerType::kEmbedder,
+          prerender_utils::kDirectUrlInputMetricSuffix);
+  EXPECT_TRUE(prerender_handle);
+  content::test::PrerenderTestHelper::WaitForPrerenderLoadCompletion(
+      *GetActiveWebContents(), prerender_url);
+
+  // Activate.
+  content::TestNavigationManager navigation_manager(GetActiveWebContents(),
+                                                    prerender_url);
+  // Simulate a browser-initiated navigation.
+  GetActiveWebContents()->OpenURL(content::OpenURLParams(
+      prerender_url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+      /*is_renderer_initiated=*/false));
+  navigation_manager.WaitForNavigationFinished();
+  EXPECT_TRUE(navigation_manager.was_prerendered_page_activation());
+  EXPECT_TRUE(navigation_manager.was_successful());
+
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_DirectURLInput",
+      kFinalStatusActivated, 1);
 }
 
 // Tests that UseCounter for SpeculationRules-triggered prerender is recorded.

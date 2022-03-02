@@ -83,7 +83,7 @@ InvalidatorRegistrarWithMemory::InvalidatorRegistrarWithMemory(
       prefs_->Get(kTopicsToHandler)->FindDictKey(sender_id_);
   if (!pref_data) {
     DictionaryPrefUpdate update(prefs_, kTopicsToHandler);
-    update->SetKey(sender_id_, base::DictionaryValue());
+    update->SetKey(sender_id_, base::Value(base::Value::Type::DICTIONARY));
     return;
   }
   // Restore |handler_name_to_subscribed_topics_map_| from prefs.

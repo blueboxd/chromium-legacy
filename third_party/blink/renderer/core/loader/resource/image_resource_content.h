@@ -79,6 +79,7 @@ class CORE_EXPORT ImageResourceContent final
 
   void AddObserver(ImageResourceObserver*);
   void RemoveObserver(ImageResourceObserver*);
+  void DidRemoveObserver();
 
   // The device pixel ratio we got from the server for this image, or 1.0.
   float DevicePixelRatioHeaderValue() const;
@@ -158,11 +159,11 @@ class CORE_EXPORT ImageResourceContent final
     // Only occurs when UpdateImage or ClearAndUpdateImage is specified.
     kShouldDecodeError,
   };
-  WARN_UNUSED_RESULT UpdateImageResult UpdateImage(scoped_refptr<SharedBuffer>,
-                                                   ResourceStatus,
-                                                   UpdateImageOption,
-                                                   bool all_data_received,
-                                                   bool is_multipart);
+  [[nodiscard]] UpdateImageResult UpdateImage(scoped_refptr<SharedBuffer>,
+                                              ResourceStatus,
+                                              UpdateImageOption,
+                                              bool all_data_received,
+                                              bool is_multipart);
 
   void NotifyStartLoad();
   void DestroyDecodedData();
@@ -181,6 +182,13 @@ class CORE_EXPORT ImageResourceContent final
   }
 
   ImageDecoder::CompressionFormat GetCompressionFormat() const;
+
+  // Returns the number of bytes of image data which should be used for entropy
+  // calculations. Ideally this should exclude metadata from within the image
+  // file, but currently just returns the complete file size.
+  // TODO(iclelland): Eventually switch this, and related calculations, to bits
+  // rather than bytes.
+  uint64_t ContentSizeForEntropy() const;
 
   // Returns true if the image content is well-compressed (and not full of
   // extraneous metadata). "well-compressed" is determined by comparing the

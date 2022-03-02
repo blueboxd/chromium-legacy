@@ -189,7 +189,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // navigations as initiated by the renderer.
   void GoToOffsetFromRenderer(int offset);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // The difference between (Can)GoToOffsetWithSkipping and
   // (Can)GoToOffset/(Can)GoToOffsetInSandboxedFrame is that this respects the
   // history manipulation intervention and will exclude skippable entries.
@@ -355,7 +355,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
 // Returns true if the string corresponds to a valid data URL, false
 // otherwise.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   static bool ValidateDataURLAsString(
       const scoped_refptr<const base::RefCountedString>& data_url_as_string);
 #endif
@@ -396,6 +396,9 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // FrameNavigationEntries are serialized and added to |request|'s commit
   // params.
   void PopulateAppHistoryEntryVectors(NavigationRequest* request);
+
+  // Returns whether the last NavigationEntry encountered a post-commit error.
+  bool has_post_commit_error_entry() const;
 
  private:
   friend class RestoreHelper;
@@ -561,7 +564,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   NavigationType ClassifyNavigation(
       RenderFrameHostImpl* rfh,
       const mojom::DidCommitProvisionalLoadParams& params,
-      NavigationRequest* navigation_request);
+      NavigationRequest* navigation_request,
+      LoadCommittedDetails* load_committed_details);
 
   // Handlers for the different types of navigation types. They will actually
   // handle the navigations corresponding to the different NavClasses above.

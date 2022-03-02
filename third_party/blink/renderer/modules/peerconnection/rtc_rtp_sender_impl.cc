@@ -313,7 +313,8 @@ class RTCRtpSenderImpl::RTCRtpSenderInternal
 
   bool RemoveFromPeerConnection(webrtc::PeerConnectionInterface* pc) {
     DCHECK(main_task_runner_->BelongsToCurrentThread());
-    if (!pc->RemoveTrack(webrtc_sender_.get()))
+    // TODO(bugs.webrtc.org/9534): Return proper error code
+    if (!pc->RemoveTrackOrError(webrtc_sender_.get()).ok())
       return false;
     // TODO(hbos): Removing the track should null the sender's track, or we
     // should do |webrtc_sender_->SetTrack(null)| but that is not allowed on a
@@ -384,7 +385,7 @@ class RTCRtpSenderImpl::RTCRtpSenderInternal
       RTCStatsReportCallbackInternal callback,
       const Vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
     native_peer_connection_->GetStats(
-        webrtc_sender_.get(),
+        rtc::scoped_refptr<webrtc::RtpSenderInterface>(webrtc_sender_.get()),
         CreateRTCStatsCollectorCallback(
             main_task_runner_, ConvertToBaseOnceCallback(std::move(callback)),
             exposed_group_ids));

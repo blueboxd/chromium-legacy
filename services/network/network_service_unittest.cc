@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -61,6 +62,7 @@
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/test/test_url_loader_network_observer.h"
 #include "services/network/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -153,7 +155,7 @@ TEST_F(NetworkServiceTest, CreateContextWithoutChannelID) {
 }
 
 // Platforms where Negotiate can be used.
-#if BUILDFLAG(USE_KERBEROS) && !defined(OS_ANDROID)
+#if BUILDFLAG(USE_KERBEROS) && !BUILDFLAG(IS_ANDROID)
 // Returns the negotiate factory, if one exists, to query its configuration.
 net::HttpAuthHandlerNegotiate::Factory* GetNegotiateFactory(
     NetworkContext* network_context) {
@@ -182,52 +184,28 @@ TEST_F(NetworkServiceTest, AuthDefaultParams) {
   EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kDigestAuthScheme));
   EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
 
-#if BUILDFLAG(USE_KERBEROS) && !defined(OS_ANDROID)
+#if BUILDFLAG(USE_KERBEROS) && !BUILDFLAG(IS_ANDROID)
   ASSERT_TRUE(GetNegotiateFactory(&network_context));
-#if defined(OS_POSIX) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_EQ("",
             GetNegotiateFactory(&network_context)->GetLibraryNameForTesting());
 #endif
-#endif  // BUILDFLAG(USE_KERBEROS) && !defined(OS_ANDROID)
+#endif  // BUILDFLAG(USE_KERBEROS) && !BUILDFLAG(IS_ANDROID)
 
   EXPECT_FALSE(auth_handler_factory->http_auth_preferences()
                    ->NegotiateDisableCnameLookup());
   EXPECT_FALSE(
       auth_handler_factory->http_auth_preferences()->NegotiateEnablePort());
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   EXPECT_TRUE(auth_handler_factory->http_auth_preferences()->NtlmV2Enabled());
-#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
-#if defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_ANDROID)
   EXPECT_EQ("", auth_handler_factory->http_auth_preferences()
                     ->AuthAndroidNegotiateAccountType());
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
-TEST_F(NetworkServiceTest, AuthSchemesDigestAndNtlmOnly) {
-  mojom::HttpAuthStaticParamsPtr auth_params =
-      mojom::HttpAuthStaticParams::New();
-  auth_params->supported_schemes.push_back("digest");
-  auth_params->supported_schemes.push_back("ntlm");
-  service()->SetUpHttpAuth(std::move(auth_params));
-
-  mojo::Remote<mojom::NetworkContext> network_context_remote;
-  NetworkContext network_context(
-      service(), network_context_remote.BindNewPipeAndPassReceiver(),
-      CreateContextParams());
-  net::HttpAuthHandlerRegistryFactory* auth_handler_factory =
-      reinterpret_cast<net::HttpAuthHandlerRegistryFactory*>(
-          network_context.url_request_context()->http_auth_handler_factory());
-  ASSERT_TRUE(auth_handler_factory);
-
-  EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kBasicAuthScheme));
-  EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kDigestAuthScheme));
-  EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
-  EXPECT_FALSE(
-      auth_handler_factory->GetSchemeFactory(net::kNegotiateAuthScheme));
-}
-
-TEST_F(NetworkServiceTest, AuthSchemesNone) {
-  // An empty list means to support no schemes.
+TEST_F(NetworkServiceTest, AuthSchemesDynamicallyChanging) {
   service()->SetUpHttpAuth(mojom::HttpAuthStaticParams::New());
 
   mojo::Remote<mojom::NetworkContext> network_context_remote;
@@ -239,6 +217,78 @@ TEST_F(NetworkServiceTest, AuthSchemesNone) {
           network_context.url_request_context()->http_auth_handler_factory());
   ASSERT_TRUE(auth_handler_factory);
 
+  EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kBasicAuthScheme));
+  EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kDigestAuthScheme));
+  EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
+#if BUILDFLAG(USE_KERBEROS) && !defined(OS_ANDROID)
+  EXPECT_TRUE(
+      auth_handler_factory->GetSchemeFactory(net::kNegotiateAuthScheme));
+#else
+  EXPECT_FALSE(
+      auth_handler_factory->GetSchemeFactory(net::kNegotiateAuthScheme));
+#endif
+  {
+    mojom::HttpAuthDynamicParamsPtr auth_params =
+        mojom::HttpAuthDynamicParams::New();
+    auth_params->allowed_schemes = std::vector<std::string>{};
+    service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+
+    EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kBasicAuthScheme));
+    EXPECT_FALSE(
+        auth_handler_factory->GetSchemeFactory(net::kDigestAuthScheme));
+    EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
+    EXPECT_FALSE(
+        auth_handler_factory->GetSchemeFactory(net::kNegotiateAuthScheme));
+  }
+  {
+    mojom::HttpAuthDynamicParamsPtr auth_params =
+        mojom::HttpAuthDynamicParams::New();
+    auth_params->allowed_schemes =
+        std::vector<std::string>{net::kDigestAuthScheme, net::kNtlmAuthScheme};
+    service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+
+    EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kBasicAuthScheme));
+    EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kDigestAuthScheme));
+    EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
+    EXPECT_FALSE(
+        auth_handler_factory->GetSchemeFactory(net::kNegotiateAuthScheme));
+  }
+  {
+    mojom::HttpAuthDynamicParamsPtr auth_params =
+        mojom::HttpAuthDynamicParams::New();
+    service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+
+    EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kBasicAuthScheme));
+    EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kDigestAuthScheme));
+    EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
+#if BUILDFLAG(USE_KERBEROS) && !defined(OS_ANDROID)
+    EXPECT_TRUE(
+        auth_handler_factory->GetSchemeFactory(net::kNegotiateAuthScheme));
+#else
+    EXPECT_FALSE(
+        auth_handler_factory->GetSchemeFactory(net::kNegotiateAuthScheme));
+#endif
+  }
+}
+
+TEST_F(NetworkServiceTest, AuthSchemesNone) {
+  service()->SetUpHttpAuth(mojom::HttpAuthStaticParams::New());
+
+  mojo::Remote<mojom::NetworkContext> network_context_remote;
+  NetworkContext network_context(
+      service(), network_context_remote.BindNewPipeAndPassReceiver(),
+      CreateContextParams());
+  net::HttpAuthHandlerRegistryFactory* auth_handler_factory =
+      reinterpret_cast<net::HttpAuthHandlerRegistryFactory*>(
+          network_context.url_request_context()->http_auth_handler_factory());
+  ASSERT_TRUE(auth_handler_factory);
+
+  // An empty list means to support no schemes.
+  mojom::HttpAuthDynamicParamsPtr auth_params =
+      mojom::HttpAuthDynamicParams::New();
+  auth_params->allowed_schemes = std::vector<std::string>{};
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+
   EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kBasicAuthScheme));
   EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kDigestAuthScheme));
   EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
@@ -247,11 +297,16 @@ TEST_F(NetworkServiceTest, AuthSchemesNone) {
 #if BUILDFLAG(USE_EXTERNAL_GSSAPI)
 TEST_F(NetworkServiceTest, AuthGssapiLibraryName) {
   const std::string kGssapiLibraryName = "Jim";
-  mojom::HttpAuthStaticParamsPtr auth_params =
+  mojom::HttpAuthStaticParamsPtr static_auth_params =
       mojom::HttpAuthStaticParams::New();
-  auth_params->supported_schemes.push_back("negotiate");
-  auth_params->gssapi_library_name = kGssapiLibraryName;
-  service()->SetUpHttpAuth(std::move(auth_params));
+  static_auth_params->gssapi_library_name = kGssapiLibraryName;
+  service()->SetUpHttpAuth(std::move(static_auth_params));
+
+  mojom::HttpAuthDynamicParamsPtr dynamic_auth_params =
+      mojom::HttpAuthDynamicParams::New();
+  dynamic_auth_params->allowed_schemes =
+      std::vector<std::string>{net::kNegotiateAuthScheme};
+  service()->ConfigureHttpAuthPrefs(std::move(dynamic_auth_params));
 
   mojo::Remote<mojom::NetworkContext> network_context_remote;
   NetworkContext network_context(
@@ -281,10 +336,10 @@ TEST_F(NetworkServiceTest, AuthServerAllowlist) {
   ASSERT_TRUE(auth_handler_factory->http_auth_preferences());
   EXPECT_TRUE(
       auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
-          GURL("https://server1/")));
+          url::SchemeHostPort(GURL("https://server1/"))));
   EXPECT_FALSE(
       auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
-          GURL("https://server2/")));
+          url::SchemeHostPort(GURL("https://server2/"))));
 
   // Change allowlist to only have a different server on it. The pre-existing
   // NetworkContext should be using the new list.
@@ -293,10 +348,10 @@ TEST_F(NetworkServiceTest, AuthServerAllowlist) {
   service()->ConfigureHttpAuthPrefs(std::move(auth_params));
   EXPECT_FALSE(
       auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
-          GURL("https://server1/")));
+          url::SchemeHostPort(GURL("https://server1/"))));
   EXPECT_TRUE(
       auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
-          GURL("https://server2/")));
+          url::SchemeHostPort(GURL("https://server2/"))));
 
   // Change allowlist to have multiple servers. The pre-existing NetworkContext
   // should be using the new list.
@@ -305,10 +360,10 @@ TEST_F(NetworkServiceTest, AuthServerAllowlist) {
   service()->ConfigureHttpAuthPrefs(std::move(auth_params));
   EXPECT_TRUE(
       auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
-          GURL("https://server1/")));
+          url::SchemeHostPort(GURL("https://server1/"))));
   EXPECT_TRUE(
       auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
-          GURL("https://server2/")));
+          url::SchemeHostPort(GURL("https://server2/"))));
 }
 
 TEST_F(NetworkServiceTest, AuthDelegateAllowlist) {
@@ -332,9 +387,11 @@ TEST_F(NetworkServiceTest, AuthDelegateAllowlist) {
       auth_handler_factory->http_auth_preferences();
   ASSERT_TRUE(auth_prefs);
   EXPECT_EQ(DelegationType::kUnconstrained,
-            auth_prefs->GetDelegationType(GURL("https://server1/")));
+            auth_prefs->GetDelegationType(
+                url::SchemeHostPort(GURL("https://server1/"))));
   EXPECT_EQ(DelegationType::kNone,
-            auth_prefs->GetDelegationType(GURL("https://server2/")));
+            auth_prefs->GetDelegationType(
+                url::SchemeHostPort(GURL("https://server2/"))));
 
   // Change allowlist to only have a different server on it. The pre-existing
   // NetworkContext should be using the new list.
@@ -342,9 +399,11 @@ TEST_F(NetworkServiceTest, AuthDelegateAllowlist) {
   auth_params->delegate_allowlist = "server2";
   service()->ConfigureHttpAuthPrefs(std::move(auth_params));
   EXPECT_EQ(DelegationType::kNone,
-            auth_prefs->GetDelegationType(GURL("https://server1/")));
+            auth_prefs->GetDelegationType(
+                url::SchemeHostPort(GURL("https://server1/"))));
   EXPECT_EQ(DelegationType::kUnconstrained,
-            auth_prefs->GetDelegationType(GURL("https://server2/")));
+            auth_prefs->GetDelegationType(
+                url::SchemeHostPort(GURL("https://server2/"))));
 
   // Change allowlist to have multiple servers. The pre-existing NetworkContext
   // should be using the new list.
@@ -352,9 +411,11 @@ TEST_F(NetworkServiceTest, AuthDelegateAllowlist) {
   auth_params->delegate_allowlist = "server1,server2";
   service()->ConfigureHttpAuthPrefs(std::move(auth_params));
   EXPECT_EQ(DelegationType::kUnconstrained,
-            auth_prefs->GetDelegationType(GURL("https://server1/")));
+            auth_prefs->GetDelegationType(
+                url::SchemeHostPort(GURL("https://server1/"))));
   EXPECT_EQ(DelegationType::kUnconstrained,
-            auth_prefs->GetDelegationType(GURL("https://server2/")));
+            auth_prefs->GetDelegationType(
+                url::SchemeHostPort(GURL("https://server2/"))));
 }
 
 TEST_F(NetworkServiceTest, DelegateByKdcPolicy) {
@@ -454,7 +515,7 @@ TEST_F(NetworkServiceTest, AuthEnableNegotiatePort) {
 }
 
 // DnsClient isn't supported on iOS.
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 
 TEST_F(NetworkServiceTest, DnsClientEnableDisable) {
   // Create valid DnsConfig.
@@ -469,7 +530,7 @@ TEST_F(NetworkServiceTest, DnsClientEnableDisable) {
 
   service()->ConfigureStubHostResolver(
       /*insecure_dns_client_enabled=*/true, net::SecureDnsMode::kOff,
-      /*dns_over_https_servers=*/absl::nullopt,
+      /*dns_over_https_servers=*/{},
       /*additional_dns_types_enabled=*/true);
   EXPECT_TRUE(dns_client_ptr->CanUseInsecureDnsTransactions());
   EXPECT_EQ(net::SecureDnsMode::kOff,
@@ -477,7 +538,7 @@ TEST_F(NetworkServiceTest, DnsClientEnableDisable) {
 
   service()->ConfigureStubHostResolver(
       /*insecure_dns_client_enabled=*/false, net::SecureDnsMode::kOff,
-      /*dns_over_https_servers=*/absl::nullopt,
+      /*dns_over_https_servers=*/{},
       /*additional_dns_types_enabled=*/true);
   EXPECT_FALSE(dns_client_ptr->CanUseInsecureDnsTransactions());
   EXPECT_EQ(net::SecureDnsMode::kOff,
@@ -485,21 +546,15 @@ TEST_F(NetworkServiceTest, DnsClientEnableDisable) {
 
   service()->ConfigureStubHostResolver(
       /*insecure_dns_client_enabled=*/false, net::SecureDnsMode::kAutomatic,
-      /*dns_over_https_servers=*/absl::nullopt,
+      /*dns_over_https_servers=*/{},
       /*additional_dns_types_enabled=*/true);
   EXPECT_FALSE(dns_client_ptr->CanUseInsecureDnsTransactions());
   EXPECT_EQ(net::SecureDnsMode::kAutomatic,
             dns_client_ptr->GetEffectiveConfig()->secure_dns_mode);
 
-  std::vector<mojom::DnsOverHttpsServerPtr> dns_over_https_servers_ptr;
-  mojom::DnsOverHttpsServerPtr dns_over_https_server =
-      mojom::DnsOverHttpsServer::New();
-  dns_over_https_server->server_template = "https://foo/";
-  dns_over_https_server->use_post = true;
-  dns_over_https_servers_ptr.emplace_back(std::move(dns_over_https_server));
   service()->ConfigureStubHostResolver(
       /*insecure_dns_client_enabled=*/false, net::SecureDnsMode::kAutomatic,
-      std::move(dns_over_https_servers_ptr),
+      {{*net::DnsOverHttpsServerConfig::FromString("https://foo/")}},
       /*additional_dns_types_enabled=*/true);
   EXPECT_FALSE(dns_client_ptr->CanUseInsecureDnsTransactions());
   EXPECT_EQ(net::SecureDnsMode::kAutomatic,
@@ -519,24 +574,24 @@ TEST_F(NetworkServiceTest, HandlesAdditionalDnsQueryTypesEnableDisable) {
 
   service()->ConfigureStubHostResolver(
       /*insecure_dns_client_enabled=*/true, net::SecureDnsMode::kOff,
-      /*dns_over_https_servers=*/absl::nullopt,
+      /*dns_over_https_servers=*/{},
       /*additional_dns_types_enabled=*/true);
   EXPECT_TRUE(dns_client_ptr->CanQueryAdditionalTypesViaInsecureDns());
 
   service()->ConfigureStubHostResolver(
       /*insecure_dns_client_enabled=*/true, net::SecureDnsMode::kOff,
-      /*dns_over_https_servers=*/absl::nullopt,
+      /*dns_over_https_servers=*/{},
       /*additional_dns_types_enabled=*/false);
   EXPECT_FALSE(dns_client_ptr->CanQueryAdditionalTypesViaInsecureDns());
 }
 
 TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
-  const std::string kServer1 = "https://foo/";
-  const bool kServer1UsePost = false;
-  const std::string kServer2 = "https://bar/dns-query{?dns}";
-  const bool kServer2UsePost = true;
-  const std::string kServer3 = "https://grapefruit/resolver/query{?dns}";
-  const bool kServer3UsePost = false;
+  const auto kServer1 =
+      *net::DnsOverHttpsServerConfig::FromString("https://foo/");
+  const auto kServer2 =
+      *net::DnsOverHttpsServerConfig::FromString("https://bar/dns-query{?dns}");
+  const auto kServer3 = *net::DnsOverHttpsServerConfig::FromString(
+      "https://grapefruit/resolver/query{?dns}");
 
   // Create valid DnsConfig.
   net::DnsConfig config;
@@ -550,52 +605,27 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
 
   // Enable DNS over HTTPS for one server.
 
-  std::vector<mojom::DnsOverHttpsServerPtr> dns_over_https_servers_ptr;
-
-  mojom::DnsOverHttpsServerPtr dns_over_https_server =
-      mojom::DnsOverHttpsServer::New();
-  dns_over_https_server->server_template = kServer1;
-  dns_over_https_server->use_post = kServer1UsePost;
-  dns_over_https_servers_ptr.emplace_back(std::move(dns_over_https_server));
-
   service()->ConfigureStubHostResolver(
       /*insecure_dns_client_enabled=*/false, net::SecureDnsMode::kAutomatic,
-      std::move(dns_over_https_servers_ptr),
+      {{kServer1}},
       /*additional_dns_types_enabled=*/true);
   EXPECT_TRUE(
       service()->host_resolver_manager()->GetDnsConfigAsValue().is_dict());
   std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers =
       dns_client_ptr->GetEffectiveConfig()->dns_over_https_servers;
-  ASSERT_EQ(1u, dns_over_https_servers.size());
-  EXPECT_EQ(kServer1, dns_over_https_servers[0].server_template);
-  EXPECT_EQ(kServer1UsePost, dns_over_https_servers[0].use_post);
+  EXPECT_THAT(dns_over_https_servers, testing::ElementsAre(kServer1));
 
   // Enable DNS over HTTPS for two servers.
 
-  dns_over_https_servers_ptr.clear();
-  dns_over_https_server = mojom::DnsOverHttpsServer::New();
-  dns_over_https_server->server_template = kServer2;
-  dns_over_https_server->use_post = kServer2UsePost;
-  dns_over_https_servers_ptr.emplace_back(std::move(dns_over_https_server));
-
-  dns_over_https_server = mojom::DnsOverHttpsServer::New();
-  dns_over_https_server->server_template = kServer3;
-  dns_over_https_server->use_post = kServer3UsePost;
-  dns_over_https_servers_ptr.emplace_back(std::move(dns_over_https_server));
-
   service()->ConfigureStubHostResolver(
       /*insecure_dns_client_enabled=*/true, net::SecureDnsMode::kSecure,
-      std::move(dns_over_https_servers_ptr),
+      {{kServer2, kServer3}},
       /*additional_dns_types_enabled=*/true);
   EXPECT_TRUE(
       service()->host_resolver_manager()->GetDnsConfigAsValue().is_dict());
   dns_over_https_servers =
       dns_client_ptr->GetEffectiveConfig()->dns_over_https_servers;
-  ASSERT_EQ(2u, dns_over_https_servers.size());
-  EXPECT_EQ(kServer2, dns_over_https_servers[0].server_template);
-  EXPECT_EQ(kServer2UsePost, dns_over_https_servers[0].use_post);
-  EXPECT_EQ(kServer3, dns_over_https_servers[1].server_template);
-  EXPECT_EQ(kServer3UsePost, dns_over_https_servers[1].use_post);
+  EXPECT_THAT(dns_over_https_servers, testing::ElementsAre(kServer2, kServer3));
 }
 
 TEST_F(NetworkServiceTest, DisableDohUpgradeProviders) {
@@ -605,7 +635,7 @@ TEST_F(NetworkServiceTest, DisableDohUpgradeProviders) {
       {{"DisabledProviders", "CleanBrowsingSecure, , Cloudflare,Unexpected"}});
   service()->ConfigureStubHostResolver(
       /*insecure_dns_client_enabled=*/true, net::SecureDnsMode::kAutomatic,
-      /*dns_over_https_servers=*/absl::nullopt,
+      /*dns_over_https_servers=*/{},
       /*additional_dns_types_enabled=*/true);
 
   // Set valid DnsConfig.
@@ -639,8 +669,8 @@ TEST_F(NetworkServiceTest, DisableDohUpgradeProviders) {
       std::move(dns_client));
 
   std::vector<net::DnsOverHttpsServerConfig> expected_doh_servers = {
-      {"https://doh.cleanbrowsing.org/doh/family-filter{?dns}",
-       false /* use_post */}};
+      *net::DnsOverHttpsServerConfig::FromString(
+          "https://doh.cleanbrowsing.org/doh/family-filter{?dns}")};
   EXPECT_TRUE(dns_client_ptr->GetEffectiveConfig());
   EXPECT_EQ(expected_doh_servers,
             dns_client_ptr->GetEffectiveConfig()->dns_over_https_servers);
@@ -654,8 +684,8 @@ TEST_F(NetworkServiceTest, DohProbe) {
 
   net::DnsConfig config;
   config.nameservers.push_back(net::IPEndPoint());
-  config.dns_over_https_servers.emplace_back("example.com",
-                                             true /* use_post */);
+  config.dns_over_https_servers.push_back(
+      *net::DnsOverHttpsServerConfig::FromString("https://example.com/"));
   auto dns_client = std::make_unique<net::MockDnsClient>(
       std::move(config), net::MockDnsClientRuleList());
   dns_client->set_ignore_system_config_changes(true);
@@ -677,8 +707,8 @@ TEST_F(NetworkServiceTest, DohProbe_MultipleContexts) {
 
   net::DnsConfig config;
   config.nameservers.push_back(net::IPEndPoint());
-  config.dns_over_https_servers.emplace_back("example.com",
-                                             true /* use_post */);
+  config.dns_over_https_servers.emplace_back(
+      *net::DnsOverHttpsServerConfig::FromString("https://example.com/"));
   auto dns_client = std::make_unique<net::MockDnsClient>(
       std::move(config), net::MockDnsClientRuleList());
   dns_client->set_ignore_system_config_changes(true);
@@ -707,8 +737,8 @@ TEST_F(NetworkServiceTest, DohProbe_MultipleContexts) {
 TEST_F(NetworkServiceTest, DohProbe_ContextAddedBeforeTimeout) {
   net::DnsConfig config;
   config.nameservers.push_back(net::IPEndPoint());
-  config.dns_over_https_servers.emplace_back("example.com",
-                                             true /* use_post */);
+  config.dns_over_https_servers.emplace_back(
+      *net::DnsOverHttpsServerConfig::FromString("https://example.com/"));
   auto dns_client = std::make_unique<net::MockDnsClient>(
       std::move(config), net::MockDnsClientRuleList());
   dns_client->set_ignore_system_config_changes(true);
@@ -732,8 +762,8 @@ TEST_F(NetworkServiceTest, DohProbe_ContextAddedBeforeTimeout) {
 TEST_F(NetworkServiceTest, DohProbe_ContextAddedAfterTimeout) {
   net::DnsConfig config;
   config.nameservers.push_back(net::IPEndPoint());
-  config.dns_over_https_servers.emplace_back("example.com",
-                                             true /* use_post */);
+  config.dns_over_https_servers.emplace_back(
+      *net::DnsOverHttpsServerConfig::FromString("https://example.com/"));
   auto dns_client = std::make_unique<net::MockDnsClient>(
       std::move(config), net::MockDnsClientRuleList());
   dns_client->set_ignore_system_config_changes(true);
@@ -762,8 +792,8 @@ TEST_F(NetworkServiceTest, DohProbe_ContextRemovedBeforeTimeout) {
 
   net::DnsConfig config;
   config.nameservers.push_back(net::IPEndPoint());
-  config.dns_over_https_servers.emplace_back("example.com",
-                                             true /* use_post */);
+  config.dns_over_https_servers.emplace_back(
+      *net::DnsOverHttpsServerConfig::FromString("https://example.com/"));
   auto dns_client = std::make_unique<net::MockDnsClient>(
       std::move(config), net::MockDnsClientRuleList());
   dns_client->set_ignore_system_config_changes(true);
@@ -789,8 +819,8 @@ TEST_F(NetworkServiceTest, DohProbe_ContextRemovedAfterTimeout) {
 
   net::DnsConfig config;
   config.nameservers.push_back(net::IPEndPoint());
-  config.dns_over_https_servers.emplace_back("example.com",
-                                             true /* use_post */);
+  config.dns_over_https_servers.emplace_back(
+      *net::DnsOverHttpsServerConfig::FromString("https://example.com/"));
   auto dns_client = std::make_unique<net::MockDnsClient>(
       std::move(config), net::MockDnsClientRuleList());
   dns_client->set_ignore_system_config_changes(true);
@@ -808,10 +838,10 @@ TEST_F(NetworkServiceTest, DohProbe_ContextRemovedAfterTimeout) {
   EXPECT_FALSE(dns_client_ptr->factory()->doh_probes_running());
 }
 
-#endif  // !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
 
 // |ntlm_v2_enabled| is only supported on POSIX platforms.
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
 TEST_F(NetworkServiceTest, AuthNtlmV2Enabled) {
   // Set |ntlm_v2_enabled| to false before creating any NetworkContexts.
   mojom::HttpAuthDynamicParamsPtr auth_params =
@@ -844,10 +874,10 @@ TEST_F(NetworkServiceTest, AuthNtlmV2Enabled) {
   service()->ConfigureHttpAuthPrefs(std::move(auth_params));
   EXPECT_FALSE(auth_handler_factory->http_auth_preferences()->NtlmV2Enabled());
 }
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_POSIX)
 
 // |android_negotiate_account_type| is only supported on Android.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_F(NetworkServiceTest, AuthAndroidNegotiateAccountType) {
   const char kInitialAccountType[] = "Scorpio";
   const char kFinalAccountType[] = "Pisces";
@@ -878,7 +908,7 @@ TEST_F(NetworkServiceTest, AuthAndroidNegotiateAccountType) {
   EXPECT_EQ(kFinalAccountType, auth_handler_factory->http_auth_preferences()
                                    ->AuthAndroidNegotiateAccountType());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 static int GetGlobalMaxConnectionsPerProxy() {
   return net::ClientSocketPoolManager::max_sockets_per_proxy_server(
@@ -928,11 +958,14 @@ class NetworkServiceTestWithService : public testing::Test {
   ~NetworkServiceTestWithService() override {}
 
   void SetUp() override {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     test_server_.AddDefaultHandlers(base::FilePath(kServicesTestData));
     ASSERT_TRUE(test_server_.Start());
-    scoped_features_.InitAndEnableFeature(net::features::kFirstPartySets);
     service_ = NetworkService::CreateForTesting();
     service_->Bind(network_service_.BindNewPipeAndPassReceiver());
+    service_->first_party_sets()->SetEnabledForTesting(true);
+    service_->first_party_sets()->SetManuallySpecifiedSet(
+        command_line->GetSwitchValueASCII(switches::kUseFirstPartySet));
   }
 
   void CreateNetworkContext() {
@@ -1260,7 +1293,7 @@ class NetworkChangeTest : public testing::Test {
 
 // mojom:NetworkChangeManager isn't supported on iOS.
 // See the same ifdef in CreateNetworkChangeNotifierIfNeeded.
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 #define MAYBE_NetworkChangeManagerRequest DISABLED_NetworkChangeManagerRequest
 #else
 #define MAYBE_NetworkChangeManagerRequest NetworkChangeManagerRequest
@@ -1424,10 +1457,12 @@ class ClearSiteDataAuthCertObserver : public TestURLLoaderNetworkObserver {
   explicit ClearSiteDataAuthCertObserver() = default;
   ~ClearSiteDataAuthCertObserver() override = default;
 
-  void OnClearSiteData(const GURL& url,
-                       const std::string& header_value,
-                       int load_flags,
-                       OnClearSiteDataCallback callback) override {
+  void OnClearSiteData(
+      const GURL& url,
+      const std::string& header_value,
+      int load_flags,
+      const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
+      OnClearSiteDataCallback callback) override {
     ++on_clear_site_data_counter_;
     last_on_clear_site_data_header_value_ = header_value;
     std::move(callback).Run();

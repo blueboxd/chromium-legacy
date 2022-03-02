@@ -110,17 +110,21 @@ bool KioskModeHandler::Parse(Extension* extension, std::u16string* error) {
          manifest->FindKey(keys::kKioskOnly));
 
   bool kiosk_enabled = false;
-  if (manifest->FindKey(keys::kKioskEnabled) &&
-      !manifest->GetBoolean(keys::kKioskEnabled, &kiosk_enabled)) {
-    *error = manifest_errors::kInvalidKioskEnabled;
-    return false;
+  if (const base::Value* temp = manifest->FindKey(keys::kKioskEnabled)) {
+    if (!temp->is_bool()) {
+      *error = manifest_errors::kInvalidKioskEnabled;
+      return false;
+    }
+    kiosk_enabled = temp->GetBool();
   }
 
   bool kiosk_only = false;
-  if (manifest->FindKey(keys::kKioskOnly) &&
-      !manifest->GetBoolean(keys::kKioskOnly, &kiosk_only)) {
-    *error = manifest_errors::kInvalidKioskOnly;
-    return false;
+  if (const base::Value* temp = manifest->FindKey(keys::kKioskOnly)) {
+    if (!temp->is_bool()) {
+      *error = manifest_errors::kInvalidKioskOnly;
+      return false;
+    }
+    kiosk_only = temp->GetBool();
   }
 
   if (kiosk_only && !kiosk_enabled) {
@@ -177,20 +181,24 @@ bool KioskModeHandler::Parse(Extension* extension, std::u16string* error) {
 
   // Optional kiosk.required_platform_version key.
   std::string required_platform_version;
-  if (manifest->FindPath(keys::kKioskRequiredPlatformVersion) &&
-      (!manifest->GetString(keys::kKioskRequiredPlatformVersion,
-                            &required_platform_version) ||
-       !KioskModeInfo::IsValidPlatformVersion(required_platform_version))) {
-    *error = manifest_errors::kInvalidKioskRequiredPlatformVersion;
-    return false;
+  if (const base::Value* temp =
+          manifest->FindPath(keys::kKioskRequiredPlatformVersion)) {
+    if (!temp->is_string() ||
+        !KioskModeInfo::IsValidPlatformVersion(temp->GetString())) {
+      *error = manifest_errors::kInvalidKioskRequiredPlatformVersion;
+      return false;
+    }
+    required_platform_version = temp->GetString();
   }
 
   // Optional kiosk.always_update key.
   bool always_update = false;
-  if (manifest->FindPath(keys::kKioskAlwaysUpdate) &&
-      !manifest->GetBoolean(keys::kKioskAlwaysUpdate, &always_update)) {
-    *error = manifest_errors::kInvalidKioskAlwaysUpdate;
-    return false;
+  if (const base::Value* temp = manifest->FindPath(keys::kKioskAlwaysUpdate)) {
+    if (!temp->is_bool()) {
+      *error = manifest_errors::kInvalidKioskAlwaysUpdate;
+      return false;
+    }
+    always_update = temp->GetBool();
   }
 
   extension->SetManifestData(keys::kKioskMode,

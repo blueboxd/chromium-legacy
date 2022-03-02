@@ -37,7 +37,7 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
   ForceMaximizeOnFirstRunTest() {}
 
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
-    policy->SetBoolean(key::kForceMaximizeOnFirstRun, true);
+    policy->SetBoolKey(key::kForceMaximizeOnFirstRun, true);
   }
 
   void SetUpResolution() {
@@ -51,8 +51,7 @@ class ForceMaximizeOnFirstRunTest : public LoginPolicyTestBase {
   const Browser* OpenNewBrowserWindow() {
     const user_manager::User* const user =
         user_manager::UserManager::Get()->GetActiveUser();
-    Profile* const profile =
-        chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+    Profile* const profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
     return CreateBrowser(profile);
   }
 };
@@ -101,7 +100,7 @@ class ForceMaximizePolicyFalseTest : public ForceMaximizeOnFirstRunTest {
   ForceMaximizePolicyFalseTest() : ForceMaximizeOnFirstRunTest() {}
 
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
-    policy->SetBoolean(key::kForceMaximizeOnFirstRun, false);
+    policy->SetBoolKey(key::kForceMaximizeOnFirstRun, false);
   }
 };
 

@@ -34,13 +34,13 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_file_handler_manager.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "components/embedder_support/switches.h"
 #include "components/permissions/test/permission_request_observer.h"
@@ -50,6 +50,7 @@
 #include "components/policy/policy_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_launcher.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -94,7 +95,7 @@ class WebAppFileHandlingTestBase : public WebAppControllerBrowserTest {
   void InstallFileHandlingPWA() {
     GURL url = GetSecureAppURL();
 
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = url;
     web_app_info->scope = url.GetWithoutFilename();
     web_app_info->title = u"A Hosted App";
@@ -130,7 +131,7 @@ class WebAppFileHandlingTestBase : public WebAppControllerBrowserTest {
   }
 
   AppId InstallAnotherFileHandlingPwa(const GURL& start_url) {
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
     web_app_info->title = u"A second app";
@@ -240,6 +241,15 @@ class WebAppFileHandlingBrowserTest : public WebAppFileHandlingTestBase {
       EXPECT_EQ(expected_file_path.BaseName().AsUTF8Unsafe(),
                 content::EvalJs(web_contents_.get(),
                                 "window.launchParams.files[0].name"));
+      std::string check_permissions_js(
+          // clang-format off
+        "(async () => {"
+        "  return await window.launchParams.files[0].queryPermission("
+        "             {mode: 'readwrite'}) === 'granted';"
+        "})()");
+      // clang-format on
+      EXPECT_TRUE(content::EvalJs(web_contents_.get(), check_permissions_js)
+                      .ExtractBool());
     }
   }
 
@@ -345,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
                        LaunchQueueSetOnRedirect) {
   // Install an app where the file handling action page redirects.
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->start_url =
       https_server()->GetURL("app.com", "/web_app_file_handling/index.html");
   web_app_info->scope = web_app_info->start_url.GetWithoutFilename();
@@ -381,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest, LaunchQueueSetOnReload) {
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->start_url =
       https_server()->GetURL("app.com", "/web_app_file_handling/index.html");
   web_app_info->scope = web_app_info->start_url.GetWithoutFilename();
@@ -418,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
                        LaunchQueueNotSetOnCrossOriginRedirect) {
   // Install an app where the file handling action page redirects to a page on a
   // different origin.
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->start_url =
       https_server()->GetURL("app.com", "/web_app_file_handling/index.html");
   web_app_info->scope = web_app_info->start_url.GetWithoutFilename();
@@ -457,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
                        LaunchQueueNotSetOnNavigate) {
   GURL start_url =
       https_server()->GetURL("app.com", "/web_app_file_handling/index.html");
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->start_url = start_url;
   web_app_info->scope = web_app_info->start_url.GetWithoutFilename();
   web_app_info->title = u"An app that will be navigated";
@@ -496,14 +506,10 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
   InstallFileHandlingPWA();
   const GURL origin = GetSecureAppURL().DeprecatedGetOriginAsURL();
 
-  {
-    ScopedRegistryUpdate update(&provider()->sync_bridge());
-    WebApp* app = update->UpdateApp(app_id());
-    ASSERT_TRUE(app);
-    EXPECT_EQ(ApiApprovalState::kRequiresPrompt,
-              app->file_handler_approval_state());
-    app->SetFileHandlerApprovalState(ApiApprovalState::kAllowed);
-  }
+  EXPECT_EQ(ApiApprovalState::kRequiresPrompt,
+            registrar().GetAppFileHandlerApprovalState(app_id()));
+  provider()->sync_bridge().SetAppFileHandlerApprovalState(
+      app_id(), ApiApprovalState::kAllowed);
 
   // Tangentially: make sure the outparam for
   // `GetFileTypeAssociationsHandledByWebAppsForDisplay` is properly set.
@@ -618,5 +624,124 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingIconBrowserTest, Basic) {
 // TODO(crbug.com/1218210): add more tests.
 
 INSTANTIATE_TEST_SUITE_P(, WebAppFileHandlingIconBrowserTest, testing::Bool());
+
+// The following fixtures help test what happens when the feature's state
+// changes between browser launches.
+class WebAppFileHandlingBrowserTest_FeatureSwitchesState
+    : public WebAppFileHandlingBrowserTest {
+ public:
+  explicit WebAppFileHandlingBrowserTest_FeatureSwitchesState(
+      bool feature_switches_from_off_to_on = false) {
+    if (feature_switches_from_off_to_on == content::IsPreTest()) {
+      scoped_feature_list_.InitAndDisableFeature(
+          blink::features::kFileHandlingAPI);
+    }
+
+    WebAppFileHandlerManager::DisableOsIntegrationForTesting(
+        base::BindRepeating(
+            &WebAppFileHandlingBrowserTest_FeatureSwitchesState::
+                IntegrationWasSet,
+            base::Unretained(this)));
+  }
+  ~WebAppFileHandlingBrowserTest_FeatureSwitchesState() override = default;
+
+  void InstallApp() {
+    EXPECT_EQ(0u, registrar().GetAppIds().size());
+    InstallFileHandlingPWA();
+    EXPECT_EQ(1u, registrar().GetAppIds().size());
+
+    // `InstallFileHandlingPWA()` doesn't perform OS integration, so explicitly
+    // call it here to simulate a user install. Note: does nothing if the
+    // feature is disabled.
+    file_handler_manager().EnableAndRegisterOsFileHandlers(app_id());
+  }
+
+  void IntegrationWasSet(bool enabled) {
+    if (enabled)
+      added_count_++;
+    else
+      removed_count_++;
+  }
+
+ protected:
+  // The number of times Chrome has called into the OS to set state.
+  int added_count_ = 0;
+  int removed_count_ = 0;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// This test fixture will run the PRE_ test with the feature disabled, then the
+// main test with the feature enabled. If a FH app was installed when the
+// feature was disabled, then the feature becomes enabled, it should be
+// registered with the OS.
+class WebAppFileHandlingBrowserTest_FeatureSwitchesOn
+    : public WebAppFileHandlingBrowserTest_FeatureSwitchesState {
+ public:
+  WebAppFileHandlingBrowserTest_FeatureSwitchesOn()
+      : WebAppFileHandlingBrowserTest_FeatureSwitchesState(
+            /*feature_switches_from_off_to_on=*/true) {}
+  ~WebAppFileHandlingBrowserTest_FeatureSwitchesOn() override = default;
+};
+
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest_FeatureSwitchesOn,
+                       PRE_PRE_OsIntegrationIsAdded) {
+  InstallApp();
+  EXPECT_FALSE(file_handler_manager().IsFileHandlingAPIAvailable(app_id()));
+  EXPECT_FALSE(registrar().ExpectThatFileHandlersAreRegisteredWithOs(app_id()));
+  EXPECT_EQ(0, added_count_);
+  EXPECT_EQ(0, removed_count_);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest_FeatureSwitchesOn,
+                       PRE_OsIntegrationIsAdded) {
+  // In this intermediate test, the feature is still off. Verify that Chrome
+  // doesn't make excess calls to the OS.
+  EXPECT_EQ(0, added_count_);
+  EXPECT_EQ(0, removed_count_);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest_FeatureSwitchesOn,
+                       OsIntegrationIsAdded) {
+  ASSERT_EQ(1u, registrar().GetAppIds().size());
+  AppId app_id = registrar().GetAppIds()[0];
+  EXPECT_TRUE(file_handler_manager().IsFileHandlingAPIAvailable(app_id));
+  EXPECT_TRUE(registrar().ExpectThatFileHandlersAreRegisteredWithOs(app_id));
+  EXPECT_EQ(1, added_count_);
+  EXPECT_EQ(0, removed_count_);
+}
+
+// This test fixture verifies the opposite of the above. It will run the PRE_
+// test with the feature enabled, then the main test with the feature disabled.
+// If a FH app was installed when the feature was enabled, then the feature
+// becomes disabled, it should be no longer be registered with the OS.
+class WebAppFileHandlingBrowserTest_FeatureSwitchesOff
+    : public WebAppFileHandlingBrowserTest_FeatureSwitchesState {
+ public:
+  WebAppFileHandlingBrowserTest_FeatureSwitchesOff()
+      : WebAppFileHandlingBrowserTest_FeatureSwitchesState(
+            /*feature_switches_from_off_to_on=*/false) {}
+  ~WebAppFileHandlingBrowserTest_FeatureSwitchesOff() override = default;
+};
+
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest_FeatureSwitchesOff,
+                       PRE_OsIntegrationIsRemoved) {
+  InstallApp();
+  EXPECT_TRUE(file_handler_manager().IsFileHandlingAPIAvailable(app_id()));
+  EXPECT_TRUE(registrar().ExpectThatFileHandlersAreRegisteredWithOs(app_id()));
+  EXPECT_EQ(1, added_count_);
+  EXPECT_EQ(0, removed_count_);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest_FeatureSwitchesOff,
+                       OsIntegrationIsRemoved) {
+  ASSERT_EQ(1u, registrar().GetAppIds().size());
+  AppId app_id = registrar().GetAppIds()[0];
+  EXPECT_FALSE(file_handler_manager().IsFileHandlingAPIAvailable(app_id));
+  EXPECT_FALSE(registrar().ExpectThatFileHandlersAreRegisteredWithOs(app_id));
+  EXPECT_EQ(0, added_count_);
+  EXPECT_EQ(1, removed_count_);
+}
 
 }  // namespace web_app

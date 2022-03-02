@@ -60,8 +60,6 @@
 #include "third_party/blink/public/web/web_memory_statistics.h"
 #include "ui/gfx/native_widget_types.h"
 
-class SkBitmap;
-
 namespace blink {
 class WebResourceRequestSenderDelegate;
 class WebVideoCaptureImplManager;
@@ -105,11 +103,11 @@ class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class VariationsRenderThreadObserver;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 class StreamTextureFactory;
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 class DCOMPTextureFactory;
 #endif
 
@@ -260,12 +258,12 @@ class CONTENT_EXPORT RenderThreadImpl
     return url_loader_throttle_provider_.get();
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   scoped_refptr<StreamTextureFactory> GetStreamTexureFactory();
   bool EnableStreamTextureCopy();
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   scoped_refptr<DCOMPTextureFactory> GetDCOMPTextureFactory();
 #endif
 
@@ -430,9 +428,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void InitializeCompositorThread();
   void InitializeWebKit(mojo::BinderMap* binders);
 
-  void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
-  void OnGetAccessibilityTree();
-
   // mojom::Renderer:
   void CreateAgentSchedulingGroup(
       mojo::PendingReceiver<IPC::mojom::ChannelBootstrap> bootstrap,
@@ -552,11 +547,11 @@ class CONTENT_EXPORT RenderThreadImpl
   // Pool of workers used for raster operations (e.g., tile rasterization).
   scoped_refptr<CategorizedWorkerPool> categorized_worker_pool_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   scoped_refptr<StreamTextureFactory> stream_texture_factory_;
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   scoped_refptr<DCOMPTextureFactory> dcomp_texture_factory_;
 #endif
 

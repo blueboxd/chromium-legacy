@@ -14,31 +14,17 @@
 
 namespace device {
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 const base::Feature kWebAuthUseNativeWinApi{"WebAuthenticationUseNativeWinApi",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_WIN)
-
-extern const base::Feature kWebAuthCableServerLink {
-  // This feature is default-enabled in the same cases as |kWebAuthCable|.
-  "WebAuthenticationCableServerLink",
-
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-// If updating this, also update kWebAuthCable.
-#if BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_LINUX)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+#endif  // BUILDFLAG(IS_WIN)
 
 extern const base::Feature kWebAuthCableSecondFactor {
   "WebAuthenticationCableSecondFactor",
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 // If updating this, also update kWebAuthCableServerLink.
-#if BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT

@@ -24,8 +24,8 @@
 #include "chrome/browser/web_applications/url_handler_launch_params.h"
 #include "chrome/browser/web_applications/url_handler_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -59,7 +59,7 @@ std::vector<web_app::UrlHandlerLaunchParams> CreateUrlHandlerLaunchParams(
 }
 
 web_app::AppId InstallTestWebApp(Profile* profile) {
-  auto app_info = std::make_unique<WebApplicationInfo>();
+  auto app_info = std::make_unique<WebAppInstallInfo>();
   app_info->start_url = GURL(kStartUrl);
   app_info->title = kAppName;
   app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;

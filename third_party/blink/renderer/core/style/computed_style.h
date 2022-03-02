@@ -30,6 +30,7 @@
 #include <memory>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/values_equivalent.h"
 #include "base/types/pass_key.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -141,8 +142,8 @@ class Resize;
 class StopColor;
 class Stroke;
 class TextDecorationColor;
+class TextEmphasisColor;
 class WebkitTapHighlightColor;
-class WebkitTextEmphasisColor;
 class WebkitTextFillColor;
 class WebkitTextStrokeColor;
 
@@ -255,8 +256,8 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::StopColor;
   friend class css_longhand::Stroke;
   friend class css_longhand::TextDecorationColor;
+  friend class css_longhand::TextEmphasisColor;
   friend class css_longhand::WebkitTapHighlightColor;
-  friend class css_longhand::WebkitTextEmphasisColor;
   friend class css_longhand::WebkitTextFillColor;
   friend class css_longhand::WebkitTextStrokeColor;
   // Access to private Appearance() and HasAppearance().
@@ -390,6 +391,51 @@ class ComputedStyle : public ComputedStyleBase,
                                IsAtShadowBoundary = kNotAtShadowBoundary);
   void CopyNonInheritedFromCached(const ComputedStyle&);
 
+  bool AncestorsAffectedByHas() const {
+    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByHas;
+  }
+
+  void SetAncestorsAffectedByHas() {
+    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
+                                 kAncestorsAffectedByHas);
+  }
+
+  bool AncestorsAffectedByHoverInHas() const {
+    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByHoverInHas;
+  }
+
+  void SetAncestorsAffectedByHoverInHas() {
+    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
+                                 kAncestorsAffectedByHoverInHas);
+  }
+
+  bool AncestorsAffectedByActiveInHas() const {
+    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByActiveInHas;
+  }
+
+  void SetAncestorsAffectedByActiveInHas() {
+    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
+                                 kAncestorsAffectedByActiveInHas);
+  }
+
+  bool AncestorsAffectedByFocusInHas() const {
+    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByFocusInHas;
+  }
+
+  void SetAncestorsAffectedByFocusInHas() {
+    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
+                                 kAncestorsAffectedByFocusInHas);
+  }
+
+  bool AncestorsAffectedByFocusVisibleInHas() const {
+    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByFocusVisibleInHas;
+  }
+
+  void SetAncestorsAffectedByFocusVisibleInHas() {
+    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
+                                 kAncestorsAffectedByFocusVisibleInHas);
+  }
+
   PseudoId StyleType() const {
     return static_cast<PseudoId>(StyleTypeInternal());
   }
@@ -399,7 +445,9 @@ class ComputedStyle : public ComputedStyleBase,
       PseudoId,
       const AtomicString& pseudo_argument = g_null_atom) const;
   const ComputedStyle* AddCachedPseudoElementStyle(
-      scoped_refptr<const ComputedStyle>) const;
+      scoped_refptr<const ComputedStyle>,
+      PseudoId,
+      const AtomicString&) const;
   void ClearCachedPseudoElementStyles() const;
 
   // If this ComputedStyle is affected by animation/transitions, then the
@@ -472,7 +520,8 @@ class ComputedStyle : public ComputedStyleBase,
       MutableBackdropFilterInternal()->operations_ = ops;
   }
   bool BackdropFilterDataEquivalent(const ComputedStyle& o) const {
-    return DataEquivalent(BackdropFilterInternal(), o.BackdropFilterInternal());
+    return base::ValuesEquivalent(BackdropFilterInternal(),
+                                  o.BackdropFilterInternal());
   }
 
   // filter (aka -webkit-filter)
@@ -496,7 +545,7 @@ class ComputedStyle : public ComputedStyleBase,
       MutableFilterInternal()->operations_ = v;
   }
   bool FilterDataEquivalent(const ComputedStyle& o) const {
-    return DataEquivalent(FilterInternal(), o.FilterInternal());
+    return base::ValuesEquivalent(FilterInternal(), o.FilterInternal());
   }
 
 
@@ -587,7 +636,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // box-shadow (aka -webkit-box-shadow)
   bool BoxShadowDataEquivalent(const ComputedStyle& other) const {
-    return DataEquivalent(BoxShadow(), other.BoxShadow());
+    return base::ValuesEquivalent(BoxShadow(), other.BoxShadow());
   }
 
   // clip-path
@@ -876,7 +925,7 @@ class ComputedStyle : public ComputedStyleBase,
   // shape-outside (aka -webkit-shape-outside)
   ShapeValue* ShapeOutside() const { return ShapeOutsideInternal().Get(); }
   bool ShapeOutsideDataEquivalent(const ComputedStyle& other) const {
-    return DataEquivalent(ShapeOutside(), other.ShapeOutside());
+    return base::ValuesEquivalent(ShapeOutside(), other.ShapeOutside());
   }
 
   // touch-action
@@ -916,7 +965,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // -webkit-clip-path
   bool ClipPathDataEquivalent(const ComputedStyle& other) const {
-    return DataEquivalent(ClipPath(), other.ClipPath());
+    return base::ValuesEquivalent(ClipPath(), other.ClipPath());
   }
 
   // Mask properties.
@@ -971,7 +1020,7 @@ class ComputedStyle : public ComputedStyleBase,
   // list-style-type
   const AtomicString& ListStyleStringValue() const;
   bool ListStyleTypeDataEquivalent(const ComputedStyle& other) const {
-    return DataEquivalent(ListStyleType(), other.ListStyleType());
+    return base::ValuesEquivalent(ListStyleType(), other.ListStyleType());
   }
 
   // quotes
@@ -1145,8 +1194,8 @@ class ComputedStyle : public ComputedStyleBase,
   bool CounterDirectivesEqual(const ComputedStyle& other) const {
     // If the counter directives change, trigger a relayout to re-calculate
     // counter values and rebuild the counter node tree.
-    return DataEquivalent(CounterDirectivesInternal().get(),
-                          other.CounterDirectivesInternal().get());
+    return base::ValuesEquivalent(CounterDirectivesInternal().get(),
+                                  other.CounterDirectivesInternal().get());
   }
   void ClearIncrementDirectives();
   void ClearResetDirectives();
@@ -1247,7 +1296,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool HasBoxReflect() const { return BoxReflect(); }
   bool ReflectionDataEquivalent(const ComputedStyle& other) const {
-    return DataEquivalent(BoxReflect(), other.BoxReflect());
+    return base::ValuesEquivalent(BoxReflect(), other.BoxReflect());
   }
   float ResolvedFlexGrow(const ComputedStyle& box_style) const {
     if (box_style.IsDeprecatedWebkitBox())
@@ -1900,11 +1949,9 @@ class ComputedStyle : public ComputedStyleBase,
     const EFloat value = FloatingInternal();
     switch (value) {
       case EFloat::kInlineStart:
-      case EFloat::kInlineEnd: {
-        return IsLtr(cb_direction) == (value == EFloat::kInlineStart)
-                   ? EFloat::kLeft
-                   : EFloat::kRight;
-      }
+        return IsLtr(cb_direction) ? EFloat::kLeft : EFloat::kRight;
+      case EFloat::kInlineEnd:
+        return IsLtr(cb_direction) ? EFloat::kRight : EFloat::kLeft;
       default:
         return value;
     }
@@ -1980,11 +2027,9 @@ class ComputedStyle : public ComputedStyleBase,
     const EClear value = ClearInternal();
     switch (value) {
       case EClear::kInlineStart:
-      case EClear::kInlineEnd: {
-        return IsLtr(cb_direction) == (value == EClear::kInlineStart)
-                   ? EClear::kLeft
-                   : EClear::kRight;
-      }
+        return IsLtr(cb_direction) ? EClear::kLeft : EClear::kRight;
+      case EClear::kInlineEnd:
+        return IsLtr(cb_direction) ? EClear::kRight : EClear::kLeft;
       default:
         return value;
     }
@@ -2038,7 +2083,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Content utility functions.
   bool ContentDataEquivalent(const ComputedStyle& other) const {
-    return DataEquivalent(GetContentData(), other.GetContentData());
+    return base::ValuesEquivalent(GetContentData(), other.GetContentData());
   }
 
   // Contain utility functions.
@@ -2077,6 +2122,11 @@ class ComputedStyle : public ComputedStyleBase,
            SkipsContents();
   }
   CORE_EXPORT bool ShouldApplyAnyContainment(const Element& element) const;
+
+  // Utility method which checks if legacy layout is forced for the element in
+  // addition to checking IsContainerForContainerQueries(). Query containers are
+  // not established in legacy layout.
+  bool IsContainerForContainerQueries(const Element& element) const;
 
   bool IsContainerForContainerQueries() const {
     return IsInlineOrBlockSizeContainer() && StyleType() == kPseudoIdNone &&
@@ -2162,12 +2212,11 @@ class ComputedStyle : public ComputedStyleBase,
     EResize value = ResizeInternal();
     switch (value) {
       case EResize::kBlock:
-      case EResize::kInline: {
-        return ::blink::IsHorizontalWritingMode(cb_style.GetWritingMode()) ==
-                       (value == EResize::kBlock)
-                   ? EResize::kVertical
-                   : EResize::kHorizontal;
-      }
+        return cb_style.IsHorizontalWritingMode() ? EResize::kVertical
+                                                  : EResize::kHorizontal;
+      case EResize::kInline:
+        return cb_style.IsHorizontalWritingMode() ? EResize::kHorizontal
+                                                  : EResize::kVertical;
       default:
         return value;
     }
@@ -2455,6 +2504,9 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasTransformRelatedProperty() const {
     return HasTransform() || Preserves3D() || HasPerspective() ||
            HasWillChangeTransformHint();
+  }
+  bool HasTransformRelatedPropertyForSVG() const {
+    return HasTransform() || HasWillChangeTransformHint();
   }
 
   // Return true if this style has properties ('filter', 'clip-path' and 'mask')
@@ -3101,13 +3153,13 @@ inline bool ComputedStyle::HasAnyPseudoElementStyles() const {
 
 inline bool ComputedStyle::HasPseudoElementStyle(PseudoId pseudo) const {
   DCHECK(pseudo >= kFirstPublicPseudoId);
-  DCHECK(pseudo < kFirstInternalPseudoId);
+  DCHECK(pseudo <= kLastTrackedPublicPseudoId);
   return (1 << (pseudo - kFirstPublicPseudoId)) & PseudoBitsInternal();
 }
 
 inline void ComputedStyle::SetHasPseudoElementStyle(PseudoId pseudo) {
   DCHECK(pseudo >= kFirstPublicPseudoId);
-  DCHECK(pseudo < kFirstInternalPseudoId);
+  DCHECK(pseudo <= kLastTrackedPublicPseudoId);
   // TODO: Fix up this code. It is hard to understand.
   SetPseudoBitsInternal(PseudoBitsInternal() |
                         1 << (pseudo - kFirstPublicPseudoId));

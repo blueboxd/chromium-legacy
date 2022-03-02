@@ -1238,7 +1238,17 @@ PersonalDataManager::GetActiveAutofillPromoCodeOffersForOrigin(
   return promo_code_offers_for_origin;
 }
 
-gfx::Image* PersonalDataManager::GetCreditCardArtImageForUrl(
+raw_ptr<gfx::Image> PersonalDataManager::GetCreditCardArtImageForUrl(
+    const GURL& card_art_url) const {
+  raw_ptr<gfx::Image> cached_image = GetCachedCardArtImageForUrl(card_art_url);
+  if (cached_image)
+    return cached_image;
+
+  FetchImagesForUrls({card_art_url});
+  return nullptr;
+}
+
+raw_ptr<gfx::Image> PersonalDataManager::GetCachedCardArtImageForUrl(
     const GURL& card_art_url) const {
   if (!IsAutofillWalletImportEnabled())
     return nullptr;
@@ -1248,14 +1258,14 @@ gfx::Image* PersonalDataManager::GetCreditCardArtImageForUrl(
 
   auto images_iterator = credit_card_art_images_.find(card_art_url);
 
-  // Found an image and return it.
+  // If the cache contains the image, return it.
   if (images_iterator != credit_card_art_images_.end()) {
-    gfx::Image* image = images_iterator->second.get();
+    raw_ptr<gfx::Image> image = images_iterator->second.get();
     if (!image->IsEmpty())
       return image;
   }
 
-  FetchImagesForUrls({card_art_url});
+  // The cache does not contain the image, return nullptr.
   return nullptr;
 }
 
@@ -1339,13 +1349,13 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   std::unique_ptr<LabelFormatter> formatter;
   bool use_formatter;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   use_formatter = base::FeatureList::IsEnabled(
       autofill::features::kAutofillUseImprovedLabelDisambiguation);
 #else
   use_formatter = base::FeatureList::IsEnabled(
       autofill::features::kAutofillUseMobileLabelDisambiguation);
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
   // The formatter stores a constant reference to |unique_matched_profiles|.
   // This is safe since the formatter is destroyed when this function returns.
@@ -2096,8 +2106,8 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
 // The feature is only for Linux, Windows, Mac, and Fuchsia.
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_WIN) || \
-    defined(OS_APPLE) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
+    BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_FUCHSIA)
   // This option should only be shown for users that have not enabled the Sync
   // Feature and that have server credit cards available.
   if (!sync_service_ || sync_service_->IsSyncFeatureEnabled() ||
@@ -2118,8 +2128,8 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
   return !is_opted_in;
 #else
   return false;
-#endif  // #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) ||
-        // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_FUCHSIA)
+#endif  // #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) ||
+        // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_FUCHSIA)
 }
 
 void PersonalDataManager::OnUserAcceptedCardsFromAccountOption() {

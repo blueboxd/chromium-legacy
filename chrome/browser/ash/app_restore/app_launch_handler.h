@@ -46,6 +46,8 @@ class AppLaunchHandler : public apps::AppRegistryCache::Observer {
 
   ::app_restore::RestoreData* restore_data() { return restore_data_.get(); }
 
+  void set_delay(base::TimeDelta delay) { delay_ = delay; }
+
  protected:
   // Note: LaunchApps does not launch browser windows, this is handled
   // separately.
@@ -61,7 +63,7 @@ class AppLaunchHandler : public apps::AppRegistryCache::Observer {
 
   // Called before an extension type app is launched. Allows subclasses to
   // perform some setup prior to launching an extension type app.
-  virtual void OnExtensionLaunching(const std::string& app_id) = 0;
+  virtual void OnExtensionLaunching(const std::string& app_id) {}
 
   virtual base::WeakPtr<AppLaunchHandler> GetWeakPtrAppLaunchHandler() = 0;
 
@@ -80,6 +82,10 @@ class AppLaunchHandler : public apps::AppRegistryCache::Observer {
 
   Profile* const profile_;
   std::unique_ptr<::app_restore::RestoreData> restore_data_;
+
+  // A delay between apps launch time. This should only be set in non official
+  // builds.
+  base::TimeDelta delay_;
 };
 
 }  // namespace ash

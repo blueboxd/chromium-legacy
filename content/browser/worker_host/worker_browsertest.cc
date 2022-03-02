@@ -69,7 +69,7 @@ const char kSameSiteCookie[] = "same-site-cookie=same-site-cookie-value";
 const char kNoCookie[] = "None";
 
 bool SupportsSharedWorker() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // SharedWorkers are not enabled on Android. https://crbug.com/154571
   //
   // TODO(davidben): Move other SharedWorker exclusions from
@@ -86,6 +86,7 @@ bool SupportsSharedWorker() {
 // 0 => Base
 // 1 => kPlzDedicatedWorker enabled
 // 2 => kCOEPForSharedWorker enabled
+// 3 => kPrivateNetworkAccessForWorkers enabled
 class WorkerTest : public ContentBrowserTest,
                    public testing::WithParamInterface<int> {
  public:
@@ -106,6 +107,7 @@ class WorkerTest : public ContentBrowserTest,
             {
                 network::features::kCrossOriginEmbedderPolicyCredentialless,
                 blink::features::kPlzDedicatedWorker,
+                features::kPrivateNetworkAccessForWorkers,
             },
             {
                 blink::features::kCOEPForSharedWorker,
@@ -116,10 +118,21 @@ class WorkerTest : public ContentBrowserTest,
             {
                 network::features::kCrossOriginEmbedderPolicyCredentialless,
                 blink::features::kCOEPForSharedWorker,
+                features::kPrivateNetworkAccessForWorkers,
             },
             {
                 blink::features::kPlzDedicatedWorker,
             });
+        break;
+      case 3:  // PrivateNetworkAccessForWorkers
+        feature_list_.InitWithFeatures(
+            {
+                network::features::kCrossOriginEmbedderPolicyCredentialless,
+                blink::features::kPlzDedicatedWorker,
+                blink::features::kCOEPForSharedWorker,
+                features::kPrivateNetworkAccessForWorkers,
+            },
+            {});
         break;
       default:
         NOTREACHED();
@@ -325,7 +338,7 @@ class WorkerTest : public ContentBrowserTest,
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All, WorkerTest, testing::Range(0, 3));
+INSTANTIATE_TEST_SUITE_P(All, WorkerTest, testing::Range(0, 4));
 
 IN_PROC_BROWSER_TEST_P(WorkerTest, SingleWorker) {
   RunTest(GetTestURL("single_worker.html", std::string()));
@@ -345,7 +358,7 @@ class WorkerTestWithAllowFileAccessFromFiles : public WorkerTest {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          WorkerTestWithAllowFileAccessFromFiles,
-                         testing::Range(0, 3));
+                         testing::Range(0, 4));
 
 IN_PROC_BROWSER_TEST_P(WorkerTestWithAllowFileAccessFromFiles,
                        SingleWorkerFromFile) {
@@ -926,7 +939,7 @@ class WorkerFromAnonymousIframeNikBrowserTest : public WorkerTest {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          WorkerFromAnonymousIframeNikBrowserTest,
-                         testing::Range(0, 3));
+                         testing::Range(0, 4));
 
 IN_PROC_BROWSER_TEST_P(WorkerFromAnonymousIframeNikBrowserTest,
                        SharedWorkerRequestIsDoneWithPartitionedNetworkState) {
@@ -953,7 +966,7 @@ IN_PROC_BROWSER_TEST_P(WorkerFromAnonymousIframeNikBrowserTest,
     EXPECT_EQ(1U, main_rfh->child_count());
     RenderFrameHostImpl* iframe = main_rfh->child_at(0)->current_frame_host();
     EXPECT_EQ(anonymous, iframe->anonymous());
-
+    EXPECT_EQ(anonymous, EvalJs(iframe, "window.anonymous"));
     ResetNetworkState();
 
     GURL worker_url = embedded_test_server()->GetURL("/workers/worker.js");

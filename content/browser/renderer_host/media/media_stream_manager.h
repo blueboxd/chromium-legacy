@@ -384,7 +384,7 @@ class CONTENT_EXPORT MediaStreamManager
   // This method is called when all tracks are started.
   void OnStreamStarted(const std::string& label);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Determines whether the captured surface (tab/window) should be focused.
   // This can be called at most once, and only within the first 1s of the
   // capture session being initiated. If a call with |focus=false| is not
@@ -442,11 +442,11 @@ class CONTENT_EXPORT MediaStreamManager
   void HandleRequestDone(const std::string& label, DeviceRequest* request);
   // Stop the use of the device associated with |session_id| of type |type| in
   // all |requests_|. The device is removed from the request. If a request
-  /// doesn't use any devices as a consequence, the request is deleted.
+  // doesn't use any devices as a consequence, the request is deleted.
   void StopDevice(blink::mojom::MediaStreamType type,
                   const base::UnguessableToken& session_id);
-  // Calls the correct capture manager and close the device with |session_id|.
-  // All requests that uses the device are updated.
+  // Calls the correct capture manager and closes the device with |session_id|.
+  // All requests that use the device are updated.
   void CloseDevice(blink::mojom::MediaStreamType type,
                    const base::UnguessableToken& session_id);
   // Returns true if a request for devices has been completed and the devices
@@ -644,7 +644,7 @@ class CONTENT_EXPORT MediaStreamManager
                              blink::mojom::MediaStreamType type,
                              media::mojom::CaptureHandlePtr capture_handle);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Defines a window of opportunity for the Web-application to decide
   // whether a display-surface which it's capturing should be focused.
   // After |kConditionalFocusWindow| past the beginning of the capture,

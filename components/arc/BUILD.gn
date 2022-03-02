@@ -17,8 +17,6 @@ static_library("arc") {
     "intent_helper/intent_constants.h",
     "intent_helper/intent_filter.cc",
     "intent_helper/intent_filter.h",
-    "intent_helper/link_handler_model.cc",
-    "intent_helper/link_handler_model.h",
     "intent_helper/open_url_delegate.h",
   ]
 
@@ -40,11 +38,16 @@ static_library("arc") {
 static_library("arc_test_support") {
   testonly = true
   sources = [
+    "test/fake_intent_helper_host.cc",
+    "test/fake_intent_helper_host.h",
     "test/fake_intent_helper_instance.cc",
     "test/fake_intent_helper_instance.h",
   ]
 
-  deps = [ "//ash/components/arc/mojom" ]
+  deps = [
+    "//ash/components/arc/mojom",
+    "//ash/components/arc/session:connection_holder",
+  ]
 }
 
 source_set("unit_tests") {
@@ -53,7 +56,6 @@ source_set("unit_tests") {
     "intent_helper/arc_intent_helper_bridge_unittest.cc",
     "intent_helper/custom_tab_unittest.cc",
     "intent_helper/intent_filter_unittest.cc",
-    "intent_helper/link_handler_model_unittest.cc",
   ]
 
   deps = [

@@ -136,9 +136,10 @@
 // for further information.
 // The MinGW compiler doesn't complain about the weak attribute until the link
 // step, presumably because Windows doesn't use ELF binaries.
-#if (ABSL_HAVE_ATTRIBUTE(weak) ||                   \
-     (defined(__GNUC__) && !defined(__clang__))) && \
-    (!defined(_WIN32) || __clang_major__ < 9) && !defined(__MINGW32__)
+#if (ABSL_HAVE_ATTRIBUTE(weak) ||                                        \
+     (defined(__GNUC__) && !defined(__clang__))) &&                      \
+    (!defined(_WIN32) || (defined(__clang__) && __clang_major__ < 9)) && \
+    !defined(__MINGW32__)
 #undef ABSL_ATTRIBUTE_WEAK
 #define ABSL_ATTRIBUTE_WEAK __attribute__((weak))
 #define ABSL_HAVE_ATTRIBUTE_WEAK 1
@@ -400,6 +401,9 @@
 //
 // Tells the compiler to warn about unused results.
 //
+// For code or headers that are assured to only build with C++17 and up, prefer
+// just using the standard `[[nodiscard]]` directly over this macro.
+//
 // When annotating a function, it must appear as the first part of the
 // declaration or definition. The compiler will warn if the return value from
 // such a function is unused:
@@ -426,9 +430,10 @@
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425
 //
 // Note: past advice was to place the macro after the argument list.
-#if ABSL_HAVE_ATTRIBUTE(nodiscard)
-#define ABSL_MUST_USE_RESULT [[nodiscard]]
-#elif defined(__clang__) && ABSL_HAVE_ATTRIBUTE(warn_unused_result)
+//
+// TODO(b/176172494): Use ABSL_HAVE_CPP_ATTRIBUTE(nodiscard) when all code is
+// compliant with the stricter [[nodiscard]].
+#if defined(__clang__) && ABSL_HAVE_ATTRIBUTE(warn_unused_result)
 #define ABSL_MUST_USE_RESULT __attribute__((warn_unused_result))
 #else
 #define ABSL_MUST_USE_RESULT

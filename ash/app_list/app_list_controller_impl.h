@@ -89,8 +89,9 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // TODO(crbug.com/1204554): Rename to fullscreen_presenter().
-  AppListPresenterImpl* presenter() { return fullscreen_presenter_.get(); }
+  AppListPresenterImpl* fullscreen_presenter() {
+    return fullscreen_presenter_.get();
+  }
 
   // AppListController:
   void SetClient(AppListClient* client) override;
@@ -196,6 +197,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
       bool was_animation_interrupted) override;
   int AdjustAppListViewScrollOffset(int offset, ui::EventType type) override;
   void LoadIcon(const std::string& app_id) override;
+  bool HasValidProfile() const override;
 
   void GetAppLaunchedMetricParams(
       AppLaunchedMetricParams* metric_params) override;
@@ -315,6 +317,12 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   // Returns whether the assistant page is showing (either in bubble app list or
   // fullscreen app list).
   bool IsShowingEmbeddedAssistantUI() const;
+
+  // Sets up `close_assistant_ui_runner_` to close the assistant.
+  void ScheduleCloseAssistant();
+
+  // Runs `close_assistant_ui_runner_` when it is non-null.
+  void MaybeCloseAssistant();
 
   // Get updated app list view state after dragging from shelf.
   AppListViewState CalculateStateAfterShelfDrag(
@@ -440,8 +448,9 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   // prevent a crash in destruction.
   std::unique_ptr<AppListPresenterImpl> fullscreen_presenter_;
 
-  // Manages the clamshell launcher bubble. Null when the feature AppListBubble
-  // is disabled.
+  // Manages the clamshell launcher bubble. Always exists, even when feature
+  // ProductivityLauncher is disabled, to allow unit tests to turn the feature
+  // on and off within the test body.
   std::unique_ptr<AppListBubblePresenter> bubble_presenter_;
 
   // Tracks the current page shown in the app list view (tracked for the

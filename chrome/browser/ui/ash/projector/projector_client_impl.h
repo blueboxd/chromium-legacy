@@ -48,7 +48,8 @@ class ProjectorClientImpl : public ash::ProjectorClient,
   bool IsDriveFsMounted() const override;
   void OpenProjectorApp() const override;
   void MinimizeProjectorApp() const override;
-  void OnNewScreencastPreconditionChanged(bool can_start) const override;
+  void OnNewScreencastPreconditionChanged(
+      const ash::NewScreencastPrecondition& precondition) const override;
 
   // SpeechRecognizerDelegate:
   void OnSpeechResult(
@@ -59,6 +60,7 @@ class ProjectorClientImpl : public ash::ProjectorClient,
   void OnSpeechSoundLevelChanged(int16_t level) override {}
   void OnSpeechRecognitionStateChanged(
       SpeechRecognizerStatus new_state) override;
+  void OnSpeechRecognitionStopped() override;
 
  private:
   ash::ProjectorController* const controller_;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './shimless_rma_shared_css.js';
@@ -51,6 +52,12 @@ export class ReimagingProvisioningPage extends ReimagingProvisioningPageBase {
 
   static get properties() {
     return {
+      /**
+       * Set by shimless_rma.js.
+       * @type {boolean}
+       */
+      allButtonsDisabled: Boolean,
+
       /** @protected {!ProvisioningStatus} */
       status_: {
         type: Object,
@@ -66,6 +73,18 @@ export class ReimagingProvisioningPage extends ReimagingProvisioningPageBase {
       statusString_: {
         type: String,
         computed: 'getStatusString_(status_, progress_)',
+      },
+
+      /** @protected {boolean} */
+      shouldShowSpinner_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /** @protected {boolean} */
+      shouldShowRetryButton_: {
+        type: Boolean,
+        value: false,
       },
     };
   }
@@ -119,6 +138,10 @@ export class ReimagingProvisioningPage extends ReimagingProvisioningPageBase {
         'disable-next-button',
         {bubbles: true, composed: true, detail: disabled},
         ));
+    this.shouldShowSpinner_ = this.status_ === ProvisioningStatus.kInProgress;
+    this.shouldShowRetryButton_ =
+        this.status_ === ProvisioningStatus.kFailedBlocking ||
+        this.status_ === ProvisioningStatus.kFailedNonBlocking;
   }
 
   /** @return {!Promise<!StateResult>} */
@@ -129,6 +152,26 @@ export class ReimagingProvisioningPage extends ReimagingProvisioningPageBase {
     } else {
       return Promise.reject(new Error('Provisioning is not complete.'));
     }
+  }
+
+  /** @private */
+  onRetryProvsioningButtonClicked_() {
+    if (this.status_ !== ProvisioningStatus.kFailedBlocking &&
+        this.status_ !== ProvisioningStatus.kFailedNonBlocking) {
+      console.error('Provisioning has not failed.');
+      return;
+    }
+
+    this.dispatchEvent(new CustomEvent(
+        'transition-state',
+        {
+          bubbles: true,
+          composed: true,
+          detail: (() => {
+            return this.shimlessRmaService_.retryProvisioning();
+          })
+        },
+        ));
   }
 }
 

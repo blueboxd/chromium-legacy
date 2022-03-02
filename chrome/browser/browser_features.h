@@ -44,6 +44,10 @@ extern const base::Feature kCopyLinkToText;
 extern const base::Feature kMuteNotificationSnoozeAction;
 #endif
 
+#if defined(OS_WIN)
+extern const base::Feature kPrewarmSearchResultsPageFonts;
+#endif
+
 extern const base::Feature kPwaUpdateDialogForNameAndIcon;
 
 extern const base::Feature kSandboxExternalProtocolBlocked;
@@ -59,6 +63,8 @@ extern const base::Feature kCertificateTransparencyAndroid;
 
 extern const base::Feature kLargeFaviconFromGoogle;
 extern const base::FeatureParam<int> kLargeFaviconFromGoogleSizeInDip;
+
+extern const base::Feature kObserverBasedPostProfileInit;
 
 }  // namespace features
 

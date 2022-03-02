@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import contextlib
 import copy
 import glob
 import io
@@ -28,12 +27,9 @@ import test_util
 
 
 _SCRIPT_DIR = os.path.dirname(__file__)
-_TEST_DATA_DIR = os.path.join(_SCRIPT_DIR, 'testdata')
-_TEST_SDK_DIR = os.path.join(_TEST_DATA_DIR, 'mock_sdk')
-_TEST_SOURCE_DIR = os.path.join(_TEST_DATA_DIR, 'mock_source_directory')
-_TEST_OUTPUT_DIR = os.path.join(_TEST_SOURCE_DIR, 'out', 'Release')
-_TEST_TOOL_PREFIX = os.path.join(
-    os.path.abspath(_TEST_DATA_DIR), 'mock_toolchain', '')
+_TEST_DATA_DIR = test_util.TEST_DATA_DIR
+_TEST_SOURCE_DIR = test_util.TEST_SOURCE_DIR
+_TEST_OUTPUT_DIR = test_util.TEST_OUTPUT_DIR
 _TEST_APK_ROOT_DIR = os.path.join(_TEST_DATA_DIR, 'mock_apk')
 _TEST_MAP_PATH = os.path.join(_TEST_DATA_DIR, 'test.map')
 _TEST_PAK_INFO_PATH = os.path.join(
@@ -59,11 +55,16 @@ _TEST_MINIMAL_APKS_PATH = os.path.join(_TEST_OUTPUT_DIR, 'Bundle.minimal.apks')
 _TEST_SSARGS_PATH = os.path.join(_TEST_OUTPUT_DIR, 'test.ssargs')
 
 # Generated file paths relative to apk
-_TEST_APK_SO_PATH = 'test.so'
-_TEST_APK_SMALL_SO_PATH = 'smalltest.so'
-_TEST_APK_DEX_PATH = 'test.dex'
+_TEST_APK_SO_PATH = 'lib/armeabi-v7a/test.so'
+_TEST_APK_SMALL_SO_PATH = 'lib/armeabi-v7a/smalltest.so'
+_TEST_APK_DEX_PATH = 'classes.dex'
 _TEST_APK_OTHER_FILE_PATH = 'assets/icudtl.dat'
 _TEST_APK_RES_FILE_PATH = 'res/drawable-v13/test.xml'
+
+_TEST_CONFIG_JSON = os.path.join(_TEST_DATA_DIR, 'supersize.json')
+_TEST_PATH_DEFAULTS = {
+    'assets/icudtl.dat': '../../third_party/icu/android/icudtl.dat',
+}
 
 
 def _CompareWithGolden(name=None):
@@ -85,25 +86,10 @@ def _CompareWithGolden(name=None):
   return real_decorator
 
 
-@contextlib.contextmanager
-def _AddMocksToPath():
-  prev_path = os.environ['PATH']
-  os.environ['PATH'] = _TEST_TOOL_PREFIX[:-1] + os.path.pathsep + prev_path
-  os.environ['APK_ANALYZER'] = os.path.join(_TEST_SDK_DIR, 'tools', 'bin',
-                                            'apkanalyzer')
-  os.environ['AAPT2'] = os.path.join(_TEST_SDK_DIR, 'tools', 'bin', 'aapt2')
-  try:
-    yield
-  finally:
-    os.environ['PATH'] = prev_path
-    del os.environ['APK_ANALYZER']
-    del os.environ['AAPT2']
-
-
 def _RunApp(name, args, debug_measures=False):
   argv = [os.path.join(_SCRIPT_DIR, 'main.py'), name]
   argv.extend(args)
-  with _AddMocksToPath():
+  with test_util.AddMocksToPath():
     env = None
     if debug_measures:
       env = os.environ.copy()
@@ -217,7 +203,7 @@ class IntegrationTest(unittest.TestCase):
                 _TEST_APK_LOCALE_PAK_SUBPATH, _TEST_APK_PAK_SUBPATH
             ]
 
-        native_spec = archive.NativeSpec(tool_prefix=_TEST_TOOL_PREFIX)
+        native_spec = archive.NativeSpec()
 
         # TODO(crbug.com/1193507): Remove when we implement string literal
         #     tracking without map files.
@@ -239,6 +225,7 @@ class IntegrationTest(unittest.TestCase):
 
         if use_apk or use_minimal_apks:
           native_spec.apk_so_path = _TEST_APK_SO_PATH
+          apk_spec.path_defaults = _TEST_PATH_DEFAULTS
           if output_directory:
             if use_apk:
               orig_path = _TEST_APK_PATH
@@ -268,18 +255,13 @@ class IntegrationTest(unittest.TestCase):
             container_name = 'Bundle.minimal.apks/%s.apk' % split_name
             if split_name == 'on_demand':
               container_name += '?'
+              apk_spec.default_component = 'DEFAULT'
             yield container_name, apk_spec, pak_spec, native_spec
 
-      container_list = []
       raw_symbols_list = []
       build_config = {}
 
-      # Override for testing. Lower the bar for compacting symbols, to allow
-      # smaller test cases to be created.
-      knobs = archive.SectionSizeKnobs()
-      knobs.max_same_name_alias_count = 3
-
-      with _AddMocksToPath():
+      with test_util.AddMocksToPath():
         pak_id_map = pakfile.PakIdMap()
         for container_name, apk_spec, pak_spec, native_spec in iter_specs():
           metadata = archive.CreateMetadata(build_config=build_config,
@@ -287,8 +269,7 @@ class IntegrationTest(unittest.TestCase):
                                             native_spec=native_spec,
                                             source_directory=_TEST_SOURCE_DIR,
                                             output_directory=output_directory)
-          container, raw_symbols = archive.CreateContainerAndSymbols(
-              knobs=knobs,
+          raw_symbols = archive.CreateContainerSymbols(
               container_name=container_name,
               metadata=metadata,
               apk_spec=apk_spec,
@@ -296,12 +277,12 @@ class IntegrationTest(unittest.TestCase):
               native_spec=native_spec,
               source_directory=_TEST_SOURCE_DIR,
               output_directory=output_directory,
+              resources_pathmap_path=None,
               pak_id_map=pak_id_map)
-          container_list.append(container)
           raw_symbols_list.append(raw_symbols)
 
         IntegrationTest.cached_size_info[cache_key] = archive.CreateSizeInfo(
-            build_config, container_list, raw_symbols_list)
+            build_config, raw_symbols_list)
     return copy.deepcopy(IntegrationTest.cached_size_info[cache_key])
 
   def _DoArchive(self,
@@ -322,8 +303,8 @@ class IntegrationTest(unittest.TestCase):
         archive_path,
         '--source-directory',
         _TEST_SOURCE_DIR,
-        '--tool-prefix',
-        _TEST_TOOL_PREFIX,
+        '--json-config',
+        _TEST_CONFIG_JSON,
     ]
 
     if use_output_directory:

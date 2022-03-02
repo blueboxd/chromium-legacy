@@ -17,6 +17,9 @@
 namespace feed {
 
 base::Time kTestTimeEpoch = base::Time::UnixEpoch();
+AccountInfo TestAccountInfo() {
+  return {"gaia", "user@foo"};
+}
 
 ContentId MakeContentId(ContentId::Type type,
                         std::string content_domain,
@@ -232,11 +235,16 @@ StreamModelUpdateRequestGenerator::MakeFirstPage(int first_cluster_id,
 
   initial_update->shared_states.push_back(MakeSharedState(first_cluster_id));
   *initial_update->stream_data.mutable_content_id() = MakeRootId();
-  initial_update->stream_data.set_root_event_id(MakeRootEventId());
+  initial_update->stream_data.set_root_event_id(
+      MakeRootEventId(event_id_number));
   *initial_update->stream_data.add_shared_state_ids() =
       MakeSharedStateId(first_cluster_id);
   initial_update->stream_data.set_next_page_token("page-2");
   initial_update->stream_data.set_signed_in(signed_in);
+  if (signed_in) {
+    initial_update->stream_data.set_email(account_info.email);
+    initial_update->stream_data.set_gaia(account_info.gaia);
+  }
   initial_update->stream_data.set_logging_enabled(logging_enabled);
   initial_update->stream_data.set_privacy_notice_fulfilled(
       privacy_notice_fulfilled);
@@ -276,6 +284,10 @@ StreamModelUpdateRequestGenerator::MakeNextPage(
   initial_update->stream_data.set_next_page_token(
       "page-" + base::NumberToString(page_number + 1));
   initial_update->stream_data.set_signed_in(signed_in);
+  if (signed_in) {
+    initial_update->stream_data.set_email(account_info.email);
+    initial_update->stream_data.set_gaia(account_info.gaia);
+  }
   initial_update->stream_data.set_logging_enabled(logging_enabled);
   initial_update->stream_data.set_privacy_notice_fulfilled(
       privacy_notice_fulfilled);
@@ -311,6 +323,7 @@ std::unique_ptr<StreamModelUpdateRequest> MakeTypicalRefreshModelState(
   generator.signed_in = signed_in;
   generator.logging_enabled = logging_enabled;
   generator.privacy_notice_fulfilled = false;
+  generator.event_id_number = 456;  // Refreshes will have a new event id.
   return generator.MakeFirstPage(first_cluster_id, /*num_cards=*/3);
 }
 

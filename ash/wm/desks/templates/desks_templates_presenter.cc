@@ -6,8 +6,9 @@
 
 #include "ash/public/cpp/desk_template.h"
 #include "ash/public/cpp/desks_templates_delegate.h"
-#include "ash/public/cpp/toast_data.h"
-#include "ash/public/cpp/toast_manager.h"
+#include "ash/public/cpp/system/toast_catalog.h"
+#include "ash/public/cpp/system/toast_data.h"
+#include "ash/public/cpp/system/toast_manager.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desks_bar_view.h"
@@ -25,11 +26,8 @@
 namespace ash {
 
 namespace {
-DesksTemplatesPresenter* g_instance = nullptr;
 
-// The amount of time for which the launch template toasts will remain
-// displayed.
-constexpr int kLaunchTemplateToastDurationMs = 6 * 1000;
+DesksTemplatesPresenter* g_instance = nullptr;
 
 // Toast name.
 constexpr char kMaximumDeskLaunchTemplateToastName[] =
@@ -37,7 +35,6 @@ constexpr char kMaximumDeskLaunchTemplateToastName[] =
 
 // Helper to get the desk model from the shell delegate. Should always return a
 // usable desk model, either from chrome sync, or a local storage.
-// TODO(sammiequon): Investigate if we can cache this.
 desks_storage::DeskModel* GetDeskModel() {
   auto* desk_model = Shell::Get()->desks_templates_delegate()->GetDeskModel();
   DCHECK(desk_model);
@@ -47,12 +44,13 @@ desks_storage::DeskModel* GetDeskModel() {
 // Callback ran after creating and activating a new desk for launching a
 // template. Launches apps into the active desk.
 void OnNewDeskCreatedForTemplate(std::unique_ptr<DeskTemplate> desk_template,
+                                 base::TimeDelta delay,
                                  bool on_create_activate_success) {
   if (!on_create_activate_success)
     return;
 
   Shell::Get()->desks_templates_delegate()->LaunchAppsFromTemplate(
-      std::move(desk_template));
+      std::move(desk_template), delay);
 }
 
 }  // namespace
@@ -97,6 +95,14 @@ void DesksTemplatesPresenter::UpdateDesksTemplatesUI() {
       Shell::Get()->tablet_mode_controller()->InTabletMode();
   should_show_templates_ui_ = !in_tablet_mode && GetEntryCount() > 0u;
   for (auto& overview_grid : overview_session_->grid_list()) {
+    if (!should_show_templates_ui_ &&
+        overview_grid->IsShowingDesksTemplatesGrid()) {
+      // When deleting, it is possible to delete the last template. In this
+      // case, close the template grid and go back to overview.
+      overview_grid->HideDesksTemplatesGrid(/*exit_overview=*/false);
+      continue;
+    }
+
     if (DesksBarView* desks_bar_view =
             const_cast<DesksBarView*>(overview_grid->desks_bar_view())) {
       // When templates is enabled but templates haven't loaded, the templates
@@ -105,18 +111,7 @@ void DesksTemplatesPresenter::UpdateDesksTemplatesUI() {
       desks_bar_view->UpdateDesksTemplatesButtonVisibility();
       desks_bar_view->UpdateButtonsForDesksTemplatesGrid();
       desks_bar_view->Layout();
-    }
-
-    overview_grid->UpdateSaveDeskAsTemplateButton();
-
-    if (!overview_grid->IsShowingDesksTemplatesGrid())
-      continue;
-
-    if (!should_show_templates_ui_) {
-      // When deleting, it is possible to delete the last template. In this
-      // case, close the template grid and go back to overview.
-      overview_grid->HideDesksTemplatesGrid(/*exit_overview=*/false);
-      continue;
+      overview_grid->UpdateSaveDeskAsTemplateButton();
     }
   }
 }
@@ -136,18 +131,18 @@ void DesksTemplatesPresenter::DeleteEntry(const std::string& template_uuid) {
 }
 
 void DesksTemplatesPresenter::LaunchDeskTemplate(
-    const std::string& template_uuid) {
+    const std::string& template_uuid,
+    base::TimeDelta delay) {
   // If we are at the max desk limit (currently is 8), a new desk
   // cannot be created, and a toast will be displayed to the user.
   if (!DesksController::Get()->CanCreateDesks()) {
     ToastData toast_data = {
         /*id=*/kMaximumDeskLaunchTemplateToastName,
+        ToastCatalogName::kMaximumDeskLaunchTemplate,
         /*text=*/
         l10n_util::GetStringFUTF16(
             IDS_ASH_DESKS_TEMPLATES_REACH_MAXIMUM_DESK_TOAST,
-            base::FormatNumber(desks_util::kMaxNumberOfDesks)),
-        kLaunchTemplateToastDurationMs,
-        /*dismiss_text=*/absl::nullopt};
+            base::FormatNumber(desks_util::kMaxNumberOfDesks))};
     ToastManager::Get()->Show(toast_data);
     return;
   }
@@ -157,7 +152,7 @@ void DesksTemplatesPresenter::LaunchDeskTemplate(
   GetDeskModel()->GetEntryByUUID(
       template_uuid,
       base::BindOnce(&DesksTemplatesPresenter::OnGetTemplateForDeskLaunch,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), delay));
 }
 
 void DesksTemplatesPresenter::MaybeSaveActiveDeskAsTemplate() {
@@ -177,6 +172,9 @@ void DesksTemplatesPresenter::SaveOrUpdateDeskTemplate(
 
   weak_ptr_factory_.InvalidateWeakPtrs();
 
+  if (!is_update)
+    RecordWindowAndTabCountHistogram(desk_template.get());
+
   // Save or update `desk_template_clone` as an entry in DeskModel.
   GetDeskModel()->AddOrUpdateEntry(
       std::move(desk_template_clone),
@@ -184,10 +182,20 @@ void DesksTemplatesPresenter::SaveOrUpdateDeskTemplate(
                      weak_ptr_factory_.GetWeakPtr(), is_update));
 }
 
-void DesksTemplatesPresenter::DeskModelLoaded() {}
-
 void DesksTemplatesPresenter::OnDeskModelDestroying() {
   desk_model_observation_.Reset();
+}
+
+void DesksTemplatesPresenter::EntriesAddedOrUpdatedRemotely(
+    const std::vector<const DeskTemplate*>& new_entries) {
+  if (overview_session_->IsShowingDesksTemplatesGrid())
+    GetAllEntries();
+}
+
+void DesksTemplatesPresenter::EntriesRemovedRemotely(
+    const std::vector<std::string>& uuids) {
+  if (overview_session_->IsShowingDesksTemplatesGrid())
+    GetAllEntries();
 }
 
 void DesksTemplatesPresenter::OnGetAllEntries(
@@ -220,16 +228,21 @@ void DesksTemplatesPresenter::OnDeleteEntry(
     return;
 
   RecordDeleteTemplateHistogram();
+  RecordUserTemplateCountHistogram(GetEntryCount(), GetMaxEntryCount());
   GetAllEntries();
-
-  UpdateDesksTemplatesUI();
 }
 
 void DesksTemplatesPresenter::OnGetTemplateForDeskLaunch(
+    base::TimeDelta delay,
     desks_storage::DeskModel::GetEntryByUuidStatus status,
     std::unique_ptr<DeskTemplate> entry) {
   if (status != desks_storage::DeskModel::GetEntryByUuidStatus::kOk)
     return;
+
+  // `CreateAndActivateNewDeskForTemplate` may destroy `this`. Copy the member
+  // variables to a local to prevent UAF. See https://crbug.com/1284138.
+  base::OnceClosure on_update_ui_closure_for_testing =
+      std::move(on_update_ui_closure_for_testing_);
 
   // Launch the windows as specified in the template to a new desk.
   // Calling `CreateAndActivateNewDeskForTemplate` results in exiting overview
@@ -239,10 +252,10 @@ void DesksTemplatesPresenter::OnGetTemplateForDeskLaunch(
   const auto template_name = entry->template_name();
   DesksController::Get()->CreateAndActivateNewDeskForTemplate(
       template_name,
-      base::BindOnce(&OnNewDeskCreatedForTemplate, std::move(entry)));
+      base::BindOnce(&OnNewDeskCreatedForTemplate, std::move(entry), delay));
 
-  if (on_update_ui_closure_for_testing_)
-    std::move(on_update_ui_closure_for_testing_).Run();
+  if (on_update_ui_closure_for_testing)
+    std::move(on_update_ui_closure_for_testing).Run();
 
   RecordLaunchTemplateHistogram();
 }
@@ -250,26 +263,31 @@ void DesksTemplatesPresenter::OnGetTemplateForDeskLaunch(
 void DesksTemplatesPresenter::OnAddOrUpdateEntry(
     bool was_update,
     desks_storage::DeskModel::AddOrUpdateEntryStatus status) {
+  // TODO(crbug.com/1284449): Add visible cue when failing to save a desk
+  // template.
+  RecordAddOrUpdateTemplateStatusHistogram(status);
+
   if (status != desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk)
     return;
 
-  const auto& grid_list = overview_session_->grid_list();
-  DCHECK(!grid_list.empty());
-
   // If the templates grid is already shown, just update the entries.
-  if (grid_list[0]->IsShowingDesksTemplatesGrid()) {
+  if (overview_session_->IsShowingDesksTemplatesGrid()) {
     GetAllEntries();
     return;
   }
 
   // Update the button here in case it has been disabled.
+  const auto& grid_list = overview_session_->grid_list();
+  DCHECK(!grid_list.empty());
   overview_session_->ShowDesksTemplatesGrids(
-      grid_list[0]->desks_bar_view()->IsZeroState());
+      grid_list.front()->desks_bar_view()->IsZeroState());
   for (auto& overview_grid : grid_list)
     overview_grid->UpdateSaveDeskAsTemplateButton();
 
-  if (!was_update)
+  if (!was_update) {
     RecordNewTemplateHistogram();
+    RecordUserTemplateCountHistogram(GetEntryCount(), GetMaxEntryCount());
+  }
 }
 
 }  // namespace ash

@@ -77,13 +77,21 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
   bool CanCheckSubresourceURL() const override;
   bool CanCheckSafeBrowsingDb() const override;
   void Shutdown() override;
+  bool CanSendRTSampleRequest() const override;
+
+#if defined(UNIT_TEST)
+  void set_bypass_probability_for_tests(
+      bool bypass_protego_probability_for_tests) {
+    bypass_protego_probability_for_tests_ =
+        bypass_protego_probability_for_tests;
+  }
+#endif
 
  private:
   // RealTimeUrlLookupServiceBase:
   GURL GetRealTimeLookupUrl() const override;
   net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag() const override;
   bool CanPerformFullURLLookupWithToken() const override;
-  bool CanAttachReferrerChain() const override;
   int GetReferrerUserGestureLimit() const override;
   bool CanSendPageLoadToken() const override;
   void GetAccessToken(
@@ -137,6 +145,10 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
   // Unowned. For checking whether real-time checks can be enabled in a given
   // location.
   raw_ptr<variations::VariationsService> variations_;
+
+  // Bypasses the check for probability when sending Protego sample pings.
+  // Only for unit tests.
+  bool bypass_protego_probability_for_tests_ = false;
 
   // True if Shutdown() has already been called, or started running. This allows
   // us to skip unnecessary calls to SendRequest().

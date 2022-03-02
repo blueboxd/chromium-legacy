@@ -61,6 +61,7 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/wrapped_sk_image.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/vulkan/buildflags.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "skia/ext/rgba_to_yuva.h"
@@ -89,9 +90,9 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #endif  // BUILDFLAG(ENABLE_VULKAN)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "gpu/command_buffer/service/shared_image_backing_factory_d3d.h"
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
 // Local versions of the SET_GL_ERROR macros
 #define LOCAL_SET_GL_ERROR(error, function_name, msg) \
@@ -621,7 +622,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   }
 
   void FlushToWorkAroundMacCrashes() {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     if (!shared_context_state_->GrContextIsGL())
       return;
     // This function does aggressive flushes to work around crashes in the
@@ -821,12 +822,22 @@ class RasterDecoderImpl final : public RasterDecoder,
     bool sync_cpu = gpu::ShouldVulkanSyncCpuForSkiaSubmit(
         shared_context_state_->vk_context_provider());
     if (signal_semaphores.empty()) {
-      if (surface)
+      if (surface) {
         surface->flush();
-      else
+      } else {
         gr_context()->flush();
-      if (sync_cpu)
+      }
+
+      // If DrDc is enabled, submit the gr_context() to ensure correct ordering
+      // of vulkan commands between raster and display compositor.
+      // TODO(vikassoni): This submit could be happening more often than
+      // intended resulting in perf penalty. Explore ways to reduce it by
+      // trying to issue submit only once per draw call for both gpu main and
+      // drdc thread gr_context. Also add metric to see how often submits are
+      // happening per frame.
+      if (sync_cpu || is_drdc_enabled_) {
         gr_context()->submit(sync_cpu);
+      }
       return;
     }
 
@@ -985,6 +996,8 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   const bool is_raw_draw_enabled_;
 
+  const bool is_drdc_enabled_;
+
   raw_ptr<gl::GLApi> api_ = nullptr;
 
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_{this};
@@ -1101,7 +1114,8 @@ RasterDecoderImpl::RasterDecoderImpl(
           this,
           gpu_preferences_.disable_oopr_debug_crash_dump)),
       is_privileged_(is_privileged),
-      is_raw_draw_enabled_(features::IsUsingRawDraw()) {
+      is_raw_draw_enabled_(features::IsUsingRawDraw()),
+      is_drdc_enabled_(features::IsDrDcEnabled()) {
   DCHECK(shared_context_state_);
   shared_context_state_->AddContextLostObserver(this);
 }
@@ -1330,10 +1344,10 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
     caps.texture_half_float_linear =
         feature_info()->feature_flags().enable_texture_half_float_linear;
   }
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   caps.shared_image_swap_chain =
       SharedImageBackingFactoryD3D::IsSwapChainSupported();
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
   caps.disable_legacy_mailbox = disable_legacy_mailbox_;
   return caps;
 }
@@ -2640,6 +2654,7 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
                                               GLuint shm_offset,
                                               GLuint pixels_offset,
                                               const volatile GLbyte* mailbox) {
+  TRACE_EVENT0("gpu", "RasterDecoderImpl::DoWritePixelsINTERNAL");
   if (src_sk_color_type > kLastEnum_SkColorType) {
     LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "WritePixels",
                        "src_sk_color_type must be a valid SkColorType");
@@ -2819,6 +2834,7 @@ void RasterDecoderImpl::DoReadbackARGBImagePixelsINTERNAL(
     GLuint color_space_offset,
     GLuint pixels_offset,
     const volatile GLbyte* mailbox) {
+  TRACE_EVENT0("gpu", "RasterDecoderImpl::DoReadbackARGBImagePixelsINTERNAL");
   if (dst_sk_color_type > kLastEnum_SkColorType) {
     LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "ReadbackImagePixels",
                        "dst_sk_color_type must be a valid SkColorType");
@@ -2981,6 +2997,7 @@ void RasterDecoderImpl::DoReadbackYUVImagePixelsINTERNAL(
     GLuint v_offset,
     GLuint v_stride,
     const volatile GLbyte* mailbox) {
+  TRACE_EVENT0("gpu", "RasterDecoderImpl::DoReadbackYUVImagePixelsINTERNAL");
   if (dst_width % 2 != 0 || dst_height % 2 != 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glReadbackImagePixels",
                        "|dst_width| and |dst_height| must be divisible by 2");

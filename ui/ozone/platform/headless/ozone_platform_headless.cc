@@ -28,7 +28,7 @@
 #include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 #include "ui/base/ime/fuchsia/input_method_fuchsia.h"
 #endif
 
@@ -98,7 +98,7 @@ class OzonePlatformHeadless : public OzonePlatform {
     return std::make_unique<InputMethodMinimal>(delegate);
   }
 
-  void InitializeUI(const InitParams& params) override {
+  bool InitializeUI(const InitParams& params) override {
     window_manager_ = std::make_unique<HeadlessWindowManager>();
     surface_factory_ = std::make_unique<HeadlessSurfaceFactory>(file_path_);
     // This unbreaks tests that create their own.
@@ -112,6 +112,8 @@ class OzonePlatformHeadless : public OzonePlatform {
     input_controller_ = CreateStubInputController();
     cursor_factory_ = std::make_unique<BitmapCursorFactory>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
+
+    return true;
   }
 
   void InitializeGPU(const InitParams& params) override {

@@ -48,7 +48,10 @@ class RectF;
 namespace web {
 
 class BrowserState;
+struct FaviconStatus;
 class NavigationManager;
+enum class Permission;
+enum class PermissionState;
 class SessionCertificatePolicyCache;
 class WebFrame;
 class WebFramesManager;
@@ -297,6 +300,14 @@ class WebState : public base::SupportsUserData {
   // registering user interaction.
   virtual void ExecuteUserJavaScript(NSString* javaScript) = 0;
 
+  // Returns a unique identifier for this WebState that is stable across
+  // restart of the application (and across "undo" after a tab is closed).
+  // It is local to the device and not synchronized. This can be used as a key
+  // to identify locally this WebState (e.g. can be used as part of the name
+  // of the file that is used to store a snapshot of the WebState, or it can
+  // be used as a key in an NSDictionary).
+  virtual NSString* GetStableIdentifier() const = 0;
+
   // Gets the contents MIME type.
   virtual const std::string& GetContentsMimeType() const = 0;
 
@@ -331,6 +342,10 @@ class WebState : public base::SupportsUserData {
 
   // Whether this instance is in the process of being destroyed.
   virtual bool IsBeingDestroyed() const = 0;
+
+  // Gets/Sets the favicon for the current page displayed by this WebState.
+  virtual const FaviconStatus& GetFaviconStatus() const = 0;
+  virtual void SetFaviconStatus(const FaviconStatus& favicon_status) = 0;
 
   // Gets the URL currently being displayed in the URL bar, if there is one.
   // This URL might be a pending navigation that hasn't committed yet, so it is
@@ -367,9 +382,9 @@ class WebState : public base::SupportsUserData {
   // this WebState is still alive, and do nothing if this WebState is already
   // destroyed. Therefore if the caller want to stop receiving JS messages it
   // can just destroy the subscription.
-  virtual base::CallbackListSubscription AddScriptCommandCallback(
+  [[nodiscard]] virtual base::CallbackListSubscription AddScriptCommandCallback(
       const ScriptCommandCallback& callback,
-      const std::string& command_prefix) WARN_UNUSED_RESULT = 0;
+      const std::string& command_prefix) = 0;
 
   // Returns the current CRWWebViewProxy object.
   virtual CRWWebViewProxyType GetWebViewProxy() const = 0;
@@ -410,6 +425,10 @@ class WebState : public base::SupportsUserData {
   virtual void CreateFullPagePdf(
       base::OnceCallback<void(NSData*)> callback) = 0;
 
+  // Tries to dismiss the presented states of the media (fullscreen or Picture
+  // in Picture).
+  virtual void CloseMediaPresentations() = 0;
+
   // Adds and removes observers for page navigation notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be
   // sure to remove the observer before they go away.
@@ -424,6 +443,14 @@ class WebState : public base::SupportsUserData {
   // Returns true if this operation succeeds, and false otherwise.
   virtual bool SetSessionStateData(NSData* data) = 0;
   virtual NSData* SessionStateData() = 0;
+
+  // Gets or sets the web state's permission for a specific type, for example
+  // camera or microphone, on the device.
+  virtual PermissionState GetStateForPermission(Permission permission) const
+      API_AVAILABLE(ios(15.0)) = 0;
+  virtual void SetStateForPermission(PermissionState state,
+                                     Permission permission)
+      API_AVAILABLE(ios(15.0)) = 0;
 
  protected:
   friend class WebStatePolicyDecider;

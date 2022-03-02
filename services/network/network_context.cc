@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -16,7 +17,6 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/dcheck_is_on.h"
 #include "base/feature_list.h"
-#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -62,11 +62,13 @@
 #include "net/http/http_auth.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
+#include "net/http/http_auth_scheme.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/net_buildflags.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -132,13 +134,13 @@
 #include "services/network/sct_auditing/sct_auditing_handler.h"
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "services/network/cert_verifier_with_trust_anchors.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 #include "services/network/websocket_factory.h"
-#endif  // !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/base/http_user_agent_settings.h"
@@ -157,7 +159,7 @@
 #include "services/network/p2p/socket_manager.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/application_status_listener.h"
 #endif
 
@@ -287,7 +289,7 @@ base::RepeatingCallback<bool(const GURL&)> BuildUrlFilter(
                              std::move(filter_origins));
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 class NetworkContextApplicationStatusListener
     : public base::android::ApplicationStatusListener {
  public:
@@ -451,7 +453,7 @@ NetworkContext::NetworkContext(
 #endif
       params_(std::move(params)),
       on_connection_close_callback_(std::move(on_connection_close_callback)),
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       app_status_listener_(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
@@ -459,14 +461,14 @@ NetworkContext::NetworkContext(
       cors_preflight_controller_(network_service),
       cors_non_wildcard_request_headers_support_(base::FeatureList::IsEnabled(
           features::kCorsNonWildcardRequestHeadersSupport)) {
-#if defined(OS_WIN) && DCHECK_IS_ON()
+#if BUILDFLAG(IS_WIN) && DCHECK_IS_ON()
   if (params_->file_paths) {
     DCHECK(params_->win_permissions_set)
         << "Permissions not set on files. Network context should be created "
            "using CreateNetworkContextInNetworkService rather than directly on "
            "the network service.";
   }
-#endif  // defined(OS_WIN) && DCHECK_IS_ON()
+#endif  // BUILDFLAG(IS_WIN) && DCHECK_IS_ON()
   mojo::PendingRemote<mojom::URLLoaderFactory>
       url_loader_factory_for_cert_net_fetcher;
   mojo::PendingReceiver<mojom::URLLoaderFactory>
@@ -515,10 +517,21 @@ NetworkContext::NetworkContext(
 #if BUILDFLAG(IS_CT_SUPPORTED)
   if (params_->ct_policy)
     SetCTPolicy(std::move(params_->ct_policy));
+
+  base::FilePath sct_auditing_path;
+  if (base::FeatureList::IsEnabled(
+          features::kSCTAuditingRetryAndPersistReports)) {
+    GetFullDataFilePath(params_->file_paths,
+                        &network::mojom::NetworkContextFilePaths::
+                            sct_auditing_pending_reports_file_name,
+                        sct_auditing_path);
+  }
+  sct_auditing_handler_ =
+      std::make_unique<SCTAuditingHandler>(this, sct_auditing_path);
   sct_auditing_handler()->SetEnabled(params_->enable_sct_auditing);
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (params_->cookie_manager)
     GetCookieManager(std::move(params_->cookie_manager));
 #endif
@@ -537,7 +550,7 @@ NetworkContext::NetworkContext(
 #if BUILDFLAG(ENABLE_REPORTING)
       is_observing_reporting_service_(false),
 #endif
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       app_status_listener_(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
@@ -697,7 +710,8 @@ void NetworkContext::GetRestrictedCookieManager(
       std::make_unique<RestrictedCookieManager>(
           role, url_request_context_->cookie_store(),
           cookie_manager_->cookie_settings(), origin, isolation_info,
-          std::move(cookie_observer)),
+          std::move(cookie_observer),
+          network_service_->first_party_sets()->is_enabled()),
       std::move(receiver));
 }
 
@@ -838,7 +852,7 @@ void NetworkContext::ClearTrustTokenData(mojom::ClearDataFilterPtr filter,
   trust_token_store_->ExecuteOrEnqueue(base::BindOnce(
       [](mojom::ClearDataFilterPtr filter, base::OnceClosure done,
          TrustTokenStore* store) {
-        ignore_result(store->ClearDataForFilter(std::move(filter)));
+        std::ignore = store->ClearDataForFilter(std::move(filter));
         std::move(done).Run();
       },
       std::move(filter), std::move(done)));
@@ -1254,7 +1268,7 @@ void NetworkContext::SetEnableReferrers(bool enable_referrers) {
   network_delegate_->set_enable_referrers(enable_referrers);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 void NetworkContext::UpdateAdditionalCertificates(
     mojom::AdditionalCertificatesPtr additional_certificates) {
   if (!cert_verifier_with_trust_anchors_) {
@@ -1271,7 +1285,7 @@ void NetworkContext::UpdateAdditionalCertificates(
       additional_certificates->trust_anchors,
       additional_certificates->all_certificates);
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
 void NetworkContext::SetCTPolicy(mojom::CTPolicyPtr ct_policy) {
@@ -1534,7 +1548,7 @@ void NetworkContext::CreateWebSocket(
     mojo::PendingRemote<mojom::WebSocketAuthenticationHandler> auth_handler,
     mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
     const absl::optional<base::UnguessableToken>& throttling_profile_id) {
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
   if (!websocket_factory_)
     websocket_factory_ = std::make_unique<WebSocketFactory>(this);
 
@@ -1546,7 +1560,7 @@ void NetworkContext::CreateWebSocket(
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(handshake_client), std::move(url_loader_network_observer),
       std::move(auth_handler), std::move(header_client), throttling_profile_id);
-#endif  // !defined(OS_IOS)
+#endif  // !BUILDFLAG(IS_IOS)
 }
 
 void NetworkContext::CreateWebTransport(
@@ -2060,12 +2074,12 @@ void NetworkContext::OnHttpAuthDynamicParamsChanged(
       http_auth_dynamic_network_service_params->enable_negotiate_port);
   http_auth_merged_preferences_.set_basic_over_http_enabled(
       http_auth_dynamic_network_service_params->basic_over_http_enabled);
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   http_auth_merged_preferences_.set_ntlm_v2_enabled(
       http_auth_dynamic_network_service_params->ntlm_v2_enabled);
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   http_auth_merged_preferences_.set_auth_android_negotiate_account_type(
       http_auth_dynamic_network_service_params->android_negotiate_account_type);
 #endif
@@ -2074,6 +2088,13 @@ void NetworkContext::OnHttpAuthDynamicParamsChanged(
   http_auth_merged_preferences_.set_allow_gssapi_library_load(
       http_auth_dynamic_network_service_params->allow_gssapi_library_load);
 #endif
+  if (http_auth_dynamic_network_service_params->allowed_schemes.has_value()) {
+    http_auth_merged_preferences_.set_allowed_schemes(std::set<std::string>(
+        http_auth_dynamic_network_service_params->allowed_schemes->begin(),
+        http_auth_dynamic_network_service_params->allowed_schemes->end()));
+  } else {
+    http_auth_merged_preferences_.set_allowed_schemes(absl::nullopt);
+  }
 }
 
 URLRequestContextOwner NetworkContext::MakeURLRequestContext(
@@ -2125,7 +2146,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         std::make_unique<net::CoalescingCertVerifier>(
             std::move(cert_verifier)));
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
     cert_verifier_with_trust_anchors_ =
         new CertVerifierWithTrustAnchors(base::BindRepeating(
             &NetworkContext::TrustAnchorUsed, base::Unretained(this)));
@@ -2134,7 +2155,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     cert_verifier_with_trust_anchors_->InitializeOnIOThread(
         std::move(cert_verifier));
     cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
   }
 
   builder.SetCertVerifier(IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
@@ -2197,8 +2218,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
 
   if (session_cleanup_cookie_store) {
     std::unique_ptr<net::CookieMonster> cookie_store =
-        std::make_unique<net::CookieMonster>(session_cleanup_cookie_store.get(),
-                                             net_log);
+        std::make_unique<net::CookieMonster>(
+            session_cleanup_cookie_store.get(), net_log,
+            network_service_->first_party_sets()->is_enabled());
     if (params_->persist_session_cookies)
       cookie_store->SetPersistSessionCookies(true);
 
@@ -2242,9 +2264,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         std::move(params_->proxy_resolver_factory));
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (params_->windows_system_proxy_resolver) {
-    // TODO(https://crbug.com/1032820): Connect to proxy_resolver_win service.
+    builder.SetMojoWindowsSystemProxyResolver(
+        std::move(params_->windows_system_proxy_resolver));
   }
 #endif
 
@@ -2268,7 +2291,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     }
     cache_params.reset_cache = params_->reset_http_cache_backend;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     cache_params.app_status_listener = app_status_listener();
 #endif
     builder.EnableHttpCache(cache_params);
@@ -2409,6 +2432,9 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   builder.set_host_mapping_rules(
       command_line->GetSwitchValueASCII(switches::kHostResolverRules));
 
+  builder.set_first_party_sets_enabled(
+      network_service_->first_party_sets()->is_enabled());
+
   auto result =
       URLRequestContextOwner(std::move(pref_service), builder.Build());
 
@@ -2481,10 +2507,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         certificate_report_sender_.get());
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   result.url_request_context->set_check_cleartext_permitted(
       params_->check_clear_text_permitted);
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
   if (params_->enable_expect_ct_reporting) {
@@ -2544,12 +2570,6 @@ NetworkContext::MakeSessionCleanupCookieStore() const {
 
   net::CookieCryptoDelegate* crypto_delegate = nullptr;
   if (params_->enable_encrypted_cookies) {
-#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
-    !BUILDFLAG(IS_CHROMECAST)
-    DCHECK(network_service_->os_crypt_config_set())
-        << "NetworkService::SetCryptConfig must be called before creating a "
-           "NetworkContext with encrypted cookies.";
-#endif
     crypto_delegate = cookie_config::GetCookieCryptoDelegate();
   }
 
@@ -2720,7 +2740,7 @@ void NetworkContext::OnVerifyCertForSignedExchangeComplete(int cert_verify_id,
       .Run(result, *pending_cert_verify->result.get());
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 void NetworkContext::TrustAnchorUsed() {
   client_->OnTrustAnchorUsed();
 }

@@ -62,10 +62,10 @@
 #include "third_party/blink/renderer/core/exported/web_input_method_controller_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_remote_frame_impl.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
 
@@ -151,8 +151,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       int32_t world_id,
       const WebScriptSource&,
       BackForwardCacheAware back_forward_cache_aware) override;
-  WARN_UNUSED_RESULT v8::Local<v8::Value>
-  ExecuteScriptInIsolatedWorldAndReturnValue(
+  [[nodiscard]] v8::Local<v8::Value> ExecuteScriptInIsolatedWorldAndReturnValue(
       int32_t world_id,
       const WebScriptSource&,
       BackForwardCacheAware back_forward_cache_aware) override;
@@ -297,6 +296,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebPlugin* GetPluginToPrint(const WebNode& constrain_to_node) override;
   uint32_t PrintBegin(const WebPrintParams&,
                       const WebNode& constrain_to_node) override;
+  bool WillPrintSoon() override;
   float GetPrintPageShrink(uint32_t page) override;
   float PrintPage(uint32_t page_to_print, cc::PaintCanvas*) override;
   void PrintEnd() override;
@@ -329,11 +329,13 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool HasTransientUserActivation() override;
   bool ConsumeTransientUserActivation(UserActivationUpdateSource) override;
   bool LastActivationWasRestricted() const override;
+#if BUILDFLAG(IS_WIN)
+  WebFontFamilyNames GetWebFontFamilyNames() const override;
+#endif
   void SetTargetToCurrentHistoryItem(const WebString& target) override;
   void UpdateCurrentHistoryItem() override;
   PageState CurrentHistoryItemToPageState() override;
   const WebHistoryItem& GetCurrentHistoryItem() const override;
-  bool ServiceWorkerSubresourceFilterEnabled() override;
   void SetLocalStorageArea(
       CrossVariantMojoRemote<mojom::StorageAreaInterfaceBase>
           local_storage_area) override;
@@ -428,7 +430,7 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   bool HasDevToolsOverlays() const;
   void UpdateDevToolsOverlaysPrePaint();
-  void PaintDevToolsOverlays(GraphicsContext&);  // For CompositeAfterPaint.
+  void PaintDevToolsOverlays(GraphicsContext&);
 
   void CreateFrameView();
 
@@ -467,6 +469,7 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void DidFailLoad(const ResourceError&, WebHistoryCommitType);
   void DidFinish();
+  void DidFinishLoadForPrinting();
 
   void SetClient(WebLocalFrameClient* client) { client_ = client; }
 

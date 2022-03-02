@@ -41,14 +41,11 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/identifiability_study_helper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
-
-// TODO(crbug.com/940846): Consider using double-type without casting and
-// DoublePoint & DoubleRect instead of gfx::PointF & FloatRect.
 
 void CanvasPath::closePath() {
   if (UNLIKELY(path_.IsEmpty()))
@@ -626,6 +623,19 @@ void CanvasPath::roundRect(
                                         corner_radii[2], corner_radii[3]),
                        clockwise);
   path_.MoveTo(gfx::PointF(x, y));
+}
+
+void CanvasPath::roundRect(
+    double double_x,
+    double double_y,
+    double double_width,
+    double double_height,
+    const Member<V8UnionDOMPointInitOrUnrestrictedDouble>& radius,
+    ExceptionState& exception_state) {
+  const auto radii =
+      HeapVector<Member<V8UnionDOMPointInitOrUnrestrictedDouble>>(1, radius);
+  roundRect(double_x, double_y, double_width, double_height, radii,
+            exception_state);
 }
 
 void CanvasPath::Trace(Visitor* visitor) const {

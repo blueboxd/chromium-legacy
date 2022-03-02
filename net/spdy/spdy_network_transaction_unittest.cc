@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/compiler_specific.h"
 #include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -302,7 +301,7 @@ class SpdyNetworkTransactionTest : public TestWithTaskEnvironment {
 
   void ConnectStatusHelper(const MockRead& status);
 
-  HttpRequestInfo CreateGetPushRequest() const WARN_UNUSED_RESULT {
+  [[nodiscard]] HttpRequestInfo CreateGetPushRequest() const {
     HttpRequestInfo request;
     request.method = "GET";
     request.url = GURL(kPushedUrl);
@@ -3974,7 +3973,7 @@ TEST_F(SpdyNetworkTransactionTest, ConnectionPoolingSessionClosedBeforeUse) {
   helper.VerifyDataConsumed();
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 
 // Test this if two HttpNetworkTransactions try to repurpose the same
 // SpdySession with two different SocketTags, only one request gets the session,
@@ -4151,7 +4150,7 @@ TEST_F(SpdyNetworkTransactionTest, SocketTagChangeSessionTagWithDnsAliases) {
                                      std::move(session_deps));
 
   GURL url = request_.url;
-  std::vector<std::string> dns_aliases({"alias1", "alias2", "alias3"});
+  std::set<std::string> dns_aliases({"alias1", "alias2", "alias3"});
   helper.session_deps()->host_resolver->rules()->AddIPLiteralRuleWithDnsAliases(
       url.host(), "127.0.0.1", dns_aliases);
 
@@ -4270,9 +4269,9 @@ TEST_F(SpdyNetworkTransactionTest,
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
                                      std::move(session_deps));
   GURL url1 = request_.url;
-  std::vector<std::string> dns_aliases1({"alias1", "alias2", "alias3"});
+  std::set<std::string> dns_aliases1({"alias1", "alias2", "alias3"});
   GURL url2("https://example.test/");
-  std::vector<std::string> dns_aliases2({"example.net", "example.com"});
+  std::set<std::string> dns_aliases2({"example.net", "example.com"});
 
   helper.session_deps()->host_resolver->rules()->AddIPLiteralRuleWithDnsAliases(
       url1.host(), "127.0.0.1", dns_aliases1);
@@ -4486,7 +4485,7 @@ TEST_F(SpdyNetworkTransactionTest,
   helper.VerifyDataConsumed();
 }
 
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Regression test for https://crbug.com/727653.
 TEST_F(SpdyNetworkTransactionTest, RejectServerPushWithNoMethod) {
@@ -9643,21 +9642,48 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketHttp11Required) {
                                       /* expected_count = */ 1);
 }
 
-// Plaintext WebSocket over HTTP/2 is not implemented, see
-// https://crbug.com/684681.
+// When using an HTTP(S) proxy, plaintext WebSockets use CONNECT tunnels. This
+// should work for HTTP/2 proxies.
 TEST_F(SpdyNetworkTransactionTest, PlaintextWebSocketOverHttp2Proxy) {
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
       nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
       HostPortPair("www.example.org", 80)));
-  MockWrite writes[] = {CreateMockWrite(req, 0)};
+  const char kWebSocketRequest[] =
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "Connection: Upgrade\r\n"
+      "Upgrade: websocket\r\n"
+      "Origin: http://www.example.org\r\n"
+      "Sec-WebSocket-Version: 13\r\n"
+      "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+      "Sec-WebSocket-Extensions: permessage-deflate; "
+      "client_max_window_bits\r\n\r\n";
+  spdy::SpdySerializedFrame websocket_request(spdy_util_.ConstructSpdyDataFrame(
+      /*stream_id=*/1, kWebSocketRequest, /*fin=*/false));
+  MockWrite writes[] = {CreateMockWrite(req, 0),
+                        CreateMockWrite(websocket_request, 2)};
 
-  spdy::SpdySerializedFrame resp(
+  spdy::SpdySerializedFrame connect_response(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
-  MockRead reads[] = {CreateMockRead(resp, 1), MockRead(ASYNC, 0, 2)};
+  const char kWebSocketResponse[] =
+      "HTTP/1.1 101 Switching Protocols\r\n"
+      "Upgrade: websocket\r\n"
+      "Connection: Upgrade\r\n"
+      "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n";
+  spdy::SpdySerializedFrame websocket_response(
+      spdy_util_.ConstructSpdyDataFrame(/*stream_id=*/1, kWebSocketResponse,
+                                        /*fin=*/false));
+  MockRead reads[] = {CreateMockRead(connect_response, 1),
+                      CreateMockRead(websocket_response, 3),
+                      MockRead(ASYNC, 0, 4)};
 
   SequencedSocketData data(reads, writes);
 
   request_.url = GURL("ws://www.example.org/");
+  request_.extra_headers.SetHeader("Connection", "Upgrade");
+  request_.extra_headers.SetHeader("Upgrade", "websocket");
+  request_.extra_headers.SetHeader("Origin", "http://www.example.org");
+  request_.extra_headers.SetHeader("Sec-WebSocket-Version", "13");
   auto session_deps = std::make_unique<SpdySessionDependencies>(
       ConfiguredProxyResolutionService::CreateFixed(
           "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -9673,60 +9699,9 @@ TEST_F(SpdyNetworkTransactionTest, PlaintextWebSocketOverHttp2Proxy) {
 
   EXPECT_TRUE(helper.StartDefaultTest());
   helper.WaitForCallbackToComplete();
-  EXPECT_THAT(helper.output().rv, IsError(ERR_NOT_IMPLEMENTED));
+  EXPECT_THAT(helper.output().rv, IsOk());
 
-  helper.VerifyDataConsumed();
-}
-
-// Regression test for https://crbug.com/819101.  Open two identical plaintext
-// websocket requests over proxy.  The HttpStreamFactory::Job for the second
-// request should reuse the first connection.
-TEST_F(SpdyNetworkTransactionTest, TwoWebSocketRequestsOverHttp2Proxy) {
-  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
-      nullptr, 0, 1, HttpProxyConnectJob::kH2QuicTunnelPriority,
-      HostPortPair("www.example.org", 80)));
-  MockWrite writes[] = {CreateMockWrite(req, 0)};
-
-  spdy::SpdySerializedFrame resp(
-      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
-  MockRead reads[] = {CreateMockRead(resp, 1),
-                      MockRead(ASYNC, ERR_IO_PENDING, 2),
-                      MockRead(ASYNC, 0, 3)};
-
-  SequencedSocketData data(reads, writes);
-
-  request_.url = GURL("ws://www.example.org/");
-  auto session_deps = std::make_unique<SpdySessionDependencies>(
-      ConfiguredProxyResolutionService::CreateFixed(
-          "https://proxy:70", TRAFFIC_ANNOTATION_FOR_TESTS));
-  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
-                                     std::move(session_deps));
-  helper.RunPreTestSetup();
-  helper.AddData(&data);
-
-  HttpNetworkTransaction* trans1 = helper.trans();
-  TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
-  trans1->SetWebSocketHandshakeStreamCreateHelper(
-      &websocket_stream_create_helper);
-
-  EXPECT_TRUE(helper.StartDefaultTest());
-  helper.WaitForCallbackToComplete();
-  EXPECT_THAT(helper.output().rv, IsError(ERR_NOT_IMPLEMENTED));
-
-  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
-  trans2.SetWebSocketHandshakeStreamCreateHelper(
-      &websocket_stream_create_helper);
-
-  TestCompletionCallback callback2;
-  int rv = trans2.Start(&request_, callback2.callback(), log_);
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-
-  rv = callback2.WaitForResult();
-  EXPECT_THAT(rv, IsError(ERR_NOT_IMPLEMENTED));
-
-  data.Resume();
   base::RunLoop().RunUntilIdle();
-
   helper.VerifyDataConsumed();
 }
 

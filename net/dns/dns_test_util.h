@@ -19,15 +19,18 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "net/base/address_list.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/public/dns_over_https_server_config.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/dns/public/secure_dns_mode.h"
 #include "net/socket/socket_test_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/scheme_host_port.h"
 
 namespace net {
 
@@ -351,8 +354,7 @@ class MockDnsTransactionFactory : public DnsTransactionFactory {
   void CompleteDelayedTransactions();
   // If there are any pending transactions of the given type,
   // completes one and returns true. Otherwise, returns false.
-  bool CompleteOneDelayedTransactionOfType(DnsQueryType type)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] bool CompleteOneDelayedTransactionOfType(DnsQueryType type);
 
   bool doh_probes_running() { return !running_doh_probe_runners_.empty(); }
   void CompleteDohProbeRuners() { running_doh_probe_runners_.clear(); }
@@ -403,13 +405,14 @@ class MockDnsClient : public DnsClient {
   DnsConfigOverrides GetConfigOverridesForTesting() const override;
   void SetTransactionFactoryForTesting(
       std::unique_ptr<DnsTransactionFactory> factory) override;
+  absl::optional<AddressList> GetPresetAddrs(
+      const url::SchemeHostPort& endpoint) const override;
 
   // Completes all DnsTransactions that were delayed by a rule.
   void CompleteDelayedTransactions();
   // If there are any pending transactions of the given type,
   // completes one and returns true. Otherwise, returns false.
-  bool CompleteOneDelayedTransactionOfType(DnsQueryType type)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] bool CompleteOneDelayedTransactionOfType(DnsQueryType type);
 
   void set_max_fallback_failures(int max_fallback_failures) {
     max_fallback_failures_ = max_fallback_failures;
@@ -417,6 +420,14 @@ class MockDnsClient : public DnsClient {
 
   void set_ignore_system_config_changes(bool ignore_system_config_changes) {
     ignore_system_config_changes_ = ignore_system_config_changes;
+  }
+
+  void set_preset_endpoint(absl::optional<url::SchemeHostPort> endpoint) {
+    preset_endpoint_ = std::move(endpoint);
+  }
+
+  void set_preset_addrs(AddressList preset_addrs) {
+    preset_addrs_ = std::move(preset_addrs);
   }
 
   void SetForceDohServerAvailable(bool available);
@@ -446,7 +457,14 @@ class MockDnsClient : public DnsClient {
   absl::optional<DnsConfig> effective_config_;
   std::unique_ptr<MockDnsTransactionFactory> factory_;
   std::unique_ptr<AddressSorter> address_sorter_;
+  absl::optional<url::SchemeHostPort> preset_endpoint_;
+  absl::optional<AddressList> preset_addrs_;
 };
+
+// Convert a list of templates into a list of server configs.
+// All templates in the list must be valid.
+std::vector<DnsOverHttpsServerConfig> ParseDohTemplates(
+    std::vector<std::string> server_templates);
 
 }  // namespace net
 

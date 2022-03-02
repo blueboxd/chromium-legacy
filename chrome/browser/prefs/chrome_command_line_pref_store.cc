@@ -50,7 +50,7 @@ const CommandLinePrefStore::SwitchToPreferenceMapEntry
         {switches::kAuthServerAllowlist, prefs::kAuthServerAllowlist},
         {switches::kSSLVersionMin, prefs::kSSLVersionMin},
         {switches::kSSLVersionMax, prefs::kSSLVersionMax},
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
         {switches::kAuthAndroidNegotiateAccountType,
          prefs::kAuthAndroidNegotiateAccountType},
 #endif
@@ -81,16 +81,15 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
         {safe_browsing::switches::kSbEnableEnhancedProtection,
          prefs::kSafeBrowsingEnhanced, true},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-        {chromeos::switches::kEnableTouchpadThreeFingerClick,
+        {ash::switches::kEnableTouchpadThreeFingerClick,
          prefs::kEnableTouchpadThreeFingerClick, true},
         {switches::kEnableUnifiedDesktop,
          prefs::kUnifiedDesktopEnabledByDefault, true},
-        {chromeos::switches::kEnableCastReceiver, prefs::kCastReceiverEnabled,
-         true},
+        {ash::switches::kEnableCastReceiver, prefs::kCastReceiverEnabled, true},
 #endif
         {switches::kEnableLocalSyncBackend,
          syncer::prefs::kEnableLocalSyncBackend, true},
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
         {switches::kUseSystemDefaultPrinter,
          prefs::kPrintPreviewUseSystemDefaultPrinter, true},
 #endif

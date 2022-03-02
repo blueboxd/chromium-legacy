@@ -15,6 +15,7 @@
 #include "base/pickle.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
@@ -142,11 +143,15 @@ class ChromeDataExchangeDelegateTest : public testing::Test {
 };
 
 TEST_F(ChromeDataExchangeDelegateTest, GetDataTransferEndpointType) {
+  // Create container window as the parent for other windows.
+  aura::Window container_window(nullptr, aura::client::WINDOW_TYPE_NORMAL);
+  container_window.Init(ui::LAYER_NOT_DRAWN);
+
   // ChromeDataExchangeDelegate always checks app type in
   // window->GetToplevelWindow(), so we must create a parent window with
   // delegate and app type set, but use the child window in tests. Arc:
   aura::Window* arc_toplevel = aura::test::CreateTestWindowWithDelegate(
-      &delegate_, 0, gfx::Rect(), nullptr);
+      &delegate_, 0, gfx::Rect(), &container_window);
   arc_toplevel->SetProperty(aura::client::kAppType,
                             static_cast<int>(ash::AppType::ARC_APP));
   ASSERT_TRUE(ash::IsArcWindow(arc_toplevel));
@@ -156,7 +161,7 @@ TEST_F(ChromeDataExchangeDelegateTest, GetDataTransferEndpointType) {
 
   // Crostini:
   aura::Window* crostini_toplevel = aura::test::CreateTestWindowWithDelegate(
-      &delegate_, 0, gfx::Rect(), nullptr);
+      &delegate_, 0, gfx::Rect(), &container_window);
   crostini_toplevel->SetProperty(aura::client::kAppType,
                                  static_cast<int>(ash::AppType::CROSTINI_APP));
   ASSERT_TRUE(crostini::IsCrostiniWindow(crostini_toplevel));
@@ -164,9 +169,19 @@ TEST_F(ChromeDataExchangeDelegateTest, GetDataTransferEndpointType) {
       aura::test::CreateTestWindowWithBounds(gfx::Rect(), crostini_toplevel);
   ASSERT_TRUE(crostini::IsCrostiniWindow(crostini_window->GetToplevelWindow()));
 
+  // Lacros:
+  aura::Window* lacros_toplevel = aura::test::CreateTestWindowWithDelegate(
+      &delegate_, 0, gfx::Rect(), &container_window);
+  exo::SetShellApplicationId(lacros_toplevel, "org.chromium.lacros.");
+  ASSERT_TRUE(crosapi::browser_util::IsLacrosWindow(lacros_toplevel));
+  aura::Window* lacros_window =
+      aura::test::CreateTestWindowWithBounds(gfx::Rect(), lacros_toplevel);
+  ASSERT_TRUE(crosapi::browser_util::IsLacrosWindow(
+      lacros_window->GetToplevelWindow()));
+
   // Plugin VM:
   aura::Window* plugin_vm_toplevel = aura::test::CreateTestWindowWithDelegate(
-      &delegate_, 0, gfx::Rect(), nullptr);
+      &delegate_, 0, gfx::Rect(), &container_window);
   exo::SetShellApplicationId(plugin_vm_toplevel, "org.chromium.plugin_vm_ui");
   ASSERT_TRUE(plugin_vm::IsPluginVmAppWindow(plugin_vm_toplevel));
   aura::Window* plugin_vm_window =
@@ -184,6 +199,9 @@ TEST_F(ChromeDataExchangeDelegateTest, GetDataTransferEndpointType) {
   EXPECT_EQ(
       ui::EndpointType::kCrostini,
       data_exchange_delegate.GetDataTransferEndpointType(crostini_window));
+
+  EXPECT_EQ(ui::EndpointType::kLacros,
+            data_exchange_delegate.GetDataTransferEndpointType(lacros_window));
 
   EXPECT_EQ(
       ui::EndpointType::kPluginVm,

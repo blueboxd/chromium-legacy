@@ -28,13 +28,14 @@ import time
 import urllib.request
 import urllib.error
 import zipfile
+import zlib
 
 
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/main/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
 # This is the output of `git describe` and is usable as a commit-ish.
-CLANG_REVISION = 'llvmorg-14-init-11564-g37fbf238'
+CLANG_REVISION = 'llvmorg-14-init-12719-gc4b45eeb'
 CLANG_SUB_REVISION = 3
 
 PACKAGE_VERSION = '%s-%s' % (CLANG_REVISION, CLANG_SUB_REVISION)
@@ -96,16 +97,27 @@ def DownloadUrl(url, output_file):
     try:
       sys.stdout.write('Downloading %s ' % url)
       sys.stdout.flush()
-      response = urllib.request.urlopen(url)
+      request = urllib.request.Request(url)
+      request.add_header('Accept-Encoding', 'gzip')
+      response = urllib.request.urlopen(request)
       total_size = int(response.info().get('Content-Length').strip())
+
+      is_gzipped = response.info().get('Content-Encoding', '').strip() == 'gzip'
+      if is_gzipped:
+        gzip_decode = zlib.decompressobj(zlib.MAX_WBITS + 16)
+
       bytes_done = 0
       dots_printed = 0
       while True:
         chunk = response.read(CHUNK_SIZE)
         if not chunk:
           break
-        output_file.write(chunk)
         bytes_done += len(chunk)
+
+        if is_gzipped:
+          chunk = gzip_decode.decompress(chunk)
+        output_file.write(chunk)
+
         num_dots = TOTAL_DOTS * bytes_done // total_size
         sys.stdout.write('.' * (num_dots - dots_printed))
         sys.stdout.flush()
@@ -113,6 +125,8 @@ def DownloadUrl(url, output_file):
       if bytes_done != total_size:
         raise urllib.error.URLError("only got %d of %d bytes" %
                                     (bytes_done, total_size))
+      if is_gzipped:
+        output_file.write(gzip_decode.flush())
       print(' Done.')
       return
     except urllib.error.URLError as e:
@@ -219,6 +233,8 @@ def UpdatePackage(package_name, host_os):
     package_file = 'clang'
   elif package_name == 'clang-tidy':
     package_file = 'clang-tidy'
+  elif package_name == 'clang-libs':
+    package_file = 'clang-libs'
   elif package_name == 'objdump':
     package_file = 'llvmobjdump'
   elif package_name == 'translation_unit':

@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
@@ -178,7 +178,7 @@ WebTimeLimitEnforcerThrottleTest::GetWebTimeLimitEnforcer() {
 content::WebContents* WebTimeLimitEnforcerThrottleTest::InstallAndLaunchWebApp(
     const GURL& url,
     bool allowlisted_app) {
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->title = base::UTF8ToUTF16(url.host());
   web_app_info->description = u"Web app";
   web_app_info->start_url = url;

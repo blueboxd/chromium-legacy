@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/cxx17_backports.h"
+#include "base/memory/values_equivalent.h"
 #include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
@@ -308,7 +309,7 @@ const CSSValue* BorderBlock::CSSValueFromComputedStyleInternal(
   const CSSValue* value_end =
       GetCSSPropertyBorderBlockEnd().CSSValueFromComputedStyle(
           style, layout_object, allow_visited_style);
-  if (!DataEquivalent(value_start, value_end)) {
+  if (!base::ValuesEquivalent(value_start, value_end)) {
     return nullptr;
   }
   return value_start;
@@ -446,7 +447,7 @@ const CSSValue* Border::CSSValueFromComputedStyleInternal(
   for (size_t i = 0; i < base::size(kProperties); ++i) {
     const CSSValue* value_for_side = kProperties[i]->CSSValueFromComputedStyle(
         style, layout_object, allow_visited_style);
-    if (!DataEquivalent(value, value_for_side)) {
+    if (!base::ValuesEquivalent(value, value_for_side)) {
       return nullptr;
     }
   }
@@ -569,7 +570,7 @@ const CSSValue* BorderInline::CSSValueFromComputedStyleInternal(
   const CSSValue* value_end =
       GetCSSPropertyBorderInlineEnd().CSSValueFromComputedStyle(
           style, layout_object, allow_visited_style);
-  if (!DataEquivalent(value_start, value_end)) {
+  if (!base::ValuesEquivalent(value_start, value_end)) {
     return nullptr;
   }
   return value_start;
@@ -1567,7 +1568,7 @@ CSSValueList* ConsumeImplicitAutoFlow(
     const CSSIdentifierValue& flow_direction) {
   // [ auto-flow && dense? ]
   CSSValue* dense_algorithm = nullptr;
-  if ((css_parsing_utils::ConsumeIdent<CSSValueID::kAutoFlow>(range))) {
+  if (css_parsing_utils::ConsumeIdent<CSSValueID::kAutoFlow>(range)) {
     dense_algorithm =
         css_parsing_utils::ConsumeIdent<CSSValueID::kDense>(range);
   } else {
@@ -1627,16 +1628,16 @@ bool Grid::ParseShorthand(bool important,
     css_parsing_utils::AddProperty(
         CSSPropertyID::kGridAutoFlow, CSSPropertyID::kGrid,
         *(To<Longhand>(GetCSSPropertyGridAutoFlow()).InitialValue()), important,
-        css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+        css_parsing_utils::IsImplicitProperty::kImplicit, properties);
     css_parsing_utils::AddProperty(
         CSSPropertyID::kGridAutoColumns, CSSPropertyID::kGrid,
         *(To<Longhand>(GetCSSPropertyGridAutoColumns()).InitialValue()),
-        important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
+        important, css_parsing_utils::IsImplicitProperty::kImplicit,
         properties);
     css_parsing_utils::AddProperty(
         CSSPropertyID::kGridAutoRows, CSSPropertyID::kGrid,
         *(To<Longhand>(GetCSSPropertyGridAutoRows()).InitialValue()), important,
-        css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+        css_parsing_utils::IsImplicitProperty::kImplicit, properties);
     return true;
   }
 
@@ -1722,16 +1723,14 @@ bool Grid::ParseShorthand(bool important,
       properties);
   css_parsing_utils::AddProperty(
       CSSPropertyID::kGridAutoFlow, CSSPropertyID::kGrid, *grid_auto_flow,
-      important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
-      properties);
+      important, css_parsing_utils::IsImplicitProperty::kImplicit, properties);
   css_parsing_utils::AddProperty(
       CSSPropertyID::kGridAutoColumns, CSSPropertyID::kGrid,
       *auto_columns_value, important,
-      css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+      css_parsing_utils::IsImplicitProperty::kImplicit, properties);
   css_parsing_utils::AddProperty(
       CSSPropertyID::kGridAutoRows, CSSPropertyID::kGrid, *auto_rows_value,
-      important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
-      properties);
+      important, css_parsing_utils::IsImplicitProperty::kImplicit, properties);
   return true;
 }
 
@@ -3068,14 +3067,22 @@ const CSSValue* WebkitMaskRepeat::CSSValueFromComputedStyleInternal(
       &style.MaskLayers());
 }
 
-bool WebkitTextEmphasis::ParseShorthand(
+bool TextEmphasis::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   return css_parsing_utils::ConsumeShorthandGreedilyViaLonghands(
-      webkitTextEmphasisShorthand(), important, context, range, properties);
+      textEmphasisShorthand(), important, context, range, properties);
+}
+
+const CSSValue* TextEmphasis::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValuesForShorthandProperty(
+      textEmphasisShorthand(), style, layout_object, allow_visited_style);
 }
 
 bool WebkitTextStroke::ParseShorthand(

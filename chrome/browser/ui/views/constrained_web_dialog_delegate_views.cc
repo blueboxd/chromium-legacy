@@ -32,7 +32,7 @@
 namespace {
 
 gfx::Size RestrictToPlatformMinimumSize(const gfx::Size& min_size) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // http://crbug.com/78973 - MacOS does not handle zero-sized windows well.
   gfx::Size adjusted_min_size(1, 1);
   adjusted_min_size.SetToMax(min_size);
@@ -87,8 +87,7 @@ class ConstrainedDialogWebView : public views::WebView,
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
-  void DocumentOnLoadCompletedInMainFrame(
-      content::RenderFrameHost* render_frame_host) override;
+  void DocumentOnLoadCompletedInPrimaryMainFrame() override;
 
  private:
   base::WeakPtr<content::WebContents> initiator_web_contents_;
@@ -483,8 +482,7 @@ gfx::Size ConstrainedDialogWebView::GetMaximumSize() const {
   return !max_size().IsEmpty() ? max_size() : WebView::GetMaximumSize();
 }
 
-void ConstrainedDialogWebView::DocumentOnLoadCompletedInMainFrame(
-    content::RenderFrameHost* render_frame_host) {
+void ConstrainedDialogWebView::DocumentOnLoadCompletedInPrimaryMainFrame() {
   if (!max_size().IsEmpty() && initiator_web_contents_) {
     content::WebContents* top_level_web_contents =
         constrained_window::GetTopLevelWebContents(

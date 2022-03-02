@@ -90,6 +90,12 @@ void AppListTestHelper::ToggleAndRunLoop(uint64_t display_id,
   WaitUntilIdle();
 }
 
+void AppListTestHelper::StartSlideAnimationOnBubbleAppsPage(
+    views::View* view,
+    int vertical_offset) {
+  GetBubbleAppsPage()->SlideViewIntoPosition(view, vertical_offset);
+}
+
 void AppListTestHelper::CheckVisibility(bool visible) {
   EXPECT_EQ(visible, app_list_controller_->IsVisible());
   EXPECT_EQ(visible, app_list_controller_->GetTargetVisibility(absl::nullopt));
@@ -131,9 +137,7 @@ void AppListTestHelper::AddRecentApps(int num_apps) {
     // result IDs must match app item IDs in the app list data model.
     result->set_result_id(test::AppListTestModel::GetItemName(i));
     result->set_result_type(AppListSearchResultType::kInstalledApp);
-    // TODO(crbug.com/1216662): Replace with a real display type after the ML
-    // team gives us a way to query directly for recent apps.
-    result->set_display_type(SearchResultDisplayType::kList);
+    result->set_display_type(SearchResultDisplayType::kRecentApps);
     GetSearchResults()->Add(std::move(result));
   }
 }
@@ -151,7 +155,7 @@ bool AppListTestHelper::IsInFolderView() {
 }
 
 AppListView* AppListTestHelper::GetAppListView() {
-  return app_list_controller_->presenter()->GetView();
+  return app_list_controller_->fullscreen_presenter()->GetView();
 }
 
 SearchBoxView* AppListTestHelper::GetSearchBoxView() {

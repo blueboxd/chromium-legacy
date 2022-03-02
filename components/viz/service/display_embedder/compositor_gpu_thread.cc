@@ -40,7 +40,7 @@ std::unique_ptr<CompositorGpuThread> CompositorGpuThread::Create(
   if (!features::IsDrDcEnabled())
     return nullptr;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // When using angle via enabling passthrough command decoder on android, angle
   // context virtualization group extension should be enabled. Also since angle
   // currently always enables this extension, we are adding DCHECK() to ensure
@@ -59,8 +59,8 @@ std::unique_ptr<CompositorGpuThread> CompositorGpuThread::Create(
     compositor_thread_device_queue->InitializeForCompositorGpuThread(
         device_queue->GetVulkanPhysicalDevice(),
         device_queue->GetVulkanDevice(), device_queue->GetVulkanQueue(),
-        device_queue->GetVulkanQueueIndex(),
-        device_queue->enabled_extensions());
+        device_queue->GetVulkanQueueIndex(), device_queue->enabled_extensions(),
+        device_queue->enabled_device_features_2());
     vulkan_context_provider =
         VulkanInProcessContextProvider::CreateForCompositorGpuThread(
             vulkan_implementation, std::move(compositor_thread_device_queue),
@@ -152,7 +152,8 @@ void CompositorGpuThread::Init() {
 #endif
       /*metal_context_provider=*/nullptr,
       /*dawn_context_provider=*/nullptr,
-      /*peak_memory_monitor=*/weak_ptr_factory_.GetWeakPtr());
+      /*peak_memory_monitor=*/weak_ptr_factory_.GetWeakPtr(),
+      /*created_on_compositor_gpu_thread=*/true);
 
   const auto& workarounds = gpu_channel_manager_->gpu_driver_bug_workarounds();
   auto gles2_feature_info = base::MakeRefCounted<gpu::gles2::FeatureInfo>(

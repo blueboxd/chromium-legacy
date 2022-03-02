@@ -113,9 +113,11 @@ mojom("mojom_platform") {
     "loader/same_document_navigation_type.mojom",
     "loader/transferrable_url_loader.mojom",
     "loader/url_loader_factory_bundle.mojom",
+    "lock_screen/lock_screen.mojom",
     "locks/lock_manager.mojom",
     "manifest/capture_links.mojom",
     "manifest/display_mode.mojom",
+    "manifest/handle_links.mojom",
     "manifest/manifest.mojom",
     "manifest/manifest_manager.mojom",
     "manifest/manifest_observer.mojom",
@@ -187,7 +189,7 @@ mojom("mojom_platform") {
     "speech/speech_synthesis.mojom",
     "storage_access/storage_access_automation.mojom",
     "storage_key/storage_key.mojom",
-    "subapps/sub_apps_provider.mojom",
+    "subapps/sub_apps_service.mojom",
     "timing/performance_mark_or_measure.mojom",
     "timing/resource_timing.mojom",
     "timing/worker_timing_container.mojom",
@@ -483,6 +485,20 @@ mojom("mojom_platform") {
         },
       ]
       traits_headers = [ "//third_party/blink/public/common/navigation/prefetched_signed_exchange_info_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.LinkGenerationError"
+          cpp = "::shared_highlighting::LinkGenerationError"
+        },
+        {
+          mojom = "blink.mojom.LinkGenerationReadyStatus"
+          cpp = "::shared_highlighting::LinkGenerationReadyStatus"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/link_to_text/link_to_text_mojom_traits.h" ]
+      traits_public_deps = [ "//components/shared_highlighting/core/common" ]
     },
   ]
   cpp_typemaps = [

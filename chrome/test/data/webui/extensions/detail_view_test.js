@@ -8,7 +8,7 @@ import {navigation, Page} from 'chrome://extensions/extensions.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {isChildVisible, isVisible} from '../test_util.js';
+import {isChildVisible, isVisible} from 'chrome://webui-test/test_util.js';
 
 import {createExtensionInfo, MockItemDelegate} from './test_util.js';
 
@@ -55,11 +55,10 @@ suite(extension_detail_view_tests.suiteName, function() {
     item.set('inDevMode', false);
     item.set('incognitoAvailable', true);
     item.set('showActivityLog', false);
-    item.set('useNewSiteAccessPage', false);
+    item.set('enableEnhancedSiteControls', false);
     document.body.appendChild(item);
   });
 
-  // TODO(crbug.com/1253673): Break this test up into smaller subtests.
   test(assert(extension_detail_view_tests.TestNames.Layout), function() {
     flush();
 
@@ -124,36 +123,6 @@ suite(extension_detail_view_tests.suiteName, function() {
     expectFalse(testIsVisible('extensions-runtime-host-permissions'));
     // Reset state.
     item.set('data.dependentExtensions', []);
-    item.set('data.permissions', {simplePermissions: []});
-    flush();
-
-    expectFalse(testIsVisible('#extensionsSiteAccessLink'));
-    expectTrue(testIsVisible('#no-site-access'));
-    item.set('useNewSiteAccessPage', true);
-    flush();
-
-    // Since there are no site permissions, there shouldn't be a link to the
-    // site access page.
-    expectFalse(testIsVisible('#extensionsSiteAccessLink'));
-    expectTrue(testIsVisible('#no-site-access'));
-
-    // Adding any runtime host permissions should result in the runtime host
-    // controls becoming visible.
-    const allSitesPermissions = {
-      simplePermissions: [],
-      runtimeHostPermissions: {
-        hosts: [{granted: false, host: '<all_urls>'}],
-        hasAllHosts: true,
-        hostAccess: chrome.developerPrivate.HostAccess.ON_CLICK,
-      },
-    };
-    item.set('data.permissions', allSitesPermissions);
-    flush();
-
-    expectTrue(testIsVisible('#extensionsSiteAccessLink'));
-    expectFalse(testIsVisible('#no-site-access'));
-
-    item.set('useNewSiteAccessPage', false);
     item.set('data.permissions', {simplePermissions: []});
     flush();
 
@@ -238,6 +207,14 @@ suite(extension_detail_view_tests.suiteName, function() {
 
     // Adding any runtime host permissions should result in the runtime host
     // controls becoming visible.
+    const allSitesPermissions = {
+      simplePermissions: [],
+      runtimeHostPermissions: {
+        hosts: [{granted: false, host: '<all_urls>'}],
+        hasAllHosts: true,
+        hostAccess: chrome.developerPrivate.HostAccess.ON_CLICK,
+      },
+    };
     item.set('data.permissions', allSitesPermissions);
     flush();
     expectFalse(testIsVisible('#no-site-access'));
@@ -350,13 +327,6 @@ suite(extension_detail_view_tests.suiteName, function() {
         expectDeepEquals(
             currentPage,
             {page: Page.ACTIVITY_LOG, extensionId: extensionData.id});
-
-        // Ditto for the site access page, which is hidden behind a feature
-        // flag.
-        item.shadowRoot.querySelector('#extensionsSiteAccessLink').click();
-        expectDeepEquals(
-            currentPage,
-            {page: Page.EXTENSION_SITE_ACCESS, extensionId: extensionData.id});
 
         // Reset current page and test delegate calls.
         navigation.navigateTo(

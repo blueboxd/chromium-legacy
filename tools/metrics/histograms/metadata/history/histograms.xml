@@ -171,7 +171,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.FailedTasksChrome"
-    enum="ChromeBrowsingDataRemoverTasks" expires_after="2022-04-17">
+    enum="ChromeBrowsingDataRemoverTasks" expires_after="2022-07-11">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <summary>
@@ -338,19 +338,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.ClearBrowsingData.TimeSpentInDialog" units="ms"
-    expires_after="M85">
-  <obsolete>
-    Removed 12/2020
-  </obsolete>
-  <owner>dullweber@chromium.org</owner>
-  <owner>msramek@chromium.org</owner>
-  <summary>
-    Time spent in Clear Browsing Data dialog. From opening the dialog until data
-    is cleared. This does not record users who exit the dialog without clearing.
-  </summary>
-</histogram>
-
 <histogram name="History.ClearBrowsingData.UserDeletedCookieOrCache"
     enum="CookieOrCacheDeletion" expires_after="never">
 <!-- expires-never: tracked as an important privacy metric. -->
@@ -375,7 +362,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.UserDeletedFromTab"
-    enum="ClearBrowsingDataTab" expires_after="2022-04-17">
+    enum="ClearBrowsingDataTab" expires_after="2022-06-19">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <summary>
@@ -384,8 +371,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.Clusters.Actions.DidMakeQuery" units="BooleanQueried"
-    expires_after="M101">
+<histogram name="History.Clusters.Actions.DidMakeQuery" enum="BooleanQueried"
+    expires_after="2022-06-12">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -396,7 +383,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.FinalState"
-    units="HistoryClustersFinalState" expires_after="2022-05-15">
+    enum="HistoryClustersFinalState" expires_after="2022-07-17">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -408,7 +395,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.InitialState"
-    units="HistoryClustersInitialState" expires_after="2022-05-15">
+    enum="HistoryClustersInitialState" expires_after="2022-07-17">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -420,7 +407,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.LinksOpened" units="links opened"
-    expires_after="2022-05-15">
+    expires_after="2022-07-17">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -431,7 +418,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.NumQueries"
-    units="number queries made" expires_after="2022-05-15">
+    units="number queries made" expires_after="2022-07-17">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -443,7 +430,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.BatchEntityLookupLatency" units="ms"
-    expires_after="2022-05-15">
+    expires_after="2022-07-17">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -456,7 +443,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.BatchEntityLookupSize" units="count"
-    expires_after="2022-05-15">
+    expires_after="2022-07-17">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -486,7 +473,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.GetClustersLatency" units="ms"
-    expires_after="2022-05-15">
+    expires_after="2022-07-17">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -498,7 +485,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.KeywordCache.AllKeywordPhraseCount"
-    units="count" expires_after="M101">
+    units="count" expires_after="2022-07-11">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -514,7 +501,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.KeywordCache.AllKeywordsCount"
-    units="count" expires_after="M101">
+    units="count" expires_after="2022-07-11">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -530,7 +517,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.KeywordCache.ShortKeywordPhraseCount"
-    units="count" expires_after="M101">
+    units="count" expires_after="2022-07-11">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -545,7 +532,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.KeywordCache.ShortKeywordsCount"
-    units="count" expires_after="M101">
+    units="count" expires_after="2022-07-11">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -560,7 +547,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.NumClustersReturned"
-    units="number clusters returned" expires_after="2022-05-15">
+    units="number clusters returned" expires_after="2022-07-17">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -589,7 +576,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.NumVisitsToCluster"
-    units="number visits" expires_after="2022-05-15">
+    units="number visits" expires_after="2022-07-17">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -639,7 +626,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.ServiceLatency" units="ms"
-    expires_after="2022-05-15">
+    expires_after="2022-07-17">
   <owner>tommycli@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -696,7 +683,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.UIActions.ToggledVisibility"
-    units="BooleanVisible" expires_after="2022-02-25">
+    enum="BooleanVisible" expires_after="2022-02-25">
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -775,21 +762,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.DomainCount1Day" units="domains"
-    expires_after="2022-04-17">
+<histogram name="History.DomainCount1Day_V2" units="domains"
+    expires_after="2022-06-19">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
   <summary>
     Number of unique domains visited by the user within a calendar day in user's
-    local timezone. For each profile, reported at profile open (which usually
-    happens at startup) for each unreported day (up to 7 days) prior to the
-    current date, and also reported once every 24 hours thereafter for the
-    latest unreported day, while the profile remains open. If no domains are
-    visited in a given day, a count of 0 will be reported for that day.
-
-    Warning: this histogram is logged incorrectly on ChromeOS. See
-    http://crbug.com/1237591
+    local timezone. For each regular profile (not incognito, guest, system,
+    etc.), reported at profile open (which usually happens at startup) for each
+    unreported day (up to 7 days) prior to the current date, and also reported
+    once every 24 hours thereafter for the latest unreported day, while the
+    profile remains open. If no domains are visited in a given day, a count of 0
+    will be reported for that day.
 
     Warning about delayed data: Chrome may upload logs on a given day without
     uploading this histogram. This can happen because Chrome uploads logs
@@ -813,22 +798,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.DomainCount28Day" units="domains"
-    expires_after="2022-04-17">
+<histogram name="History.DomainCount28Day_V2" units="domains"
+    expires_after="2022-06-19">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
   <summary>
     Number of unique domains visited by the user within a 28 calendar day period
-    in user's local timezone. For each profile, reported at profile open (which
-    usually happens at startup) for each unreported 28-day period (up to 7
-    periods) ending on the current day, current day - 1, current day - 2, etc.
-    Also reported once every 24 hours thereafter for the latest unreported
-    period, while the profile remains open. If no domains are visited during a
-    28-day period, a count of 0 will be reported for that period.
-
-    Warning: this histogram is logged incorrectly on ChromeOS. See
-    http://crbug.com/1237591
+    in user's local timezone. For each regular profile (not incognito, guest,
+    system, etc.), reported at profile open (which usually happens at startup)
+    for each unreported 28-day period (up to 7 periods) ending on the current
+    day, current day - 1, current day - 2, etc. Also reported once every 24
+    hours thereafter for the latest unreported period, while the profile remains
+    open. If no domains are visited during a 28-day period, a count of 0 will be
+    reported for that period.
 
     Warning about delayed data: Chrome may upload logs on a given day without
     uploading this histogram. This can happen because Chrome uploads logs
@@ -852,22 +835,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.DomainCount7Day" units="domains"
-    expires_after="2022-04-17">
+<histogram name="History.DomainCount7Day_V2" units="domains"
+    expires_after="2022-06-19">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
   <summary>
     Number of unique domains visited by the user within a 7 calendar day period
-    in user's local timezone. For each profile, reported at profile open (which
-    usually happens at startup) for each unreported 7-day period (up to 7
-    periods) ending on the current day, current day - 1, current day - 2, etc.
-    Also reported once every 24 hours thereafter for the latest unreported
-    period, while the profile remains open. If no domains are visited during a
-    7-day period, a count 0 will be reported for that period.
-
-    Warning: this histogram is logged incorrectly on ChromeOS. See
-    http://crbug.com/1237591
+    in user's local timezone. For each regular profile (not incognito, guest,
+    system, etc.), reported at profile open (which usually happens at startup)
+    for each unreported 7-day period (up to 7 periods) ending on the current
+    day, current day - 1, current day - 2, etc. Also reported once every 24
+    hours thereafter for the latest unreported period, while the profile remains
+    open. If no domains are visited during a 7-day period, a count 0 will be
+    reported for that period.
 
     Warning about delayed data: Chrome may upload logs on a given day without
     uploading this histogram. This can happen because Chrome uploads logs
@@ -891,8 +872,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.DomainCountQueryTime" units="ms"
-    expires_after="2022-02-20">
+<histogram name="History.DomainCountQueryTime_V2" units="ms"
+    expires_after="2022-06-19">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -902,7 +883,8 @@ chromium-metrics-reviews@google.com.
     where each set includes 3 results, for a 1-day, 7-day and 28-day period
     respectively. Note that for each computation task, only one query time is
     reported which covers the entire duration of the task. A task is scheduled
-    once at startup and every 24 hours thereafter while the browser remains
+    once per regular profile (not Incognito, Guest, System, etc. profiles) at
+    startup and every 24 hours per profile thereafter while the profile remains
     open.
   </summary>
 </histogram>
@@ -970,7 +952,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.HistoryPageView" enum="HistoryPageView"
-    expires_after="2022-05-01">
+    expires_after="2022-07-03">
   <owner>calamity@chromium.org</owner>
   <owner>src/chrome/browser/resources/history/OWNERS</owner>
   <summary>
@@ -1031,26 +1013,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.InMemoryDBPopulate" units="ms"
-    expires_after="2022-07-30">
-  <obsolete>
-    Removed August 2021 because it was not meaningful. It did not seem to
-    reflect anything about the user experience or about contention in the
-    system; it moved in unexpected ways.
-  </obsolete>
-  <owner>sky@chromium.org</owner>
-  <owner>mpearson@chromium.org</owner>
-  <summary>
-    The time it takes to read the typed URLs from the main history database into
-    the &quot;in memory&quot; history database. This in memory copy of the typed
-    URLs is used for synchronous inline autocomplete on the UI thread, while the
-    larger slower service is run off of disk on a background thread. Recorded on
-    profile open.
-  </summary>
-</histogram>
-
 <histogram name="History.InMemoryURLHistoryItems" units="items"
-    expires_after="2022-04-10">
+    expires_after="2022-06-12">
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1061,7 +1025,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexingTime" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-07-03">
   <owner>mpearson@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -1071,7 +1035,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexingTime.RoundTripTime" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-07-03">
   <owner>tommycli@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -1097,7 +1061,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexSaveCacheTime" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-07-03">
   <owner>tommycli@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -1119,7 +1083,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.MonthlyHostCount" units="hosts"
-    expires_after="2022-04-10">
+    expires_after="2022-06-12">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -1139,19 +1103,6 @@ chromium-metrics-reviews@google.com.
     Unique URLs in History database urls table with last-visit times in the last
     30 days. Metrics are logged on initialization of the History DB on 0.3% of
     starts.
-  </summary>
-</histogram>
-
-<histogram name="History.MonthlyVisitCount" units="visits"
-    expires_after="2021-10-04">
-  <obsolete>
-    Removed September 2021.
-  </obsolete>
-  <owner>mpearson@chromium.org</owner>
-  <owner>sky@chromium.org</owner>
-  <summary>
-    Number of rows in History visits table with visit times in the last 30 days.
-    Metrics are logged on initialization of the History DB on 1% of starts.
   </summary>
 </histogram>
 
@@ -1288,7 +1239,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.WeeklyHostCount" units="hosts"
-    expires_after="2022-04-17">
+    expires_after="2022-06-19">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -1299,26 +1250,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.WeeklyURLCount" units="URLs"
-    expires_after="2022-05-01">
+    expires_after="2022-07-03">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
     Unique URLs in History database urls table with last-visit times in the last
     7 days. Metrics are logged on initialization of the History DB on 0.3% of
     starts.
-  </summary>
-</histogram>
-
-<histogram name="History.WeeklyVisitCount" units="visits"
-    expires_after="2021-10-04">
-  <obsolete>
-    Removed September 2021.
-  </obsolete>
-  <owner>mpearson@chromium.org</owner>
-  <owner>sky@chromium.org</owner>
-  <summary>
-    Number of rows in History visits table with visit times in the last 7 days.
-    Metrics are logged on initialization of the History DB on 1% of starts.
   </summary>
 </histogram>
 

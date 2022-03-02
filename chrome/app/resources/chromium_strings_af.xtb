@@ -41,13 +41,11 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="2401032172288869980">Chromium het kamera- en mikrofoontoestemming vir hierdie werf nodig</translation>
 <translation id="2483889755041906834">In Chromium</translation>
 <translation id="2485422356828889247">Deïnstalleer</translation>
-<translation id="251127392410688874">Sien hoe Chromium beplan om jou teen kruiswerfnasporing te beveilig terwyl dit die oop web in stand hou</translation>
 <translation id="2535480412977113886">Chromium-bedryfstelsel kon nie jou data sinkroniseer nie, omdat jou rekening se aanmeldbesonderhede verouderd is.</translation>
 <translation id="2560420686485554789">Chromium het bergingtoegang nodig om lêers af te laai</translation>
 <translation id="2572494885440352020">Chromium-helper</translation>
 <translation id="2583187216237139145">Enige Chromium-data wat tydens die gebruik van hierdie profiel gegenereer word (soos die skepping van boekmerke, geskiedenis, wagwoorde, en ander instellings) kan deur die werkprofieladministrateur verwyder word. <ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">Chromium-bedryfstelsel moet herbegin word om die opdatering toe te pas.</translation>
-<translation id="2614883797045469742">Die verstekinstellings werk vir die meeste mense, maar jy kan hulle pasmaak volgens hoe jy daarvan hou om Chromium te gebruik</translation>
 <translation id="2648074677641340862">'n Bedryfstelselfout het voorgekom met installering. Laai Chromium asseblief weer af.</translation>
 <translation id="2661879430930417727">As jy 'n toestel deel, kan vriende en familie apart blaai en Chromium opstel net soos hulle dit wil hê</translation>
 <translation id="2711502716910134313">Chromium-oortjie</translation>
@@ -119,13 +117,13 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="454579500955453258">Gaan voort in 'n nuwe Chromium-profiel?</translation>
 <translation id="4567424176335768812">Jy is as <ph name="USER_EMAIL_ADDRESS" /> aangemeld. Nou kan jy op al jou aangemelde toestelle by jou boekmerke, geskiedenis en ander instellings ingaan.</translation>
 <translation id="459535195905078186">Chromium-programme</translation>
+<translation id="4621240073146040695">Amper op datum! Herbegin Chromium om opdatering te voltooi.</translation>
 <translation id="4665829708273112819">Waarskuwing: Chromium kan nie keer dat uitbreidings rekord hou van jou blaaigeskiedenis nie. Ontkies hierdie opsie om hierdie uitbreiding in Incognito-modus te deaktiveer.</translation>
 <translation id="4677944499843243528">Dit lyk of die profiel deur 'n ander Chromium-proses (<ph name="PROCESS_ID" />) op 'n ander rekenaar (<ph name="HOST_NAME" />) gebruik word. Chromium het jou profiel gesluit sodat dit nie gekorrupteer word nie. As jy seker is dat geen ander prosesse hierdie profiel gebruik nie, kan jy die profiel ontsluit en Chromium herbegin.</translation>
 <translation id="469338717132742108">Kry hulp met Chromium-bedryfstelsel</translation>
 <translation id="4708774505295300557">Iemand het voorheen op hierdie rekenaar as <ph name="ACCOUNT_EMAIL_LAST" /> by Chromium aangemeld. Skep asseblief 'n nuwe Chromium-gebruiker om jou inligting apart te hou.</translation>
 <translation id="4746050847053251315">Verlaat Chromium in elk geval?</translation>
 <translation id="4748217263233248895">'n Spesiale sekuriteitopdatering vir Chromium is sopas toegepas. Herbegin nou en ons sal jou oortjies teruglaai.</translation>
-<translation id="4750035648288509542">Amper op datum! Herbegin Chromium om opdatering te voltooi. Incognitovensters sal nie weer oopgemaak word nie.</translation>
 <translation id="4788777615168560705">Chromium kan nie jou wagwoorde nagaan nie. Probeer ná 24 uur weer of <ph name="BEGIN_LINK" />gaan wagwoorde in jou Google-rekening na<ph name="END_LINK" />.</translation>
 <translation id="479167709087336770">Dit gebruik dieselfde speltoetser wat in Google-soektog gebruik word. Teks wat jy in die blaaier tik, word na Google toe gestuur. Jy kan altyd hierdie gedrag in instellings verander.</translation>
 <translation id="4888717733111232871">Inkomende reël vir Chromium om mDNS-verkeer toe te laat.</translation>
@@ -215,7 +213,6 @@ Sommige kenmerke sal dalk nie beskikbaar wees nie. Spesifiseer 'n ander profielg
 <translation id="6990124437352146030">Chromium het toestemming nodig om toegang te kry tot jou mikrofoon vir hierdie werf</translation>
 <translation id="705851970750939768">Dateer Chromium op</translation>
 <translation id="7067091210845072982">As 'n prent nie 'n nuttige beskrywing het nie, sal Chromium probeer om een vir jou te verskaf. Prente word na Google toe gestuur om beskrywings te skep.</translation>
-<translation id="7147279922647361552">Pasmaak 'n paar van Chromium se belangrikste privaatheidkeuses</translation>
 <translation id="718435575166326686">Chromium het kameratoestemming vir hierdie werf nodig</translation>
 <translation id="7196312274710523067">Kon nie Chromium begin nie. Probeer weer.</translation>
 <translation id="7197677400338048821">Chromium kan nie jou wagwoorde nagaan nie. Probeer weer ná 24 uur.</translation>
@@ -233,6 +230,7 @@ Chromium kan nie jou instellings herwin nie.</translation>
 <translation id="7448255348454382571">Herbegin Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
 <translation id="7451052299415159299">Chromium het toestemming nodig om toegang te kry tot jou kamera vir hierdie werf</translation>
+<translation id="7467949745582939695">Herbegin Chromium?</translation>
 <translation id="7483335560992089831">Kan nie dieselfde Chromium-weergawe installeer wat tans gebruik word nie. Maak Chromium asseblief toe en probeer weer.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium sal oor 1 minuut herbegin}other{Chromium sal oor # minute herbegin}}</translation>
 <translation id="7549178288319965365">Meer oor Chromium-bedrystelsel</translation>

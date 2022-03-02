@@ -10,7 +10,6 @@
 #include <iterator>
 
 #include "base/logging.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,7 +18,7 @@
 #include "content/common/ax_serialization_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
-#include "third_party/blink/public/strings/grit/blink_strings.h"
+#include "third_party/blink/public/strings/grit/blink_accessibility_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -1351,6 +1350,10 @@ bool BrowserAccessibility::GetStringListAttribute(
   return node_->GetStringListAttribute(attribute, value);
 }
 
+bool BrowserAccessibility::HasHtmlAttribute(const char* attribute) const {
+  return node_->HasHtmlAttribute(attribute);
+}
+
 const BrowserAccessibility::HtmlAttributes&
 BrowserAccessibility::GetHtmlAttributes() const {
   return node()->GetHtmlAttributes();
@@ -1600,20 +1603,28 @@ bool BrowserAccessibility::PlatformChildIterator::operator!=(
   return GetIndexInParent() != rhs.GetIndexInParent();
 }
 
-void BrowserAccessibility::PlatformChildIterator::operator++() {
+BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator::operator++() {
   ++platform_iterator;
+  return *this;
 }
 
-void BrowserAccessibility::PlatformChildIterator::operator++(int) {
+BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator::operator++(int) {
   ++platform_iterator;
+  return *this;
 }
 
-void BrowserAccessibility::PlatformChildIterator::operator--() {
+BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator::operator--() {
   --platform_iterator;
+  return *this;
 }
 
-void BrowserAccessibility::PlatformChildIterator::operator--(int) {
+BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator::operator--(int) {
   --platform_iterator;
+  return *this;
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformChildIterator::get() const {

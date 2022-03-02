@@ -15,6 +15,7 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory_ozone.h"
@@ -60,7 +61,7 @@
 #include "ui/ozone/platform/wayland/host/linux_ui_delegate_wayland.h"  // nogncheck
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "ui/ozone/common/bitmap_cursor_factory.h"
 #else
 #include "ui/ozone/platform/wayland/host/wayland_cursor_factory.h"
@@ -204,7 +205,11 @@ class OzonePlatformWayland : public OzonePlatform,
     return connection_->xdg_decoration_manager_v1() == nullptr;
   }
 
-  void InitializeUI(const InitParams& args) override {
+  bool InitializeUI(const InitParams& args) override {
+    if (ShouldFailInitializeUIForTest()) {
+      LOG(ERROR) << "Failing for test";
+      return false;
+    }
     // Initialize DeviceDataManager early as devices are set during
     // WaylandConnection::Initialize().
     DeviceDataManager::CreateInstance();
@@ -217,12 +222,14 @@ class OzonePlatformWayland : public OzonePlatform,
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
         keyboard_layout_engine_.get());
     connection_ = std::make_unique<WaylandConnection>();
-    if (!connection_->Initialize())
-      LOG(FATAL) << "Failed to initialize Wayland platform";
+    if (!connection_->Initialize()) {
+      LOG(ERROR) << "Failed to initialize Wayland platform";
+      return false;
+    }
 
     buffer_manager_connector_ = std::make_unique<WaylandBufferManagerConnector>(
         connection_->buffer_manager_host());
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
     cursor_factory_ = std::make_unique<BitmapCursorFactory>();
 #else
     cursor_factory_ = std::make_unique<WaylandCursorFactory>(connection_.get());
@@ -239,6 +246,8 @@ class OzonePlatformWayland : public OzonePlatform,
 
     menu_utils_ = std::make_unique<WaylandMenuUtils>(connection_.get());
     wayland_utils_ = std::make_unique<WaylandUtils>();
+
+    return true;
   }
 
   void InitializeGPU(const InitParams& args) override {
@@ -270,13 +279,6 @@ class OzonePlatformWayland : public OzonePlatform,
       // shows the tooltip.
       properties->set_parent_for_non_top_level_windows = true;
       properties->app_modal_dialogs_use_event_blocker = true;
-
-      // Primary planes can be transluscent due to underlay strategy. As a
-      // result Wayland server draws contents occluded by an accelerated widget.
-      // To prevent this, an opaque background image is stacked below the
-      // accelerated widget to occlude contents below.
-      properties->needs_background_image =
-          ui::IsWaylandOverlayDelegationEnabled();
 
       // By design, clients are disallowed to manipulate global screen
       // coordinates, instead only surface-local ones are supported.
@@ -315,6 +317,12 @@ class OzonePlatformWayland : public OzonePlatform,
           ui::IsWaylandOverlayDelegationEnabled() &&
           connection_->buffer_manager_host()
               ->SupportsNonBackedSolidColorBuffers();
+      // Primary planes can be transluscent due to underlay strategy. As a
+      // result Wayland server draws contents occluded by an accelerated widget.
+      // To prevent this, an opaque background image is stacked below the
+      // accelerated widget to occlude contents below.
+      properties.needs_background_image =
+          ui::IsWaylandOverlayDelegationEnabled() && connection_->viewporter();
     } else if (buffer_manager_) {
       DCHECK(has_initialized_gpu());
       // These properties are set when the GetPlatformRuntimeProperties is
@@ -322,6 +330,10 @@ class OzonePlatformWayland : public OzonePlatform,
       properties.supports_non_backed_solid_color_buffers =
           ui::IsWaylandOverlayDelegationEnabled() &&
           buffer_manager_->supports_non_backed_solid_color_buffers();
+      // See the comment above.
+      properties.needs_background_image =
+          ui::IsWaylandOverlayDelegationEnabled() &&
+          buffer_manager_->supports_viewporter();
     }
     return properties;
   }

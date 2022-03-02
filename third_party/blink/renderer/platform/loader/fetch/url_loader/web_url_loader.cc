@@ -56,7 +56,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
-#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -680,7 +679,6 @@ void WebURLLoader::PopulateURLResponse(
   response->SetExpectedContentLength(head.content_length);
   response->SetHasMajorCertificateErrors(
       net::IsCertStatusError(head.cert_status));
-  response->SetCTPolicyCompliance(head.ct_policy_compliance);
   response->SetIsLegacyTLSVersion(head.is_legacy_tls_version);
   response->SetHasRangeRequested(head.has_range_requested);
   response->SetTimingAllowPassed(head.timing_allow_passed);
@@ -983,7 +981,7 @@ net::NetworkTrafficAnnotationTag WebURLLoader::Context::GetTrafficAnnotationTag(
     case network::mojom::RequestDestination::kFrame:
     case network::mojom::RequestDestination::kFencedframe:
       NOTREACHED();
-      FALLTHROUGH;
+      [[fallthrough]];
 
     case network::mojom::RequestDestination::kEmpty:
     case network::mojom::RequestDestination::kAudio:

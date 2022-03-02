@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
+#include "base/json/json_writer.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantClient_jni.h"
@@ -23,12 +24,9 @@
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/password_manager/password_change_success_tracker_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/autofill_assistant/browser/autofill_assistant_tts_controller.h"
 #include "components/autofill_assistant/browser/controller.h"
@@ -38,9 +36,8 @@
 #include "components/autofill_assistant/browser/service/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/switches.h"
 #include "components/autofill_assistant/browser/website_login_manager_impl.h"
+#include "components/password_manager/core/browser/password_change_success_tracker.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/signin/public/identity_manager/account_info.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/variations/service/variations_service.h"
 #include "components/version_info/android/channel_getter.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -53,6 +50,8 @@
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
+using base::android::ScopedJavaGlobalRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace autofill_assistant {
 namespace {
@@ -64,13 +63,16 @@ const char kDisabledGroupName[] = "Disabled";
 
 }  // namespace
 
-static base::android::ScopedJavaLocalRef<jobject>
+static ScopedJavaLocalRef<jobject>
 JNI_AutofillAssistantClient_CreateForWebContents(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jweb_contents,
-    const base::android::JavaParamRef<jobject>& jdependencies) {
+    const JavaParamRef<jobject>& jweb_contents,
+    const JavaParamRef<jobject>& jdependencies) {
   auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
-  ClientAndroid::CreateForWebContents(web_contents, jdependencies);
+  std::unique_ptr<Dependencies> dependencies =
+      Dependencies::CreateFromJavaObject(
+          ScopedJavaGlobalRef<jobject>(jdependencies));
+  ClientAndroid::CreateForWebContents(web_contents, std::move(dependencies));
   return ClientAndroid::FromWebContents(web_contents)->GetJavaObject();
 }
 
@@ -89,7 +91,7 @@ JNI_AutofillAssistantClient_FromWebContents(
 
 static void JNI_AutofillAssistantClient_OnOnboardingUiChange(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jweb_contents,
+    const JavaParamRef<jobject>& jweb_contents,
     jboolean shown) {
   RuntimeManager* runtime_manager = RuntimeManager::GetForWebContents(
       content::WebContents::FromJavaWebContents(jweb_contents));
@@ -97,14 +99,14 @@ static void JNI_AutofillAssistantClient_OnOnboardingUiChange(
     runtime_manager->SetUIState(shown ? UIState::kShown : UIState::kNotShown);
 }
 
-ClientAndroid::ClientAndroid(
-    content::WebContents* web_contents,
-    const base::android::JavaRef<jobject>& jdependencies)
+ClientAndroid::ClientAndroid(content::WebContents* web_contents,
+                             std::unique_ptr<Dependencies> dependencies)
     : content::WebContentsUserData<ClientAndroid>(*web_contents),
-      jdependencies_(jdependencies),
       java_object_(Java_AutofillAssistantClient_Constructor(
           AttachCurrentThread(),
-          reinterpret_cast<intptr_t>(this))) {}
+          reinterpret_cast<intptr_t>(this),
+          dependencies->CreateAccessTokenUtil())),
+      dependencies_(std::move(dependencies)) {}
 
 ClientAndroid::~ClientAndroid() {
   if (controller_ != nullptr && started_) {
@@ -163,11 +165,11 @@ bool ClientAndroid::Start(
   }
 
   // Register TTS Synthetic Field Trial.
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+  const bool enable_tts =
+      trigger_context->GetScriptParameters().GetEnableTts().value_or(false);
+  dependencies_->CreateFieldTrialUtil()->RegisterSyntheticFieldTrial(
       kAutofillAssistantTtsTrialName,
-      trigger_context->GetScriptParameters().GetEnableTts().value_or(false)
-          ? kEnabledGroupName
-          : kDisabledGroupName);
+      enable_tts ? kEnabledGroupName : kDisabledGroupName);
 
   DCHECK(!trigger_context->GetDirectAction());
   if (VLOG_IS_ON(2)) {
@@ -389,23 +391,37 @@ void ClientAndroid::ShowFatalError(
   controller_->OnFatalError(
       GetDisplayStringUTF8(ClientSettingsProto::DEFAULT_ERROR,
                            controller_->GetSettings()),
-      /*show_feedback_chip = */ false, Metrics::DropOutReason::NO_SCRIPTS);
+      Metrics::DropOutReason::NO_SCRIPTS);
 }
 
 void ClientAndroid::OnSpokenFeedbackAccessibilityServiceChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     jboolean enabled) {
-  if (!controller_) {
+  if (!ui_controller_) {
     return;
   }
-  controller_->OnSpokenFeedbackAccessibilityServiceChanged(enabled);
+  ui_controller_->OnSpokenFeedbackAccessibilityServiceChanged(enabled);
+}
+
+std::string ClientAndroid::GetDebugContext() {
+  if (!controller_) {
+    return std::string();
+  }
+  base::Value controller_context = controller_->GetDebugContext();
+  if (ui_controller_) {
+    base::Value ui_controller_context = ui_controller_->GetDebugContext();
+    controller_context.MergeDictionary(&ui_controller_context);
+  }
+  std::string output_js;
+  base::JSONWriter::Write(controller_context, &output_js);
+  return output_js;
 }
 
 base::android::ScopedJavaGlobalRef<jobject> ClientAndroid::GetDependencies(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
-  return jdependencies_;
+  return dependencies_->GetJavaObject();
 }
 
 int ClientAndroid::FindDirectAction(const std::string& action_name) {
@@ -434,7 +450,7 @@ void ClientAndroid::AttachUI(
     const base::android::JavaRef<jobject>& joverlay_coordinator) {
   if (!ui_controller_android_) {
     ui_controller_android_ = UiControllerAndroid::CreateFromWebContents(
-        GetWebContents(), jdependencies_, joverlay_coordinator);
+        GetWebContents(), dependencies_->GetJavaObject(), joverlay_coordinator);
     if (!ui_controller_android_) {
       // The activity is not or not yet in a mode where attaching the UI is
       // possible.
@@ -448,7 +464,8 @@ void ClientAndroid::AttachUI(
        !ui_controller_android_->IsAttachedTo(controller_.get()))) {
     if (!controller_)
       CreateController(nullptr, absl::nullopt);
-    ui_controller_android_->Attach(GetWebContents(), this, controller_.get());
+    ui_controller_android_->Attach(GetWebContents(), this, controller_.get(),
+                                   ui_controller_.get());
   }
 }
 
@@ -468,11 +485,7 @@ std::string ClientAndroid::GetEmailAddressForAccessTokenAccount() const {
 }
 
 std::string ClientAndroid::GetChromeSignedInEmailAddress() const {
-  CoreAccountInfo account_info =
-      IdentityManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(GetWebContents()->GetBrowserContext()))
-          ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
-  return account_info.email;
+  return dependencies_->GetChromeSignedInEmailAddress(GetWebContents());
 }
 
 absl::optional<std::pair<int, int>> ClientAndroid::GetWindowSize() const {
@@ -529,13 +542,19 @@ WebsiteLoginManager* ClientAndroid::GetWebsiteLoginManager() const {
   return website_login_manager_.get();
 }
 
+password_manager::PasswordChangeSuccessTracker*
+ClientAndroid::GetPasswordChangeSuccessTracker() const {
+  return PasswordChangeSuccessTrackerFactory::GetForBrowserContext(
+      GetWebContents()->GetBrowserContext());
+}
+
 std::string ClientAndroid::GetLocale() const {
   return base::android::GetDefaultLocaleString();
 }
 
 std::string ClientAndroid::GetCountryCode() const {
   variations::VariationsService* variations_service =
-      g_browser_process->variations_service();
+      dependencies_->GetVariationsService();
   // Use fallback "ZZ" if no country is available.
   if (!variations_service || variations_service->GetLatestCountry().empty())
     return "ZZ";
@@ -560,7 +579,7 @@ DeviceContext ClientAndroid::GetDeviceContext() const {
 
 bool ClientAndroid::IsAccessibilityEnabled() const {
   return Java_AutofillAssistantClient_isAccessibilityEnabled(
-      AttachCurrentThread(), jdependencies_);
+      AttachCurrentThread(), dependencies_->GetJavaObject());
 }
 
 bool ClientAndroid::IsSpokenFeedbackAccessibilityServiceEnabled() const {
@@ -585,6 +604,10 @@ void ClientAndroid::RecordDropOut(Metrics::DropOutReason reason) {
 
 bool ClientAndroid::HasHadUI() const {
   return has_had_ui_;
+}
+
+ScriptExecutorUiDelegate* ClientAndroid::GetScriptExecutorUiDelegate() {
+  return ui_controller_.get();
 }
 
 void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
@@ -660,13 +683,16 @@ void ClientAndroid::CreateController(
       GetWebContents(), /* client= */ this,
       base::DefaultTickClock::GetInstance(),
       RuntimeManager::GetForWebContents(GetWebContents())->GetWeakPtr(),
-      std::move(service), std::move(tts_controller), ukm::UkmRecorder::Get(),
-      AnnotateDomModelServiceFactory::GetInstance()->GetForBrowserContext(
+      std::move(service), ukm::UkmRecorder::Get(),
+      dependencies_->GetAnnotateDomModelService(
           GetWebContents()->GetBrowserContext()));
-  controller_->SetStatusMessage(status_message);
+  ui_controller_ = std::make_unique<UiController>(
+      /* client= */ this, controller_.get(), std::move(tts_controller));
+  ui_controller_->StartListening();
+  ui_controller_->SetStatusMessage(status_message);
   if (progress_bar_config) {
-    controller_->SetStepProgressBarConfiguration(*progress_bar_config);
-    controller_->SetProgressActiveStep(*progress_bar_active_step);
+    ui_controller_->SetStepProgressBarConfiguration(*progress_bar_config);
+    ui_controller_->SetProgressActiveStep(*progress_bar_active_step);
   }
 }
 
@@ -675,6 +701,7 @@ void ClientAndroid::DestroyController() {
       ui_controller_android_->IsAttachedTo(controller_.get())) {
     ui_controller_android_->Detach();
   }
+  ui_controller_.reset();
   controller_.reset();
   started_ = false;
 }

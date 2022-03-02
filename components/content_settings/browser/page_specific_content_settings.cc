@@ -420,6 +420,14 @@ void PageSpecificContentSettings::SharedWorkerAccessed(
 }
 
 // static
+void PageSpecificContentSettings::InterestGroupJoined(
+    content::RenderFrameHost* rfh,
+    const url::Origin api_origin,
+    bool blocked_by_policy) {
+  // TODO(crbug.com/1286276): Not implemented yet.
+}
+
+// static
 content::WebContentsObserver*
 PageSpecificContentSettings::GetWebContentsObserverForTest(
     content::WebContents* web_contents) {
@@ -515,7 +523,7 @@ void PageSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
   if (type == ContentSettingsType::SENSORS)
     must_reset_blocked_status = true;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // content_settings_status_[type].allowed is always set to true in
   // OnContentBlocked, so we have to use
   // content_settings_status_[type].blocked to detect whether the protected
@@ -694,7 +702,7 @@ void PageSpecificContentSettings::OnFileSystemAccessed(const GURL& url,
   NotifySiteDataObservers();
 }
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
 void PageSpecificContentSettings::OnProtectedMediaIdentifierPermissionSet(
     const GURL& requesting_origin,
     bool allowed) {
@@ -827,7 +835,7 @@ void PageSpecificContentSettings::OnContentSettingChanged(
           map_->GetContentSetting(current_url, current_url, content_type);
       if (geolocation_setting == CONTENT_SETTING_ALLOW)
         geolocation_was_just_granted_on_site_level_ = true;
-      FALLTHROUGH;
+      [[fallthrough]];
     }
     case ContentSettingsType::IMAGES:
     case ContentSettingsType::JAVASCRIPT:

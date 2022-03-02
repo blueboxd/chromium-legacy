@@ -25,6 +25,7 @@ extern const BASE_EXPORT Feature kPartitionAllocPCScanBrowserOnly;
 extern const BASE_EXPORT Feature kPartitionAllocPCScanRendererOnly;
 extern const BASE_EXPORT Feature kPartitionAllocBackupRefPtrControl;
 extern const BASE_EXPORT Feature kPartitionAllocLargeThreadCacheSize;
+extern const BASE_EXPORT Feature kPartitionAllocLargeEmptySlotSpanRing;
 
 enum class BackupRefPtrEnabledProcesses {
   // BRP enabled only in the browser process.
@@ -68,8 +69,6 @@ extern const BASE_EXPORT Feature kPartitionAllocPCScanStackScanning;
 extern const BASE_EXPORT Feature kPartitionAllocDCScan;
 extern const BASE_EXPORT Feature kPartitionAllocPCScanImmediateFreeing;
 extern const BASE_EXPORT Feature kPartitionAllocPCScanEagerClearing;
-
-extern const BASE_EXPORT Feature kPartitionAllocLazyCommit;
 
 }  // namespace features
 }  // namespace base

@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/ignore_result.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -39,6 +39,10 @@
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_APPLE)
+#include "base/mac/backup_util.h"
+#endif
 
 namespace component_updater {
 
@@ -151,7 +155,7 @@ Result ComponentInstaller::InstallHelper(const base::FilePath& unpack_path,
 
   // Acquire the ownership of the |local_install_path|.
   base::ScopedTempDir install_path_owner;
-  ignore_result(install_path_owner.Set(local_install_path));
+  std::ignore = install_path_owner.Set(local_install_path);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!base::SetPosixFilePermissions(local_install_path, 0755)) {
@@ -163,6 +167,12 @@ Result ComponentInstaller::InstallHelper(const base::FilePath& unpack_path,
 
   DCHECK(!base::PathExists(unpack_path));
   DCHECK(base::PathExists(local_install_path));
+
+#if BUILDFLAG(IS_APPLE)
+  // Since components can be large and can be re-downloaded when needed, they
+  // are excluded from backups.
+  base::mac::SetBackupExclusion(local_install_path);
+#endif
 
   const Result result =
       installer_policy_->OnCustomInstall(local_manifest, local_install_path);

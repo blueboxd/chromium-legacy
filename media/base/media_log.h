@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "base/gtest_prod_util.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -48,7 +49,7 @@ class MEDIA_EXPORT MediaLog {
 // Maximum limit for the total number of logs kept per renderer. At the time of
 // writing, 512 events of the kind: { "property": value } together consume ~88kb
 // of memory on linux.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   static constexpr size_t kLogLimit = 128;
 #else
   static constexpr size_t kLogLimit = 512;
@@ -95,7 +96,13 @@ class MEDIA_EXPORT MediaLog {
   void NotifyError(PipelineStatus status);
 
   // Notify a non-ok Status. This method Should _not_ be given an OK status.
-  void NotifyError(Status status);
+  template <typename T>
+  void NotifyError(const TypedStatus<T>& status) {
+    DCHECK(!status.is_ok());
+    std::string output_str;
+    base::JSONWriter::Write(MediaSerialize(status), &output_str);
+    AddMessage(MediaLogMessageLevel::kERROR, output_str);
+  }
 
   // Notify the media log that the player is destroyed. Some implementations
   // will want to change event handling based on this.

@@ -125,8 +125,8 @@ Vector<float> SepiaMatrix(double amount) {
 
 FilterEffectBuilder::FilterEffectBuilder(const gfx::RectF& reference_box,
                                          float zoom,
-                                         const PaintFlags* fill_flags,
-                                         const PaintFlags* stroke_flags,
+                                         const cc::PaintFlags* fill_flags,
+                                         const cc::PaintFlags* stroke_flags,
                                          SkTileMode blur_tile_mode)
     : reference_box_(reference_box),
       zoom_(zoom),
@@ -324,6 +324,18 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
             component_transfer_operation->AlphaFunc());
         break;
       }
+      case FilterOperation::kTurbulence: {
+        TurbulenceFilterOperation* turbulence_filter_operation =
+            To<TurbulenceFilterOperation>(filter_operation);
+        effect = MakeGarbageCollected<FETurbulence>(
+            parent_filter, turbulence_filter_operation->Type(),
+            turbulence_filter_operation->BaseFrequencyX(),
+            turbulence_filter_operation->BaseFrequencyY(),
+            turbulence_filter_operation->NumOctaves(),
+            turbulence_filter_operation->Seed(),
+            turbulence_filter_operation->StitchTiles());
+        break;
+      }
       default:
         break;
     }
@@ -398,6 +410,7 @@ CompositorFilterOperations FilterEffectBuilder::BuildFilterOperations(
       case FilterOperation::kLuminanceToAlpha:
       case FilterOperation::kConvolveMatrix:
       case FilterOperation::kComponentTransfer:
+      case FilterOperation::kTurbulence:
         // These filter types only exist for Canvas filters.
         NOTREACHED();
         break;

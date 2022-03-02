@@ -6,8 +6,9 @@
 #define GPU_IPC_COMMON_GPU_PREFERENCES_MOJOM_TRAITS_H_
 
 #include <vector>
-#include "build/chromeos_buildflags.h"
 
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/gpu_preferences.mojom-shared.h"
@@ -188,7 +189,6 @@ struct GPU_EXPORT
     }
 
     out->ignore_gpu_blocklist = prefs.ignore_gpu_blocklist();
-    out->enable_oop_rasterization = prefs.enable_oop_rasterization();
     out->disable_oop_rasterization = prefs.disable_oop_rasterization();
     out->enable_oop_rasterization_ddl = prefs.enable_oop_rasterization_ddl();
     out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
@@ -207,7 +207,7 @@ struct GPU_EXPORT
     out->enable_gpu_benchmarking_extension =
         prefs.enable_gpu_benchmarking_extension();
     out->enable_webgpu = prefs.enable_webgpu();
-    out->enable_webgpu_spirv = prefs.enable_webgpu_spirv();
+    out->enable_unsafe_webgpu = prefs.enable_unsafe_webgpu();
     out->force_webgpu_compat = prefs.force_webgpu_compat();
     if (!prefs.ReadEnableDawnBackendValidation(
             &out->enable_dawn_backend_validation))
@@ -229,7 +229,7 @@ struct GPU_EXPORT
     out->enable_native_gpu_memory_buffers =
         prefs.enable_native_gpu_memory_buffers();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
     out->enable_chromeos_direct_video_decoder =
         prefs.enable_chromeos_direct_video_decoder();
 #endif
@@ -351,9 +351,6 @@ struct GPU_EXPORT
   static bool ignore_gpu_blocklist(const gpu::GpuPreferences& prefs) {
     return prefs.ignore_gpu_blocklist;
   }
-  static bool enable_oop_rasterization(const gpu::GpuPreferences& prefs) {
-    return prefs.enable_oop_rasterization;
-  }
   static bool disable_oop_rasterization(const gpu::GpuPreferences& prefs) {
     return prefs.disable_oop_rasterization;
   }
@@ -397,8 +394,8 @@ struct GPU_EXPORT
   static bool enable_webgpu(const gpu::GpuPreferences& prefs) {
     return prefs.enable_webgpu;
   }
-  static bool enable_webgpu_spirv(const gpu::GpuPreferences& prefs) {
-    return prefs.enable_webgpu_spirv;
+  static bool enable_unsafe_webgpu(const gpu::GpuPreferences& prefs) {
+    return prefs.enable_unsafe_webgpu;
   }
   static bool force_webgpu_compat(const gpu::GpuPreferences& prefs) {
     return prefs.force_webgpu_compat;
@@ -431,7 +428,7 @@ struct GPU_EXPORT
       const gpu::GpuPreferences& prefs) {
     return prefs.enable_native_gpu_memory_buffers;
   }
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   static bool enable_chromeos_direct_video_decoder(
       const gpu::GpuPreferences& prefs) {
     return prefs.enable_chromeos_direct_video_decoder;

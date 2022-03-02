@@ -26,12 +26,15 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.UserActionTester;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
+import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.externalauth.ExternalAuthUtils;
 import org.chromium.components.signin.AccountRenameChecker;
 import org.chromium.components.signin.base.CoreAccountInfo;
@@ -163,9 +166,32 @@ public class SigninCheckerTest {
                     mAccountManagerTestRule.getPrimaryAccount(ConsentLevel.SYNC));
         });
         Assert.assertEquals(
-                2, SigninCheckerProvider.get().getNumOfChildAccountChecksDoneForTests());
+                3, SigninCheckerProvider.get().getNumOfChildAccountChecksDoneForTests());
         Assert.assertTrue(
                 actionTester.getActions().contains("Signin_Signin_WipeDataOnChildAccountSignin2"));
+        Assert.assertTrue(SyncTestUtil.isSyncRequested());
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS})
+    public void signinWhenChildAccountIsTheOnlyAccountAndAllowSyncOffForChildAccountsIsEnabled() {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        UserActionTester actionTester = new UserActionTester();
+
+        final CoreAccountInfo expectedPrimaryAccount =
+                mAccountManagerTestRule.addAccountAndWaitForSeeding(CHILD_ACCOUNT_NAME);
+
+        CriteriaHelper.pollUiThread(() -> {
+            return expectedPrimaryAccount.equals(
+                    mAccountManagerTestRule.getPrimaryAccount(ConsentLevel.SIGNIN));
+        });
+        Assert.assertNull(mAccountManagerTestRule.getPrimaryAccount(ConsentLevel.SYNC));
+        Assert.assertEquals(
+                3, SigninCheckerProvider.get().getNumOfChildAccountChecksDoneForTests());
+        Assert.assertTrue(
+                actionTester.getActions().contains("Signin_Signin_WipeDataOnChildAccountSignin2"));
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
     }
 
     @Test
@@ -224,9 +250,9 @@ public class SigninCheckerTest {
                     mAccountManagerTestRule.getPrimaryAccount(ConsentLevel.SYNC));
         });
 
-        // The check should be done once at activity start-up
+        // The check should be done once at account addition and once at activity start-up.
         Assert.assertEquals(
-                1, SigninCheckerProvider.get().getNumOfChildAccountChecksDoneForTests());
+                2, SigninCheckerProvider.get().getNumOfChildAccountChecksDoneForTests());
         Assert.assertTrue(
                 actionTester.getActions().contains("Signin_Signin_WipeDataOnChildAccountSignin2"));
     }

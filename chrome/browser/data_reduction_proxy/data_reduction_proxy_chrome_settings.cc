@@ -24,25 +24,19 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
-#include "chrome/browser/subresource_redirect/https_image_compression_infobar_decider.h"
-#include "chrome/browser/subresource_redirect/litepages_service_bypass_decider.h"
-#include "chrome/browser/subresource_redirect/origin_robots_rules_cache.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
-#include "components/subresource_redirect/common/subresource_redirect_features.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -242,7 +236,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
       base::BindOnce(DeleteLiteVideosOptOutDatabaseOnDBThread,
                      profile_path.Append(kLiteVideoOptOutDBFilename)));
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On mobile we write Data Reduction Proxy prefs directly to the pref service.
   // On desktop we store Data Reduction Proxy prefs in memory, writing to disk
   // every 60 minutes and on termination. Shutdown hooks must be added for
@@ -275,21 +269,4 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   // unable to browse non-SSL sites for the most part (see
   // http://crbug.com/476610).
   MigrateDataReductionProxyOffProxyPrefs(profile_prefs);
-  if (subresource_redirect::ShouldEnablePublicImageHintsBasedCompression() ||
-      subresource_redirect::ShouldEnableLoginRobotsCheckedImageCompression()) {
-    https_image_compression_infobar_decider_ =
-        std::make_unique<HttpsImageCompressionInfoBarDecider>(profile_prefs,
-                                                              this);
-  }
-  if (subresource_redirect::ShouldEnablePublicImageHintsBasedCompression() ||
-      subresource_redirect::ShouldEnableLoginRobotsCheckedImageCompression() ||
-      subresource_redirect::ShouldEnableRobotsRulesFetching()) {
-    litepages_service_bypass_decider_ =
-        std::make_unique<LitePagesServiceBypassDecider>();
-  }
-  if (subresource_redirect::ShouldEnableRobotsRulesFetching()) {
-    origin_robots_rules_cache_ =
-        std::make_unique<subresource_redirect::OriginRobotsRulesCache>(
-            url_loader_factory, litepages_service_bypass_decider_->AsWeakPtr());
-  }
 }

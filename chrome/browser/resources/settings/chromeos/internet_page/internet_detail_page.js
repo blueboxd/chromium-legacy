@@ -286,6 +286,15 @@ Polymer({
       }
     },
 
+    /** @private {boolean} */
+    isExtendedOpenVpnSettingsEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.valueExists('extendedOpenVpnSettingsEnabled') &&
+            loadTimeData.getBoolean('extendedOpenVpnSettingsEnabled');
+      }
+    },
+
     /**
      * When true, all inputs that allow state to be changed (e.g., toggles,
      * inputs) are disabled.
@@ -564,9 +573,9 @@ Polymer({
    * Handler for when os sync preferences are updated.
    * @private
    */
-  handleOsSyncPrefsChanged_(osSyncFeatureEnabled, osSyncPrefs) {
-    this.isWifiSyncEnabled_ = osSyncFeatureEnabled && !!osSyncPrefs &&
-        osSyncPrefs.osWifiConfigurationsSynced;
+  handleOsSyncPrefsChanged_(osSyncPrefs) {
+    this.isWifiSyncEnabled_ =
+        !!osSyncPrefs && osSyncPrefs.osWifiConfigurationsSynced;
   },
 
   /**

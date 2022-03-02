@@ -49,7 +49,6 @@ class MediaRouterUiForTestBase {
   virtual void WaitForAnyRoute() = 0;
   virtual void WaitForDialogShown() = 0;
   virtual void WaitForDialogHidden() = 0;
-  void WaitUntilNoRoutes();
 
   // These methods require that the dialog is shown, and the sink specified by
   // |sink_name| is in the dialog.
@@ -57,13 +56,10 @@ class MediaRouterUiForTestBase {
   std::string GetStatusTextForSink(const std::string& sink_name) const;
   std::string GetIssueTextForSink(const std::string& sink_name) const;
 
-  // Sets up a mock file picker that returns |file_url| as the selected file.
-  virtual void SetLocalFile(const GURL& file_url) = 0;
-  // Sets up a mock file picker that fails with |issue|.
-  virtual void SetLocalFileSelectionIssue(const IssueInfo& issue) = 0;
-
   // Called by MediaRouterDialogControllerViews.
   virtual void OnDialogCreated();
+
+  content::WebContents* web_contents() const { return web_contents_; }
 
  protected:
   enum class WatchType {

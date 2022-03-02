@@ -28,6 +28,7 @@ class LocalFrameView;
 class PropertyTreeStateOrAlias;
 class StyleFetchedImage;
 class TextPaintTimingDetector;
+class ImageRecord;
 
 // |PaintTimingCallbackManager| is an interface between
 // |ImagePaintTimingDetector|/|TextPaintTimingDetector| and |ChromeClient|.
@@ -107,8 +108,6 @@ class PaintTimingCallbackManagerImpl final
 // PaintTimingDetector contains some of paint metric detectors,
 // providing common infrastructure for these detectors.
 //
-// Users has to enable 'loading' trace category to enable the metrics.
-//
 // See also:
 // https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit
 class CORE_EXPORT PaintTimingDetector
@@ -144,7 +143,8 @@ class CORE_EXPORT PaintTimingDetector
   // The returned value indicates whether the candidates have changed.
   bool NotifyIfChangedLargestImagePaint(base::TimeTicks image_paint_time,
                                         uint64_t image_size,
-                                        bool is_animated);
+                                        ImageRecord* image_record,
+                                        double image_bpp);
   bool NotifyIfChangedLargestTextPaint(base::TimeTicks, uint64_t size);
 
   void DidChangePerformanceTiming();
@@ -175,6 +175,9 @@ class CORE_EXPORT PaintTimingDetector
   uint64_t LargestImagePaintSize() const { return largest_image_paint_size_; }
   LargestContentfulPaintTypeMask LargestContentfulPaintType() const {
     return largest_contentful_paint_type_;
+  }
+  double LargestContentfulPaintImageBPP() const {
+    return largest_contentful_paint_image_bpp_;
   }
   base::TimeTicks LargestTextPaint() const { return largest_text_paint_time_; }
   uint64_t LargestTextPaintSize() const { return largest_text_paint_size_; }
@@ -225,6 +228,7 @@ class CORE_EXPORT PaintTimingDetector
   base::TimeTicks largest_image_paint_time_;
   uint64_t largest_image_paint_size_ = 0;
   LargestContentfulPaintTypeMask largest_contentful_paint_type_ = 0;
+  double largest_contentful_paint_image_bpp_ = 0.0;
   base::TimeTicks largest_text_paint_time_;
   uint64_t largest_text_paint_size_ = 0;
   base::TimeTicks largest_contentful_paint_time_;

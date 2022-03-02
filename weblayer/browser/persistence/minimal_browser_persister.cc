@@ -59,7 +59,7 @@ class MinimalPersister {
   // Returns true if all |commands| were successfully added. A return value of
   // false indicates the max size has been reached and no more commands will be
   // accepted.
-  bool AppendIfFits(SessionCommands commands) WARN_UNUSED_RESULT {
+  [[nodiscard]] bool AppendIfFits(SessionCommands commands) {
     // The number of commands is written out as |size_type|, make sure the
     // count isn't exceeded.
     const int commands_size = CalculateSizeForCommands(commands);
@@ -360,8 +360,8 @@ std::vector<uint8_t> PersistMinimalState(BrowserImpl* browser,
   return builder.ToByteArray();
 }
 
-void RestoreMinimalState(BrowserImpl* browser,
-                         const std::vector<uint8_t>& value) {
+void RestoreMinimalStateForBrowser(BrowserImpl* browser,
+                                   const std::vector<uint8_t>& value) {
   MinimalRestorer restorer(value);
   RestoreBrowserState(browser, restorer.RestoreCommands());
 }

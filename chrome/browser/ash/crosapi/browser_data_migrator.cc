@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
-#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
@@ -19,7 +18,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -28,11 +26,9 @@
 #include "base/values.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
-#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/prefs/pref_service.h"
@@ -43,68 +39,6 @@
 
 namespace ash {
 namespace {
-// The base names of files and directories directly under the original profile
-// data directory that does not need to be copied nor need to remain in ash e.g.
-// cache data.
-constexpr const char* const kNoCopyPathsDeprecated[] = {kTmpDir, "Cache"};
-constexpr const char* const kNoCopyPaths[] = {
-    kTmpDir,
-    "Cache",
-    "Code Cache",
-    "crash",
-    "blob_storage",
-    "GCache",
-    "data_reduction_proxy_leveldb",
-    "previews_opt_out.db",
-    "Download Service",
-    "Network Persistent State",
-    "Reporting and NEL",
-    "TransportSecurity",
-    "optimization_guide_hint_cache_store",
-    "Site Characteristics Database",
-    "Network Action Predictor"};
-// The base names of files and directories that should remain in ash data
-// directory.
-constexpr const char* const kAshDataPathsDeprecated[]{"Downloads", "MyFiles"};
-constexpr const char* const kAshDataPaths[] = {"FullRestoreData",
-                                               "Downloads",
-                                               "MyFiles",
-                                               "arc.apps",
-                                               "crostini.icons",
-                                               "PreferredApps",
-                                               "autobrightness",
-                                               "extension_install_log",
-                                               "google-assistant-library",
-                                               "login-times",
-                                               "logout-times",
-                                               "structured_metrics",
-                                               "PrintJobDatabase",
-                                               "PPDCache",
-                                               "BudgetDatabase",
-                                               "RLZ Data",
-                                               "app_ranker.pb",
-                                               "zero_state_group_ranker.pb",
-                                               "zero_state_local_files.pb"};
-// The base names of files/dirs that are needed only by the browser part of
-// chrome i.e. data that should be moved to lacros.
-constexpr const char* const kLacrosDataPathsDeprecated[]{"Bookmarks"};
-constexpr const char* const kLacrosDataPaths[]{"AutofillStrikeDatabase",
-                                               "Bookmarks",
-                                               "Cookies",
-                                               "Extension Cookies",
-                                               "Extension Rules",
-                                               "Extension State",
-                                               "Extensions",
-                                               "Local App Settings",
-                                               "Local Extension Settings",
-                                               "Managed Extension Settings",
-                                               "Sync App Settings",
-                                               "DNR Extension Rules",
-                                               "Favicons",
-                                               "History",
-                                               "Top Sites",
-                                               "Shortcuts",
-                                               "Sessions"};
 // Flag values for `switches::kForceBrowserDataMigrationForTesting`.
 const char kBrowserDataMigrationForceSkip[] = "force-skip";
 const char kBrowserDataMigrationForceMigration[] = "force-migration";
@@ -116,108 +50,41 @@ const int64_t kBuffer = (int64_t)1024 * 1024 * 1024;
 // vector<TargetItem> in TargetInfo.
 constexpr char kLacrosCategory[] = "lacros";
 constexpr char kCommonCategory[] = "common";
-
-// Enable these to fallback to an older version of paths lists.
-const base::Feature kLacrosProfileMigrationUseDeprecatedNoCopyPaths{
-    "LacrosProfileMigrationUseDeprecatedNoCopyPaths",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kLacrosProfileMigrationUseDeprecatedAshDataPaths{
-    "LacrosProfileMigrationUseDeprecatedAshDataPaths",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kLacrosProfileMigrationUseDeprecatedLacrosDataPaths{
-    "LacrosProfileMigrationUseDeprecatedLacrosDataPaths",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Ensures that each path in UDD appears in one of `kNoCopyPaths`,
-// `kAshDataPaths` or `kLacrosDataPaths`.
-constexpr bool HasNoOverlapBetweenPathsSets() {
-  for (const char* no_copy_path : kNoCopyPaths) {
-    for (const char* ash_data_path : kAshDataPaths) {
-      if (base::StringPiece(no_copy_path) == base::StringPiece(ash_data_path))
-        return false;
-    }
-  }
-
-  for (const char* ash_data_path : kAshDataPaths) {
-    for (const char* lacros_data_path : kLacrosDataPaths) {
-      if (base::StringPiece(ash_data_path) ==
-          base::StringPiece(lacros_data_path))
-        return false;
-    }
-  }
-
-  for (const char* lacros_data_path : kLacrosDataPaths) {
-    for (const char* no_copy_path : kNoCopyPaths) {
-      if (base::StringPiece(lacros_data_path) ==
-          base::StringPiece(no_copy_path))
-        return false;
-    }
-  }
-
-  return true;
-}
-
-static_assert(HasNoOverlapBetweenPathsSets(),
-              "There must be no overlap between kNoCopyPaths, kAshDataPaths "
-              "and kLacrosDataPaths");
-
-base::span<const char* const> GetNoCopyDataPaths() {
-  if (base::FeatureList::IsEnabled(
-          kLacrosProfileMigrationUseDeprecatedNoCopyPaths)) {
-    return base::make_span(kNoCopyPathsDeprecated);
-  }
-  return base::make_span(kNoCopyPaths);
-}
-
-base::span<const char* const> GetAshDataPaths() {
-  if (base::FeatureList::IsEnabled(
-          kLacrosProfileMigrationUseDeprecatedAshDataPaths)) {
-    return base::make_span(kAshDataPathsDeprecated);
-  }
-  return base::make_span(kAshDataPaths);
-}
-
-base::span<const char* const> GetLacrosDataPaths() {
-  if (base::FeatureList::IsEnabled(
-          kLacrosProfileMigrationUseDeprecatedLacrosDataPaths)) {
-    return base::make_span(kLacrosDataPathsDeprecated);
-  }
-  return base::make_span(kLacrosDataPaths);
-}
 }  // namespace
 
 CancelFlag::CancelFlag() : cancelled_(false) {}
 CancelFlag::~CancelFlag() = default;
 
-BrowserDataMigrator::TargetInfo::TargetInfo()
-    : ash_data_size(0),
-      no_copy_data_size(0),
+BrowserDataMigratorImpl::TargetInfo::TargetInfo()
+    : remain_in_ash_data_size(0),
+      deletable_data_size(0),
       lacros_data_size(0),
       common_data_size(0) {}
-BrowserDataMigrator::TargetInfo::TargetInfo(TargetInfo&&) = default;
-BrowserDataMigrator::TargetInfo::~TargetInfo() = default;
+BrowserDataMigratorImpl::TargetInfo::TargetInfo(TargetInfo&&) = default;
+BrowserDataMigratorImpl::TargetInfo::~TargetInfo() = default;
 
-BrowserDataMigrator::TargetItem::TargetItem(base::FilePath path,
-                                            int64_t size,
-                                            ItemType item_type)
+BrowserDataMigratorImpl::TargetItem::TargetItem(base::FilePath path,
+                                                int64_t size,
+                                                ItemType item_type)
     : path(path), size(size), is_directory(item_type == ItemType::kDirectory) {}
 
-bool BrowserDataMigrator::TargetItem::operator==(const TargetItem& rhs) const {
+bool BrowserDataMigratorImpl::TargetItem::operator==(
+    const TargetItem& rhs) const {
   return this->path == rhs.path && this->size == rhs.size &&
          this->is_directory == rhs.is_directory;
 }
 
-int64_t BrowserDataMigrator::TargetInfo::TotalCopySize() const {
+int64_t BrowserDataMigratorImpl::TargetInfo::TotalCopySize() const {
   return lacros_data_size + common_data_size;
 }
 
-int64_t BrowserDataMigrator::TargetInfo::TotalDirSize() const {
-  return no_copy_data_size + ash_data_size + lacros_data_size +
+int64_t BrowserDataMigratorImpl::TargetInfo::TotalDirSize() const {
+  return deletable_data_size + remain_in_ash_data_size + lacros_data_size +
          common_data_size;
 }
 
 // static
-bool BrowserDataMigrator::MaybeRestartToMigrate(
+bool BrowserDataMigratorImpl::MaybeRestartToMigrate(
     const AccountId& account_id,
     const std::string& user_id_hash) {
   // TODO(crbug.com/1277848): Once `BrowserDataMigrator` stabilises, remove this
@@ -306,6 +173,10 @@ bool BrowserDataMigrator::MaybeRestartToMigrate(
   // If the user is a new user, then there shouldn't be anything to migrate.
   // Also mark the user as migration completed.
   if (user_manager::UserManager::Get()->IsCurrentUserNew()) {
+    crosapi::browser_util::RecordDataVer(g_browser_process->local_state(),
+                                         user_id_hash,
+                                         version_info::GetVersion());
+
     crosapi::browser_util::SetProfileMigrationCompletedForUser(
         g_browser_process->local_state(), user_id_hash);
     // TODO(crbug.com/1277848): Once `BrowserDataMigrator` stabilises, remove
@@ -349,8 +220,9 @@ bool BrowserDataMigrator::MaybeRestartToMigrate(
 }
 
 // static
-bool BrowserDataMigrator::RestartToMigrate(const AccountId& account_id,
-                                           const std::string& user_id_hash) {
+bool BrowserDataMigratorImpl::RestartToMigrate(
+    const AccountId& account_id,
+    const std::string& user_id_hash) {
   SetMigrationStep(g_browser_process->local_state(),
                    MigrationStep::kRestartCalled);
 
@@ -375,54 +247,57 @@ bool BrowserDataMigrator::RestartToMigrate(const AccountId& account_id,
   return true;
 }
 
-// static
-base::OnceClosure BrowserDataMigrator::Migrate(
+BrowserDataMigratorImpl::BrowserDataMigratorImpl(
+    const base::FilePath& original_profile_dir,
     const std::string& user_id_hash,
     const ProgressCallback& progress_callback,
-    base::OnceClosure completion_callback) {
+    base::OnceClosure completion_callback,
+    PrefService* local_state)
+    : original_profile_dir_(original_profile_dir),
+      user_id_hash_(user_id_hash),
+      progress_tracker_(
+          std::make_unique<MigrationProgressTrackerImpl>(progress_callback)),
+      completion_callback_(std::move(completion_callback)),
+      cancel_flag_(base::MakeRefCounted<CancelFlag>()),
+      local_state_(local_state),
+      final_status_(ResultValue::kSkipped) {
+  DCHECK(local_state_);
+}
+
+BrowserDataMigratorImpl::~BrowserDataMigratorImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void BrowserDataMigratorImpl::Migrate() {
+  DCHECK(local_state_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(crbug.com/1178702): Once BrowserDataMigrator stabilises, reduce the
   // log level to VLOG(1).
-  LOG(WARNING) << "BrowserDataMigrator::Migrate() is called.";
-  DCHECK(GetMigrationStep(g_browser_process->local_state()) ==
-         MigrationStep::kRestartCalled);
-  SetMigrationStep(g_browser_process->local_state(), MigrationStep::kStarted);
-  base::FilePath user_data_dir;
-  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    LOG(ERROR)
-        << "Could not get the original user data dir path. Aborting migration.";
-    RecordStatus(FinalStatus::kGetPathFailed);
-    std::move(completion_callback).Run();
-    return base::DoNothing();
-  }
+  LOG(WARNING) << "BrowserDataMigratorImpl::Migrate() is called.";
 
-  // The pointer will be shared by `cancel_callback` and `MigrateInternal()`.
-  scoped_refptr<CancelFlag> cancel_flag = base::MakeRefCounted<CancelFlag>();
-  // Create a callback that can be called to cancel the migration.
-  base::OnceClosure cancel_callback = base::BindOnce(
-      [](scoped_refptr<CancelFlag> cancel_flag) { cancel_flag->Set(); },
-      cancel_flag);
+  DCHECK(GetMigrationStep(local_state_) == MigrationStep::kRestartCalled);
+  SetMigrationStep(local_state_, MigrationStep::kStarted);
 
-  std::unique_ptr<MigrationProgressTracker> progress_tracker =
-      std::make_unique<MigrationProgressTrackerImpl>(progress_callback);
-
-  base::FilePath profile_data_dir =
-      user_data_dir.Append(ProfileHelper::GetUserProfileDir(user_id_hash));
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(&BrowserDataMigrator::MigrateInternal, profile_data_dir,
-                     std::move(progress_tracker), cancel_flag),
-      base::BindOnce(&BrowserDataMigrator::MigrateInternalFinishedUIThread,
-                     std::move(completion_callback), user_id_hash));
+      base::BindOnce(&BrowserDataMigratorImpl::MigrateInternal,
+                     original_profile_dir_, std::move(progress_tracker_),
+                     cancel_flag_),
+      base::BindOnce(&BrowserDataMigratorImpl::MigrateInternalFinishedUIThread,
+                     weak_factory_.GetWeakPtr()));
+}
 
-  return cancel_callback;
+void BrowserDataMigratorImpl::Cancel() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  cancel_flag_->Set();
 }
 
 // static
-void BrowserDataMigrator::RecordStatus(const FinalStatus& final_status,
-                                       const TargetInfo* target_info,
-                                       const base::ElapsedTimer* timer) {
+void BrowserDataMigratorImpl::RecordStatus(const FinalStatus& final_status,
+                                           const TargetInfo* target_info,
+                                           const base::ElapsedTimer* timer) {
   // Record final status enum.
   UMA_HISTOGRAM_ENUMERATION(kFinalStatus, final_status);
 
@@ -433,7 +308,8 @@ void BrowserDataMigrator::RecordStatus(const FinalStatus& final_status,
                               target_info->TotalCopySize() / 1024 / 1024, 1,
                               10000, 100);
   UMA_HISTOGRAM_CUSTOM_COUNTS(
-      kAshDataSize, target_info->ash_data_size / 1024 / 1024, 1, 10000, 100);
+      kAshDataSize, target_info->remain_in_ash_data_size / 1024 / 1024, 1,
+      10000, 100);
   UMA_HISTOGRAM_CUSTOM_COUNTS(kLacrosDataSize,
                               target_info->lacros_data_size / 1024 / 1024, 1,
                               10000, 100);
@@ -441,7 +317,7 @@ void BrowserDataMigrator::RecordStatus(const FinalStatus& final_status,
                               target_info->common_data_size / 1024 / 1024, 1,
                               10000, 100);
   UMA_HISTOGRAM_CUSTOM_COUNTS(kNoCopyDataSize,
-                              target_info->no_copy_data_size / 1024 / 1024, 1,
+                              target_info->deletable_data_size / 1024 / 1024, 1,
                               10000, 100);
 
   if (!timer || final_status != FinalStatus::kSuccess)
@@ -455,7 +331,8 @@ void BrowserDataMigrator::RecordStatus(const FinalStatus& final_status,
 // only web browser, update the underlying logic of migration from copy to move.
 // Note that during testing phase we are copying files and leaving files in
 // original location intact. We will allow these two states to diverge.
-BrowserDataMigrator::MigrationResult BrowserDataMigrator::MigrateInternal(
+BrowserDataMigratorImpl::MigrationResult
+BrowserDataMigratorImpl::MigrateInternal(
     const base::FilePath& original_user_dir,
     std::unique_ptr<MigrationProgressTracker> progress_tracker,
     scoped_refptr<CancelFlag> cancel_flag) {
@@ -521,50 +398,52 @@ BrowserDataMigrator::MigrationResult BrowserDataMigrator::MigrateInternal(
     return {data_wipe_result, ResultValue::kFailed};
   }
 
-  LOG(WARNING) << "BrowserDataMigrator::Migrate took "
+  LOG(WARNING) << "BrowserDataMigratorImpl::Migrate took "
                << timer.Elapsed().InMilliseconds() << " ms and migrated "
                << target_info.TotalCopySize() / (1024 * 1024) << " MB.";
   RecordStatus(FinalStatus::kSuccess, &target_info, &timer);
   return {data_wipe_result, ResultValue::kSucceeded};
 }
 
-// static
-void BrowserDataMigrator::MigrateInternalFinishedUIThread(
-    base::OnceClosure callback,
-    const std::string& user_id_hash,
+void BrowserDataMigratorImpl::MigrateInternalFinishedUIThread(
     MigrationResult result) {
-  DCHECK(GetMigrationStep(g_browser_process->local_state()) ==
-         MigrationStep::kStarted);
-  SetMigrationStep(g_browser_process->local_state(), MigrationStep::kEnded);
+  DCHECK(local_state_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(GetMigrationStep(local_state_) == MigrationStep::kStarted);
+  SetMigrationStep(local_state_, MigrationStep::kEnded);
+
+  final_status_ = result.data_migration;
 
   if (result.data_wipe != ResultValue::kFailed) {
     // kSkipped means that the directory did not exist so record the current
     // version as the data version.
-    crosapi::browser_util::RecordDataVer(g_browser_process->local_state(),
-                                         user_id_hash,
+    crosapi::browser_util::RecordDataVer(local_state_, user_id_hash_,
                                          version_info::GetVersion());
   }
 
   if (result.data_migration == ResultValue::kSucceeded) {
-    crosapi::browser_util::SetProfileMigrationCompletedForUser(
-        g_browser_process->local_state(), user_id_hash);
+    crosapi::browser_util::SetProfileMigrationCompletedForUser(local_state_,
+                                                               user_id_hash_);
 
-    ClearMigrationAttemptCountForUser(g_browser_process->local_state(),
-                                      user_id_hash);
+    ClearMigrationAttemptCountForUser(local_state_, user_id_hash_);
   }
   // If migration has failed or skipped, we silently relaunch ash and send them
   // to their home screen. In that case lacros will be disabled.
 
-  g_browser_process->local_state()->CommitPendingWrite();
+  local_state_->CommitPendingWrite();
 
-  std::move(callback).Run();
+  std::move(completion_callback_).Run();
+}
+
+BrowserDataMigratorImpl::ResultValue BrowserDataMigratorImpl::GetFinalStatus() {
+  return final_status_;
 }
 
 // static
 // Copies `item` to location pointed by `dest`. Returns true on success and
 // false on failure.
-bool BrowserDataMigrator::CopyTargetItem(
-    const BrowserDataMigrator::TargetItem& item,
+bool BrowserDataMigratorImpl::CopyTargetItem(
+    const BrowserDataMigratorImpl::TargetItem& item,
     const base::FilePath& dest,
     CancelFlag* cancel_flag,
     MigrationProgressTracker* progress_tracker) {
@@ -586,12 +465,9 @@ bool BrowserDataMigrator::CopyTargetItem(
 }
 
 // static
-BrowserDataMigrator::TargetInfo BrowserDataMigrator::GetTargetInfo(
+BrowserDataMigratorImpl::TargetInfo BrowserDataMigratorImpl::GetTargetInfo(
     const base::FilePath& original_user_dir) {
   TargetInfo target_info;
-  const base::span<const char* const> no_copy_data_paths = GetNoCopyDataPaths();
-  const base::span<const char* const> ash_data_paths = GetAshDataPaths();
-  const base::span<const char* const> lacros_data_paths = GetLacrosDataPaths();
 
   base::FileEnumerator enumerator(original_user_dir, false /* recursive */,
                                   base::FileEnumerator::FILES |
@@ -614,22 +490,22 @@ BrowserDataMigrator::TargetInfo BrowserDataMigrator::GetTargetInfo(
       continue;
     }
 
-    if (base::Contains(ash_data_paths, entry.BaseName().value())) {
-      target_info.ash_data_items.emplace_back(
+    if (base::Contains(kRemainInAshDataPaths, entry.BaseName().value())) {
+      target_info.remain_in_ash_items.emplace_back(
           TargetItem{entry, size, item_type});
-      target_info.ash_data_size += size;
-    } else if (base::Contains(no_copy_data_paths, entry.BaseName().value())) {
-      target_info.no_copy_data_items.emplace_back(
+      target_info.remain_in_ash_data_size += size;
+    } else if (base::Contains(kDeletablePaths, entry.BaseName().value())) {
+      target_info.deletable_items.emplace_back(
           TargetItem{entry, size, item_type});
-      target_info.no_copy_data_size += size;
-    } else if (base::Contains(lacros_data_paths, entry.BaseName().value())) {
+      target_info.deletable_data_size += size;
+    } else if (base::Contains(kLacrosDataPaths, entry.BaseName().value())) {
       // Items that should be moved to lacros.
       target_info.lacros_data_items.emplace_back(
           TargetItem{entry, size, item_type});
       target_info.lacros_data_size += size;
-    } else {
-      // Items that are not explicitly ash, no_copy or lacros are put into
-      // common category.
+    } else if (base::Contains(kCommonDataPaths, entry.BaseName().value())) {
+      // Items that are not explicitly ash, deletable_data or lacros are put
+      // into common category.
       target_info.common_data_items.emplace_back(
           TargetItem{entry, size, item_type});
       target_info.common_data_size += size;
@@ -640,7 +516,7 @@ BrowserDataMigrator::TargetInfo BrowserDataMigrator::GetTargetInfo(
 }
 
 // static
-bool BrowserDataMigrator::HasEnoughDiskSpace(
+bool BrowserDataMigratorImpl::HasEnoughDiskSpace(
     const TargetInfo& target_info,
     const base::FilePath& original_user_dir,
     Mode mode) {
@@ -654,11 +530,11 @@ bool BrowserDataMigrator::HasEnoughDiskSpace(
       break;
     case Mode::kDeleteAndCopy:
       required_space =
-          target_info.TotalCopySize() - target_info.no_copy_data_size;
+          target_info.TotalCopySize() - target_info.deletable_data_size;
       break;
     case Mode::kDeleteAndMove:
       required_space =
-          target_info.common_data_size - target_info.no_copy_data_size;
+          target_info.common_data_size - target_info.deletable_data_size;
       break;
     case Mode::kCopy:
     default:
@@ -677,7 +553,7 @@ bool BrowserDataMigrator::HasEnoughDiskSpace(
 }
 
 // static
-bool BrowserDataMigrator::CopyDirectory(
+bool BrowserDataMigratorImpl::CopyDirectory(
     const base::FilePath& from_path,
     const base::FilePath& to_path,
     CancelFlag* cancel_flag,
@@ -719,7 +595,8 @@ bool BrowserDataMigrator::CopyDirectory(
   return true;
 }
 
-bool BrowserDataMigrator::CopyTargetItems(
+// static
+bool BrowserDataMigratorImpl::CopyTargetItems(
     const base::FilePath& to_dir,
     const std::vector<TargetItem>& items,
     CancelFlag* cancel_flag,
@@ -755,7 +632,7 @@ bool BrowserDataMigrator::CopyTargetItems(
 }
 
 // static
-bool BrowserDataMigrator::SetupTmpDir(
+bool BrowserDataMigratorImpl::SetupTmpDir(
     const TargetInfo& target_info,
     const base::FilePath& from_dir,
     const base::FilePath& tmp_dir,
@@ -793,7 +670,7 @@ bool BrowserDataMigrator::SetupTmpDir(
 }
 
 // static
-void BrowserDataMigrator::RegisterLocalStatePrefs(
+void BrowserDataMigratorImpl::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kMigrationStep,
                                 static_cast<int>(MigrationStep::kCheckStep));
@@ -802,34 +679,36 @@ void BrowserDataMigrator::RegisterLocalStatePrefs(
 }
 
 // static
-void BrowserDataMigrator::SetMigrationStep(
+void BrowserDataMigratorImpl::SetMigrationStep(
     PrefService* local_state,
-    BrowserDataMigrator::MigrationStep step) {
+    BrowserDataMigratorImpl::MigrationStep step) {
   local_state->SetInteger(kMigrationStep, static_cast<int>(step));
 }
 
 // static
-void BrowserDataMigrator::ClearMigrationStep(PrefService* local_state) {
+void BrowserDataMigratorImpl::ClearMigrationStep(PrefService* local_state) {
   local_state->ClearPref(kMigrationStep);
 }
 
 // static
-BrowserDataMigrator::MigrationStep BrowserDataMigrator::GetMigrationStep(
-    PrefService* local_state) {
+BrowserDataMigratorImpl::MigrationStep
+BrowserDataMigratorImpl::GetMigrationStep(PrefService* local_state) {
   return static_cast<MigrationStep>(local_state->GetInteger(kMigrationStep));
 }
 
-void BrowserDataMigrator::UpdateMigrationAttemptCountForUser(
+// static
+void BrowserDataMigratorImpl::UpdateMigrationAttemptCountForUser(
     PrefService* local_state,
     const std::string& user_id_hash) {
   int count = GetMigrationAttemptCountForUser(local_state, user_id_hash);
   count += 1;
   DictionaryPrefUpdate update(local_state, kMigrationAttemptCountPref);
-  base::DictionaryValue* dict = update.Get();
-  dict->SetKey(user_id_hash, base::Value(count));
+  base::Value* dict = update.Get();
+  dict->SetIntKey(user_id_hash, count);
 }
 
-int BrowserDataMigrator::GetMigrationAttemptCountForUser(
+// static
+int BrowserDataMigratorImpl::GetMigrationAttemptCountForUser(
     PrefService* local_state,
     const std::string& user_id_hash) {
   return local_state->GetDictionary(kMigrationAttemptCountPref)
@@ -837,25 +716,26 @@ int BrowserDataMigrator::GetMigrationAttemptCountForUser(
       .value_or(0);
 }
 
-void BrowserDataMigrator::ClearMigrationAttemptCountForUser(
+// static
+void BrowserDataMigratorImpl::ClearMigrationAttemptCountForUser(
     PrefService* local_state,
     const std::string& user_id_hash) {
   DictionaryPrefUpdate update(local_state, kMigrationAttemptCountPref);
-  base::DictionaryValue* dict = update.Get();
+  base::Value* dict = update.Get();
   dict->RemoveKey(user_id_hash);
 }
 
 // static
-void BrowserDataMigrator::DryRunToCollectUMA(
+void BrowserDataMigratorImpl::DryRunToCollectUMA(
     const base::FilePath& profile_data_dir) {
   TargetInfo target_info = GetTargetInfo(profile_data_dir);
 
   base::UmaHistogramCustomCounts(kDryRunNoCopyDataSize,
-                                 target_info.no_copy_data_size / 1024 / 1024, 1,
-                                 10000, 100);
-  base::UmaHistogramCustomCounts(kDryRunAshDataSize,
-                                 target_info.ash_data_size / 1024 / 1024, 1,
-                                 10000, 100);
+                                 target_info.deletable_data_size / 1024 / 1024,
+                                 1, 10000, 100);
+  base::UmaHistogramCustomCounts(
+      kDryRunAshDataSize, target_info.remain_in_ash_data_size / 1024 / 1024, 1,
+      10000, 100);
   base::UmaHistogramCustomCounts(kDryRunLacrosDataSize,
                                  target_info.lacros_data_size / 1024 / 1024, 1,
                                  10000, 100);
@@ -865,8 +745,8 @@ void BrowserDataMigrator::DryRunToCollectUMA(
 
   browser_data_migrator_util::RecordTotalSize(target_info.TotalDirSize());
 
-  RecordTargetItemSizes(target_info.no_copy_data_items);
-  RecordTargetItemSizes(target_info.ash_data_items);
+  RecordTargetItemSizes(target_info.deletable_items);
+  RecordTargetItemSizes(target_info.remain_in_ash_items);
   RecordTargetItemSizes(target_info.lacros_data_items);
   RecordTargetItemSizes(target_info.common_data_items);
 
@@ -885,7 +765,7 @@ void BrowserDataMigrator::DryRunToCollectUMA(
 }
 
 // staic
-void BrowserDataMigrator::RecordTargetItemSizes(
+void BrowserDataMigratorImpl::RecordTargetItemSizes(
     const std::vector<TargetItem>& items) {
   for (auto& item : items)
     browser_data_migrator_util::RecordUserDataSize(item.path, item.size);

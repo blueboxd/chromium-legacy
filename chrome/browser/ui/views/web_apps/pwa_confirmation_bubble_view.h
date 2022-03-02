@@ -8,7 +8,7 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/widget/widget.h"
@@ -31,7 +31,7 @@ class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
 
   PWAConfirmationBubbleView(views::View* anchor_view,
                             views::Button* highlight_button,
-                            std::unique_ptr<WebApplicationInfo> web_app_info,
+                            std::unique_ptr<WebAppInstallInfo> web_app_info,
                             chrome::AppInstallationAcceptanceCallback callback,
                             chrome::PwaInProductHelpState iph_state,
                             PrefService* prefs,
@@ -50,7 +50,7 @@ class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
   bool Accept() override;
 
  private:
-  std::unique_ptr<WebApplicationInfo> web_app_info_;
+  std::unique_ptr<WebAppInstallInfo> web_app_info_;
   chrome::AppInstallationAcceptanceCallback callback_;
 
   // Checkbox to launch window with tab strip.

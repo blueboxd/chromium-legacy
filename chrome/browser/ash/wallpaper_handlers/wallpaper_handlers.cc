@@ -4,19 +4,36 @@
 
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.h"
 
+#include <utility>
+
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/constants/devicetype.h"
+#include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/extensions/api/wallpaper_private.h"
+#include "components/signin/public/base/consent_level.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/scope_set.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
@@ -46,11 +63,63 @@ constexpr char kFilteringLabel[] = "chromebook";
 // The label used to return exclusive content for Google branded chromebooks.
 constexpr char kGoogleDeviceFilteringLabel[] = "google_branded_chromebook";
 
+// The URL to download the albums in a user's Google Photos library.
+constexpr char kGooglePhotosAlbumsUrl[] =
+    "https://photosfirstparty-pa.googleapis.com/v1/chromeos/"
+    "userCollections:read";
+
+constexpr net::NetworkTrafficAnnotationTag
+    kGooglePhotosAlbumsTrafficAnnotation =
+        net::DefineNetworkTrafficAnnotation("wallpaper_google_photos_albums",
+                                            R"(
+      semantics {
+        sender: "ChromeOS Wallpaper Picker"
+        description:
+          "Within the Google Photos tile, the ChromeOS Wallpaper Picker "
+          "shows the user the Google Photos albums they have created so that "
+          "they can pick a photo or turn on the surprise me feature from "
+          "within an album. This query fetches those albums."
+        trigger: "When the user accesses the Google Photos tile within the "
+                 "ChromeOS Wallpaper Picker app."
+        data: "OAuth credentials for the user's Google Photos account."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        cookies_allowed: NO
+        setting: "N/A"
+        policy_exception_justification:
+          "Not implemented, considered not necessary."
+      })");
+
+// The URL to download the number of photos in a user's Google Photos library.
+constexpr char kGooglePhotosCountUrl[] =
+    "https://photosfirstparty-pa.googleapis.com/v1/chromeos/user:read";
+
+constexpr net::NetworkTrafficAnnotationTag kGooglePhotosCountTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("wallpaper_google_photos_count",
+                                        R"(
+      semantics {
+        sender: "ChromeOS Wallpaper Picker"
+        description:
+          "The ChromeOS Wallpaper Picker displays a tile to view and pick from "
+          "a user's Google Photos library. The tile shows the library's number "
+          "of photos, which this query fetches."
+        trigger: "When the user opens the ChromeOS Wallpaper Picker app."
+        data: "OAuth credentials for the user's Google Photos account."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        cookies_allowed: NO
+        setting: "N/A"
+        policy_exception_justification:
+          "Not implemented, considered not necessary."
+      })");
+
 // Returns the corresponding test url if |kTestWallpaperServer| is present,
 // otherwise returns |url| as is. See https://crbug.com/914144.
 std::string MaybeConvertToTestUrl(std::string url) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kTestWallpaperServer)) {
+          ash::switches::kTestWallpaperServer)) {
     base::ReplaceFirstSubstringAfterOffset(&url, 0, "clients3",
                                            "chromecast-dev.sandbox");
   } else if (base::FeatureList::IsEnabled(
@@ -165,26 +234,23 @@ void BackdropCollectionInfoFetcher::Start(OnCollectionsInfoFetched callback) {
   request.SerializeToString(&serialized_proto);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("backdrop_collection_names_download",
+      net::DefineNetworkTrafficAnnotation("wallpaper_backdrop_collection_names",
                                           R"(
         semantics {
           sender: "ChromeOS Wallpaper Picker"
           description:
-            "The ChromeOS Wallpaper Picker extension displays a rich set of "
+            "The ChromeOS Wallpaper Picker app displays a rich set of "
             "wallpapers for users to choose from. Each wallpaper belongs to a "
             "collection (e.g. Arts, Landscape etc.). The list of all available "
             "collections is downloaded from the Backdrop wallpaper service."
-          trigger:
-            "When ChromeOS Wallpaper Picker extension is open, and "
-            "BUILDFLAG(GOOGLE_CHROME_BRANDING) is defined."
+          trigger: "When the user opens the ChromeOS Wallpaper Picker app."
           data:
             "The Backdrop protocol buffer messages. No user data is included."
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
           cookies_allowed: NO
-          setting:
-            "NA"
+          setting: "N/A"
           policy_exception_justification:
             "Not implemented, considered not necessary."
         })");
@@ -240,7 +306,7 @@ void BackdropImageInfoFetcher::Start(OnImagesInfoFetched callback) {
   request.SerializeToString(&serialized_proto);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("backdrop_images_info_download", R"(
+      net::DefineNetworkTrafficAnnotation("wallpaper_backdrop_images_info", R"(
         semantics {
           sender: "ChromeOS Wallpaper Picker"
           description:
@@ -249,17 +315,15 @@ void BackdropImageInfoFetcher::Start(OnImagesInfoFetched callback) {
             "and descriptive texts for each image. Such information is "
             "downloaded from the Backdrop wallpaper service."
           trigger:
-            "When ChromeOS Wallpaper Picker extension is open, "
-            "BUILDFLAG(GOOGLE_CHROME_BRANDING) is defined and user clicks on a "
-            "particular collection."
+            "When the ChromeOS Wallpaper Picker app is open and the user "
+            "clicks on a particular collection."
           data:
             "The Backdrop protocol buffer messages. No user data is included."
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
           cookies_allowed: NO
-          setting:
-            "NA"
+          setting: "N/A"
           policy_exception_justification:
             "Not implemented, considered not necessary."
         })");
@@ -317,8 +381,9 @@ void BackdropSurpriseMeImageFetcher::Start(OnSurpriseMeImageFetched callback) {
   request.SerializeToString(&serialized_proto);
 
   const net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("backdrop_surprise_me_image_download",
-                                          R"(
+      net::DefineNetworkTrafficAnnotation(
+          "wallpaper_backdrop_surprise_me_image",
+          R"(
         semantics {
           sender: "ChromeOS Wallpaper Picker"
           description:
@@ -328,17 +393,15 @@ void BackdropSurpriseMeImageFetcher::Start(OnSurpriseMeImageFetched callback) {
             "periodically changed to a random wallpaper selected by the "
             "Backdrop wallpaper service."
           trigger:
-            "When ChromeOS Wallpaper Picker extension is open, "
-            "BUILDFLAG(GOOGLE_CHROME_BRANDING) is defined and user turns on "
-            "the surprise me feature."
+            "When the ChromeOS Wallpaper Picker app is open and the user turns "
+            "on the surprise me feature."
           data:
             "The Backdrop protocol buffer messages. No user data is included."
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
           cookies_allowed: NO
-          setting:
-            "NA"
+          setting: "N/A"
           policy_exception_justification:
             "Not implemented, considered not necessary."
         })");
@@ -370,21 +433,205 @@ void BackdropSurpriseMeImageFetcher::OnResponseFetched(
                            surprise_me_image_response.resume_token());
 }
 
-GooglePhotosCountFetcher::GooglePhotosCountFetcher() {
+template <typename T>
+GooglePhotosFetcher<T>::GooglePhotosFetcher(
+    Profile* profile,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
+    : profile_(profile),
+      identity_manager_(IdentityManagerFactory::GetForProfile(profile)),
+      traffic_annotation_(traffic_annotation) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(profile_);
+  DCHECK(identity_manager_);
+  identity_manager_observation_.Observe(identity_manager_);
+}
+
+template <typename T>
+GooglePhotosFetcher<T>::~GooglePhotosFetcher() = default;
+
+template <typename T>
+void GooglePhotosFetcher<T>::AddRequestAndStartIfNecessary(
+    const std::string& service_url,
+    ClientCallback callback) {
+  pending_client_callbacks_[service_url].push_back(std::move(callback));
+  if (pending_client_callbacks_[service_url].size() > 1)
+    return;
+
+  signin::ScopeSet scopes;
+  scopes.insert(GaiaConstants::kPhotosModuleOAuth2Scope);
+
+  DCHECK(token_fetchers_.find(service_url) == token_fetchers_.end());
+  token_fetchers_[service_url] =
+      std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
+          "wallpaper_google_photos_fetcher", identity_manager_, scopes,
+          base::BindOnce(
+              &GooglePhotosFetcher::OnTokenReceived,
+              base::Unretained(this), /*`this` owns `token_fetchers_`.*/
+              service_url),
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
+          signin::ConsentLevel::kSignin);
+}
+
+template <typename T>
+void GooglePhotosFetcher<T>::OnTokenReceived(
+    const std::string& service_url,
+    GoogleServiceAuthError error,
+    signin::AccessTokenInfo token_info) {
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    OnResponseReady(service_url, absl::nullopt);
+    return;
+  }
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->method = "GET";
+  resource_request->url = GURL(service_url);
+  // Cookies should not be allowed.
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                                      "application/json");
+  resource_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
+                                      "Bearer " + token_info.token);
+
+  DCHECK(url_loaders_.find(service_url) == url_loaders_.end());
+  url_loaders_[service_url] = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation_);
+  url_loaders_[service_url]->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      profile_->GetURLLoaderFactory().get(),
+      base::BindOnce(&GooglePhotosFetcher::OnJsonReceived,
+                     base::Unretained(this), /*`this` owns `url_loaders_`.*/
+                     service_url));
+}
+
+template <typename T>
+void GooglePhotosFetcher<T>::OnJsonReceived(
+    const std::string& service_url,
+    std::unique_ptr<std::string> response_body) {
+  const int net_error = url_loaders_[service_url]->NetError();
+  if (net_error != net::OK || !response_body) {
+    OnResponseReady(service_url, absl::nullopt);
+    return;
+  }
+
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      *response_body,
+      base::BindOnce([](data_decoder::DataDecoder::ValueOrError result) {
+        return std::move(result.value);
+      })
+          .Then(base::BindOnce(&GooglePhotosFetcher::OnResponseReady,
+                               weak_factory_.GetWeakPtr(), service_url)));
+}
+
+template <typename T>
+void GooglePhotosFetcher<T>::OnResponseReady(
+    const std::string& service_url,
+    absl::optional<base::Value> response) {
+  T args = ParseResponse(std::move(response));
+  for (auto& callback : pending_client_callbacks_[service_url])
+    std::move(callback).Run(mojo::Clone(args));
+
+  token_fetchers_.erase(service_url);
+  url_loaders_.erase(service_url);
+  pending_client_callbacks_.erase(service_url);
+}
+
+GooglePhotosAlbumsFetcher::GooglePhotosAlbumsFetcher(Profile* profile)
+    : GooglePhotosFetcher(profile, kGooglePhotosAlbumsTrafficAnnotation) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
+
+GooglePhotosAlbumsFetcher::~GooglePhotosAlbumsFetcher() = default;
+
+void GooglePhotosAlbumsFetcher::AddRequestAndStartIfNecessary(
+    const absl::optional<std::string>& resume_token,
+    base::OnceCallback<void(GooglePhotosAlbumsCbkArgs)> callback) {
+  std::string service_url =
+      resume_token.has_value()
+          ? base::StrCat({kGooglePhotosAlbumsUrl,
+                          "?resume_token=", resume_token.value()})
+          : kGooglePhotosAlbumsUrl;
+  GooglePhotosFetcher::AddRequestAndStartIfNecessary(service_url,
+                                                     std::move(callback));
+}
+
+GooglePhotosAlbumsCbkArgs GooglePhotosAlbumsFetcher::ParseResponse(
+    absl::optional<base::Value> response) {
+  auto parsed_response =
+      ash::personalization_app::mojom::FetchGooglePhotosAlbumsResponse::New();
+  if (!response.has_value())
+    return parsed_response;
+
+  const std::string* resume_token = response->FindStringPath("resumeToken");
+  if (resume_token && !resume_token->empty())
+    parsed_response->resume_token = *resume_token;
+
+  const base::Value* response_albums = response->FindListPath("collection");
+  if (!response_albums)
+    return parsed_response;
+
+  parsed_response->albums =
+      std::vector<ash::personalization_app::mojom::GooglePhotosAlbumPtr>();
+  for (const auto& response_album : response_albums->GetList()) {
+    const base::Value* id_wrapper = response_album.FindDictPath("collectionId");
+    const std::string* id =
+        id_wrapper ? id_wrapper->FindStringPath("mediaKey") : nullptr;
+    const std::string* title = response_album.FindStringPath("name");
+    const std::string* num_photos_string =
+        response_album.FindStringPath("numPhotos");
+
+    // Temporarily use a hard-coded URL from the solid colors backdrop
+    // collection since the backdrop server is already allowlisted with the
+    // untrusted iframe's content security policy.
+    // TODO(b/214577469): Get `cover_photo_url` from `response_album`.
+    std::string placeholder_photo =
+        "https://lh6.googleusercontent.com/proxy/"
+        "5ftru2Wt8g3R7r4TzRAOhJD7jMpLWOiqKxgql3vd_s26EnV51M5WfJe-"
+        "ZJZkrMnqbOQ4uB1iBycwwGziEVYCwMeRx2Tcdmiq2lH44hUD3OLX";
+    const std::string* cover_photo_url = &placeholder_photo;
+
+    int64_t num_photos;
+    if (!id || !title || !num_photos_string ||
+        !base::StringToInt64(*num_photos_string, &num_photos) ||
+        !cover_photo_url) {
+      continue;
+    }
+
+    parsed_response->albums->push_back(
+        ash::personalization_app::mojom::GooglePhotosAlbum::New(
+            *id, *title, base::saturated_cast<int>(num_photos),
+            GURL(*cover_photo_url)));
+  }
+  return parsed_response;
+}
+
+GooglePhotosCountFetcher::GooglePhotosCountFetcher(Profile* profile)
+    : GooglePhotosFetcher(profile, kGooglePhotosCountTrafficAnnotation) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 GooglePhotosCountFetcher::~GooglePhotosCountFetcher() = default;
 
-void GooglePhotosCountFetcher::Start(OnGooglePhotosCountFetched callback) {
-  DCHECK(callback_.is_null());
-  callback_ = std::move(callback);
-
-  OnResponseFetched(std::string());
+void GooglePhotosCountFetcher::AddRequestAndStartIfNecessary(
+    base::OnceCallback<void(int)> callback) {
+  GooglePhotosFetcher::AddRequestAndStartIfNecessary(kGooglePhotosCountUrl,
+                                                     std::move(callback));
 }
 
-void GooglePhotosCountFetcher::OnResponseFetched(const std::string& response) {
-  std::move(callback_).Run(/*count=*/0);
+int GooglePhotosCountFetcher::ParseResponse(
+    absl::optional<base::Value> response) {
+  if (!response.has_value())
+    return -1;
+
+  const base::Value* user = response->FindDictPath("user");
+  if (!user)
+    return -1;
+
+  const std::string* count_string = user->FindStringKey("numPhotos");
+  int64_t count;
+  if (!count_string || !base::StringToInt64(*count_string, &count))
+    return -1;
+
+  return base::saturated_cast<int>(count);
 }
 
 }  // namespace wallpaper_handlers

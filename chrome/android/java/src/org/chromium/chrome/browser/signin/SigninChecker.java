@@ -15,10 +15,10 @@ import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.sync.SyncService;
-import org.chromium.chrome.browser.sync.SyncUserDataWiper;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountRenameChecker;
@@ -152,29 +152,51 @@ public class SigninChecker
         if (ChildAccountStatus.isChild(status)) {
             assert childAccount != null;
             mSigninManager.onFirstRunCheckDone();
-            if (mSigninManager.isSignInAllowed()) {
-                Log.d(TAG, "The child account sign-in starts.");
-                final SignInCallback signInCallback = new SignInCallback() {
-                    @Override
-                    public void onSignInComplete() {
-                        final SyncService syncService = SyncService.get();
-                        if (syncService != null) {
-                            syncService.setFirstSetupComplete(
-                                    SyncFirstSetupCompleteSource.BASIC_FLOW);
-                        }
-                        ++mNumOfChildAccountChecksDone;
-                    }
+            mSigninManager.runAfterOperationInProgress(() -> {
+                final boolean forceSync = !ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS);
+                if ((!forceSync && mSigninManager.isSigninAllowed())
+                        || (forceSync && mSigninManager.isSyncOptInAllowed())) {
+                    Log.d(TAG, "The child account sign-in starts.");
 
-                    @Override
-                    public void onSignInAborted() {}
-                };
-                SyncUserDataWiper.wipeSyncUserData().then((Void v) -> {
-                    RecordUserAction.record("Signin_Signin_WipeDataOnChildAccountSignin2");
-                    mSigninManager.signinAndEnableSync(
-                            SigninAccessPoint.FORCED_SIGNIN, childAccount, signInCallback);
-                });
-                return;
-            }
+                    final SignInCallback signInCallback = new SignInCallback() {
+                        @Override
+                        public void onSignInComplete() {
+                            ++mNumOfChildAccountChecksDone;
+                        }
+
+                        @Override
+                        public void onSignInAborted() {}
+                    };
+
+                    final SignInCallback signInCallbackForSync = new SignInCallback() {
+                        @Override
+                        public void onSignInComplete() {
+                            final SyncService syncService = SyncService.get();
+                            if (syncService != null) {
+                                syncService.setFirstSetupComplete(
+                                        SyncFirstSetupCompleteSource.BASIC_FLOW);
+                            }
+                            ++mNumOfChildAccountChecksDone;
+                        }
+
+                        @Override
+                        public void onSignInAborted() {}
+                    };
+
+                    mSigninManager.wipeSyncUserData(() -> {
+                        RecordUserAction.record("Signin_Signin_WipeDataOnChildAccountSignin2");
+                        if (ChromeFeatureList.isEnabled(
+                                    ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS)) {
+                            mSigninManager.signin(childAccount, signInCallback);
+                        } else {
+                            mSigninManager.signinAndEnableSync(SigninAccessPoint.FORCED_SIGNIN,
+                                    childAccount, signInCallbackForSync);
+                        }
+                    });
+                    return;
+                }
+            });
         }
         ++mNumOfChildAccountChecksDone;
     }

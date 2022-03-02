@@ -6,6 +6,7 @@ import("//build/buildflag_header.gni")
 import("//build/config/ui.gni")
 import("//components/vector_icons/vector_icons.gni")
 import("//device/vr/buildflags/buildflags.gni")
+import("//extensions/buildflags/buildflags.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -102,6 +103,7 @@ static_library("browser") {
     "autocomplete_classifier.h",
     "autocomplete_controller.cc",
     "autocomplete_controller.h",
+    "autocomplete_i18n.h",
     "autocomplete_match.cc",
     "autocomplete_match.h",
     "autocomplete_match_classification.cc",
@@ -114,6 +116,7 @@ static_library("browser") {
     "autocomplete_provider_client.h",
     "autocomplete_provider_debouncer.cc",
     "autocomplete_provider_debouncer.h",
+    "autocomplete_provider_listener.h",
     "autocomplete_result.cc",
     "autocomplete_result.h",
     "base_search_provider.cc",
@@ -183,8 +186,6 @@ static_library("browser") {
     "omnibox_triggered_feature_service.h",
     "omnibox_view.cc",
     "omnibox_view.h",
-    "omnibox_watcher.cc",
-    "omnibox_watcher.h",
     "on_device_head_model.cc",
     "on_device_head_model.h",
     "on_device_head_provider.cc",
@@ -271,7 +272,7 @@ static_library("browser") {
     "//components/url_formatter",
     "//components/variations",
     "//components/variations/net",
-    "//extensions/common:common_constants",
+    "//extensions/buildflags",
     "//net",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
@@ -289,6 +290,16 @@ static_library("browser") {
 
   if (!is_ios) {
     deps += [ "//components/keyed_service/content" ]
+  }
+
+  if (enable_extensions) {
+    deps += [ "//extensions/common:common_constants" ]
+    sources += [
+      "omnibox_input_watcher.cc",
+      "omnibox_input_watcher.h",
+      "omnibox_suggestions_watcher.cc",
+      "omnibox_suggestions_watcher.h",
+    ]
   }
 
   if (is_android) {
@@ -399,6 +410,7 @@ if (is_android) {
       "android/java/src/org/chromium/components/omnibox/SecurityButtonAnimationDelegate.java",
       "android/java/src/org/chromium/components/omnibox/SecurityStatusIcon.java",
       "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
+      "android/java/src/org/chromium/components/omnibox/action/OmniboxPedal.java",
     ]
 
     resources_package = "org.chromium.components.omnibox"
@@ -423,6 +435,7 @@ if (is_android) {
 
   java_cpp_enum("browser_java_enums_srcjar") {
     sources = [
+      "actions/omnibox_pedal_concepts.h",
       "autocomplete_match.h",
       "autocomplete_match_type.h",
       "suggestion_answer.h",
@@ -436,6 +449,7 @@ if (is_android) {
       "android/java/src/org/chromium/components/omnibox/AutocompleteSchemeClassifier.java",
       "android/java/src/org/chromium/components/omnibox/OmniboxUrlEmphasizer.java",
       "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
+      "android/java/src/org/chromium/components/omnibox/action/OmniboxPedal.java",
     ]
   }
 }

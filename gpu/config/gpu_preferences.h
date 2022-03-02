@@ -22,7 +22,7 @@
 namespace gpu {
 
 // The size to set for the program cache for default and low-end device cases.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 const size_t kDefaultMaxProgramCacheMemoryBytes = 6 * 1024 * 1024;
 #else
 const size_t kDefaultMaxProgramCacheMemoryBytes = 2 * 1024 * 1024;
@@ -197,9 +197,7 @@ struct GPU_EXPORT GpuPreferences {
   // Ignores GPU blocklist.
   bool ignore_gpu_blocklist = false;
 
-  // Oop rasterization preferences in the GPU process.  disable wins over
-  // enable, and neither means use defaults from GpuFeatureInfo.
-  bool enable_oop_rasterization = false;
+  // Oop rasterization preferences in the GPU process.
   bool disable_oop_rasterization = false;
 
   bool enable_oop_rasterization_ddl = false;
@@ -247,9 +245,8 @@ struct GPU_EXPORT GpuPreferences {
   // Enable the WebGPU command buffer.
   bool enable_webgpu = false;
 
-  // Enable usage of SPIR-V with WebGPU. This is unsafe since SPIR-V from the
-  // renderer process isn't fully validated.
-  bool enable_webgpu_spirv = false;
+  // Enable usage of unsafe WebGPU features.
+  bool enable_unsafe_webgpu = false;
 
   // Enable validation layers in Dawn backends.
   DawnBackendValidationLevel enable_dawn_backend_validation =
@@ -285,7 +282,7 @@ struct GPU_EXPORT GpuPreferences {
   // ===================================
   // Settings from //media/base/media_switches.h
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // Enable the hardware-accelerated direct video decoder on ChromeOS.
   bool enable_chromeos_direct_video_decoder = false;
 #endif

@@ -24,6 +24,7 @@
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/language/core/browser/locale_util.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -183,14 +184,13 @@ bool VariationsFieldTrialCreator::SetUpFieldTrials(
     metrics::MetricsStateManager* metrics_state_manager,
     PlatformFieldTrials* platform_field_trials,
     SafeSeedManager* safe_seed_manager,
-    absl::optional<int> low_entropy_source_value,
-    bool extend_variations_safe_mode) {
+    absl::optional<int> low_entropy_source_value) {
   DCHECK(feature_list);
   DCHECK(metrics_state_manager);
   DCHECK(platform_field_trials);
   DCHECK(safe_seed_manager);
 
-  if (extend_variations_safe_mode &&
+  if (base::FieldTrialList::IsTrialActive(kExtendedSafeModeTrial) &&
       !metrics_state_manager->is_background_session()) {
     // If the session is expected to be a background session, then do not extend
     // Variations Safe Mode. Extending Safe Mode involves monitoring for crashes
@@ -304,10 +304,10 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
   state->cpu_architecture = GetCurrentCpuArchitecture();
   state->platform = GetPlatform();
   // TODO(crbug/1111131): Expand to other platforms.
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_ANDROID)
   state->hardware_class = base::SysInfo::HardwareModelName();
 #endif
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // This is set on Android only currently, because the IsLowEndDevice() API
   // on other platforms has no intrinsic meaning outside of a field trial that
   // controls its value. Since this is before server-side field trials are
@@ -343,7 +343,7 @@ std::string VariationsFieldTrialCreator::LoadPermanentConsistencyCountry(
     return permanent_overridden_country;
   }
 
-  const base::ListValue* list_value =
+  const base::Value* list_value =
       local_state()->GetList(prefs::kVariationsPermanentConsistencyCountry);
   const std::string* stored_version_string = nullptr;
   const std::string* stored_country = nullptr;
@@ -449,7 +449,9 @@ void VariationsFieldTrialCreator::MaybeExtendVariationsSafeMode(
     metrics::MetricsStateManager* metrics_state_manager) {
   const std::string group_name =
       base::FieldTrialList::FindFullName(kExtendedSafeModeTrial);
-  if (group_name.empty() || group_name == kDefaultGroup)
+  DCHECK(!group_name.empty());
+
+  if (group_name == kDefaultGroup)
     return;
 
   if (group_name == kControlGroup) {
@@ -481,6 +483,8 @@ bool VariationsFieldTrialCreator::HasSeedExpired(bool is_safe_seed) {
     if (!is_safe_seed) {
       // Store the current time as the last fetch time for Chrome's first run.
       GetSeedStore()->RecordLastFetchTime(base::Time::Now());
+      // Record freshness of "0", since we expect a first run seed to be fresh.
+      RecordSeedFreshness(base::TimeDelta());
     }
     return false;
   }

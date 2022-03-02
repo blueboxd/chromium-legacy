@@ -29,7 +29,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {StoredAccount, SyncBrowserProxyImpl} from '../people_page/sync_browser_proxy.js';
 
-// <if expr="chromeos or lacros">
+// <if expr="chromeos_ash or chromeos_lacros">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
@@ -48,7 +48,8 @@ declare global {
 export interface PasswordsListHandlerElement {
   $: {
     menu: CrActionMenuElement,
-    toast: CrToastElement,
+    removalToast: CrToastElement,
+    copyToast: CrToastElement,
   };
 }
 
@@ -94,7 +95,7 @@ export class PasswordsListHandlerElement extends
         value: false,
       },
 
-      // <if expr="chromeos or lacros">
+      // <if expr="chromeos_ash or chromeos_lacros">
       tokenRequestManager: Object,
       // </if>
 
@@ -150,7 +151,7 @@ export class PasswordsListHandlerElement extends
   isAccountStoreUser: boolean;
   allowMoveToAccountOption: boolean;
 
-  // <if expr="chromeos or lacros">
+  // <if expr="chromeos_ash or chromeos_lacros">
   tokenRequestManager: BlockingRequestManager;
   // </if>
 
@@ -191,16 +192,14 @@ export class PasswordsListHandlerElement extends
   disconnectedCallback() {
     super.disconnectedCallback();
 
-    if (this.$.toast.open) {
-      this.$.toast.hide();
-    }
+    this.hideToasts_();
   }
 
   /**
    * Closes the toast manager.
    */
   onSavedPasswordOrExceptionRemoved() {
-    this.$.toast.hide();
+    this.$.removalToast.hide();
   }
 
   /**
@@ -240,7 +239,7 @@ export class PasswordsListHandlerElement extends
         .requestPlaintextPassword(
             this.activePassword_!.entry.getAnyId(), reason)
         .then(callback, _error => {
-          // <if expr="chromeos or lacros">
+          // <if expr="chromeos_ash or chromeos_lacros">
           // If no password was found, refresh auth token and retry.
           this.tokenRequestManager.request(() => {
             this.requestActivePlaintextPassword_(reason, callback);
@@ -292,6 +291,7 @@ export class PasswordsListHandlerElement extends
     this.requestActivePlaintextPassword_(
         chrome.passwordsPrivate.PlaintextReason.COPY, _ => {
           this.activePassword_ = null;
+          this.displayCopyNotification_();
         });
 
     this.$.menu.close();
@@ -321,6 +321,15 @@ export class PasswordsListHandlerElement extends
     this.activePassword_ = null;
   }
 
+  private hideToasts_() {
+    if (this.$.removalToast.open) {
+      this.$.removalToast.hide();
+    }
+    if (this.$.copyToast.open) {
+      this.$.copyToast.hide();
+    }
+  }
+
   /**
    * At least one of |removedFromAccount| or |removedFromDevice| must be true.
    */
@@ -338,12 +347,19 @@ export class PasswordsListHandlerElement extends
         this.removalNotification_ = this.i18n('passwordDeletedFromDevice');
       }
     }
-    this.$.toast.show();
+
+    this.hideToasts_();
+    this.$.removalToast.show();
   }
 
   private onUndoButtonClick_() {
     this.passwordManager_.undoRemoveSavedPasswordOrException();
     this.onSavedPasswordOrExceptionRemoved();
+  }
+
+  private displayCopyNotification_() {
+    this.hideToasts_();
+    this.$.copyToast.show();
   }
 
   /**

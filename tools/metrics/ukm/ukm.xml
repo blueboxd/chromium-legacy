@@ -2805,6 +2805,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="CompositingAssignments">
+    <obsolete>
+      No longer recorded after M97 with the launch of CompositeAfterPaint.
+    </obsolete>
     <summary>
       The time spent in main thread compositing assignments, between navigation
       and First Contentful Paint, in microseconds.
@@ -3206,6 +3209,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="CompositingAssignments">
+    <obsolete>
+      No longer recorded after M97 with the launch of CompositeAfterPaint.
+    </obsolete>
     <summary>
       The time taken by compositing assignments in microseconds during the
       sampled frame.
@@ -3220,6 +3226,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="CompositingAssignmentsBeginMainFrame">
+    <obsolete>
+      No longer recorded after M97 with the launch of CompositeAfterPaint.
+    </obsolete>
     <summary>
       The total main frame time used by the compositing assignments phase, in
       microseconds.
@@ -4398,6 +4407,50 @@ be describing additional metrics about the same event.
       An enum that specifies how the near V8 heap limit event was handled. See
       blink::NearV8HeapLimitHandling for the enum elements.
     </summary>
+  </metric>
+</event>
+
+<event name="ChromeOSApp.InputEvent">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records each five minutes in Chrome OS to log the input events happened on
+    the app window. This is logged only when the user allows app syncing or
+    allows sync of everything, and the user does not set up a sync passphrase.
+  </summary>
+  <metric name="AppInputEventCount">
+    <summary>
+      The number of the input events happened in each five mintues.
+    </summary>
+  </metric>
+  <metric name="AppInputEventSource" enum="AppInputEventSource">
+    <summary>
+      An enum that records the input event source.
+    </summary>
+  </metric>
+  <metric name="AppType" enum="AppType">
+    <summary>
+      An enum that records the app type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="UserDeviceMatrix" enum="UserDeviceMatrix">
+    <summary>
+      An enum that records the user type and the device type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -6464,6 +6517,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="SendBeginMainFrameToCommit.CompositingAssignments">
+    <obsolete>
+      No longer recorded after M97 with the launch of CompositeAfterPaint.
+    </obsolete>
     <summary>
       The time portion of SendBeginMainFrameToCommit spent on updating
       compositing assignments, in microseconds.
@@ -6964,6 +7020,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="SendBeginMainFrameToCommit.CompositingAssignments">
+    <obsolete>
+      No longer recorded after M97 with the launch of CompositeAfterPaint.
+    </obsolete>
     <summary>
       The time portion of SendBeginMainFrameToCommit spent on updating
       compositing assignments, in microseconds.
@@ -8841,6 +8900,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Intervention.DocumentWrite.ScriptBlock" singular="True">
+  <obsolete>
+    Removed 12/2021.
+  </obsolete>
   <owner>bmcquade@chromium.org</owner>
   <summary>
     Recorded for page loads where the document.write script block intervention
@@ -8889,7 +8951,6 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="IOS.IsDefaultBrowser">
-  <owner>javierrobles@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <summary>
     As of iOS14, users will be able to set a default browser other than Safari.
@@ -9272,7 +9333,7 @@ be describing additional metrics about the same event.
   <summary>
     Metrics that reflect the accuracy of the predictions used by the Loading
     Predictor. This event will be recorded once per page load on
-    DocumentOnLoadCompletedInMainFrame().
+    DocumentOnLoadCompletedInPrimaryMainFrame().
   </summary>
   <metric name="CorrectSubresourceOriginPreconnectsInitiated">
     <summary>
@@ -13693,6 +13754,16 @@ be describing additional metrics about the same event.
       anytime after that happens.
     </summary>
   </metric>
+  <metric name="PaintTiming.LargestContentfulPaintBPP"
+      enum="BitsPerPixelExponential">
+    <summary>
+      Measures the ratio of image file size (in bits) to displayed pixels for
+      the LCP candidate. Bucketed into roughly exponential intervals to account
+      for the wide range of encountered values (less than 1:100000 to greater
+      than 10000:1). This metric is recorded whenever the LCP candidate is an
+      image, and omitted when it is text.
+    </summary>
+  </metric>
   <metric name="PaintTiming.LargestContentfulPaintType">
     <summary>
       Indicates that type of the LargestContentfulPaint candidate. This value is
@@ -14445,6 +14516,24 @@ be describing additional metrics about the same event.
     <summary>
       Records what the user does with a form. Recorded values correspond to the
       enum password_manager::UserAction.
+    </summary>
+  </metric>
+</event>
+
+<event name="PasswordManager.PasswordChangeTriggered">
+  <owner>selakovic@google.com</owner>
+  <owner>chrome-duplex@google.com</owner>
+  <summary>
+    Metrics related to password change. The Password Checkup in Chrome Settings
+    aims to help users find their leaked passwords. After getting list of
+    compromised passwords, user can trigger password change. On some limited
+    number of sites automated password change is available and on others only
+    manual change is available. We collect what type of password change user
+    triggered.
+  </summary>
+  <metric name="PasswordChangeType" enum="PasswordChangeType">
+    <summary>
+      Records what type of password change the user triggers.
     </summary>
   </metric>
 </event>
@@ -15396,12 +15485,11 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PrefetchProxy" singular="True">
-  <owner>robertogden@chromium.org</owner>
+  <owner>curranmax@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
+  <owner>spelchat@chromium.org</owner>
   <summary>
-    Metrics related to the privacy-preserving prefetch proxy. Recorded only for
-    Lite mode (AKA Data Saver) users.
+    Metrics related to the privacy-preserving prefetch proxy.
   </summary>
   <metric name="count_css_js_loaded_cache_before_fcp">
     <summary>
@@ -15474,9 +15562,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PrefetchProxy.AfterSRPClick" singular="True">
-  <owner>robertogden@chromium.org</owner>
+  <owner>curranmax@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
+  <owner>spelchat@chromium.org</owner>
   <summary>
     Metrics related to the privacy-preserving prefetch proxy on the page load
     after the SRP. Recorded only for eligible users on the first mainframe
@@ -15513,9 +15601,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PrefetchProxy.PrefetchedResource">
-  <owner>robertogden@chromium.org</owner>
+  <owner>curranmax@chromium.org</owner>
   <owner>ryansturm@chromium.org</owner>
-  <owner>tbansal@chromium.org</owner>
+  <owner>spelchat@chromium.org</owner>
   <summary>
     Each event corresponds to a single resource, either mainframe or
     subresource, that was prefetched during an Isolated Prerender. Logged one or
@@ -15621,6 +15709,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Previews" singular="True">
+  <obsolete>
+    Obsoleted 01/2022.
+  </obsolete>
   <owner>ryansturm@chromium.org</owner>
   <summary>
     Previews related metrics associated with a page load. See
@@ -15929,6 +16020,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PublicImageCompressionDataUse">
+  <obsolete>
+    Obsoleted 01/2022.
+  </obsolete>
   <owner>rajendrant@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -15983,6 +16077,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="PublicImageCompressionImageLoad">
+  <obsolete>
+    Obsoleted Jan 2022.
+  </obsolete>
   <owner>rajendrant@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -18648,6 +18745,13 @@ be describing additional metrics about the same event.
       App backgrounding on Android to is considered to be the end of page visit
       as well, as the app could be evicted by Android anytime after that
       happens.
+    </summary>
+  </metric>
+  <metric name="UserInitiated" enum="Boolean">
+    <summary>
+      True if this page visit was initiated by user input. For renderer
+      navigations, only true if the code can trace back to the original input
+      event - there are cases where this known not to be possible.
     </summary>
   </metric>
 </event>

@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -529,8 +530,10 @@ class DevToolsExtensionTest : public DevToolsTest {
         .Set("manifest_version", 2)
         // simple_test_page.html is currently the only page referenced outside
         // of its own extension in the tests
-        .Set("web_accessible_resources",
-             extensions::ListBuilder().Append("simple_test_page.html").Build());
+        .Set("web_accessible_resources", extensions::ListBuilder()
+                                             .Append("simple_test_page.html")
+                                             .Append("source.map")
+                                             .Build());
 
     // If |devtools_page| isn't empty, make it a devtools extension in the
     // manifest.
@@ -566,6 +569,9 @@ class DevToolsExtensionTest : public DevToolsTest {
                    "        'console.log(\"PASS\")');\n"
                    "    }\n"
                    ");\n");
+
+    dir->WriteFile(FILE_PATH_LITERAL("source.map"),
+                   R"({"version":3,"sources":["foo.js"],"mappings":"AAyCAA"})");
 
     dir->WriteFile(FILE_PATH_LITERAL("sidebarpane_devtools_page.html"),
                    "<html><head><script src='sidebarpane_devtools_page.js'>"
@@ -780,7 +786,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestDockedDevToolsClose) {
 // we try to close the inspected page.
 //
 // TODO(https://crbug.com/1061052): Flaky on Windows.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_TestDockedDevToolsInspectedTabClose \
   DISABLED_TestDockedDevToolsInspectedTabClose
 #else
@@ -940,8 +946,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, TestShowScriptsTab) {
 // hadn't been shown by the moment inspected paged refreshed.
 // @see http://crbug.com/26312
 // This test is flaky on windows and linux asan. See https://crbug.com/1013003
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
   DISABLED_TestScriptsTabIsPopulatedOnInspectedPageRefresh
 #else
@@ -1454,7 +1460,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, DevToolsExtensionInItself) {
 // Tests that a devtools (not a devtools extension) Iframe can be injected into
 // devtools.  http://crbug.com/570483
 // crbug.com/1124981: flaky on win
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_DevtoolsInDevTools DISABLED_DevtoolsInDevTools
 #else
 #define MAYBE_DevtoolsInDevTools DevtoolsInDevTools
@@ -1509,7 +1515,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   dir->WriteManifest(extensions::DictionaryBuilder()
                          .Set("name", "Devtools Panel")
                          .Set("version", "1")
-                         // Whitelist the script we stuff into the 'blob:' URL:
+                         // Allow the script we stuff into the 'blob:' URL:
                          .Set("content_security_policy",
                               "script-src 'self' "
                               "'sha256-uv9gxBEOFchPzak3TK6O39RdKxJeZvfha9zOHGam"
@@ -1589,7 +1595,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 }
 
 // Disabled on Windows due to flakiness. http://crbug.com/183649
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_TestDevToolsExtensionMessaging DISABLED_TestDevToolsExtensionMessaging
 #else
 #define MAYBE_TestDevToolsExtensionMessaging TestDevToolsExtensionMessaging
@@ -1638,7 +1644,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, TestNoScriptDuplicatesOnPanelSwitch) {
 // Tests that debugger works correctly if pause event occurs when DevTools
 // frontend is being loaded.
 // Flaky on win and linux: crbug.com/1092924.
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_TestPauseWhenLoadingDevTools DISABLED_TestPauseWhenLoadingDevTools
 #else
 #define MAYBE_TestPauseWhenLoadingDevTools TestPauseWhenLoadingDevTools
@@ -1649,11 +1655,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, MAYBE_TestPauseWhenLoadingDevTools) {
 
 // Tests that pressing 'Pause' will pause script execution if the script
 // is already running.
-#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
+#if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) && \
     defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on linux ARM bot: https://crbug/238453
 #define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
-#elif ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(MEMORY_SANITIZER))
+#elif ((BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && \
+       defined(MEMORY_SANITIZER))
 // Timing out on Linux and ChromeOS MSan: https://crbug.com/1181692
 #define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
 #else
@@ -1681,7 +1688,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, TestNetworkSyncSize) {
 
 // Tests raw headers text.
 // TODO(https://crbug.com/1199825): Flaky on Mac.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_TestNetworkRawHeadersText DISABLED_TestNetworkRawHeadersText
 #else
 #define MAYBE_TestNetworkRawHeadersText TestNetworkRawHeadersText
@@ -1749,7 +1756,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, DISABLED_TestNetworkPushTime) {
   CloseDevToolsWindow();
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // Flaky on Windows: https://crbug.com/1087320
 #define MAYBE_TestDOMWarnings DISABLED_TestDOMWarnings
 #else
@@ -1760,7 +1767,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, MAYBE_TestDOMWarnings) {
 }
 
 // Tests that console messages are not duplicated on navigation back.
-#if defined(OS_WIN) || defined(MEMORY_SANITIZER)
+#if BUILDFLAG(IS_WIN) || defined(MEMORY_SANITIZER)
 // Flaking on windows swarm try runs: crbug.com/409285.
 // Also flaking on MSan runs: crbug.com/1182861
 #define MAYBE_TestConsoleOnNavigateBack DISABLED_TestConsoleOnNavigateBack
@@ -1771,7 +1778,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, MAYBE_TestConsoleOnNavigateBack) {
   RunTest("testConsoleOnNavigateBack", kNavigateBackTestPage);
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 // Flaking on linux runs, see crbug.com/990692.
 #define MAYBE_TestDeviceEmulation DISABLED_TestDeviceEmulation
 #else
@@ -1816,7 +1823,7 @@ class BrowserAutofillManagerTestDelegateDevtoolsImpl
 
 // Disabled. Failing on MacOS MSAN. See https://crbug.com/849129.
 // Also failing on Linux. See https://crbug.com/1187693.
-#if defined(OS_MAC) || defined(OS_LINUX)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #define MAYBE_TestDispatchKeyEventShowsAutoFill \
   DISABLED_TestDispatchKeyEventShowsAutoFill
 #else
@@ -1841,7 +1848,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest,
   CloseDevToolsWindow();
 }
 
-// Tests that whitelisted unhandled shortcuts are forwarded from inspected page
+// Tests that allowed unhandled shortcuts are forwarded from inspected page
 // into devtools frontend
 IN_PROC_BROWSER_TEST_F(DevToolsTest, testKeyEventUnhandled) {
   OpenDevToolsWindow("about:blank", true);
@@ -1860,7 +1867,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, testForwardedKeysChanged) {
 // Test that showing a certificate in devtools does not crash the process.
 // Disabled on windows as this opens a modal in its own thread, which leads to a
 // test timeout.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #define MAYBE_testShowCertificate DISABLED_testShowCertificate
 #else
 #define MAYBE_testShowCertificate testShowCertificate
@@ -1891,9 +1898,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, TestDevToolsExternalNavigation) {
       std::string("window.location = \"") + url.spec() + "\""));
   observer.Wait();
 
-  ASSERT_TRUE(main_web_contents()->GetURL().
-                  SchemeIs(content::kChromeDevToolsScheme));
-  ASSERT_EQ(url, GetInspectedTab()->GetURL());
+  ASSERT_TRUE(main_web_contents()->GetLastCommittedURL().SchemeIs(
+      content::kChromeDevToolsScheme));
+  ASSERT_EQ(url, GetInspectedTab()->GetLastCommittedURL());
   CloseDevToolsWindow();
 }
 
@@ -2007,7 +2014,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsReattachAfterCrashTest,
 }
 
 // Very flaky on Linux only.  http://crbug.com/1216219
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #define MAYBE_AutoAttachToWindowOpen DISABLED_AutoAttachToWindowOpen
 #else
 #define MAYBE_AutoAttachToWindowOpen AutoAttachToWindowOpen
@@ -2054,8 +2061,8 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsTest, InspectSharedWorker) {
 }
 
 // Flaky on multiple platforms. See http://crbug.com/1263230
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_MAC)
 #define MAYBE_PauseInSharedWorkerInitialization DISABLED_PauseInSharedWorkerInitialization
 #else
 #define MAYBE_PauseInSharedWorkerInitialization PauseInSharedWorkerInitialization
@@ -2215,13 +2222,13 @@ class DevToolsAllowedByCommandLineSwitch : public DevToolsExtensionForceInstallT
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-    // Same as |chromeos::switches::kForceDevToolsAvailable|, but used as a
+    // Same as `ash::switches::kForceDevToolsAvailable`, but used as a
     // literal here so it's possible to verify that the switch does not apply on
     // non-ChromeOS platforms.
     const std::string kForceDevToolsAvailableBase = "force-devtools-available";
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     ASSERT_EQ(kForceDevToolsAvailableBase,
-              chromeos::switches::kForceDevToolsAvailable);
+              ash::switches::kForceDevToolsAvailable);
 #endif
     command_line->AppendSwitch("--" + kForceDevToolsAvailableBase);
   }
@@ -2650,13 +2657,13 @@ class DevToolsPolicyTest : public InProcessBrowserTest {
   testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
 };
 
-IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, OpenBlackListedDevTools) {
-  base::ListValue blacklist;
-  blacklist.Append("devtools://*");
+IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, OpenBlockedDevTools) {
+  base::ListValue blocklist;
+  blocklist.Append("devtools://*");
   policy::PolicyMap policies;
-  policies.Set(policy::key::kURLBlacklist, policy::POLICY_LEVEL_MANDATORY,
+  policies.Set(policy::key::kURLBlocklist, policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               blacklist.Clone(), nullptr);
+               blocklist.Clone(), nullptr);
   provider_.UpdateChromePolicy(policies);
 
   WebContents* wc = browser()->tab_strip_model()->GetActiveWebContents();
@@ -2720,6 +2727,30 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   CloseDevToolsWindow();
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, SourceMapsFromExtension) {
+  const Extension* extension =
+      LoadExtensionForTest("Non-DevTools Extension", "" /* devtools_page */,
+                           "" /* panel_iframe_src */);
+  ASSERT_TRUE(extension);
+  OpenDevToolsWindow(kEmptyTestPage, /* is_docked */ false);
+  DispatchOnTestSuite(window_, "testSourceMapsFromExtension",
+                      extension->id().c_str());
+  CloseDevToolsWindow();
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsTest, SourceMapsFromDevtools) {
+  OpenDevToolsWindow(kEmptyTestPage, /* is_docked */ false);
+  DispatchOnTestSuite(window_, "testSourceMapsFromDevtools");
+  CloseDevToolsWindow();
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsTest,
+                       DoesNotCrashOnSourceMapsFromUnknownScheme) {
+  OpenDevToolsWindow(kEmptyTestPage, /* is_docked */ false);
+  DispatchOnTestSuite(window_, "testDoesNotCrashOnSourceMapsFromUnknownScheme");
+  CloseDevToolsWindow();
+}
+
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
                        ExtensionWebSocketOfflineNetworkConditions) {
   net::SpawnedTestServer websocket_server(
@@ -2734,6 +2765,30 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   DispatchOnTestSuite(window_, "testExtensionWebSocketOfflineNetworkConditions",
                       base::NumberToString(websocket_port).c_str());
   CloseDevToolsWindow();
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, IsDeveloperModeTrueHistogram) {
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kExtensionsUIDeveloperMode, true);
+  base::HistogramTester histograms;
+  const char* histogram_name = "Extensions.DevTools.UserIsInDeveloperMode";
+
+  LoadExtension("devtools_extension");
+  RunTest("waitForTestResultsInConsole", kArbitraryPage);
+
+  histograms.ExpectBucketCount(histogram_name, true, 2);
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, IsDeveloperModeFalseHistogram) {
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kExtensionsUIDeveloperMode, false);
+  base::HistogramTester histograms;
+  const char* histogram_name = "Extensions.DevTools.UserIsInDeveloperMode";
+
+  LoadExtension("devtools_extension");
+  RunTest("waitForTestResultsInConsole", kArbitraryPage);
+
+  histograms.ExpectBucketCount(histogram_name, false, 2);
 }
 
 namespace {

@@ -6,12 +6,13 @@
 
 #include <lib/zx/channel.h>
 #include <vulkan/vulkan.h>
+
 #include <memory>
+#include <tuple>
 
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/ignore_result.h"
 #include "base/native_library.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
@@ -85,7 +86,7 @@ bool VulkanImplementationFlatland::GetPhysicalDevicePresentationSupport(
 std::vector<const char*>
 VulkanImplementationFlatland::GetRequiredDeviceExtensions() {
   std::vector<const char*> result = {
-      VK_FUCHSIA_BUFFER_COLLECTION_X_EXTENSION_NAME,
+      VK_FUCHSIA_BUFFER_COLLECTION_EXTENSION_NAME,
       VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME,
       VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
       VK_KHR_BIND_MEMORY_2_EXTENSION_NAME,
@@ -156,7 +157,7 @@ VkSemaphore VulkanImplementationFlatland::ImportSemaphoreHandle(
   }
 
   // Vulkan took ownership of the handle.
-  ignore_result(event.release());
+  std::ignore = event.release();
 
   return semaphore;
 }

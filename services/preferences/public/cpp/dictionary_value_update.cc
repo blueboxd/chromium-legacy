@@ -26,7 +26,7 @@ DictionaryValueUpdate::DictionaryValueUpdate(UpdateCallback report_update,
 DictionaryValueUpdate::~DictionaryValueUpdate() = default;
 
 bool DictionaryValueUpdate::HasKey(base::StringPiece key) const {
-  return value_->HasKey(key);
+  return value_->FindKey(key);
 }
 
 size_t DictionaryValueUpdate::size() const {
@@ -47,8 +47,8 @@ void DictionaryValueUpdate::Clear() {
 
 void DictionaryValueUpdate::Set(base::StringPiece path,
                                 std::unique_ptr<base::Value> in_value) {
-  const base::Value* old_value = nullptr;
-  if (value_->Get(path, &old_value) && *old_value == *in_value)
+  const base::Value* old_value = value_->FindPath(path);
+  if (old_value != nullptr && *old_value == *in_value)
     return;
 
   RecordPath(path);
@@ -92,8 +92,8 @@ std::unique_ptr<DictionaryValueUpdate> DictionaryValueUpdate::SetDictionary(
     base::StringPiece path,
     std::unique_ptr<base::DictionaryValue> in_value) {
   RecordPath(path);
-  base::DictionaryValue* dictionary_value =
-      value_->SetDictionary(path, std::move(in_value));
+  auto* dictionary_value = static_cast<base::DictionaryValue*>(value_->SetPath(
+      path, base::Value::FromUniquePtrValue(std::move(in_value))));
 
   return std::make_unique<DictionaryValueUpdate>(
       report_update_, dictionary_value, ConcatPath(path_, path));

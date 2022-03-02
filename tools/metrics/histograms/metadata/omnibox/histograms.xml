@@ -37,7 +37,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.AnswerParseSuccess" enum="BooleanSuccess"
-    expires_after="2022-05-08">
+    expires_after="2022-07-11">
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -62,7 +62,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.BitmapFetchLatency" units="ms"
-    expires_after="2022-05-08">
+    expires_after="2022-07-11">
 <!-- Name completed by histogram_suffixes name="Omnibox.BitmapFetchLatencyCacheSplit" -->
 
   <owner>manukh@chromium.org</owner>
@@ -79,7 +79,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.CharTypedToRepaintLatency" units="ms"
-    expires_after="2022-05-08">
+    expires_after="2022-07-11">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -111,7 +111,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.CharTypedToRepaintLatency.InsertToPresent" units="ms"
-    expires_after="2022-04-24">
+    expires_after="2022-06-26">
   <owner>asvitkine@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -139,7 +139,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.CharTypedToRepaintLatency.ToPaint" units="ms"
-    expires_after="2022-04-24">
+    expires_after="2022-06-26">
   <owner>asvitkine@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -152,7 +152,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ClipboardSuggestionRemovedAge" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-07-03">
   <owner>gangwu@chromium.org</owner>
   <owner>fgorski@chromium.org</owner>
   <summary>
@@ -236,7 +236,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.CutOrCopyAllText" units="count"
-    expires_after="2022-04-17">
+    expires_after="2022-06-19">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -247,7 +247,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.DocumentSuggest.Requests"
-    enum="OmniboxDocumentSuggestRequests" expires_after="2022-04-10">
+    enum="OmniboxDocumentSuggestRequests" expires_after="2022-06-12">
   <owner>manukh@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -259,7 +259,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.DocumentSuggest.ResultCount" units="count"
-    expires_after="2022-04-10">
+    expires_after="2022-06-12">
   <owner>manukh@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -267,24 +267,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Number of results returned in each document suggestion reply. Logged for
     successful requests where the provider returned a parseable result set.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.ElisionConfig" enum="OmniboxElisionConfig"
-    expires_after="M88">
-  <obsolete>
-    Removed 2020-10.
-  </obsolete>
-  <owner>livvielin@chromium.org</owner>
-  <owner>tommycli@chromium.org</owner>
-  <summary>
-    The state of URL elision in the omnibox, e.g. URL default behavior,
-    prevented by context menu option, or prevented by Chrome extension. This
-    histogram is recorded the first time ShouldPreventElision is called on
-    ChromeLocationBarModelDelegate with an existing profile. This occurs every
-    time a browser window is open, including when opening a new profile or
-    moving a tab to a new window. This metric measures the percentage of browser
-    windows that use each type of elision behavior.
   </summary>
 </histogram>
 
@@ -303,7 +285,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.FocusResultedInNavigation" enum="BooleanNavigated"
-    expires_after="2022-04-10">
+    expires_after="2022-06-12">
   <owner>ender@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
@@ -335,7 +317,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.FocusToOpenTimeAnyPopupState3" units="ms"
-    expires_after="2022-05-08">
+    expires_after="2022-07-11">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -363,30 +345,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.IconOrFaviconShown" enum="SuggestionIconOrFaviconType"
-    expires_after="M83">
-  <obsolete>
-    Removed 2020-10.
-  </obsolete>
-  <owner>ender@chromium.org</owner>
-  <owner>jdonnelly@chromium.org</owner>
-  <owner>mpearson@chromium.org</owner>
-  <owner>chrome-android-omnibox-team@google.com</owner>
-  <summary>
-    Records suggestions decorated with specific icon or favicon at the time the
-    user exited the omnibox. Exiting the omnibox includes navigating (to entered
-    text or any suggestion), pressing the system back key, clearing omnibox,
-    blanking screen / locking the phone (whether intentionally or due to
-    inactivity), or closing the Chrome app. This metric is logged every time the
-    omnibox is exited, including when no answer is present in the list of
-    suggestions.
-
-    This histogram is related to Omnibox.SuggestionUsed.IconOrFaviconType.
-  </summary>
-</histogram>
-
 <histogram name="Omnibox.InputType" enum="OmniboxInputType"
-    expires_after="2022-04-10">
+    expires_after="2022-06-12">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -442,7 +402,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.JustDeletedText" enum="Boolean"
-    expires_after="2022-04-10">
+    expires_after="2022-06-12">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -454,55 +414,6 @@ chromium-metrics-reviews@google.com.
     windows open. In M-75 and later, it records all omnibox interactions
     regardless, in order to be consistent with how user actions and histograms
     are handled.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.Lens.LensSupportStatus" enum="LensSupportStatus"
-    expires_after="2021-11-18">
-  <obsolete>
-    Removed 2021-03. Switch to use Omnibox.LensSupportStatus.
-  </obsolete>
-  <owner>yusuyoutube@google.com</owner>
-  <owner>benwgold@google.com</owner>
-  <owner>fgorski@chromium.org</owner>
-  <owner>wylieb@chromium.org</owner>
-  <owner>lens-chrome@google.com</owner>
-  <summary>
-    Whether the user supports the camera assisted search with Google Lens and if
-    not, the reason why. Recorded only if the feature is enabled when the
-    omnibox is loaded.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.Lens.TimeSpentInLens" units="ms" expires_after="M94">
-  <obsolete>
-    Removed 2021-03. Switch to use Omnibox.TimeSpentBeforeDismissLens.
-  </obsolete>
-  <owner>yusuyoutube@google.com</owner>
-  <owner>benwgold@google.com</owner>
-  <owner>fgorski@chromium.org</owner>
-  <owner>wylieb@chromium.org</owner>
-  <owner>lens-chrome@google.com</owner>
-  <summary>
-    Logged the elapsed time between the time when user enters the Google Lens
-    and the time when user returns to Chrome. Only logged on Android.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.LensSupportStatus" enum="LensSupportStatus"
-    expires_after="2021-11-18">
-  <obsolete>
-    Removed 2021-05. Switch to use Lens.Omnibox.LensSupportStatus.
-  </obsolete>
-  <owner>yusuyoutube@google.com</owner>
-  <owner>benwgold@google.com</owner>
-  <owner>fgorski@chromium.org</owner>
-  <owner>wylieb@chromium.org</owner>
-  <owner>lens-chrome@google.com</owner>
-  <summary>
-    Whether the user supports the camera assisted search with Google Lens and if
-    not, the reason why. Recorded only if the feature is enabled when the
-    omnibox is loaded.
   </summary>
 </histogram>
 
@@ -654,7 +565,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.PaintTime" units="ms" expires_after="2022-05-01">
+<histogram name="Omnibox.PaintTime" units="ms" expires_after="2022-07-03">
   <owner>asvitkine@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -671,18 +582,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of paste commands on the text in the omnibox. Reported every time
     a paste command is done.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.PasteAndGo" units="count" expires_after="M89">
-  <obsolete>
-    Removed 2021-01 due to redundancy with Omnibox.IsPasteAndGo.
-  </obsolete>
-  <owner>mpearson@chromium.org</owner>
-  <owner>jdonnelly@chromium.org</owner>
-  <summary>
-    The number of paste-and-go commands on the text in the omnibox. Reported
-    every time a paste-and-go command is done.
   </summary>
 </histogram>
 
@@ -707,7 +606,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.ProviderTime2" units="ms" expires_after="2022-04-17">
+<histogram name="Omnibox.ProviderTime2" units="ms" expires_after="2022-06-19">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -716,7 +615,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.QueryTime2" units="ms" expires_after="2022-05-08">
+<histogram name="Omnibox.QueryTime2" units="ms" expires_after="2022-07-11">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -745,8 +644,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.Search.OffTheRecord" enum="BooleanOffTheRecord"
-    expires_after="2022-02-02">
-  <owner>rhalavati@chromium.org</owner>
+    expires_after="2022-08-02">
+  <owner>sideyilmaz@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
     This histogram records the number of searches done from omnibox using
@@ -798,7 +697,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SearchProviderMatches" units="units"
-    expires_after="2022-05-08">
+    expires_after="2022-07-11">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -810,7 +709,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SelectedPosition" units="position"
-    expires_after="2022-05-08">
+    expires_after="2022-07-17">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -826,19 +725,6 @@ chromium-metrics-reviews@google.com.
     windows open. In M-75 and later, it records all omnibox interactions
     regardless, in order to be consistent with how user actions and histograms
     are handled.
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.ShowFullUrlsEnabled" enum="BooleanEnabled"
-    expires_after="M88">
-  <obsolete>
-    Removed 2020-10.
-  </obsolete>
-  <owner>livvielin@chromium.org</owner>
-  <owner>tommycli@chromium.org</owner>
-  <summary>
-    Tracks whether the context menu option to prevent URL elisions in the
-    omnibox is enabled. Recorded when the pref is toggled.
   </summary>
 </histogram>
 
@@ -860,7 +746,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.AnswerInSuggest"
-    enum="SuggestionAnswerOptionalType" expires_after="2022-04-17">
+    enum="SuggestionAnswerOptionalType" expires_after="2022-06-19">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -948,7 +834,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SuggestionUsed.Search.NavigationToFirstContentfulPaint"
-    units="ms" expires_after="2022-05-08">
+    units="ms" expires_after="2022-07-11">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -989,7 +875,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SuggestionUsed.URL.Experimental.NavigationToFirstMeaningfulPaint"
-    units="ms" expires_after="2022-04-24">
+    units="ms" expires_after="2022-06-26">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1000,7 +886,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestionUsed.URL.NavigationToFirstContentfulPaint"
-    units="ms" expires_after="2022-04-10">
+    units="ms" expires_after="2022-06-12">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1011,7 +897,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestRequest.Failure.GoogleResponseTime" units="ms"
-    expires_after="2022-05-08">
+    expires_after="2022-07-11">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>cch@chromium.org</owner>
@@ -1023,7 +909,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestRequest.Success.GoogleResponseTime" units="ms"
-    expires_after="2022-05-08">
+    expires_after="2022-07-11">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>cch@chromium.org</owner>
@@ -1046,7 +932,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SuggestRequests" enum="OmniboxSuggestRequests"
-    expires_after="2022-05-08">
+    expires_after="2022-07-11">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>cch@chromium.org</owner>
@@ -1057,7 +943,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.TabMatchTime" units="microseconds"
-    expires_after="2022-04-17">
+    expires_after="2022-06-19">
   <owner>gangwu@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
@@ -1088,7 +974,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.TimeSpentBeforeDismissLens" units="ms"
-    expires_after="2022-04-24">
+    expires_after="2022-06-26">
   <owner>yusuyoutube@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>fgorski@chromium.org</owner>
@@ -1114,7 +1000,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ToggleSuggestionGroupId.On" enum="SuggestionGroupId"
-    expires_after="2022-05-01">
+    expires_after="2022-07-03">
   <owner>mahmadi@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1126,7 +1012,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.URLNavigationScheme" enum="NavigationScheme"
-    expires_after="2022-05-01">
+    expires_after="2022-07-03">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1145,47 +1031,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.UserTextCleared" enum="OmniboxUserTextCleared"
-    expires_after="M85">
-  <obsolete>
-    Removed 2021-01.
-  </obsolete>
-  <owner>kenjibaheux@chromium.org</owner>
-  <owner>mpearson@chromium.org</owner>
-  <owner>jdonnelly@chromium.org</owner>
-  <summary>
-    Counts the number of times that the user text is cleared. IME users are
-    sometimes in the situation that IME was unintentionally turned on and failed
-    to input latin alphabets (ASCII characters) or the opposite case. In that
-    case, users may delete all the text and the user text gets cleared. This
-    histogram helps us estimate how often this scenario happens.
-
-    Note that since we don't currently correlate &quot;text cleared&quot; events
-    with IME usage, this also captures many other cases where users clear the
-    text; though it explicitly doesn't log deleting all the permanent text as
-    the first action of an editing sequence (see comments in
-    OnAfterPossibleChange()).
-  </summary>
-</histogram>
-
-<histogram name="Omnibox.WarmupTime" units="ms" expires_after="M85">
-  <obsolete>
-    Deprecated as of 03/2021. Code is removed.
-  </obsolete>
-  <owner>etienneb@chromium.org</owner>
-  <owner>mpearson@chromium.org</owner>
-  <owner>jdonnelly@chromium.org</owner>
-  <summary>
-    Time it takes for the omnibox to process the first user interaction after
-    startup. This measures the time it takes to start all autocomplete providers
-    and their initialisation steps. This metric may be recorded twice as there
-    is the normal omnibox path and also the &quot;classify text&quot; path to
-    the autocomplete system.
-  </summary>
-</histogram>
-
 <histogram name="Omnibox.ZeroSuggest.Eligible.OnFocusV2"
-    enum="ZeroSuggestEligibleOnFocus" expires_after="2022-04-17">
+    enum="ZeroSuggestEligibleOnFocus" expires_after="2022-06-19">
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -1219,6 +1066,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Omnibox.ZeroSuggest.Eligible.OnProfileOpen"
     enum="BooleanSupported" expires_after="2022-01-02">
+  <obsolete>
+    Since Q1 2022
+  </obsolete>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -1244,15 +1094,51 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.ZeroSuggestRequests" enum="OmniboxZeroSuggestRequests"
-    expires_after="2022-06-05">
-  <owner>ender@chromium.org</owner>
-  <owner>tommycli@chromium.org</owner>
+<histogram name="Omnibox.ZeroSuggestRequests.NonPrefetch"
+    enum="OmniboxZeroSuggestRequests" expires_after="2022-06-05">
+  <owner>mahmadi@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
-    Counts about the number of zero suggest requests (requests for suggestions
-    when the user has focused but not modified the omnibox) the omnibox sent,
-    invalidated, and replies received.
+    Counts the number of non-prefetch zero suggest requests (requests for
+    suggestions when the user has focused but not modified the omnibox) the
+    omnibox sent, requests that were invalidated, responses that were received,
+    and the subset of responses that were loaded from HTTP cache.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.ZeroSuggestRequests.NonPrefetch.RoundTripTime"
+    units="ms" expires_after="2022-06-05">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Records the time elapsed between non-prefetch zero suggest requests
+    (requests for suggestions when the user has focused but not modified the
+    omnibox) sent and the responses received; whether or not the response is
+    loaded from HTTP cache.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.ZeroSuggestRequests.Prefetch"
+    enum="OmniboxZeroSuggestRequests" expires_after="2022-06-05">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Counts the number of prefetch zero suggest requests (requests for
+    suggestions when the user opens a new tab or brings one to foreground) the
+    omnibox sent, requests that were invalidated, responses that were received,
+    and the subset of responses that were loaded from HTTP cache.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.ZeroSuggestRequests.Prefetch.RoundTripTime" units="ms"
+    expires_after="2022-06-05">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Records the time elapsed between prefetch zero suggest requests (requests
+    for suggestions when the user opens a new tab or brings one to foreground)
+    sent and the responses received; whether or not the response is loaded from
+    HTTP cache.
   </summary>
 </histogram>
 

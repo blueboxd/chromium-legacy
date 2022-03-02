@@ -29,7 +29,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/tab_groups/tab_group_id.h"
 #endif
@@ -67,7 +67,7 @@ struct OpenURLParams;
 
 // TODO(thestig): Split or ifdef out more fields that are not used on Android.
 struct NavigateParams {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   explicit NavigateParams(
       std::unique_ptr<content::WebContents> contents_to_insert);
 #else
@@ -236,7 +236,7 @@ struct NavigateParams {
   };
   PathBehavior path_behavior = RESPECT;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // [in]  Specifies a Browser object where the navigation could occur or the
   //       tab could be added. Navigate() is not obliged to use this Browser if
   //       it is not compatible with the operation being performed. This can be
@@ -289,6 +289,10 @@ struct NavigateParams {
   // Indicates that the navigation should happen in an pwa window if
   // possible, i.e. if the is a PWA installed for the target URL.
   bool open_pwa_window_if_possible = false;
+
+  // Indicates that the navigation must happen in a PWA window. If a PWA
+  // window can't be created, the navigation will be cancelled.
+  bool force_open_pwa_window = false;
 
   // The time when the input which led to the navigation occurred. Currently
   // only set when a link is clicked or the navigation takes place from the

@@ -13,9 +13,9 @@
 #include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "remoting/host/action_executor.h"
+#include "remoting/host/base/desktop_environment_options.h"
 #include "remoting/host/base/screen_controls.h"
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/protocol/fake_desktop_capturer.h"
@@ -95,6 +95,10 @@ class FakeDesktopEnvironment : public DesktopEnvironment {
     frame_generator_ = std::move(frame_generator);
   }
 
+  void set_desktop_session_id(uint32_t desktop_session_id) {
+    desktop_session_id_ = desktop_session_id;
+  }
+
   const DesktopEnvironmentOptions& options() const;
 
   // DesktopEnvironment implementation.
@@ -126,6 +130,7 @@ class FakeDesktopEnvironment : public DesktopEnvironment {
 
   scoped_refptr<base::SingleThreadTaskRunner> capture_thread_;
   protocol::FakeDesktopCapturer::FrameGenerator frame_generator_;
+  uint32_t desktop_session_id_ = UINT32_MAX;
 
   base::WeakPtr<FakeInputInjector> last_input_injector_;
 
@@ -152,6 +157,10 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
     frame_generator_ = std::move(frame_generator);
   }
 
+  void set_desktop_session_id(uint32_t desktop_session_id) {
+    desktop_session_id_ = desktop_session_id;
+  }
+
   // DesktopEnvironmentFactory implementation.
   std::unique_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control,
@@ -166,6 +175,7 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> capture_thread_;
   protocol::FakeDesktopCapturer::FrameGenerator frame_generator_;
+  uint32_t desktop_session_id_ = UINT32_MAX;
 
   base::WeakPtr<FakeDesktopEnvironment> last_desktop_environment_;
 };

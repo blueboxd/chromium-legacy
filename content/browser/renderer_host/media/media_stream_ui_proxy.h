@@ -23,8 +23,8 @@ struct MediaStreamRequest;
 class RenderFrameHostDelegate;
 
 // MediaStreamUIProxy proxies calls to media stream UI between IO thread and UI
-// thread. One instance of this class is create per MediaStream object. It must
-// be created, used and destroyed on IO thread.
+// thread. One instance of this class is created per MediaStream object. It must
+// be created, used and destroyed on the IO thread.
 class CONTENT_EXPORT MediaStreamUIProxy {
  public:
   using ResponseCallback =
@@ -50,12 +50,12 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   virtual void RequestAccess(std::unique_ptr<MediaStreamRequest> request,
                              ResponseCallback response_callback);
 
-  // Notifies the UI that the MediaStream has been started. Must be called after
+  // Notifies the UI that the MediaStream has started. Must be called after
   // access has been approved using RequestAccess().
-  // |stop_callback| is be called on the IO thread after the user has requests
-  // the stream to be stopped.
-  // |source_callback| is be called on the IO thread after the user has requests
-  // the stream source to be changed.
+  // |stop_callback| is called on the IO thread when the user requests to stop
+  // the stream or when it needs to be stopped due to admin policies to protect
+  // confidential data from being shared. |source_callback| is called on the IO
+  // thread after the user has requests the stream source to be changed.
   // |window_id_callback| is called on the IO thread with the platform-
   // dependent window ID of the UI.
   // |label| is the unique label of the stream's request.
@@ -73,7 +73,7 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   virtual void OnDeviceStopped(const std::string& label,
                                const DesktopMediaID& media_id);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Determines whether the captured display surface represented by |media_id|
   // should be focused or not.
   // Only the first call to this method on a given object has an effect; the

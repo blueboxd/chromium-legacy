@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/user_education/tutorial/tutorial.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "chrome/browser/ui/user_education/tutorial/tutorial_bubble.h"
 #include "chrome/browser/ui/user_education/tutorial/tutorial_bubble_factory.h"
 #include "chrome/browser/ui/user_education/tutorial/tutorial_bubble_factory_registry.h"
@@ -16,7 +15,7 @@
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/interaction/interaction_sequence.h"
 
-Tutorial::StepBuilder::StepBuilder() {}
+Tutorial::StepBuilder::StepBuilder() = default;
 Tutorial::StepBuilder::StepBuilder(const TutorialDescription::Step& step)
     : step_(step) {}
 Tutorial::StepBuilder::~StepBuilder() = default;
@@ -207,7 +206,7 @@ Tutorial::Builder::~Builder() = default;
 
 // static
 std::unique_ptr<Tutorial> Tutorial::Builder::BuildFromDescription(
-    TutorialDescription description,
+    const TutorialDescription& description,
     TutorialService* tutorial_service,
     TutorialBubbleFactoryRegistry* bubble_factory_registry,
     ui::ElementContext context) {

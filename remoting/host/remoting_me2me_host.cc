@@ -52,6 +52,7 @@
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/base/util.h"
+#include "remoting/host/base/desktop_environment_options.h"
 #include "remoting/host/base/host_exit_codes.h"
 #include "remoting/host/base/switches.h"
 #include "remoting/host/base/username.h"
@@ -63,7 +64,6 @@
 #include "remoting/host/config_watcher.h"
 #include "remoting/host/crash_process.h"
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/ftl_echo_message_listener.h"
 #include "remoting/host/ftl_host_change_notification_listener.h"
@@ -106,24 +106,24 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
 #include <signal.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include "base/file_descriptor_posix.h"
 #include "remoting/host/pam_authorization_factory_posix.h"
 #include "remoting/host/posix/signal_handler.h"
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_POSIX)
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "remoting/host/audio_capturer_mac.h"
 #include "remoting/host/desktop_capturer_checker.h"
 #include "remoting/host/mac/permission_utils.h"
-#endif  // defined(OS_APPLE)
+#endif  // BUILDFLAG(IS_APPLE)
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include <gtk/gtk.h>
 
 #include "base/linux_util.h"
@@ -131,21 +131,21 @@
 #include "remoting/host/linux/certificate_watcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/xlib_support.h"
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <commctrl.h>
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "remoting/host/pairing_registry_delegate_win.h"
 #include "remoting/host/win/session_desktop_environment.h"
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 using remoting::protocol::PairingRegistry;
 using remoting::protocol::NetworkSettings;
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 
 // The following creates a section that tells Mac OS X that it is OK to let us
 // inject input in the login screen. Just the name of the section is important,
@@ -154,7 +154,7 @@ __attribute__((used))
 __attribute__((section ("__CGPreLoginApp,__cgpreloginapp")))
 static const char magic_section[] = "";
 
-#endif  // defined(OS_APPLE)
+#endif  // BUILDFLAG(IS_APPLE)
 
 namespace {
 
@@ -167,17 +167,17 @@ const char kApplicationName[] = "chromoting";
 const char kStdinConfigPath[] = "-";
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 // The command line switch used to pass name of the pipe to capture audio on
 // linux.
 const char kAudioPipeSwitchName[] = "audio-pipe-name";
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
 // The command line switch used to pass name of the unix domain socket used to
 // listen for security key requests.
 const char kAuthSocknameSwitchName[] = "ssh-auth-sockname";
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_POSIX)
 
 // The command line switch used by the parent to request the host to signal it
 // when it is successfully started.
@@ -283,7 +283,9 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   void StartOnNetworkThread();
 
-#if defined(OS_POSIX)
+  void ShutdownOnNetworkThread();
+
+#if BUILDFLAG(IS_POSIX)
   // Callback passed to RegisterSignalHandler() to handle SIGTERM events.
   void SigTermHandler(int signal_number);
 #endif
@@ -353,7 +355,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   void GoOffline(const std::string& host_offline_reason);
   void OnHostOfflineReasonAck(bool success);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // mojom::RemotingHostControl implementation.
   void CrashHostProcess(const std::string& function_name,
                         const std::string& file_name,
@@ -366,7 +368,7 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   std::unique_ptr<ChromotingHostContext> context_;
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // Watch for certificate changes and kill the host when changes occur
   std::unique_ptr<CertificateWatcher> cert_watcher_;
 #endif
@@ -461,13 +463,13 @@ class HostProcess : public ConfigWatcher::Delegate,
   mojo::AssociatedReceiver<mojom::RemotingHostControl> remoting_host_control_{
       this};
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // When using the command line option to check the Accessibility or Screen
   // Recording permission, these track the permission state and indicate that
   // the host should exit immediately with the result.
   bool checking_permission_state_ = false;
   bool permission_granted_ = false;
-#endif  // defined(OS_APPLE)
+#endif  // BUILDFLAG(IS_APPLE)
 };
 
 HostProcess::HostProcess(std::unique_ptr<ChromotingHostContext> context,
@@ -485,7 +487,7 @@ HostProcess::HostProcess(std::unique_ptr<ChromotingHostContext> context,
 
   StartOnUiThread();
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   if (checking_permission_state_) {
     *exit_code_out = (permission_granted_ ? EXIT_SUCCESS : EXIT_FAILURE);
   }
@@ -500,7 +502,7 @@ HostProcess::~HostProcess() {
   // We might be getting deleted on one of the threads the |host_context| owns,
   // so we need to post it back to the caller thread to safely join & delete the
   // threads it contains.  This will go away when we move to AutoThread.
-  // |context_release()| will null |context_| before the method is invoked, so
+  // |context_.release()| will null |context_| before the method is invoked, so
   // we need to pull out the task-runner on which to call DeleteSoon first.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       context_->ui_task_runner();
@@ -508,7 +510,7 @@ HostProcess::~HostProcess() {
 }
 
 bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   if (cmd_line->HasSwitch(kCheckAccessibilityPermissionSwitchName)) {
     checking_permission_state_ = true;
     permission_granted_ = mac::CanInjectInput();
@@ -537,7 +539,7 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
     }
     return false;
   }
-#endif  // defined(OS_APPLE)
+#endif  // BUILDFLAG(IS_APPLE)
 
   // Mojo keeps the task runner passed to it alive forever, so an
   // AutoThreadTaskRunner should not be passed to it. Otherwise, the process may
@@ -729,14 +731,22 @@ void HostProcess::StartOnNetworkThread() {
   }
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
   remoting::RegisterSignalHandler(
       SIGTERM, base::BindRepeating(&HostProcess::SigTermHandler,
                                    base::Unretained(this)));
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_POSIX)
 }
 
-#if defined(OS_POSIX)
+void HostProcess::ShutdownOnNetworkThread() {
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+  config_watcher_.reset();
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  cert_watcher_.reset();
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+}
+
+#if BUILDFLAG(IS_POSIX)
 void HostProcess::SigTermHandler(int signal_number) {
   DCHECK(signal_number == SIGTERM);
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
@@ -765,7 +775,7 @@ void HostProcess::CreateAuthenticatorFactory() {
     if (allow_pairing_) {
       // On Windows |pairing_registry_| is initialized in
       // InitializePairingRegistry().
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
       if (!pairing_registry_) {
         std::unique_ptr<PairingRegistry::Delegate> delegate =
             CreatePairingRegistryDelegate();
@@ -774,7 +784,7 @@ void HostProcess::CreateAuthenticatorFactory() {
           pairing_registry_ = new PairingRegistry(context_->file_task_runner(),
                                                   std::move(delegate));
       }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
       pairing_registry = pairing_registry_;
     }
@@ -790,16 +800,16 @@ void HostProcess::CreateAuthenticatorFactory() {
     DCHECK(third_party_auth_config_.token_url.is_valid());
     DCHECK(third_party_auth_config_.token_validation_url.is_valid());
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     if (!cert_watcher_) {
       cert_watcher_ = std::make_unique<CertificateWatcher>(
-          base::BindRepeating(&HostProcess::ShutdownHost, this,
-                              kSuccessExitCode),
+          base::BindRepeating(&HostProcess::ShutdownHost,
+                              base::Unretained(this), kSuccessExitCode),
           context_->file_task_runner());
       cert_watcher_->Start();
     }
     cert_watcher_->SetMonitor(host_->status_monitor());
-#endif
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
     scoped_refptr<protocol::TokenValidatorFactory> token_validator_factory =
         new TokenValidatorFactoryImpl(third_party_auth_config_, key_pair_,
@@ -809,10 +819,10 @@ void HostProcess::CreateAuthenticatorFactory() {
         token_validator_factory);
   }
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
   // On Linux and Mac, perform a PAM authorization step after authentication.
   factory = std::make_unique<PamAuthorizationFactory>(std::move(factory));
-#endif
+#endif  // BUILDFLAG(IS_POSIX)
   host_->SetAuthenticatorFactory(std::move(factory));
 }
 
@@ -904,7 +914,7 @@ void HostProcess::StartOnUiThread() {
       base::BindRepeating(&HostProcess::OnPolicyUpdate, base::Unretained(this)),
       base::BindRepeating(&HostProcess::OnPolicyError, base::Unretained(this)));
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // If an audio pipe is specific on the command-line then initialize
   // AudioCapturerLinux to capture from it.
   base::FilePath audio_pipe_name = base::CommandLine::ForCurrentProcess()->
@@ -913,9 +923,9 @@ void HostProcess::StartOnUiThread() {
     remoting::AudioCapturerLinux::InitializePipeReader(
         context_->audio_task_runner(), audio_pipe_name);
   }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
   base::FilePath security_key_socket_name =
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           kAuthSocknameSwitchName);
@@ -925,7 +935,7 @@ void HostProcess::StartOnUiThread() {
   } else {
     security_key_extension_supported_ = false;
   }
-#endif  // defined(OS_POSIX)
+#endif  // BUILDFLAG(IS_POSIX)
 
   // Create a desktop environment factory appropriate to the build type &
   // platform.
@@ -951,6 +961,9 @@ void HostProcess::StartOnUiThread() {
 void HostProcess::ShutdownOnUiThread() {
   DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
 
+  context_->network_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&HostProcess::ShutdownOnNetworkThread, this));
+
   // Tear down resources that need to be torn down on the UI thread.
   desktop_environment_factory_.reset();
   policy_watcher_.reset();
@@ -962,12 +975,16 @@ void HostProcess::ShutdownOnUiThread() {
   // It is now safe for the HostProcess to be deleted.
   self_ = nullptr;
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // Cause the global AudioPipeReader to be freed, otherwise the audio
   // thread will remain in-use and prevent the process from exiting.
   // TODO(wez): DesktopEnvironmentFactory should own the pipe reader.
   // See crbug.com/161373 and crbug.com/104544.
   AudioCapturerLinux::InitializePipeReader(nullptr, base::FilePath());
+
+  context_->input_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce([]() { delete ui::X11EventSource::GetInstance(); }));
 #endif
 }
 
@@ -981,7 +998,7 @@ void HostProcess::OnFirstHeartbeatSuccessful() {
     return;
   }
   HOST_LOG << "Host ready to receive connections.";
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_POSIX)
   if (signal_parent_) {
     kill(getppid(), SIGUSR1);
     signal_parent_ = false;
@@ -994,7 +1011,7 @@ void HostProcess::OnHostDeleted() {
   ShutdownHost(kHostDeletedExitCode);
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void HostProcess::ApplyHostConfig(base::Value config) {
   DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
   OnConfigParsed(std::move(config));
@@ -1033,7 +1050,7 @@ void HostProcess::InitializePairingRegistry(
   // initialized.
   CreateAuthenticatorFactory();
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 // Applies the host config, returning true if successful.
 bool HostProcess::ApplyConfig(const base::Value& config) {
@@ -1259,7 +1276,7 @@ void HostProcess::ApplyUsernamePolicy() {
         !base::StartsWith(host_owner_, username + std::string("@"),
                           base::CompareCase::INSENSITIVE_ASCII);
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
     // On Mac, we run as root at the login screen, so the username won't match.
     // However, there's no need to enforce the policy at the login screen, as
     // the client will have to reconnect if a login occurs.
@@ -1271,10 +1288,10 @@ void HostProcess::ApplyUsernamePolicy() {
     // Curtain-mode on Windows presents the standard OS login prompt to the user
     // for each connection, removing the need for an explicit user-name matching
     // check.
-#if defined(OS_WIN) && defined(REMOTING_RDP_SESSION)
+#if BUILDFLAG(IS_WIN) && defined(REMOTING_RDP_SESSION)
     if (desktop_environment_options_.enable_curtaining())
       return;
-#endif  // defined(OS_WIN) && defined(REMOTING_RDP_SESSION)
+#endif  // BUILDFLAG(IS_WIN) && defined(REMOTING_RDP_SESSION)
 
     // Shutdown the host if the username does not match.
     if (shutdown) {
@@ -1340,15 +1357,15 @@ bool HostProcess::OnUdpPortPolicyUpdate(base::DictionaryValue* policies) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  std::string string_value;
-  if (!policies->GetString(policy::key::kRemoteAccessHostUdpPortRange,
-                           &string_value)) {
+  const std::string* string_value =
+      policies->FindStringKey(policy::key::kRemoteAccessHostUdpPortRange);
+  if (!string_value) {
     return false;
   }
 
-  if (!PortRange::Parse(string_value, &udp_port_range_)) {
+  if (!PortRange::Parse(*string_value, &udp_port_range_)) {
     // PolicyWatcher verifies that the value is formatted correctly.
-    LOG(FATAL) << "Invalid port range: " << string_value;
+    LOG(FATAL) << "Invalid port range: " << *string_value;
   }
   HOST_LOG << "Policy restricts UDP port range to: " << udp_port_range_;
   return true;
@@ -1365,7 +1382,7 @@ bool HostProcess::OnCurtainPolicyUpdate(base::DictionaryValue* policies) {
 
   desktop_environment_options_.set_enable_curtaining(curtain_required.value());
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   if (curtain_required.value()) {
     // When curtain mode is in effect on Mac, the host process runs in the
     // user's switched-out session, but launchd will also run an instance at
@@ -1575,6 +1592,7 @@ void HostProcess::InitializeSignaling() {
       context_->url_loader_factory());
   zombie_host_detector_ = std::make_unique<ZombieHostDetector>(base::BindOnce(
       &HostProcess::OnZombieStateDetected, base::Unretained(this)));
+
   auto ftl_signal_strategy = std::make_unique<FtlSignalStrategy>(
       std::make_unique<OAuthTokenGetterProxy>(
           oauth_token_getter_->GetWeakPtr()),
@@ -1667,7 +1685,7 @@ void HostProcess::StartHost() {
   // The feature is enabled for all Googlers using a supported platform.
   desktop_environment_options_.set_enable_remote_open_url(is_googler_);
 
-#if defined(OS_LINUX) || !defined(NDEBUG)
+#if BUILDFLAG(IS_LINUX) || !defined(NDEBUG)
   // Experimental feature. Enabled on Linux for easier testing.
   if (is_googler_) {
     desktop_environment_options_.set_enable_remote_webauthn(true);
@@ -1723,7 +1741,7 @@ void HostProcess::StartHost() {
       HostEventLogger::Create(host_->status_monitor(), kApplicationName);
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // Don't run the permission-checks as root (i.e. at the login screen), as they
   // are not actionable there.
   // Also, the permission-checks are not needed on MacOS 10.15+, as they are
@@ -1732,7 +1750,7 @@ void HostProcess::StartHost() {
   if (getuid() != 0U && base::mac::IsAtMostOS10_14()) {
     mac::PromptUserToChangeTrustStateIfNeeded(context_->ui_task_runner());
   }
-#endif  // defined(OS_APPLE)
+#endif  // BUILDFLAG(IS_APPLE)
 
   host_->Start(host_owner_);
   host_->StartChromotingHostServices();
@@ -1852,7 +1870,7 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   }
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void HostProcess::CrashHostProcess(const std::string& function_name,
                                    const std::string& file_name,
                                    int line_number) {
@@ -1864,7 +1882,7 @@ void HostProcess::CrashHostProcess(const std::string& function_name,
 int HostProcessMain() {
   HOST_LOG << "Starting host process: version " << STRINGIZE(VERSION);
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // Initialize Xlib for multi-threaded use, allowing non-Chromium code to
   // use X11 safely (such as the WebRTC capturer, GTK ...)
   x11::InitXlib();
@@ -1884,7 +1902,7 @@ int HostProcessMain() {
   // Need to prime the host OS version value for linux to prevent IO on the
   // network thread. base::GetLinuxDistro() caches the result.
   base::GetLinuxDistro();
-#endif
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Me2Me");
 
@@ -1892,7 +1910,7 @@ int HostProcessMain() {
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   base::RunLoop run_loop;
   std::unique_ptr<ChromotingHostContext> context =
-      ChromotingHostContext::Create(new AutoThreadTaskRunner(
+      ChromotingHostContext::Create(base::MakeRefCounted<AutoThreadTaskRunner>(
           main_task_executor.task_runner(), run_loop.QuitClosure()));
   if (!context)
     return kInitializationFailed;
@@ -1901,16 +1919,15 @@ int HostProcessMain() {
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(
       net::NetworkChangeNotifier::CreateIfNeeded());
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // Create an X11EventSource on all UI threads, so the global X11 connection
   // (x11::Connection::Get()) can dispatch X events.
   auto event_source =
       std::make_unique<ui::X11EventSource>(x11::Connection::Get());
-  auto input_task_runner = context->input_task_runner();
-  input_task_runner->PostTask(FROM_HERE, base::BindOnce([]() {
-                                new ui::X11EventSource(x11::Connection::Get());
-                              }));
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+  context->input_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce([]() { new ui::X11EventSource(x11::Connection::Get()); }));
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
   // Create & start the HostProcess using these threads.
   // TODO(wez): The HostProcess holds a reference to itself until Shutdown().
@@ -1921,12 +1938,6 @@ int HostProcessMain() {
 
   // Run the main (also UI) task executor until the host no longer needs it.
   run_loop.Run();
-
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-  input_task_runner->PostTask(FROM_HERE, base::BindOnce([]() {
-                                delete ui::X11EventSource::GetInstance();
-                              }));
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   // Block until tasks blocking shutdown have completed their execution.
   base::ThreadPoolInstance::Get()->Shutdown();

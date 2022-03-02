@@ -204,7 +204,7 @@ TEST_F(CompositorTestWithMessageLoop, ShouldUpdateDisplayProperties) {
   color_matrix.set(2, 2, 0.4f);
   gfx::DisplayColorSpaces display_color_spaces(
       gfx::ColorSpace::CreateDisplayP3D65());
-  display_color_spaces.SetSDRWhiteLevel(1.f);
+  display_color_spaces.SetSDRMaxLuminanceNits(1.f);
   base::TimeTicks vsync_timebase(base::TimeTicks::Now());
   base::TimeDelta vsync_interval(base::Milliseconds(250));
   compositor()->SetDisplayColorMatrix(color_matrix);
@@ -448,7 +448,7 @@ TEST_F(CompositorTestWithMessageLoop, ThroughputTrackerInvoluntaryReport) {
   EXPECT_FALSE(tracker.Stop());
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // TODO(crbug.com/608436): Flaky on windows trybots
 #define MAYBE_CreateAndReleaseOutputSurface \
   DISABLED_CreateAndReleaseOutputSurface

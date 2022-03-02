@@ -6,8 +6,7 @@ module network.mojom;
 
 import "components/content_settings/core/common/content_settings.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "mojo/public/mojom/base/unguessable_token.mojom";
-import "services/network/public/mojom/schemeful_site.mojom";
+import "services/network/public/mojom/cookie_partition_key.mojom";
 import "url/mojom/url.mojom";
 
 // Parameters for constructing a cookie manager.
@@ -148,22 +147,6 @@ struct CookieOptions {
   uint32 full_party_context_size = 0;
   // Whether the site is a member of a nontrivial First-Party Set.
   bool is_in_nontrivial_first_party_set = false;
-};
-
-struct CookiePartitionKey {
-  SchemefulSite site;
-
-  // Indicates the CookiePartitionKey is a placeholder indicating that the
-  // cookie should be partitioned, but it was created in the renderer so we
-  // don't know what its partition key is yet.
-  bool from_script = false;
-
-  mojo_base.mojom.UnguessableToken? nonce;
-};
-
-struct CookiePartitionKeyCollection {
-  bool contains_all_partitions = false;
-  array<CookiePartitionKey> keys;
 };
 
 // See net/cookies/canonical_cookie.{h,cc} for documentation.
@@ -324,6 +307,11 @@ struct CookieDeletionFilter {
 
   // Delete session/persistent cookies.
   CookieDeletionSessionControl session_control = IGNORE_CONTROL;
+
+  // Only delete partitioned cookies contained in this
+  // CookiePartitionKeyCollection.
+  // See net/cookies/cookie_partition_key_collection.h for documentation.
+  CookiePartitionKeyCollection cookie_partition_key_collection;
 };
 
 interface CookieChangeListener {

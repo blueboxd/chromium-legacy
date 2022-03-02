@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
-#include "base/ignore_result.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 }
 
 // Crashes under ThreadSanitizer, http://crbug.com/356758.
-#if defined(OS_WIN) || defined(OS_ANDROID) || defined(THREAD_SANITIZER)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) || defined(THREAD_SANITIZER)
 #define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView
 #else
 #define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView
@@ -480,7 +480,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // rwhv size. The behavior is correct on OSX, but incorrect on other
   // platforms.
   gfx::Size exp_wcv_size(300, 300);
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   exp_wcv_size.Enlarge(size_insets.width(), size_insets.height());
 #endif
 
@@ -504,7 +504,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 // Once again, the behavior is correct on OSX. The embedder explicitly sets
 // the size to (100,100) during navigation. Both the wcv and the rwhv should
 // take on that size.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   new_size.Enlarge(size_insets.width(), size_insets.height());
 #endif
   gfx::Size actual_size = shell()
@@ -1080,7 +1080,7 @@ struct FirstVisuallyNonEmptyPaintObserver : public WebContentsObserver {
 };
 
 // See: http://crbug.com/395664
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE_FirstVisuallyNonEmptyPaint DISABLED_FirstVisuallyNonEmptyPaint
 #else
 // http://crbug.com/398471
@@ -2532,6 +2532,16 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   const std::string user_agent_override = "foo";
   NoEntryUserAgentInjector injector(shell()->web_contents(),
                                     user_agent_override);
+
+  // This tests executes two JS statements. The second statement (reload())
+  // results in a particular NavigationEntry being created. This only works
+  // if there is an IPC to the renderer, which was historically always called,
+  // but now only called if a before-unload handler is present. Force the extra
+  // IPC by making RenderFrameHost believe there is a before-unload handler.
+  static_cast<RenderFrameHostImpl*>(shell()->web_contents()->GetMainFrame())
+      ->SuddenTerminationDisablerChanged(
+          true,
+          blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler);
 
   // This triggers creating a NavigationRequest without a NavigationEntry. More
   // specifically back() triggers creating a pending entry, and because back()
@@ -4374,9 +4384,8 @@ class LoadingObserver : public WebContentsObserver {
     events_.push_back("DocumentAvailableInMainFrame");
   }
 
-  void DocumentOnLoadCompletedInMainFrame(
-      RenderFrameHost* render_frame_host) override {
-    events_.push_back("DocumentOnLoadCompletedInMainFrame");
+  void DocumentOnLoadCompletedInPrimaryMainFrame() override {
+    events_.push_back("DocumentOnLoadCompletedInPrimaryMainFrame");
   }
 
   void DOMContentLoaded(RenderFrameHost* render_frame_host) override {
@@ -4420,12 +4429,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url));
   loading_observer.Wait();
 
-  EXPECT_THAT(loading_observer.GetEvents(),
-              testing::ElementsAre(
-                  "DidStartLoading", "DidStartNavigation",
-                  "DidFinishNavigation", "DocumentAvailableInMainFrame",
-                  "DOMContentLoaded", "DocumentOnLoadCompletedInMainFrame",
-                  "DidFinishLoad", "DidStopLoading"));
+  EXPECT_THAT(
+      loading_observer.GetEvents(),
+      testing::ElementsAre("DidStartLoading", "DidStartNavigation",
+                           "DidFinishNavigation",
+                           "DocumentAvailableInMainFrame", "DOMContentLoaded",
+                           "DocumentOnLoadCompletedInPrimaryMainFrame",
+                           "DidFinishLoad", "DidStopLoading"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -4493,12 +4503,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   loading_observer.Wait();
 
-  EXPECT_THAT(loading_observer.GetEvents(),
-              testing::ElementsAre(
-                  "DidStartLoading", "DidStartNavigation",
-                  "DidFinishNavigation", "DocumentAvailableInMainFrame",
-                  "DOMContentLoaded", "DocumentOnLoadCompletedInMainFrame",
-                  "DidFinishLoad", "DidStopLoading"));
+  EXPECT_THAT(
+      loading_observer.GetEvents(),
+      testing::ElementsAre("DidStartLoading", "DidStartNavigation",
+                           "DidFinishNavigation",
+                           "DocumentAvailableInMainFrame", "DOMContentLoaded",
+                           "DocumentOnLoadCompletedInPrimaryMainFrame",
+                           "DidFinishLoad", "DidStopLoading"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -4519,12 +4530,13 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   response.Done();
 
   loading_observer.Wait();
-  EXPECT_THAT(loading_observer.GetEvents(),
-              testing::ElementsAre(
-                  "DidStartLoading", "DidStartNavigation",
-                  "DidFinishNavigation", "DocumentAvailableInMainFrame",
-                  "DOMContentLoaded", "DocumentOnLoadCompletedInMainFrame",
-                  "DidFinishLoad", "DidStopLoading"));
+  EXPECT_THAT(
+      loading_observer.GetEvents(),
+      testing::ElementsAre("DidStartLoading", "DidStartNavigation",
+                           "DidFinishNavigation",
+                           "DocumentAvailableInMainFrame", "DOMContentLoaded",
+                           "DocumentOnLoadCompletedInPrimaryMainFrame",
+                           "DidFinishLoad", "DidStopLoading"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -4954,7 +4966,7 @@ class WebContentsImplBrowserTestWindowControlsOverlay
 
     web_contents->UpdateWindowControlsOverlay(bounding_client_rect);
     TitleWatcher title_watcher(web_contents, u"ongeometrychange");
-    ignore_result(title_watcher.WaitAndGetTitle());
+    std::ignore = title_watcher.WaitAndGetTitle();
   }
 
  private:
@@ -5034,7 +5046,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestWindowControlsOverlay,
   gfx::Rect bounding_client_rect = gfx::Rect(2, 3, 4, 5);
   web_contents->UpdateWindowControlsOverlay(bounding_client_rect);
   TitleWatcher title_watcher(web_contents, u"ongeometrychange1");
-  ignore_result(title_watcher.WaitAndGetTitle());
+  std::ignore = title_watcher.WaitAndGetTitle();
 
   // Expect the "geometrychange" event to have fired once.
   EXPECT_EQ(1, EvalJs(web_contents, "geometrychangeCount"));
@@ -5047,7 +5059,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestWindowControlsOverlay,
   EXPECT_EQ(bounding_client_rect.height(), EvalJs(web_contents, "rect.height"));
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestWindowControlsOverlay,
                        ValidatePageScaleChangesInfoAndFiresEvent) {
   auto* web_contents = shell()->web_contents();
@@ -5077,7 +5089,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestWindowControlsOverlay,
              "}"));
   content::HostZoomMap::SetZoomLevel(web_contents, 1.5);
   TitleWatcher title_watcher(web_contents, u"ongeometrychangefromzoomlevel");
-  ignore_result(title_watcher.WaitAndGetTitle());
+  std::ignore = title_watcher.WaitAndGetTitle();
 
   // Validate the event payload.
   double zoom_factor = blink::PageZoomLevelToZoomFactor(
@@ -5098,7 +5110,7 @@ class WebContentsImplBrowserTestWindowControlsOverlayNonOneDeviceScaleFactor
     : public WebContentsImplBrowserTestWindowControlsOverlay {
  public:
   void SetUp() override {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // Device scale factor on MacOSX is always an integer.
     EnablePixelOutput(2.0f);
 #else
@@ -5121,7 +5133,7 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_TRUE(NavigateToURL(shell(), url));
   WaitForLoadStop(web_contents);
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Device scale factor on MacOSX is always an integer.
   ASSERT_EQ(2.0f,
             web_contents->GetRenderWidgetHostView()->GetDeviceScaleFactor());
@@ -5430,8 +5442,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplStarScanPrerenderBrowserTest,
   // now disabled.
   {
     PCScanReadyToCommitObserver observer(shell()->web_contents());
-    ignore_result(ExecJs(shell()->web_contents()->GetMainFrame(),
-                         JsReplace("location = $1", prendering_url)));
+    std::ignore = ExecJs(shell()->web_contents()->GetMainFrame(),
+                         JsReplace("location = $1", prendering_url));
     observer.Wait();
     EXPECT_FALSE(observer.WasPCScanEnabled());
   }

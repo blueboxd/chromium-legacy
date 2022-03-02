@@ -161,6 +161,7 @@ component("gfx") {
   }
   if (is_mac) {
     sources += [
+      "ca_layer_result.h",
       "canvas_paint_mac.h",
       "canvas_paint_mac.mm",
       "decorated_text_mac.h",
@@ -766,12 +767,13 @@ test("gfx_unittests") {
       "geometry/axis_transform2d_unittest.cc",
       "geometry/box_unittest.cc",
       "geometry/cubic_bezier_unittest.cc",
+      "geometry/insets_f_unittest.cc",
       "geometry/insets_unittest.cc",
       "geometry/matrix3_unittest.cc",
-      "geometry/point3_unittest.cc",
+      "geometry/point3_f_unittest.cc",
       "geometry/point_f_unittest.cc",
       "geometry/point_unittest.cc",
-      "geometry/quad_unittest.cc",
+      "geometry/quad_f_unittest.cc",
       "geometry/quaternion_unittest.cc",
       "geometry/rect_conversions_unittest.cc",
       "geometry/rect_f_unittest.cc",
@@ -785,7 +787,7 @@ test("gfx_unittests") {
       "geometry/triangle_unittest.cc",
       "geometry/vector2d_f_unittest.cc",
       "geometry/vector2d_unittest.cc",
-      "geometry/vector3d_unittest.cc",
+      "geometry/vector3d_f_unittest.cc",
       "half_float_unittest.cc",
       "icc_profile_unittest.cc",
       "image/image_skia_operations_unittest.cc",

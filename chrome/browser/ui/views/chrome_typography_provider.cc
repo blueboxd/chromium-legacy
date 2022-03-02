@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/chrome_typography_provider.h"
 
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -17,7 +18,7 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #include "ui/native_theme/native_theme_win.h"
 #endif
@@ -106,9 +107,9 @@ ui::ResourceBundle::FontDetails ChromeTypographyProvider::GetFontDetails(
 
   if (style == STYLE_PRIMARY_MONOSPACED ||
       style == STYLE_SECONDARY_MONOSPACED) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     details.typeface = "Menlo";
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
     details.typeface = "Consolas";
 #else
     details.typeface = "DejaVu Sans Mono";
@@ -129,13 +130,11 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
   if (context == CONTEXT_DOWNLOAD_SHELF ||
       (context == CONTEXT_DOWNLOAD_SHELF_STATUS &&
        style == views::style::STYLE_DISABLED)) {
-    // TODO(pkasting): Instead of reusing COLOR_BOOKMARK_TEXT, use dedicated
-    // values.
     const auto* theme_provider = view.GetThemeProvider();
     if (!theme_provider)
       return gfx::kPlaceholderColor;
     const SkColor base_color =
-        theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
+        theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_TEXT);
     // TODO(pkasting): Should use some way of dimming text that's as analogous
     // as possible to e.g. enabled vs. disabled labels.
     const SkColor dimmed_color = SkColorSetA(base_color, 0xC7);
@@ -179,12 +178,12 @@ int ChromeTypographyProvider::GetLineHeight(int context, int style) const {
 // The platform-specific heights (i.e. gfx::Font::GetHeight()) that result when
 // asking for the target size constants in ChromeTypographyProvider::GetFont()
 // in a default OS configuration.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   constexpr int kHeadlinePlatformHeight = 25;
   constexpr int kTitlePlatformHeight = 19;
   constexpr int kBodyTextLargePlatformHeight = 16;
   constexpr int kBodyTextSmallPlatformHeight = 15;
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   constexpr int kHeadlinePlatformHeight = 27;
   constexpr int kTitlePlatformHeight = 20;
   constexpr int kBodyTextLargePlatformHeight = 18;

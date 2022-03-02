@@ -91,8 +91,7 @@ class PerProjectDictionaryPrefUpdate {
       : update_(prefs, kTypeSubscribedForInvalidations) {
     per_sender_pref_ = update_->FindDictKey(project_id);
     if (!per_sender_pref_) {
-      update_->SetDictionary(project_id,
-                             std::make_unique<base::DictionaryValue>());
+      update_->SetKey(project_id, base::Value(base::Value::Type::DICTIONARY));
       per_sender_pref_ = update_->FindDictKey(project_id);
     }
     DCHECK(per_sender_pref_);
@@ -114,7 +113,7 @@ void MigratePrefs(PrefService* prefs, const std::string& project_id) {
   }
   {
     DictionaryPrefUpdate token_update(prefs, kActiveRegistrationTokens);
-    token_update->SetString(
+    token_update->SetStringKey(
         project_id, prefs->GetString(kActiveRegistrationTokenDeprecated));
   }
 
@@ -405,7 +404,7 @@ void PerUserTopicSubscriptionManager::ActOnSuccessfulSubscription(
     // request).
     {
       PerProjectDictionaryPrefUpdate update(pref_service_, project_id_);
-      update->SetKey(topic, base::Value(private_topic_name));
+      update->SetStringKey(topic, private_topic_name);
       topic_to_private_topic_[topic] = private_topic_name;
       private_topic_to_topic_[private_topic_name] = topic;
     }
@@ -571,13 +570,15 @@ PerUserTopicSubscriptionManager::DropAllSavedSubscriptionsOnTokenChangeImpl() {
   {
     DictionaryPrefUpdate token_update(pref_service_, kActiveRegistrationTokens);
     std::string previous_token;
-    token_update->GetString(project_id_, &previous_token);
+    if (const std::string* str_ptr = token_update->FindStringKey(project_id_)) {
+      previous_token = *str_ptr;
+    }
     if (previous_token == instance_id_token_) {
       // Note: This includes the case where the token was and still is empty.
       return TokenStateOnSubscriptionRequest::kTokenUnchanged;
     }
 
-    token_update->SetString(project_id_, instance_id_token_);
+    token_update->SetStringKey(project_id_, instance_id_token_);
     if (previous_token.empty()) {
       // If we didn't have a registration token before, we shouldn't have had
       // any subscriptions either, so no need to drop them.

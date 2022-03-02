@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -158,12 +157,11 @@ std::unique_ptr<net::CanonicalCookie> ToCanonicalCookie(
     cookie_partition_key = net::CookiePartitionKey::FromScript();
   }
 
-  // TODO(crbug.com/1144187): Add support for SameParty attribute.
   return net::CanonicalCookie::CreateSanitizedCookie(
       cookie_url, name.Utf8(), value.Utf8(), domain.Utf8(), path.Utf8(),
       base::Time() /*creation*/, expires, base::Time() /*last_access*/,
       true /*secure*/, false /*http_only*/, same_site,
-      net::CookiePriority::COOKIE_PRIORITY_DEFAULT, false /*same_party*/,
+      net::CookiePriority::COOKIE_PRIORITY_DEFAULT, options->sameParty(),
       cookie_partition_key);
 }
 

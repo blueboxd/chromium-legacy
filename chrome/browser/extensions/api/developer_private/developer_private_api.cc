@@ -7,13 +7,13 @@
 #include <stddef.h>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
-#include "base/ignore_result.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -83,6 +83,7 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/path_util.h"
+#include "extensions/browser/permissions_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/ui_util.h"
 #include "extensions/browser/warning_service.h"
@@ -129,8 +130,8 @@ const char kManifestKeyIsRequiredError[] =
     "The 'manifestKey' argument is required for manifest files.";
 const char kCouldNotFindWebContentsError[] =
     "Could not find a valid web contents.";
-const char kCannotUpdateSupervisedProfileSettingsError[] =
-    "Cannot change settings for a supervised profile.";
+const char kCannotUpdateChildAccountProfileSettingsError[] =
+    "Cannot change settings for a child account profile.";
 const char kNoOptionsPageForExtensionError[] =
     "Extension does not have an options page.";
 const char kCannotRepairHealthyExtension[] =
@@ -159,7 +160,7 @@ std::string ReadFileToString(const base::FilePath& path) {
   std::string data;
   // This call can fail, but it doesn't matter for our purposes. If it fails,
   // we simply return an empty string for the manifest, and ignore it.
-  ignore_result(base::ReadFileToString(path, &data));
+  std::ignore = base::ReadFileToString(path, &data);
   return data;
 }
 
@@ -308,7 +309,7 @@ DeveloperPrivateAPI::GetFactoryInstance() {
 std::unique_ptr<developer::ProfileInfo> DeveloperPrivateAPI::CreateProfileInfo(
     Profile* profile) {
   std::unique_ptr<developer::ProfileInfo> info(new developer::ProfileInfo());
-  info->is_supervised = profile->IsChild();
+  info->is_child_account = profile->IsChild();
   PrefService* prefs = profile->GetPrefs();
   const PrefService::Preference* pref =
       prefs->FindPreference(prefs::kExtensionsUIDeveloperMode);
@@ -316,7 +317,7 @@ std::unique_ptr<developer::ProfileInfo> DeveloperPrivateAPI::CreateProfileInfo(
                                  IncognitoModePrefs::Availability::kDisabled;
   info->is_developer_mode_controlled_by_policy = pref->IsManaged();
   info->in_developer_mode =
-      !info->is_supervised &&
+      !info->is_child_account &&
       prefs->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   info->can_load_unpacked =
       ExtensionManagementFactory::GetForBrowserContext(profile)
@@ -896,7 +897,7 @@ DeveloperPrivateUpdateProfileConfigurationFunction::Run() {
   PrefService* prefs = profile->GetPrefs();
   if (update.in_developer_mode) {
     if (profile->IsChild())
-      return RespondNow(Error(kCannotUpdateSupervisedProfileSettingsError));
+      return RespondNow(Error(kCannotUpdateChildAccountProfileSettingsError));
     prefs->SetBoolean(prefs::kExtensionsUIDeveloperMode,
                       *update.in_developer_mode);
   }
@@ -1110,7 +1111,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateLoadUnpackedFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   if (profile->IsChild()) {
     return RespondNow(
-        Error("Supervised users cannot load unpacked extensions."));
+        Error("Child account users cannot load unpacked extensions."));
   }
   PrefService* prefs = profile->GetPrefs();
   if (!prefs->GetBoolean(prefs::kExtensionsUIDeveloperMode)) {
@@ -2109,6 +2110,29 @@ DeveloperPrivateRemoveHostPermissionFunction::Run() {
 void DeveloperPrivateRemoveHostPermissionFunction::
     OnRuntimePermissionsRevoked() {
   Respond(NoArguments());
+}
+
+DeveloperPrivateGetUserSiteSettingsFunction::
+    DeveloperPrivateGetUserSiteSettingsFunction() = default;
+DeveloperPrivateGetUserSiteSettingsFunction::
+    ~DeveloperPrivateGetUserSiteSettingsFunction() = default;
+
+ExtensionFunction::ResponseAction
+DeveloperPrivateGetUserSiteSettingsFunction::Run() {
+  const PermissionsManager::UserPermissionsSettings& settings =
+      PermissionsManager::Get(browser_context())->GetUserPermissionsSettings();
+
+  developer::UserSiteSettings user_site_settings;
+  user_site_settings.permitted_sites.reserve(settings.permitted_sites.size());
+  for (const auto& origin : settings.permitted_sites)
+    user_site_settings.permitted_sites.push_back(origin.Serialize());
+
+  user_site_settings.restricted_sites.reserve(settings.restricted_sites.size());
+  for (const auto& origin : settings.restricted_sites)
+    user_site_settings.restricted_sites.push_back(origin.Serialize());
+
+  return RespondNow(OneArgument(
+      base::Value::FromUniquePtrValue(user_site_settings.ToValue())));
 }
 
 }  // namespace api

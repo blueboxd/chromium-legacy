@@ -24,7 +24,6 @@ struct BitstreamBufferMetadata;
 class CodecPicture;
 class ScopedVABuffer;
 class VideoFrame;
-class VASurface;
 class VaapiWrapper;
 
 // An VaapiVideoEncoderDelegate  performs high-level, platform-independent

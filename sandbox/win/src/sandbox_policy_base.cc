@@ -96,7 +96,6 @@ PolicyBase::PolicyBase()
       memory_limit_(0),
       use_alternate_desktop_(false),
       use_alternate_winstation_(false),
-      file_system_init_(false),
       relaxed_interceptions_(true),
       stdout_handle_(INVALID_HANDLE_VALUE),
       stderr_handle_(INVALID_HANDLE_VALUE),
@@ -644,16 +643,12 @@ ResultCode PolicyBase::AddAppContainerProfile(const wchar_t* package_name,
 }
 
 scoped_refptr<AppContainer> PolicyBase::GetAppContainer() {
-  return GetAppContainerBase();
+  return app_container_;
 }
 
 void PolicyBase::SetEffectiveToken(HANDLE token) {
   CHECK(token);
   effective_token_ = token;
-}
-
-scoped_refptr<AppContainerBase> PolicyBase::GetAppContainerBase() {
-  return app_container_;
 }
 
 ResultCode PolicyBase::SetupAllInterceptions(TargetProcess& target) {
@@ -700,11 +695,6 @@ ResultCode PolicyBase::AddRuleInternal(SubSystem subsystem,
 
   switch (subsystem) {
     case SUBSYS_FILES: {
-      if (!file_system_init_) {
-        if (!FileSystemPolicy::SetInitialRules(policy_maker_))
-          return SBOX_ERROR_BAD_PARAMS;
-        file_system_init_ = true;
-      }
       if (!FileSystemPolicy::GenerateRules(pattern, semantics, policy_maker_)) {
         NOTREACHED();
         return SBOX_ERROR_BAD_PARAMS;

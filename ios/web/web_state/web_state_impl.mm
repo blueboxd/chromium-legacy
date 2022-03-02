@@ -11,6 +11,7 @@
 #import "base/feature_list.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/permissions/permissions.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/web_state_impl_realized_web_state.h"
@@ -138,6 +139,10 @@ void WebStateImpl::OnPageLoaded(const GURL& url, bool load_success) {
 void WebStateImpl::OnFaviconUrlUpdated(
     const std::vector<FaviconURL>& candidates) {
   RealizedState()->OnFaviconUrlUpdated(candidates);
+}
+
+void WebStateImpl::OnStateChangedForPermission(Permission permission) {
+  RealizedState()->OnStateChangedForPermission(permission);
 }
 
 NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() {
@@ -303,6 +308,7 @@ WebState* WebStateImpl::ForceRealized() {
     DCHECK(saved_);
     const CreateParams params = saved_->GetCreateParams();
     CRWSessionStorage* session_storage = saved_->GetSessionStorage();
+    FaviconStatus favicon_status = saved_->GetFaviconStatus();
     DCHECK(session_storage);
 
     // Create the RealizedWebState. At this point the WebStateImpl has
@@ -320,6 +326,7 @@ WebState* WebStateImpl::ForceRealized() {
     // code should be able to observe the WebStateImpl with both `saved_`
     // and `pimpl_` set.
     pimpl_->Init(params, session_storage);
+    pimpl_->SetFaviconStatus(favicon_status);
 
     // Notify all observers that the WebState has become realized.
     for (auto& observer : observers_)
@@ -429,6 +436,11 @@ void WebStateImpl::ExecuteUserJavaScript(NSString* javascript) {
   RealizedState()->ExecuteUserJavaScript(javascript);
 }
 
+NSString* WebStateImpl::GetStableIdentifier() const {
+  return LIKELY(pimpl_) ? pimpl_->GetStableIdentifier()
+                        : saved_->GetStableIdentifier();
+}
+
 const std::string& WebStateImpl::GetContentsMimeType() const {
   static std::string kEmptyString;
   return LIKELY(pimpl_) ? pimpl_->GetContentsMimeType() : kEmptyString;
@@ -464,6 +476,19 @@ bool WebStateImpl::IsEvicted() const {
 
 bool WebStateImpl::IsBeingDestroyed() const {
   return is_being_destroyed_;
+}
+
+const FaviconStatus& WebStateImpl::GetFaviconStatus() const {
+  return LIKELY(pimpl_) ? pimpl_->GetFaviconStatus()
+                        : saved_->GetFaviconStatus();
+}
+
+void WebStateImpl::SetFaviconStatus(const FaviconStatus& favicon_status) {
+  if (LIKELY(pimpl_)) {
+    pimpl_->SetFaviconStatus(favicon_status);
+  } else {
+    saved_->SetFaviconStatus(favicon_status);
+  }
 }
 
 const GURL& WebStateImpl::GetVisibleURL() const {
@@ -523,6 +548,12 @@ void WebStateImpl::CreateFullPagePdf(
   RealizedState()->CreateFullPagePdf(std::move(callback));
 }
 
+void WebStateImpl::CloseMediaPresentations() {
+  if (pimpl_) {
+    pimpl_->CloseMediaPresentations();
+  }
+}
+
 void WebStateImpl::AddObserver(WebStateObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -541,6 +572,17 @@ bool WebStateImpl::SetSessionStateData(NSData* data) {
 
 NSData* WebStateImpl::SessionStateData() {
   return LIKELY(pimpl_) ? pimpl_->SessionStateData() : nil;
+}
+
+PermissionState WebStateImpl::GetStateForPermission(
+    Permission permission) const {
+  return LIKELY(pimpl_) ? pimpl_->GetStateForPermission(permission)
+                        : PermissionState::NOT_ACCESSIBLE;
+}
+
+void WebStateImpl::SetStateForPermission(PermissionState state,
+                                         Permission permission) {
+  RealizedState()->SetStateForPermission(state, permission);
 }
 
 void WebStateImpl::AddPolicyDecider(WebStatePolicyDecider* decider) {

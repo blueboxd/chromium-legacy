@@ -325,10 +325,8 @@ void RecordUMAHistogramForOOBEStepCompletionTime(OobeScreenId screen,
   screen_name[0] = std::toupper(screen_name[0]);
   std::string histogram_name_with_reason =
       "OOBE.StepCompletionTimeByExitReason." + screen_name + "." + exit_reason;
-  base::HistogramBase* histogram_with_reason = base::Histogram::FactoryTimeGet(
-      histogram_name_with_reason, base::Milliseconds(10), base::Minutes(10),
-      100, base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram_with_reason->AddTime(step_time);
+  base::UmaHistogramCustomTimes(histogram_name_with_reason, step_time,
+                                base::Milliseconds(10), base::Minutes(10), 100);
 }
 
 LoginDisplayHost* GetLoginDisplayHost() {
@@ -391,6 +389,10 @@ WizardController::WizardController(WizardContext* wizard_context)
   if (GetOobeUI()) {
     // could be null in unit tests.
     screen_manager_->Init(CreateScreens());
+    // OOBE UI can be recreated in case of CrossOriginOpenerPolicyByDefault.
+    // TODO(crbug.com/1100879): Remove this logic after WebUI split is done,
+    // as screens should work with late binding/early unbinding in that case.
+    oobe_ui_observation_.Observe(GetOobeUI());
   }
 }
 
@@ -458,6 +460,12 @@ void WizardController::Init(OobeScreenId first_screen) {
   }
 
   AdvanceToScreenAfterHIDDetection(first_screen);
+}
+
+void WizardController::OnDestroyingOobeUI() {
+  // Reset screens, they should not access handlers anymore.
+  screen_manager_->Shutdown();
+  oobe_ui_observation_.Reset();
 }
 
 void WizardController::AdvanceToScreenAfterHIDDetection(
@@ -1049,6 +1057,10 @@ void WizardController::OnGaiaScreenExit(GaiaScreen::Result result) {
     case GaiaScreen::Result::START_CONSUMER_KIOSK:
       LoginDisplayHost::default_host()->AttemptShowEnableConsumerKioskScreen();
       break;
+    case GaiaScreen::Result::SAML_VIDEO_TIMEOUT:
+      LoginDisplayHost::default_host()->HideOobeDialog(
+          /*saml_video_timeout=*/true);
+      break;
   }
 }
 
@@ -1181,8 +1193,8 @@ void WizardController::OnGuestTosScreenExit(GuestTosScreen::Result result) {
   switch (result) {
     case GuestTosScreen::Result::ACCEPT:
       ash::LoginDisplayHost::default_host()->GetExistingUserController()->Login(
-          chromeos::UserContext(user_manager::USER_TYPE_GUEST,
-                                user_manager::GuestAccountId()),
+          UserContext(user_manager::USER_TYPE_GUEST,
+                      user_manager::GuestAccountId()),
           chromeos::SigninSpecifics());
       break;
     case GuestTosScreen::Result::BACK:
@@ -1339,7 +1351,7 @@ void WizardController::OnEulaScreenExit(EulaScreen::Result result) {
       // method.
       DCHECK(demo_setup_controller_);
       PerformPostEulaActions();
-      ShowArcTermsOfServiceScreen();
+      ShowConsolidatedConsentScreen();
       break;
     case EulaScreen::Result::NOT_APPLICABLE_CONSOLIDATED_CONSENT_REGULAR:
       DCHECK(!demo_setup_controller_);
@@ -1423,12 +1435,11 @@ void WizardController::OnEnrollmentScreenExit(EnrollmentScreen::Result result) {
           << EnrollmentScreen::GetResultString(result) << ").";
   switch (result) {
     case EnrollmentScreen::Result::COMPLETED:
-    case EnrollmentScreen::Result::SKIPPED_FOR_TESTS:
       OnEnrollmentDone();
       break;
     case EnrollmentScreen::Result::BACK:
-      retry_auto_enrollment_check_ = true;
-      ShowAutoEnrollmentCheckScreen();
+    case EnrollmentScreen::Result::SKIPPED_FOR_TESTS:
+      ShowPackagedLicenseScreen();
       break;
     case EnrollmentScreen::Result::TPM_ERROR:
       DCHECK(switches::IsTpmDynamic());
@@ -1439,6 +1450,10 @@ void WizardController::OnEnrollmentScreenExit(EnrollmentScreen::Result result) {
       DCHECK(switches::IsTpmDynamic());
       wizard_context_->tpm_dbus_error = true;
       AdvanceToScreen(TpmErrorView::kScreenId);
+      break;
+    case EnrollmentScreen::Result::BACK_TO_AUTO_ENROLLMENT_CHECK:
+      retry_auto_enrollment_check_ = true;
+      ShowAutoEnrollmentCheckScreen();
       break;
   }
 }

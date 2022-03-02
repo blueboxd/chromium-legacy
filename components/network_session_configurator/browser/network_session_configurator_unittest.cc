@@ -26,7 +26,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -71,7 +71,6 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_FALSE(params_.enable_http2_settings_grease);
   EXPECT_FALSE(params_.greased_http2_frame);
   EXPECT_FALSE(params_.http2_end_stream_with_data_frame);
-  EXPECT_TRUE(params_.enable_websocket_over_http2);
 
   EXPECT_TRUE(params_.enable_quic);
   EXPECT_TRUE(quic_params_.retry_without_alt_svc_on_quic_errors);
@@ -776,10 +775,10 @@ TEST_F(NetworkSessionConfiguratorTest, HostRules) {
 }
 
 TEST_F(NetworkSessionConfiguratorTest, DefaultCacheBackend) {
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE,
             ChooseCacheType());
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   EXPECT_EQ(
       base::mac::IsAtLeastOS10_14()
           ? net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE
@@ -799,10 +798,10 @@ TEST_F(NetworkSessionConfiguratorTest, SimpleCacheTrialExperimentYes) {
 
 TEST_F(NetworkSessionConfiguratorTest, SimpleCacheTrialDisable) {
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial", "Disable");
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE,
             ChooseCacheType());
-#else  // defined(OS_ANDROID)
+#else  // BUILDFLAG(IS_ANDROID)
   // Android always uses the simple cache.
   EXPECT_EQ(net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE,
             ChooseCacheType());

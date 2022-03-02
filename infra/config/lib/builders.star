@@ -102,8 +102,10 @@ os = struct(
     WINDOWS_8_1 = os_enum("Windows-8.1", os_category.WINDOWS),
     WINDOWS_10 = os_enum("Windows-10", os_category.WINDOWS),
     WINDOWS_10_1703 = os_enum("Windows-10-15063", os_category.WINDOWS),
-    WINDOWS_10_20h2 = os_enum("Windows-10-19042", os_category.WINDOWS),
     WINDOWS_10_1909 = os_enum("Windows-10-18363", os_category.WINDOWS),
+    WINDOWS_10_20h2 = os_enum("Windows-10-19042", os_category.WINDOWS),
+    WINDOWS_11 = os_enum("Windows-11", os_category.WINDOWS),
+    WINDOWS_11_21h2 = os_enum("Windows-11-22000", os_category.WINDOWS),
     WINDOWS_DEFAULT = os_enum("Windows-10", os_category.WINDOWS),
     WINDOWS_ANY = os_enum("Windows", os_category.WINDOWS),
 )
@@ -365,6 +367,7 @@ def builder(
         triggered_by = args.DEFAULT,
         os = args.DEFAULT,
         builderless = args.DEFAULT,
+        override_builder_dimension = None,
         auto_builder_dimension = args.DEFAULT,
         fully_qualified_builder_dimension = args.DEFAULT,
         cores = args.DEFAULT,
@@ -443,6 +446,9 @@ def builder(
         builderless: a boolean indicating whether the builder runs on
             builderless machines. If True, emits a 'builderless:1' dimension. By
             default, considered True iff `os` refers to a linux OS.
+        override_builder_dimension: a string to assign to the "builder"
+            dimension. Ignores any other "builder" and "builderless" dimensions
+            that would have been assigned.
         auto_builder_dimension: a boolean indicating whether the builder runs on
             machines devoted to the builder. If True, a dimension will be
             emitted of the form 'builder:<name>'. By default, considered True
@@ -596,30 +602,33 @@ def builder(
     if os:
         dimensions["os"] = os.dimension
 
-    builderless = defaults.get_value("builderless", builderless)
-    if builderless == args.COMPUTE:
-        builderless = os != None and os.category in _DEFAULT_BUILDERLESS_OS_CATEGORIES
-    if builderless:
-        dimensions["builderless"] = "1"
-
     # bucket might be the args.COMPUTE sentinel value if the caller didn't set
     # bucket in some way, which will result in a weird fully-qualified builder
     # dimension, but it shouldn't matter because the call to luci.builder will
     # fail without bucket being set
     bucket = defaults.get_value("bucket", bucket)
 
-    auto_builder_dimension = defaults.get_value(
-        "auto_builder_dimension",
-        auto_builder_dimension,
-    )
-    if auto_builder_dimension == args.COMPUTE:
-        auto_builder_dimension = builderless == False
-    if auto_builder_dimension:
-        fully_qualified_builder_dimension = defaults.get_value("fully_qualified_builder_dimension", fully_qualified_builder_dimension)
-        if fully_qualified_builder_dimension:
-            dimensions["builder"] = "{}/{}/{}".format(settings.project, bucket, name)
-        else:
-            dimensions["builder"] = name
+    if override_builder_dimension:
+        dimensions["builder"] = override_builder_dimension
+    else:
+        builderless = defaults.get_value("builderless", builderless)
+        if builderless == args.COMPUTE:
+            builderless = os != None and os.category in _DEFAULT_BUILDERLESS_OS_CATEGORIES
+        if builderless:
+            dimensions["builderless"] = "1"
+
+        auto_builder_dimension = defaults.get_value(
+            "auto_builder_dimension",
+            auto_builder_dimension,
+        )
+        if auto_builder_dimension == args.COMPUTE:
+            auto_builder_dimension = builderless == False
+        if auto_builder_dimension:
+            fully_qualified_builder_dimension = defaults.get_value("fully_qualified_builder_dimension", fully_qualified_builder_dimension)
+            if fully_qualified_builder_dimension:
+                dimensions["builder"] = "{}/{}/{}".format(settings.project, bucket, name)
+            else:
+                dimensions["builder"] = name
 
     cores = defaults.get_value("cores", cores)
     if cores != None:

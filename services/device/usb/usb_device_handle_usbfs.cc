@@ -10,13 +10,13 @@
 #include <sys/ioctl.h>
 
 #include <numeric>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/containers/contains.h"
 #include "base/files/file_descriptor_watcher_posix.h"
-#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/numerics/checked_math.h"
@@ -235,7 +235,7 @@ void UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::ReleaseFileDescriptor() {
   // This method intentionally leaks the file descriptor.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   watch_controller_.reset();
-  ignore_result(fd_.release());
+  std::ignore = fd_.release();
 }
 
 bool UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::SetConfiguration(
@@ -370,7 +370,6 @@ UsbDeviceHandleUsbfs::Transfer::Transfer(
     scoped_refptr<base::RefCountedBytes> buffer,
     TransferCallback callback)
     : buffer(buffer), callback(std::move(callback)) {
-  memset(&urb, 0, sizeof(urb));
   urb.usercontext = this;
   urb.buffer = buffer->front();
 }
@@ -379,9 +378,6 @@ UsbDeviceHandleUsbfs::Transfer::Transfer(
     scoped_refptr<base::RefCountedBytes> buffer,
     IsochronousTransferCallback callback)
     : buffer(buffer), isoc_callback(std::move(callback)) {
-  // This buffer size calculation is checked in operator new().
-  memset(&urb, 0,
-         sizeof(urb) + sizeof(urb.iso_frame_desc[0]) * urb.number_of_packets);
   urb.usercontext = this;
   urb.buffer = buffer->front();
 }
@@ -399,6 +395,8 @@ void* UsbDeviceHandleUsbfs::Transfer::operator new(
           .ValueOrDie();
   void* p = ::operator new(total_size);
   Transfer* transfer = static_cast<Transfer*>(p);
+  memset(&transfer->urb, 0,
+         sizeof(urb) + sizeof(urb.iso_frame_desc[0]) * number_of_iso_packets);
   transfer->urb.number_of_packets = number_of_iso_packets;
   return p;
 }

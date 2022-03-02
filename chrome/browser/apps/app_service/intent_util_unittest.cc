@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/apps/app_service/intent_util.h"
+
 #include <initializer_list>
 #include <memory>
 #include <string>
@@ -12,12 +14,9 @@
 #include "ash/components/arc/mojom/intent_helper.mojom.h"
 #include "base/check.h"
 #include "base/containers/flat_map.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -130,28 +129,6 @@ class IntentUtilsTest : public testing::Test {
     return true;
   }
 };
-
-TEST_F(IntentUtilsTest, CreateIntentForArcIntentAndActivity) {
-  arc::mojom::IntentInfoPtr arc_intent = CreateArcIntent();
-  arc::mojom::ActivityNamePtr src_activity = CreateActivity();
-  apps::mojom::IntentPtr intent =
-      apps_util::CreateIntentForArcIntentAndActivity(arc_intent.Clone(),
-                                                     src_activity.Clone());
-
-  std::string intent_str =
-      apps_util::CreateLaunchIntent("com.android.vending", intent);
-  EXPECT_TRUE(intent_str.empty());
-
-  arc::mojom::ActivityNamePtr dst_activity = arc::mojom::ActivityName::New();
-  if (intent->activity_name.has_value() &&
-      !intent->activity_name.value().empty()) {
-    dst_activity->activity_name = intent->activity_name.value();
-  }
-
-  EXPECT_TRUE(IsEqual(std::move(arc_intent),
-                      apps_util::ConvertAppServiceToArcIntent(intent)));
-  EXPECT_TRUE(IsEqual(std::move(src_activity), std::move(dst_activity)));
-}
 
 TEST_F(IntentUtilsTest, CreateIntentForActivity) {
   const std::string& activity_name = "com.android.vending.AssetBrowserActivity";
@@ -326,43 +303,6 @@ TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_NoteTakingApp) {
             apps_util::kIntentActionCreateNote);
   EXPECT_TRUE(apps_util::IntentMatchesFilter(
       apps_util::CreateCreateNoteIntent(), filters[1]));
-}
-
-TEST_F(IntentUtilsTest, CreateShareIntentFromFiles_GetFileUrls) {
-  base::ScopedTempDir scoped_temp_dir;
-  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
-  constexpr char kTestData[] = "testing1234";
-  constexpr char kTestText[] = "text1234";
-  constexpr char kShareTitle[] = "title1234";
-  std::vector<base::FilePath> file_paths;
-  std::vector<std::string> mime_types;
-
-  base::FilePath test_file_path =
-      scoped_temp_dir.GetPath().AppendASCII("test.txt");
-  ASSERT_EQ(static_cast<int>(base::size(kTestData)),
-            base::WriteFile(test_file_path, kTestData, base::size(kTestData)));
-  file_paths.push_back(test_file_path);
-  mime_types.push_back(".txt");
-
-  apps::mojom::IntentPtr intent = apps_util::CreateShareIntentFromFiles(
-      absl::nullopt, file_paths, mime_types, kTestText, kShareTitle);
-  const std::string intent_str =
-      "#Intent;action=android.intent.action.SEND;launchFlags=0x10200000;"
-      "component=com.android.vending/;type=*/*;"
-      "S.android.intent.extra.TEXT=text1234;"
-      "S.android.intent.extra.SUBJECT=title1234;end";
-  EXPECT_EQ(intent_str,
-            apps_util::CreateLaunchIntent("com.android.vending", intent));
-
-  apps::mojom::IntentPtr intent_with_text_and_title =
-      apps_util::CreateShareIntentFromFiles(absl::nullopt, file_paths,
-                                            mime_types);
-  const std::string intent_with_text_and_title_str =
-      "#Intent;action=android.intent.action.SEND;launchFlags=0x10200000;"
-      "component=com.android.vending/;type=*/*;end";
-  EXPECT_EQ(intent_with_text_and_title_str,
-            apps_util::CreateLaunchIntent("com.android.vending",
-                                          intent_with_text_and_title));
 }
 
 TEST_F(IntentUtilsTest, CreateChromeAppIntentFilters_FileHandlers) {
@@ -634,7 +574,7 @@ TEST_F(IntentUtilsTest, ConvertArcIntentFilter_DeduplicatesHosts) {
   }
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 TEST_F(IntentUtilsTest, CrosapiIntentConversion) {
   apps::mojom::IntentPtr original_intent =
       apps_util::CreateIntentFromUrl(GURL("www.google.com"));
@@ -704,12 +644,14 @@ class IntentUtilsFileTest : public ::testing::Test {
 TEST_F(IntentUtilsFileTest, AppServiceIntentToCrosapi) {
   auto app_service_intent = apps::mojom::Intent::New();
   app_service_intent->action = "action";
-  app_service_intent->mime_type = "mime_type";
+  app_service_intent->mime_type = "*/*";
   const std::string path = "Documents/foo.txt";
+  const std::string mime_type = "text/plain";
   auto url = ToGURL(base::FilePath(storage::kTestDir), path);
   app_service_intent->files = std::vector<apps::mojom::IntentFilePtr>{};
   auto file = apps::mojom::IntentFile::New();
   file->url = url;
+  file->mime_type = mime_type;
   app_service_intent->files->push_back(std::move(file));
   auto crosapi_intent = apps_util::ConvertAppServiceToCrosapiIntent(
       app_service_intent, GetProfile());
@@ -718,6 +660,7 @@ TEST_F(IntentUtilsFileTest, AppServiceIntentToCrosapi) {
   ASSERT_TRUE(crosapi_intent->files.has_value());
   ASSERT_EQ(crosapi_intent->files.value().size(), 1U);
   EXPECT_EQ(crosapi_intent->files.value()[0]->file_path, base::FilePath(path));
+  EXPECT_EQ(crosapi_intent->files.value()[0]->mime_type, mime_type);
 }
 
 TEST_F(IntentUtilsFileTest, CrosapiIntentToAppService) {

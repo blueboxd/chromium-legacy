@@ -25,11 +25,9 @@ action("default_regex_patterns_cc") {
   visibility = [ ":*" ]
   sources = [ "pattern_provider/resources/regex_patterns.json" ]
   script = "pattern_provider/transpile_default_regex_patterns.py"
-  args = [
-    rebase_path("pattern_provider/resources/regex_patterns.json"),
-    rebase_path("$target_gen_dir/pattern_provider/default_regex_patterns.cc"),
-  ]
   outputs = [ "$target_gen_dir/pattern_provider/default_regex_patterns.cc" ]
+  args = rebase_path(sources, root_build_dir) +
+         rebase_path(outputs, root_build_dir)
 }
 
 static_library("browser") {
@@ -195,8 +193,6 @@ static_library("browser") {
     "geo/country_names.h",
     "geo/country_names_for_locale.cc",
     "geo/country_names_for_locale.h",
-    "geo/mock_alternative_state_name_map_updater.cc",
-    "geo/mock_alternative_state_name_map_updater.h",
     "geo/phone_number_i18n.cc",
     "geo/phone_number_i18n.h",
     "geo/region_data_loader.h",
@@ -255,17 +251,24 @@ static_library("browser") {
     "payments/payments_client.cc",
     "payments/payments_client.h",
     "payments/payments_customer_data.h",
+    "payments/payments_requests/get_details_for_enrollment_request.cc",
+    "payments/payments_requests/get_details_for_enrollment_request.h",
     "payments/payments_requests/payments_request.cc",
     "payments/payments_requests/payments_request.h",
     "payments/payments_requests/select_challenge_option_request.cc",
     "payments/payments_requests/select_challenge_option_request.h",
     "payments/payments_requests/unmask_card_request.cc",
     "payments/payments_requests/unmask_card_request.h",
+    "payments/payments_requests/update_virtual_card_enrollment_request.cc",
+    "payments/payments_requests/update_virtual_card_enrollment_request.h",
     "payments/payments_service_url.cc",
     "payments/payments_service_url.h",
     "payments/payments_util.cc",
     "payments/payments_util.h",
     "payments/risk_data_loader.h",
+    "payments/virtual_card_enrollment_flow.h",
+    "payments/virtual_card_enrollment_manager.cc",
+    "payments/virtual_card_enrollment_manager.h",
     "payments/wait_for_signal_or_timeout.cc",
     "payments/wait_for_signal_or_timeout.h",
     "payments/webauthn_callback_types.h",
@@ -541,6 +544,8 @@ static_library("test_support") {
     "autofill_test_utils.h",
     "geo/alternative_state_name_map_test_utils.cc",
     "geo/alternative_state_name_map_test_utils.h",
+    "geo/mock_alternative_state_name_map_updater.cc",
+    "geo/mock_alternative_state_name_map_updater.h",
     "geo/test_region_data_loader.cc",
     "geo/test_region_data_loader.h",
     "logging/stub_log_manager.cc",
@@ -779,6 +784,7 @@ source_set("unit_tests") {
     "payments/full_card_request_unittest.cc",
     "payments/legal_message_line_unittest.cc",
     "payments/payments_client_unittest.cc",
+    "payments/payments_requests/get_details_for_enrollment_request_unittest.cc",
     "payments/payments_service_url_unittest.cc",
     "payments/payments_util_unittest.cc",
     "payments/wait_for_signal_or_timeout_unittest.cc",

@@ -62,10 +62,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace blink {
-class PendingURLLoaderFactoryBundle;
-}
-
 namespace content {
 
 class ServiceWorkerContainerHost;
@@ -468,15 +464,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     force_bypass_cache_for_scripts_ = force_bypass_cache_for_scripts;
   }
 
-  bool initialize_global_scope_after_main_script_loaded() const {
-    return initialize_global_scope_after_main_script_loaded_;
-  }
-
-  void set_initialize_global_scope_after_main_script_loaded() {
-    DCHECK(!initialize_global_scope_after_main_script_loaded_);
-    initialize_global_scope_after_main_script_loaded_ = true;
-  }
-
   void set_main_script_load_params(
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params) {
     main_script_load_params_ = std::move(main_script_load_params);
@@ -489,12 +476,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     outside_fetch_client_settings_object_ =
         std::move(outside_fetch_client_settings_object);
   }
-
-  // For use by EmbeddedWorkerInstance. Called when the main script loaded.
-  // This is only used for new (non-installed) workers, so that script
-  // evaluation doesn't happen in the renderer until the browser calls
-  // InitializeGlobalScope() to tell it's ready to proceed.
-  void OnMainScriptLoaded();
 
   // Returns the reason the embedded worker failed to start, using internal
   // information that may not be available to the caller. Returns
@@ -632,16 +613,16 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   // Initializes the global scope of the ServiceWorker on the renderer side.
-  // This is dependant on a number of internal members and should only be called
-  // at a few select points where those members are valid.
-  void InitializeGlobalScope(
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-          script_loader_factories,
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-          subresource_loader_factories);
+  void InitializeGlobalScope();
 
   // Returns true if |process_id| is a controllee process ID of this version.
   bool IsControlleeProcessID(int process_id) const;
+
+  // Executes the given `script` in the associated worker. If `callback` is
+  // non-empty, invokes `callback` with the result of the script after
+  // execution. See also service_worker.mojom.
+  void ExecuteScriptForTest(const std::string& script,
+                            ServiceWorkerScriptExecutionCallback callback);
 
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
@@ -940,15 +921,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   ServiceWorkerRegistration::Status registration_status_;
 
   // Cross-Origin-Embedder-Policy for the service worker script. This persists
-  // in the disk.
-  //
-  // On brand new service workers, the COEP value is not known initially. It
-  // will be set in PrepareForUpdate(), after the main script has been processed
-  // by the renderer process.
-  //
-  // PlzServiceWorker(https://crbug.com/996511):
-  // Once landed, there is no more need to use an absl::optional here. The COEP
-  // header is going to be known from the beginning and can be mark as 'const'.
+  // in the disk. On brand new service workers, the COEP value is not known
+  // initially. It will be set in PrepareForUpdate() once the response headers
+  // are received.
   absl::optional<network::CrossOriginEmbedderPolicy>
       cross_origin_embedder_policy_;
 
@@ -1075,7 +1050,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // called. This allows the browser process to prevent the renderer from
   // evaluating the script immediately after the script has been loaded, until
   // the subresource loader factories are updated.
-  bool initialize_global_scope_after_main_script_loaded_ = false;
+  bool initialize_global_scope_after_main_script_loaded_for_testing = false;
 
   // Populated via network::mojom::URLResponseHead of the main script.
   std::unique_ptr<MainScriptResponse> main_script_response_;

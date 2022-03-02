@@ -25,8 +25,9 @@
 #include "components/update_client/update_query_params.h"
 #include "components/update_client/updater_state.h"
 #include "components/update_client/utils.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
@@ -42,7 +43,7 @@ int GetPhysicalMemoryGB() {
 }
 
 std::string GetOSVersion() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   const auto ver = base::win::OSInfo::GetInstance()->version_number();
   return base::StringPrintf("%u.%u.%u.%u", ver.major, ver.minor, ver.build,
                             ver.patch);
@@ -52,7 +53,7 @@ std::string GetOSVersion() {
 }
 
 std::string GetServicePack() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return base::win::OSInfo::GetInstance()->service_pack_str();
 #else
   return {};
@@ -105,6 +106,7 @@ protocol_request::Request MakeProtocolRequest(
     const std::string& channel,
     const std::string& os_long_name,
     const std::string& download_preference,
+    absl::optional<bool> domain_joined,
     const base::flat_map<std::string, std::string>& additional_attributes,
     const std::map<std::string, std::string>* updater_state_attributes,
     std::vector<protocol_request::App> apps) {
@@ -129,18 +131,13 @@ protocol_request::Request MakeProtocolRequest(
   request.arch = UpdateQueryParams::GetArch();
   request.nacl_arch = UpdateQueryParams::GetNaclArch();
   request.dlpref = download_preference;
+  request.domain_joined = domain_joined;
   request.additional_attributes = additional_attributes;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (base::win::OSInfo::GetInstance()->IsWowX86OnAMD64())
     request.is_wow64 = true;
 #endif
-
-  if (updater_state_attributes &&
-      updater_state_attributes->count(UpdaterState::kIsEnterpriseManaged)) {
-    request.domain_joined =
-        updater_state_attributes->at(UpdaterState::kIsEnterpriseManaged) == "1";
-  }
 
   // HW platform information.
   base::CPU cpu;

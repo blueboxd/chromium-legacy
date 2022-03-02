@@ -90,16 +90,20 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 
   // Possible errors passed back to an error callback function in case of a
   // failed call to Connect().
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. This enum should be kept in sync
+  // with the BluetoothDeviceConnectErrorCode enum in
+  // src/tools/metrics/histograms/enums.xml.
   enum ConnectErrorCode {
-    ERROR_AUTH_CANCELED,
-    ERROR_AUTH_FAILED,
-    ERROR_AUTH_REJECTED,
-    ERROR_AUTH_TIMEOUT,
-    ERROR_FAILED,
-    ERROR_INPROGRESS,
-    ERROR_UNKNOWN,
-    ERROR_UNSUPPORTED_DEVICE,
-    NUM_CONNECT_ERROR_CODES  // Keep as last enum.
+    ERROR_AUTH_CANCELED = 0,
+    ERROR_AUTH_FAILED = 1,
+    ERROR_AUTH_REJECTED = 2,
+    ERROR_AUTH_TIMEOUT = 3,
+    ERROR_FAILED = 4,
+    ERROR_INPROGRESS = 5,
+    ERROR_UNKNOWN = 6,
+    ERROR_UNSUPPORTED_DEVICE = 7,
+    NUM_CONNECT_ERROR_CODES,  // Keep as last enum.
   };
 
   // Possible battery types that this device could have information for.
@@ -251,7 +255,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // and metrics logging,
   virtual uint32_t GetBluetoothClass() const = 0;
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // Returns the transport type of the device. Some devices only support one
   // of BR/EDR or LE, and some support both.
   virtual BluetoothTransport GetType() const = 0;
@@ -350,7 +354,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // its UUID.
   virtual UUIDSet GetUUIDs() const;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // Sets if this device is blocked by admin policy.
   void SetIsBlockedByPolicy(bool);
   bool IsBlockedByPolicy() const;
@@ -643,7 +647,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
                           AbortWriteErrorCallback error_callback) = 0;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
   // Set the battery information for the battery type |info.type|. Overrides
   // previously set value (if any).
   void SetBatteryInfo(const BatteryInfo& info);
@@ -813,12 +817,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // a device type for display when |name_| is empty.
   std::u16string GetAddressWithLocalizedDeviceTypeName() const;
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
   // Battery information for the known battery types for this device.
   base::flat_map<BatteryType, BatteryInfo> battery_info_map_;
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // Indicate whether or not this device is blocked by admin policy. This would
   // be true if any of its auto-connect service does not exist in the
   // ServiceAllowList under org.bluez.AdminPolicyStatus1.

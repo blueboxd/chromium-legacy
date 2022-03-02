@@ -13,13 +13,13 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chromeos/components/onc/onc_signature.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
-#include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "components/device_event_log/device_event_log.h"
@@ -137,11 +137,11 @@ std::string FormattedMacAddress(const std::string& shill_mac_address) {
   return result;
 }
 
-bool ParseCellularScanResults(const base::ListValue& list,
+bool ParseCellularScanResults(const base::Value::ConstListView list,
                               std::vector<CellularScanResult>* scan_results) {
   scan_results->clear();
-  scan_results->reserve(list.GetList().size());
-  for (const auto& value : list.GetList()) {
+  scan_results->reserve(list.size());
+  for (const auto& value : list) {
     const base::DictionaryValue* dict;
     if (!value.GetAsDictionary(&dict))
       return false;

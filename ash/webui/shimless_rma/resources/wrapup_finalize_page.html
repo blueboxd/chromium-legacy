@@ -1,13 +1,22 @@
 <style include="cr-shared-style shimless-rma-shared">
 </style>
 
-<base-page>
+<base-page orientation="column">
   <div slot="header">
     <h1>[[i18n('finalizePageTitleText')]]</h1>
+    <div id="finalizationMessage">[[finalizationMessage_]]</div>
+    <div>
+      <cr-button id="retryFinalizationButton" class="cancel-button"
+          on-click="onRetryFinalizationButtonClicked_"
+          hidden$="[[!shouldShowRetryButton_]]"
+          disabled="[[allButtonsDisabled]]">
+        [[i18n('finalizePageFailedRetryButtonLabel')]]
+      </cr-button>
+    </div>
   </div>
   <div slot="body">
-    <p id="finalizationMessage">
-      [[finalizationMessage_]]
-    </p>
+    <paper-spinner-lite active hidden$="[[shouldShowSpinner_]]"
+        class="large-spinner">
+    </paper-spinner-lite>
   </div>
 </base-page>

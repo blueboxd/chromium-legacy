@@ -115,7 +115,6 @@ TEST_F(IntersectionObserverTest, NotificationSentWhenRootRemoved) {
 }
 
 TEST_F(IntersectionObserverTest, DocumentRootClips) {
-  ScopedIntersectionObserverDocumentScrollingElementRootForTest scope(true);
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest iframe_resource("https://example.com/iframe.html", "text/html");
@@ -786,7 +785,7 @@ TEST_F(IntersectionObserverTest, CachedRectsTest) {
     <style>
     body { margin: 0; }
     .spacer { height: 1000px; }
-    .scroller { overflow-y: scroll; height: 100px; }
+    .scroller { overflow-y: scroll; height: 100px; position: relative; }
     </style>
     <div id='root' class='scroller'>
       <div id='target1-container'>

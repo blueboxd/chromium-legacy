@@ -32,7 +32,7 @@
 #include "third_party/blink/public/mojom/page/widget.mojom-test-utils.h"
 #include "url/origin.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "ui/android/view_android.h"
 #endif
 
@@ -45,6 +45,12 @@ const int kInvalidId = -1;
 const url::Origin& GetOriginForFrameTreeNode(FrameTreeNode* node) {
   return node->current_frame_host()->GetLastCommittedOrigin();
 }
+
+#if BUILDFLAG(IS_ANDROID)
+double GetFrameDeviceScaleFactor(const ToRenderFrameHost& adapter) {
+  return EvalJs(adapter, "window.devicePixelRatio;").ExtractDouble();
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace
 
@@ -166,7 +172,7 @@ INSTANTIATE_TEST_SUITE_P(FindRequestManagerTests,
                          testing::Bool());
 
 // TODO(crbug.com/615291): These tests frequently fail on Android.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #define MAYBE(x) DISABLED_##x
 #else
 #define MAYBE(x) x
@@ -272,11 +278,11 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, ScrollAndZoomIntoView) {
   LoadAndWait("/find_in_page_desktop.html");
   // Note: for now, don't run this test on Android in OOPIF mode.
   if (GetParam())
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     return;
 #else
     MakeChildFrameCrossProcess();
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetPrimaryFrameTree()
@@ -615,7 +621,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(FindNewMatches)) {
 // TODO(crbug.com/615291): These tests frequently fail on Android.
 // TODO(crbug.com/779912): Flaky timeout on Win7 (dbg).
 // TODO(crbug.com/875306): Flaky on Win10.
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
 #define MAYBE_FindInPage_Issue627799 DISABLED_FindInPage_Issue627799
 #else
 #define MAYBE_FindInPage_Issue627799 FindInPage_Issue627799
@@ -706,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindInPage_Issue644448)) {
   EXPECT_EQ(5, results.number_of_matches);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Tests empty active match rect when kWrapAround is false.
 IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, EmptyActiveMatchRect) {
   LoadAndWait("/find_in_page.html");
@@ -956,6 +962,7 @@ class ZoomToFindInPageRectMessageFilter
 }  // namespace
 
 // Tests activating the find match nearest to a given point.
+// TODO(crbug.com/1285135): Fix flaky failures.
 IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, ActivateNearestFindMatch) {
   LoadAndWait("/find_in_page.html");
   bool test_with_oopif = GetParam();
@@ -983,6 +990,8 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, ActivateNearestFindMatch) {
   delegate()->WaitForMatchRects();
   const std::vector<gfx::RectF>& rects = delegate()->find_match_rects();
 
+  double device_scale_factor = GetFrameDeviceScaleFactor(contents());
+
   // Activate matches via points inside each of the find match rects, in an
   // arbitrary order. Check that the correct match becomes active after each
   // activation.
@@ -998,15 +1007,18 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, ActivateNearestFindMatch) {
     // Check widget message rect to make sure it matches.
     if (is_match_in_oopif) {
       message_interceptor_child->WaitForWidgetHostMessage();
+      auto expected_rect = gfx::ScaleToEnclosingRect(
+          message_interceptor_child->widget_message_rect(),
+          1.f / device_scale_factor);
       EXPECT_EQ(find_request_manager->GetSelectionRectForTesting(),
-                message_interceptor_child->widget_message_rect());
+                expected_rect);
       message_interceptor_child->Reset();
     }
 
     EXPECT_EQ(order[i] + 1, delegate()->GetFindResults().active_match_ordinal);
   }
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Test basic find-in-page functionality after going back and forth to the same
 // page. In particular, find-in-page should continue to work after going back to

@@ -523,8 +523,8 @@ void ArcSettingsServiceImpl::SyncLocale() const {
   // code (e.g. fr_FR).  Since Android expects locale to contain country code,
   // ARC will derive a likely locale with country code from such
   GetLocaleAndPreferredLanguages(profile_, &locale, &preferred_languages);
-  extras.SetString("locale", locale);
-  extras.SetString("preferredLanguages", preferred_languages);
+  extras.SetStringKey("locale", locale);
+  extras.SetStringKey("preferredLanguages", preferred_languages);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_LOCALE", extras);
 }
 
@@ -552,7 +552,7 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
   }
 
   base::DictionaryValue extras;
-  extras.SetString("mode", ProxyPrefs::ProxyModeToString(mode));
+  extras.SetStringKey("mode", ProxyPrefs::ProxyModeToString(mode));
 
   switch (mode) {
     case ProxyPrefs::MODE_DIRECT:
@@ -563,10 +563,10 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
     case ProxyPrefs::MODE_AUTO_DETECT: {
       // WPAD with DHCP has a higher priority than DNS.
       if (dhcp_wpad_url_.is_valid()) {
-        extras.SetString("pacUrl", dhcp_wpad_url_.spec());
+        extras.SetStringKey("pacUrl", dhcp_wpad_url_.spec());
       } else {
         // Fallback to WPAD via DNS.
-        extras.SetString("pacUrl", "http://wpad/wpad.dat");
+        extras.SetStringKey("pacUrl", "http://wpad/wpad.dat");
       }
       break;
     }
@@ -576,7 +576,7 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
         LOG(ERROR) << "No pac URL for pac_script proxy mode.";
         return;
       }
-      extras.SetString("pacUrl", pac_url);
+      extras.SetStringKey("pacUrl", pac_url);
       break;
     }
     case ProxyPrefs::MODE_FIXED_SERVERS: {
@@ -586,8 +586,8 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
         LOG(ERROR) << "No Http proxy server is sent.";
         return;
       }
-      extras.SetString("host", host);
-      extras.SetInteger("port", port);
+      extras.SetStringKey("host", host);
+      extras.SetIntKey("port", port);
 
       std::string bypass_list;
       if (proxy_config_dict->GetBypassList(&bypass_list) &&
@@ -600,7 +600,7 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
         bypass_list =
             base::JoinString(bypassed_hosts, kArcProxyBypassListDelimiter);
-        extras.SetString("bypassList", bypass_list);
+        extras.SetStringKey("bypassList", bypass_list);
       }
       break;
     }
@@ -634,10 +634,10 @@ void ArcSettingsServiceImpl::SyncProxySettingsForSystemProxy() const {
     return;
 
   base::DictionaryValue extras;
-  extras.SetString(
+  extras.SetStringKey(
       "mode", ProxyPrefs::ProxyModeToString(ProxyPrefs::MODE_FIXED_SERVERS));
-  extras.SetString("host", host);
-  extras.SetInteger("port", port);
+  extras.SetStringKey("host", host);
+  extras.SetIntKey("port", port);
   SendSettingsBroadcast(kSetProxyAction, extras);
 }
 
@@ -658,7 +658,7 @@ void ArcSettingsServiceImpl::SyncReportingConsent(bool initial_sync) const {
     consent = false;
   }
   base::DictionaryValue extras;
-  extras.SetBoolean("reportingConsent", consent);
+  extras.SetBoolKey("reportingConsent", consent);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_REPORTING_CONSENT",
                         extras);
 }
@@ -697,13 +697,13 @@ void ArcSettingsServiceImpl::SyncTimeZone() const {
   TimezoneSettings* timezone_settings = TimezoneSettings::GetInstance();
   std::u16string timezoneID = timezone_settings->GetCurrentTimezoneID();
   base::DictionaryValue extras;
-  extras.SetString("olsonTimeZone", timezoneID);
+  extras.SetStringKey("olsonTimeZone", timezoneID);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_TIME_ZONE", extras);
 }
 
 void ArcSettingsServiceImpl::SyncTimeZoneByGeolocation() const {
   base::DictionaryValue extras;
-  extras.SetBoolean("autoTimeZone",
+  extras.SetBoolKey("autoTimeZone",
                     chromeos::system::TimeZoneResolverManager::
                             GetEffectiveUserTimeZoneResolveMethod(
                                 registrar_.prefs(), false) !=
@@ -720,7 +720,7 @@ void ArcSettingsServiceImpl::SyncUse24HourClock() const {
   DCHECK(pref->GetValue()->is_bool());
   bool use24HourClock = pref->GetValue()->GetBool();
   base::DictionaryValue extras;
-  extras.SetBoolean("use24HourClock", use24HourClock);
+  extras.SetBoolKey("use24HourClock", use24HourClock);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_USE_24_HOUR_CLOCK",
                         extras);
 }
@@ -777,8 +777,8 @@ void ArcSettingsServiceImpl::SendBoolValueSettingsBroadcast(
     bool managed,
     const std::string& action) const {
   base::DictionaryValue extras;
-  extras.SetBoolean("enabled", enabled);
-  extras.SetBoolean("managed", managed);
+  extras.SetBoolKey("enabled", enabled);
+  extras.SetBoolKey("managed", managed);
   SendSettingsBroadcast(action, extras);
 }
 

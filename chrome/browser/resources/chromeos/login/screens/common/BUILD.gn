@@ -23,6 +23,7 @@ group("polymer3_elements") {
     ":error_message_module",
     ":family_link_notice_module",
     ":fingerprint_setup_module",
+    ":gaia_signin_module",
     ":gesture_navigation_module",
     ":guest_tos_module",
     ":hw_data_collection_module",
@@ -30,8 +31,11 @@ group("polymer3_elements") {
     ":marketing_opt_in_module",
     ":offline_ad_login_module",
     ":oobe_reset_module",
+    ":os_install_module",
+    ":os_trial_module",
     ":parental_handoff_module",
     ":pin_setup_module",
+    ":saml_confirm_password_module",
     ":signin_fatal_error_module",
     ":sync_consent_module",
     ":tpm_error_module",
@@ -41,15 +45,7 @@ group("polymer3_elements") {
 }
 
 group("closure_compile") {
-  deps = [
-    ":closure_compile_local",
-    "../../components:closure_compile",
-  ]
-}
-
-js_type_check("closure_compile_local") {
-  uses_legacy_modules = true
-  deps = [ ":os_install" ]
+  deps = [ "../../components:closure_compile" ]
 }
 
 js_type_check("closure_compile_module") {
@@ -67,6 +63,7 @@ js_type_check("closure_compile_module") {
     ":error_message.m",
     ":family_link_notice.m",
     ":fingerprint_setup.m",
+    ":gaia_signin.m",
     ":gesture_navigation.m",
     ":guest_tos.m",
     ":hw_data_collection.m",
@@ -74,8 +71,11 @@ js_type_check("closure_compile_module") {
     ":marketing_opt_in.m",
     ":offline_ad_login.m",
     ":oobe_reset.m",
+    ":os_install.m",
+    ":os_trial.m",
     ":parental_handoff.m",
     ":pin_setup.m",
+    ":saml_confirm_password.m",
     ":signin_fatal_error.m",
     ":sync_consent.m",
     ":tpm_error.m",
@@ -86,17 +86,6 @@ js_type_check("closure_compile_module") {
 
 ###############################
 # Closure compiler libraries below
-
-js_library("os_install") {
-  deps = [
-    "../../components/behaviors:login_screen_behavior",
-    "../../components/behaviors:multi_step_behavior",
-    "../../components/behaviors:oobe_dialog_host_behavior",
-    "../../components/behaviors:oobe_i18n_behavior",
-    "../../components/dialogs:oobe_adaptive_dialog",
-    "../../components/dialogs:oobe_modal_dialog",
-  ]
-}
 
 js_library("adb_sideloading.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/adb_sideloading.m.js" ]
@@ -170,6 +159,7 @@ js_library("consolidated_consent.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/consolidated_consent.m.js" ]
   deps = [
     "../..:display_manager.m",
+    "../../components:display_manager_types.m",
     "../../components:oobe_select.m",
     "../../components:oobe_types.m",
     "../../components:web_view_helper.m",
@@ -250,6 +240,7 @@ js_library("fingerprint_setup.m") {
 js_library("gesture_navigation.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/gesture_navigation.m.js" ]
   deps = [
+    "../../components:oobe_cr_lottie.m",
     "../../components/behaviors:login_screen_behavior.m",
     "../../components/behaviors:multi_step_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
@@ -260,6 +251,23 @@ js_library("gesture_navigation.m") {
     "//ui/webui/resources/js:cr.m",
   ]
   extra_deps = [ ":gesture_navigation_module" ]
+}
+
+js_library("gaia_signin.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/gaia_signin.m.js" ]
+  deps = [
+    "../..:display_manager.m",
+    "../../components:gaia_dialog.m",
+    "../../components:notification_card.m",
+    "../../components:oobe_types.m",
+    "../../components:security_token_pin.m",
+    "../../components/behaviors:login_screen_behavior.m",
+    "../../components/behaviors:multi_step_behavior.m",
+    "../../components/behaviors:oobe_i18n_behavior.m",
+    "../../components/dialogs:oobe_adaptive_dialog.m",
+    "//ui/webui/resources/js:cr.m",
+  ]
+  extra_deps = [ ":gaia_signin_module" ]
 }
 
 js_library("guest_tos.m") {
@@ -325,7 +333,7 @@ js_library("marketing_opt_in.m") {
     "../../components:oobe_a11y_option.m",
     "../../components:oobe_cr_lottie.m",
     "../../components/behaviors:login_screen_behavior.m",
-    "../../components/behaviors:oobe_dialog_host_behavior.m",
+    "../../components/behaviors:multi_step_behavior.m",
     "../../components/behaviors:oobe_i18n_behavior.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -347,6 +355,7 @@ js_library("offline_ad_login.m") {
     "../../components/buttons:oobe_text_button.m",
     "../../components/dialogs:oobe_adaptive_dialog.m",
     "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
+    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
   extra_deps = [ ":offline_ad_login_module" ]
@@ -368,6 +377,27 @@ js_library("oobe_reset.m") {
   extra_deps = [ ":oobe_reset_module" ]
 }
 
+js_library("os_install.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/os_install.m.js" ]
+  deps = [
+    "../../:display_manager.m",
+    "../../components/behaviors:login_screen_behavior.m",
+    "../../components/behaviors:multi_step_behavior.m",
+    "../../components/behaviors:oobe_dialog_host_behavior.m",
+    "../../components/behaviors:oobe_i18n_behavior.m",
+    "../../components/buttons:oobe_back_button.m",
+    "../../components/buttons:oobe_text_button.m",
+    "../../components/dialogs:oobe_adaptive_dialog.m",
+    "../../components/dialogs:oobe_loading_dialog.m",
+    "../../components/dialogs:oobe_modal_dialog.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+
+  externs_list = [ "$externs_path/webview_tag.js" ]
+
+  extra_deps = [ ":os_install_module" ]
+}
+
 js_library("parental_handoff.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/parental_handoff.m.js" ]
   deps = [
@@ -379,6 +409,25 @@ js_library("parental_handoff.m") {
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   extra_deps = [ ":parental_handoff_module" ]
+}
+
+js_library("os_trial.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/os_trial.m.js" ]
+  deps = [
+    "../../components/behaviors:login_screen_behavior.m",
+    "../../components/behaviors:oobe_dialog_host_behavior.m",
+    "../../components/behaviors:oobe_i18n_behavior.m",
+    "../../components/buttons:oobe_back_button.m",
+    "../../components/buttons:oobe_text_button.m",
+    "../../components/dialogs:oobe_adaptive_dialog.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_lottie:cr_lottie.m",
+    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle.m",
+  ]
+
+  externs_list = [ "$externs_path/webview_tag.js" ]
+
+  extra_deps = [ ":os_trial_module" ]
 }
 
 js_library("pin_setup.m") {
@@ -397,6 +446,20 @@ js_library("pin_setup.m") {
     "//ui/webui/resources/js:cr.m",
   ]
   extra_deps = [ ":pin_setup_module" ]
+}
+
+js_library("saml_confirm_password.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/saml_confirm_password.m.js" ]
+  deps = [
+    "../../:login_ui_tools.m",
+    "../../components/behaviors:oobe_i18n_behavior.m",
+    "../../components/buttons:oobe_next_button.m",
+    "../../components/buttons:oobe_text_button.m",
+    "../../components/dialogs:oobe_adaptive_dialog.m",
+    "../../components/dialogs:oobe_loading_dialog.m",
+    "../../components/dialogs:oobe_modal_dialog.m",
+  ]
+  extra_deps = [ ":saml_confirm_password_module" ]
 }
 
 js_library("signin_fatal_error.m") {
@@ -563,6 +626,14 @@ polymer_modulizer("fingerprint_setup") {
   namespace_rewrites = oobe_namespace_rewrites
 }
 
+polymer_modulizer("gaia_signin") {
+  js_file = "gaia_signin.js"
+  html_file = "gaia_signin.html"
+  html_type = "dom-module"
+  auto_imports = oobe_auto_imports
+  namespace_rewrites = oobe_namespace_rewrites
+}
+
 polymer_modulizer("gesture_navigation") {
   js_file = "gesture_navigation.js"
   html_file = "gesture_navigation.html"
@@ -619,6 +690,22 @@ polymer_modulizer("oobe_reset") {
   namespace_rewrites = oobe_namespace_rewrites
 }
 
+polymer_modulizer("os_install") {
+  js_file = "os_install.js"
+  html_file = "os_install.html"
+  html_type = "dom-module"
+  auto_imports = oobe_auto_imports
+  namespace_rewrites = oobe_namespace_rewrites
+}
+
+polymer_modulizer("os_trial") {
+  js_file = "os_trial.js"
+  html_file = "os_trial.html"
+  html_type = "dom-module"
+  auto_imports = oobe_auto_imports
+  namespace_rewrites = oobe_namespace_rewrites
+}
+
 polymer_modulizer("parental_handoff") {
   js_file = "parental_handoff.js"
   html_file = "parental_handoff.html"
@@ -639,6 +726,14 @@ polymer_modulizer("pin_setup") {
 polymer_modulizer("user_creation") {
   js_file = "user_creation.js"
   html_file = "user_creation.html"
+  html_type = "dom-module"
+  auto_imports = oobe_auto_imports
+  namespace_rewrites = oobe_namespace_rewrites
+}
+
+polymer_modulizer("saml_confirm_password") {
+  js_file = "saml_confirm_password.js"
+  html_file = "saml_confirm_password.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   namespace_rewrites = oobe_namespace_rewrites

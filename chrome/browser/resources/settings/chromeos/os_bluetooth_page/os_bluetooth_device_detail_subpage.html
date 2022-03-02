@@ -11,6 +11,10 @@
     flex: 8
   }
 
+  #forgetBtn {
+    margin-inline-end: 8px;
+  }
+
   .bluetooth-middle {
     align-items: center;
     flex: auto;
@@ -23,7 +27,7 @@
 <div id="container">
   <div id="deviceStateSettings" class="settings-box two-line first">
     <iron-icon id="statusIcon"
-        icon="[[getBluetoothStateIcon_(device_.*, pageState_)]]">
+        icon="[[getBluetoothStateIcon_(isDeviceConnected_)]]">
     </iron-icon>
     <div id="bluetoothState"
         class="middle settings-box-text">
@@ -61,11 +65,15 @@
       </div>
     </template>
     <div id="buttonContainer" class="layout end">
-      <cr-button id="forgetBtn"
-          class="cancel-button"
-          on-click="onForgetBtnClick_">
-        $i18n{bluetoothDeviceDetailForget}
-      </cr-button>
+      <template is="dom-if" if="[[shouldShowForgetBtn_(device_.*)]]"
+          restamp>
+        <cr-button id="forgetBtn"
+            class="cancel-button"
+            aria-label$="[[getForgetA11yLabel_(device_.*)]]"
+            on-click="onForgetBtnClick_">
+          $i18n{bluetoothDeviceDetailForget}
+        </cr-button>
+      </template>
       <template is="dom-if" if="[[shouldShowConnectDisconnectBtn_(device_.*)]]"
           restamp>
         <cr-button id="connectDisconnectBtn"
@@ -77,6 +85,14 @@
       </template>
     </div>
   </div>
+  <template is="dom-if"
+      if="[[shouldShowNonAudioOutputDeviceMessage_(device_.*)]]" restamp>
+    <div id="nonAudioOutputDeviceMessage"
+        class="settings-box settings-box-text continuation"
+        aria-live="polite">
+      [[getNonAudioOutputDeviceMessage_(device_.*)]]
+    </div>
+  </template>
   <div id="deviceNameSettings" class="settings-box">
     <div id="bluetoothDeviceName"
         class="bluetooth-middle settings-box-text no-padding"
@@ -94,7 +110,8 @@
     </cr-button>
   </div>
   <template is="dom-if"
-      if="[[shouldShowChangeMouseDeviceSettings_(device_.*)]]" restamp>
+      if="[[shouldShowChangeMouseDeviceSettings_(device_.*,
+          isDeviceConnected_)]]" restamp>
     <cr-link-row
         id="changeMouseSettings"
         class="hr settings-box"
@@ -103,7 +120,8 @@
     </cr-link-row>
   </template>
   <template is="dom-if"
-      if="[[shouldShowChangeKeyboardDeviceSettings_(device_.*)]]" restamp>
+      if="[[shouldShowChangeKeyboardDeviceSettings_(device_.*,
+          isDeviceConnected_)]]" restamp>
     <cr-link-row
         id="changeKeyboardSettings"
         class="hr settings-box"

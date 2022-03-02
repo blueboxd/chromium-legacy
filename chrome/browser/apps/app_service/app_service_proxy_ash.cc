@@ -74,7 +74,7 @@ void AppServiceProxyAsh::Initialize() {
   }
 
   const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+      ash::ProfileHelper::Get()->GetUserByProfile(profile_);
   if (user) {
     const AccountId& account_id = user->GetAccountId();
     app_registry_cache_.SetAccountId(account_id);
@@ -110,7 +110,7 @@ void AppServiceProxyAsh::Initialize() {
   publisher_host_ = std::make_unique<PublisherHost>(this);
 
   if (crosapi::browser_util::IsLacrosEnabled() &&
-      chromeos::ProfileHelper::IsPrimaryProfile(profile_) &&
+      ash::ProfileHelper::IsPrimaryProfile(profile_) &&
       web_app::IsWebAppsCrosapiEnabled()) {
     auto* browser_manager = crosapi::BrowserManager::Get();
     // In unit tests, it is possible that the browser manager is not created.
@@ -283,14 +283,17 @@ void AppServiceProxyAsh::UninstallImpl(
                                          &callback](
                                             const apps::AppUpdate& update) {
     apps::mojom::IconKeyPtr icon_key = update.IconKey();
-    auto uninstall_dialog = std::make_unique<UninstallDialog>(
+    auto uninstall_dialog_ptr = std::make_unique<UninstallDialog>(
         profile_, update.AppType(), update.AppId(), update.Name(),
-        std::move(icon_key), this, parent_window,
+        parent_window,
         base::BindOnce(&AppServiceProxyAsh::OnUninstallDialogClosed,
                        weak_ptr_factory_.GetWeakPtr(), update.AppType(),
                        update.AppId(), uninstall_source));
-    uninstall_dialog->SetDialogCreatedCallbackForTesting(std::move(callback));
-    uninstall_dialogs_.emplace(std::move(uninstall_dialog));
+    UninstallDialog* uninstall_dialog = uninstall_dialog_ptr.get();
+    uninstall_dialog_ptr->SetDialogCreatedCallbackForTesting(
+        std::move(callback));
+    uninstall_dialogs_.emplace(std::move(uninstall_dialog_ptr));
+    uninstall_dialog->PrepareToShow(std::move(icon_key), this);
   });
 }
 
@@ -471,8 +474,8 @@ void AppServiceProxyAsh::RecordAppPlatformMetrics(
     const apps::AppUpdate& update,
     apps::mojom::LaunchSource launch_source,
     apps::mojom::LaunchContainer container) {
-  RecordAppLaunchMetrics(profile, update.AppType(), update.AppId(),
-                         launch_source, container);
+  RecordAppLaunchMetrics(profile, ConvertMojomAppTypToAppType(update.AppType()),
+                         update.AppId(), launch_source, container);
 }
 
 void AppServiceProxyAsh::InitAppPlatformMetrics() {
@@ -489,7 +492,7 @@ void AppServiceProxyAsh::PerformPostUninstallTasks(
   if (app_platform_metrics_service_ &&
       app_platform_metrics_service_->AppPlatformMetrics()) {
     app_platform_metrics_service_->AppPlatformMetrics()->RecordAppUninstallUkm(
-        app_type, app_id, uninstall_source);
+        ConvertMojomAppTypToAppType(app_type), app_id, uninstall_source);
   }
 }
 

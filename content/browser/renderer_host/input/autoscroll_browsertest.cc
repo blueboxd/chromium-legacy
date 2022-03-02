@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/feature_list.h"
-#include "base/ignore_result.h"
 #include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
@@ -119,7 +120,7 @@ class AutoscrollBrowserTest : public ContentBrowserTest {
 
     std::u16string ready_title(u"ready");
     TitleWatcher watcher(shell()->web_contents(), ready_title);
-    ignore_result(watcher.WaitAndGetTitle());
+    std::ignore = watcher.WaitAndGetTitle();
 
     MainThreadFrameObserver main_thread_sync(host);
     main_thread_sync.Wait();
@@ -175,7 +176,7 @@ class AutoscrollBrowserTest : public ContentBrowserTest {
 
 // We don't plan on supporting middle click autoscroll on Android.
 // See https://crbug.com/686223
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest, AutoscrollFling) {
   LoadURL(kAutoscrollDataURL);
 
@@ -345,6 +346,6 @@ IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
   GetWidgetHost()->ForwardMouseEvent(move_down);
   WaitForScroll(observer);
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace content

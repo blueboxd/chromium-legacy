@@ -16,7 +16,7 @@
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
-#include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
+#include "ui/ozone/platform/wayland/mojom/wayland_overlay_config.mojom.h"
 
 namespace ui {
 
@@ -59,6 +59,10 @@ struct WaylandFrame {
   // of the buffers will be attached, this is |root_config->buffer_id|.
   // Used to invoke buffer_manager_host OnSubmission and OnPrensentation calls.
   uint32_t buffer_id;
+
+  // An indicator that there are buffers destrotyed before frame playback. This
+  // frame should be skipped.
+  bool buffer_lost = false;
 
   // A Wayland callback, which is triggered once wl_buffer has been committed
   // and it is the right time to notify the GPU that it can start a new drawing

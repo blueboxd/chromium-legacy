@@ -16,9 +16,10 @@
 
 #include "base/cxx17_backports.h"
 #include "base/no_destructor.h"
+#include "build/build_config.h"
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
-    defined(OS_AIX)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_AIX)
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/notreached.h"
@@ -31,7 +32,7 @@
 #endif
 
 #if defined(ARCH_CPU_ARM_FAMILY) && \
-    (defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS))
+    (BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
 #include <asm/hwcap.h>
 #include <sys/auxv.h>
 #include "base/files/file_util.h"
@@ -151,7 +152,7 @@ uint64_t xgetbv(uint32_t xcr) {
 #endif  // ARCH_CPU_X86_FAMILY
 
 #if defined(ARCH_CPU_ARM_FAMILY) && \
-    (defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS))
+    (BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
 StringPairs::const_iterator FindFirstProcCpuKey(const StringPairs& pairs,
                                                 StringPiece key) {
   return ranges::find_if(pairs, [key](const StringPairs::value_type& pair) {
@@ -215,8 +216,8 @@ const ProcCpuInfo& ParseProcCpu() {
 
   return *info;
 }
-#endif  // defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) ||
-        // defined(OS_LINUX) || defined(OS_CHROMEOS))
+#endif  // defined(ARCH_CPU_ARM_FAMILY) && (BUILDFLAG(IS_ANDROID) ||
+        // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
 
 }  // namespace
 
@@ -343,7 +344,7 @@ void CPU::Initialize(bool require_branding) {
     }
   }
 #elif defined(ARCH_CPU_ARM_FAMILY)
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   if (require_branding) {
     const ProcCpuInfo& info = ParseProcCpu();
     cpu_brand_ = info.brand;
@@ -358,7 +359,7 @@ void CPU::Initialize(bool require_branding) {
   has_bti_ = hwcap2 & HWCAP2_BTI;
 #endif
 
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   // Windows makes high-resolution thread timing information available in
   // user-space.
   has_non_stop_time_stamp_counter_ = true;
@@ -366,6 +367,7 @@ void CPU::Initialize(bool require_branding) {
 #endif
 }
 
+#if defined(ARCH_CPU_X86_FAMILY)
 CPU::IntelMicroArchitecture CPU::GetIntelMicroArchitecture() const {
   if (has_avx2()) return AVX2;
   if (has_fma3()) return FMA3;
@@ -378,9 +380,10 @@ CPU::IntelMicroArchitecture CPU::GetIntelMicroArchitecture() const {
   if (has_sse()) return SSE;
   return PENTIUM;
 }
+#endif
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
-  defined(OS_AIX)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_AIX)
 namespace {
 
 constexpr char kTimeInStatePath[] =
@@ -635,8 +638,8 @@ bool CPU::GetCumulativeCoreIdleTimes(CoreIdleTimes& idle_times) {
 
   return success;
 }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) ||
-        // defined(OS_AIX)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
+        // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_AIX)
 
 const CPU& CPU::GetInstanceNoAllocation() {
   static const base::NoDestructor<const CPU> cpu(CPU(false));

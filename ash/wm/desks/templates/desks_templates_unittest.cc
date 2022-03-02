@@ -8,6 +8,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/desk_template.h"
+#include "ash/public/cpp/desks_templates_delegate.h"
 #include "ash/public/cpp/rounded_image_view.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -31,6 +32,7 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
+#include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_test_base.h"
 #include "ash/wm/overview/overview_test_util.h"
@@ -45,17 +47,21 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/window/dialog_delegate.h"
+#include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
 
@@ -304,11 +310,33 @@ class DesksTemplatesTest : public OverviewTestBase {
       ASSERT_TRUE(overview_grid->IsShowingDesksTemplatesGrid());
   }
 
+  void SetDisableAppIdCheckForDeskTemplates(bool disabled) {
+    DesksController::Get()->set_disable_app_id_check_for_desk_templates(
+        disabled);
+  }
+
   // OverviewTestBase:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kDesksTemplates);
     OverviewTestBase::SetUp();
+
+    // The FullRestoreSaveHandler isn't setup during tests so every window we
+    // create in tests doesn't have an app id associated with it. Since these
+    // windows don't have app ids, Desk won't consider them supported windows so
+    // we need to disable the app id check during tests.
+    DesksController::Get()->set_disable_app_id_check_for_desk_templates(true);
   }
+
+  void TearDown() override {
+    DesksController::Get()->set_disable_app_id_check_for_desk_templates(true);
+    OverviewTestBase::TearDown();
+  }
+
+ protected:
+  // Tests should normally create a local `ScopedAnimationDurationScaleMode`.
+  // Create this object if a non zero scale mode needs to be used during test
+  // tear down.
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> animation_scale_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -726,36 +754,29 @@ TEST_F(DesksTemplatesTest, LaunchTemplate) {
   ASSERT_EQ(1ul, GetAllEntries().size());
 
   // Click on the grid item to launch the template.
-  {
-    DeskSwitchAnimationWaiter waiter;
-    ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
-    WaitForDesksTemplatesUI();
-    waiter.Wait();
-  }
+  ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
+  WaitForDesksTemplatesUI();
 
   // Verify that we have created and activated a new desk.
   EXPECT_EQ(2ul, desks_controller->desks().size());
   EXPECT_EQ(1, desks_controller->GetActiveDeskIndex());
 
-  // Launching a template creates and activates a new desk, which also results
-  // in exiting overview mode, so we check to make sure overview is closed.
-  EXPECT_FALSE(InOverviewSession());
+  // Launching a template creates and activates a new desk without exiting
+  // overview mode, so we check that we're still in overview.
+  EXPECT_TRUE(InOverviewSession());
 
   // This section tests clicking on the "Use template" button to launch the
   // template.
+  ToggleOverview();
   OpenOverviewAndShowTemplatesGrid();
-  {
-    DeskSwitchAnimationWaiter waiter;
-    DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
-        /*grid_item_index=*/0);
-    ClickOnView(DesksTemplatesItemViewTestApi(item_view).launch_button());
-    WaitForDesksTemplatesUI();
-    waiter.Wait();
-  }
+  DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
+      /*grid_item_index=*/0);
+  ClickOnView(DesksTemplatesItemViewTestApi(item_view).launch_button());
+  WaitForDesksTemplatesUI();
 
   EXPECT_EQ(3ul, desks_controller->desks().size());
   EXPECT_EQ(2, desks_controller->GetActiveDeskIndex());
-  EXPECT_FALSE(InOverviewSession());
+  EXPECT_TRUE(InOverviewSession());
 }
 
 // Tests that the order of DesksTemplatesItemView is in order.
@@ -770,7 +791,7 @@ TEST_F(DesksTemplatesTest, IconsOrder) {
   DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
   const std::vector<DesksTemplatesIconView*>& icon_views =
-      DesksTemplatesItemViewTestApi(item_view).icon_views();
+      DesksTemplatesItemViewTestApi(item_view).GetIconViews();
 
   // The items previews should be ordered by activation index. Exclude the
   // final DesksTemplatesIconView since it will be the overflow counter.
@@ -835,7 +856,7 @@ TEST_F(DesksTemplatesTest, IconsOrderWithInactiveTabs) {
   DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
   const std::vector<DesksTemplatesIconView*>& icon_views =
-      DesksTemplatesItemViewTestApi(item_view).icon_views();
+      DesksTemplatesItemViewTestApi(item_view).GetIconViews();
 
   // Check the icon views. The first two items should be the active tabs,
   // ordered by activation index. The next two items should be the inactive tabs
@@ -865,7 +886,7 @@ TEST_F(DesksTemplatesTest, OverflowIconView) {
   DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
   const std::vector<DesksTemplatesIconView*>& icon_views =
-      DesksTemplatesItemViewTestApi(item_view).icon_views();
+      DesksTemplatesItemViewTestApi(item_view).GetIconViews();
 
   // There should only be the max number of icons plus the overflow icon.
   EXPECT_EQ(DesksTemplatesIconContainer::kMaxIcons + 1,
@@ -902,7 +923,7 @@ TEST_F(DesksTemplatesTest, OverflowIconViewIncrementsForHiddenIcons) {
   DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
   const std::vector<DesksTemplatesIconView*>& icon_views =
-      DesksTemplatesItemViewTestApi(item_view).icon_views();
+      DesksTemplatesItemViewTestApi(item_view).GetIconViews();
 
   // Even though there are more than `DesksTemplatesIconContainer::kMaxIcons`,
   // there should still be `DesksTemplatesIconContainer::kMaxIcons`+ 1
@@ -955,7 +976,7 @@ TEST_F(DesksTemplatesTest, IconViewMoreThan9Windows) {
   DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
   const std::vector<DesksTemplatesIconView*>& icon_views =
-      DesksTemplatesItemViewTestApi(item_view).icon_views();
+      DesksTemplatesItemViewTestApi(item_view).GetIconViews();
 
   // There should only be 1 icon view for the app and 1 icon view for the
   // overflow.
@@ -986,7 +1007,7 @@ TEST_F(DesksTemplatesTest, OverflowIconViewHiddenOnNoOverflow) {
   DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
   const std::vector<DesksTemplatesIconView*>& icon_views =
-      DesksTemplatesItemViewTestApi(item_view).icon_views();
+      DesksTemplatesItemViewTestApi(item_view).GetIconViews();
 
   // All the icon views should be visible and the overflow icon view should be
   // invisible.
@@ -1198,21 +1219,55 @@ TEST_F(DesksTemplatesTest, UnsupportedAppsDialog) {
 }
 
 // Tests that the save desk as template button is disabled when all windows on
-// the desk are unsupported.
+// the desk are unsupported or there are no windows with Full Restore app ids.
+// See crbug.com/1277763.
 TEST_F(DesksTemplatesTest, AllUnsupportedAppsDisablesSaveTemplates) {
-  auto* root = Shell::Get()->GetPrimaryRootWindow();
+  SetDisableAppIdCheckForDeskTemplates(false);
 
-  // Use `CreateTestWindow` instead of `CreateAppWindow`, which by default
+  // Use `CreateTestWindow()` instead of `CreateAppWindow()`, which by default
   // creates a supported window.
   auto test_window = CreateTestWindow();
+
+  // Also create an app window which should be supported and not have an app id.
+  auto no_app_id_window = CreateAppWindow();
+  auto* delegate = Shell::Get()->desks_templates_delegate();
+  ASSERT_TRUE(
+      delegate->IsWindowSupportedForDeskTemplate(no_app_id_window.get()));
+  ASSERT_TRUE(full_restore::GetAppId(no_app_id_window.get()).empty());
 
   EXPECT_EQ(0, DesksController::Get()->active_desk()->num_supported_windows());
 
   ToggleOverview();
 
   auto* save_template = static_cast<PillButton*>(
-      GetSaveDeskAsTemplateButtonForRoot(root)->GetContentsView());
+      GetSaveDeskAsTemplateButtonForRoot(Shell::Get()->GetPrimaryRootWindow())
+          ->GetContentsView());
   EXPECT_EQ(views::Button::STATE_DISABLED, save_template->GetState());
+}
+
+TEST_F(DesksTemplatesTest, AddRemoveSupportedWindows) {
+  auto* controller = DesksController::Get();
+
+  // Create a desk other than the default initial desk.
+  NewDesk();
+
+  Desk* desk_1 = controller->desks()[0].get();
+
+  // Create 3 supported windows on desk_1.
+  auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
+  auto win2 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
+
+  // Expect `num_supported_windows_` to be 3.
+  EXPECT_EQ(3, desk_1->num_supported_windows());
+
+  // Close the supported windows.
+  win0.reset();
+  win1.reset();
+  win2.reset();
+
+  // Expect `num_supported_windows_` to be 0.
+  EXPECT_EQ(0, desk_1->num_supported_windows());
 }
 
 // Tests the mouse and touch hover behavior on the template item view.
@@ -1308,16 +1363,13 @@ TEST_F(DesksTemplatesTest, LaunchTemplateWithMinimizedOverviewWindow) {
   OpenOverviewAndSaveTemplate(Shell::Get()->GetPrimaryRootWindow());
   ASSERT_EQ(1ul, GetAllEntries().size());
 
-  // Click on the grid item to launch the template. We should exit overview and
-  // there should be no crash.
-  DeskSwitchAnimationWaiter waiter;
+  // Click on the grid item to launch the template. We should remain in overview
+  // and there should be no crash.
   ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
-  // Launching a template fetches it from the desk model asynchronously. Make
-  // sure the async call is done before waiting.
+  // Launching a template fetches it from the desk model asynchronously.
   WaitForDesksTemplatesUI();
-  waiter.Wait();
 
-  EXPECT_FALSE(InOverviewSession());
+  EXPECT_TRUE(InOverviewSession());
 }
 
 // Tests that there is no crash if we launch a template after deleting the
@@ -1339,16 +1391,12 @@ TEST_F(DesksTemplatesTest, LaunchTemplateAfterClosingActiveDesk) {
   // a template" button was not moved when the active desk was removed.
   RemoveDesk(desks_controller->active_desk());
 
-  // Click on the grid item to launch the template. We should exit overview and
-  // there should be no crash.
-  DeskSwitchAnimationWaiter waiter;
+  // Click on the grid item to launch the template. There should be no crash.
   ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
-  // Launching a template fetches it from the desk model asynchronously. Make
-  // sure the async call is done before waiting.
+  // Launching a template fetches it from the desk model asynchronously.
   WaitForDesksTemplatesUI();
-  waiter.Wait();
 
-  EXPECT_FALSE(InOverviewSession());
+  EXPECT_TRUE(InOverviewSession());
 }
 
 // Tests that if we open the desks templates grid a second time during an
@@ -1559,6 +1607,12 @@ TEST_F(DesksTemplatesTest, EditTemplateName) {
   WaitForDesksTemplatesUI();
   name_view = GetItemViewFromTemplatesGrid(0)->name_view();
   EXPECT_EQ(u"abc", name_view->GetText());
+
+  // There was a bug where a relayout could cause a revert of the name changes,
+  // and lead to a crash if the name view had highlight focus. This is a
+  // regression test for that. See https://crbug.com/1285113 for more details.
+  GetItemViewFromTemplatesGrid(0)->SetBoundsRect(gfx::Rect(150, 40));
+  EXPECT_EQ(u"abc", GetItemViewFromTemplatesGrid(0)->name_view()->GetText());
 }
 
 // Tests for checking that certain conditions will revert the template name to
@@ -1717,10 +1771,8 @@ TEST_F(DesksTemplatesTest, LaunchTemplateRecordsMetric) {
   ASSERT_EQ(1ul, GetAllEntries().size());
 
   // Click on the grid item to launch the template.
-  DeskSwitchAnimationWaiter waiter;
   ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
   WaitForDesksTemplatesUI();
-  waiter.Wait();
 
   // Verify that we have created and activated a new desk.
   EXPECT_EQ(2ul, desks_controller->desks().size());
@@ -1762,6 +1814,377 @@ TEST_F(DesksTemplatesTest, SaveDeskAsTemplateRecordsMetric) {
   constexpr int kExpectedNewTemplates = 1;
   histogram_tester.ExpectTotalCount(kNewTemplateHistogramName,
                                     kExpectedNewTemplates);
+  histogram_tester.ExpectBucketCount(
+      kAddOrUpdateTemplateStatusHistogramName,
+      static_cast<int>(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk),
+      kExpectedNewTemplates);
+}
+
+// Tests that UnsupportedAppDialogShow metric is recorded when the unsupported
+// app dialog is shown.
+TEST_F(DesksTemplatesTest, UnsupportedAppDialogRecordsMetric) {
+  // For asserting histogram was captured.
+  base::HistogramTester histogram_tester;
+
+  // Create a crostini window.
+  auto crostini_window = CreateAppWindow();
+  crostini_window->SetProperty(aura::client::kAppType,
+                               static_cast<int>(AppType::CROSTINI_APP));
+
+  // Create a normal window.
+  auto test_window = CreateAppWindow();
+
+  // Open overview and click on the save template button. The unsupported apps
+  // dialog should show up.
+  auto* root = Shell::Get()->GetPrimaryRootWindow();
+  ToggleOverview();
+  WaitForDesksTemplatesUI();
+  views::Widget* save_template = GetSaveDeskAsTemplateButtonForRoot(root);
+  ASSERT_TRUE(save_template->IsVisible());
+  ClickOnView(save_template->GetContentsView());
+  EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
+
+  // Now we assert that we've recorded the metric.
+  constexpr int kExpectedDialogShows = 1;
+  histogram_tester.ExpectTotalCount(kUnsupportedAppDialogShowHistogramName,
+                                    kExpectedDialogShows);
+}
+
+// Tests to verify that clicking the spacebar doesn't cause the name view to
+// lose focus (since it's within a button), and that whitespaces are handled
+// correctly.
+TEST_F(DesksTemplatesTest, TemplateNameTestSpaces) {
+  auto test_window = CreateAppWindow();
+
+  const std::string template_name = "desk name";
+  AddEntry(base::GUID::GenerateRandomV4(), template_name, base::Time::Now());
+
+  OpenOverviewAndShowTemplatesGrid();
+  DesksTemplatesNameView* name_view =
+      GetItemViewFromTemplatesGrid(0)->name_view();
+
+  // Pressing spacebar does not cause `name_view` to lose focus.
+  ClickOnView(name_view);
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_SPACE);
+  EXPECT_TRUE(name_view->HasFocus());
+  EXPECT_EQ(base::UTF8ToUTF16(template_name) + u" ", name_view->GetText());
+
+  // Extra whitespace should be trimmed.
+  SendKey(ui::VKEY_HOME);
+  SendKey(ui::VKEY_SPACE);
+  SendKey(ui::VKEY_SPACE);
+  EXPECT_EQ(u"  " + base::UTF8ToUTF16(template_name) + u" ",
+            name_view->GetText());
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_EQ(base::UTF8ToUTF16(template_name), name_view->GetText());
+
+  // A string consisting of just spaces is considered an empty string, and the
+  // name change is reverted.
+  EXPECT_FALSE(name_view->HasFocus());
+  ClickOnView(name_view);
+  EXPECT_TRUE(name_view->HasFocus());
+  SendKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  SendKey(ui::VKEY_SPACE);
+  EXPECT_EQ(u" ", name_view->GetText());
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_EQ(base::UTF8ToUTF16(template_name), name_view->GetText());
+}
+
+// Tests that there is no crash after we use the keyboard to change the name of
+// a template. Regression test for https://crbug.com/1279649.
+TEST_F(DesksTemplatesTest, EditTemplateNameWithKeyboardNoCrash) {
+  AddEntry(base::GUID::GenerateRandomV4(), "a", base::Time::Now());
+  AddEntry(base::GUID::GenerateRandomV4(), "b", base::Time::Now());
+
+  OpenOverviewAndShowTemplatesGrid();
+  DesksTemplatesNameView* name_view =
+      GetItemViewFromTemplatesGrid(0)->name_view();
+
+  // Tab until we focus the name view of the first template item.
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  ASSERT_EQ(name_view, GetHighlightedView());
+
+  // Rename template "a" to template "d".
+  SendKey(ui::VKEY_RETURN);
+  SendKey(ui::VKEY_D);
+  SendKey(ui::VKEY_RETURN);
+  WaitForDesksTemplatesUI();
+
+  // Verify that there is no crash after we tab again.
+  SendKey(ui::VKEY_TAB);
+}
+
+// Tests that there is no crash when leaving the template name view focused with
+// a changed name during shutdown. Regression test for
+// https://crbug.com/1281422.
+TEST_F(DesksTemplatesTest, EditTemplateNameShutdownNoCrash) {
+  // The fade out animation of the desks templates grid must be enabled for this
+  // crash to have happened.
+  animation_scale_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  AddEntry(base::GUID::GenerateRandomV4(), "a", base::Time::Now());
+  AddEntry(base::GUID::GenerateRandomV4(), "b", base::Time::Now());
+
+  OpenOverviewAndShowTemplatesGrid();
+  DesksTemplatesNameView* name_view =
+      GetItemViewFromTemplatesGrid(0)->name_view();
+
+  // Tab until we focus the name view of the first template item.
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  ASSERT_EQ(name_view, GetHighlightedView());
+
+  // Rename template "a" to template "ddd".
+  SendKey(ui::VKEY_RETURN);
+  SendKey(ui::VKEY_D);
+  SendKey(ui::VKEY_D);
+  SendKey(ui::VKEY_D);
+
+  // Verify that there is no crash while the test tears down.
+}
+
+// Tests that the hovering over the templates name shows the expected cursor.
+TEST_F(DesksTemplatesTest, TemplatesNameHitTest) {
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+
+  for (bool is_rtl : {true, false}) {
+    SCOPED_TRACE(is_rtl ? "rtl" : "ltr");
+    base::i18n::SetRTLForTesting(is_rtl);
+
+    AddEntry(base::GUID::GenerateRandomV4(), "a", base::Time::Now());
+
+    OpenOverviewAndShowTemplatesGrid();
+    DesksTemplatesNameView* name_view =
+        GetItemViewFromTemplatesGrid(0)->name_view();
+    const gfx::Rect name_view_bounds = name_view->GetBoundsInScreen();
+    // Hover to a point just inside main edge. This will cover the case where
+    // the hit test logic is inverted.
+    const gfx::Point hover_point =
+        is_rtl ? name_view_bounds.right_center() + gfx::Vector2d(-2, 0)
+               : name_view_bounds.left_center() + gfx::Vector2d(2, 0);
+
+    // Tests that the hover cursor is an IBeam.
+    GetEventGenerator()->MoveMouseTo(hover_point);
+    EXPECT_EQ(ui::mojom::CursorType::kIBeam,
+              cursor_manager->GetCursor().type());
+
+    // Exit overview for the next run.
+    ToggleOverview();
+  }
+}
+
+TEST_F(DesksTemplatesTest, UserTemplateCountRecordsCorrectly) {
+  // Record histogram.
+  base::HistogramTester histogram_tester;
+
+  // Create three new templates through the UI.
+  for (unsigned long num_templates = 0; num_templates < 3; ++num_templates) {
+    // There are no saved template entries and one test window initially.
+    auto test_window = CreateAppWindow();
+
+    // Toggle overview if there isn't currently an overview. This is needed
+    // to save a template via the UI.
+    if (!GetOverviewSession()) {
+      ToggleOverview();
+      WaitForDesksTemplatesUI();
+    }
+
+    // The `save_desk_as_template_widget` is visible when at least one window is
+    // open.
+    views::Widget* save_desk_as_template_widget =
+        GetSaveDeskAsTemplateButtonForRoot(Shell::GetPrimaryRootWindow());
+    ASSERT_TRUE(save_desk_as_template_widget);
+    EXPECT_TRUE(save_desk_as_template_widget->GetContentsView()->GetVisible());
+
+    // Click on `save_desk_as_template_widget` button.
+    ClickOnView(save_desk_as_template_widget->GetContentsView());
+    ASSERT_EQ(num_templates + 1, GetAllEntries().size());
+
+    // Expect that the Desk Templates grid is visible.
+    EXPECT_TRUE(GetOverviewGridList()[0]->IsShowingDesksTemplatesGrid());
+  }
+
+  OpenOverviewAndShowTemplatesGrid();
+
+  // Delete one of the templates which will iterate the histogram's second
+  // bucket.
+  DeleteTemplate(GetAllEntries()[0]->uuid(), /*expected_item_count=*/3);
+
+  histogram_tester.ExpectBucketCount(kUserTemplateCountHistogramName, 1, 1);
+  histogram_tester.ExpectBucketCount(kUserTemplateCountHistogramName, 2, 2);
+  histogram_tester.ExpectBucketCount(kUserTemplateCountHistogramName, 3, 1);
+}
+
+// Tests that the window and tab counts are properly recorded in their
+// resepctive metrics.
+TEST_F(DesksTemplatesTest, SaveDeskRecordsWindowAndTabCountMetrics) {
+  const std::string kAppId1 = extension_misc::kChromeAppId;
+  constexpr int kWindowId1 = 1;
+  constexpr int kActiveTabIndex1 = 1;
+  const std::vector<GURL> kTabs1{GURL("http://a.com"), GURL("http://b.com"),
+                                 GURL("http://c.com")};
+
+  const std::string kAppId2 = extension_misc::kChromeAppId;
+  constexpr int kWindowId2 = 2;
+  constexpr int kActiveTabIndex2 = 2;
+  const std::vector<GURL> kTabs2{GURL("http://d.com"), GURL("http://e.com"),
+                                 GURL("http://f.com")};
+
+  // Create `restore_data` for the template.
+  auto restore_data = std::make_unique<app_restore::RestoreData>();
+
+  // Add app launch info for the first browser instance.
+  auto app_launch_info_1 =
+      std::make_unique<app_restore::AppLaunchInfo>(kAppId1, kWindowId1);
+  app_launch_info_1->active_tab_index = kActiveTabIndex1;
+  app_launch_info_1->urls = absl::make_optional(kTabs1);
+  restore_data->AddAppLaunchInfo(std::move(app_launch_info_1));
+  app_restore::WindowInfo window_info_1;
+  window_info_1.activation_index = absl::make_optional<int32_t>(kWindowId1);
+  restore_data->ModifyWindowInfo(kAppId1, kWindowId1, window_info_1);
+
+  // Add app launch info for the second browser instance.
+  auto app_launch_info_2 =
+      std::make_unique<app_restore::AppLaunchInfo>(kAppId2, kWindowId2);
+  app_launch_info_2->active_tab_index = kActiveTabIndex2;
+  app_launch_info_2->urls = absl::make_optional(kTabs2);
+  restore_data->AddAppLaunchInfo(std::move(app_launch_info_2));
+  app_restore::WindowInfo window_info_2;
+  window_info_2.activation_index = absl::make_optional<int32_t>(kWindowId2);
+  restore_data->ModifyWindowInfo(kAppId2, kWindowId2, window_info_2);
+
+  auto desk_template = std::make_unique<DeskTemplate>(
+      base::GUID::GenerateRandomV4().AsLowercaseString(),
+      DeskTemplateSource::kUser, "template_1", base::Time::Now());
+  desk_template->set_desk_restore_data(std::move(restore_data));
+
+  // Record histogram.
+  base::HistogramTester histogram_tester;
+
+  ToggleOverview();
+  WaitForDesksTemplatesUI();
+
+  // Mocks saving templates with some browsers.
+  DesksTemplatesPresenter::Get()->SaveOrUpdateDeskTemplate(
+      /*is_update=*/false, std::move(desk_template));
+
+  histogram_tester.ExpectBucketCount(kWindowCountHistogramName, 2, 1);
+  histogram_tester.ExpectBucketCount(kTabCountHistogramName, 6, 1);
+  histogram_tester.ExpectBucketCount(kWindowAndTabCountHistogramName, 6, 1);
+}
+
+// Tests that accessibility overrides are set as expected.
+TEST_F(DesksTemplatesTest, AccessibilityFocusAnnotatorInOverview) {
+  auto window = CreateTestWindow(gfx::Rect(100, 100));
+
+  ToggleOverview();
+  WaitForDesksTemplatesUI();
+
+  auto* focus_widget = views::Widget::GetWidgetForNativeWindow(
+      GetOverviewSession()->GetOverviewFocusWindow());
+  DCHECK(focus_widget);
+
+  OverviewGrid* grid = GetOverviewSession()->grid_list()[0].get();
+  auto* desk_widget = const_cast<views::Widget*>(grid->desks_widget());
+  DCHECK(desk_widget);
+
+  auto* save_widget =
+      GetSaveDeskAsTemplateButtonForRoot(Shell::GetPrimaryRootWindow());
+
+  // Overview items are in MRU order, so the expected order in the grid list is
+  // the reverse creation order.
+  auto* item_widget = GetOverviewItemForWindow(window.get())->item_widget();
+
+  // Order should be [focus_widget, save_widget, item_widget, desk_widget].
+  CheckA11yOverrides("focus", focus_widget, desk_widget, save_widget);
+  CheckA11yOverrides("save", save_widget, focus_widget, item_widget);
+  CheckA11yOverrides("item", item_widget, save_widget, desk_widget);
+  CheckA11yOverrides("desk", desk_widget, item_widget, focus_widget);
+}
+
+TEST_F(DesksTemplatesTest, LayoutItemsInLandscape) {
+  UpdateDisplay("800x600");
+
+  // Create a window and add four test entries.
+  auto test_window = CreateAppWindow();
+  AddEntry(base::GUID::GenerateRandomV4(), "A_template", base::Time::Now());
+  AddEntry(base::GUID::GenerateRandomV4(), "B_template", base::Time::Now());
+  AddEntry(base::GUID::GenerateRandomV4(), "C_template", base::Time::Now());
+  AddEntry(base::GUID::GenerateRandomV4(), "D_template", base::Time::Now());
+
+  OpenOverviewAndShowTemplatesGrid();
+
+  OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
+  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
+  const auto* templates_grid_view =
+      static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
+
+  views::View::Views grid_views = templates_grid_view->children();
+  ASSERT_EQ(4ul, grid_views.size());
+
+  // We expect the first three items to be laid out in one row.
+  EXPECT_EQ(grid_views[0]->bounds().y(), grid_views[1]->bounds().y());
+  EXPECT_EQ(grid_views[0]->bounds().y(), grid_views[2]->bounds().y());
+  // The fourth item goes in the second row.
+  EXPECT_NE(grid_views[0]->bounds().y(), grid_views[3]->bounds().y());
+}
+
+TEST_F(DesksTemplatesTest, LayoutItemsInPortrait) {
+  UpdateDisplay("600x800");
+
+  // Create a window and add four test entries.
+  auto test_window = CreateAppWindow();
+  AddEntry(base::GUID::GenerateRandomV4(), "A_template", base::Time::Now());
+  AddEntry(base::GUID::GenerateRandomV4(), "B_template", base::Time::Now());
+  AddEntry(base::GUID::GenerateRandomV4(), "C_template", base::Time::Now());
+  AddEntry(base::GUID::GenerateRandomV4(), "D_template", base::Time::Now());
+
+  OpenOverviewAndShowTemplatesGrid();
+
+  OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
+  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
+  const auto* templates_grid_view =
+      static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
+
+  views::View::Views grid_views = templates_grid_view->children();
+  ASSERT_EQ(4ul, grid_views.size());
+
+  // We expect the first two items to be laid out in one row.
+  EXPECT_EQ(grid_views[0]->bounds().y(), grid_views[1]->bounds().y());
+  // And the last two items on the next row.
+  EXPECT_NE(grid_views[0]->bounds().y(), grid_views[2]->bounds().y());
+  EXPECT_EQ(grid_views[2]->bounds().y(), grid_views[3]->bounds().y());
+}
+
+// Tests record metrics when current template being replaced.
+TEST_F(DesksTemplatesTest, ReplaceTemplateRecordMetrics) {
+  base::HistogramTester histogram_tester;
+
+  UpdateDisplay("800x600,800x600");
+
+  ToggleOverview();
+  ASSERT_TRUE(GetOverviewSession());
+
+  // Show replace dialogs.
+  auto* dialog_controller = DesksTemplatesDialogController::Get();
+  dialog_controller->ShowReplaceDialog(Shell::GetPrimaryRootWindow(), u"Bento");
+  EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
+  ASSERT_TRUE(GetOverviewSession());
+
+  // Accepting the dialog will record metrics.
+  dialog_controller->dialog_widget()
+      ->widget_delegate()
+      ->AsDialogDelegate()
+      ->AcceptDialog();
+
+  // Assert metrics being recorded.
+  histogram_tester.ExpectTotalCount(kReplaceTemplateHistogramName, 1);
+
+  EXPECT_FALSE(Shell::IsSystemModalWindowOpen());
+  EXPECT_TRUE(GetOverviewSession());
 }
 
 }  // namespace ash

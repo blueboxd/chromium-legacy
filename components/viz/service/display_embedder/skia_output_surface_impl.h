@@ -153,7 +153,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   gpu::SyncToken Flush() override;
   void OnObservingBeginFrameSourceChanged(bool observing) override;
 
-#if defined(OS_APPLE) || defined(USE_OZONE)
+#if BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
   SkCanvas* BeginPaintRenderPassOverlay(
       const gfx::Size& size,
       ResourceFormat format,
@@ -171,7 +171,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       ResourceFormat format,
       bool maybe_concurrent_reads,
       const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
-      sk_sp<SkColorSpace> color_space) override;
+      sk_sp<SkColorSpace> color_space,
+      bool raw_draw_if_possible) override;
 
   void InitDelegatedInkPointRendererReceiver(
       mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer>

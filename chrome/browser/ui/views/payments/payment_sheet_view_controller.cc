@@ -222,25 +222,25 @@ std::unique_ptr<views::View> CreateInlineCurrencyAmountItem(
       views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   DCHECK(!bold || !hint_color);
-  std::unique_ptr<views::Label> currency_label;
-  if (bold)
-    currency_label = CreateBoldLabel(currency);
-  else if (hint_color)
-    currency_label = CreateHintLabel(currency);
-  else
-    currency_label = std::make_unique<views::Label>(currency);
-
-  std::unique_ptr<views::Label> amount_label =
-      bold ? CreateBoldLabel(amount) : std::make_unique<views::Label>(amount);
-  amount_label->SetMultiLine(true);
-  amount_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  amount_label->SetAllowCharacterBreak(true);
-
-  item_amount_layout->StartRow(views::GridLayout::kFixedSize, 0);
-  item_amount_layout->AddView(std::move(currency_label));
-  item_amount_layout->AddView(std::move(amount_label));
-
-  return item_amount_line;
+  return views::Builder<views::TableLayoutView>()
+      .AddColumn(views::LayoutAlignment::kStart, views::LayoutAlignment::kStart,
+                 views::TableLayout::kFixedSize,
+                 views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
+      .AddColumn(views::LayoutAlignment::kEnd, views::LayoutAlignment::kStart,
+                 1.0, views::TableLayout::ColumnSize::kUsePreferred, 0, 0)
+      .AddRows(1, views::TableLayout::kFixedSize, 0)
+      .AddChildren((bold ? views::Builder<views::Label>(CreateBoldLabel(u""))
+                         : (hint_color ? views::Builder<views::Label>(
+                                             CreateHintLabel(u""))
+                                       : views::Builder<views::Label>()))
+                       .SetText(currency),
+                   (bold ? views::Builder<views::Label>(CreateBoldLabel(u""))
+                         : views::Builder<views::Label>())
+                       .SetText(amount)
+                       .SetMultiLine(true)
+                       .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+                       .SetAllowCharacterBreak(true))
+      .Build();
 }
 
 // A class used to build Payment Sheet Rows. Construct an instance of it, chain

@@ -7,8 +7,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
@@ -17,9 +17,7 @@ namespace web_app {
 
 class LinkCapturingMigrationManagerBrowserTest : public InProcessBrowserTest {
  public:
-  LinkCapturingMigrationManagerBrowserTest() {
-    os_hooks_supress_ = OsIntegrationManager::ScopedSuppressOsHooksForTesting();
-  }
+  LinkCapturingMigrationManagerBrowserTest() = default;
   ~LinkCapturingMigrationManagerBrowserTest() override = default;
 
   // InProcessBrowserTest:
@@ -30,7 +28,7 @@ class LinkCapturingMigrationManagerBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  ScopedOsHooksSuppress os_hooks_supress_;
+  OsIntegrationManager::ScopedSuppressForTesting os_hooks_supress_;
 };
 
 IN_PROC_BROWSER_TEST_F(LinkCapturingMigrationManagerBrowserTest,
@@ -38,7 +36,7 @@ IN_PROC_BROWSER_TEST_F(LinkCapturingMigrationManagerBrowserTest,
   Profile* profile = browser()->profile();
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
 
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  auto web_app_info = std::make_unique<WebAppInstallInfo>();
   web_app_info->title = u"Test app";
   web_app_info->start_url = GURL("https://example.org");
   web_app_info->capture_links =

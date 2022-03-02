@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -104,16 +103,6 @@ void HTMLPortalElement::ExpireAdoptionLifetime() {
 void HTMLPortalElement::PortalContentsWillBeDestroyed(PortalContents* portal) {
   DCHECK_EQ(portal_, portal);
   portal_ = nullptr;
-}
-
-bool HTMLPortalElement::IsCurrentlyWithinFrameLimit() const {
-  auto* frame = GetDocument().GetFrame();
-  if (!frame)
-    return false;
-  auto* page = frame->GetPage();
-  if (!page)
-    return false;
-  return page->SubframeCount() < Page::MaxNumberOfFrames();
 }
 
 String HTMLPortalElement::PreActivateChecksCommon() {

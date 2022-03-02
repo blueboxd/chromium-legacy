@@ -144,7 +144,7 @@ sk_sp<PaintRecord> CanvasFormattedText::PaintFormattedText(
     double x,
     double y,
     double wrap_width,
-    FloatRect& bounds) {
+    gfx::RectF& bounds) {
   LayoutBlockFlow* block = GetLayoutBlock(document, font);
   NGBlockNode block_node(block);
   NGInlineNode node(block);
@@ -164,10 +164,10 @@ sk_sp<PaintRecord> CanvasFormattedText::PaintFormattedText(
   const auto& fragment =
       To<NGPhysicalBoxFragment>(block_results->PhysicalFragment());
   block->RecalcFragmentsVisualOverflow();
-  bounds = FloatRect(block->PhysicalVisualOverflowRect());
+  bounds = gfx::RectF(block->PhysicalVisualOverflowRect());
   auto* paint_record_builder = MakeGarbageCollected<PaintRecordBuilder>();
   PaintInfo paint_info(paint_record_builder->Context(), CullRect::Infinite(),
-                       PaintPhase::kForeground, kGlobalPaintNormalPhase, 0);
+                       PaintPhase::kForeground);
   NGBoxFragmentPainter(fragment).PaintObject(
       paint_info, PhysicalOffset(LayoutUnit(x), LayoutUnit(y)));
   return paint_record_builder->EndRecording();

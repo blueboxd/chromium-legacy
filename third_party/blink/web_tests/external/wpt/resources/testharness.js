@@ -1812,7 +1812,7 @@
      *
      * @param {number} actual - Test value.
      * @param {number} lower - Number that ``actual`` must be greater than or equal to.
-     * @param {number} upper - Number that ``actual`` must be less than or eqaul to.
+     * @param {number} upper - Number that ``actual`` must be less than or equal to.
      * @param {string} [description] - Description of the condition being tested.
      */
     function assert_between_inclusive(actual, lower, upper, description)
@@ -2052,7 +2052,7 @@
     /**
      * Assert a DOMException with the expected type is thrown.
      *
-     * There are two ways of calling promise_rejects_dom:
+     * There are two ways of calling assert_throws_dom:
      *
      * 1) If the DOMException is expected to come from the current global, the
      * second argument should be the function expected to throw and a third,
@@ -2072,7 +2072,7 @@
      * "WrongDocumentError") or the name of the corresponding error
      * code (e.g. "``HIERARCHY_REQUEST_ERR``", "``WRONG_DOCUMENT_ERR``").
      * @param {Function} descriptionOrFunc - The function expected to
-     * throw (if the exeception comes from another global), or the
+     * throw (if the exception comes from another global), or the
      * optional description of the condition being tested (if the
      * exception comes from the current global).
      * @param {string} [description] - Description of the condition

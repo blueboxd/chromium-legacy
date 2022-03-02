@@ -15,7 +15,6 @@
 #include "chrome/browser/media/offscreen_tab.h"
 #include "components/media_router/common/media_route.h"
 #include "components/media_router/common/mojom/media_router.mojom.h"
-#include "content/public/test/browser_test_utils.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -56,8 +55,7 @@ class TestMediaRouteProvider : public mojom::MediaRouteProvider,
                               const std::vector<uint8_t>& data) override;
   void StartObservingMediaSinks(const std::string& media_source) override;
   void StopObservingMediaSinks(const std::string& media_source) override;
-  void StartObservingMediaRoutes(const std::string& media_source) override;
-  void StopObservingMediaRoutes(const std::string& media_source) override;
+  void StartObservingMediaRoutes() override;
   void StartListeningForRouteMessages(const std::string& route_id) override;
   void StopListeningForRouteMessages(const std::string& route_id) override;
   void DetachRoute(const std::string& route_id) override;
@@ -99,6 +97,9 @@ class TestMediaRouteProvider : public mojom::MediaRouteProvider,
   void CaptureOffScreenTab(content::WebContents* web_contents,
                            GURL source_urn,
                            std::string& presentation_id);
+
+  bool HasRoutes() const;
+
   void TearDown();
 
  private:

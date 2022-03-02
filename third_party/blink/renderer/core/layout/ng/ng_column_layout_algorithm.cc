@@ -506,7 +506,8 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutChildren() {
   if (!walker.IsFinished() || container_builder_.HasInflowChildBreakInside()) {
     // We broke in the main flow. Let this multicol container take up any
     // remaining space.
-    intrinsic_block_size_ = FragmentainerSpaceAtBfcStart(ConstraintSpace());
+    intrinsic_block_size_ = std::max(
+        intrinsic_block_size_, FragmentainerSpaceAtBfcStart(ConstraintSpace()));
 
     // Go through any remaining parts that we didn't get to, and push them as
     // break tokens for the next (outer) fragmentainer to handle.
@@ -646,10 +647,35 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
   // block-start border/padding), or in the outer fragmentation context), it may
   // be better to push some of the content to the next outer fragmentainer and
   // retry there.
-  bool may_have_more_space_in_next_outer_fragmentainer =
-      may_resume_in_next_outer_fragmentainer &&
-      (intrinsic_block_size_ ||
-       ConstraintSpace().FragmentainerOffsetAtBfc() > LayoutUnit());
+  bool may_have_more_space_in_next_outer_fragmentainer = false;
+  if (may_resume_in_next_outer_fragmentainer) {
+    if (intrinsic_block_size_) {
+      may_have_more_space_in_next_outer_fragmentainer = true;
+    } else {
+      if (ConstraintSpace().FragmentainerOffsetAtBfc() > LayoutUnit()) {
+        if (!BreakToken()) {
+          may_have_more_space_in_next_outer_fragmentainer = true;
+        } else {
+          // We have already added a break for this multicol container, but we
+          // think that we're not at the start of the fragmentainer. This may be
+          // the case if we have a nested floated multicol container with a
+          // non-zero block-start margin. Float margins are unbreakable and are
+          // never truncated. So we may have broken before it, and kept the
+          // margin for the next fragmentainer (as we should), but since a
+          // fragmentainer offset is a border-box offset, we'll now think that
+          // we're past the fragmentainer start (the margin edge is at the
+          // start, but the border edge isn't). This is not ideal, but for now
+          // just avoid breaking before *again*, which would cause an infinite
+          // loop with no content progress. DCHECK that this is the situation.
+          // TODO(mstensho): Find a solution to this. We may have added an
+          // unnecessary break now. Pushing the float to the next fragmentainer
+          // may not have solved anything.
+          DCHECK(Node().IsFloating());
+          DCHECK(BreakToken()->IsBreakBefore());
+        }
+      }
+    }
+  }
 
   scoped_refptr<const NGLayoutResult> result;
   absl::optional<NGBreakAppeal> min_break_appeal;
@@ -877,12 +903,9 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
   }
 
   // Commit all column fragments to the fragment builder.
-  const NGBlockBreakToken* incoming_column_token = next_column_token;
   for (auto result_with_offset : new_columns) {
     const NGPhysicalBoxFragment& column = result_with_offset.Fragment();
     container_builder_.AddChild(column, result_with_offset.offset);
-    Node().AddColumnResult(result_with_offset.result, incoming_column_token);
-    incoming_column_token = To<NGBlockBreakToken>(column.BreakToken());
   }
 
   if (min_break_appeal)

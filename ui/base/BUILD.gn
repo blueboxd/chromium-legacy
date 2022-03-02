@@ -204,8 +204,6 @@ component("base") {
       "resource/resource_data_dll_win.cc",
       "resource/resource_data_dll_win.h",
       "win/accessibility_ids_win.h",
-      "win/accessibility_misc_utils.cc",
-      "win/accessibility_misc_utils.h",
       "win/atl_module.h",
       "win/event_creation_utils.cc",
       "win/event_creation_utils.h",
@@ -670,7 +668,10 @@ if (!is_ios) {
     if (is_win) {
       data += [ "//tools/skia_goldctl/win/goldctl.exe" ]
     } else if (is_mac) {
-      data += [ "//tools/skia_goldctl/mac/goldctl" ]
+      data += [
+        "//tools/skia_goldctl/mac_amd64/goldctl",
+        "//tools/skia_goldctl/mac_arm64/goldctl",
+      ]
     } else {
       data += [ "//tools/skia_goldctl/linux/goldctl" ]
     }

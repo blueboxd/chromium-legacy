@@ -31,8 +31,12 @@
 #include "components/strings/grit/components_strings.h"
 #include "extensions/buildflags/buildflags.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "components/policy/core/common/android/policy_service_android.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "components/policy/core/common/default_chrome_apps_migrator.h"
 #endif
 
 namespace policy {
@@ -58,9 +62,9 @@ void RemapRenamedPolicies(PolicyMap* policies) {
        policy::key::kSpellcheckLanguageBlocklist},
       {policy::key::kURLBlacklist, policy::key::kURLBlocklist},
       {policy::key::kURLWhitelist, policy::key::kURLAllowlist},
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
       {policy::key::kAutoplayWhitelist, policy::key::kAutoplayAllowlist},
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       {policy::key::kExtensionInstallBlacklist,
        policy::key::kExtensionInstallBlocklist},
@@ -71,10 +75,10 @@ void RemapRenamedPolicies(PolicyMap* policies) {
       {policy::key::kNativeMessagingWhitelist,
        policy::key::kNativeMessagingAllowlist},
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
       {policy::key::kAttestationExtensionWhitelist,
        policy::key::kAttestationExtensionAllowlist},
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       {policy::key::kExternalPrintServersWhitelist,
        policy::key::kExternalPrintServersAllowlist},
@@ -281,7 +285,7 @@ void PolicyServiceImpl::RefreshPolicies(base::OnceClosure callback) {
   }
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 android::PolicyServiceAndroid* PolicyServiceImpl::GetPolicyServiceAndroid() {
   if (!policy_service_android_)
     policy_service_android_ =
@@ -349,6 +353,9 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   // Merge from each provider in their order of priority.
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
   PolicyBundle bundle;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  DefaultChromeAppsMigrator chrome_apps_migrator;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   for (auto* provider : providers_) {
     PolicyBundle provided_bundle;
     provided_bundle.CopyFrom(provider->policies());
@@ -356,6 +363,12 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
     IgnoreUserCloudPrecedencePolicies(&provided_bundle.Get(chrome_namespace));
     DowngradeMetricsReportingToRecommendedPolicy(
         &provided_bundle.Get(chrome_namespace));
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    if (base::FeatureList::IsEnabled(
+            policy::features::kDefaultChromeAppsMigration)) {
+      chrome_apps_migrator.Migrate(&provided_bundle.Get(chrome_namespace));
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     bundle.MergeFrom(provided_bundle);
   }
 

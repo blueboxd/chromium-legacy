@@ -60,7 +60,8 @@ class CaptureAccessHandlerBase : public MediaAccessHandler {
                          const content::MediaStreamRequest& request,
                          content::MediaResponseCallback callback,
                          std::u16string application_title,
-                         bool should_display_notification);
+                         bool should_display_notification,
+                         bool is_allowlisted_extension);
     PendingAccessRequest(const PendingAccessRequest& other) = delete;
     PendingAccessRequest& operator=(const PendingAccessRequest& other) = delete;
     ~PendingAccessRequest();
@@ -69,7 +70,8 @@ class CaptureAccessHandlerBase : public MediaAccessHandler {
     content::MediaStreamRequest request;
     content::MediaResponseCallback callback;
     std::u16string application_title;
-    bool should_display_notification;
+    const bool should_display_notification;
+    const bool is_allowlisted_extension;
   };
 
   using RequestsQueue =
@@ -83,7 +85,7 @@ class CaptureAccessHandlerBase : public MediaAccessHandler {
   static bool IsBuiltInFeedbackUI(const GURL& origin);
 
   void UpdateExtensionTrusted(const content::MediaStreamRequest& request,
-                              const extensions::Extension* extension);
+                              bool is_allowlisted_extension);
 
   void UpdateTrusted(const content::MediaStreamRequest& request,
                      bool is_trusted);

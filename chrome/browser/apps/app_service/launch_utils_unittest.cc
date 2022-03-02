@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/app_service/launch_utils.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
@@ -12,9 +13,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/types/display_constants.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chromeos/crosapi/mojom/app_service_types.mojom.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 class LaunchUtilsTest : public testing::Test {
  protected:
@@ -201,7 +202,7 @@ TEST_F(LaunchUtilsTest, GetLaunchFilesFromCommandLine_CustomProtocol) {
   EXPECT_EQ(0U, launch_files.size());
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 // Verifies that convert params (with no override url, intent, files) to crosapi
 // and back works.
 TEST_F(LaunchUtilsTest, ConvertToCrosapi) {
@@ -285,4 +286,56 @@ TEST_F(LaunchUtilsTest, FromCrosapiIncomplete) {
   EXPECT_EQ(apps::mojom::LaunchSource::kFromIntentUrl,
             converted_params.launch_source);
 }
-#endif  // defined(OS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+TEST_F(LaunchUtilsTest, FromCrosapiIntent) {
+  constexpr char kIntentMimeType[] = "image/*";
+  constexpr char kShareText[] = "Message";
+  constexpr char kFilePath[] = "/tmp/picture.png";
+  constexpr char kFileMimeType[] = "image/png";
+  constexpr char kBaseName[] = "picture.png";
+
+  crosapi::mojom::LaunchParamsPtr crosapi_params =
+      crosapi::mojom::LaunchParams::New();
+  crosapi_params->container =
+      crosapi::mojom::LaunchContainer::kLaunchContainerWindow;
+  crosapi_params->disposition =
+      crosapi::mojom::WindowOpenDisposition::kNewForegroundTab;
+  crosapi_params->launch_source = apps::mojom::LaunchSource::kFromSharesheet;
+  crosapi_params->intent = crosapi::mojom::Intent::New();
+  crosapi_params->intent->action = apps_util::kIntentActionSend;
+  crosapi_params->intent->mime_type = kIntentMimeType;
+  crosapi_params->intent->share_text = kShareText;
+  {
+    std::vector<crosapi::mojom::IntentFilePtr> crosapi_files;
+    auto crosapi_file = crosapi::mojom::IntentFile::New();
+    crosapi_file->file_path = base::FilePath(kFilePath);
+    crosapi_file->mime_type = kFileMimeType;
+    crosapi_files.push_back(std::move(crosapi_file));
+    crosapi_params->intent->files = std::move(crosapi_files);
+  }
+
+  auto converted_params =
+      apps::ConvertCrosapiToLaunchParams(crosapi_params, &profile_);
+
+  EXPECT_EQ(converted_params.container,
+            apps::mojom::LaunchContainer::kLaunchContainerWindow);
+  EXPECT_EQ(converted_params.disposition,
+            WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  EXPECT_EQ(converted_params.launch_source,
+            apps::mojom::LaunchSource::kFromSharesheet);
+
+  EXPECT_EQ(converted_params.launch_files.size(), 1U);
+  EXPECT_EQ(converted_params.launch_files[0], base::FilePath(kFilePath));
+
+  EXPECT_EQ(converted_params.intent->action, apps_util::kIntentActionSend);
+  EXPECT_EQ(converted_params.intent->mime_type, kIntentMimeType);
+  EXPECT_EQ(converted_params.intent->share_text, kShareText);
+  EXPECT_EQ(converted_params.intent->files->size(), 1U);
+  EXPECT_EQ((*converted_params.intent->files)[0]->file_name,
+            base::SafeBaseName::Create(kBaseName));
+  EXPECT_EQ((*converted_params.intent->files)[0]->mime_type, kFileMimeType);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#endif  // BUILDFLAG(IS_CHROMEOS)

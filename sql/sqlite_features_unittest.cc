@@ -6,13 +6,13 @@
 #include <stdint.h>
 
 #include <string>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/ignore_result.h"
 #include "build/build_config.h"
 #include "sql/database.h"
 #include "sql/statement.h"
@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 #include "base/mac/backup_util.h"
 #endif
 
@@ -195,7 +195,7 @@ TEST_F(SQLiteFeaturesTest, IcuEnabled) {
 // be disabled on this platform using SQLITE_MAX_MMAP_SIZE=0.
 TEST_F(SQLiteFeaturesTest, Mmap) {
   // Try to turn on mmap'ed I/O.
-  ignore_result(db_.Execute("PRAGMA mmap_size = 1048576"));
+  std::ignore = db_.Execute("PRAGMA mmap_size = 1048576");
   {
     sql::Statement s(db_.GetUniqueStatement("PRAGMA mmap_size"));
 
@@ -292,7 +292,7 @@ TEST_F(SQLiteFeaturesTest, CachedRegexp) {
   EXPECT_EQ(7, s.ColumnInt(0));
 }
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 // If a database file is marked to be excluded from backups, verify that journal
 // files are also excluded.
 TEST_F(SQLiteFeaturesTest, TimeMachine) {
@@ -323,7 +323,7 @@ TEST_F(SQLiteFeaturesTest, TimeMachine) {
 }
 #endif
 
-#if !defined(OS_FUCHSIA)
+#if !BUILDFLAG(IS_FUCHSIA)
 // SQLite WAL mode defaults to checkpointing the WAL on close.  This would push
 // additional work into Chromium shutdown.  Verify that SQLite supports a config
 // option to not checkpoint on close.

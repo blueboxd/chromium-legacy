@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <unordered_set>
 
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -735,7 +736,7 @@ bool ValidateCompressedTexSubDimensions(GLenum target,
         *error_message = "target == GL_TEXTURE_3D is not allowed";
         return false;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     }
     case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT:
     case GL_COMPRESSED_RGBA_BPTC_UNORM_EXT:
@@ -975,7 +976,7 @@ CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
   std::string output_error_msg;
 
   switch (dest_internal_format) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // RGB5_A1 is not color-renderable on NVIDIA Mac, see
     // https://crbug.com/676209.
     case GL_RGB5_A1:

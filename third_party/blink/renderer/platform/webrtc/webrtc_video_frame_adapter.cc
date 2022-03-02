@@ -13,7 +13,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "build/os_buildflags.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -408,9 +407,11 @@ WebRtcVideoFrameAdapter::ScaledBuffer::CropAndScale(int offset_x,
                                                     int crop_height,
                                                     int scaled_width,
                                                     int scaled_height) {
-  return new rtc::RefCountedObject<ScaledBuffer>(
-      parent_, size_.CropAndScale(offset_x, offset_y, crop_width, crop_height,
-                                  scaled_width, scaled_height));
+  return rtc::scoped_refptr<webrtc::VideoFrameBuffer>(
+      new rtc::RefCountedObject<ScaledBuffer>(
+          parent_,
+          size_.CropAndScale(offset_x, offset_y, crop_width, crop_height,
+                             scaled_width, scaled_height)));
 }
 
 WebRtcVideoFrameAdapter::WebRtcVideoFrameAdapter(
@@ -489,9 +490,11 @@ WebRtcVideoFrameAdapter::CropAndScale(int offset_x,
                                       int crop_height,
                                       int scaled_width,
                                       int scaled_height) {
-  return new rtc::RefCountedObject<ScaledBuffer>(
-      this, full_size_.CropAndScale(offset_x, offset_y, crop_width, crop_height,
-                                    scaled_width, scaled_height));
+  return rtc::scoped_refptr<webrtc::VideoFrameBuffer>(
+      new rtc::RefCountedObject<ScaledBuffer>(
+          this,
+          full_size_.CropAndScale(offset_x, offset_y, crop_width, crop_height,
+                                  scaled_width, scaled_height)));
 }
 
 rtc::scoped_refptr<webrtc::VideoFrameBuffer>

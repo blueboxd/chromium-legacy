@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
-#include "media/base/decode_status.h"
+#include "media/base/decoder_status.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/v4l2/v4l2_decode_surface_handler.h"
@@ -54,7 +54,7 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
                        const gfx::Rect& visible_rect,
                        const size_t num_output_frames) override;
   void OnChangeResolutionDone(CroStatus status) override;
-  void ClearPendingRequests(DecodeStatus status) override;
+  void ClearPendingRequests(DecoderStatus status) override;
   bool StopInputQueueOnResChange() const override;
 
   // V4L2DecodeSurfaceHandler implementation.
@@ -180,7 +180,7 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
   V4L2RequestsQueue* requests_queue_;
 
   // Map of enqueuing timestamps to wall clock, for histogramming purposes.
-  base::small_map<std::map<int64_t, base::TimeTicks>> encoding_timestamps_;
+  base::small_map<std::map<int64_t, base::TimeTicks>> enqueuing_timestamps_;
 
   base::WeakPtr<V4L2StatelessVideoDecoderBackend> weak_this_;
   base::WeakPtrFactory<V4L2StatelessVideoDecoderBackend> weak_this_factory_{

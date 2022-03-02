@@ -46,7 +46,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Called when BrowserView creates all it's child views.
   virtual void OnBrowserViewInitViewsComplete();
 
-  // Called on Mac after the browser window is fullscreened or unfullscreened.
+  // Called after the browser window is fullscreened or unfullscreened.
   virtual void OnFullscreenStateChanged();
 
   // Returns whether the caption buttons are drawn at the leading edge (i.e. the
@@ -103,8 +103,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Returns the color of the browser frame, which is also the color of the
   // tabstrip background.
-  SkColor GetFrameColor(BrowserFrameActiveState active_state =
-                            BrowserFrameActiveState::kUseCurrent) const;
+  virtual SkColor GetFrameColor(BrowserFrameActiveState active_state) const;
 
   // Called by BrowserView to signal the frame color has changed and needs
   // to be repainted.
@@ -186,7 +185,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
  private:
   // views::NonClientFrameView:
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   int GetSystemMenuY() const override;
 #endif
 

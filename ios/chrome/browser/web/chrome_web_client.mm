@@ -17,6 +17,7 @@
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/autofill/ios/browser/suggestion_controller_java_script_feature.h"
 #import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/google/core/common/google_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -28,8 +29,11 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#import "ios/chrome/browser/follow/rss_link_java_script_feature.h"
 #include "ios/chrome/browser/ios_chrome_main_parts.h"
 #import "ios/chrome/browser/link_to_text/link_to_text_java_script_feature.h"
+#include "ios/chrome/browser/ntp/browser_policy_new_tab_page_rewriter.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
@@ -47,6 +51,7 @@
 #include "ios/chrome/browser/web/error_page_controller_bridge.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/chrome/browser/web/features.h"
+#import "ios/chrome/browser/web/font_size/font_size_java_script_feature.h"
 #include "ios/chrome/browser/web/image_fetch/image_fetch_java_script_feature.h"
 #import "ios/chrome/browser/web/java_script_console/java_script_console_feature.h"
 #import "ios/chrome/browser/web/java_script_console/java_script_console_feature_factory.h"
@@ -60,7 +65,6 @@
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_error.h"
 #include "ios/components/webui/web_ui_url_constants.h"
 #import "ios/net/protocol_handler_util.h"
-#import "ios/public/provider/chrome/browser/font_size_java_script_feature.h"
 #include "ios/public/provider/chrome/browser/url_rewriters/url_rewriters_api.h"
 #include "ios/web/common/features.h"
 #include "ios/web/common/user_agent.h"
@@ -268,6 +272,7 @@ void ChromeWebClient::GetAdditionalWebUISchemes(
 
 void ChromeWebClient::PostBrowserURLRewriterCreation(
     web::BrowserURLRewriter* rewriter) {
+  rewriter->AddURLRewriter(&WillHandleWebBrowserNewTabPageURLForPolicy);
   rewriter->AddURLRewriter(&WillHandleWebBrowserAboutURL);
   ios::provider::AddURLRewriters(rewriter);
 }
@@ -310,6 +315,7 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
       SearchEngineTabHelperFactory::GetInstance());
   features.push_back(SearchEngineJavaScriptFeature::GetInstance());
   features.push_back(WebPerformanceMetricsJavaScriptFeature::GetInstance());
+  features.push_back(RSSLinkJavaScriptFeature::GetInstance());
   return features;
 }
 
@@ -402,9 +408,16 @@ bool ChromeWebClient::EnableLongPressUIContextMenu() const {
 }
 
 web::UserAgentType ChromeWebClient::GetDefaultUserAgent(
-    id<UITraitEnvironment> web_view,
+    web::WebState* web_state,
     const GURL& url) {
-  return web::UserAgentType::MOBILE;
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
+  HostContentSettingsMap* settings_map =
+      ios::HostContentSettingsMapFactory::GetForBrowserState(browser_state);
+  ContentSetting setting = settings_map->GetContentSetting(
+      url, url, ContentSettingsType::REQUEST_DESKTOP_SITE);
+  return (setting == CONTENT_SETTING_ALLOW) ? web::UserAgentType::DESKTOP
+                                            : web::UserAgentType::MOBILE;
 }
 
 bool ChromeWebClient::RestoreSessionFromCache(web::WebState* web_state) const {

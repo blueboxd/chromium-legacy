@@ -180,12 +180,7 @@ NET_ERROR(SSL_RENEGOTIATION_REQUESTED, -114)
 // unsupported method.
 NET_ERROR(PROXY_AUTH_UNSUPPORTED, -115)
 
-// During SSL renegotiation (rehandshake), the server sent a certificate with
-// an error.
-//
-// Note: this error is not in the -2xx range so that it won't be handled as a
-// certificate error.
-NET_ERROR(CERT_ERROR_IN_SSL_RENEGOTIATION, -116)
+// Error -116 was removed (CERT_ERROR_IN_SSL_RENEGOTIATION)
 
 // The SSL handshake failed because of a bad or missing client certificate.
 NET_ERROR(BAD_SSL_CLIENT_AUTH_CERT, -117)
@@ -1012,3 +1007,6 @@ NET_ERROR(DNS_SECURE_RESOLVER_HOSTNAME_RESOLUTION_FAILED, -808)
 // Error should be handled as if an HTTP redirect was received to redirect to
 // https or wss.
 NET_ERROR(DNS_NAME_HTTPS_ONLY, -809)
+
+// All DNS requests associated with this job have been cancelled.
+NET_ERROR(DNS_REQUEST_CANCELLED, -810)

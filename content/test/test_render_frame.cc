@@ -212,10 +212,6 @@ class MockFrameHost : public mojom::FrameHost {
 
   void DidStopLoading() override {}
 
-#if defined(OS_ANDROID)
-  void UpdateUserGestureCarryoverInfo() override {}
-#endif
-
  private:
   mojom::DidCommitProvisionalLoadParamsPtr last_commit_params_;
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
@@ -242,7 +238,7 @@ TestRenderFrame::TestRenderFrame(RenderFrameImpl::CreateParams params)
       static_cast<MockRenderThread*>(RenderThread::Get());
   mock_frame_host_->SetInitialBrowserInterfaceBrokerReceiver(
       mock_render_thread->TakeInitialBrowserInterfaceBrokerReceiverForFrame(
-          params.routing_id));
+          GetRoutingID()));
 }
 
 TestRenderFrame::~TestRenderFrame() {}

@@ -32,13 +32,37 @@ struct MediaSerializer<UselessThingToBeSerialized> {
 
 }  // namespace internal
 
-enum class NoDefaultType : StatusCodeType { kFoo = 0, kBar = 1, kBaz = 2 };
+enum class NoDefaultNoOkType : StatusCodeType { kFoo = 0, kBar = 1, kBaz = 2 };
 
-struct NoDefaultTypeTraits {
-  using Codes = NoDefaultType;
+struct NoDefaultNoOkTypeTraits {
+  using Codes = NoDefaultNoOkType;
   static constexpr StatusGroupType Group() {
-    return "GroupWithNoDefaultTypeForTests";
+    return "GroupWithNoDefaultNoOkTypeForTests";
   }
+};
+
+enum class NoDefaultHasOkType : StatusCodeType {
+  kOk = 0,
+  kFoo = 1,
+  kBar = 2,
+  kBaz = 3
+};
+
+struct NoDefaultHasOkTypeTraits {
+  using Codes = NoDefaultHasOkType;
+  static constexpr StatusGroupType Group() {
+    return "GroupWithNoDefaultHasOkTypeForTests";
+  }
+};
+
+enum class NonZeroOkType : StatusCodeType {
+  kOk = 100,
+  kFoo = 101,
+};
+
+struct NonZeroOkTypeTraits {
+  using Codes = NonZeroOkType;
+  static constexpr StatusGroupType Group() { return "GroupWithNonZeroOkType"; }
 };
 
 struct MapValueCodeTraits {
@@ -53,9 +77,13 @@ class StatusTest : public testing::Test {
  public:
   Status DontFail() { return OkStatus(); }
 
+  // Return a failure, with a line number.  Record the lower and upper line
+  // number limits so that we can make sure that the error's line is bounded.
+  constexpr static int lower_line_limit_ = __LINE__;
   Status FailEasily() {
     return Status(StatusCode::kCodeOnlyForTesting, "Message");
   }
+  constexpr static int upper_line_limit_ = __LINE__;
 
   Status FailRecursively(unsigned int count) {
     if (!count) {
@@ -143,8 +171,11 @@ TEST_F(StatusTest, SingleLayerError) {
   const auto& stack = actual.FindListPath("stack")->GetList();
   ASSERT_EQ(stack[0].DictSize(), 2ul);  // line and file
 
-  // This is a bit fragile, since it's dependent on the file layout.
-  ASSERT_EQ(stack[0].FindIntPath("line").value_or(-1), 57);
+  // This is a bit fragile, since it's dependent on the file layout.  Just check
+  // that it's somewhere in the `FailEasily`` function.
+  int line = stack[0].FindIntPath("line").value_or(-1);
+  ASSERT_GT(line, lower_line_limit_);
+  ASSERT_LT(line, upper_line_limit_);
   ASSERT_THAT(*stack[0].FindStringPath("file"),
               HasSubstr("status_unittest.cc"));
 }
@@ -302,24 +333,97 @@ TEST_F(StatusTest, StatusOrCodeIsOkWithValue) {
   EXPECT_EQ(status_or.code(), StatusCode::kOk);
 }
 
-TEST_F(StatusTest, TypedStatusWithNoDefault) {
-  using NDStatus = TypedStatus<NoDefaultTypeTraits>;
+TEST_F(StatusTest, TypedStatusWithNoDefaultAndNoOk) {
+  using NDStatus = TypedStatus<NoDefaultNoOkTypeTraits>;
 
-  NDStatus foo = NoDefaultType::kFoo;
-  EXPECT_EQ(foo.code(), NoDefaultType::kFoo);
+  NDStatus foo = NDStatus::Codes::kFoo;
+  EXPECT_EQ(foo.code(), NDStatus::Codes::kFoo);
+  EXPECT_FALSE(foo.is_ok());
 
-  NDStatus bar = NoDefaultType::kBar;
-  EXPECT_EQ(bar.code(), NoDefaultType::kBar);
+  NDStatus bar = NDStatus::Codes::kBar;
+  EXPECT_EQ(bar.code(), NDStatus::Codes::kBar);
+  EXPECT_FALSE(bar.is_ok());
 
-  NDStatus::Or<std::string> err = NoDefaultType::kBaz;
+  NDStatus::Or<std::string> err = NDStatus::Codes::kBaz;
   NDStatus::Or<std::string> ok = std::string("kBaz");
 
   EXPECT_TRUE(err.has_error());
-  EXPECT_EQ(err.code(), NoDefaultType::kBaz);
+  EXPECT_FALSE(err.has_value());
+  // One cannot call err.code() without an okay type.
+  EXPECT_EQ(std::move(err).error().code(), NDStatus::Codes::kBaz);
+
   EXPECT_FALSE(ok.has_error());
+  EXPECT_TRUE(ok.has_value());
+  // One cannot call ok.code() without an okay type.
 
   base::Value actual = MediaSerialize(bar);
-  EXPECT_EQ(*actual.FindIntPath("code"), 1);
+  EXPECT_EQ(*actual.FindIntPath("code"), static_cast<int>(bar.code()));
+}
+
+TEST_F(StatusTest, TypedStatusWithNoDefaultHasOk) {
+  using NDStatus = TypedStatus<NoDefaultHasOkTypeTraits>;
+
+  NDStatus foo = NDStatus::Codes::kFoo;
+  EXPECT_EQ(foo.code(), NDStatus::Codes::kFoo);
+  EXPECT_FALSE(foo.is_ok());
+
+  NDStatus bar = NDStatus::Codes::kBar;
+  EXPECT_EQ(bar.code(), NDStatus::Codes::kBar);
+  EXPECT_FALSE(bar.is_ok());
+
+  NDStatus bat = NDStatus::Codes::kOk;
+  EXPECT_EQ(bat.code(), NDStatus::Codes::kOk);
+  EXPECT_TRUE(bat.is_ok());
+
+  NDStatus::Or<std::string> err = NDStatus::Codes::kBaz;
+  NDStatus::Or<std::string> ok = std::string("kBaz");
+
+  EXPECT_TRUE(err.has_error());
+  EXPECT_FALSE(err.has_value());
+  EXPECT_EQ(err.code(), NDStatus::Codes::kBaz);
+
+  EXPECT_FALSE(ok.has_error());
+  EXPECT_TRUE(ok.has_value());
+  EXPECT_EQ(ok.code(), NDStatus::Codes::kOk);
+
+  base::Value actual = MediaSerialize(bar);
+  EXPECT_EQ(*actual.FindIntPath("code"), static_cast<int>(bar.code()));
+}
+
+TEST_F(StatusTest, Okayness) {
+  EXPECT_FALSE(
+      TypedStatus<NoDefaultNoOkTypeTraits>(NoDefaultNoOkTypeTraits::Codes::kFoo)
+          .is_ok());
+
+  EXPECT_FALSE(TypedStatus<NoDefaultHasOkTypeTraits>(
+                   NoDefaultHasOkTypeTraits::Codes::kFoo)
+                   .is_ok());
+  EXPECT_TRUE(TypedStatus<NoDefaultHasOkTypeTraits>(
+                  NoDefaultHasOkTypeTraits::Codes::kOk)
+                  .is_ok());
+
+  EXPECT_FALSE(
+      TypedStatus<NonZeroOkTypeTraits>(NonZeroOkTypeTraits::Codes::kFoo)
+          .is_ok());
+  EXPECT_TRUE(TypedStatus<NonZeroOkTypeTraits>(NonZeroOkTypeTraits::Codes::kOk)
+                  .is_ok());
+}
+
+TEST_F(StatusTest, CanConvertOkToCode) {
+  // OkStatus() should also be convertible to the enum directly.
+  NoDefaultHasOkTypeTraits::Codes code = OkStatus();
+  EXPECT_EQ(code, NoDefaultHasOkTypeTraits::Codes::kOk);
+}
+
+TEST_F(StatusTest, OkStatusInitializesToOk) {
+  // Construction from the return value of OkStatus() should be `kOk`, for any
+  // status traits that has `kOk`.  We only test explicit construction, though
+  // this is probably used as an implicit construction in practice when it's
+  // a return value.
+  EXPECT_EQ(TypedStatus<NoDefaultHasOkTypeTraits>(OkStatus()).code(),
+            NoDefaultHasOkTypeTraits::Codes::kOk);
+  EXPECT_EQ(TypedStatus<NonZeroOkTypeTraits>(OkStatus()).code(),
+            NonZeroOkTypeTraits::Codes::kOk);
 }
 
 TEST_F(StatusTest, StatusOrEqOp) {
@@ -395,7 +499,7 @@ TEST_F(StatusTest, OrTypeMapping) {
 }
 
 TEST_F(StatusTest, OrTypeMappingToOtherOrType) {
-  using A = TypedStatus<NoDefaultTypeTraits>;
+  using A = TypedStatus<NoDefaultNoOkTypeTraits>;
   using B = TypedStatus<MapValueCodeTraits>;
 
   auto unwrap = [](std::unique_ptr<int> ptr) -> A::Or<int> {

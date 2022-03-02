@@ -922,7 +922,7 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
     HTMLSelectMenuElement::PartType part_type =
         owner_select_menu->AssignedPartType(GetNode());
     if (part_type == HTMLSelectMenuElement::PartType::kButton) {
-      return ax::mojom::blink::Role::kPopUpButton;
+      return ax::mojom::blink::Role::kComboBoxMenuButton;
     } else if (part_type == HTMLSelectMenuElement::PartType::kListBox) {
       return ax::mojom::blink::Role::kListBox;
     } else if (part_type == HTMLSelectMenuElement::PartType::kOption) {
@@ -2576,23 +2576,18 @@ ax::mojom::blink::InvalidState AXNodeObject::GetInvalidState() const {
   // aria-invalid="false".
   if (EqualIgnoringASCIICase(attribute_value, "false"))
     return ax::mojom::blink::InvalidState::kFalse;
-    // In most cases, aria-invalid="spelling"| "grammar" are used on inline text
-    // elements, and are exposed via Markers() as if they are native errors.
-    // Therefore, they are exposed as InvalidState:kNone here in order to avoid
-    // exposing the state twice, and to prevent superfluous "invalid"
-    // announcements in some screen readers.
-    // On text fields, they are simply exposed as if aria-invalid="true".
-    // TODO(accessibility) Reenable this condition onn OS_CHROMEOS, but add
-    // spelling/grammar errors from markers to AutomationPredicate.IsValid().
-    // See crrev.com/c//3396516.
-#if !defined(OS_CHROMEOS)
+  // In most cases, aria-invalid="spelling"| "grammar" are used on inline text
+  // elements, and are exposed via Markers() as if they are native errors.
+  // Therefore, they are exposed as InvalidState:kNone here in order to avoid
+  // exposing the state twice, and to prevent superfluous "invalid"
+  // announcements in some screen readers.
+  // On text fields, they are simply exposed as if aria-invalid="true".
   if (EqualIgnoringASCIICase(attribute_value, "spelling") ||
       EqualIgnoringASCIICase(attribute_value, "grammar")) {
     return RoleValue() == ax::mojom::blink::Role::kTextField
                ? ax::mojom::blink::InvalidState::kTrue
                : ax::mojom::blink::InvalidState::kNone;
   }
-#endif  // !defined(OS_CHROMEOS)
   // Any other non-empty value is considered true.
   if (!attribute_value.IsEmpty()) {
     return ax::mojom::blink::InvalidState::kTrue;
@@ -2670,7 +2665,7 @@ bool AXNodeObject::ValueForRange(float* out_value) const {
         *out_value = (min_value + max_value) / 2.0f;
         return true;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     }
     case ax::mojom::blink::Role::kSplitter: {
       *out_value = 50.0f;
@@ -2934,7 +2929,7 @@ String AXNodeObject::GetValueForControl() const {
   }
 
   // An ARIA combobox can get value from inner contents.
-  if (AriaRoleAttribute() == ax::mojom::blink::Role::kComboBoxMenuButton) {
+  if (RoleValue() == ax::mojom::blink::Role::kComboBoxMenuButton) {
     AXObjectSet visited;
     return TextFromDescendants(visited, nullptr, false);
   }
@@ -3393,6 +3388,9 @@ String AXNodeObject::TextFromDescendants(
     AXObjectSet& visited,
     const AXObject* aria_label_or_description_root,
     bool recursive) const {
+#if defined(AX_FAIL_FAST_BUILD)
+  DCHECK(!is_adding_children_);
+#endif
   if (!CanHaveChildren())
     return recursive ? String() : GetElement()->GetInnerTextWithoutUpdate();
 
@@ -3401,56 +3399,10 @@ String AXNodeObject::TextFromDescendants(
   ax::mojom::blink::NameFrom last_used_name_from =
       ax::mojom::blink::NameFrom::kUninitialized;
 
-  AXObjectVector children;
-
-  HeapVector<Member<AXObject>> owned_children;
-  AXObjectCache().ValidatedAriaOwnedChildren(this, owned_children);
-
-  if (ShouldUseLayoutObjectTraversalForChildren()) {
-    // This is a pseudo element and its descendants don't have an associated
-    // node, so we cannot use a DOM traversal. In this case, we can traverse the
-    // children of the accessible object directly, because CSS ::before and
-    // ::after do generate accessibility nodes.
-    // We include only ::before and ::after pseudo elements, because these are
-    // the only ones explicitly specified in the accname spec.
-    // TODO(accessibility): Chrome has never included markers, but that's
-    // actually undefined behavior. We will have to revisit after this is
-    // settled, see: https://github.com/w3c/accname/issues/76
-    if (GetElement() && (GetElement()->GetPseudoId() == kPseudoIdBefore ||
-                         GetElement()->GetPseudoId() == kPseudoIdAfter)) {
-      for (const auto& child : ChildrenIncludingIgnored())
-        children.push_back(child);
-    }
-  } else {
-    // For regular elements, we traverse the flattened DOM tree exposed by
-    // LayoutTreeBuilderTraversal that includes pseudo elements such as
-    // ::before, but not their children. We don't traverse the accessibility
-    // tree because it doesn't contain all the nodes we need. In particular, it
-    // will fail when there's a hidden node that is the target of an
-    // aria-labelledby or -describedby relation. Check content_browsertests at:
-    // All/DumpAccessibilityAccNameTest.NameTextLabelledbyHiddenWithHiddenChild/blink
-    // TODO(accessibility): Revisit this code after an agreement for the case
-    // explained above is reached, see: https://github.com/w3c/accname/issues/57
-    for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node_); child;
-         child = LayoutTreeBuilderTraversal::NextSibling(*child)) {
-      auto* child_text_node = DynamicTo<Text>(child);
-      if (child_text_node &&
-          child_text_node->wholeText().ContainsOnlyWhitespaceOrEmpty()) {
-        // skip over empty text nodes
-        continue;
-      }
-      AXObject* child_obj = AXObjectCache().GetOrCreate(child);
-      if (child_obj && !AXObjectCache().IsAriaOwned(child_obj))
-        children.push_back(child_obj);
-    }
-  }
-  for (const auto& owned_child : owned_children)
-    children.push_back(owned_child);
-
-  for (AXObject* child : children) {
+  for (AXObject* child : ChildrenIncludingIgnored()) {
     constexpr size_t kMaxDescendantsForTextAlternativeComputation = 100;
-    if (visited.size() > kMaxDescendantsForTextAlternativeComputation + 1)
-      break;  // Need to add 1 because the root naming node is in the list.
+    if (visited.size() > kMaxDescendantsForTextAlternativeComputation)
+      break;
 
     // Don't recurse into children that are explicitly hidden.
     // Note that we don't call IsInert()/IsAriaHidden because they would return
@@ -3565,7 +3517,7 @@ bool AXNodeObject::IsRedundantLabel(HTMLLabelElement* label) {
 }
 
 void AXNodeObject::GetRelativeBounds(AXObject** out_container,
-                                     FloatRect& out_bounds_in_container,
+                                     gfx::RectF& out_bounds_in_container,
                                      skia::Matrix44& out_container_transform,
                                      bool* clips_children) const {
   if (GetLayoutObject()) {
@@ -3580,7 +3532,7 @@ void AXNodeObject::GetRelativeBounds(AXObject** out_container,
 #endif
 
   *out_container = nullptr;
-  out_bounds_in_container = FloatRect();
+  out_bounds_in_container = gfx::RectF();
   out_container_transform.setIdentity();
 
   // First check if it has explicit bounds, for example if this element is tied
@@ -3590,7 +3542,7 @@ void AXNodeObject::GetRelativeBounds(AXObject** out_container,
   if (!explicit_element_rect_.IsEmpty()) {
     *out_container = AXObjectCache().ObjectFromAXID(explicit_container_id_);
     if (*out_container) {
-      out_bounds_in_container = FloatRect(explicit_element_rect_);
+      out_bounds_in_container = gfx::RectF(explicit_element_rect_);
       return;
     }
   }
@@ -3601,12 +3553,12 @@ void AXNodeObject::GetRelativeBounds(AXObject** out_container,
   if ((GetNode()->parentElement() &&
        GetNode()->parentElement()->IsInCanvasSubtree()) ||
       (element && element->HasDisplayContentsStyle())) {
-    Vector<FloatRect> rects;
+    Vector<gfx::RectF> rects;
     for (Node& child : NodeTraversal::ChildrenOf(*GetNode())) {
       if (child.IsHTMLElement()) {
         if (AXObject* obj = AXObjectCache().Get(&child)) {
           AXObject* container;
-          FloatRect bounds;
+          gfx::RectF bounds;
           obj->GetRelativeBounds(&container, bounds, out_container_transform,
                                  clips_children);
           if (container) {
@@ -3618,7 +3570,8 @@ void AXNodeObject::GetRelativeBounds(AXObject** out_container,
     }
 
     if (*out_container) {
-      out_bounds_in_container = UnionRects(rects);
+      for (auto& rect : rects)
+        out_bounds_in_container.Union(rect);
       return;
     }
   }
@@ -3635,8 +3588,8 @@ void AXNodeObject::GetRelativeBounds(AXObject** out_container,
           clips_children);
       if (*out_container) {
         out_bounds_in_container.set_size(
-            FloatSize(out_bounds_in_container.width(),
-                      std::min(10.0f, out_bounds_in_container.height())));
+            gfx::SizeF(out_bounds_in_container.width(),
+                       std::min(10.0f, out_bounds_in_container.height())));
       }
       break;
     }
@@ -4328,10 +4281,8 @@ bool AXNodeObject::CanHaveChildren() const {
     case ax::mojom::blink::Role::kSplitter:
     case ax::mojom::blink::Role::kSwitch:
     case ax::mojom::blink::Role::kTab:
-    case ax::mojom::blink::Role::kToggleButton:
       return false;
     case ax::mojom::blink::Role::kPopUpButton:
-      return true;
     case ax::mojom::blink::Role::kLineBreak:
     case ax::mojom::blink::Role::kStaticText:
       // Note: these can have AXInlineTextBox children, but when adding them, we

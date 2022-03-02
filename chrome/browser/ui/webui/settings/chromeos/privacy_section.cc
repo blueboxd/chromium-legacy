@@ -319,8 +319,8 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_TITLE},
       {"smartPrivacySnoopingSubtext",
        IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_SUBTEXT},
-      {"smartPrivacySnoopingIcon", IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_ICON},
-      {"smartPrivacySnoopingDim", IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_DIM},
+      {"smartPrivacySnoopingNotifications",
+       IDS_OS_SETTINGS_SMART_PRIVACY_SNOOPING_NOTIFICATIONS},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -347,9 +347,8 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   ::settings::AddPersonalizationOptionsStrings(html_source);
   ::settings::AddSecureDnsStrings(html_source);
 
-  html_source->AddBoolean("isRevenBranding",
-                          chromeos::switches::IsRevenBranding());
-  if (chromeos::switches::IsRevenBranding()) {
+  html_source->AddBoolean("isRevenBranding", switches::IsRevenBranding());
+  if (switches::IsRevenBranding()) {
     html_source->AddString(
         "enableHWDataUsage",
         l10n_util::GetStringFUTF8(

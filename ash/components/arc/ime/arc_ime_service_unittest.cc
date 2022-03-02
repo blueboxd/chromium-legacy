@@ -94,7 +94,10 @@ class FakeInputMethod : public ui::DummyInputMethod {
 
   ui::TextInputClient* GetTextInputClient() const override { return client_; }
 
-  void ShowVirtualKeyboardIfEnabled() override { count_show_ime_if_needed_++; }
+  void SetVirtualKeyboardVisibilityIfEnabled(bool visible) override {
+    if (visible)
+      count_show_ime_if_needed_++;
+  }
 
   void CancelComposition(const ui::TextInputClient* client) override {
     if (client == client_)
@@ -594,6 +597,16 @@ TEST_F(ArcImeServiceTest, OnDispatchingKeyEventPostIME) {
   fabricated_event.SetProperties(properties);
   instance_->OnDispatchingKeyEventPostIME(&fabricated_event);
   EXPECT_TRUE(fabricated_event.handled());
+
+  // Language input keys from VK should not pass to the next phase.
+  ui::KeyEvent language_input_event{
+      ui::ET_KEY_PRESSED,  ui::VKEY_CONVERT,     ui::DomCode::CONVERT, 0,
+      ui::DomKey::CONVERT, ui::EventTimeForNow()};
+  instance_->OnDispatchingKeyEventPostIME(&language_input_event);
+  EXPECT_FALSE(language_input_event.handled());
+  language_input_event.SetProperties(properties);
+  instance_->OnDispatchingKeyEventPostIME(&language_input_event);
+  EXPECT_TRUE(language_input_event.handled());
 }
 
 TEST_F(ArcImeServiceTest, SendKeyEvent) {

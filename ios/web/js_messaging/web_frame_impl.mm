@@ -260,6 +260,73 @@ bool WebFrameImpl::CallJavaScriptFunctionInContentWorld(
   return called;
 }
 
+bool WebFrameImpl::ExecuteJavaScript(const std::string& script) {
+  return ExecuteJavaScript(script,
+                           base::DoNothingAs<void(const base::Value*)>());
+}
+
+bool WebFrameImpl::ExecuteJavaScript(
+    const std::string& script,
+    base::OnceCallback<void(const base::Value*)> callback) {
+  ExecuteJavaScriptCallbackWithError callback_with_error =
+      ExecuteJavaScriptCallbackAdapter(std::move(callback));
+
+  return ExecuteJavaScript(script, std::move(callback_with_error));
+}
+
+bool WebFrameImpl::ExecuteJavaScript(
+    const std::string& script,
+    ExecuteJavaScriptCallbackWithError callback) {
+  DCHECK(base::ios::IsRunningOnIOS14OrLater());
+  DCHECK(frame_info_);
+
+  if (!IsMainFrame()) {
+    return false;
+  }
+
+  NSString* ns_script = base::SysUTF8ToNSString(script);
+  __block auto internal_callback = std::move(callback);
+  void (^completion_handler)(id, NSError*) = ^void(id value, NSError* error) {
+    if (error) {
+      LogScriptWarning(ns_script, error);
+      std::move(internal_callback).Run(nullptr, true);
+    } else {
+      std::move(internal_callback)
+          .Run(ValueResultFromWKResult(value).get(), false);
+    }
+  };
+
+  if (@available(iOS 14.0, *)) {
+    web::ExecuteJavaScript(frame_info_.webView, WKContentWorld.pageWorld,
+                           frame_info_, ns_script, completion_handler);
+    return true;
+  }
+
+  return false;
+}
+
+WebFrame::ExecuteJavaScriptCallbackWithError
+WebFrameImpl::ExecuteJavaScriptCallbackAdapter(
+    base::OnceCallback<void(const base::Value*)> callback) {
+  // Because blocks treat scoped-variables
+  // as const, we have to redefine the callback with the
+  // __block keyword to be able to run the callback inside
+  // the completion handler.
+  __block auto internal_callback = std::move(callback);
+  return base::BindOnce(^(const base::Value* value, bool error) {
+    if (!error) {
+      std::move(internal_callback).Run(value);
+    }
+  });
+}
+
+void WebFrameImpl::LogScriptWarning(NSString* script, NSError* error) {
+  DLOG(WARNING) << "Script execution of:" << base::SysNSStringToUTF16(script)
+                << "\nfailed with error: "
+                << base::SysNSStringToUTF16(
+                       error.userInfo[NSLocalizedDescriptionKey]);
+}
+
 bool WebFrameImpl::ExecuteJavaScriptFunction(
     JavaScriptContentWorld* content_world,
     const std::string& name,

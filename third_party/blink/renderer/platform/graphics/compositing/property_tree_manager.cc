@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -82,15 +83,14 @@ static void UpdateCcTransformLocalMatrix(
     } else {
       compositor_node.local.matrix().setTranslate(translation.x(),
                                                   translation.y(), 0);
-      DCHECK_EQ(FloatPoint3D(), transform_node.Origin());
+      DCHECK_EQ(gfx::Point3F(), transform_node.Origin());
       compositor_node.origin = gfx::Point3F();
     }
   } else {
     DCHECK(!transform_node.ScrollNode());
-    FloatPoint3D origin = transform_node.Origin();
     compositor_node.local.matrix() =
         TransformationMatrix::ToSkMatrix44(transform_node.Matrix());
-    compositor_node.origin = ToGfxPoint3F(origin);
+    compositor_node.origin = transform_node.Origin();
   }
   compositor_node.needs_local_transform_update = true;
 }
@@ -899,6 +899,16 @@ bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
   return true;
 }
 
+// A reason is conditional if it can be omitted if it controls less than two
+// composited layers or render surfaces. We set the reason on an effect node
+// when updating the cc effect property tree, and remove unnecessary ones in
+// UpdateConditionalRenderSurfaceReasons() after layerirzation.
+static bool IsConditionalRenderSurfaceReason(cc::RenderSurfaceReason reason) {
+  return reason == cc::RenderSurfaceReason::kBlendModeDstIn ||
+         reason == cc::RenderSurfaceReason::kOpacity ||
+         reason == cc::RenderSurfaceReason::kOpacityAnimation;
+}
+
 int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     const ClipPaintPropertyNode& target_clip,
     const EffectPaintPropertyNode* next_effect) {
@@ -926,8 +936,8 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
       if (!IsCurrentCcEffectSynthetic()) {
         // TODO(crbug.com/803649): We still have clip hierarchy issues with
         // fragment clips. See crbug.com/1238656 for the test case. Will change
-        // the above condition to DCHECK after both CompositeAfterPaint and
-        // LayoutNGBlockFragmentation are fully launched.
+        // the above condition to DCHECK after LayoutNGBlockFragmentation is
+        // fully launched.
         return cc::EffectTree::kInvalidNodeId;
       }
       const auto* pre_exit_clip = current_.clip;
@@ -953,8 +963,8 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
   if (!clip) {
     // TODO(crbug.com/803649): We still have clip hierarchy issues with
     // fragment clips. See crbug.com/1238656 for the test case. Will change
-    // the above condition to DCHECK after both CompositeAfterPaint and
-    // LayoutNGBlockFragmentation are fully launched.
+    // the above condition to DCHECK after LayoutNGBlockFragmentation is fully
+    // launched.
     return cc::EffectTree::kInvalidNodeId;
   }
 
@@ -1013,8 +1023,11 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
           for (auto effect_it = effect_stack_.rbegin();
                effect_it != effect_stack_.rend(); ++effect_it) {
             auto& effect_node = *GetEffectTree().Node(effect_it->effect_id);
-            if (effect_node.HasRenderSurface())
+            if (effect_node.HasRenderSurface() &&
+                !IsConditionalRenderSurfaceReason(
+                    effect_node.render_surface_reason)) {
               break;
+            }
             ForceRenderSurfaceIfSyntheticRoundedCornerClip(*effect_it);
           }
         }
@@ -1066,19 +1079,14 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
 
   bool has_multiple_groups = false;
   if (GetEffectTree().Node(next_effect.CcNodeId(new_sequence_number_))) {
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      // TODO(crbug.com/1064341): We have to allow one blink effect node to
-      // apply to multiple groups in block fragments (multicol, etc.) due to
-      // the current FragmentClip implementation. This can only be fixed by
-      // LayoutNG block fragments. For now we'll create multiple cc effect
-      // nodes in the case.
-      // TODO(crbug.com/1253797): Actually this still happens with LayoutNG
-      // block fragments due to paint order issue.
-      has_multiple_groups = true;
-    } else {
-      NOTREACHED() << "Malformed paint artifact. Paint chunks under the same"
-                      " effect should be contiguous.";
-    }
+    // TODO(crbug.com/1064341): We have to allow one blink effect node to apply
+    // to multiple groups in block fragments (multicol, etc.) due to the
+    // current FragmentClip implementation. This can only be fixed by LayoutNG
+    // block fragments. For now we'll create multiple cc effect nodes in the
+    // case.
+    // TODO(crbug.com/1253797): Actually this still happens with LayoutNG block
+    // fragments due to paint order issue.
+    has_multiple_groups = true;
   }
 
   int real_effect_node_id = cc::EffectTree::kInvalidNodeId;
@@ -1143,20 +1151,36 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
                         *output_clip, transform);
 }
 
+// See IsConditionalRenderSurfaceReason() for the definition of conditional
+// render surface.
+static cc::RenderSurfaceReason ConditionalRenderSurfaceReasonForEffect(
+    const EffectPaintPropertyNode& effect) {
+  if (effect.BlendMode() == SkBlendMode::kDstIn)
+    return cc::RenderSurfaceReason::kBlendModeDstIn;
+  if (effect.Opacity() != 1.f)
+    return cc::RenderSurfaceReason::kOpacity;
+  // TODO(crbug.com/1285498): Optimize for will-change: opacity.
+  if (effect.HasActiveOpacityAnimation())
+    return cc::RenderSurfaceReason::kOpacityAnimation;
+  return cc::RenderSurfaceReason::kNone;
+}
+
 static cc::RenderSurfaceReason RenderSurfaceReasonForEffect(
     const EffectPaintPropertyNode& effect) {
-  if (!effect.Filter().IsEmpty())
+  if (!effect.Filter().IsEmpty() ||
+      effect.RequiresCompositingForWillChangeFilter()) {
     return cc::RenderSurfaceReason::kFilter;
+  }
   if (effect.HasActiveFilterAnimation())
     return cc::RenderSurfaceReason::kFilterAnimation;
-  if (effect.BackdropFilter())
+  if (effect.BackdropFilter() ||
+      effect.RequiresCompositingForWillChangeBackdropFilter()) {
     return cc::RenderSurfaceReason::kBackdropFilter;
+  }
   if (effect.HasActiveBackdropFilterAnimation())
     return cc::RenderSurfaceReason::kBackdropFilterAnimation;
   if (effect.BlendMode() != SkBlendMode::kSrcOver &&
-      // For optimization, we will set render surface reason for DstIn later in
-      // PaintArtifactCompositor::UpdateRenderSurfaceForEffects() if it controls
-      // more than one layer.
+      // The render surface for kDstIn is conditional. See above functions.
       effect.BlendMode() != SkBlendMode::kDstIn) {
     return cc::RenderSurfaceReason::kBlendMode;
   }
@@ -1169,7 +1193,10 @@ static cc::RenderSurfaceReason RenderSurfaceReasonForEffect(
   if (effect.FlattensAtLeafOf3DScene())
     return cc::RenderSurfaceReason::k3dTransformFlattening;
 
-  return cc::RenderSurfaceReason::kNone;
+  auto conditional_reason = ConditionalRenderSurfaceReasonForEffect(effect);
+  DCHECK(conditional_reason == cc::RenderSurfaceReason::kNone ||
+         IsConditionalRenderSurfaceReason(conditional_reason));
+  return conditional_reason;
 }
 
 void PropertyTreeManager::PopulateCcEffectNode(
@@ -1199,6 +1226,48 @@ void PropertyTreeManager::PopulateCcEffectNode(
   effect_node.document_transition_shared_element_id =
       effect.DocumentTransitionSharedElementId();
   effect_node.shared_element_resource_id = effect.SharedElementResourceId();
+}
+
+void PropertyTreeManager::UpdateConditionalRenderSurfaceReasons(
+    const cc::LayerList& layers) {
+  auto& effect_tree = GetEffectTree();
+  // This vector is indexed by effect node id. The value is the number of
+  // layers and sub-render-surfaces controlled by this effect.
+  Vector<int> effect_layer_counts(static_cast<wtf_size_t>(effect_tree.size()));
+  // Initialize the vector to count directly controlled layers.
+  for (const auto& layer : layers) {
+    if (layer->DrawsContent())
+      effect_layer_counts[layer->effect_tree_index()]++;
+  }
+
+  // In the effect tree, parent always has lower id than children, so the
+  // following loop will check descendants before parents and accumulate
+  // effect_layer_counts.
+  for (int id = static_cast<int>(effect_tree.size() - 1);
+       id > cc::EffectTree::kSecondaryRootNodeId; id--) {
+    auto* effect = effect_tree.Node(id);
+    if (effect_layer_counts[id] < 2 &&
+        IsConditionalRenderSurfaceReason(effect->render_surface_reason)) {
+      // The conditional render surface can be omitted because it controls less
+      // than two layers or render surfaces.
+      effect->render_surface_reason = cc::RenderSurfaceReason::kNone;
+    }
+
+    // We should not have visited the parent.
+    DCHECK_NE(-1, effect_layer_counts[effect->parent_id]);
+    if (effect->HasRenderSurface()) {
+      // A sub-render-surface counts as one controlled layer of the parent.
+      effect_layer_counts[effect->parent_id]++;
+    } else {
+      // Otherwise all layers count as controlled layers of the parent.
+      effect_layer_counts[effect->parent_id] += effect_layer_counts[id];
+    }
+
+#if DCHECK_IS_ON()
+    // Mark we have visited this effect.
+    effect_layer_counts[id] = -1;
+#endif
+  }
 }
 
 }  // namespace blink

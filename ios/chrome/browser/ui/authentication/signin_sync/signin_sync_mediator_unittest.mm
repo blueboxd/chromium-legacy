@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
@@ -94,6 +95,10 @@ std::unique_ptr<KeyedService> CreateFakeConsentAuditor(
 
 - (void)setUIEnabled:(BOOL)UIEnabled {
   self.UIWasEnabled = UIEnabled;
+}
+
+- (void)setActionToDone {
+  self.UIWasEnabled = YES;
 }
 
 @end
@@ -173,6 +178,7 @@ class SigninSyncMediatorTest : public PlatformTest {
   }
 
   web::WebTaskEnvironment task_environment_;
+  IOSChromeScopedTestingLocalState scoped_testing_local_state_;
 
   SigninSyncMediator* mediator_;
   std::unique_ptr<ChromeBrowserState> browser_state_;

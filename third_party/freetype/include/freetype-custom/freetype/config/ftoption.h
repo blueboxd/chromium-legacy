@@ -4,7 +4,7 @@
  *
  *   User-selectable configuration macros (specification only).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -219,6 +219,10 @@ FT_BEGIN_HEADER
    *   If you use a build system like cmake or the `configure` script,
    *   options set by those programs have precedence, overwriting the value
    *   here with the configured one.
+   *
+   *   If you use the GNU make build system directly (that is, without the
+   *   `configure` script) and you define this macro, you also have to pass
+   *   `SYSTEM_ZLIB=yes` as an argument to make.
    */
 #define FT_CONFIG_OPTION_SYSTEM_ZLIB
 

@@ -30,7 +30,6 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
-#include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
@@ -63,13 +62,18 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "pdf/buildflags.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PDF)
+#include "chrome/browser/pdf/pdf_extension_test_util.h"
 #endif
 
 namespace extensions {
@@ -115,19 +119,19 @@ const int kUndefinedId = INT_MIN;
 const ExtensionTabUtil::ScrubTabBehavior kDontScrubBehavior = {
     ExtensionTabUtil::kDontScrubTab, ExtensionTabUtil::kDontScrubTab};
 
-int GetTabId(base::DictionaryValue* tab) {
+int GetTabId(const base::Value* tab) {
   if (!tab)
     return kUndefinedId;
   return tab->FindIntKey(keys::kIdKey).value_or(kUndefinedId);
 }
 
-int GetTabWindowId(base::DictionaryValue* tab) {
+int GetTabWindowId(const base::Value* tab) {
   if (!tab)
     return kUndefinedId;
   return tab->FindIntKey(keys::kWindowIdKey).value_or(kUndefinedId);
 }
 
-int GetWindowId(base::DictionaryValue* window) {
+int GetWindowId(const base::Value* window) {
   if (!window)
     return kUndefinedId;
   return window->FindIntKey(keys::kIdKey).value_or(kUndefinedId);
@@ -300,14 +304,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
 
   base::ListValue* windows = result.get();
   EXPECT_EQ(window_ids.size(), windows->GetList().size());
-  for (size_t i = 0; i < windows->GetList().size(); ++i) {
-    base::DictionaryValue* result_window = nullptr;
-    EXPECT_TRUE(windows->GetDictionary(i, &result_window));
-    result_ids.insert(GetWindowId(result_window));
+  for (const base::Value& result_window : windows->GetList()) {
+    EXPECT_TRUE(result_window.is_dict());
+    result_ids.insert(GetWindowId(&result_window));
 
     // "populate" was not passed in so tabs are not populated.
-    base::ListValue* tabs = nullptr;
-    EXPECT_FALSE(result_window->GetList(keys::kTabsKey, &tabs));
+    const base::Value* tabs = result_window.FindListKey(keys::kTabsKey);
+    EXPECT_FALSE(tabs);
   }
   // The returned ids should contain all the current browser instance ids.
   EXPECT_EQ(window_ids, result_ids);
@@ -320,14 +323,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindows) {
 
   windows = result.get();
   EXPECT_EQ(window_ids.size(), windows->GetList().size());
-  for (size_t i = 0; i < windows->GetList().size(); ++i) {
-    base::DictionaryValue* result_window = nullptr;
-    EXPECT_TRUE(windows->GetDictionary(i, &result_window));
-    result_ids.insert(GetWindowId(result_window));
+  for (const base::Value& result_window : windows->GetList()) {
+    EXPECT_TRUE(result_window.is_dict());
+    result_ids.insert(GetWindowId(&result_window));
 
     // "populate" was enabled so tabs should be populated.
-    base::ListValue* tabs = nullptr;
-    EXPECT_TRUE(result_window->GetList(keys::kTabsKey, &tabs));
+    const base::Value* tabs = result_window.FindListKey(keys::kTabsKey);
+    EXPECT_TRUE(tabs);
   }
   // The returned ids should contain all the current app, browser and
   // devtools instance ids.
@@ -372,14 +374,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindowsAllTypes) {
 
   base::ListValue* windows = result.get();
   EXPECT_EQ(window_ids.size(), windows->GetList().size());
-  for (size_t i = 0; i < windows->GetList().size(); ++i) {
-    base::DictionaryValue* result_window = nullptr;
-    EXPECT_TRUE(windows->GetDictionary(i, &result_window));
-    result_ids.insert(GetWindowId(result_window));
+  for (const base::Value& result_window : windows->GetList()) {
+    EXPECT_TRUE(result_window.is_dict());
+    result_ids.insert(GetWindowId(&result_window));
 
     // "populate" was not passed in so tabs are not populated.
-    base::ListValue* tabs = nullptr;
-    EXPECT_FALSE(result_window->GetList(keys::kTabsKey, &tabs));
+    const base::Value* tabs = result_window.FindListKey(keys::kTabsKey);
+    EXPECT_FALSE(tabs);
   }
   // The returned ids should contain all the browser and devtools instance ids.
   EXPECT_EQ(window_ids, result_ids);
@@ -395,14 +396,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetAllWindowsAllTypes) {
 
   windows = result.get();
   EXPECT_EQ(window_ids.size(), windows->GetList().size());
-  for (size_t i = 0; i < windows->GetList().size(); ++i) {
-    base::DictionaryValue* result_window = nullptr;
-    EXPECT_TRUE(windows->GetDictionary(i, &result_window));
-    result_ids.insert(GetWindowId(result_window));
+  for (const base::Value& result_window : windows->GetList()) {
+    EXPECT_TRUE(result_window.is_dict());
+    result_ids.insert(GetWindowId(&result_window));
 
     // "populate" was enabled so tabs should be populated.
-    base::ListValue* tabs = nullptr;
-    EXPECT_TRUE(result_window->GetList(keys::kTabsKey, &tabs));
+    const base::Value* tabs = result_window.FindListKey(keys::kTabsKey);
+    EXPECT_TRUE(tabs);
   }
   // The returned ids should contain all the browser and devtools instance ids.
   EXPECT_EQ(window_ids, result_ids);
@@ -600,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
     CreateBrowser(browser()->profile());
 
   GURL url(url::kAboutBlankURL);
-  AddTabAtIndex(0, url, ui::PAGE_TRANSITION_LINK);
+  ASSERT_TRUE(AddTabAtIndex(0, url, ui::PAGE_TRANSITION_LINK));
   int window_id = ExtensionTabUtil::GetWindowId(browser());
 
   // Get tabs in the 'current' window called from non-focused browser.
@@ -613,10 +613,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
   base::ListValue* result_tabs = result.get();
   // We should have one initial tab and one added tab.
   EXPECT_EQ(2u, result_tabs->GetList().size());
-  for (size_t i = 0; i < result_tabs->GetList().size(); ++i) {
-    base::DictionaryValue* result_tab = nullptr;
-    EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
-    EXPECT_EQ(window_id, GetTabWindowId(result_tab));
+  for (const base::Value& result_tab : result_tabs->GetList()) {
+    EXPECT_TRUE(result_tab.is_dict());
+    EXPECT_EQ(window_id, GetTabWindowId(&result_tab));
   }
 
   // Get tabs NOT in the 'current' window called from non-focused browser.
@@ -628,10 +627,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
   result_tabs = result.get();
   // We should have one tab for each extra window.
   EXPECT_EQ(kExtraWindows, result_tabs->GetList().size());
-  for (size_t i = 0; i < kExtraWindows; ++i) {
-    base::DictionaryValue* result_tab = nullptr;
-    EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
-    EXPECT_NE(window_id, GetTabWindowId(result_tab));
+  for (const base::Value& result_tab : result_tabs->GetList()) {
+    EXPECT_TRUE(result_tab.is_dict());
+    EXPECT_NE(window_id, GetTabWindowId(&result_tab));
   }
 }
 
@@ -659,10 +657,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryAllTabsWithDevTools) {
   base::ListValue* result_tabs = result.get();
   // We should have one tab per browser except for DevTools.
   EXPECT_EQ(kNumWindows, result_tabs->GetList().size());
-  for (size_t i = 0; i < result_tabs->GetList().size(); ++i) {
-    base::DictionaryValue* result_tab = nullptr;
-    EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
-    result_ids.insert(GetTabWindowId(result_tab));
+  for (const base::Value& result_tab : result_tabs->GetList()) {
+    EXPECT_TRUE(result_tab.is_dict());
+    result_ids.insert(GetTabWindowId(&result_tab));
   }
   EXPECT_EQ(window_ids, result_ids);
 
@@ -671,9 +668,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryAllTabsWithDevTools) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryTabGroups) {
   GURL url(url::kAboutBlankURL);
-  AddTabAtIndex(0, url, ui::PAGE_TRANSITION_LINK);
-  AddTabAtIndex(0, url, ui::PAGE_TRANSITION_LINK);
-  AddTabAtIndex(0, url, ui::PAGE_TRANSITION_LINK);
+  ASSERT_TRUE(AddTabAtIndex(0, url, ui::PAGE_TRANSITION_LINK));
+  ASSERT_TRUE(AddTabAtIndex(0, url, ui::PAGE_TRANSITION_LINK));
+  ASSERT_TRUE(AddTabAtIndex(0, url, ui::PAGE_TRANSITION_LINK));
   tab_groups::TabGroupId group_id =
       browser()->tab_strip_model()->AddToNewGroup({0, 1});
 
@@ -820,14 +817,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, ExtensionAPICannotNavigateDevtools) {
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 // https://crbug.com/836327
 #define MAYBE_AcceptState DISABLED_AcceptState
 #else
 #define MAYBE_AcceptState AcceptState
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, MAYBE_AcceptState) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   if (base::mac::IsOS10_10())
     return;  // Fails when swarmed. http://crbug.com/660582
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
@@ -849,7 +846,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, MAYBE_AcceptState) {
   EXPECT_TRUE(error.empty());
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if !(defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   // DesktopWindowTreeHostX11::IsMinimized() relies on an asynchronous update
   // from the window server.
   EXPECT_TRUE(new_window->window()->IsMinimized());
@@ -1027,7 +1024,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, NoTabsAppWindow) {
 }
 
 // Crashes on Mac/Win only.  http://crbug.com/708996
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_FilteredEvents DISABLED_FilteredEvents
 #else
 #define MAYBE_FilteredEvents FilteredEvents
@@ -1062,7 +1059,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_FilteredEvents) {
   // TODO(llandwerlin): It seems creating an app window on MacOSX
   // won't create an activation event whereas it does on all other
   // platform. Disable focus event tests for now.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   listener.Reply("");
 #else
   listener.Reply("focus");
@@ -1893,6 +1890,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, CannotZoomInvalidTab) {
       base::MatchPattern(error, manifest_errors::kCannotAccessChromeUrl));
 }
 
+#if BUILDFLAG(ENABLE_PDF)
 // Regression test for crbug.com/660498.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TemporaryAddressSpoof) {
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -1946,6 +1944,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TemporaryAddressSpoof) {
   // avoid a race during browser teardown (see crbug.com/882213).
   navigation_manager.WaitForNavigationFinished();
 }
+#endif  // BUILDFLAG(ENABLE_PDF)
 
 // Tests how chrome.windows.create behaves when setSelfAsOpener parameter is
 // used.  setSelfAsOpener was introduced as a fix for https://crbug.com/713888

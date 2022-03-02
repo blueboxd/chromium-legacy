@@ -10,7 +10,7 @@
 #include "base/strings/string_piece_forward.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 
@@ -47,21 +47,21 @@ apps::FileHandlers CreateFileHandlersFromManifest(
         manifest_file_handlers,
     const GURL& app_scope);
 
-// Update the given WebApplicationInfo with information from the manifest.
+// Update the given WebAppInstallInfo with information from the manifest.
 // Will sanitise the manifest fields to be suitable for installation to prevent
 // sites from using arbitrarily large amounts of disk space.
 void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
                                   const GURL& manifest_url,
-                                  WebApplicationInfo* web_app_info);
+                                  WebAppInstallInfo* web_app_info);
 
 // Form a list of icons to download: Remove icons with invalid urls.
 std::vector<GURL> GetValidIconUrlsToDownload(
-    const WebApplicationInfo& web_app_info);
+    const WebAppInstallInfo& web_app_info);
 
-// Populate non-product icons in WebApplicationInfo using the IconsMap. This
+// Populate non-product icons in WebAppInstallInfo using the IconsMap. This
 // currently covers shortcut item icons and file handler icons. It ignores
 // icons that might have already existed in `web_app_info`.
-void PopulateOtherIcons(WebApplicationInfo* web_app_info,
+void PopulateOtherIcons(WebAppInstallInfo* web_app_info,
                         const IconsMap& icons_map);
 
 // Populates main product icons into `web_app_info`. This method filters icons
@@ -70,7 +70,7 @@ void PopulateOtherIcons(WebApplicationInfo* web_app_info,
 // `icons_map` is null or missing icons, it will generate icons for sizes where
 // resizing is not possible. Icons which were already populated in
 // `web_app_info` may be retained, and even used to generate missing icons.
-void PopulateProductIcons(WebApplicationInfo* web_app_info,
+void PopulateProductIcons(WebAppInstallInfo* web_app_info,
                           const IconsMap* icons_map);
 
 // Record an app banner added to homescreen event to ensure banners are not
@@ -82,6 +82,11 @@ void RecordAppBanner(content::WebContents* contents, const GURL& app_url);
 void RecordDownloadedIconsHttpResultsCodeClass(
     base::StringPiece histogram_name,
     IconsDownloadedResult result,
+    const DownloadedIconsHttpResults& icons_http_results);
+
+// Records http status code for each processed icon url.
+void RecordDownloadedIconHttpStatusCodes(
+    base::StringPiece histogram_name,
     const DownloadedIconsHttpResults& icons_http_results);
 
 webapps::WebappInstallSource ConvertExternalInstallSourceToInstallSource(

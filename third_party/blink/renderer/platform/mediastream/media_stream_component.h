@@ -38,7 +38,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
@@ -154,7 +154,7 @@ class PLATFORM_EXPORT MediaStreamComponent final
   MediaConstraints constraints_;
   std::unique_ptr<MediaStreamTrackPlatform> platform_track_;
   // Frame where the referenced platform track was created, if applicable.
-  WebLocalFrame* creation_frame_ = nullptr;
+  WebLocalFrame* creation_frame_;
 };
 
 typedef HeapVector<Member<MediaStreamComponent>> MediaStreamComponentVector;

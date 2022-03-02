@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://test/mojo_webui_test_support.js';
+
 import {$$, photosDescriptor, PhotosProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {PhotosHandlerRemote} from 'chrome://new-tab-page/photos.mojom-webui.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
@@ -20,8 +23,7 @@ suite('NewTabPageModulesPhotosModuleTest', () => {
 
   setup(() => {
     document.body.innerHTML = '';
-    handler =
-        installMock(photos.mojom.PhotosHandlerRemote, PhotosProxy.setHandler);
+    handler = installMock(PhotosHandlerRemote, PhotosProxy.setHandler);
     metrics = fakeMetricsPrivate();
   });
 

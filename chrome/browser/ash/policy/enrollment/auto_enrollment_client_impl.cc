@@ -61,7 +61,7 @@ int NextPowerOf2(int64_t value) {
 }
 
 // Sets or clears a value in a dictionary.
-void UpdateDict(base::DictionaryValue* dict,
+void UpdateDict(base::Value* dict,
                 const char* pref_path,
                 bool set_or_clear,
                 std::unique_ptr<base::Value> value) {

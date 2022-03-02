@@ -40,15 +40,35 @@ class ArcAsh : public mojom::Arc, public arc::ArcIntentHelperObserver {
                             RequestActivityIconsCallback callback) override;
   void RequestUrlHandlerList(const std::string& url,
                              RequestUrlHandlerListCallback callback) override;
+  void RequestTextSelectionActions(
+      const std::string& text,
+      mojom::ScaleFactor scale_factor,
+      RequestTextSelectionActionsCallback callback) override;
+  void HandleUrl(const std::string& url,
+                 const std::string& package_name) override;
 
-  // arc::ArcLacrosObserver:
+  // arc::ArcIntentHelperObserver:
   void OnIconInvalidated(const std::string& package_name) override;
-  void OnArcIntentHelperBridgeDestruction() override;
+  void OnArcIntentHelperBridgeShutdown() override;
 
  private:
   // Called when activity icons are sent.
   void ConvertActivityIcons(RequestActivityIconsCallback callback,
                             std::vector<arc::mojom::ActivityIconPtr> icons);
+  // Called when intent handler list is sent.
+  void ConvertIntentHandlerInfo(
+      RequestUrlHandlerListCallback callback,
+      std::vector<arc::mojom::IntentHandlerInfoPtr> handlers);
+  // Called when actions for text selection are sent.
+  void ConvertTextSelectionActions(
+      RequestTextSelectionActionsCallback callback,
+      std::vector<arc::mojom::TextSelectionActionPtr> actions);
+  // Called when icon converted to ImageSkia is returned.
+  void ConvertTextSelectionAction(
+      mojom::TextSelectionActionPtr* converted_action,
+      arc::mojom::TextSelectionActionPtr action,
+      base::OnceClosure callback,
+      const gfx::ImageSkia& image);
 
   // This class supports any number of connections.
   mojo::ReceiverSet<mojom::Arc> receivers_;

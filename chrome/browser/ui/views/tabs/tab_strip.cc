@@ -28,7 +28,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/scoped_observation.h"
 #include "base/stl_util.h"
@@ -106,7 +105,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_version.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/win/hwnd_util.h"
@@ -896,6 +895,7 @@ TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
           controller_.get(),
           base::BindRepeating(&TabStrip::tabs_view_model,
                               base::Unretained(this)))),
+      hover_card_controller_(std::make_unique<TabHoverCardController>(this)),
       drag_context_(std::make_unique<TabDragContextImpl>(this)) {
   // TODO(pbos): This is probably incorrect, the background of individual tabs
   // depend on their selected state. This should probably be pushed down into
@@ -1544,10 +1544,6 @@ void TabStrip::SetTabNeedsAttention(int model_index, bool attention) {
   tab_at(model_index)->SetTabNeedsAttention(attention);
 }
 
-const gfx::Rect& TabStrip::ideal_bounds(tab_groups::TabGroupId group) const {
-  return layout_helper_->group_header_ideal_bounds().at(group);
-}
-
 int TabStrip::GetModelIndexOf(const TabSlotView* view) const {
   return tabs_.GetIndexOfView(view);
 }
@@ -1855,11 +1851,8 @@ void TabStrip::UpdateHoverCard(Tab* tab, HoverCardUpdateType update_type) {
     update_type = HoverCardUpdateType::kAnimating;
   }
 
-  if (!hover_card_controller_) {
-    if (!tab)
-      return;
-    hover_card_controller_ = std::make_unique<TabHoverCardController>(this);
-  }
+  if (!hover_card_controller_)
+    return;
 
   hover_card_controller_->UpdateHoverCard(tab, update_type);
 }
@@ -2561,7 +2554,7 @@ bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
 }
 
 bool TabStrip::TitlebarBackgroundIsTransparent() const {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Windows 8+ uses transparent window contents (because the titlebar area is
   // drawn by the system and not Chrome), but the actual titlebar is opaque.
   if (base::win::GetVersion() >= base::win::Version::WIN8)
@@ -2589,16 +2582,15 @@ void TabStrip::SetTabSlotVisibility() {
   bool last_tab_visible = false;
   absl::optional<tab_groups::TabGroupId> last_tab_group = absl::nullopt;
   std::vector<Tab*> tabs = layout_helper_->GetTabs();
-  for (std::vector<Tab*>::reverse_iterator tab = tabs.rbegin();
-       tab != tabs.rend(); ++tab) {
-    absl::optional<tab_groups::TabGroupId> current_group = (*tab)->group();
+  for (Tab* tab : base::Reversed(tabs)) {
+    absl::optional<tab_groups::TabGroupId> current_group = tab->group();
     if (current_group != last_tab_group && last_tab_group.has_value()) {
       TabGroupViews* group_view = group_views_.at(last_tab_group.value()).get();
       group_view->header()->SetVisible(last_tab_visible);
       group_view->underline()->SetVisible(last_tab_visible);
     }
-    last_tab_visible = ShouldTabBeVisible(*tab);
-    last_tab_group = (*tab)->closing() ? absl::nullopt : current_group;
+    last_tab_visible = ShouldTabBeVisible(tab);
+    last_tab_group = tab->closing() ? absl::nullopt : current_group;
 
     // Collapsed tabs disappear once they've reached their minimum size. This
     // is different than very small non-collapsed tabs, because in that case
@@ -2606,8 +2598,8 @@ void TabStrip::SetTabSlotVisibility() {
     bool is_collapsed =
         (current_group.has_value() &&
          controller()->IsGroupCollapsed(current_group.value()) &&
-         (*tab)->bounds().width() <= TabStyle::GetTabOverlap());
-    (*tab)->SetVisible(is_collapsed ? false : last_tab_visible);
+         tab->bounds().width() <= TabStyle::GetTabOverlap());
+    tab->SetVisible(is_collapsed ? false : last_tab_visible);
   }
 }
 
@@ -3251,6 +3243,10 @@ void TabStrip::UpdateTabGroupVisuals(tab_groups::TabGroupId group_id) {
   const auto group_views = group_views_.find(group_id);
   if (group_views != group_views_.end())
     group_views->second->UpdateBounds();
+}
+
+const gfx::Rect& TabStrip::ideal_bounds(tab_groups::TabGroupId group) const {
+  return layout_helper_->group_header_ideal_bounds().at(group);
 }
 
 bool TabStrip::OnMouseDragged(const ui::MouseEvent& event) {

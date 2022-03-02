@@ -37,6 +37,7 @@
 #include "components/segmentation_platform/internal/signals/histogram_signal_handler.h"
 #include "components/segmentation_platform/internal/signals/signal_filter_processor.h"
 #include "components/segmentation_platform/internal/signals/user_action_signal_handler.h"
+#include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/config.h"
 
 using optimization_guide::proto::OptimizationTarget;
@@ -103,8 +104,6 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
       std::move(signal_storage_config_db), clock);
   segmentation_result_prefs_ =
       std::make_unique<SegmentationResultPrefs>(pref_service);
-  proxy_ =
-      std::make_unique<ServiceProxyImpl>(this, segment_info_database_.get());
 
   // Construct signal processors.
   user_action_signal_handler_ =
@@ -123,6 +122,9 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
             platform_options_);
   }
 
+  proxy_ = std::make_unique<ServiceProxyImpl>(segment_info_database_.get(),
+                                              signal_storage_config_.get(),
+                                              &configs_, &segment_selectors_);
   for (const auto& config : configs_) {
     for (const auto& segment_id : config->segment_ids)
       all_segment_ids_.insert(segment_id);
@@ -156,6 +158,13 @@ void SegmentationPlatformServiceImpl::GetSelectedSegment(
   CHECK(segment_selectors_.find(segmentation_key) != segment_selectors_.end());
   auto& selector = segment_selectors_.at(segmentation_key);
   selector->GetSelectedSegment(std::move(callback));
+}
+
+SegmentSelectionResult SegmentationPlatformServiceImpl::GetCachedSegmentResult(
+    const std::string& segmentation_key) {
+  CHECK(segment_selectors_.find(segmentation_key) != segment_selectors_.end());
+  auto& selector = segment_selectors_.at(segmentation_key);
+  return selector->GetCachedSegmentResult();
 }
 
 void SegmentationPlatformServiceImpl::EnableMetrics(
@@ -201,8 +210,11 @@ void SegmentationPlatformServiceImpl::MaybeRunPostInitializationRoutines() {
                       signal_storage_config_initialized_;
 
   OnServiceStatusChanged();
-  if (!init_success)
+  if (!init_success) {
+    stats::RecordSegmentSelectionFailure(
+        stats::SegmentationSelectionFailureReason::kDBInitFailure);
     return;
+  }
 
   model_execution_manager_ = CreateModelExecutionManager(
       model_provider_, task_runner_, all_segment_ids_, clock_,
@@ -231,6 +243,8 @@ void SegmentationPlatformServiceImpl::MaybeRunPostInitializationRoutines() {
           &SegmentationPlatformServiceImpl::OnExecuteDatabaseMaintenanceTasks,
           weak_ptr_factory_.GetWeakPtr()),
       kDatabaseMaintenanceDelay);
+
+  proxy_->SetModelExecutionScheduler(model_execution_scheduler_.get());
 }
 
 void SegmentationPlatformServiceImpl::OnSegmentationModelUpdated(
@@ -243,6 +257,12 @@ void SegmentationPlatformServiceImpl::OnSegmentationModelUpdated(
   signal_filter_processor_->OnSignalListUpdated();
 
   model_execution_scheduler_->OnNewModelInfoReady(segment_info);
+
+  // Update the service status for proxy.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SegmentationPlatformServiceImpl::OnServiceStatusChanged,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SegmentationPlatformServiceImpl::OnExecuteDatabaseMaintenanceTasks() {
@@ -251,15 +271,12 @@ void SegmentationPlatformServiceImpl::OnExecuteDatabaseMaintenanceTasks() {
 
 void SegmentationPlatformServiceImpl::OnServiceStatusChanged() {
   int status = static_cast<int>(ServiceStatus::kUninitialized);
-  if (IsInitializationFinished()) {
-    if (segment_info_database_initialized_)
-      status |= static_cast<int>(ServiceStatus::kSegmentationInfoDbInitialized);
-    if (signal_database_initialized_)
-      status |= static_cast<int>(ServiceStatus::kSignalDbInitialized);
-    if (signal_storage_config_initialized_) {
-      status |=
-          static_cast<int>(ServiceStatus::kSignalStorageConfigInitialized);
-    }
+  if (segment_info_database_initialized_)
+    status |= static_cast<int>(ServiceStatus::kSegmentationInfoDbInitialized);
+  if (signal_database_initialized_)
+    status |= static_cast<int>(ServiceStatus::kSignalDbInitialized);
+  if (signal_storage_config_initialized_) {
+    status |= static_cast<int>(ServiceStatus::kSignalStorageConfigInitialized);
   }
 
   proxy_->OnServiceStatusChanged(IsInitializationFinished(), status);

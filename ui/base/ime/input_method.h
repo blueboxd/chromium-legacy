@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/compiler_specific.h"
 #include "build/build_config.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
@@ -109,8 +108,8 @@ class InputMethod {
   // dispatched back to the caller via
   // ui::InputMethodDelegate::DispatchKeyEventPostIME(), once it's processed by
   // the input method. It should only be called by a message dispatcher.
-  virtual ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event)
-      WARN_UNUSED_RESULT = 0;
+  [[nodiscard]] virtual ui::EventDispatchDetails DispatchKeyEvent(
+      ui::KeyEvent* event) = 0;
 
   // Called by the focused client whenever its text input type is changed.
   // Before calling this method, the focused client must confirm or clear
@@ -141,9 +140,7 @@ class InputMethod {
   // of IME popups is not supported.
   virtual bool IsCandidatePopupOpen() const = 0;
 
-  // Displays an on screen keyboard if enabled.
-  virtual void ShowVirtualKeyboardIfEnabled() = 0;
-
+  // Sets visibility of the virtual keyboard, if enabled already.
   virtual void SetVirtualKeyboardVisibilityIfEnabled(bool should_show) = 0;
 
   // Management of the observer list.

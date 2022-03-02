@@ -18,6 +18,10 @@ SourceString SourceString::Create(base::PassKey<SourceLineIterator>,
   return SourceString(line, 1, str);
 }
 
+SourceString SourceString::CreateForTesting(base::StringPiece str) {
+  return SourceString::CreateForTesting(1, 1, str);
+}
+
 SourceString SourceString::CreateForTesting(size_t line,
                                             size_t column,
                                             base::StringPiece str) {
@@ -36,6 +40,15 @@ SourceString& SourceString::operator=(SourceString&&) = default;
 SourceString SourceString::Substr(size_t pos, size_t count) const {
   const auto column = column_ + pos;
   return SourceString(line_, column, str_.substr(pos, count));
+}
+
+SourceString SourceString::Consume(size_t count) {
+  count = std::min(count, str_.size());
+
+  auto consumed = Substr(0, count);
+  *this = Substr(count);
+
+  return consumed;
 }
 
 SourceLineIterator::SourceLineIterator(base::StringPiece source)

@@ -271,10 +271,8 @@ GetTransitionFromMetricsAnimationInfo(
 AppListControllerImpl::AppListControllerImpl()
     : model_provider_(std::make_unique<AppListModelProvider>()),
       fullscreen_presenter_(std::make_unique<AppListPresenterImpl>(this)),
+      bubble_presenter_(std::make_unique<AppListBubblePresenter>(this)),
       badge_controller_(std::make_unique<AppListBadgeController>()) {
-  if (features::IsProductivityLauncherEnabled())
-    bubble_presenter_ = std::make_unique<AppListBubblePresenter>(this);
-
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
   session_controller->AddObserver(this);
@@ -485,6 +483,9 @@ void AppListControllerImpl::Show(int64_t display_id,
     LogAppListShowSource(show_source.value(), show_app_list_bubble);
 
   if (show_app_list_bubble) {
+    // Clamshell ProductivityLauncher does not support app list drags.
+    if (show_source.has_value())
+      DCHECK_NE(show_source.value(), AppListShowSource::kSwipeFromShelf);
     bubble_presenter_->Show(display_id);
     return;
   }
@@ -525,11 +526,8 @@ void AppListControllerImpl::OnTemporarySortOrderChanged(
   DCHECK(features::IsProductivityLauncherEnabled());
   DCHECK(features::IsLauncherAppSortEnabled());
 
-  // Adapt to the new sorting order in clamshell mode.
-  if (!IsTabletMode()) {
-    DCHECK(bubble_presenter_);
-    bubble_presenter_->OnTemporarySortOrderChanged(new_order);
-  }
+  bubble_presenter_->OnTemporarySortOrderChanged(new_order);
+  fullscreen_presenter_->OnTemporarySortOrderChanged(new_order);
 }
 
 ShelfAction AppListControllerImpl::ToggleAppList(
@@ -859,8 +857,12 @@ void AppListControllerImpl::OnTabletModeEnded() {
 }
 
 void AppListControllerImpl::OnWallpaperColorsChanged() {
-  if (IsVisible(last_visible_display_id_))
-    fullscreen_presenter_->GetView()->OnWallpaperColorsChanged();
+  // Clamshell ProductivityLauncher doesn't use wallpaper prominent color.
+  if (IsVisible(last_visible_display_id_) && !ShouldShowAppListBubble()) {
+    AppListView* app_list_view = fullscreen_presenter_->GetView();
+    DCHECK(app_list_view);
+    app_list_view->OnWallpaperColorsChanged();
+  }
 }
 
 void AppListControllerImpl::OnWallpaperPreviewStarted() {
@@ -930,12 +932,14 @@ void AppListControllerImpl::OnUiVisibilityChanged(
 
   switch (new_visibility) {
     case AssistantVisibility::kVisible:
+      DVLOG(1) << "Assistant becoming visible";
       if (!IsVisible() || is_old_visibility_closing) {
         absl::optional<AppListView::ScopedContentsResetDisabler> disabler;
         if (is_old_visibility_closing) {
           // Avoid resetting the contents view when the transition to close the
           // Assistant ui is going to be reversed.
-          disabler.emplace(fullscreen_presenter_->GetView());
+          if (fullscreen_presenter_->GetView())
+            disabler.emplace(fullscreen_presenter_->GetView());
 
           // Reset `close_assistant_ui_runner_` because the Assistant ui is
           // going to show.
@@ -1078,11 +1082,17 @@ void AppListControllerImpl::SetKeyboardTraversalMode(bool engaged) {
   keyboard_traversal_engaged_ = engaged;
 
   // No need to schedule paint for bubble presenter.
-  if (bubble_presenter_ && bubble_presenter_->IsShowing())
+  if (features::IsProductivityLauncherEnabled() &&
+      bubble_presenter_->IsShowing()) {
     return;
+  }
 
+  AppListView* app_list_view = fullscreen_presenter_->GetView();
+  // May be null in tests of bubble presenter.
+  if (!app_list_view)
+    return;
   views::View* focused_view =
-      fullscreen_presenter_->GetView()->GetFocusManager()->GetFocusedView();
+      app_list_view->GetFocusManager()->GetFocusedView();
 
   if (!focused_view)
     return;
@@ -1106,8 +1116,10 @@ void AppListControllerImpl::SetKeyboardTraversalMode(bool engaged) {
 }
 
 bool AppListControllerImpl::IsShowingEmbeddedAssistantUI() const {
-  if (bubble_presenter_ && bubble_presenter_->IsShowingEmbeddedAssistantUI())
+  if (features::IsProductivityLauncherEnabled() &&
+      bubble_presenter_->IsShowingEmbeddedAssistantUI()) {
     return true;
+  }
   return fullscreen_presenter_->IsShowingEmbeddedAssistantUI();
 }
 
@@ -1475,6 +1487,10 @@ void AppListControllerImpl::OnStateTransitionAnimationCompleted(
     state_transition_animation_callback_.Run(state);
   }
 
+  MaybeCloseAssistant();
+}
+
+void AppListControllerImpl::MaybeCloseAssistant() {
   if (close_assistant_ui_runner_)
     close_assistant_ui_runner_.RunAndReset();
 }
@@ -1484,6 +1500,7 @@ AppListViewState AppListControllerImpl::GetAppListViewState() const {
 }
 
 void AppListControllerImpl::OnViewStateChanged(AppListViewState state) {
+  DVLOG(1) << __PRETTY_FUNCTION__ << " " << state;
   app_list_view_state_ = state;
 
   auto* notifier = GetNotifier();
@@ -1493,6 +1510,12 @@ void AppListControllerImpl::OnViewStateChanged(AppListViewState state) {
   for (auto& observer : observers_)
     observer.OnViewStateChanged(state);
 
+  if (state == AppListViewState::kClosed)
+    ScheduleCloseAssistant();
+}
+
+void AppListControllerImpl::ScheduleCloseAssistant() {
+  DVLOG(1) << __PRETTY_FUNCTION__;
   // Close the Assistant in asynchronous way if the app list is going to be
   // closed while the Assistant is visible. If the app list close animation is
   // not reversed, `close_assistant_ui_runner_` runs at the end of the animation
@@ -1500,7 +1523,7 @@ void AppListControllerImpl::OnViewStateChanged(AppListViewState state) {
   const bool is_assistant_ui_visible =
       (AssistantUiController::Get()->GetModel()->visibility() ==
        AssistantVisibility::kVisible);
-  if (state == AppListViewState::kClosed && is_assistant_ui_visible) {
+  if (is_assistant_ui_visible) {
     absl::optional<base::ScopedClosureRunner> runner =
         AssistantUiController::Get()->CloseUi(
             AssistantExitPoint::kLauncherClose);
@@ -1538,6 +1561,10 @@ int AppListControllerImpl::AdjustAppListViewScrollOffset(int offset,
 void AppListControllerImpl::LoadIcon(const std::string& app_id) {
   if (client_)
     client_->LoadIcon(profile_id_, app_id);
+}
+
+bool AppListControllerImpl::HasValidProfile() const {
+  return profile_id_ != kAppListInvalidProfileID;
 }
 
 void AppListControllerImpl::GetAppLaunchedMetricParams(
@@ -1613,6 +1640,8 @@ void AppListControllerImpl::RemoveObserver(
 
 void AppListControllerImpl::OnVisibilityChanged(bool visible,
                                                 int64_t display_id) {
+  DVLOG(1) << __PRETTY_FUNCTION__ << " visible " << visible << " display_id "
+           << display_id;
   // Focus and app visibility changes while finishing home launcher state
   // animation may cause OnVisibilityChanged() to be called before the home
   // launcher state transition finished - delay the visibility change until
@@ -1940,6 +1969,11 @@ int AppListControllerImpl::GetLastQueryLength() {
 void AppListControllerImpl::Shutdown() {
   DCHECK(!is_shutdown_);
   is_shutdown_ = true;
+
+  // Always shutdown the bubble presenter, even if ProductivityLauncher is
+  // disabled, because tests might have temporarily enabled the feature and
+  // the widget needs to be closed.
+  bubble_presenter_->Shutdown();
 
   Shell* shell = Shell::Get();
   AssistantController::Get()->RemoveObserver(this);

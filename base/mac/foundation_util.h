@@ -27,7 +27,7 @@ class NSString;
 class UIFont;
 #endif  // __OBJC__
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 #include <CoreText/CoreText.h>
 #else
 #include <ApplicationServices/ApplicationServices.h>
@@ -47,10 +47,10 @@ typedef struct CF_BRIDGED_TYPE(id) __SecKey* SecKeyRef;
 typedef struct CF_BRIDGED_TYPE(id) __SecPolicy* SecPolicyRef;
 
 namespace base {
-
 class FilePath;
+}
 
-namespace mac {
+namespace base::mac {
 
 // Returns true if the application is running from a bundle
 BASE_EXPORT bool AmIBundled();
@@ -151,8 +151,11 @@ BASE_EXPORT const char* BaseBundleID();
 // make its own copy of new_base_bundle_id.
 BASE_EXPORT void SetBaseBundleID(const char* new_base_bundle_id);
 
-}  // namespace mac
-}  // namespace base
+}  // namespace base::mac
+
+// These casting functions cannot be implemented in a way that will work with
+// ARC. Use the casting functions in base/mac/bridging.h instead.
+#if !defined(__has_feature) || !__has_feature(objc_arc)
 
 #if !defined(__OBJC__)
 #define OBJC_CPP_CLASS_DECL(x) class x;
@@ -215,7 +218,7 @@ CF_TO_NS_CAST_DECL(CFWriteStream, NSOutputStream)
 CF_TO_NS_MUTABLE_CAST_DECL(String)
 CF_TO_NS_CAST_DECL(CFURL, NSURL)
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 CF_TO_NS_CAST_DECL(CTFont, UIFont)
 #else
 CF_TO_NS_CAST_DECL(CTFont, NSFont)
@@ -225,8 +228,9 @@ CF_TO_NS_CAST_DECL(CTFont, NSFont)
 #undef CF_TO_NS_MUTABLE_CAST_DECL
 #undef OBJC_CPP_CLASS_DECL
 
-namespace base {
-namespace mac {
+#endif  // !defined(__has_feature) || !__has_feature(objc_arc)
+
+namespace base::mac {
 
 // CFCast<>() and CFCastStrict<>() cast a basic CFTypeRef to a more
 // specific CoreFoundation type. The compatibility of the passed
@@ -369,12 +373,11 @@ BASE_EXPORT base::ScopedCFTypeRef<CFURLRef> FilePathToCFURL(
 // Converts |range| to an NSRange, returning the new range in |range_out|.
 // Returns true if conversion was successful, false if the values of |range|
 // could not be converted to NSUIntegers.
-BASE_EXPORT bool CFRangeToNSRange(CFRange range,
-                                  NSRange* range_out) WARN_UNUSED_RESULT;
+[[nodiscard]] BASE_EXPORT bool CFRangeToNSRange(CFRange range,
+                                                NSRange* range_out);
 #endif  // defined(__OBJC__)
 
-}  // namespace mac
-}  // namespace base
+}  // namespace base::mac
 
 // Stream operations for CFTypes. They can be used with NSTypes as well
 // by using the NSToCFCast methods above.
@@ -392,7 +395,7 @@ BASE_EXPORT extern std::ostream& operator<<(std::ostream& o, id);
 BASE_EXPORT extern std::ostream& operator<<(std::ostream& o, NSRange);
 BASE_EXPORT extern std::ostream& operator<<(std::ostream& o, SEL);
 
-#if !defined(OS_IOS)
+#if !BUILDFLAG(IS_IOS)
 BASE_EXPORT extern std::ostream& operator<<(std::ostream& o, NSPoint);
 BASE_EXPORT extern std::ostream& operator<<(std::ostream& o, NSRect);
 BASE_EXPORT extern std::ostream& operator<<(std::ostream& o, NSSize);

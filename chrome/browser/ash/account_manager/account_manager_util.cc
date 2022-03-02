@@ -27,7 +27,7 @@ bool IsAccountManagerAvailable(const Profile* const profile) {
   // Signin Profile does not have any accounts associated with it,
   // LockScreenAppProfile and LockScreenProfile do not link to the user's
   // cryptohome.
-  if (!chromeos::ProfileHelper::IsRegularProfile(profile))
+  if (!ProfileHelper::IsRegularProfile(profile))
     return false;
 
   // Account Manager is unavailable on Guest (Incognito) Sessions.
@@ -60,9 +60,8 @@ void InitializeAccountManager(const base::FilePath& cryptohome_root_dir,
       cryptohome_root_dir,
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
-      base::BindRepeating(
-          &chromeos::DelayNetworkCall,
-          base::Milliseconds(chromeos::kDefaultNetworkRetryDelayMS)),
+      base::BindRepeating(&DelayNetworkCall,
+                          base::Milliseconds(kDefaultNetworkRetryDelayMS)),
       std::move(initialization_callback));
 
   crosapi::AccountManagerMojoService* account_manager_mojo_service =

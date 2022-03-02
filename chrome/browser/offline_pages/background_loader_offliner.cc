@@ -38,7 +38,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
-#include "third_party/blink/public/common/loader/previews_state.h"
 
 namespace offline_pages {
 
@@ -248,17 +247,16 @@ void BackgroundLoaderOffliner::DocumentAvailableInMainFrame(
   AddLoadingSignal("DocumentAvailableInMainFrame");
 }
 
-void BackgroundLoaderOffliner::DocumentOnLoadCompletedInMainFrame(
-    content::RenderFrameHost* render_frame_host) {
+void BackgroundLoaderOffliner::DocumentOnLoadCompletedInPrimaryMainFrame() {
   if (!pending_request_.get()) {
     DVLOG(1) << "DidStopLoading called even though no pending request.";
     return;
   }
 
   // Add this signal to signal_data_.
-  AddLoadingSignal("DocumentOnLoadCompletedInMainFrame");
+  AddLoadingSignal("DocumentOnLoadCompletedInPrimaryMainFrame");
 
-  snapshot_controller_->DocumentOnLoadCompletedInMainFrame();
+  snapshot_controller_->DocumentOnLoadCompletedInPrimaryMainFrame();
 }
 
 void BackgroundLoaderOffliner::PrimaryMainFrameRenderProcessGone(

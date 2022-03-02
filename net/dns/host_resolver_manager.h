@@ -33,6 +33,7 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
+#include "net/dns/httpssvc_metrics.h"
 #include "net/dns/public/dns_config_overrides.h"
 #include "net/dns/public/dns_query_type.h"
 #include "net/dns/public/secure_dns_mode.h"
@@ -246,7 +247,11 @@ class NET_EXPORT HostResolverManager
     CACHE_LOOKUP,
     INSECURE_CACHE_LOOKUP,
     SECURE_CACHE_LOOKUP,
+    CONFIG_PRESET,
   };
+
+  // Returns true if the task is local, synchronous, and instantaneous.
+  static bool IsLocalTask(TaskType task);
 
   // Attempts host resolution for |request|. Generally only expected to be
   // called from RequestImpl::Start().
@@ -271,6 +276,7 @@ class NET_EXPORT HostResolverManager
       const JobKey& job_key,
       const IPAddress& ip_address,
       ResolveHostParameters::CacheUsage cache_usage,
+      SecureDnsPolicy secure_dns_policy,
       const NetLogWithSource& request_net_log,
       HostCache* cache,
       std::deque<TaskType>* out_tasks,
@@ -282,8 +288,16 @@ class NET_EXPORT HostResolverManager
                          std::deque<TaskType> tasks,
                          RequestImpl* request);
 
+  HostResolverManager::Job* AddJobWithoutRequest(
+      JobKey key,
+      ResolveHostParameters::CacheUsage cache_usage,
+      HostCache* host_cache,
+      std::deque<TaskType> tasks,
+      RequestPriority priority,
+      const NetLogWithSource& source_net_log);
+
   // Resolves the IP literal hostname represented by `ip_address`.
-  HostCache::Entry ResolveAsIP(DnsQueryType query_type,
+  HostCache::Entry ResolveAsIP(DnsQueryTypeSet query_types,
                                bool resolve_canonname,
                                const IPAddress& ip_address);
 
@@ -299,12 +313,22 @@ class NET_EXPORT HostResolverManager
       const NetLogWithSource& source_net_log,
       absl::optional<HostCache::EntryStaleness>* out_stale_info);
 
+  // Returns any preset resolution result from the active DoH configuration that
+  // matches |key.host|.
+  absl::optional<HostCache::Entry> MaybeReadFromConfig(const JobKey& key);
+
+  // Populates the secure cache with an optimal entry that supersedes the
+  // bootstrap result.
+  void StartBootstrapFollowup(JobKey key,
+                              HostCache* host_cache,
+                              const NetLogWithSource& source_net_log);
+
   // Iff we have a DnsClient with a valid DnsConfig and we're not about to
   // attempt a system lookup, then try to resolve the query using the HOSTS
   // file.
   absl::optional<HostCache::Entry> ServeFromHosts(
       base::StringPiece hostname,
-      DnsQueryType query_type,
+      DnsQueryTypeSet query_types,
       bool default_family_due_to_no_ipv6,
       const std::deque<TaskType>& tasks);
 
@@ -312,7 +336,7 @@ class NET_EXPORT HostResolverManager
   // returns a results entry with the loopback IP.
   absl::optional<HostCache::Entry> ServeLocalhost(
       base::StringPiece hostname,
-      DnsQueryType query_type,
+      DnsQueryTypeSet query_types,
       bool default_family_due_to_no_ipv6);
 
   // Returns the secure dns mode to use for a job, taking into account the
@@ -338,19 +362,19 @@ class NET_EXPORT HostResolverManager
   // may be adjusted later and not all tasks need to be run.
   void CreateTaskSequence(const JobKey& job_key,
                           ResolveHostParameters::CacheUsage cache_usage,
+                          SecureDnsPolicy secure_dns_policy,
                           std::deque<TaskType>* out_tasks);
 
   // Determines "effective" request parameters using manager properties and IPv6
   // reachability.
   void GetEffectiveParametersForRequest(
-      base::StringPiece hostname,
+      const absl::variant<url::SchemeHostPort, std::string>& host,
       DnsQueryType dns_query_type,
       HostResolverFlags flags,
       SecureDnsPolicy secure_dns_policy,
-      ResolveHostParameters::CacheUsage cache_usage,
       bool is_ip,
       const NetLogWithSource& net_log,
-      DnsQueryType* out_effective_type,
+      DnsQueryTypeSet* out_effective_types,
       HostResolverFlags* out_effective_flags,
       SecureDnsMode* out_effective_secure_dns_mode);
 
@@ -475,6 +499,9 @@ class NET_EXPORT HostResolverManager
                      false /* allow_reentrancy */>
       registered_contexts_;
   bool invalidation_in_progress_;
+
+  // Helper for metrics associated with `features::kDnsHttpssvc`.
+  HttpssvcExperimentDomainCache httpssvc_domain_cache_;
 
   THREAD_CHECKER(thread_checker_);
 

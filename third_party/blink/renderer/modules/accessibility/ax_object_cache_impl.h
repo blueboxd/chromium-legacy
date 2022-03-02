@@ -45,7 +45,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/inspector_accessibility_agent.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -359,6 +359,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   // since the last query. Clears the vector so that the next time it's
   // called, it will only retrieve objects that have changed since now.
   HeapVector<Member<AXObject>> GetAllObjectsWithChangedBounds();
+
+  static constexpr int kDataTableHeuristicMinRows = 20;
 
  protected:
   void PostPlatformNotification(

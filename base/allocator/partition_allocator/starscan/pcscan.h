@@ -96,12 +96,10 @@ class BASE_EXPORT PCScan final {
 
   // Registers a newly allocated super page for |root|.
   static void RegisterNewSuperPage(Root* root, uintptr_t super_page_base);
-  static void RegisterNewSuperPage(PartitionRoot<NotThreadSafe>* root,
-                                   uintptr_t super_page_base) {}
 
   ALWAYS_INLINE static void MoveToQuarantine(void* ptr,
                                              size_t usable_size,
-                                             void* slot_start,
+                                             uintptr_t slot_start,
                                              size_t slot_size);
 
   // Performs scanning unconditionally.
@@ -109,7 +107,7 @@ class BASE_EXPORT PCScan final {
   // Performs scanning only if a certain quarantine threshold was reached.
   static void PerformScanIfNeeded(InvocationMode invocation_mode);
   // Performs scanning with specified delay.
-  static void PerformDelayedScan(TimeDelta delay);
+  static void PerformDelayedScan(int64_t delay_in_microseconds);
 
   // Enables safepoints in mutator threads.
   static void EnableSafepoints();
@@ -234,7 +232,7 @@ ALWAYS_INLINE void PCScan::JoinScanIfNeeded() {
 
 ALWAYS_INLINE void PCScan::MoveToQuarantine(void* ptr,
                                             size_t usable_size,
-                                            void* slot_start,
+                                            uintptr_t slot_start,
                                             size_t slot_size) {
   PCScan& instance = Instance();
   if (instance.clear_type_ == ClearType::kEager) {
@@ -247,13 +245,13 @@ ALWAYS_INLINE void PCScan::MoveToQuarantine(void* ptr,
     SecureMemset(ptr, 0, usable_size);
   }
 
-  auto* unmasked_slot = memory::UnmaskPtr(slot_start);
-  auto* state_bitmap = StateBitmapFromPointer(unmasked_slot);
+  uintptr_t unmasked_slot_start = memory::UnmaskPtr(slot_start);
+  auto* state_bitmap = StateBitmapFromAddr(unmasked_slot_start);
 
   // Mark the state in the state bitmap as quarantined. Make sure to do it after
   // the clearing to avoid racing with *Scan Sweeper.
-  const bool succeeded = state_bitmap->Quarantine(
-      reinterpret_cast<uintptr_t>(unmasked_slot), instance.epoch());
+  const bool succeeded =
+      state_bitmap->Quarantine(unmasked_slot_start, instance.epoch());
 #if PA_STARSCAN_EAGER_DOUBLE_FREE_DETECTION_ENABLED
   if (UNLIKELY(!succeeded))
     DoubleFreeAttempt();

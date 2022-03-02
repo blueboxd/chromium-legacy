@@ -122,26 +122,20 @@ class DraggedNodeImageBuilder {
     }
 
     gfx::RectF bounding_box =
-        ToGfxRectF(layer->GetLayoutObject()
-                       .AbsoluteToLocalQuad(FloatQuad(absolute_bounding_box))
-                       .BoundingBox());
-    absl::optional<OverriddenCullRectScope> cull_rect_scope;
-    if (RuntimeEnabledFeatures::CullRectUpdateEnabled()) {
-      gfx::RectF cull_rect = bounding_box;
-      cull_rect.Offset(gfx::Vector2dF(
-          layer->GetLayoutObject().FirstFragment().PaintOffset()));
-      cull_rect_scope.emplace(*layer,
-                              CullRect(gfx::ToEnclosingRect(cull_rect)));
-    }
-    PaintLayerPaintingInfo painting_info(
-        layer, CullRect(gfx::ToEnclosingRect(bounding_box)),
-        kGlobalPaintFlattenCompositingLayers, PhysicalOffset());
+        layer->GetLayoutObject()
+            .AbsoluteToLocalQuad(gfx::QuadF(gfx::RectF(absolute_bounding_box)))
+            .BoundingBox();
+    gfx::RectF cull_rect = bounding_box;
+    cull_rect.Offset(
+        gfx::Vector2dF(layer->GetLayoutObject().FirstFragment().PaintOffset()));
+    OverriddenCullRectScope cull_rect_scope(
+        *layer, CullRect(gfx::ToEnclosingRect(cull_rect)));
     auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
 
     dragged_layout_object->GetDocument().Lifecycle().AdvanceTo(
         DocumentLifecycle::kInPaint);
-    PaintLayerPainter(*layer).Paint(builder->Context(), painting_info,
-                                    kPaintLayerNoFlag);
+    PaintLayerPainter(*layer).Paint(builder->Context(),
+                                    PaintFlag::kOmitCompositingInfo);
     dragged_layout_object->GetDocument().Lifecycle().AdvanceTo(
         DocumentLifecycle::kPaintClean);
 
@@ -527,7 +521,7 @@ void DataTransfer::WriteSelection(const FrameSelection& selection) {
   }
 
   String str = selection.SelectedTextForClipboard();
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   ReplaceNewlinesWithWindowsStyleNewlines(str);
 #endif
   ReplaceNBSPWithSpace(str);

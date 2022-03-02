@@ -56,8 +56,8 @@
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
-#import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
-#import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
+#import "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
+#import "ios/chrome/browser/ssl/captive_portal_tab_helper_delegate.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -151,7 +151,6 @@
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
-#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
 #import "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
@@ -275,7 +274,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - BVC
 
 @interface BrowserViewController () <BubblePresenterDelegate,
-                                     CaptivePortalDetectorTabHelperDelegate,
+                                     CaptivePortalTabHelperDelegate,
                                      ChromeLensControllerDelegate,
                                      CRWWebStateObserver,
                                      FindBarPresentationDelegate,
@@ -394,6 +393,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // The disabler that prevents the toolbar from being scrolled offscreen when
   // the thumb strip is visible.
   std::unique_ptr<ScopedFullscreenDisabler> _fullscreenDisabler;
+
+  // For thumb strip, when YES, fullscreen disabler is reset only when web view
+  // dragging stops, to avoid closing thumb strip and going fullscreen in
+  // one single drag gesture.  When NO, full screen disabler is reset when
+  // the thumb strip animation ends.
+  BOOL _deferEndFullscreenDisabler;
 
   // A controller that can provide an entrypoint into Lens features.
   id<ChromeLensController> _lensController;
@@ -1784,7 +1789,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // the status bar to mimic this layout.
 - (void)installFakeStatusBar {
   // This method is called when the view is loaded and when the thumb strip is
-  // installed via addAnimatee -> didAnimateViewReveal-> installFakeStatusBar.
+  // installed via addAnimatee -> didAnimateViewRevealFromState ->
+  // installFakeStatusBar.
 
   // Remove the _fakeStatusBarView if present.
   [_fakeStatusBarView removeFromSuperview];
@@ -2606,7 +2612,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                              self.sideSwipeController);
   SadTabTabHelper::FromWebState(webState)->SetDelegate(_sadTabCoordinator);
   NetExportTabHelper::CreateForWebState(webState, self);
-  CaptivePortalDetectorTabHelper::CreateForWebState(webState, self);
+  CaptivePortalTabHelper::CreateForWebState(webState, self);
 
   OfflinePageTabHelper::CreateForWebState(
       webState, ReadingListModelFactory::GetForBrowserState(self.browserState));
@@ -2618,18 +2624,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   NewTabPageTabHelper::FromWebState(webState)->SetDelegate(self);
 
-  // The language detection helper accepts a callback from the translate
-  // client, so must be created after it.
-  // This will explode if the webState doesn't have a JS injection manager
-  // (this only comes up in unit tests), so check for that and bypass the
-  // init of the translation helpers if needed.
-  // TODO(crbug.com/785238): Remove the need for this check.
-  if (webState->GetJSInjectionReceiver()) {
-    language::IOSLanguageDetectionTabHelper::CreateForWebState(
-        webState,
-        UrlLanguageHistogramFactory::GetForBrowserState(self.browserState));
-    ChromeIOSTranslateClient::CreateForWebState(webState);
-  }
+  language::IOSLanguageDetectionTabHelper::CreateForWebState(
+      webState,
+      UrlLanguageHistogramFactory::GetForBrowserState(self.browserState));
+  ChromeIOSTranslateClient::CreateForWebState(webState);
 
   if (AccountConsistencyService* accountConsistencyService =
           ios::AccountConsistencyServiceFactory::GetForBrowserState(
@@ -2911,33 +2909,39 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       !_fullscreenDisabler) {
     _fullscreenDisabler =
         std::make_unique<ScopedFullscreenDisabler>(self.fullscreenController);
+    _deferEndFullscreenDisabler = NO;
   }
-  // Hide the tab strip and take a snapshot of it. If a snapshot of a hidden
-  // view is taken, the snapshot will be a blank view. However, if the view's
-  // parent is hidden but the view itself is not, the snapshot will not be a
-  // blank view.
-  [self.tabStripSnapshot removeFromSuperview];
-  // During initial setup, the tab strip view may be nil, but the missing
-  // snapshot will never be visible because all three animation methods are
-  // called in succession.
-  if (self.tabStripView && !base::FeatureList::IsEnabled(kModernTabStrip)) {
-    self.tabStripSnapshot = [self.tabStripView screenshotForAnimation];
-    self.tabStripSnapshot.translatesAutoresizingMaskIntoConstraints = NO;
-    self.tabStripSnapshot.transform =
-        currentViewRevealState == ViewRevealState::Hidden
-            ? [self.tabStripView
-                  adjustTransformForRTL:CGAffineTransformIdentity]
-            : [self.tabStripView
-                  adjustTransformForRTL:CGAffineTransformMakeTranslation(
-                                            0, self.tabStripView.frame.size
-                                                   .height)];
-    self.tabStripSnapshot.alpha =
-        currentViewRevealState == ViewRevealState::Revealed ||
-                currentViewRevealState == ViewRevealState::Fullscreen
-            ? 0
-            : 1;
-    [self.contentArea addSubview:self.tabStripSnapshot];
-    AddSameConstraints(self.tabStripSnapshot, self.tabStripView);
+
+  // Hide the tab strip and take a snapshot of it for better animation. However,
+  // this is not necessary to do if the thumb strip will never actually be
+  // revealed.
+  if (currentViewRevealState != nextViewRevealState) {
+    // If a snapshot of a hidden view is taken, the snapshot will be a blank
+    // view. However, if the view's parent is hidden but the view itself is not,
+    // the snapshot will not be a blank view.
+    [self.tabStripSnapshot removeFromSuperview];
+    // During initial setup, the tab strip view may be nil, but the missing
+    // snapshot will never be visible because all three animation methods are
+    // called in succession.
+    if (self.tabStripView && !base::FeatureList::IsEnabled(kModernTabStrip)) {
+      self.tabStripSnapshot = [self.tabStripView screenshotForAnimation];
+      self.tabStripSnapshot.translatesAutoresizingMaskIntoConstraints = NO;
+      self.tabStripSnapshot.transform =
+          currentViewRevealState == ViewRevealState::Hidden
+              ? [self.tabStripView
+                    adjustTransformForRTL:CGAffineTransformIdentity]
+              : [self.tabStripView
+                    adjustTransformForRTL:CGAffineTransformMakeTranslation(
+                                              0, self.tabStripView.frame.size
+                                                     .height)];
+      self.tabStripSnapshot.alpha =
+          currentViewRevealState == ViewRevealState::Revealed ||
+                  currentViewRevealState == ViewRevealState::Fullscreen
+              ? 0
+              : 1;
+      [self.contentArea addSubview:self.tabStripSnapshot];
+      AddSameConstraints(self.tabStripSnapshot, self.tabStripView);
+    }
   }
 
   // Remove the fake status bar to allow the thumb strip animations to appear.
@@ -3036,14 +3040,18 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-- (void)didAnimateViewReveal:(ViewRevealState)viewRevealState {
+- (void)didAnimateViewRevealFromState:(ViewRevealState)startViewRevealState
+                              toState:(ViewRevealState)currentViewRevealState
+                              trigger:(ViewRevealTrigger)trigger {
   [self.tabStripSnapshot removeFromSuperview];
-  self.bottomPosition = (viewRevealState == ViewRevealState::Revealed ||
-                         viewRevealState == ViewRevealState::Fullscreen);
+  self.bottomPosition = (currentViewRevealState == ViewRevealState::Revealed ||
+                         currentViewRevealState == ViewRevealState::Fullscreen);
 
-  if (viewRevealState == ViewRevealState::Hidden) {
+  if (currentViewRevealState == ViewRevealState::Hidden) {
     // Stop disabling fullscreen.
-    _fullscreenDisabler.reset();
+    if (!_deferEndFullscreenDisabler) {
+      _fullscreenDisabler.reset();
+    }
 
     // Add the status bar back to cover the web content.
     [self installFakeStatusBar];
@@ -3075,9 +3083,19 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         }
       }
     }
-  } else if (viewRevealState == ViewRevealState::Peeked) {
+  } else if (currentViewRevealState == ViewRevealState::Peeked) {
     // Close the omnibox after opening the thumb strip
     [self.omniboxHandler cancelOmniboxEdit];
+  }
+}
+
+- (void)webViewIsDragging:(BOOL)dragging
+          viewRevealState:(ViewRevealState)viewRevealState {
+  if (dragging && viewRevealState != ViewRevealState::Hidden) {
+    _deferEndFullscreenDisabler = YES;
+  } else if (_deferEndFullscreenDisabler) {
+    _fullscreenDisabler.reset();
+    _deferEndFullscreenDisabler = NO;
   }
 }
 
@@ -3235,8 +3253,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (BOOL)displaySignInNotification:(UIViewController*)viewController
                         fromTabId:(NSString*)tabId {
   // Check if the call comes from currently visible tab.
-  NSString* visibleTabId =
-      TabIdTabHelper::FromWebState(self.currentWebState)->tab_id();
+  NSString* visibleTabId = self.currentWebState->GetStableIdentifier();
   if ([tabId isEqual:visibleTabId]) {
     [self addChildViewController:viewController];
     [self.view addSubview:viewController.view];
@@ -4040,10 +4057,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)lensControllerDidSelectURL:(NSURL*)URL {
+  // Dismiss the Lens view controller.
+  if (self.presentedViewController != nil) {
+    [self dismissViewControllerAnimated:YES completion:nil];
+  }
+
   // TODO(crbug.com/1234532): Integrate Lens with the browser's navigation
   // stack.
   UrlLoadParams loadParams = UrlLoadParams::InNewTab(net::GURLWithNSURL(URL));
-  loadParams.SetInBackground(YES);
+  loadParams.SetInBackground(NO);
   loadParams.in_incognito = self.isOffTheRecord;
   loadParams.append_to = kCurrentTab;
   UrlLoadingBrowserAgent* loadingAgent =
@@ -4107,8 +4129,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     self.browserContainerViewController.contentView = nil;
   }
 
-  [[UpgradeCenter sharedInstance]
-      tabWillClose:TabIdTabHelper::FromWebState(webState)->tab_id()];
+  [[UpgradeCenter sharedInstance] tabWillClose:webState->GetStableIdentifier()];
 }
 
 // Observer method, WebState replaced in |webStateList|.
@@ -4150,7 +4171,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // infobar(s) that are just added.
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(webState);
-  NSString* tabID = TabIdTabHelper::FromWebState(webState)->tab_id();
+  NSString* tabID = webState->GetStableIdentifier();
   [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
                                              forTabId:tabID];
   if (!ReSignInInfoBarDelegate::Create(self.browserState, webState,
@@ -4532,11 +4553,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return nil;
 }
 
-#pragma mark - CaptivePortalDetectorTabHelperDelegate
+#pragma mark - CaptivePortalTabHelperDelegate
 
-- (void)captivePortalDetectorTabHelper:
-            (CaptivePortalDetectorTabHelper*)tabHelper
-                 connectWithLandingURL:(const GURL&)landingURL {
+- (void)captivePortalTabHelper:(CaptivePortalTabHelper*)tabHelper
+         connectWithLandingURL:(const GURL&)landingURL {
   TabInsertionBrowserAgent* insertionAgent =
       TabInsertionBrowserAgent::FromBrowser(self.browser);
   insertionAgent->InsertWebState(

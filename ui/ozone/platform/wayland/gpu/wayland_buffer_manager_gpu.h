@@ -18,7 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
-#include "ui/ozone/public/mojom/wayland/wayland_buffer_manager.mojom.h"
+#include "ui/ozone/platform/wayland/mojom/wayland_buffer_manager.mojom.h"
 
 namespace gfx {
 enum class SwapResult;
@@ -82,7 +82,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   // Methods, which can be used when in both in-process-gpu and out of process
   // modes. These calls are forwarded to the browser process through the
   // WaylandConnection mojo interface. See more in
-  // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
+  // ui/ozone/platform/wayland/mojom/wayland_buffer_manager.mojom.
   //
   // Asks Wayland to create generic dmabuf-based wl_buffer.
   void CreateDmabufBasedBuffer(base::ScopedFD dmabuf_fd,
@@ -161,26 +161,6 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
                            GbmSurfacelessWaylandCommitOverlaysCallbacksTest);
   FRIEND_TEST_ALL_PREFIXES(WaylandSurfaceFactoryTest,
                            GbmSurfacelessWaylandGroupOnSubmissionCallbacksTest);
-
-  void CreateDmabufBasedBufferInternal(base::ScopedFD dmabuf_fd,
-                                       gfx::Size size,
-                                       const std::vector<uint32_t>& strides,
-                                       const std::vector<uint32_t>& offsets,
-                                       const std::vector<uint64_t>& modifiers,
-                                       uint32_t current_format,
-                                       uint32_t planes_count,
-                                       uint32_t buffer_id);
-  void CreateShmBasedBufferInternal(base::ScopedFD shm_fd,
-                                    size_t length,
-                                    gfx::Size size,
-                                    uint32_t buffer_id);
-  void CreateSolidColorBufferInternal(SkColor color,
-                                      const gfx::Size& size,
-                                      uint32_t buf_id);
-  void CommitOverlaysInternal(
-      gfx::AcceleratedWidget widget,
-      std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays);
-  void DestroyBufferInternal(gfx::AcceleratedWidget widget, uint32_t buffer_id);
 
   void BindHostInterface(
       mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> remote_host);

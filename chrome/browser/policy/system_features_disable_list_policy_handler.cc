@@ -27,6 +27,7 @@ const char kScanningFeature[] = "scanning";
 const char kWebStoreFeature[] = "web_store";
 const char kCanvasFeature[] = "canvas";
 const char kExploreFeature[] = "explore";
+const char kCroshFeature[] = "crosh";
 
 const char kBlockedDisableMode[] = "blocked";
 const char kHiddenDisableMode[] = "hidden";
@@ -61,7 +62,7 @@ bool SystemFeaturesDisableListPolicyHandler::IsSystemFeatureDisabled(
   if (!pref_service)  // Sometimes it's not available in tests.
     return false;
 
-  const base::ListValue* disabled_system_features_pref =
+  const base::Value* disabled_system_features_pref =
       pref_service->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
   if (!disabled_system_features_pref)
     return false;
@@ -116,6 +117,8 @@ SystemFeature SystemFeaturesDisableListPolicyHandler::ConvertToEnum(
     return SystemFeature::kCanvas;
   if (system_feature == kExploreFeature)
     return SystemFeature::kExplore;
+  if (system_feature == kCroshFeature)
+    return SystemFeature::kCrosh;
 
   LOG(ERROR) << "Unsupported system feature: " << system_feature;
   return kUnknownSystemFeature;

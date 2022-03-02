@@ -26,7 +26,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_shm.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
-#include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
+#include "ui/ozone/platform/wayland/mojom/wayland_overlay_config.mojom.h"
 
 namespace ui {
 
@@ -279,11 +279,11 @@ void WaylandBufferManagerHost::CommitOverlays(
   window->CommitOverlays(overlays);
 }
 
-void WaylandBufferManagerHost::DestroyBuffer(gfx::AcceleratedWidget widget,
-                                             uint32_t buffer_id) {
+void WaylandBufferManagerHost::DestroyBuffer(
+    [[maybe_unused]] gfx::AcceleratedWidget widget,
+    uint32_t buffer_id) {
   // TODO(fangzhoug): Remove |widget| from the argument list of the mojo
   // interface.
-  ALLOW_UNUSED_LOCAL(widget);
   DCHECK(base::CurrentUIThread::IsSet());
 
   TRACE_EVENT1("wayland", "WaylandBufferManagerHost::DestroyBuffer",

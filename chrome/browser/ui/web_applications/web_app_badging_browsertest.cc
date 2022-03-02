@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -48,7 +48,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
     main_app_id_ = InstallPWA(start_url);
 
     GURL sub_start_url = https_server()->GetURL("/web_app_badging/blank.html");
-    auto sub_app_info = std::make_unique<WebApplicationInfo>();
+    auto sub_app_info = std::make_unique<WebAppInstallInfo>();
     sub_app_info->start_url = sub_start_url;
     sub_app_info->scope = sub_start_url;
     sub_app_info->user_display_mode = DisplayMode::kStandalone;

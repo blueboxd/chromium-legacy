@@ -24,6 +24,7 @@
 #include "components/password_manager/core/browser/android_affiliation/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/fake_password_store_backend.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
+#include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/mock_password_store_backend.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -49,8 +50,11 @@ using testing::_;
 using testing::DoAll;
 using testing::ElementsAre;
 using testing::ElementsAreArray;
+using testing::Eq;
+using testing::Invoke;
 using testing::IsEmpty;
 using testing::Pointee;
+using testing::SizeIs;
 using testing::UnorderedElementsAre;
 using testing::WithArg;
 
@@ -121,64 +125,6 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
   base::WeakPtrFactory<MockPasswordStoreConsumer> weak_ptr_factory_{this};
 };
 
-class MockPasswordStoreSigninNotifier : public PasswordStoreSigninNotifier {
- public:
-  MOCK_METHOD(void,
-              SubscribeToSigninEvents,
-              (PasswordReuseManager * manager),
-              (override));
-  MOCK_METHOD(void, UnsubscribeFromSigninEvents, (), (override));
-};
-
-class MockMetadataStore : public PasswordStoreSync::MetadataStore {
- public:
-  MOCK_METHOD(void, DeleteAllSyncMetadata, (), (override));
-  MOCK_METHOD(void,
-              SetDeletionsHaveSyncedCallback,
-              (base::RepeatingCallback<void(bool)> callback),
-              (override));
-  MOCK_METHOD(bool, HasUnsyncedDeletions, (), (override));
-
-  std::unique_ptr<syncer::MetadataBatch> GetAllSyncMetadata() override {
-    return std::make_unique<syncer::MetadataBatch>();
-  }
-
-  bool UpdateSyncMetadata(syncer::ModelType model_type,
-                          const std::string& storage_key,
-                          const sync_pb::EntityMetadata& metadata) override {
-    return true;
-  }
-
-  bool ClearSyncMetadata(syncer::ModelType model_type,
-                         const std::string& storage_key) override {
-    return true;
-  }
-
-  bool UpdateModelTypeState(
-      syncer::ModelType model_type,
-      const sync_pb::ModelTypeState& model_type_state) override {
-    return true;
-  }
-
-  bool ClearModelTypeState(syncer::ModelType model_type) override {
-    return true;
-  }
-};
-
-class BackendImplWithMockedMetadataStore : public PasswordStoreBuiltInBackend {
- public:
-  explicit BackendImplWithMockedMetadataStore(
-      std::unique_ptr<LoginDatabase> login_database)
-      : PasswordStoreBuiltInBackend(std::move(login_database)) {}
-
-  PasswordStoreSync::MetadataStore* GetMetadataStore() override {
-    return &metadata_store_;
-  }
-
- private:
-  MockMetadataStore metadata_store_;
-};
-
 PasswordForm MakePasswordForm(const std::string& signon_realm) {
   PasswordForm form;
   form.url = GURL("http://www.origin.com");
@@ -191,6 +137,13 @@ PasswordForm MakePasswordForm(const std::string& signon_realm) {
 
 bool MatchesOrigin(const GURL& origin, const GURL& url) {
   return origin.DeprecatedGetOriginAsURL() == url.DeprecatedGetOriginAsURL();
+}
+
+std::tuple<PasswordStore*, MockPasswordStoreBackend*>
+CreateUnownedStoreWithOwnedMockBackend() {
+  auto backend = std::make_unique<MockPasswordStoreBackend>();
+  MockPasswordStoreBackend* mock_backend = backend.get();
+  return std::make_tuple(new PasswordStore(std::move(backend)), mock_backend);
 }
 
 PasswordFormData CreateTestPasswordFormDataByOrigin(const char* origin_url) {
@@ -206,6 +159,37 @@ PasswordFormData CreateTestPasswordFormDataByOrigin(const char* origin_url) {
                            true,
                            1};
   return data;
+}
+
+PasswordStoreChangeList CreateChangeList(PasswordStoreChange::Type type,
+                                         PasswordForm form) {
+  PasswordStoreChangeList changes;
+  changes.emplace_back(type, std::move(form));
+  return changes;
+}
+
+auto HasChangeType(PasswordStoreChange::Type type) {
+  return testing::Property(&PasswordStoreChange::type, Eq(type));
+}
+
+auto HasForm(const PasswordForm& form) {
+  return testing::Property(&PasswordStoreChange::form, Eq(form));
+}
+
+auto EqChange(PasswordStoreChange::Type type, const PasswordForm& form) {
+  return AllOf(HasChangeType(type), HasForm(form));
+}
+
+auto EqRemoval(const PasswordForm& form) {
+  return EqChange(PasswordStoreChange::REMOVE, form);
+}
+
+auto EqAddition(const PasswordForm& form) {
+  return EqChange(PasswordStoreChange::ADD, form);
+}
+
+auto EqUpdate(const PasswordForm& form) {
+  return EqChange(PasswordStoreChange::UPDATE, form);
 }
 
 }  // namespace
@@ -243,14 +227,6 @@ class PasswordStoreTest : public testing::Test {
         std::make_unique<LoginDatabase>(
             test_login_db_file_path(),
             password_manager::IsAccountStore(false))));
-  }
-
-  scoped_refptr<PasswordStore> CreatePasswordStoreWithMockedMetaData() {
-    return base::MakeRefCounted<PasswordStore>(
-        std::make_unique<BackendImplWithMockedMetadataStore>(
-            std::make_unique<LoginDatabase>(
-                test_login_db_file_path(),
-                password_manager::IsAccountStore(false))));
   }
 
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
@@ -1019,11 +995,7 @@ INSTANTIATE_TEST_SUITE_P(Federation,
 TEST_F(PasswordStoreTest, DelegatesGetAllLoginsToBackend) {
   scoped_refptr<PasswordStore> store;
   MockPasswordStoreBackend* mock_backend;
-  {  // This scope ensures nobody tries to use `backend` after its move.
-    auto backend = std::make_unique<MockPasswordStoreBackend>();
-    mock_backend = backend.get();
-    store = new PasswordStore(std::move(backend));
-  }
+  std::tie(store, mock_backend) = CreateUnownedStoreWithOwnedMockBackend();
   store->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
 
   MockPasswordStoreConsumer mock_consumer;
@@ -1036,11 +1008,7 @@ TEST_F(PasswordStoreTest, DelegatesGetAllLoginsToBackend) {
 TEST_F(PasswordStoreTest, DelegatesGetAutofillableLoginsToBackend) {
   scoped_refptr<PasswordStore> store;
   MockPasswordStoreBackend* mock_backend;
-  {  // This scope ensures nobody tries to use `backend` after its move.
-    auto backend = std::make_unique<MockPasswordStoreBackend>();
-    mock_backend = backend.get();
-    store = new PasswordStore(std::move(backend));
-  }
+  std::tie(store, mock_backend) = CreateUnownedStoreWithOwnedMockBackend();
   store->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
 
   MockPasswordStoreConsumer mock_consumer;
@@ -1049,6 +1017,127 @@ TEST_F(PasswordStoreTest, DelegatesGetAutofillableLoginsToBackend) {
   WaitForPasswordStore();
   store->ShutdownOnUIThread();
 }
+
+TEST_F(PasswordStoreTest, CallOnLoginsChangedIfRemovalProvidesChanges) {
+  const PasswordForm kTestForm = MakePasswordForm(kTestWebRealm1);
+  MockPasswordStoreObserver mock_observer;
+  scoped_refptr<PasswordStore> store;
+  MockPasswordStoreBackend* mock_backend;
+  std::tie(store, mock_backend) = CreateUnownedStoreWithOwnedMockBackend();
+  store->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
+  store->AddObserver(&mock_observer);
+
+  // Expect that observers receive the removal when the backend invokes the
+  // reply with a `PasswordStoreChangeList`.
+  EXPECT_CALL(*mock_backend, RemoveLoginAsync(Eq(kTestForm), _))
+      .WillOnce(
+          WithArg<1>(Invoke([&](PasswordStoreChangeListReply reply) -> void {
+            std::move(reply).Run(
+                CreateChangeList(PasswordStoreChange::REMOVE, kTestForm));
+          })));
+  EXPECT_CALL(mock_observer, OnLoginsRetained).Times(0);
+  EXPECT_CALL(mock_observer,
+              OnLoginsChanged(store.get(), ElementsAre(EqRemoval(kTestForm))));
+  store->RemoveLogin(kTestForm);
+  WaitForPasswordStore();
+
+  store->RemoveObserver(&mock_observer);
+  store->ShutdownOnUIThread();
+}
+
+TEST_F(PasswordStoreTest, CallOnLoginsChangedIfAdditionProvidesChanges) {
+  const PasswordForm kTestForm = MakePasswordForm(kTestWebRealm1);
+  MockPasswordStoreObserver mock_observer;
+  scoped_refptr<PasswordStore> store;
+  MockPasswordStoreBackend* mock_backend;
+  std::tie(store, mock_backend) = CreateUnownedStoreWithOwnedMockBackend();
+  store->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
+  store->AddObserver(&mock_observer);
+
+  // Expect that observers receive the addition when the backend invokes the
+  // reply with a `PasswordStoreChangeList`.
+  EXPECT_CALL(*mock_backend, AddLoginAsync(Eq(kTestForm), _))
+      .WillOnce(
+          WithArg<1>(Invoke([&](PasswordStoreChangeListReply reply) -> void {
+            std::move(reply).Run(
+                CreateChangeList(PasswordStoreChange::ADD, kTestForm));
+          })));
+  EXPECT_CALL(mock_observer, OnLoginsRetained).Times(0);
+  EXPECT_CALL(mock_observer,
+              OnLoginsChanged(store.get(), ElementsAre(EqAddition(kTestForm))));
+  store->AddLogin(kTestForm);
+  WaitForPasswordStore();
+
+  store->RemoveObserver(&mock_observer);
+  store->ShutdownOnUIThread();
+}
+
+TEST_F(PasswordStoreTest, CallOnLoginsChangedIfUpdateProvidesChanges) {
+  const PasswordForm kTestForm = MakePasswordForm(kTestWebRealm1);
+  MockPasswordStoreObserver mock_observer;
+  scoped_refptr<PasswordStore> store;
+  MockPasswordStoreBackend* mock_backend;
+  std::tie(store, mock_backend) = CreateUnownedStoreWithOwnedMockBackend();
+  store->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
+  store->AddObserver(&mock_observer);
+
+  // Expect that observers receive the update when the backend invokes the
+  // reply with a `PasswordStoreChangeList`.
+  EXPECT_CALL(*mock_backend, UpdateLoginAsync(Eq(kTestForm), _))
+      .WillOnce(
+          WithArg<1>(Invoke([&](PasswordStoreChangeListReply reply) -> void {
+            std::move(reply).Run(
+                CreateChangeList(PasswordStoreChange::UPDATE, kTestForm));
+          })));
+  EXPECT_CALL(mock_observer, OnLoginsRetained).Times(0);
+  EXPECT_CALL(mock_observer,
+              OnLoginsChanged(store.get(), ElementsAre(EqUpdate(kTestForm))));
+  store->UpdateLogin(kTestForm);
+  WaitForPasswordStore();
+
+  store->RemoveObserver(&mock_observer);
+  store->ShutdownOnUIThread();
+}
+
+#if BUILDFLAG(IS_ANDROID)
+TEST_F(PasswordStoreTest, CallOnLoginsRetainedIfUpdateProvidesNoChanges) {
+  std::vector<std::unique_ptr<PasswordForm>> all_credentials;
+  all_credentials.push_back(FillPasswordFormWithData(
+      CreateTestPasswordFormDataByOrigin(kTestWebRealm1)));
+  all_credentials.push_back(FillPasswordFormWithData(
+      CreateTestPasswordFormDataByOrigin(kTestAndroidRealm1)));
+  const PasswordForm kTestForm = *all_credentials[0];
+  const PasswordForm kOtherForm = *all_credentials[1];
+  MockPasswordStoreObserver mock_observer;
+  scoped_refptr<PasswordStore> store;
+  MockPasswordStoreBackend* mock_backend;
+  std::tie(store, mock_backend) = CreateUnownedStoreWithOwnedMockBackend();
+  store->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
+  store->AddObserver(&mock_observer);
+
+  // Expect that observers receive the full list if the backend invokes the
+  // reply with a nullopt.
+  EXPECT_CALL(*mock_backend, UpdateLoginAsync(Eq(kTestForm), _))
+      .WillOnce(
+          WithArg<1>(Invoke([](PasswordStoreChangeListReply reply) -> void {
+            std::move(reply).Run(absl::nullopt);
+          })));
+  EXPECT_CALL(*mock_backend, GetAllLoginsAsync(_))
+      .WillOnce(WithArg<0>(
+          Invoke([&all_credentials](LoginsOrErrorReply reply) -> void {
+            std::move(reply).Run(std::move(all_credentials));
+          })));
+  EXPECT_CALL(mock_observer, OnLoginsChanged).Times(0);
+  EXPECT_CALL(mock_observer,
+              OnLoginsRetained(store.get(),
+                               UnorderedElementsAre(kTestForm, kOtherForm)));
+  store->UpdateLogin(kTestForm);
+  WaitForPasswordStore();
+
+  store->RemoveObserver(&mock_observer);
+  store->ShutdownOnUIThread();
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 TEST_F(PasswordStoreTest, GetAllLogins) {
   static constexpr PasswordFormData kTestCredentials[] = {
@@ -1092,11 +1181,7 @@ TEST_F(PasswordStoreTest, GetAllLogins) {
 TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
   scoped_refptr<PasswordStore> store;
   MockPasswordStoreBackend* mock_backend;
-  {  // This scope ensures nobody tries to use `backend` after its move.
-    auto backend = std::make_unique<MockPasswordStoreBackend>();
-    mock_backend = backend.get();
-    store = new PasswordStore(std::move(backend));
-  }
+  std::tie(store, mock_backend) = CreateUnownedStoreWithOwnedMockBackend();
   // Invoke the store initialization callback to initialize
   // AffiliatedMatchHelper.
   EXPECT_CALL(*mock_backend, InitBackend)
@@ -1160,7 +1245,6 @@ TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
   EXPECT_CALL(mock_consumer,
               OnGetPasswordStoreResultsConstRef(
                   UnorderedPasswordFormElementsAre(&expected_results)));
-  LoginsOrErrorReply callback;
   EXPECT_CALL(*mock_backend, GetAllLoginsAsync)
       .WillOnce([&all_credentials](LoginsOrErrorReply callback) {
         std::move(callback).Run(std::move(all_credentials));
@@ -1288,7 +1372,7 @@ TEST_F(PasswordStoreTest, RemoveInsecureCredentialsSyncOnUpdate) {
   store->ShutdownOnUIThread();
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 // TODO(https://crbug.com/1051914): Enable on Android after making local
 // heuristics reliable.
 TEST_F(PasswordStoreTest, GetAllFieldInfo) {
@@ -1353,7 +1437,7 @@ TEST_F(PasswordStoreTest, RemoveFieldInfo) {
 
   store->ShutdownOnUIThread();
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 TEST_F(PasswordStoreTest, TestGetLoginRequestCancelable) {
   scoped_refptr<PasswordStore> store = CreatePasswordStore();
@@ -1384,7 +1468,7 @@ TEST_F(PasswordStoreTest, TestGetLoginRequestCancelable) {
 }
 
 TEST_F(PasswordStoreTest, TestUnblockListEmptyStore) {
-  scoped_refptr<PasswordStore> store = CreatePasswordStoreWithMockedMetaData();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
   WaitForPasswordStore();
 

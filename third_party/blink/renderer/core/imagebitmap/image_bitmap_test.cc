@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/platform/graphics/test/gpu_test_utils.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -315,7 +314,7 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
 // This test is failing on asan-clang-phone because memory allocation is
 // declined. See <http://crbug.com/782286>.
 // See <http://crbug.com/1090252>, test is flaky in fuchsia.
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_CreateImageBitmapFromTooBigImageDataDoesNotCrash \
   DISABLED_CreateImageBitmapFromTooBigImageDataDoesNotCrash
 #else

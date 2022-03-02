@@ -4,24 +4,39 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import android.content.Context;
+import android.app.Activity;
 import android.view.View;
 
-import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.lifetime.Destroyable;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Generic dependencies interface. The concrete implementation will depend on the browser framework,
  * i.e., WebLayer vs. Chrome.
+ *
+ * WebContents should not be returned in this interface as objects should stay valid when
+ * WebContents change.
  */
+@JNINamespace("autofill_assistant")
 public interface AssistantDependencies extends AssistantStaticDependencies {
-    WebContents getWebContents();
+    /**
+     * Updates dependencies that are tied to the activity.
+     * @return Whether a new activity could be found.
+     */
+    boolean maybeUpdateDependencies(Activity activity);
 
-    Context getContext();
+    boolean maybeUpdateDependencies(WebContents webContents);
+
+    Activity getActivity();
+
+    WindowAndroid getWindowAndroid();
 
     BottomSheetController getBottomSheetController();
 
@@ -31,9 +46,21 @@ public interface AssistantDependencies extends AssistantStaticDependencies {
 
     ApplicationViewportInsetSupplier getBottomInsetProvider();
 
-    ActivityTabProvider getActivityTabProvider();
-
     View getRootView();
 
     AssistantSnackbarFactory getSnackbarFactory();
+
+    AssistantBrowserControlsFactory createBrowserControlsFactory();
+
+    /**
+     * Observes tab changes.
+     * @return The destroyer that must be called to unregister the internal observer.
+     */
+    Destroyable observeTabChanges(AssistantTabChangeObserver tabChangeObserver);
+
+    // Only called by native to guarantee future type safety.
+    @CalledByNative
+    default AssistantStaticDependencies getStaticDependencies() {
+        return this;
+    }
 }

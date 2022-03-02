@@ -49,7 +49,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
-#include "chrome/browser/ui/webui/extensions/chromeos/kiosk_apps_handler.h"
+#include "chrome/browser/ui/webui/extensions/ash/kiosk_apps_handler.h"
 #endif
 
 namespace extensions {
@@ -59,7 +59,7 @@ namespace {
 constexpr char kInDevModeKey[] = "inDevMode";
 constexpr char kShowActivityLogKey[] = "showActivityLog";
 constexpr char kLoadTimeClassesKey[] = "loadTimeClasses";
-constexpr char kUseNewSiteAccessPage[] = "useNewSiteAccessPage";
+constexpr char kEnableEnhancedSiteControls[] = "enableEnhancedSiteControls";
 
 std::string GetLoadTimeClasses(bool in_dev_mode) {
   return in_dev_mode ? "in-dev-mode" : std::string();
@@ -195,7 +195,6 @@ content::WebUIDataSource* CreateExtensionsSource(Profile* profile,
     {"itemPermissionsEmpty", IDS_EXTENSIONS_ITEM_PERMISSIONS_EMPTY},
     {"itemRemoveExtension", IDS_EXTENSIONS_ITEM_REMOVE_EXTENSION},
     {"itemSiteAccess", IDS_EXTENSIONS_ITEM_SITE_ACCESS},
-    {"itemSiteAccessSublabel", IDS_EXTENSIONS_ITEM_SITE_ACCESS_SUBLABEL},
     {"itemSiteAccessAddHost", IDS_EXTENSIONS_ITEM_SITE_ACCESS_ADD_HOST},
     {"itemSiteAccessEmpty", IDS_EXTENSIONS_ITEM_SITE_ACCESS_EMPTY},
     {"itemSource", IDS_EXTENSIONS_ITEM_SOURCE},
@@ -225,7 +224,6 @@ content::WebUIDataSource* CreateExtensionsSource(Profile* profile,
     {"loadErrorRetry", IDS_EXTENSIONS_LOAD_ERROR_RETRY},
     {"loadingActivities", IDS_EXTENSIONS_LOADING_ACTIVITIES},
     {"missingOrUninstalledExtension", IDS_MISSING_OR_UNINSTALLED_EXTENSION},
-    {"newItemSiteAccessTitle", IDS_EXTENSIONS_ITEM_SITE_ACCESS_NEW},
     {"noActivities", IDS_EXTENSIONS_NO_ACTIVITIES},
     {"noErrorsToShow", IDS_EXTENSIONS_ERROR_NO_ERRORS_CODE_MESSAGE},
     {"runtimeHostsDialogInputError",
@@ -243,6 +241,8 @@ content::WebUIDataSource* CreateExtensionsSource(Profile* profile,
     {"packDialogKeyFile", IDS_EXTENSIONS_PACK_DIALOG_KEY_FILE_LABEL},
     {"packDialogContent", IDS_EXTENSION_PACK_DIALOG_HEADING},
     {"packDialogConfirm", IDS_EXTENSIONS_PACK_DIALOG_CONFIRM_BUTTON},
+    {"sitePermissions", IDS_EXTENSIONS_SITE_PERMISSIONS},
+    {"sitePermissionsPageTitle", IDS_EXTENSIONS_SITE_PERMISSIONS_PAGE_TITLE},
     {"editShortcut", IDS_EXTENSIONS_EDIT_SHORTCUT},
     {"shortcutNotSet", IDS_EXTENSIONS_SHORTCUT_NOT_SET},
     {"shortcutScopeGlobal", IDS_EXTENSIONS_SHORTCUT_SCOPE_GLOBAL},
@@ -336,7 +336,7 @@ content::WebUIDataSource* CreateExtensionsSource(Profile* profile,
   source->AddString(kLoadTimeClassesKey, GetLoadTimeClasses(in_dev_mode));
 
   source->AddBoolean(
-      kUseNewSiteAccessPage,
+      kEnableEnhancedSiteControls,
       base::FeatureList::IsEnabled(features::kExtensionsMenuAccessControl));
 
   return source;
@@ -360,7 +360,7 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui)
   ManagedUIHandler::Initialize(web_ui, source);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  auto kiosk_app_handler = std::make_unique<chromeos::KioskAppsHandler>(
+  auto kiosk_app_handler = std::make_unique<ash::KioskAppsHandler>(
       ash::OwnerSettingsServiceAshFactory::GetForBrowserContext(profile));
   web_ui->AddMessageHandler(std::move(kiosk_app_handler));
 #endif

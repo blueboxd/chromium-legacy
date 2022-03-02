@@ -9,11 +9,48 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/task/delay_policy.h"
 #include "base/task/delayed_task_handle.h"
 #include "base/task/sequenced_task_runner_helpers.h"
 #include "base/task/task_runner.h"
+#include "base/types/pass_key.h"
+
+namespace ash {
+class PSIMemoryMetrics;
+}
+
+namespace blink {
+class TimerBase;
+}
 
 namespace base {
+
+namespace internal {
+class DelayTimerBase;
+}
+class DeadlineTimer;
+
+namespace subtle {
+
+// Used to restrict access to PostCancelableDelayedTaskAt() to authorize
+// callers.
+class PostDelayedTaskPassKey {
+ private:
+  // Avoid =default to disallow creation by uniform initialization.
+  PostDelayedTaskPassKey() {}
+
+  friend class base::internal::DelayTimerBase;
+  friend class base::DeadlineTimer;
+  friend class blink::TimerBase;
+  // TODO(pmonette): Remove this once PSIMemoryMetrics no longer uses
+  // PostCancelableDelayedTask.
+  friend class ash::PSIMemoryMetrics;
+  friend class PostDelayedTaskPassKeyForTesting;
+};
+
+class PostDelayedTaskPassKeyForTesting : public PostDelayedTaskPassKey {};
+
+}  // namespace subtle
 
 // A SequencedTaskRunner is a subclass of TaskRunner that provides
 // additional guarantees on the order that tasks are started, as well
@@ -119,7 +156,9 @@ class BASE_EXPORT SequencedTaskRunner : public TaskRunner {
                                           base::TimeDelta delay) = 0;
 
   // Posts the given |task| to be run only after |delay| has passed. Returns a
-  // handle that can be used to cancel the task.
+  // handle that can be used to cancel the task. This should not be used
+  // directly. Consider using higher level timer primitives in
+  // base/timer/timer.h.
   //
   // The handle is only valid while the task is pending execution. This means
   // that it will be invalid if the posting failed, and will be invalid while
@@ -128,9 +167,23 @@ class BASE_EXPORT SequencedTaskRunner : public TaskRunner {
   //
   // This method and the handle it returns are not thread-safe and can only be
   // used from the sequence this task runner runs its tasks on.
-  virtual DelayedTaskHandle PostCancelableDelayedTask(const Location& from_here,
-                                                      OnceClosure task,
-                                                      TimeDelta delay);
+  virtual DelayedTaskHandle PostCancelableDelayedTask(
+      subtle::PostDelayedTaskPassKey,
+      const Location& from_here,
+      OnceClosure task,
+      TimeDelta delay);
+
+  // Posts the given |task| to be run at |delayed_run_time|, following
+  // |delay_policy|. Returns a handle that can be used to cancel the task.
+  // This should not be used directly. Consider using higher level timer
+  // primitives in base/timer/timer.h.
+  [[nodiscard]] virtual DelayedTaskHandle PostCancelableDelayedTaskAt(
+      subtle::PostDelayedTaskPassKey,
+      const Location& from_here,
+      OnceClosure task,
+      TimeTicks delayed_run_time,
+      subtle::DelayPolicy delay_policy =
+          subtle::DelayPolicy::kFlexibleNoSooner);
 
   // Submits a non-nestable task to delete the given object.  Returns
   // true if the object may be deleted at some point in the future,
@@ -183,6 +236,20 @@ class BASE_EXPORT SequencedTaskRunner : public TaskRunner {
 
  protected:
   ~SequencedTaskRunner() override = default;
+
+  // Posts the given |task| to be run at |delayed_run_time|, following
+  // |delay_policy|. This is used by the default implementation of
+  // PostCancelableDelayedTaskAt(). The default behavior subtracts
+  // TimeTicks::Now() from |delayed_run_time| to get a delay. See base::Timer to
+  // post precise/repeating timeouts.
+  // TODO(1153139): Make pure virtual once all SequencedTaskRunners implement
+  // this.
+  virtual bool PostDelayedTaskAt(subtle::PostDelayedTaskPassKey,
+                                 const Location& from_here,
+                                 OnceClosure task,
+                                 TimeTicks delayed_run_time,
+                                 subtle::DelayPolicy delay_policy =
+                                     subtle::DelayPolicy::kFlexibleNoSooner);
 
  private:
   bool DeleteOrReleaseSoonInternal(const Location& from_here,

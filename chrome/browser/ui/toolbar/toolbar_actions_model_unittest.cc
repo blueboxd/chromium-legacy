@@ -53,7 +53,6 @@
 namespace {
 
 using extensions::mojom::ManifestLocation;
-using ActionType = extensions::ExtensionBuilder::ActionType;
 
 // A simple observer that tracks the number of times certain events occur.
 class ToolbarActionsModelTestObserver : public ToolbarActionsModel::Observer {
@@ -141,19 +140,17 @@ class ToolbarActionsModelUnitTest
   void TearDown() override;
 
   // Adds or removes the given |extension| and verify success.
-  testing::AssertionResult AddExtension(
-      const scoped_refptr<const extensions::Extension>& extension)
-      WARN_UNUSED_RESULT;
-  testing::AssertionResult RemoveExtension(
-      const scoped_refptr<const extensions::Extension>& extension)
-      WARN_UNUSED_RESULT;
+  [[nodiscard]] testing::AssertionResult AddExtension(
+      const scoped_refptr<const extensions::Extension>& extension);
+  [[nodiscard]] testing::AssertionResult RemoveExtension(
+      const scoped_refptr<const extensions::Extension>& extension);
 
   // Adds three extensions, all with browser actions.
-  testing::AssertionResult AddBrowserActionExtensions() WARN_UNUSED_RESULT;
+  [[nodiscard]] testing::AssertionResult AddBrowserActionExtensions();
 
   // Adds three extensions, one each for browser action, page action, and no
   // action, and are added in that order.
-  testing::AssertionResult AddActionExtensions() WARN_UNUSED_RESULT;
+  [[nodiscard]] testing::AssertionResult AddActionExtensions();
 
   // Returns true if the |toobar_model_| has an action with the given |id|.
   bool ModelHasActionForId(const std::string& id) const;
@@ -254,12 +251,13 @@ testing::AssertionResult ToolbarActionsModelUnitTest::RemoveExtension(
 }
 
 testing::AssertionResult ToolbarActionsModelUnitTest::AddActionExtensions() {
-  browser_action_extension_ = extensions::ExtensionBuilder("browser_action")
-                                  .SetAction(ActionType::BROWSER_ACTION)
-                                  .SetLocation(ManifestLocation::kInternal)
-                                  .Build();
+  browser_action_extension_ =
+      extensions::ExtensionBuilder("browser_action")
+          .SetAction(extensions::ActionInfo::TYPE_BROWSER)
+          .SetLocation(ManifestLocation::kInternal)
+          .Build();
   page_action_extension_ = extensions::ExtensionBuilder("page_action")
-                               .SetAction(ActionType::PAGE_ACTION)
+                               .SetAction(extensions::ActionInfo::TYPE_PAGE)
                                .SetLocation(ManifestLocation::kInternal)
                                .Build();
   no_action_extension_ = extensions::ExtensionBuilder("no_action")
@@ -277,15 +275,15 @@ testing::AssertionResult ToolbarActionsModelUnitTest::AddActionExtensions() {
 testing::AssertionResult
 ToolbarActionsModelUnitTest::AddBrowserActionExtensions() {
   browser_action_a_ = extensions::ExtensionBuilder("browser_actionA")
-                          .SetAction(ActionType::BROWSER_ACTION)
+                          .SetAction(extensions::ActionInfo::TYPE_BROWSER)
                           .SetLocation(ManifestLocation::kInternal)
                           .Build();
   browser_action_b_ = extensions::ExtensionBuilder("browser_actionB")
-                          .SetAction(ActionType::BROWSER_ACTION)
+                          .SetAction(extensions::ActionInfo::TYPE_BROWSER)
                           .SetLocation(ManifestLocation::kInternal)
                           .Build();
   browser_action_c_ = extensions::ExtensionBuilder("browser_actionC")
-                          .SetAction(ActionType::BROWSER_ACTION)
+                          .SetAction(extensions::ActionInfo::TYPE_BROWSER)
                           .SetLocation(ManifestLocation::kInternal)
                           .Build();
 
@@ -329,7 +327,7 @@ TEST_F(ToolbarActionsModelUnitTest, BasicToolbarActionsModelTest) {
   // Load an extension with a browser action.
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder("browser_action")
-          .SetAction(ActionType::BROWSER_ACTION)
+          .SetAction(extensions::ActionInfo::TYPE_BROWSER)
           .SetLocation(ManifestLocation::kInternal)
           .Build();
   ASSERT_TRUE(AddExtension(extension));
@@ -356,17 +354,17 @@ TEST_F(ToolbarActionsModelUnitTest, NewToolbarExtensionsAreUnpinned) {
   // Three extensions with actions.
   scoped_refptr<const extensions::Extension> extension_a =
       extensions::ExtensionBuilder("a")
-          .SetAction(ActionType::BROWSER_ACTION)
+          .SetAction(extensions::ActionInfo::TYPE_BROWSER)
           .SetLocation(ManifestLocation::kInternal)
           .Build();
   scoped_refptr<const extensions::Extension> extension_b =
       extensions::ExtensionBuilder("b")
-          .SetAction(ActionType::BROWSER_ACTION)
+          .SetAction(extensions::ActionInfo::TYPE_BROWSER)
           .SetLocation(ManifestLocation::kInternal)
           .Build();
   scoped_refptr<const extensions::Extension> extension_c =
       extensions::ExtensionBuilder("c")
-          .SetAction(ActionType::BROWSER_ACTION)
+          .SetAction(extensions::ActionInfo::TYPE_BROWSER)
           .SetLocation(ManifestLocation::kInternal)
           .Build();
 
@@ -967,7 +965,7 @@ TEST_F(ToolbarActionsModelUnitTest, PinStateErasedOnUninstallation) {
 
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder("extension")
-          .SetAction(ActionType::BROWSER_ACTION)
+          .SetAction(extensions::ActionInfo::TYPE_BROWSER)
           .SetLocation(ManifestLocation::kInternal)
           .Build();
 
@@ -1017,7 +1015,7 @@ TEST_F(ToolbarActionsModelUnitTest, ForcePinnedByPolicy) {
 
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder("test")
-          .SetAction(ActionType::BROWSER_ACTION)
+          .SetAction(extensions::ActionInfo::TYPE_BROWSER)
           .SetLocation(ManifestLocation::kInternal)
           .SetID(extension_id)
           .Build();

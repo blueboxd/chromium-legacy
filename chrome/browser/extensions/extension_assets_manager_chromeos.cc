@@ -215,7 +215,8 @@ bool ExtensionAssetsManagerChromeOS::CleanUpSharedExtensions(
   if (!local_state)
     return false;
 
-  DictionaryPrefUpdate shared_extensions(local_state, kSharedExtensions);
+  DictionaryPrefUpdateDeprecated shared_extensions(local_state,
+                                                   kSharedExtensions);
   std::vector<std::string> extensions;
   extensions.reserve(shared_extensions->DictSize());
   for (base::DictionaryValue::Iterator it(*shared_extensions);
@@ -253,7 +254,7 @@ bool ExtensionAssetsManagerChromeOS::CanShareAssets(
     const base::FilePath& unpacked_extension_root,
     bool updates_from_webstore_or_empty_update_url) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableExtensionAssetsSharing)) {
+          ash::switches::kEnableExtensionAssetsSharing)) {
     return false;
   }
 
@@ -300,7 +301,8 @@ void ExtensionAssetsManagerChromeOS::CheckSharedExtension(
   }
 
   PrefService* local_state = g_browser_process->local_state();
-  DictionaryPrefUpdate shared_extensions(local_state, kSharedExtensions);
+  DictionaryPrefUpdateDeprecated shared_extensions(local_state,
+                                                   kSharedExtensions);
   base::DictionaryValue* extension_info = NULL;
   base::DictionaryValue* version_info = NULL;
   base::ListValue* users = NULL;
@@ -387,7 +389,8 @@ void ExtensionAssetsManagerChromeOS::InstallSharedExtensionDone(
   }
 
   PrefService* local_state = g_browser_process->local_state();
-  DictionaryPrefUpdate shared_extensions(local_state, kSharedExtensions);
+  DictionaryPrefUpdateDeprecated shared_extensions(local_state,
+                                                   kSharedExtensions);
   base::DictionaryValue* extension_info_weak = NULL;
   if (!shared_extensions->GetDictionary(id, &extension_info_weak)) {
     auto extension_info = std::make_unique<base::DictionaryValue>();
@@ -432,7 +435,8 @@ void ExtensionAssetsManagerChromeOS::MarkSharedExtensionUnused(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   PrefService* local_state = g_browser_process->local_state();
-  DictionaryPrefUpdate shared_extensions(local_state, kSharedExtensions);
+  DictionaryPrefUpdateDeprecated shared_extensions(local_state,
+                                                   kSharedExtensions);
   base::Value* extension_info = shared_extensions->FindDictKey(id);
   if (!extension_info) {
     NOTREACHED();
@@ -534,7 +538,7 @@ bool ExtensionAssetsManagerChromeOS::CleanUpExtension(
         // For logged in user also check that this path is actually used as
         // installed extension or as delayed install.
         Profile* profile =
-            chromeos::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
+            ash::ProfileHelper::Get()->GetProfileByUserUnsafe(user);
         ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile);
         if (!extension_prefs || extension_prefs->pref_service()->ReadOnly())
           return false;

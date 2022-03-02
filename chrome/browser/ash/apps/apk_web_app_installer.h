@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/web_app_id.h"
-#include "chrome/browser/web_applications/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
@@ -79,7 +79,7 @@ class ApkWebAppInstaller {
   virtual void DoInstall();
 
   bool has_web_app_info() const { return web_app_info_ != nullptr; }
-  const WebApplicationInfo& web_app_info() const { return *web_app_info_; }
+  const WebAppInstallInfo& web_app_info() const { return *web_app_info_; }
 
  private:
   // If |weak_owner_| is ever invalidated while this class is working,
@@ -91,7 +91,7 @@ class ApkWebAppInstaller {
   InstallFinishCallback callback_;
   base::WeakPtr<Owner> weak_owner_;
 
-  std::unique_ptr<WebApplicationInfo> web_app_info_;
+  std::unique_ptr<WebAppInstallInfo> web_app_info_;
 };
 
 }  // namespace ash

@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewStub;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.VisibleForTesting;
@@ -96,6 +97,7 @@ public class ToolbarTablet extends ToolbarLayout
     private ImageButton[] mToolbarButtons;
     private ImageButton mOptionalButton;
     private boolean mOptionalButtonUsesTint;
+    private ImageView mToolbarShadow;
 
     private NavigationPopup mNavigationPopup;
 
@@ -298,6 +300,13 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        mToolbarShadow = (ImageView) getRootView().findViewById(R.id.toolbar_shadow);
+    }
+
+    @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         // Ensure the the popup is not shown after resuming activity from background.
         if (hasWindowFocus && mNavigationPopup != null) {
@@ -362,6 +371,17 @@ public class ToolbarTablet extends ToolbarLayout
     private void updateSwitcherButtonVisibility(boolean enabled) {
         mAccessibilitySwitcherButton.setVisibility(
                 mShowTabStack || enabled ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Update the visibility of the toolbar shadow.
+     */
+    private void updateShadowVisibility() {
+        int shadowVisibility = mIsInTabSwitcherMode ? View.INVISIBLE : View.VISIBLE;
+
+        if (mToolbarShadow != null && mToolbarShadow.getVisibility() != shadowVisibility) {
+            mToolbarShadow.setVisibility(shadowVisibility);
+        }
     }
 
     @Override
@@ -485,7 +505,10 @@ public class ToolbarTablet extends ToolbarLayout
             MenuButtonCoordinator menuButtonCoordinator) {
         boolean isInTabSwitcherMode = mShowTabStack && inTabSwitcherMode;
         mIsInTabSwitcherMode = isInTabSwitcherMode;
-        if (isGridTabSwitcherEnabled()) {
+        if (isTabletGridTabSwitcherPolishEnabled()) {
+            // No impact to tablet toolbar.
+            return;
+        } else if (isGridTabSwitcherEnabled()) {
             setTabSwitcherModeWithAnimation(delayAnimation);
         } else {
             if (mIsInTabSwitcherMode) {
@@ -513,6 +536,7 @@ public class ToolbarTablet extends ToolbarLayout
 
         if (mIsInTabSwitcherMode) {
             mLocationBar.setUrlBarFocusable(false);
+            updateShadowVisibility();
         }
         setVisibility(View.VISIBLE);
         setAlpha(startAlpha);
@@ -528,6 +552,7 @@ public class ToolbarTablet extends ToolbarLayout
                 setVisibility(endVisibility);
                 if (!mIsInTabSwitcherMode) {
                     mLocationBar.setUrlBarFocusable(true);
+                    updateShadowVisibility();
                 }
             }
         });
@@ -796,5 +821,10 @@ public class ToolbarTablet extends ToolbarLayout
 
     private boolean isGridTabSwitcherEnabled() {
         return CachedFeatureFlags.isEnabled(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS);
+    }
+
+    private boolean isTabletGridTabSwitcherPolishEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS, "enable_launch_polish", false);
     }
 }

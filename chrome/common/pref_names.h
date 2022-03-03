@@ -569,10 +569,6 @@ extern const char kStabilityOtherUserCrashCount[];
 extern const char kStabilityKernelCrashCount[];
 extern const char kStabilitySystemUncleanShutdownCount[];
 
-extern const char kStabilityPluginStats[];
-extern const char kStabilityPluginName[];
-extern const char kStabilityPluginCrashes[];
-
 extern const char kBrowserSuppressDefaultBrowserPrompt[];
 
 extern const char kBrowserWindowPlacement[];
@@ -1160,6 +1156,8 @@ extern const char kCartDiscountEnabled[];
 extern const char kCartUsedDiscounts[];
 extern const char kCartDiscountLastFetchedTime[];
 extern const char kCartDiscountConsentShown[];
+extern const char kDiscountConsentLastDimissedTime[];
+extern const char kDiscountConsentPastDismissedCount[];
 #endif
 
 #if BUILDFLAG(IS_ANDROID)

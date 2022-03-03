@@ -7,6 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
+// Accessibility identifier for the close button.
+extern NSString* const kBubbleViewCloseButtonIdentifier;
+// Accessibility identifier for the title label.
+extern NSString* const kBubbleViewTitleLabelIdentifier;
+// Accessibility identifier for the image view.
+extern NSString* const kBubbleViewImageViewIdentifier;
+
 // Direction for the bubble to point.
 typedef NS_ENUM(NSInteger, BubbleArrowDirection) {
   // Bubble is below the target UI element and the arrow is pointing up.
@@ -25,6 +32,16 @@ typedef NS_ENUM(NSInteger, BubbleAlignment) {
   BubbleAlignmentTrailing,
 };
 
+// Delegate for actions happening in BubbleView.
+@protocol BubbleViewDelegate <NSObject>
+
+@optional
+
+// User tapped on the close button.
+- (void)didTapCloseButton;
+
+@end
+
 // Speech bubble shaped view that displays a message.
 @interface BubbleView : UIView
 
@@ -40,6 +57,24 @@ typedef NS_ENUM(NSInteger, BubbleAlignment) {
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
 - (instancetype)init NS_UNAVAILABLE;
+
+// Controls if there is a close button in the view. Must be set before the view
+// is added to a superview.
+@property(nonatomic) BOOL showsCloseButton;
+
+// The headline of the bubble. If set, makes the body's font smaller. Must be
+// set before the view is added to a superview.
+@property(nonatomic, copy) NSString* titleString;
+
+// Text alignment used in this View. Default is NSTextAlignmentCenter.
+@property(nonatomic) NSTextAlignment textAlignment;
+
+// The image displayed alongside the text. Must be set before the view is added
+// to a superview.
+@property(nonatomic, strong) UIImage* image;
+
+// The delegate for interactions in this View.
+@property(nonatomic, weak) id<BubbleViewDelegate> delegate;
 
 @end
 

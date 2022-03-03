@@ -127,10 +127,9 @@ class ThemeProperties {
 
     // The color of the line separating the top of the toolbar from the region
     // above. For a tabbed browser window, this is the line along the bottom
-    // edge of the tabstrip, the stroke around the tabs, and the new tab button
-    // stroke/shadow color.
-    COLOR_TOOLBAR_TOP_SEPARATOR,
-    COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE,
+    // edge of the tabstrip.
+    COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_ACTIVE,
+    COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_INACTIVE,
 
     // /!\ If you make any changes to this enum, you must also increment
     // kThemePackVersion in browser_theme_pack.cc, or else themes will display
@@ -170,6 +169,10 @@ class ThemeProperties {
     COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE,
     COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE_INCOGNITO,
     COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE_INCOGNITO,
+
+    // Colors used for the stroke around tabs.
+    COLOR_TAB_STROKE_FRAME_ACTIVE,
+    COLOR_TAB_STROKE_FRAME_INACTIVE,
 
     // The throbber colors for tabs or anything on a toolbar (currently, only
     // the download shelf). Do not use directly; only for use inside
@@ -294,10 +297,6 @@ class ThemeProperties {
     COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT,
     COLOR_OMNIBOX_SECURITY_CHIP_SECURE,
     COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
-
-    // The colors used for thumbnail tab visualizations,
-    COLOR_THUMBNAIL_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE,
-    COLOR_THUMBNAIL_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE,
 
     // Colors used for the Bookmark bar
     COLOR_BOOKMARK_BAR_BACKGROUND,

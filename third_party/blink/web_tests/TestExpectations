@@ -1,4 +1,4 @@
-# tags: [ Fuchsia Linux Mac Mac10.12 Mac10.13 Mac10.14 Mac10.15 Mac11 Mac11-arm64 Win Win7 Win10.20h2 ]
+# tags: [ Fuchsia Linux Mac Mac10.12 Mac10.13 Mac10.14 Mac10.15 Mac11 Mac11-arm64 Win Win7 Win10.20h2 Win11 ]
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Skip ]
 
@@ -391,6 +391,9 @@ crbug.com/730267 virtual/gpu-rasterization/images/yuv-decode-eligible/color-prof
 crbug.com/730267 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-layer-filter.html [ Failure Pass Skip Timeout ]
 crbug.com/730267 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer.html [ Failure Pass Timeout ]
 crbug.com/730267 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer-filter.html [ Failure Pass Skip Timeout ]
+crbug.com/730267 [ Mac11 ] virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/webp-color-profile-lossy.html [ Failure Pass Timeout ]
+crbug.com/730267 [ Mac11 ] virtual/gpu-rasterization/images/yuv-decode-eligible/jpeg-missing-eoi.html [ Failure Pass Timeout ]
+crbug.com/730267 [ Mac11 ] virtual/gpu-rasterization/images/yuv-decode-eligible/webp-no-color-profile-lossy.html [ Failure Pass Timeout ]
 
 # Flaky virtual/threaded/fast/scrolling tests
 crbug.com/841567 virtual/threaded-prefer-compositing/fast/scrolling/absolute-position-behind-scrollbar.html [ Failure Pass ]
@@ -3336,6 +3339,9 @@ crbug.com/626703 virtual/prerender/external/wpt/speculation-rules/prerender/work
 crbug.com/626703 [ Win ] external/wpt/css/css-animations/KeyframeEffect-getKeyframes.tentative.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac ] external/wpt/css/css-overflow/webkit-line-clamp-036.html [ Failure ]
+crbug.com/626703 [ Mac ] virtual/prerender/external/wpt/speculation-rules/prerender/media-autoplay.html [ Skip Timeout ]
+crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/prerender/media-autoplay.html [ Skip Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/browsers/browsing-the-web/back-forward-cache/eligibility/broadcast-channel.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/cross-origin-embedder-policy/cross-origin-isolated-permission.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/sandboxed-features.https.html [ Timeout ]
@@ -5738,13 +5744,11 @@ crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/event
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/events/wheel/wheel-latched-scroll-node-removed.html [ Timeout ]
 
 # fast/scrolling
-crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/hover-during-scroll.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/overflow-scrollability.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/fractional-scroll-offset-document.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/scroll-animation-on-by-default.html [ Failure ]
 crbug.com/1204176 virtual/main-threaded-percent-based-scrolling/fast/scrolling/wheel-scroll-latching-on-scrollbar.html [ Failure Pass ]
-crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/hover-during-scroll.html [ Failure ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/overflow-scrollability.html [ Failure Timeout ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure Timeout ]
 crbug.com/1204176 virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/fractional-scroll-offset-document.html [ Failure ]
@@ -7312,6 +7316,7 @@ crbug.com/1272801 http/tests/permissions/chromium/test-request-sharedworker.html
 
 # Flaky with setTimeout without clamp
 crbug.com/1272955 http/tests/devtools/extensions/extensions-timeline-api.js [ Failure Pass ]
+crbug.com/1302309 external/wpt/streams/transferable/writable-stream.html [ Failure Pass ]
 
 # Flaky as depends upon order of execution.
 crbug.com/1274917 external/wpt/content-security-policy/inheritance/history.sub.html [ Failure Pass Timeout ]
@@ -7582,23 +7587,6 @@ crbug.com/1295707 http/tests/devtools/elements/elements-treeoutline-copy.js [ Fa
 # Disable to skip performance test caused by potential O(n^2) problem in AXObjectCacheImpl::ChildrenChanged
 crbug.com/1293714 external/wpt/css/selectors/invalidation/has-complexity.html [ Skip ]
 
-# Temporarily disabled to land refactoring in DevTools
-crbug.com/1301903 http/tests/devtools/elements/css-variables/defined-css-variables.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/elements/css-variables/resolve-css-variables.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/elements/css-variables/resolve-inherited-css-variables.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/elements/hide-shortcut.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/elements/styles-1/add-new-rule-inline-style-csp.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/elements/styles-1/cached-sync-computed-styles.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/elements/styles-1/edit-value-inside-property.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/elements/styles-2/add-import-rule.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/elements/styles-2/import-pseudoclass-crash.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/elements/styles-2/multiple-imports-edit-crash.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/elements/styles-2/property-ui-location.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/elements/styles-3/styles-variables.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/elements/styles-4/disable-last-property-without-semicolon.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/elements/styles-4/styles-formatting.js [ Skip ]
-crbug.com/1301903 http/tests/devtools/modify-cross-domain-rule.js [ Skip ]
-
 # The test has a flaky baseline
 crbug.com/1243128 http/tests/devtools/extensions/extensions-useragent.js [ Failure Pass ]
 
@@ -7639,3 +7627,6 @@ crbug.com/1300487 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/hid.http
 
 # Sheriff 2022-03-01
 crbug.com/1302043 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-after-cross-origin-redirect.html [ Pass Timeout ]
+
+# Sheriff 2022-03-03
+crbug.com/1302571 virtual/threaded/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Skip ]

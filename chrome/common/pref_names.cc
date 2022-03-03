@@ -1725,10 +1725,6 @@ const char kProfileAttributes[] = "profile.info_cache";
 // not happen if the browser crashes, so we remove the profile on next start.
 const char kProfilesDeleted[] = "profiles.profiles_deleted";
 
-// This is the location of a list of dictionaries of plugin stability stats.
-const char kStabilityPluginStats[] =
-    "user_experience_metrics.stability.plugin_stats2";
-
 // On Chrome OS, total number of non-Chrome user process crashes
 // since the last report.
 const char kStabilityOtherUserCrashCount[] =
@@ -1742,11 +1738,6 @@ const char kStabilityKernelCrashCount[] =
 // last report.
 const char kStabilitySystemUncleanShutdownCount[] =
     "user_experience_metrics.stability.system_unclean_shutdowns";
-
-// The keys below are used for the dictionaries in the
-// kStabilityPluginStats list.
-const char kStabilityPluginName[] = "name";
-const char kStabilityPluginCrashes[] = "crashes";
 
 // String containing the version of Chrome for which Chrome will not prompt the
 // user about setting Chrome as the default browser.
@@ -3335,6 +3326,14 @@ const char kCartDiscountLastFetchedTime[] = "cart_discount_last_fetched_time";
 // Boolean pref indicating whether the consent for discount has ever shown or
 // not.
 const char kCartDiscountConsentShown[] = "cart_discount_consent_shown";
+// A time pref indicating the timestamp of when user last explicitly dismissed
+// the discount consent.
+const char kDiscountConsentLastDimissedTime[] =
+    "discount_consent_last_dimissed_time";
+// An integer pref that keeps track of how many times user has explicitly
+// dismissed the disount consent.
+const char kDiscountConsentPastDismissedCount[] =
+    "discount_consent_dismissed_count";
 #endif
 
 #if BUILDFLAG(IS_ANDROID)

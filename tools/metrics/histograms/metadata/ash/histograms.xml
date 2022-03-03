@@ -1808,7 +1808,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.HotseatTransition.Drag.PresentationTime" units="ms"
-    expires_after="2022-04-10">
+    expires_after="2023-03-01">
   <owner>anasalazar@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <summary>
@@ -2804,6 +2804,19 @@ chromium-metrics-reviews@google.com.
   <token key="TabletOrClamshell" variants="DisplayModes"/>
 </histogram>
 
+<histogram name="Ash.SearchResultUpdateAnimationShortened" enum="Boolean"
+    expires_after="2022-12-01">
+  <owner>yulunwu@google.com</owner>
+  <owner>tbarzic@google.com</owner>
+  <owner>tby@google.com</owner>
+  <summary>
+    Records whether search result animation times were shorted for recent search
+    result update animation preemptions. Recorded when productivity launcher
+    search containers' results change while result containers are still
+    animating.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Shelf.Menu.NumItemsEnabledUponSelection" units="Count"
     expires_after="2023-02-01">
   <owner>anasalazar@chromium.org</owner>
@@ -3032,6 +3045,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Track actions on the shutdown confirmation bubble, if it's opened, dismissed
     or which buttons are clicked.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Shelf.ShutdownConfirmationBubble.TimeToNextBoot"
+    units="seconds" expires_after="2022-12-31">
+  <owner>sherrilin@google.com</owner>
+  <owner>cros-lurs@google.com</owner>
+  <summary>
+    Emitted at device start-up if a shut-down was previously initiated from the
+    shelf shutdown button. In other words this metric is only recorded if a
+    shelf shutdown button was pressed and the device was powered up again soon
+    after that.
   </summary>
 </histogram>
 

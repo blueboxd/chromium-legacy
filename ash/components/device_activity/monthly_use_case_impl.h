@@ -11,6 +11,10 @@
 
 class PrefService;
 
+namespace version_info {
+enum class Channel;
+}  // namespace version_info
+
 namespace ash {
 namespace device_activity {
 
@@ -21,8 +25,9 @@ class ImportDataRequest;
 class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) MonthlyUseCaseImpl
     : public DeviceActiveUseCase {
  public:
-  MonthlyUseCaseImpl(PrefService* local_state,
-                     const std::string& psm_device_active_secret);
+  MonthlyUseCaseImpl(const std::string& psm_device_active_secret,
+                     version_info::Channel chromeos_channel,
+                     PrefService* local_state);
   MonthlyUseCaseImpl(const MonthlyUseCaseImpl&) = delete;
   MonthlyUseCaseImpl& operator=(const MonthlyUseCaseImpl&) = delete;
   ~MonthlyUseCaseImpl() override;
@@ -30,6 +35,10 @@ class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) MonthlyUseCaseImpl
   // Generate the window identifier for the kCrosMonthly use case.
   // For example, the monthly use case should generate a window identifier
   // formatted: yyyyMM.
+  //
+  // It is generated on demand each time the state machine leaves the idle
+  // state. It is reused by several states. It is reset to nullopt. This field
+  // is used apart of PSM Import request.
   std::string GenerateUTCWindowIdentifier(base::Time ts) const override;
 
   // Generate Fresnel PSM import request body.

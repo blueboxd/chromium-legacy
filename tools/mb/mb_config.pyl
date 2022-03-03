@@ -114,13 +114,13 @@
       'android-weblayer-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_disable_proguard_webview_monochrome_reclient',
       'android-10-arm64-rel': 'android_release_bot_minimal_symbols_arm64_fastbuild_webview_trichrome_reclient',
       'android-11-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_reclient',
+      'android-12-x64-rel': 'android_release_bot_minimal_symbols_x64_fastbuild_webview_trichrome_reclient',
     },
 
     'chromium.android.fyi': {
       'Android ASAN (dbg) (reclient)': 'android_clang_asan_debug_bot_reclient',
       'Android arm64 Builder (dbg) (reclient)': 'android_webview_google_debug_static_bot_arm64_reclient',
       'Android WebView P FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_monochrome_reclient',
-      'android-12-x64-fyi-rel': 'android_release_bot_minimal_symbols_x64_fastbuild_webview_trichrome_reclient',
       'android-annotator-rel': 'android_release_bot_minimal_symbols_arm64_webview_google_reclient',
       'android-pie-arm64-wpt-rel-non-cq': 'android_release_bot_minimal_symbols_arm64_webview_monochrome_reclient',
       'android-chrome-pie-x86-wpt-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
@@ -378,6 +378,8 @@
       'mac-paeverywhere-x64-fyi-dbg': 'debug_bot_paeverywhere_x64',
       'mac-paeverywhere-x64-fyi-rel': 'release_trybot_paeverywhere_x64',
       'mac-upload-perfetto': 'release_bot_perfetto_zlib',
+      'Win ASan Release Media (reclient shadow)': 'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_reclient',
+      'Win ASan Release (reclient shadow)': 'asan_fuzzer_v8_heap_release_bot_reclient',
       'win-annotator-rel': 'release_bot',
       'win-celab-builder-rel': 'release_bot_minimal_symbols',
       'win-backuprefptr-x86-fyi-rel': 'release_trybot_backuprefptr_x86',
@@ -843,8 +845,8 @@
       'android-webview-pie-arm64-fyi-rel': 'android_release_trybot_arm64_webview_monochrome',
       'android-10-arm64-rel': 'android_release_trybot_arm64_fastbuild_webview_trichrome',
       'android-11-x86-rel': 'android_release_trybot_x86_fastbuild_webview_trichrome',
-      'android-12-x64-fyi-rel': 'android_release_trybot_x64_fastbuild_webview_trichrome',
       'android-12-x64-dbg': 'android_debug_trybot_x64_webview_trichrome_webview_shell',
+      'android-12-x64-rel': 'android_release_trybot_x64_fastbuild_webview_trichrome',
       'android-webview-12-x64-dbg': 'android_debug_trybot_x64_webview_trichrome_webview_shell',
       'android-webview-marshmallow-arm64-dbg': 'android_release_trybot_arm64_webview_google',
       'android-webview-nougat-arm64-dbg': 'android_release_trybot_arm64_webview_monochrome',
@@ -1774,8 +1776,16 @@
       'clang', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 'release_bot',
     ],
 
+    'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_reclient': [
+      'clang', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 'release_bot_reclient',
+    ],
+
     'asan_fuzzer_v8_heap_release_bot': [
       'clang', 'asan', 'fuzzer', 'v8_heap', 'release_bot',
+    ],
+
+    'asan_fuzzer_v8_heap_release_bot_reclient': [
+      'clang', 'asan', 'fuzzer', 'v8_heap', 'release_bot_reclient',
     ],
 
     'asan_lsan_chromeos_release_bot_dcheck_always_on': [

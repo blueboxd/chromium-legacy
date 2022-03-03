@@ -25,14 +25,16 @@ const char kHardwareClassKeyNotFound[] = "HARDWARE_CLASS_KEY_NOT_FOUND";
 }  // namespace
 
 DeviceActiveUseCase::DeviceActiveUseCase(
-    PrefService* local_state,
     const std::string& psm_device_active_secret,
+    version_info::Channel chromeos_channel,
     const std::string& use_case_pref_key,
-    psm_rlwe::RlweUseCase psm_use_case)
-    : local_state_(local_state),
-      psm_device_active_secret_(psm_device_active_secret),
+    psm_rlwe::RlweUseCase psm_use_case,
+    PrefService* local_state)
+    : psm_device_active_secret_(psm_device_active_secret),
+      chromeos_channel_(chromeos_channel),
       use_case_pref_key_(use_case_pref_key),
       psm_use_case_(psm_use_case),
+      local_state_(local_state),
       statistics_provider_(
           chromeos::system::StatisticsProvider::GetInstance()) {}
 
@@ -42,12 +44,12 @@ PrefService* DeviceActiveUseCase::GetLocalState() const {
   return local_state_;
 }
 
-// Return the last known daily ping timestamp from local state pref.
+// Return the last known ping timestamp from local state pref.
 base::Time DeviceActiveUseCase::GetLastKnownPingTimestamp() const {
   return GetLocalState()->GetTime(use_case_pref_key_);
 }
 
-// Set the last known daily ping timestamp in local state pref.
+// Set the last known ping timestamp in local state pref.
 void DeviceActiveUseCase::SetLastKnownPingTimestamp(base::Time new_ts) {
   GetLocalState()->SetTime(use_case_pref_key_, new_ts);
 }
@@ -66,6 +68,9 @@ void DeviceActiveUseCase::SetWindowIdentifier(
 
   // nullopt the psm_id_ if a new window_id gets assigned.
   psm_id_ = absl::nullopt;
+
+  // Reset |psm_rlwe_client_| since it also depends on psm_id value.
+  psm_rlwe_client_.reset();
 }
 
 std::string DeviceActiveUseCase::GetDigestString(
@@ -87,7 +92,8 @@ DeviceActiveUseCase::GetPsmIdentifier() {
   return psm_id_;
 }
 
-void DeviceActiveUseCase::SetPsmIdentifier(psm_rlwe::RlwePlaintextId psm_id) {
+void DeviceActiveUseCase::SetPsmIdentifier(
+    absl::optional<psm_rlwe::RlwePlaintextId> psm_id) {
   psm_id_ = psm_id;
 }
 
@@ -97,16 +103,18 @@ psm_rlwe::PrivateMembershipRlweClient* DeviceActiveUseCase::GetPsmRlweClient() {
 
 void DeviceActiveUseCase::SetPsmRlweClient(
     std::unique_ptr<psm_rlwe::PrivateMembershipRlweClient> psm_rlwe_client) {
-  if (psm_rlwe_client) {
-    VLOG(1) << "Empty psm_rlwe_client passed to setter.";
-    return;
-  }
+  DCHECK(psm_rlwe_client);
 
+  // Re-assigning the unique_ptr will reset the old unique_ptr.
   psm_rlwe_client_ = std::move(psm_rlwe_client);
 }
 
-bool DeviceActiveUseCase::IsDevicePingRequired(base::Time prev_ping_ts,
-                                               base::Time new_ping_ts) const {
+bool DeviceActiveUseCase::IsDevicePingRequired(base::Time new_ping_ts) const {
+  // Check the last recorded ping timestamp in local state prefs.
+  // This variable has the default Unix Epoch value if the device is
+  // new, powerwashed, recovered, or a RMA device.
+  base::Time prev_ping_ts = GetLastKnownPingTimestamp();
+
   std::string prev_ping_window_id = GenerateUTCWindowIdentifier(prev_ping_ts);
   std::string new_ping_window_id = GenerateUTCWindowIdentifier(new_ping_ts);
 
@@ -129,6 +137,22 @@ std::string DeviceActiveUseCase::GetFullHardwareClass() const {
 
 std::string DeviceActiveUseCase::GetChromeOSVersion() const {
   return version_info::GetMajorVersionNumber();
+}
+
+Channel DeviceActiveUseCase::GetChromeOSChannel() const {
+  switch (chromeos_channel_) {
+    case version_info::Channel::CANARY:
+      return Channel::CHANNEL_CANARY;
+    case version_info::Channel::DEV:
+      return Channel::CHANNEL_DEV;
+    case version_info::Channel::BETA:
+      return Channel::CHANNEL_BETA;
+    case version_info::Channel::STABLE:
+      return Channel::CHANNEL_STABLE;
+    case version_info::Channel::UNKNOWN:
+    default:
+      return Channel::CHANNEL_UNKNOWN;
+  }
 }
 
 absl::optional<psm_rlwe::RlwePlaintextId>

@@ -18,7 +18,6 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
-#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager_observer.h"
@@ -142,7 +141,7 @@ class WebAppInstallFinalizerUnitTest : public WebAppTest {
     file_handlers->push_back(std::move(file_handler));
   }
 
-  WebAppInstallFinalizer& finalizer() { return *finalizer_.get(); }
+  WebAppInstallFinalizer& finalizer() { return *finalizer_; }
   WebAppRegistrar& registrar() {
     return fake_registry_controller_->registrar();
   }

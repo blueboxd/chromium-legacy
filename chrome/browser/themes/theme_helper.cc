@@ -322,7 +322,7 @@ bool ThemeHelper::ShouldUseIncreasedContrastThemeSupplier(
     ui::NativeTheme* native_theme) const {
 // TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
 // complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(USE_GTK) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // On Linux the GTK system theme provides the high contrast colors,
   // so don't use the IncreasedContrastThemeSupplier.
   return false;
@@ -382,12 +382,10 @@ SkColor ThemeHelper::GetDefaultColor(
       return GetColor(TP::COLOR_TOOLBAR, incognito, theme_supplier);
     case TP::COLOR_BOOKMARK_FAVICON: {
       SkColor color;
-      if (theme_supplier &&
-          theme_supplier->GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, &color)) {
-        return color;
-      } else {
-        return SK_ColorTRANSPARENT;
-      }
+      return (theme_supplier &&
+              theme_supplier->GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, &color))
+                 ? color
+                 : SK_ColorTRANSPARENT;
     }
     case TP::COLOR_FLYING_INDICATOR_BACKGROUND:
       return GetColor(TP::COLOR_TOOLBAR, incognito, theme_supplier);
@@ -403,6 +401,12 @@ SkColor ThemeHelper::GetDefaultColor(
     case TP::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE:
     case TP::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE:
       return GetColor(TP::COLOR_TOOLBAR_TEXT, incognito, theme_supplier);
+    case TP::COLOR_TAB_STROKE_FRAME_ACTIVE:
+      return GetColor(TP::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_ACTIVE, incognito,
+                      theme_supplier);
+    case TP::COLOR_TAB_STROKE_FRAME_INACTIVE:
+      return GetColor(TP::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_INACTIVE, incognito,
+                      theme_supplier);
     case TP::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND:
       return GetColor(TP::COLOR_DOWNLOAD_SHELF, incognito, theme_supplier);
     case TP::COLOR_DOWNLOAD_SHELF_BUTTON_TEXT: {
@@ -460,12 +464,12 @@ SkColor ThemeHelper::GetDefaultColor(
           gfx::kGoogleGreyAlpha500);
     case TP::COLOR_LOCATION_BAR_BORDER:
       return SkColorSetA(SK_ColorBLACK, 0x4D);
-    case TP::COLOR_TOOLBAR_TOP_SEPARATOR:
-    case TP::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE: {
+    case TP::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_ACTIVE:
+    case TP::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_INACTIVE: {
       const SkColor tab_color =
           GetColor(TP::COLOR_TOOLBAR, incognito, theme_supplier);
-      const SkColor frame_color =
-          get_frame_color(/*active=*/id == TP::COLOR_TOOLBAR_TOP_SEPARATOR);
+      const SkColor frame_color = get_frame_color(
+          /*active=*/id == TP::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_ACTIVE);
       const SeparatorColorKey key(tab_color, frame_color);
       auto i = GetSeparatorColorCache().find(key);
       if (i != GetSeparatorColorCache().end())
@@ -510,35 +514,11 @@ SkColor ThemeHelper::GetDefaultColor(
       return IncreaseLightness(
           GetColor(TP::COLOR_NTP_TEXT, incognito, theme_supplier), 0.40);
     case TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE:
-    case TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE: {
+    case TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE:
       return GetColor(id == TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE
                           ? TP::COLOR_FRAME_ACTIVE
                           : TP::COLOR_FRAME_INACTIVE,
                       incognito, theme_supplier);
-    }
-    case TP::COLOR_THUMBNAIL_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE: {
-      // TODO(crbug.com/1292546): Make into a recipe once we have Color
-      // Pipeline support for Theme Properties.
-      SkColor background_color =
-          GetColor(TP::COLOR_FRAME_ACTIVE, incognito, theme_supplier);
-      // TODO(crbug.com/1292546): : Use kColorAccent when porting to color
-      // pipeline.
-      SkColor active_tab_title_color = color_utils::IsDark(background_color)
-                                           ? gfx::kGoogleBlue300
-                                           : gfx::kGoogleBlue600;
-
-      // Check if the preferred light/dark color meets desired minimum contrast
-      // against the current background color and if not, adjust alpha.
-      color_utils::BlendResult blend_color_result =
-          color_utils::BlendForMinContrast(
-              active_tab_title_color, background_color, absl::nullopt,
-              color_utils::kMinimumVisibleContrastRatio);
-      return blend_color_result.color;
-    }
-    case TP::COLOR_THUMBNAIL_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE:
-      return color_utils::GetColorWithMaxContrast(GetDefaultColor(
-          TP::COLOR_THUMBNAIL_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE, incognito,
-          theme_supplier));
   }
 
   return TP::GetDefaultColor(id, incognito, UseDarkModeColors(theme_supplier));
@@ -546,39 +526,48 @@ SkColor ThemeHelper::GetDefaultColor(
 
 // static
 SkColor ThemeHelper::GetSeparatorColor(SkColor tab_color, SkColor frame_color) {
-  const float kContrastRatio = 2.f;
+  constexpr float kContrastRatio = 2.0f;
 
-  // In most cases, if the tab is lighter than the frame, we darken the
-  // frame; if the tab is darker than the frame, we lighten the frame.
-  // However, if the frame is already very dark or very light, respectively,
-  // this won't contrast sufficiently with the frame color, so we'll need to
-  // reverse when we're lightening and darkening.
-  SkColor separator_color = SK_ColorWHITE;
-  if (color_utils::GetRelativeLuminance(tab_color) >=
-      color_utils::GetRelativeLuminance(frame_color)) {
-    separator_color = color_utils::GetColorWithMaxContrast(separator_color);
-  }
-
-  {
-    const auto result = color_utils::BlendForMinContrast(
-        frame_color, frame_color, separator_color, kContrastRatio);
-    if (color_utils::GetContrastRatio(result.color, frame_color) >=
-        kContrastRatio) {
-      return SkColorSetA(separator_color, result.alpha);
+  // Used to generate the initial alpha blended separator color.
+  const auto generate_separator_color = [&]() {
+    // In most cases, if the tab is lighter than the frame, we darken the frame;
+    // if the tab is darker than the frame, we lighten the frame.
+    // However, if the frame is already very dark or very light, respectively,
+    // this won't contrast sufficiently with the frame color, so we'll need to
+    // reverse when we're lightening and darkening.
+    SkColor separator_color = SK_ColorWHITE;
+    if (color_utils::GetRelativeLuminance(tab_color) >=
+        color_utils::GetRelativeLuminance(frame_color)) {
+      separator_color = color_utils::GetColorWithMaxContrast(separator_color);
     }
-  }
 
-  separator_color = color_utils::GetColorWithMaxContrast(separator_color);
+    {
+      const auto result = color_utils::BlendForMinContrast(
+          frame_color, frame_color, separator_color, kContrastRatio);
+      if (color_utils::GetContrastRatio(result.color, frame_color) >=
+          kContrastRatio) {
+        return SkColorSetA(separator_color, result.alpha);
+      }
+    }
 
-  // If the above call failed to create sufficient contrast, the frame color is
-  // already very dark or very light.  Since separators are only used when the
-  // tab has low contrast against the frame, the tab color is similarly very
-  // dark or very light, just not quite as much so as the frame color.  Blend
-  // towards the opposite separator color, and compute the contrast against the
-  // tab instead of the frame to ensure both contrasts hit the desired minimum.
-  const auto result = color_utils::BlendForMinContrast(
-      frame_color, tab_color, separator_color, kContrastRatio);
-  return SkColorSetA(separator_color, result.alpha);
+    separator_color = color_utils::GetColorWithMaxContrast(separator_color);
+
+    // If the above call failed to create sufficient contrast, the frame color
+    // is already very dark or very light.  Since separators are only used when
+    // the tab has low contrast against the frame, the tab color is similarly
+    // very dark or very light, just not quite as much so as the frame color.
+    // Blend towards the opposite separator color, and compute the contrast
+    // against the tab instead of the frame to ensure both contrasts hit the
+    // desired minimum.
+    const auto result = color_utils::BlendForMinContrast(
+        frame_color, tab_color, separator_color, kContrastRatio);
+    return SkColorSetA(separator_color, result.alpha);
+  };
+
+  // The vertical tab separator might show through the stroke if the stroke
+  // color is translucent. To prevent this, always use an opaque stroke color.
+  return color_utils::GetResultingPaintColor(generate_separator_color(),
+                                             frame_color);
 }
 
 // static

@@ -9,6 +9,7 @@ import {DownloadHandler} from './download_handler.js';
 import {Earcons} from './earcons.js';
 import {FindHandler} from './find_handler.js';
 import {FocusAutomationHandler} from './focus_automation_handler.js';
+import {GestureCommandHandler} from './gesture_command_handler.js';
 import {LiveRegions} from './live_regions.js';
 import {MediaAutomationHandler} from './media_automation_handler.js';
 import {PageLoadSoundHandler} from './page_load_sound_handler.js';
@@ -221,8 +222,7 @@ export class Background extends ChromeVoxState {
     let selectedRange;
     let msg;
 
-    if (this.pageSel_ && this.pageSel_.isValid() && range.isValid() &&
-        !opt_skipSettingSelection) {
+    if (this.pageSel_ && this.pageSel_.isValid() && range.isValid()) {
       // Suppress hints.
       o.withoutHints();
 

@@ -13,6 +13,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
@@ -152,6 +154,8 @@ struct COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers {
       vkGetPhysicalDeviceSurfaceFormatsKHR;
   VulkanFunction<PFN_vkGetPhysicalDeviceSurfaceSupportKHR>
       vkGetPhysicalDeviceSurfaceSupportKHR;
+
+  VulkanFunction<PFN_vkCreateHeadlessSurfaceEXT> vkCreateHeadlessSurfaceEXT;
 
 #if defined(USE_VULKAN_XCB)
   VulkanFunction<PFN_vkCreateXcbSurfaceKHR> vkCreateXcbSurfaceKHR;
@@ -498,6 +502,15 @@ vkGetPhysicalDeviceSurfaceSupportKHR(VkPhysicalDevice physicalDevice,
                                      VkBool32* pSupported) {
   return gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceSurfaceSupportKHR(
       physicalDevice, queueFamilyIndex, surface, pSupported);
+}
+
+ALWAYS_INLINE VkResult
+vkCreateHeadlessSurfaceEXT(VkInstance instance,
+                           const VkHeadlessSurfaceCreateInfoEXT* pCreateInfo,
+                           const VkAllocationCallbacks* pAllocator,
+                           VkSurfaceKHR* pSurface) {
+  return gpu::GetVulkanFunctionPointers()->vkCreateHeadlessSurfaceEXT(
+      instance, pCreateInfo, pAllocator, pSurface);
 }
 
 #if defined(USE_VULKAN_XCB)

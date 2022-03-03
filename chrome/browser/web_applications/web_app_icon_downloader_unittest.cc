@@ -21,8 +21,6 @@
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-using content::RenderViewHostTester;
-
 namespace web_app {
 
 namespace {
@@ -82,7 +80,7 @@ class TestWebAppIconDownloader : public WebAppIconDownloader {
                            std::vector<GURL> extra_favicon_urls)
       : WebAppIconDownloader(
             web_contents,
-            extra_favicon_urls,
+            std::move(extra_favicon_urls),
             base::BindOnce(&TestWebAppIconDownloader::DownloadsComplete,
                            base::Unretained(this))) {}
   TestWebAppIconDownloader(const TestWebAppIconDownloader&) = delete;

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/bubble/bubble_view.h"
 
 #include "base/ios/ios_util.h"
+#include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -13,6 +14,30 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+@interface BubbleViewDelegateTest : NSObject <BubbleViewDelegate>
+
+- (instancetype)init;
+
+@property(nonatomic) int tapCounter;
+
+@end
+
+@implementation BubbleViewDelegateTest
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    _tapCounter = 0;
+  }
+  return self;
+}
+
+- (void)didTapCloseButton {
+  _tapCounter += 1;
+}
+
+@end
 
 // Fixture to test BubbleView.
 class BubbleViewTest : public PlatformTest {
@@ -37,6 +62,33 @@ class BubbleViewTest : public PlatformTest {
   // Text that is longer than the maximum line width. It should wrap onto
   // multiple lines.
   NSString* longText_;
+
+  UIView* GetViewOfClassWithIdentifier(Class uiClass,
+                                       NSString* accessibilityIdentifier,
+                                       BubbleView* bubbleView) {
+    for (UIView* subview in bubbleView.subviews) {
+      if ([subview isKindOfClass:uiClass] &&
+          subview.accessibilityIdentifier == accessibilityIdentifier) {
+        return subview;
+      }
+    }
+    return nil;
+  }
+
+  UIButton* GetCloseButton(BubbleView* bubbleView) {
+    return base::mac::ObjCCastStrict<UIButton>(GetViewOfClassWithIdentifier(
+        [UIButton class], kBubbleViewCloseButtonIdentifier, bubbleView));
+  }
+
+  UILabel* GetTitleLabel(BubbleView* bubbleView) {
+    return base::mac::ObjCCastStrict<UILabel>(GetViewOfClassWithIdentifier(
+        [UILabel class], kBubbleViewTitleLabelIdentifier, bubbleView));
+  }
+
+  UIImageView* GetImageView(BubbleView* bubbleView) {
+    return base::mac::ObjCCastStrict<UIImageView>(GetViewOfClassWithIdentifier(
+        [UIImageView class], kBubbleViewImageViewIdentifier, bubbleView));
+  }
 };
 
 // Test |sizeThatFits| given short text.
@@ -73,4 +125,84 @@ TEST_F(BubbleViewTest, Accessibility) {
   // Add the bubble view to the view hierarchy.
   [superview addSubview:bubble];
   EXPECT_NSEQ(longText_, bubble.accessibilityLabel);
+}
+
+// Tests that the close button is not showed when the option is set to hidden.
+TEST_F(BubbleViewTest, CloseButtonIsNotPresent) {
+  BubbleView* bubble = [[BubbleView alloc] initWithText:longText_
+                                         arrowDirection:arrowDirection_
+                                              alignment:alignment_];
+  [bubble setShowsCloseButton:NO];
+  UIView* superview = [[UIView alloc] initWithFrame:CGRectZero];
+  [superview addSubview:bubble];
+  UIButton* closeButton = GetCloseButton(bubble);
+  ASSERT_FALSE(closeButton);
+}
+
+// Tests the close button action and its presence.
+TEST_F(BubbleViewTest, CloseButtonActionAndPresent) {
+  BubbleView* bubble = [[BubbleView alloc] initWithText:longText_
+                                         arrowDirection:arrowDirection_
+                                              alignment:alignment_];
+  BubbleViewDelegateTest* delegate = [[BubbleViewDelegateTest alloc] init];
+  [bubble setShowsCloseButton:YES];
+  [bubble setDelegate:delegate];
+  UIView* superview = [[UIView alloc] initWithFrame:CGRectZero];
+  [superview addSubview:bubble];
+  UIButton* closeButton = GetCloseButton(bubble);
+  ASSERT_TRUE(closeButton);
+  // Tests close button action.
+  [closeButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+  EXPECT_EQ(delegate.tapCounter, 1);
+}
+
+// Tests that the title is not showed when the option is set to hidden.
+TEST_F(BubbleViewTest, TitleIsNotPresent) {
+  BubbleView* bubble = [[BubbleView alloc] initWithText:longText_
+                                         arrowDirection:arrowDirection_
+                                              alignment:alignment_];
+  [bubble setTitleString:nil];
+  UIView* superview = [[UIView alloc] initWithFrame:CGRectZero];
+  [superview addSubview:bubble];
+  UILabel* titleLabel = GetTitleLabel(bubble);
+  ASSERT_FALSE(titleLabel);
+}
+
+// Tests that the title is present and correct.
+TEST_F(BubbleViewTest, TitleIsPresentAndCorrect) {
+  BubbleView* bubble = [[BubbleView alloc] initWithText:longText_
+                                         arrowDirection:arrowDirection_
+                                              alignment:alignment_];
+  [bubble setTitleString:shortText_];
+  UIView* superview = [[UIView alloc] initWithFrame:CGRectZero];
+  [superview addSubview:bubble];
+  UILabel* titleLabel = GetTitleLabel(bubble);
+  ASSERT_TRUE(titleLabel);
+  ASSERT_EQ(titleLabel.text, shortText_);
+}
+
+// Tests that the image is not showed when the image is empty.
+TEST_F(BubbleViewTest, ImageIsNotPresent) {
+  BubbleView* bubble = [[BubbleView alloc] initWithText:longText_
+                                         arrowDirection:arrowDirection_
+                                              alignment:alignment_];
+  [bubble setImage:nil];
+  UIView* superview = [[UIView alloc] initWithFrame:CGRectZero];
+  [superview addSubview:bubble];
+  UIImageView* imageView = GetImageView(bubble);
+  ASSERT_FALSE(imageView);
+}
+
+// Tests that the image is present and correct.
+TEST_F(BubbleViewTest, ImageIsPresentAndCorrect) {
+  BubbleView* bubble = [[BubbleView alloc] initWithText:longText_
+                                         arrowDirection:arrowDirection_
+                                              alignment:alignment_];
+  UIImage* testImage = [[UIImage alloc] init];
+  [bubble setImage:testImage];
+  UIView* superview = [[UIView alloc] initWithFrame:CGRectZero];
+  [superview addSubview:bubble];
+  UIImageView* imageView = GetImageView(bubble);
+  ASSERT_TRUE(imageView);
+  EXPECT_EQ(imageView.image, testImage);
 }

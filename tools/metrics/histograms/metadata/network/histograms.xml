@@ -926,7 +926,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Patchpanel.ArcService"
-    enum="NetworkPatchpanelArcEvent" expires_after="2022-04-01">
+    enum="NetworkPatchpanelArcEvent" expires_after="2022-12-31">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
@@ -941,7 +941,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Patchpanel.Dbus" enum="NetworkPatchpanelDbusEvent"
-    expires_after="2022-04-01">
+    expires_after="2022-12-31">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
@@ -3170,6 +3170,12 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility"
     enum="RequestInitiatorOriginLockCompatibility" expires_after="2022-04-10">
+  <obsolete>
+    Removed in March 2022 / M101.
+
+    Old results are preserved in
+    https://docs.google.com/document/d/15j6AKzZ-HgyRQVrKpdGHfGf8D_fcUILmcQ34RAWD1TM/edit?resourcekey=0-wwIJsGSoWmhvFMwMTWdAOw
+  </obsolete>
   <owner>lukasza@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>jam@chromium.org</owner>

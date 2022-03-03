@@ -701,6 +701,19 @@
           'gtest_tests': 'android_11_emulator_gtests',
         }
       },
+      'android-12-x64-rel': {
+        'mixins': [
+          '12-x64-emulator',
+          'emulator-8-cores',
+          'has_native_resultdb_integration',
+          'linux-xenial-or-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_12_emulator_gtests',
+        }
+      },
       'android-arm64-proguard-rel': {
         'additional_compile_targets': [
           'all',
@@ -1161,19 +1174,6 @@
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'android_12_dbg_emulator_gtests',
-        }
-      },
-      'android-12-x64-fyi-rel': {
-        'mixins': [
-          '12-x64-emulator',
-          'emulator-8-cores',
-          'has_native_resultdb_integration',
-          'linux-xenial-or-bionic',
-          'x86-64',
-        ],
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'android_12_emulator_gtests',
         }
       },
       'android-annotator-rel': {
@@ -2738,6 +2738,16 @@
           'gtest_tests': 'chromium_win_gtests',
         },
         'use_swarming': False,
+      },
+      'Win ASan Release (reclient shadow)': {
+        'additional_compile_targets': [
+          'chromium_builder_asan',
+        ],
+      },
+      'Win ASan Release Media (reclient shadow)': {
+        'additional_compile_targets': [
+          'chromium_builder_asan',
+        ],
       },
       'Win x64 Builder (reclient compare)': {
         # Copied from
@@ -5484,8 +5494,7 @@
       'linux-rust-intree-x64-rel' : {
         'additional_compile_targets': [
           'mojo_rust',
-          'mojo_rust_extra_tests',
-          'mojo_rust_unittests',
+          'mojo_rust_tests',
           'rust_build_tests',
         ],
         'test_suites': {
@@ -5496,8 +5505,7 @@
       'linux-rust-x64-rel' : {
         'additional_compile_targets': [
           'mojo_rust',
-          'mojo_rust_extra_tests',
-          'mojo_rust_unittests',
+          'mojo_rust_tests',
           'rust_build_tests',
         ],
         'test_suites': {

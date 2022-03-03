@@ -1099,7 +1099,7 @@ TEST_F(BorealisDiskManagerTest, ReleaseSpaceConvertsSparseDiskToFixed) {
           [](Expected<uint64_t, Described<BorealisResizeDiskResult>>
                  response_or_error) {
             EXPECT_TRUE(response_or_error);
-            EXPECT_EQ(response_or_error.Value(), 0);
+            EXPECT_EQ(response_or_error.Value(), 0u);
           }));
   disk_manager_->ReleaseSpace(1 * kGiB, callback_factory.BindOnce());
   run_loop()->RunUntilIdle();
@@ -1420,6 +1420,39 @@ TEST_F(BorealisDiskManagerTest, SyncDiskSizeFailsIfResizeAttemptFails) {
   histogram_tester_.ExpectUniqueSample(
       kBorealisDiskStartupResultHistogram,
       BorealisSyncDiskSizeResult::kResizeFailed, 1);
+}
+
+TEST_F(BorealisDiskManagerTest,
+       SyncDiskSizeSucceedsIfDiskBelowMinSizeDuringShrink) {
+  // This object forces all EXPECT_CALLs to occur in the order they are
+  // declared.
+  testing::InSequence sequence;
+
+  EXPECT_CALL(*free_space_provider_, Get(_))
+      .Times(2)
+      .WillRepeatedly(
+          testing::Invoke([this](base::OnceCallback<void(int64_t)> callback) {
+            auto response = BuildValidListVmDisksResponse(
+                /*min_size=*/6 * kGiB, /*size=*/5 * kGiB,
+                /*available_space=*/3 * kGiB);
+            FakeConciergeClient()->set_list_vm_disks_response(response);
+            std::move(callback).Run(5 * kGiB);
+          }));
+
+  SyncDiskCallbackFactory callback_factory;
+  EXPECT_CALL(callback_factory, Call(_))
+      .WillOnce(testing::Invoke(
+          [](Expected<BorealisSyncDiskSizeResult,
+                      Described<BorealisSyncDiskSizeResult>> result) {
+            EXPECT_TRUE(result);
+            EXPECT_EQ(result.Value(),
+                      BorealisSyncDiskSizeResult::kDiskSizeSmallerThanMin);
+          }));
+  disk_manager_->SyncDiskSize(callback_factory.BindOnce());
+  run_loop()->RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample(
+      kBorealisDiskStartupResultHistogram,
+      BorealisSyncDiskSizeResult::kDiskSizeSmallerThanMin, 1);
 }
 
 TEST_F(BorealisDiskManagerTest, SyncDiskSizePartialResizeSucceeds) {

@@ -1015,8 +1015,6 @@ static_library("browser") {
     "password_manager/credentials_cleaner_runner_factory.h",
     "password_manager/field_info_manager_factory.cc",
     "password_manager/field_info_manager_factory.h",
-    "password_manager/password_change_success_tracker_factory.cc",
-    "password_manager/password_change_success_tracker_factory.h",
     "password_manager/password_reuse_manager_factory.cc",
     "password_manager/password_reuse_manager_factory.h",
     "password_manager/password_store_backend_sync_delegate_impl.cc",
@@ -6249,6 +6247,14 @@ static_library("browser") {
     ]
   }
 
+  if (is_win || is_mac || is_linux || is_chromeos) {
+    deps += [
+      "//components/user_notes:features",
+      "//components/user_notes/browser",
+      "//components/user_notes/model",
+    ]
+  }
+
   if (enable_click_to_call) {
     sources += [
       "sharing/click_to_call/click_to_call_utils.cc",
@@ -6321,6 +6327,12 @@ static_library("browser") {
       "//printing/backend",
     ]
 
+    if (!is_android) {
+      sources += [
+        "printing/print_error_dialog.cc",
+        "printing/print_error_dialog.h",
+      ]
+    }
     if (is_win) {
       sources += [
         "printing/pdf_to_emf_converter.cc",
@@ -6367,8 +6379,6 @@ static_library("browser") {
         "printing/pdf_nup_converter_client.h",
         "printing/prefs_util.cc",
         "printing/prefs_util.h",
-        "printing/print_error_dialog.cc",
-        "printing/print_error_dialog.h",
         "printing/print_preview_context_menu_observer.cc",
         "printing/print_preview_context_menu_observer.h",
         "printing/print_preview_data_service.cc",
@@ -6909,8 +6919,6 @@ static_library("browser") {
 
   if (enable_plugins) {
     sources += [
-      "metrics/plugin_metrics_provider.cc",
-      "metrics/plugin_metrics_provider.h",
       "plugins/chrome_content_browser_client_plugins_part.cc",
       "plugins/chrome_content_browser_client_plugins_part.h",
       "plugins/chrome_plugin_service_filter.cc",

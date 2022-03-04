@@ -605,7 +605,7 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   // possible for there to be a matching source if there's no DB.
   if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent)) {
     return CreateReportResult(
-        AttributionTrigger::Result::kNoMatchingImpressions);
+        AttributionTrigger::EventLevelResult::kNoMatchingImpressions);
   }
 
   const net::SchemefulSite& conversion_destination =
@@ -640,8 +640,8 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   if (!matching_sources_statement.Step()) {
     return CreateReportResult(
         matching_sources_statement.Succeeded()
-            ? AttributionTrigger::Result::kNoMatchingImpressions
-            : AttributionTrigger::Result::kInternalError);
+            ? AttributionTrigger::EventLevelResult::kNoMatchingImpressions
+            : AttributionTrigger::EventLevelResult::kInternalError);
   }
 
   // The first one returned will be attributed; it has the highest priority.
@@ -656,31 +656,37 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   }
   // Exit early if the last statement wasn't valid.
   if (!matching_sources_statement.Succeeded()) {
-    return CreateReportResult(AttributionTrigger::Result::kInternalError);
+    return CreateReportResult(
+        AttributionTrigger::EventLevelResult::kInternalError);
   }
 
   absl::optional<StoredSourceData> source_to_attribute =
       ReadSourceToAttribute(db_.get(), source_id_to_attribute);
   // This is only possible if there is a corrupt DB.
   if (!source_to_attribute.has_value()) {
-    return CreateReportResult(AttributionTrigger::Result::kInternalError);
+    return CreateReportResult(
+        AttributionTrigger::EventLevelResult::kInternalError);
   }
 
   const CommonSourceInfo::SourceType source_type =
       source_to_attribute->source.common_info().source_type();
 
-  uint64_t trigger_data;
-  switch (source_type) {
-    case CommonSourceInfo::SourceType::kNavigation:
-      trigger_data = trigger.trigger_data();
-      break;
-    case CommonSourceInfo::SourceType::kEvent:
-      trigger_data = trigger.event_source_trigger_data();
-      break;
+  uint64_t trigger_data = 0;
+  int64_t priority = 0;
+  absl::optional<uint64_t> dedup_key;
+
+  auto event_trigger =
+      base::ranges::find(trigger.event_triggers(), source_type,
+                         &AttributionTrigger::EventTriggerData::source_type);
+
+  if (event_trigger != trigger.event_triggers().end()) {
+    // TODO(apaseltiner): Consider informing the manager if the trigger
+    // data was out of range for DevTools issue reporting.
+    trigger_data =
+        delegate_->SanitizeTriggerData(event_trigger->data, source_type);
+    priority = event_trigger->priority;
+    dedup_key = event_trigger->dedup_key;
   }
-  // TODO(apaseltiner): Consider informing the manager if the trigger
-  // data was out of range for DevTools issue reporting.
-  trigger_data = delegate_->SanitizeTriggerData(trigger_data, source_type);
 
   const base::Time report_time =
       delegate_->GetReportTime(source_to_attribute->source.common_info(),
@@ -704,31 +710,45 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
                       /*time=*/current_time, trigger.debug_key()),
       /*report_time=*/report_time,
       /*external_report_id=*/delegate_->NewReportID(),
-      AttributionReport::EventLevelData(trigger_data, trigger.priority(),
+      AttributionReport::EventLevelData(trigger_data, priority,
                                         randomized_response_rate,
                                         /*id=*/absl::nullopt));
 
-  switch (ReportAlreadyStored(source_id_to_attribute, trigger.dedup_key())) {
+  // Note that this cannot currently occur outside of tests, because all
+  // triggers have two event triggers, one for each source type, one of which
+  // must match. In the future, when we have general filtering based on strings,
+  // this code path will be reachable and we return without performing
+  // attribution.
+  if (event_trigger == trigger.event_triggers().end()) {
+    return CreateReportResult(
+        AttributionTrigger::EventLevelResult::kNoMatchingEventTriggers,
+        std::move(report));
+  }
+
+  switch (ReportAlreadyStored(source_id_to_attribute, dedup_key)) {
     case ReportAlreadyStoredStatus::kNotStored:
       break;
     case ReportAlreadyStoredStatus::kStored:
-      return CreateReportResult(AttributionTrigger::Result::kDeduplicated,
-                                std::move(report));
+      return CreateReportResult(
+          AttributionTrigger::EventLevelResult::kDeduplicated,
+          std::move(report));
     case ReportAlreadyStoredStatus::kError:
-      return CreateReportResult(AttributionTrigger::Result::kInternalError,
-                                std::move(report));
+      return CreateReportResult(
+          AttributionTrigger::EventLevelResult::kInternalError,
+          std::move(report));
   }
 
   switch (CapacityForStoringReport(serialized_conversion_destination)) {
     case ConversionCapacityStatus::kHasCapacity:
       break;
     case ConversionCapacityStatus::kNoCapacity:
-      return CreateReportResult(
-          AttributionTrigger::Result::kNoCapacityForConversionDestination,
-          std::move(report));
-    case ConversionCapacityStatus::kError:
-      return CreateReportResult(AttributionTrigger::Result::kInternalError,
+      return CreateReportResult(AttributionTrigger::EventLevelResult::
+                                    kNoCapacityForConversionDestination,
                                 std::move(report));
+    case ConversionCapacityStatus::kError:
+      return CreateReportResult(
+          AttributionTrigger::EventLevelResult::kInternalError,
+          std::move(report));
   }
 
   const AttributionInfo& attribution_info = report.attribution_info();
@@ -739,11 +759,12 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
       break;
     case RateLimitResult::kNotAllowed:
       return CreateReportResult(
-          AttributionTrigger::Result::kExcessiveAttributions,
+          AttributionTrigger::EventLevelResult::kExcessiveAttributions,
           std::move(report));
     case RateLimitResult::kError:
-      return CreateReportResult(AttributionTrigger::Result::kInternalError,
-                                std::move(report));
+      return CreateReportResult(
+          AttributionTrigger::EventLevelResult::kInternalError,
+          std::move(report));
   }
 
   switch (rate_limit_table_.AttributionAllowedForReportingOriginLimit(
@@ -752,28 +773,31 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
       break;
     case RateLimitResult::kNotAllowed:
       return CreateReportResult(
-          AttributionTrigger::Result::kExcessiveReportingOrigins,
+          AttributionTrigger::EventLevelResult::kExcessiveReportingOrigins,
           std::move(report));
     case RateLimitResult::kError:
-      return CreateReportResult(AttributionTrigger::Result::kInternalError,
-                                std::move(report));
+      return CreateReportResult(
+          AttributionTrigger::EventLevelResult::kInternalError,
+          std::move(report));
   }
 
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin()) {
-    return CreateReportResult(AttributionTrigger::Result::kInternalError,
-                              std::move(report));
+    return CreateReportResult(
+        AttributionTrigger::EventLevelResult::kInternalError,
+        std::move(report));
   }
 
   absl::optional<AttributionReport> replaced_report;
   const auto maybe_replace_lower_priority_report_result =
       MaybeReplaceLowerPriorityEventLevelReport(
-          report, source_to_attribute->num_conversions, trigger.priority(),
+          report, source_to_attribute->num_conversions, priority,
           replaced_report);
   if (maybe_replace_lower_priority_report_result ==
       MaybeReplaceLowerPriorityEventLevelReportResult::kError) {
-    return CreateReportResult(AttributionTrigger::Result::kInternalError,
-                              std::move(report));
+    return CreateReportResult(
+        AttributionTrigger::EventLevelResult::kInternalError,
+        std::move(report));
   }
 
   if (maybe_replace_lower_priority_report_result ==
@@ -782,11 +806,13 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
           MaybeReplaceLowerPriorityEventLevelReportResult::
               kDropNewReportSourceDeactivated) {
     if (!transaction.Commit()) {
-      return CreateReportResult(AttributionTrigger::Result::kInternalError,
-                                std::move(report));
+      return CreateReportResult(
+          AttributionTrigger::EventLevelResult::kInternalError,
+          std::move(report));
     }
     return CreateReportResult(
-        AttributionTrigger::Result::kPriorityTooLow, std::move(report),
+        AttributionTrigger::EventLevelResult::kPriorityTooLow,
+        std::move(report),
         maybe_replace_lower_priority_report_result ==
                 MaybeReplaceLowerPriorityEventLevelReportResult::
                     kDropNewReportSourceDeactivated
@@ -803,29 +829,29 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
 
   if (create_report) {
     if (!StoreReport(attribution_info.source.source_id(), trigger_data,
-                     attribution_info.time, report.report_time(),
-                     trigger.priority(), report.external_report_id(),
-                     trigger.debug_key())) {
-      return CreateReportResult(AttributionTrigger::Result::kInternalError,
-                                std::move(report));
+                     attribution_info.time, report.report_time(), priority,
+                     report.external_report_id(), trigger.debug_key())) {
+      return CreateReportResult(
+          AttributionTrigger::EventLevelResult::kInternalError,
+          std::move(report));
     }
   }
 
   // If a dedup key is present, store it. We do this regardless of whether
   // `create_report` is true to avoid leaking whether the report was actually
   // stored.
-  if (trigger.dedup_key().has_value()) {
+  if (dedup_key.has_value()) {
     static constexpr char kInsertDedupKeySql[] =
         "INSERT INTO dedup_keys(impression_id,dedup_key)VALUES(?,?)";
     sql::Statement insert_dedup_key_statement(
         db_->GetCachedStatement(SQL_FROM_HERE, kInsertDedupKeySql));
     insert_dedup_key_statement.BindInt64(0,
                                          *attribution_info.source.source_id());
-    insert_dedup_key_statement.BindInt64(1,
-                                         SerializeUint64(*trigger.dedup_key()));
+    insert_dedup_key_statement.BindInt64(1, SerializeUint64(*dedup_key));
     if (!insert_dedup_key_statement.Run()) {
-      return CreateReportResult(AttributionTrigger::Result::kInternalError,
-                                std::move(report));
+      return CreateReportResult(
+          AttributionTrigger::EventLevelResult::kInternalError,
+          std::move(report));
     }
   }
 
@@ -843,15 +869,17 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
     impression_update_statement.BindInt64(0,
                                           *attribution_info.source.source_id());
     if (!impression_update_statement.Run()) {
-      return CreateReportResult(AttributionTrigger::Result::kInternalError,
-                                std::move(report));
+      return CreateReportResult(
+          AttributionTrigger::EventLevelResult::kInternalError,
+          std::move(report));
     }
   }
 
   // Delete all unattributed sources.
   if (!DeleteSources(source_ids_to_delete)) {
-    return CreateReportResult(AttributionTrigger::Result::kInternalError,
-                              std::move(report));
+    return CreateReportResult(
+        AttributionTrigger::EventLevelResult::kInternalError,
+        std::move(report));
   }
 
   // Based on the deletion logic here and the fact that we delete sources
@@ -863,27 +891,31 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
 
   if (create_report && !rate_limit_table_.AddRateLimitForAttribution(
                            db_.get(), attribution_info)) {
-    return CreateReportResult(AttributionTrigger::Result::kInternalError,
-                              std::move(report));
+    return CreateReportResult(
+        AttributionTrigger::EventLevelResult::kInternalError,
+        std::move(report));
   }
 
   if (!transaction.Commit()) {
-    return CreateReportResult(AttributionTrigger::Result::kInternalError,
-                              std::move(report));
+    return CreateReportResult(
+        AttributionTrigger::EventLevelResult::kInternalError,
+        std::move(report));
   }
 
   if (!create_report) {
-    return CreateReportResult(AttributionTrigger::Result::kDroppedForNoise,
-                              std::move(report));
+    return CreateReportResult(
+        AttributionTrigger::EventLevelResult::kDroppedForNoise,
+        std::move(report));
   }
 
   return CreateReportResult(
       maybe_replace_lower_priority_report_result ==
               MaybeReplaceLowerPriorityEventLevelReportResult::kReplaceOldReport
-          ? AttributionTrigger::Result::kSuccessDroppedLowerPriority
-          : AttributionTrigger::Result::kSuccess,
+          ? AttributionTrigger::EventLevelResult::kSuccessDroppedLowerPriority
+          : AttributionTrigger::EventLevelResult::kSuccess,
       std::move(replaced_report),
-      /*dropped_report_source_deactivation_reason=*/absl::nullopt, report_time);
+      /*dropped_report_source_deactivation_reason=*/absl::nullopt,
+      std::move(report));
 }
 
 bool AttributionStorageSql::StoreReport(

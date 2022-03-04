@@ -12,7 +12,6 @@ import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.metrics.MetricsSwitches;
 import org.chromium.components.network_session_configurator.NetworkSessionSwitches;
 import org.chromium.components.power_scheduler.PowerSchedulerFeatures;
-import org.chromium.components.variations.VariationsFeatures;
 import org.chromium.components.viz.common.VizFeatures;
 import org.chromium.content_public.common.ContentFeatures;
 import org.chromium.content_public.common.ContentSwitches;
@@ -268,13 +267,15 @@ public final class ProductionSupportedFlagList {
                     "Whether WebView will send variations headers on URLs where applicable."),
             Flag.baseFeature(ContentFeatures.INCLUDE_IPC_OVERHEAD_IN_NAVIGATION_START,
                     "Whether navigation metrics include ipc overhead."),
-            Flag.baseFeature(ContentFeatures.AVOID_UNNECESSARY_BEFORE_UNLOAD_CHECK,
+            Flag.baseFeature(ContentFeatures.AVOID_UNNECESSARY_BEFORE_UNLOAD_CHECK_POST_TASK,
                     "Avoids an unnecessary renderer ipc during navigation for before-unload "
                             + "handlers."),
             Flag.baseFeature(AwFeatures.WEBVIEW_X_REQUESTED_WITH_HEADER,
                     "Enables automatic insertion of XRequestedWith header "
                             + "on all outgoing requests."),
-            Flag.baseFeature(VariationsFeatures.VARIATIONS_FAKE_CRASH_AFTER_STARTUP,
-                    "Generates a crash dump without crashing after startup."),
+            Flag.baseFeature(
+                    AwFeatures.WEBVIEW_SYNTHESIZE_PAGE_LOAD_ONLY_ON_INITIAL_MAIN_DOCUMENT_ACCESS,
+                    "Only synthesize page load for URL spoof prevention at most once,"
+                            + " on initial main document access."),
     };
 }

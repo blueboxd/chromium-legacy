@@ -26,6 +26,42 @@ external/wpt/infrastructure/reftest/reftest_multiple_mismatch-0.html [ Failure ]
 external/wpt/infrastructure/reftest/reftest_multiple_mismatch-1.html [ Failure ]
 accessibility/slot-poison.html [ Failure ]
 
+# Temporarily disabling to land fixes in DevTools.
+crbug.com/1300509 http/tests/devtools/console-xhr-logging-async.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/console/console-uncaught-exception-in-eval.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/console/console-uncaught-promise.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/elements/elements-img-tooltip.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/elements/elements-tab-stops.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/elements/event-listener-sidebar.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/elements/highlight/highlight-node-vertical-rl.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/network/network-initiator.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/sources/debugger-ui/scripts-with-same-source-url.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/sources/debugger-ui/watch-expressions-panel-switch.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/profiler/agents-disabled-check.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/text-autosizing-override.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/bindings/navigator-multiple-frames.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/bindings/sourcemap-bindings-multiple-frames.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/bindings/ignore-listed-sourcemap-detach.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/bindings/suspendtarget-bindings.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/bindings/suspendtarget-navigator.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/sources/sourcemap-hot-reload.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/sources/debugger-ui/monitor-console-command.js [ Skip ]
+# This is also mentioned as flaky here: crbug.com/1272380.
+crbug.com/1300509 http/tests/devtools/bindings/bindings-multiple-frames.js [ Skip ]
+
+
+# Need updates to the testing infrastructure and v8 breakpoint setting after landing crbug.com/1229541.
+# The following test is also mentioned as flaky here: crbug.com/1263709.
+crbug.com/1300509 http/tests/devtools/elements/node-xpath.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/runtime/evaluate-timeout.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints-reload.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/animation/animation-after-navigation.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/network/parse-form-data.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/console/console-eval-object-literal.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/elements/styles-1/dynamic-style-tag.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/network/resource-priority.js [ Skip ]
+crbug.com/1300509 http/tests/devtools/resource-parameters.js [ Skip ]
+
 # Expected to time out.
 external/wpt/infrastructure/expected-fail/timeout.html [ Timeout ]
 external/wpt/infrastructure/reftest/reftest_ref_timeout.html [ Timeout ]
@@ -200,13 +236,6 @@ crbug.com/v8/12227 external/wpt/wasm/jsapi/exception/toString.tentative.any.html
 crbug.com/v8/12227 external/wpt/wasm/jsapi/exception/toString.tentative.any.worker.html [ Failure Pass ]
 
 # --- Skia roll test suppressions
-
-# TODO(michaelludwig) - crbug.com/1298194 remove after
-# https://skia-review.googlesource.com/c/skia/+/502059 lands and rolls into chromium
-crbug.com/1298194 virtual/oopr-canvas2d/fast/canvas/canvas-arc-circumference.html [ Failure Pass ]
-crbug.com/1298194 virtual/oopr-canvas2d/fast/canvas/canvas-ellipse-circumference.html [ Failure Pass ]
-crbug.com/1298194 virtual/oopr-canvas2d/fast/canvas/canvas-ellipse-connecting-line.html [ Failure Pass ]
-crbug.com/1298194 virtual/oopr-canvas2d/fast/canvas/canvas-zero-length-lineCap.html [ Failure Pass ]
 
 # --- END Skia roll test suppresions
 
@@ -1747,16 +1776,9 @@ crbug.com/958381 [ Mac ] fragmentation/single-line-cells-paginated-with-text.htm
 
 # ====== MathMLCore-only tests from here ======
 
-# These tests fail because we don't support MathML ink metrics.
-crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-001.html [ Failure ]
-crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-002.html [ Failure ]
-crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-003.html [ Failure ]
-crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-004.html [ Failure ]
-crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-005.html [ Failure ]
-crbug.com/1125137 external/wpt/mathml/presentation-markup/fractions/frac-parameters-gap-006.html [ Failure ]
-
 # This test fail because we don't properly center elements in MathML tables.
 crbug.com/1125111 external/wpt/mathml/presentation-markup/tables/table-003.html [ Failure ]
+crbug.com/1125111 external/wpt/mathml/presentation-markup/direction/direction-006.html [ Failure ]
 
 # These tests fail because some CSS properties affect MathML layout.
 crbug.com/1227601 external/wpt/mathml/relations/css-styling/ignored-properties-001.html [ Failure Timeout ]
@@ -1861,6 +1883,8 @@ crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-001.html [ Fail
 crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-002.html [ Failure ]
 crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-003.html [ Failure ]
 crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-004.html [ Failure ]
+crbug.com/1295264 crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-currentcolor-001.html [ Failure ]
+crbug.com/1295264 crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-currentcolor-002.html [ Failure ]
 crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-marker.html [ Failure ]
 crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-child-marker.html [ Failure ]
 crbug.com/1172333 external/wpt/css/css-pseudo/first-letter-hi-001.html [ Failure ]
@@ -3337,8 +3361,12 @@ crbug.com/626703 [ Linux ] external/wpt/url/a-element-xhtml.xhtml [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/url/failure.html [ Failure ]
 crbug.com/626703 virtual/prerender/external/wpt/speculation-rules/prerender/workers.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-animations/KeyframeEffect-getKeyframes.tentative.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/preload/avoid-delaying-onload-link-modulepreload.html [ Failure ]
+crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/prerender/restriction-presentation-request.https.html [ Failure ]
+crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/prerender/storage-foundation.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/geolocation-API/getCurrentPosition_permission_allow.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-overflow/webkit-line-clamp-036.html [ Failure ]
 crbug.com/626703 [ Mac ] virtual/prerender/external/wpt/speculation-rules/prerender/media-autoplay.html [ Skip Timeout ]
 crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/prerender/media-autoplay.html [ Skip Timeout ]
@@ -7300,10 +7328,8 @@ crbug.com/1272017 [ Mac11-arm64 ] virtual/shared_array_buffer_on_desktop/http/te
 crbug.com/1272352 virtual/threaded/http/tests/devtools/isolated-code-cache/same-origin-test.js [ Skip ]
 crbug.com/1272352 virtual/threaded/http/tests/devtools/isolated-code-cache/stale-revalidation-test.js [ Skip ]
 crbug.com/1272376 virtual/scroll-unification/plugins/plugin-document-back-forward.html [ Failure Pass ]
-crbug.com/1272380 http/tests/devtools/bindings/bindings-multiple-frames.js [ Failure Pass ]
 
 # Flaky on mac
-crbug.com/1263709 [ Mac ] http/tests/devtools/elements/node-xpath.js [ Failure ]
 crbug.com/1300772 [ Mac ] http/tests/devtools/oopif/oopif-elements-nesting-error-page.js [ Failure Pass ]
 crbug.com/1300772 [ Mac ] http/tests/devtools/coverage/coverage-view-unused.js [ Failure Pass ]
 
@@ -7317,10 +7343,6 @@ crbug.com/1272801 http/tests/permissions/chromium/test-request-sharedworker.html
 # Flaky with setTimeout without clamp
 crbug.com/1272955 http/tests/devtools/extensions/extensions-timeline-api.js [ Failure Pass ]
 crbug.com/1302309 external/wpt/streams/transferable/writable-stream.html [ Failure Pass ]
-
-# Flaky as depends upon order of execution.
-crbug.com/1274917 external/wpt/content-security-policy/inheritance/history.sub.html [ Failure Pass Timeout ]
-crbug.com/1274917 external/wpt/content-security-policy/inheritance/history-iframe.sub.html [ Failure Pass Timeout ]
 
 # Test is very flaky (score of 223).
 crbug.com/1274919 http/tests/inspector-protocol/page/consecutive-navigate.js [ Failure Pass Timeout ]
@@ -7435,7 +7457,7 @@ crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-s
 crbug.com/1283865 external/wpt/webmessaging/without-ports/020.html [ Failure Pass ]
 
 # Sheriff 2022-01-05
-crbug.com/1284572 [ Linux ] virtual/threaded/http/tests/devtools/isolated-code-cache/same-origin-module-test.js [ Failure Pass Skip Timeout ]
+crbug.com/1284572 virtual/threaded/http/tests/devtools/isolated-code-cache/same-origin-module-test.js [ Failure Pass Skip Timeout ]
 
 # Incomplete support for mouse wheel in test_driver.
 crbug.com/1285411 external/wpt/css/css-scroll-snap/input/mouse-wheel.html [ Timeout ]
@@ -7628,5 +7650,14 @@ crbug.com/1300487 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/hid.http
 # Sheriff 2022-03-01
 crbug.com/1302043 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-after-cross-origin-redirect.html [ Pass Timeout ]
 
+# Temporarily disable to land related CL in DevTools
+crbug.com/1288883 http/tests/devtools/elements/styles-3/spectrum.js [ Skip ]
+crbug.com/1288883 http/tests/devtools/elements/styles-4/styles-invalid-color-values.js [ Skip ]
+
 # Sheriff 2022-03-03
 crbug.com/1302571 virtual/threaded/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Skip ]
+
+# Sheriff 2022-03-04
+crbug.com/1302856 [ Mac11-arm64 ] virtual/exotic-color-space/images/rgb-png-with-cmyk-color-profile.html [ Failure Pass ]
+crbug.com/1297587 [ Mac10.14 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Failure Pass ]
+crbug.com/1297587 [ Mac10.15 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Failure Pass ]

@@ -14,6 +14,7 @@
 #include "ash/components/proximity_auth/fake_lock_handler.h"
 #include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "ash/constants/ash_features.h"
+#include "ash/services/device_sync/proto/cryptauth_api.pb.h"
 #include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "ash/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "base/bind.h"
@@ -38,7 +39,6 @@
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "components/account_id/account_id.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -142,7 +142,7 @@ class EasyUnlockServiceRegularTest : public testing::Test {
     test_remote_devices_.push_back(test_other_remote_device);
 
     fake_secure_channel_client_ =
-        std::make_unique<chromeos::secure_channel::FakeSecureChannelClient>();
+        std::make_unique<secure_channel::FakeSecureChannelClient>();
     fake_device_sync_client_ =
         std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_multidevice_setup_client_ = std::make_unique<
@@ -205,11 +205,9 @@ class EasyUnlockServiceRegularTest : public testing::Test {
 
   void SetIsEnabled(bool is_enabled) {
     fake_multidevice_setup_client_->SetFeatureState(
-        chromeos::multidevice_setup::mojom::Feature::kSmartLock,
-        is_enabled
-            ? chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser
-            : chromeos::multidevice_setup::mojom::FeatureState::
-                  kDisabledByUser);
+        multidevice_setup::mojom::Feature::kSmartLock,
+        is_enabled ? multidevice_setup::mojom::FeatureState::kEnabledByUser
+                   : multidevice_setup::mojom::FeatureState::kDisabledByUser);
   }
 
   void SetEasyUnlockAllowedPolicy(bool allowed) {
@@ -296,8 +294,8 @@ class EasyUnlockServiceRegularTest : public testing::Test {
 TEST_F(EasyUnlockServiceRegularTest, NotAllowedWhenProhibited) {
   InitializeService(true /* should_initialize_all_dependencies */);
   fake_multidevice_setup_client_->SetFeatureState(
-      chromeos::multidevice_setup::mojom::Feature::kSmartLock,
-      chromeos::multidevice_setup::mojom::FeatureState::kProhibitedByPolicy);
+      multidevice_setup::mojom::Feature::kSmartLock,
+      multidevice_setup::mojom::FeatureState::kProhibitedByPolicy);
 
   EXPECT_FALSE(easy_unlock_service_regular_->IsAllowed());
 }

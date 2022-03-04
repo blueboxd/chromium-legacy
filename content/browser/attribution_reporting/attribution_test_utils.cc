@@ -650,11 +650,18 @@ AggregatableSourcesMojoBuilder::Build() const {
   return sources_.Clone();
 }
 
+bool operator==(const AttributionTrigger::EventTriggerData& a,
+                const AttributionTrigger::EventTriggerData& b) {
+  const auto tie = [](const AttributionTrigger::EventTriggerData& t) {
+    return std::make_tuple(t.data, t.priority, t.dedup_key, t.source_type);
+  };
+  return tie(a) == tie(b);
+}
+
 bool operator==(const AttributionTrigger& a, const AttributionTrigger& b) {
   const auto tie = [](const AttributionTrigger& t) {
-    return std::make_tuple(t.trigger_data(), t.conversion_destination(),
-                           t.reporting_origin(), t.event_source_trigger_data(),
-                           t.priority(), t.dedup_key());
+    return std::make_tuple(t.conversion_destination(), t.reporting_origin(),
+                           t.debug_key(), t.event_triggers());
   };
   return tie(a) == tie(b);
 }
@@ -790,37 +797,42 @@ bool operator==(const DeactivatedSource& a, const DeactivatedSource& b) {
   return tie(a) == tie(b);
 }
 
-std::ostream& operator<<(std::ostream& out, AttributionTrigger::Result status) {
+std::ostream& operator<<(std::ostream& out,
+                         AttributionTrigger::EventLevelResult status) {
   switch (status) {
-    case AttributionTrigger::Result::kSuccess:
+    case AttributionTrigger::EventLevelResult::kSuccess:
       out << "success";
       break;
-    case AttributionTrigger::Result::kSuccessDroppedLowerPriority:
+    case AttributionTrigger::EventLevelResult::kSuccessDroppedLowerPriority:
       out << "successDroppedLowerPriority";
       break;
-    case AttributionTrigger::Result::kInternalError:
+    case AttributionTrigger::EventLevelResult::kInternalError:
       out << "internalError";
       break;
-    case AttributionTrigger::Result::kNoCapacityForConversionDestination:
+    case AttributionTrigger::EventLevelResult::
+        kNoCapacityForConversionDestination:
       out << "insufficientDestinationCapacity";
       break;
-    case AttributionTrigger::Result::kNoMatchingImpressions:
+    case AttributionTrigger::EventLevelResult::kNoMatchingImpressions:
       out << "noMatchingSources";
       break;
-    case AttributionTrigger::Result::kDeduplicated:
+    case AttributionTrigger::EventLevelResult::kDeduplicated:
       out << "deduplicated";
       break;
-    case AttributionTrigger::Result::kExcessiveAttributions:
+    case AttributionTrigger::EventLevelResult::kExcessiveAttributions:
       out << "excessiveAttributions";
       break;
-    case AttributionTrigger::Result::kPriorityTooLow:
+    case AttributionTrigger::EventLevelResult::kPriorityTooLow:
       out << "priorityTooLow";
       break;
-    case AttributionTrigger::Result::kDroppedForNoise:
+    case AttributionTrigger::EventLevelResult::kDroppedForNoise:
       out << "noised";
       break;
-    case AttributionTrigger::Result::kExcessiveReportingOrigins:
+    case AttributionTrigger::EventLevelResult::kExcessiveReportingOrigins:
       out << "excessiveReportingOrigins";
+      break;
+    case AttributionTrigger::EventLevelResult::kNoMatchingEventTriggers:
+      out << "noMatchingEventTriggers";
       break;
   }
   return out;
@@ -882,23 +894,33 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
+std::ostream& operator<<(
+    std::ostream& out,
+    const AttributionTrigger::EventTriggerData& event_trigger) {
+  return out << "{data=" << event_trigger.data
+             << ",priority=" << event_trigger.priority << ",dedup_key="
+             << (event_trigger.dedup_key
+                     ? base::NumberToString(*event_trigger.dedup_key)
+                     : "null")
+             << ",source_type=" << event_trigger.source_type << "}";
+}
+
 std::ostream& operator<<(std::ostream& out,
                          const AttributionTrigger& conversion) {
-  return out << "{trigger_data=" << conversion.trigger_data()
-             << ",conversion_destination="
-             << conversion.conversion_destination().Serialize()
-             << ",reporting_origin=" << conversion.reporting_origin()
-             << ",event_source_trigger_data="
-             << conversion.event_source_trigger_data()
-             << ",priority=" << conversion.priority() << ",dedup_key="
-             << (conversion.dedup_key()
-                     ? base::NumberToString(*conversion.dedup_key())
-                     : "null")
-             << ",debug_key="
-             << (conversion.debug_key()
-                     ? base::NumberToString(*conversion.debug_key())
-                     : "null")
-             << "}";
+  out << "{conversion_destination="
+      << conversion.conversion_destination().Serialize()
+      << ",reporting_origin=" << conversion.reporting_origin() << ",debug_key="
+      << (conversion.debug_key() ? base::NumberToString(*conversion.debug_key())
+                                 : "null")
+      << "event_triggers=[";
+
+  const char* separator = "";
+  for (const auto& event_trigger : conversion.event_triggers()) {
+    out << separator << event_trigger;
+    separator = ", ";
+  }
+
+  return out << "]}";
 }
 
 std::ostream& operator<<(std::ostream& out,

@@ -3015,7 +3015,7 @@
           ],
         },
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_fuchsia_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fuchsia_telemetry_experimental_tests',
           'gtest_tests': 'fuchsia_experimental_gtests',
         },
       },
@@ -3036,7 +3036,7 @@
           ],
         },
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_fuchsia_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fuchsia_telemetry_experimental_tests',
           'gtest_tests': 'fuchsia_experimental_gtests',
         },
       },
@@ -3604,6 +3604,19 @@
       'win-annotator-rel': {
         'test_suites': {
           'scripts': 'test_traffic_annotation_auditor_script',
+        },
+      },
+      'win-archive-dbg (reclient shadow)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'win-archive-rel (reclient shadow)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'public_build_scripts',
         },
       },
       'win-backuprefptr-x64-fyi-rel': {
@@ -4939,6 +4952,7 @@
           ],
         },
         'test_suites': {
+          'gpu_telemetry_tests': 'gpu_fuchsia_telemetry_tests',
           'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'fuchsia_isolated_scripts',
         },

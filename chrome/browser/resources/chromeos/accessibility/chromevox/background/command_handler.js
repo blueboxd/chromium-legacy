@@ -5,7 +5,9 @@
 /**
  * @fileoverview ChromeVox commands.
  */
-
+import {DesktopAutomationInterface} from './desktop_automation_interface.js';
+import {GestureInterface} from './gesture_interface.js';
+import {SmartStickyMode} from './smart_sticky_mode.js';
 
 const ActionType = chrome.automation.ActionType;
 const AutomationEvent = chrome.automation.AutomationEvent;
@@ -414,8 +416,8 @@ export class CommandHandler extends CommandHandlerInterface {
         break;
       case 'nativeNextCharacter':
       case 'nativePreviousCharacter':
-        if (DesktopAutomationHandler.instance.textEditHandler) {
-          DesktopAutomationHandler.instance.textEditHandler
+        if (DesktopAutomationInterface.instance.textEditHandler) {
+          DesktopAutomationInterface.instance.textEditHandler
               .injectInferredIntents([{
                 command: chrome.automation.IntentCommandType.MOVE_SELECTION,
                 textBoundary: chrome.automation.IntentTextBoundaryType.CHARACTER
@@ -435,8 +437,8 @@ export class CommandHandler extends CommandHandlerInterface {
         break;
       case 'nativeNextWord':
       case 'nativePreviousWord':
-        if (DesktopAutomationHandler.instance.textEditHandler) {
-          DesktopAutomationHandler.instance.textEditHandler
+        if (DesktopAutomationInterface.instance.textEditHandler) {
+          DesktopAutomationInterface.instance.textEditHandler
               .injectInferredIntents([{
                 command: chrome.automation.IntentCommandType.MOVE_SELECTION,
                 textBoundary: command === 'nativeNextWord' ?
@@ -890,7 +892,7 @@ export class CommandHandler extends CommandHandlerInterface {
         if (!ChromeVoxState.instance.pageSel_) {
           ChromeVoxState.instance.pageSel_ =
               ChromeVoxState.instance.currentRange;
-          DesktopAutomationHandler.instance.ignoreDocumentSelectionFromAction(
+          DesktopAutomationInterface.instance.ignoreDocumentSelectionFromAction(
               true);
         } else {
           const root = ChromeVoxState.instance.currentRange.start.node.root;
@@ -905,8 +907,8 @@ export class CommandHandler extends CommandHandlerInterface {
                     .format('@end_selection')
                     .withSpeechAndBraille(sel, sel, OutputEventType.NAVIGATE)
                     .go();
-            DesktopAutomationHandler.instance.ignoreDocumentSelectionFromAction(
-                false);
+            DesktopAutomationInterface.instance
+                .ignoreDocumentSelectionFromAction(false);
           }
           ChromeVoxState.instance.pageSel_ = null;
           return false;
@@ -1367,7 +1369,7 @@ export class CommandHandler extends CommandHandlerInterface {
       return true;
     }
 
-    const textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
+    const textEditHandler = DesktopAutomationInterface.instance.textEditHandler;
     if (!textEditHandler ||
         !AutomationUtil.isDescendantOf(
             ChromeVoxState.instance.currentRange.start.node,

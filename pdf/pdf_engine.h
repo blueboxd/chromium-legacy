@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "pdf/document_layout.h"
-#include "pdf/ppapi_migration/callback.h"
 #include "printing/mojom/print.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -32,10 +31,6 @@
 #endif
 
 class SkBitmap;
-
-namespace base {
-class Location;
-}  // namespace base
 
 namespace blink {
 class WebInputEvent;
@@ -244,10 +239,6 @@ class PDFEngine {
     // Notifies the client that the document has failed to load.
     virtual void DocumentLoadFailed() {}
 
-    // Asks the client to set the last plugin instance when applicable.
-    // TODO(crbug.com/702993): Remove after migrating away from PPAPI.
-    virtual void SetLastPluginInstance() {}
-
     // Notifies that an unsupported feature in the PDF was encountered.
     virtual void DocumentHasUnsupportedFeature(const std::string& feature) {}
 
@@ -289,17 +280,6 @@ class PDFEngine {
     // viewers.
     // See https://crbug.com/312882 for an example.
     virtual bool IsValidLink(const std::string& url) = 0;
-
-    // Schedules work to be executed on a main thread after a specific delay.
-    // The `result` parameter will be passed as the argument to the `callback`.
-    // `result` is needed sometimes to emulate calls of some callbacks, but it's
-    // not always needed. `delay` should be no longer than `INT32_MAX`
-    // milliseconds for the Pepper plugin implementation to prevent integer
-    // overflow.
-    virtual void ScheduleTaskOnMainThread(const base::Location& from_here,
-                                          ResultCallback callback,
-                                          int32_t result,
-                                          base::TimeDelta delay) = 0;
   };
 
   virtual ~PDFEngine() = default;

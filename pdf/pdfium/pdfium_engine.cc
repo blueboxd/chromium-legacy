@@ -549,9 +549,6 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client,
   IFSDK_PAUSE::version = 1;
   IFSDK_PAUSE::user = nullptr;
   IFSDK_PAUSE::NeedToPauseNow = Pause_NeedToPauseNow;
-
-  // PreviewModeClient does not know its pp::Instance.
-  SetLastInstance();
 }
 
 PDFiumEngine::~PDFiumEngine() {
@@ -592,11 +589,9 @@ void PDFiumEngine::PluginSizeUpdated(const gfx::Size& size) {
     // asynchronously to avoid observable differences between this path and the
     // normal loading path.
     document_pending_ = false;
-    client_->ScheduleTaskOnMainThread(
-        FROM_HERE,
-        base::BindOnce(&PDFiumEngine::FinishLoadingDocument,
-                       weak_factory_.GetWeakPtr()),
-        /*result=*/0, base::TimeDelta());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&PDFiumEngine::FinishLoadingDocument,
+                                  weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -823,7 +818,7 @@ void PDFiumEngine::OnNewDataReceived() {
 
 void PDFiumEngine::OnDocumentComplete() {
   if (doc())
-    return FinishLoadingDocument(0);
+    return FinishLoadingDocument();
 
   document_->file_access().m_FileLen = doc_loader_->GetDocumentSize();
   if (!fpdf_availability()) {
@@ -840,7 +835,7 @@ void PDFiumEngine::OnDocumentCanceled() {
     OnDocumentComplete();
 }
 
-void PDFiumEngine::FinishLoadingDocument(int32_t /*unused_but_required*/) {
+void PDFiumEngine::FinishLoadingDocument() {
   // Note that doc_loader_->IsDocumentComplete() may not be true here if
   // called via `OnDocumentCanceled()`.
   DCHECK(doc());
@@ -1014,8 +1009,6 @@ std::vector<uint8_t> PDFiumEngine::PrintPagesAsRasterPdf(
     return std::vector<uint8_t>();
 
   KillFormFocus();
-
-  SetLastInstance();
 
   return print_.PrintPagesAsPdf(page_numbers, print_params);
 }
@@ -1819,11 +1812,10 @@ void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
   if (doc_loader_set_for_testing_) {
     ContinueFind(case_sensitive ? 1 : 0);
   } else {
-    client_->ScheduleTaskOnMainThread(
-        FROM_HERE,
-        base::BindOnce(&PDFiumEngine::ContinueFind,
-                       find_weak_factory_.GetWeakPtr()),
-        case_sensitive ? 1 : 0, base::TimeDelta());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&PDFiumEngine::ContinueFind,
+                                  find_weak_factory_.GetWeakPtr(),
+                                  case_sensitive ? 1 : 0));
   }
 }
 
@@ -2793,7 +2785,7 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
   LoadBody();
 
   if (doc_loader_->IsDocumentComplete())
-    FinishLoadingDocument(0);
+    FinishLoadingDocument();
 }
 
 void PDFiumEngine::LoadPageInfo() {
@@ -3148,7 +3140,6 @@ bool PDFiumEngine::ContinuePaint(int progressive_index, SkBitmap& image_data) {
   DCHECK_LT(static_cast<size_t>(progressive_index), progressive_paints_.size());
 
   last_progressive_start_time_ = base::Time::Now();
-  SetLastInstance();
 
   int page_index = progressive_paints_[progressive_index].page_index();
   DCHECK(PageIndexInBounds(page_index));
@@ -3646,7 +3637,6 @@ void PDFiumEngine::SetCurrentPage(int index) {
     FORM_DoPageAAction(old_page, form(), FPDFPAGE_AACTION_CLOSE);
   }
   most_visible_page_ = index;
-  SetLastInstance();
   if (most_visible_page_ != -1 && called_do_document_action_) {
     FPDF_PAGE new_page = pages_[most_visible_page_]->GetPage();
     FORM_DoPageAAction(new_page, form(), FPDFPAGE_AACTION_OPEN);
@@ -4313,10 +4303,6 @@ void PDFiumEngine::MaybeRequestPendingThumbnail(int page_index) {
       pending_thumbnail.device_pixel_ratio,
       std::move(pending_thumbnail.send_callback));
   pending_thumbnails_.erase(it);
-}
-
-void PDFiumEngine::SetLastInstance() {
-  client_->SetLastPluginInstance();
 }
 
 PDFiumEngine::ProgressivePaint::ProgressivePaint(int index,

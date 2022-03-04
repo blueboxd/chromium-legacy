@@ -452,6 +452,10 @@ module.exports = {
     'valid-jsdoc': 'off',
     'require-jsdoc': 'off',
 
+    // This is not useful since ES6 and contradicts to
+    // go/tsstyle#function-declarations.
+    'no-inner-declarations': 'off',
+
     // go/tsstyle#omit-comments-that-are-redundant-with-typescript
     'jsdoc/no-types': 'error',
     'jsdoc/require-jsdoc': [
@@ -545,6 +549,30 @@ module.exports = {
             ' > FunctionExpression:not([id])',
         message: 'Use named function or arrow function instead. ' +
             '(go/tsstyle#function-declarations)',
+      },
+      // Disallow local function declaration with arrow function without
+      // accessing this. This might have some false negative if the "this" is
+      // accessed deep inside the function in another scope, but should be
+      // rare. (go/tsstyle#function-declarations)
+      {
+        selector: 'VariableDeclarator:not(:has(.id[typeAnnotation]))' +
+            ' > ArrowFunctionExpression.init:not(:has(ThisExpression))',
+        message: 'Use named function to declare local function. ' +
+            '(go/tsstyle#function-declarations)',
+      },
+      // Disallow private fields. (go/tsstyle#private-fields)
+      {
+        selector: 'TSPrivateIdentifier',
+        message: 'Private fields are not allowed. (go/tsstyle#private-fields)',
+      },
+      // Disallow explicit boolean coercions in condition.
+      // (go/tsstyle#type-coercion-implicit)
+      {
+        selector: ':matches(IfStatement, WhileStatement)' +
+            ' > UnaryExpression.test[operator="!"]' +
+            ' > UnaryExpression.argument[operator="!"]',
+        message: 'Explicit boolean coercion is not needed in conditions. ' +
+            '(go/tsstyle#type-coercion-implicit)',
       },
     ],
 
@@ -658,6 +686,15 @@ module.exports = {
     'cca/parameter-comment-format': 'error',
 
     'cca/generic-parameter-on-declaration-type': 'error',
+
+    // go/tsstyle#constructors
+    'new-parens': 'error',
+
+    // go/tsstyle#assignment-in-control-statements
+    'no-cond-assign': 'error',
+
+    // go/tsstyle#switch-statements
+    'default-case': 'error',
   }),
   overrides: [{
     files: ['**/*.ts'],

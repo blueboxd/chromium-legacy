@@ -36,6 +36,22 @@
 
 namespace blink {
 
+namespace {
+
+bool IsResponseParseError(
+    attribution_response_parsing::ResponseParseStatus status) {
+  switch (status) {
+    case attribution_response_parsing::ResponseParseStatus::kSuccess:
+    case attribution_response_parsing::ResponseParseStatus::kNotFound:
+      return false;
+    case attribution_response_parsing::ResponseParseStatus::kParseError:
+    case attribution_response_parsing::ResponseParseStatus::kInvalidFormat:
+      return true;
+  }
+}
+
+}  // namespace
+
 AttributionSrcLoader::AttributionSrcLoader(LocalFrame* frame)
     : local_frame_(frame) {}
 
@@ -159,7 +175,12 @@ void AttributionSrcLoader::HandleResponseHeaders(
       context.type == AttributionSrcType::kUndetermined ||
       context.type == AttributionSrcType::kTrigger;
   if (can_process_trigger &&
-      headers.Contains(http_names::kAttributionReportingRegisterEventTrigger)) {
+      (headers.Contains(
+           http_names::kAttributionReportingRegisterEventTrigger) ||
+       (headers.Contains(
+            http_names::kAttributionReportingRegisterAggregatableTriggerData) &&
+        headers.Contains(
+            http_names::kAttributionReportingRegisterAggregatableValues)))) {
     context.type = AttributionSrcType::kTrigger;
     HandleTriggerRegistration(resource, response, context);
   }
@@ -197,6 +218,9 @@ void AttributionSrcLoader::HandleSourceRegistration(
   auto aggregatable_sources =
       attribution_response_parsing::ParseAttributionAggregatableSources(
           aggregatable_sources_json);
+  if (IsResponseParseError(aggregatable_sources.status))
+    return;
+
   source_data->aggregatable_sources = std::move(aggregatable_sources.value);
 
   context.data_host->SourceDataAvailable(std::move(source_data));
@@ -218,12 +242,42 @@ void AttributionSrcLoader::HandleTriggerRegistration(
       SecurityOrigin::Create(response.CurrentRequestUrl());
 
   // Populate event triggers.
-  bool success = attribution_response_parsing::ParseEventTriggerData(
-      response.HttpHeaderField(
-          http_names::kAttributionReportingRegisterEventTrigger),
-      trigger_data->event_triggers);
-  if (!success)
+  const AtomicString& event_triggers_json = response.HttpHeaderField(
+      http_names::kAttributionReportingRegisterEventTrigger);
+  if (!event_triggers_json.IsNull() &&
+      !attribution_response_parsing::ParseEventTriggerData(
+          event_triggers_json, trigger_data->event_triggers)) {
     return;
+  }
+
+  const AtomicString& aggregatable_trigger_json = response.HttpHeaderField(
+      http_names::kAttributionReportingRegisterAggregatableTriggerData);
+  auto aggregatable_trigger =
+      attribution_response_parsing::ParseAttributionAggregatableTrigger(
+          aggregatable_trigger_json);
+  if (IsResponseParseError(aggregatable_trigger.status))
+    return;
+
+  trigger_data->aggregatable_trigger = std::move(aggregatable_trigger.value);
+
+  const AtomicString& aggregatable_values_json = response.HttpHeaderField(
+      http_names::kAttributionReportingRegisterAggregatableValues);
+  auto aggregatable_values =
+      attribution_response_parsing::ParseAttributionAggregatableValues(
+          aggregatable_values_json);
+  if (IsResponseParseError(aggregatable_values.status))
+    return;
+
+  trigger_data->aggregatable_values = std::move(aggregatable_values.value);
+
+  trigger_data->filters = mojom::blink::AttributionFilterData::New();
+
+  const AtomicString& filter_json =
+      response.HttpHeaderField(http_names::kAttributionReportingFilters);
+  if (!filter_json.IsNull() && !attribution_response_parsing::ParseFilters(
+                                   filter_json, *trigger_data->filters)) {
+    return;
+  }
 
   context.data_host->TriggerDataAvailable(std::move(trigger_data));
 }

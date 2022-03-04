@@ -100,6 +100,7 @@
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/heavy_ad_intervention/heavy_ad_features.h"
 #include "components/history_clusters/core/features.h"
+#include "components/history_clusters/core/on_device_clustering_features.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/lens/lens_features.h"
@@ -989,6 +990,41 @@ const FeatureEntry::FeatureVariation kPageContentAnnotationsVariations[] = {
     {"All Annotations and Persistence on Title",
      kPageContentAnnotationsTitleParams,
      std::size(kPageContentAnnotationsTitleParams), nullptr},
+};
+const FeatureEntry::FeatureParam
+    kJourneysOnDeviceClusteringLabelingNoContentClusteringParams[] = {
+        {"should_label_clusters", "true"},
+        {"content_clustering_enabled", "false"},
+};
+const FeatureEntry::FeatureParam
+    kJourneysOnDeviceClusteringNoContentClusteringParams[] = {
+        {"should_label_clusters", "false"},
+        {"content_clustering_enabled", "false"},
+};
+const FeatureEntry::FeatureParam
+    kJourneysOnDeviceClusteringLabelingWithContentClusteringParams[] = {
+        {"should_label_clusters", "true"},
+        {"content_clustering_enabled", "true"},
+};
+const FeatureEntry::FeatureParam
+    kJourneysOnDeviceClusteringContentClusteringParams[] = {
+        {"should_label_clusters", "false"},
+        {"content_clustering_enabled", "true"},
+};
+const FeatureEntry::FeatureVariation kJourneysOnDeviceClusteringVariations[] = {
+    {"Label Clusters and No Content Clustering",
+     kJourneysOnDeviceClusteringLabelingNoContentClusteringParams,
+     std::size(kJourneysOnDeviceClusteringLabelingNoContentClusteringParams),
+     nullptr},
+    {"No Content Clustering",
+     kJourneysOnDeviceClusteringNoContentClusteringParams,
+     std::size(kJourneysOnDeviceClusteringNoContentClusteringParams), nullptr},
+    {"Label Clusters and Content Clustering",
+     kJourneysOnDeviceClusteringLabelingWithContentClusteringParams,
+     std::size(kJourneysOnDeviceClusteringLabelingWithContentClusteringParams),
+     nullptr},
+    {"Content Clustering", kJourneysOnDeviceClusteringContentClusteringParams,
+     std::size(kJourneysOnDeviceClusteringContentClusteringParams), nullptr},
 };
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
@@ -2594,6 +2630,9 @@ constexpr char kBorealisDiskManagementInternalName[] =
 constexpr char kBorealisForceBetaClientInternalName[] =
     "borealis-force-beta-client";
 constexpr char kBorealisLinuxModeInternalName[] = "borealis-linux-mode";
+// This differs slightly from its symbol's name since "enabled" is used
+// internally to refer to whether borealis is installed or not.
+constexpr char kBorealisPermittedInternalName[] = "borealis-enabled";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -2695,25 +2734,28 @@ const FeatureEntry::Choice kDocumentTransitionSlowdownFactorChoices[] = {
 // sample.
 
 const FeatureEntry::FeatureParam kSnoopingProtectionPrecision[] = {
-    {"SnoopingProtection_filter_config_case", "3"},
-    {"SnoopingProtection_average_window_size", "3"},
-    {"SnoopingProtection_positive_score_threshold", "-30"},
-    {"SnoopingProtection_negative_score_threshold", "-30"},
-    {"SnoopingProtection_default_uncertain_score", "-128"}};
+    {"SnoopingProtection_filter_config_case", "2"},
+    {"SnoopingProtection_positive_count_threshold", "1"},
+    {"SnoopingProtection_negative_count_threshold", "1"},
+    {"SnoopingProtection_uncertain_count_threshold", "1"},
+    {"SnoopingProtection_positive_score_threshold", "-50"},
+    {"SnoopingProtection_negative_score_threshold", "-50"}};
 
 const FeatureEntry::FeatureParam kSnoopingProtectionConfidence[] = {
-    {"SnoopingProtection_filter_config_case", "3"},
-    {"SnoopingProtection_average_window_size", "5"},
-    {"SnoopingProtection_positive_score_threshold", "-30"},
-    {"SnoopingProtection_negative_score_threshold", "-30"},
-    {"SnoopingProtection_default_uncertain_score", "-128"}};
+    {"SnoopingProtection_filter_config_case", "2"},
+    {"SnoopingProtection_positive_count_threshold", "2"},
+    {"SnoopingProtection_negative_count_threshold", "2"},
+    {"SnoopingProtection_uncertain_count_threshold", "2"},
+    {"SnoopingProtection_positive_score_threshold", "-50"},
+    {"SnoopingProtection_negative_score_threshold", "-50"}};
 
 const FeatureEntry::FeatureParam kSnoopingProtectionRecall[] = {
-    {"SnoopingProtection_filter_config_case", "3"},
-    {"SnoopingProtection_average_window_size", "3"},
+    {"SnoopingProtection_filter_config_case", "2"},
+    {"SnoopingProtection_positive_count_threshold", "1"},
+    {"SnoopingProtection_negative_count_threshold", "1"},
+    {"SnoopingProtection_uncertain_count_threshold", "1"},
     {"SnoopingProtection_positive_score_threshold", "-70"},
-    {"SnoopingProtection_negative_score_threshold", "-70"},
-    {"SnoopingProtection_default_uncertain_score", "-128"}};
+    {"SnoopingProtection_negative_score_threshold", "-70"}};
 
 const FeatureEntry::FeatureVariation kSnoopingProtectionVariations[] = {
     {"Precise", kSnoopingProtectionPrecision,
@@ -4690,9 +4732,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"eche-swa", flag_descriptions::kEcheSWAName,
      flag_descriptions::kEcheSWADescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEcheSWA)},
-    {"eche-swa-resizing", flag_descriptions::kEcheSWAResizingName,
-     flag_descriptions::kEcheSWAResizingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kEcheSWAResizing)},
     {"eche-swa-debug-mode", flag_descriptions::kEcheSWADebugModeName,
      flag_descriptions::kEcheSWADebugModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEcheSWADebugMode)},
@@ -5002,6 +5041,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kJourneysOmniboxActionName,
      flag_descriptions::kJourneysOmniboxActionDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(history_clusters::internal::kOmniboxAction)},
+
+    {"history-journeys-on-device-clustering",
+     flag_descriptions::kJourneysOnDeviceClusteringBackendName,
+     flag_descriptions::kJourneysOnDeviceClusteringBackendDescription,
+     kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         history_clusters::features::kOnDeviceClustering,
+         kJourneysOnDeviceClusteringVariations,
+         "HistoryJourneysOnDeviceClusteringBackend")},
 
     {"page-content-annotations", flag_descriptions::kPageContentAnnotationsName,
      flag_descriptions::kPageContentAnnotationsDescription, kOsDesktop,
@@ -5343,11 +5391,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDownloadAutoResumptionNativeName,
      flag_descriptions::kDownloadAutoResumptionNativeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(download::features::kDownloadAutoResumptionNative)},
-
-    {"download-progress-message",
-     flag_descriptions::kDownloadProgressMessageName,
-     flag_descriptions::kDownloadProgressMessageDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kDownloadProgressMessage)},
 
     {"download-later", flag_descriptions::kDownloadLaterName,
      flag_descriptions::kDownloadLaterDescription, kOsAndroid,
@@ -7682,10 +7725,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-phone-hub-camera-roll", flag_descriptions::kPhoneHubCameraRollName,
      flag_descriptions::kPhoneHubCameraRollDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kPhoneHubCameraRoll)},
-
-    {"enable-phone-hub-recent-apps", flag_descriptions::kPhoneHubRecentAppsName,
-     flag_descriptions::kPhoneHubRecentAppsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kPhoneHubRecentApps)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"sameparty-cookies-considered-first-party",
@@ -7713,6 +7752,9 @@ const FeatureEntry kFeatureEntries[] = {
     {kBorealisLinuxModeInternalName, flag_descriptions::kBorealisLinuxModeName,
      flag_descriptions::kBorealisLinuxModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kBorealisLinuxMode)},
+    {kBorealisPermittedInternalName, flag_descriptions::kBorealisPermittedName,
+     flag_descriptions::kBorealisPermittedDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kBorealisPermitted)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"https-only-mode-setting", flag_descriptions::kHttpsOnlyModeName,
@@ -7999,12 +8041,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kLargeFaviconFromGoogle,
                                     kLargeFaviconFromGoogleVariations,
                                     "LargeFaviconFromGoogle")},
-#if BUILDFLAG(IS_ANDROID)
-    {"web-bluetooth-request-larger-mtu",
-     flag_descriptions::kWebBluetoothRequestLargerMtuName,
-     flag_descriptions::kWebBluetoothRequestLargerMtuDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kWebBluetoothRequestLargerMtu)},
-#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
     {"request-desktop-site-exceptions",
@@ -8221,6 +8257,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReduceUserAgentMinorVersionDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kReduceUserAgentMinorVersion)},
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"enable-variable-refresh-rate",
+     flag_descriptions::kEnableVariableRefreshRateName,
+     flag_descriptions::kEnableVariableRefreshRateDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kEnableVariableRefreshRate)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -8324,6 +8367,10 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   }
 
   if (!strcmp(kBorealisLinuxModeInternalName, entry.internal_name)) {
+    return !base::FeatureList::IsEnabled(features::kBorealis);
+  }
+
+  if (!strcmp(kBorealisPermittedInternalName, entry.internal_name)) {
     return !base::FeatureList::IsEnabled(features::kBorealis);
   }
 

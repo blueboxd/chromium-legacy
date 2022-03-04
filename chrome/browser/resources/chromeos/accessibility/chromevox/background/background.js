@@ -4,7 +4,10 @@
 
 import {InstanceChecker} from '../../common/instance_checker.js';
 
+import {BrailleCommandHandler} from './braille_command_handler.js';
 import {CommandHandler} from './command_handler.js';
+import {DesktopAutomationHandler} from './desktop_automation_handler.js';
+import {DesktopAutomationInterface} from './desktop_automation_interface.js';
 import {DownloadHandler} from './download_handler.js';
 import {Earcons} from './earcons.js';
 import {FindHandler} from './find_handler.js';
@@ -236,7 +239,7 @@ export class Background extends ChromeVoxState {
       if (pageRootStart !== pageRootEnd || pageRootStart !== curRootStart ||
           pageRootEnd !== curRootEnd) {
         o.format('@end_selection');
-        DesktopAutomationHandler.instance.ignoreDocumentSelectionFromAction(
+        DesktopAutomationInterface.instance.ignoreDocumentSelectionFromAction(
             false);
         this.pageSel_ = null;
       } else {

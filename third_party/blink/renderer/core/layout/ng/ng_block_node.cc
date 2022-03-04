@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_row_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_scripts_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_space_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_token_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_under_over_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
@@ -76,6 +77,7 @@
 #include "third_party/blink/renderer/core/mathml/mathml_radical_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_scripts_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_space_element.h"
+#include "third_party/blink/renderer/core/mathml/mathml_token_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_under_over_element.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -143,10 +145,11 @@ NOINLINE void DetermineMathMLAlgorithmAndRun(
     } else if (IsA<MathMLPaddedElement>(element)) {
       CreateAlgorithmAndRun<NGMathPaddedLayoutAlgorithm>(params, callback);
       return;
-    } else if (IsA<MathMLElement>(element) &&
-               To<MathMLElement>(*element).IsTokenElement()) {
+    } else if (IsA<MathMLTokenElement>(element)) {
       if (IsOperatorWithSpecialShaping(params.node))
         CreateAlgorithmAndRun<NGMathOperatorLayoutAlgorithm>(params, callback);
+      else if (IsTextOnlyToken(params.node))
+        CreateAlgorithmAndRun<NGMathTokenLayoutAlgorithm>(params, callback);
       else
         CreateAlgorithmAndRun<NGBlockLayoutAlgorithm>(params, callback);
       return;
@@ -417,11 +420,6 @@ const NGLayoutResult* NGBlockNode::Layout(
   const NGLayoutResult* layout_result =
       box_->CachedLayoutResult(constraint_space, break_token, early_break,
                                &fragment_geometry, &cache_status);
-  if (UNLIKELY(DevtoolsReadonlyLayoutScope::InDevtoolsLayout())) {
-    DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
-    DCHECK(!box_->NeedsLayoutOverflowRecalc());
-    return layout_result;
-  }
   if (cache_status == NGLayoutCacheStatus::kHit) {
     DCHECK(layout_result);
 
@@ -1761,13 +1759,6 @@ const NGLayoutResult* NGBlockNode::RunLegacyLayout(
                                                             : old_layout_result;
   if (constraint_space.CacheSlot() == NGCacheSlot::kLayout && !layout_result)
     layout_result = old_measure_result;
-
-  if (UNLIKELY(DevtoolsReadonlyLayoutScope::InDevtoolsLayout())) {
-    DCHECK(layout_result);
-    DCHECK(!box_->NeedsLayout());
-    DCHECK(MaySkipLegacyLayout(*this, *layout_result, constraint_space));
-    return layout_result;
-  }
 
   // We need to force a layout on the child if the constraint space given will
   // change the layout.

@@ -8,6 +8,8 @@ import("//tools/polymer/html_to_js.gni")
 import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 
+assert(!is_android && !is_ios)
+
 preprocess_folder_tmp = "$root_gen_dir/ui/webui/resources/preprocessed/cr_components/app_management_tmp"
 preprocess_folder =
     "$root_gen_dir/ui/webui/resources/preprocessed/cr_components/app_management"
@@ -45,6 +47,25 @@ mojom("mojo_bindings") {
     "//components/services/app_service/public/mojom",
     "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
+  ]
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "app_management.mojom.Permission"
+          cpp = "::apps::PermissionPtr"
+          move_only = true
+        },
+      ]
+      traits_headers = [
+        "//ui/webui/resources/cr_components/app_management/app_management_mojom_traits.h",
+        "//components/services/app_service/public/cpp/permission.h",
+      ]
+      traits_sources = [ "//ui/webui/resources/cr_components/app_management/app_management_mojom_traits.cc" ]
+      traits_public_deps =
+          [ "//components/services/app_service/public/cpp:app_types" ]
+    },
   ]
 }
 
@@ -104,4 +125,17 @@ generate_grd("build_grdp") {
   deps = [ ":build_ts" ]
   manifest_files = [ "$target_gen_dir/tsconfig.manifest" ]
   resource_path_prefix = "cr_components/app_management"
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "app_management_mojom_traits_unittests.cc" ]
+
+  deps = [
+    ":mojo_bindings",
+    "//base/test:test_support",
+    "//chrome/test:test_support",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//testing/gtest",
+  ]
 }

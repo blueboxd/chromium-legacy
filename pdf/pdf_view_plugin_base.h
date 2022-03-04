@@ -62,8 +62,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
                           public PaintManager::Client,
                           public PreviewModeClient::Client {
  public:
-  using PDFEngine::Client::ScheduleTaskOnMainThread;
-
   // Do not save files with over 100 MB. This cap should be kept in sync with
   // and is also enforced in chrome/browser/resources/pdf/pdf_viewer.js.
   static constexpr size_t kMaximumSavedFileSize = 100 * 1000 * 1000;
@@ -229,12 +227,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Creates a URL loader and allows it to access all urls, i.e. not just the
   // frame's origin.
   virtual std::unique_ptr<UrlLoader> CreateUrlLoaderInternal() = 0;
-
-  // Rewrites the request URL just before sending to the URL loader.
-  //
-  // TODO(crbug.com/1238829): This is a workaround for Pepper not supporting
-  // chrome-untrusted://print/ URLs.
-  virtual std::string RewriteRequestUrl(base::StringPiece url) const;
 
   bool HandleInputEvent(const blink::WebInputEvent& event);
 
@@ -480,7 +472,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
   void PrepareForFirstPaint(std::vector<PaintReadyRect>& ready);
 
   // Callback to clear deferred invalidates after painting finishes.
-  void ClearDeferredInvalidates(int32_t /*unused_but_required*/);
+  void ClearDeferredInvalidates();
 
   // Sends the attachments data.
   void SendAttachments();
@@ -497,7 +489,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Starts loading accessibility information.
   void LoadAccessibility();
 
-  void ResetRecentlySentFindUpdate(int32_t /*unused_but_required*/);
+  void ResetRecentlySentFindUpdate();
 
   // Records metrics about the attachment types.
   void RecordAttachmentTypes();

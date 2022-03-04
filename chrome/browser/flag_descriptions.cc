@@ -506,6 +506,15 @@ const char kBorealisLinuxModeName[] = "Borealis Linux Mode";
 const char kBorealisLinuxModeDescription[] =
     "Do not run ChromeOS-specific code in the client.";
 
+// For UX reasons we prefer "enabled", but that is used internally to refer to
+// whether borealis is installed or not, so the name of the variable is a bit
+// different to the user-facing name.
+const char kBorealisPermittedName[] = "Borealis Enabled";
+const char kBorealisPermittedDescription[] =
+    "Allows Borealis to run on your device. Borealis may still be blocked for "
+    "other reasons, including: administrator settings, device hardware "
+    "capabilities, or other security measures.";
+
 const char kBypassAppBannerEngagementChecksName[] =
     "Bypass user engagement checks";
 const char kBypassAppBannerEngagementChecksDescription[] =
@@ -1045,10 +1054,6 @@ const char kDownloadLaterDebugOnWifiName[] =
     "Show download later dialog on WIFI.";
 const char kDownloadLaterDebugOnWifiNameDescription[] =
     "Show download later dialog on WIFI.";
-
-const char kDownloadProgressMessageName[] = "Show download progress message";
-const char kDownloadProgressMessageDescription[] =
-    "Shows download progress message UI.";
 
 const char kDownloadRangeName[] = "Enable download range support";
 const char kDownloadRangeDescription[] =
@@ -1608,6 +1613,11 @@ const char kJourneysDescription[] = "Enables the History Journeys UI.";
 const char kJourneysOmniboxActionName[] = "History Journeys Omnibox Action";
 const char kJourneysOmniboxActionDescription[] =
     "Enables the History Journeys Omnibox Action.";
+
+const char kJourneysOnDeviceClusteringBackendName[] =
+    "History Journeys On-Device Clustering Backend";
+const char kJourneysOnDeviceClusteringBackendDescription[] =
+    "Enables variations for the on-device clustering backend";
 
 const char kLargeFaviconFromGoogleName[] = "Large favicons from Google";
 const char kLargeFaviconFromGoogleDescription[] =
@@ -3660,12 +3670,6 @@ const char kVoiceButtonInTopToolbarDescription[] =
     "Enables showing the voice search button in the top toolbar. Enabling "
     "Adaptive Button overrides this.";
 
-const char kWebBluetoothRequestLargerMtuName[] =
-    "Request larger MTU for Web Bluetooth";
-const char kWebBluetoothRequestLargerMtuDescription[] =
-    "Controls whether Web Bluetooth should request for a larger ATT MTU so "
-    "that more information can be exchanged per transmission.";
-
 const char kWebFeedName[] = "Web Feed";
 const char kWebFeedDescription[] =
     "Allows users to keep up with and consume web content.";
@@ -4269,10 +4273,10 @@ const char kDefaultLinkCapturingInBrowserDescription[] =
     "When enabled, newly installed apps will not capture links clicked in the "
     "browser.";
 
-const char kDesksTemplatesName[] = "Desks Templates";
+const char kDesksTemplatesName[] = "Desk Templates";
 const char kDesksTemplatesDescription[] =
     "Streamline workflows by saving a group of applications and windows as a "
-    "launchable template.";
+    "launchable template in a new desk";
 
 const char kDesksTrackpadSwipeImprovementsName[] =
     "Experiment: Trackpad swiping to switch desks.";
@@ -4691,6 +4695,11 @@ const char kEnablePalmSuppressionName[] =
 const char kEnablePalmSuppressionDescription[] =
     "If enabled, suppresses touch when a stylus is on a touchscreen.";
 
+const char kEnableVariableRefreshRateName[] = "Enable Variable Refresh Rate";
+const char kEnableVariableRefreshRateDescription[] =
+    "Enable the variable refresh rate (Adaptive Sync) setting for capable "
+    "displays.";
+
 const char kDisableQuickAnswersV2TranslationName[] =
     "Disable Quick Answers Translation";
 const char kDisableQuickAnswersV2TranslationDescription[] =
@@ -4717,10 +4726,6 @@ const char kEcheSWADescription[] = "Enable the SWA version of the Eche.";
 const char kEcheCustomWidgetName[] = "Move Eche in a custom widget.";
 const char kEcheCustomWidgetDescription[] =
     "Move the Eche App into a custom widget.";
-
-const char kEcheSWAResizingName[] = "Allow resizing Eche App.";
-const char kEcheSWAResizingDescription[] =
-    "Enable a naive resize for the Eche window";
 
 const char kEcheSWADebugModeName[] = "Enable Eche Debug Mode";
 const char kEcheSWADebugModeDescription[] = "Enable the Debug Mode of the Eche";
@@ -5202,11 +5207,6 @@ const char kPhoneHubCameraRollName[] = "Camera Roll in Phone Hub";
 const char kPhoneHubCameraRollDescription[] =
     "Enables the Camera Roll feature in Phone Hub, which allows users to "
     "access recent photos and videos taken on a connected Android device.";
-
-const char kPhoneHubRecentAppsName[] = "Recent Apps in Phone Hub";
-const char kPhoneHubRecentAppsDescription[] =
-    "Enables the Recent Apps feature in Phone Hub, which allows users to "
-    "relaunch a recently streamed app.";
 
 const char kProductivityLauncherName[] =
     "Productivity experiment: App Launcher";

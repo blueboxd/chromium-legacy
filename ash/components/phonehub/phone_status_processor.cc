@@ -227,11 +227,10 @@ PhoneStatusProcessor::~PhoneStatusProcessor() {
 
 void PhoneStatusProcessor::ProcessReceivedNotifications(
     const RepeatedPtrField<proto::Notification>& notification_protos) {
-  chromeos::multidevice_setup::mojom::FeatureState feature_state =
+  multidevice_setup::mojom::FeatureState feature_state =
       multidevice_setup_client_->GetFeatureState(
-          chromeos::multidevice_setup::mojom::Feature::kPhoneHubNotifications);
-  if (feature_state !=
-      chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser) {
+          multidevice_setup::mojom::Feature::kPhoneHubNotifications);
+  if (feature_state != multidevice_setup::mojom::FeatureState::kEnabledByUser) {
     // Do not process any notifications if notifications are not enabled in
     // settings.
     return;
@@ -281,7 +280,7 @@ void PhoneStatusProcessor::SetReceivedPhoneStatusModelStates(
   find_my_device_controller_->SetPhoneRingingStatusInternal(
       ComputeFindMyDeviceStatus(phone_properties));
 
-  if (features::IsPhoneHubRecentAppsEnabled()) {
+  if (features::IsEcheSWAEnabled()) {
     recent_apps_interaction_handler_->set_user_states(
         GetUserStates(phone_properties.user_states()));
   }

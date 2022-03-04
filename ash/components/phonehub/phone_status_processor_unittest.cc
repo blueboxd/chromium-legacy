@@ -35,9 +35,9 @@
 namespace ash {
 namespace phonehub {
 
-using ::chromeos::multidevice_setup::mojom::Feature;
-using ::chromeos::multidevice_setup::mojom::FeatureState;
-using ::chromeos::multidevice_setup::mojom::HostStatus;
+using multidevice_setup::mojom::Feature;
+using multidevice_setup::mojom::FeatureState;
+using multidevice_setup::mojom::HostStatus;
 
 // A fake processor that immediately adds or removes notifications.
 class FakeNotificationProcessor : public NotificationProcessor {
@@ -95,7 +95,7 @@ class PhoneStatusProcessorTest : public testing::Test {
     fake_recent_apps_interaction_handler_ =
         std::make_unique<FakeRecentAppsInteractionHandler>();
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kPhoneHubRecentApps,
+        /*enabled_features=*/{features::kEcheSWA,
                               features::kPhoneHubCameraRoll},
         /*disabled_features=*/{});
   }

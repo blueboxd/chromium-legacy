@@ -22,8 +22,16 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
     this.forceContextualLastOutput();
 
     await importModule(
+        'BrailleCommandHandler',
+        '/chromevox/background/braille_command_handler.js');
+    await importModule(
+        'DesktopAutomationInterface',
+        '/chromevox/background/desktop_automation_interface.js');
+    await importModule(
         'GestureCommandHandler',
         '/chromevox/background/gesture_command_handler.js');
+    await importModule(
+        'PointerHandler', '/chromevox/background/pointer_handler.js');
     await super.setUpDeferred();
   }
 
@@ -457,14 +465,14 @@ TEST_F('ChromeVoxBackgroundTest', 'UseEditableState', function() {
     await new Promise(resolve => {
       this.listenOnce(nonEditable, 'focus', resolve);
     });
-    assertTrue(!DesktopAutomationHandler.instance.textEditHandler);
+    assertTrue(!DesktopAutomationInterface.instance.textEditHandler);
 
     editable.focus();
     await new Promise(resolve => {
       this.listenOnce(editable, 'focus', resolve);
     });
     assertNotNullNorUndefined(
-        DesktopAutomationHandler.instance.textEditHandler);
+        DesktopAutomationInterface.instance.textEditHandler);
   });
 });
 
@@ -714,7 +722,7 @@ TEST_F(
 
         running = true;
         const suppressFocusActionOutput = function() {
-          DesktopAutomationHandler.announceActions = false;
+          BaseAutomationHandler.announceActions = false;
         };
         const beforeButton =
             rootNode.find({role: RoleType.BUTTON, name: 'Before'});
@@ -749,7 +757,7 @@ TEST_F(
 TEST_F('ChromeVoxBackgroundTest', 'SelectOptionSelected', function() {
   // Undoes the ChromeVoxNextE2E call setting this to true. The doDefault action
   // should always be read.
-  DesktopAutomationHandler.announceActions = false;
+  BaseAutomationHandler.announceActions = false;
   const mockFeedback = this.createMockFeedback();
   const site = `
     <p>start</p>
@@ -1455,7 +1463,7 @@ TEST_F_WITH_PREAMBLE(
 #endif
 `,
     'ChromeVoxBackgroundTest', 'MAYBE_TextSelectionAndLiveRegion', function() {
-      DesktopAutomationHandler.announceActions = true;
+      BaseAutomationHandler.announceActions = true;
       const mockFeedback = this.createMockFeedback();
       this.runWithLoadedTree(
           `
@@ -1582,12 +1590,14 @@ TEST_F('ChromeVoxBackgroundTest', 'NavigationEscapesEdit', function() {
   `;
   this.runWithLoadedTree(site, function(root) {
     const assertBeginning = function(expected) {
-      const textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
+      const textEditHandler =
+          DesktopAutomationInterface.instance.textEditHandler;
       assertNotNullNorUndefined(textEditHandler);
       assertEquals(expected, textEditHandler.isSelectionOnFirstLine());
     };
     const assertEnd = function(expected) {
-      const textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
+      const textEditHandler =
+          DesktopAutomationInterface.instance.textEditHandler;
       assertNotNullNorUndefined(textEditHandler);
       assertEquals(expected, textEditHandler.isSelectionOnLastLine());
     };
@@ -2833,13 +2843,13 @@ TEST_F('ChromeVoxBackgroundTest', 'FocusOnUnknown', function() {
 
     const evt2 = new CustomAutomationEvent(EventType.FOCUS, group2);
     const currentRange = ChromeVoxState.instance.currentRange;
-    DesktopAutomationHandler.instance.onFocus(evt2);
+    DesktopAutomationInterface.instance.onFocus(evt2);
     assertEquals(currentRange, ChromeVoxState.instance.currentRange);
 
     const evt1 = new CustomAutomationEvent(EventType.FOCUS, group1);
     mockFeedback
-        .call(DesktopAutomationHandler.instance.onFocus.bind(
-            DesktopAutomationHandler.instance, evt1))
+        .call(DesktopAutomationInterface.instance.onFocus.bind(
+            DesktopAutomationInterface.instance, evt1))
         .expectSpeech('hello')
         .replay();
   });
@@ -3045,8 +3055,8 @@ TEST_F('ChromeVoxBackgroundTest', 'AlertNoAnnouncement', function() {
     const button = root.find({role: RoleType.BUTTON});
     const alertEvt = new CustomAutomationEvent(EventType.ALERT, button);
     mockFeedback
-        .call(DesktopAutomationHandler.instance.onAlert.bind(
-            DesktopAutomationHandler.instance, alertEvt))
+        .call(DesktopAutomationInterface.instance.onAlert.bind(
+            DesktopAutomationInterface.instance, alertEvt))
         .call(() => assertFalse(mockFeedback.utteranceInQueue('Alert')))
         .replay();
   });
@@ -3064,8 +3074,8 @@ TEST_F('ChromeVoxBackgroundTest', 'AlertAnnouncement', function() {
     const button = root.find({role: RoleType.BUTTON});
     const alertEvt = new CustomAutomationEvent(EventType.ALERT, button);
     mockFeedback
-        .call(DesktopAutomationHandler.instance.onAlert.bind(
-            DesktopAutomationHandler.instance, alertEvt))
+        .call(DesktopAutomationInterface.instance.onAlert.bind(
+            DesktopAutomationInterface.instance, alertEvt))
         .expectNextSpeechUtteranceIsNot('Alert')
         .expectSpeech('hello world')
         .replay();
@@ -3518,7 +3528,7 @@ TEST_F('ChromeVoxBackgroundTest', 'FocusAfterClick', function() {
     </script>
   `;
   this.runWithLoadedTree(site, function(root) {
-    DesktopAutomationHandler.announceActions = false;
+    BaseAutomationHandler.announceActions = false;
     mockFeedback.expectSpeech('Start')
         .call(doCmd('nextObject'))
         .expectSpeech('Click me')

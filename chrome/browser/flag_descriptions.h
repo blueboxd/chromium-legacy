@@ -283,6 +283,9 @@ extern const char kBorealisForceBetaClientDescription[];
 extern const char kBorealisLinuxModeName[];
 extern const char kBorealisLinuxModeDescription[];
 
+extern const char kBorealisPermittedName[];
+extern const char kBorealisPermittedDescription[];
+
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
@@ -648,9 +651,6 @@ extern const char kDownloadLaterDescription[];
 extern const char kDownloadLaterDebugOnWifiName[];
 extern const char kDownloadLaterDebugOnWifiNameDescription[];
 
-extern const char kDownloadProgressMessageName[];
-extern const char kDownloadProgressMessageDescription[];
-
 extern const char kDownloadRangeName[];
 extern const char kDownloadRangeDescription[];
 
@@ -918,6 +918,9 @@ extern const char kJourneysDescription[];
 
 extern const char kJourneysOmniboxActionName[];
 extern const char kJourneysOmniboxActionDescription[];
+
+extern const char kJourneysOnDeviceClusteringBackendName[];
+extern const char kJourneysOnDeviceClusteringBackendDescription[];
 
 extern const char kLargeFaviconFromGoogleName[];
 extern const char kLargeFaviconFromGoogleDescription[];
@@ -2092,9 +2095,6 @@ extern const char kShareButtonInTopToolbarDescription[];
 extern const char kVoiceButtonInTopToolbarName[];
 extern const char kVoiceButtonInTopToolbarDescription[];
 
-extern const char kWebBluetoothRequestLargerMtuName[];
-extern const char kWebBluetoothRequestLargerMtuDescription[];
-
 extern const char kWebFeedName[];
 extern const char kWebFeedDescription[];
 
@@ -2709,9 +2709,6 @@ extern const char kEcheSWADescription[];
 extern const char kEcheCustomWidgetName[];
 extern const char kEcheCustomWidgetDescription[];
 
-extern const char kEcheSWAResizingName[];
-extern const char kEcheSWAResizingDescription[];
-
 extern const char kEcheSWADebugModeName[];
 extern const char kEcheSWADebugModeDescription[];
 
@@ -2738,6 +2735,9 @@ extern const char kEnableSuggestedFilesDescription[];
 
 extern const char kEnableSuggestedLocalFilesName[];
 extern const char kEnableSuggestedLocalFilesDescription[];
+
+extern const char kEnableVariableRefreshRateName[];
+extern const char kEnableVariableRefreshRateDescription[];
 
 extern const char kEnableWireGuardName[];
 extern const char kEnableWireGuardDescription[];
@@ -2995,9 +2995,6 @@ extern const char kPhoneHubCallNotificationDescription[];
 
 extern const char kPhoneHubCameraRollName[];
 extern const char kPhoneHubCameraRollDescription[];
-
-extern const char kPhoneHubRecentAppsName[];
-extern const char kPhoneHubRecentAppsDescription[];
 
 extern const char kProductivityLauncherName[];
 extern const char kProductivityLauncherDescription[];

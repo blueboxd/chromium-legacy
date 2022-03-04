@@ -27,6 +27,8 @@ suite('network-config', function() {
   const kUserCertId = 'test-cert-id';
   const kTestVpnName = 'test-vpn';
   const kTestVpnHost = 'test-vpn-host';
+  const kTestUsername = 'test-username';
+  const kTestPassword = 'test-password';
 
   suiteSetup(function() {
     mojoApi_ = new FakeNetworkConfig();
@@ -205,23 +207,38 @@ suite('network-config', function() {
 
       networkConfig.set('vpnType_', 'IKEv2');
       Polymer.dom.flush();
+      assertEquals(3, networkConfig.get('ipsecAuthTypeItems_').length);
       assertTrue(!!networkConfig.$$('#ipsec-auth-type'));
       assertFalse(!!networkConfig.$$('#l2tp-username-input'));
 
-      // The authentication type is default to PSK. The PSK input should appear
-      // and the dropdowns for server CA and user certificate should be hidden.
-      assertEquals('PSK', networkConfig.ipsecAuthType_);
+      assertEquals('EAP', networkConfig.ipsecAuthType_);
+      assertFalse(!!networkConfig.$$('#ipsec-psk-input'));
+      assertTrue(!!networkConfig.$$('#vpnServerCa'));
+      assertFalse(!!networkConfig.$$('#vpnUserCert'));
+      assertTrue(!!networkConfig.$$('#ipsec-eap-username-input'));
+      assertTrue(!!networkConfig.$$('#ipsec-eap-password-input'));
+      assertTrue(!!networkConfig.$$('#ipsec-local-id-input'));
+      assertTrue(!!networkConfig.$$('#ipsec-remote-id-input'));
+
+      networkConfig.set('ipsecAuthType_', 'PSK');
+      Polymer.dom.flush();
       assertTrue(!!networkConfig.$$('#ipsec-psk-input'));
       assertFalse(!!networkConfig.$$('#vpnServerCa'));
       assertFalse(!!networkConfig.$$('#vpnUserCert'));
+      assertFalse(!!networkConfig.$$('#ipsec-eap-username-input'));
+      assertFalse(!!networkConfig.$$('#ipsec-eap-password-input'));
+      assertTrue(!!networkConfig.$$('#ipsec-local-id-input'));
+      assertTrue(!!networkConfig.$$('#ipsec-remote-id-input'));
 
-      // Switch the authentication type to Cert. The PSK input should be hidden
-      // and the dropdowns for server CA and user certificate should appear.
       networkConfig.set('ipsecAuthType_', 'Cert');
       Polymer.dom.flush();
       assertFalse(!!networkConfig.$$('#ipsec-psk-input'));
       assertTrue(!!networkConfig.$$('#vpnServerCa'));
       assertTrue(!!networkConfig.$$('#vpnUserCert'));
+      assertFalse(!!networkConfig.$$('#ipsec-eap-username-input'));
+      assertFalse(!!networkConfig.$$('#ipsec-eap-password-input'));
+      assertTrue(!!networkConfig.$$('#ipsec-local-id-input'));
+      assertTrue(!!networkConfig.$$('#ipsec-remote-id-input'));
     });
 
     test('No Certs', function() {
@@ -292,7 +309,7 @@ suite('network-config', function() {
       configProperties.typeConfig.vpn.ipSec.psk = 'test-psk';
       assertTrue(networkConfig.vpnIsConfigured_());
 
-      const props = networkConfig.getPropertiesToSet_();
+      let props = networkConfig.getPropertiesToSet_();
       const mojom = chromeos.networkConfig.mojom;
       assertEquals(kTestVpnName, props.name);
       assertEquals(kTestVpnHost, props.typeConfig.vpn.host);
@@ -301,10 +318,18 @@ suite('network-config', function() {
       assertEquals(2, props.typeConfig.vpn.ipSec.ikeVersion);
       assertFalse(props.typeConfig.vpn.ipSec.saveCredentials);
       assertEquals('test-psk', props.typeConfig.vpn.ipSec.psk);
+      assertEquals('', props.typeConfig.vpn.ipSec.localIdentity);
+      assertEquals('', props.typeConfig.vpn.ipSec.remoteIdentity);
 
       networkConfig.set('vpnSaveCredentials_', true);
       assertTrue(networkConfig.getPropertiesToSet_()
                      .typeConfig.vpn.ipSec.saveCredentials);
+
+      configProperties.typeConfig.vpn.ipSec.localIdentity = 'local-id';
+      configProperties.typeConfig.vpn.ipSec.remoteIdentity = 'remote-id';
+      props = networkConfig.getPropertiesToSet_();
+      assertEquals('local-id', props.typeConfig.vpn.ipSec.localIdentity);
+      assertEquals('remote-id', props.typeConfig.vpn.ipSec.remoteIdentity);
     });
 
     // Checks if values are read correctly for an existing service of PSK
@@ -318,6 +343,8 @@ suite('network-config', function() {
       ikev2.typeProperties.vpn.ipSec = {
         authenticationType: {activeValue: 'PSK'},
         ikeVersion: {activeValue: 2},
+        localIdentity: {activeValue: 'local-id'},
+        remoteIdentity: {activeValue: 'remote-id'},
         saveCredentials: {activeValue: true},
       };
       setNetworkConfig(ikev2);
@@ -336,6 +363,8 @@ suite('network-config', function() {
         assertEquals(mojom.VpnType.kIKEv2, props.typeConfig.vpn.type.value);
         assertEquals('PSK', props.typeConfig.vpn.ipSec.authenticationType);
         assertEquals(2, props.typeConfig.vpn.ipSec.ikeVersion);
+        assertEquals('local-id', props.typeConfig.vpn.ipSec.localIdentity);
+        assertEquals('remote-id', props.typeConfig.vpn.ipSec.remoteIdentity);
         assertTrue(props.typeConfig.vpn.ipSec.saveCredentials);
       });
     });
@@ -417,6 +446,98 @@ suite('network-config', function() {
         });
       });
     });
+
+    test('EAP', function() {
+      initNetworkConfigWithCerts(
+          /* hasServerCa= */ true, /* hasUserCert= */ false);
+      networkConfig.set('vpnType_', 'IKEv2');
+      networkConfig.set('ipsecAuthType_', 'EAP');
+      return mojoApi_.whenCalled('getNetworkCertificates').then(() => {
+        return flushAsync().then(() => {
+          // Server CA should be selected.
+          assertEquals(kCaHash, networkConfig.selectedServerCaHash_);
+
+          setMandatoryFields();
+          assertFalse(networkConfig.vpnIsConfigured_());
+          const eapProperties = networkConfig.get('eapProperties_');
+          eapProperties.identity = kTestUsername;
+          eapProperties.password = kTestPassword;
+          assertTrue(networkConfig.vpnIsConfigured_());
+
+          // Server CA is also mandatory when using EAP.
+          networkConfig.set('selectedServerCaHash_', '');
+          assertFalse(networkConfig.vpnIsConfigured_());
+          networkConfig.set('selectedServerCaHash_', kCaHash);
+
+          let props = networkConfig.getPropertiesToSet_();
+          const mojom = chromeos.networkConfig.mojom;
+          assertEquals(kTestVpnName, props.name);
+          assertEquals(kTestVpnHost, props.typeConfig.vpn.host);
+          assertEquals(mojom.VpnType.kIKEv2, props.typeConfig.vpn.type.value);
+          assertEquals('EAP', props.typeConfig.vpn.ipSec.authenticationType);
+          assertEquals(2, props.typeConfig.vpn.ipSec.ikeVersion);
+          assertEquals(1, props.typeConfig.vpn.ipSec.serverCaPems.length);
+          assertEquals(kCaPem, props.typeConfig.vpn.ipSec.serverCaPems[0]);
+          assertEquals('MSCHAPv2', props.typeConfig.vpn.ipSec.eap.outer);
+          assertEquals(kTestUsername, props.typeConfig.vpn.ipSec.eap.identity);
+          assertEquals(kTestPassword, props.typeConfig.vpn.ipSec.eap.password);
+          assertFalse(props.typeConfig.vpn.ipSec.saveCredentials);
+          assertFalse(props.typeConfig.vpn.ipSec.eap.saveCredentials);
+
+          networkConfig.set('vpnSaveCredentials_', true);
+          props = networkConfig.getPropertiesToSet_();
+          assertTrue(props.typeConfig.vpn.ipSec.saveCredentials);
+          assertTrue(props.typeConfig.vpn.ipSec.eap.saveCredentials);
+        });
+      });
+    });
+
+    test('Existing EAP', function() {
+      const mojom = chromeos.networkConfig.mojom;
+      const ikev2 = OncMojo.getDefaultManagedProperties(
+          mojom.NetworkType.kVPN, 'someguid', kTestVpnName);
+      ikev2.typeProperties.vpn.type = mojom.VpnType.kIKEv2;
+      ikev2.typeProperties.vpn.host = {activeValue: kTestVpnHost};
+      ikev2.typeProperties.vpn.ipSec = {
+        authenticationType: {activeValue: 'EAP'},
+        eap: {
+          domainSuffixMatch: {activeValue: []},
+          identity: {activeValue: kTestUsername},
+          outer: {activeValue: 'MSCHAPv2'},
+          saveCredentials: {activeValue: true},
+          subjectAltNameMatch: {activeValue: []},
+          useSystemCas: {activeValue: false},
+        },
+        ikeVersion: {activeValue: 2},
+        saveCredentials: {activeValue: true},
+        serverCaPems: {activeValue: [kCaPem]},
+      };
+      setNetworkConfig(ikev2);
+      initNetworkConfigWithCerts(
+          /* hasServerCa= */ true, /* hasUserCert= */ false);
+      return mojoApi_.whenCalled('getNetworkCertificates').then(() => {
+        return flushAsync().then(() => {
+          assertEquals('IKEv2', networkConfig.get('vpnType_'));
+          assertEquals('EAP', networkConfig.get('ipsecAuthType_'));
+          assertEquals(kCaHash, networkConfig.selectedServerCaHash_);
+
+          const props = networkConfig.getPropertiesToSet_();
+          const mojom = chromeos.networkConfig.mojom;
+          assertEquals('someguid', props.guid);
+          assertEquals(kTestVpnName, props.name);
+          assertEquals(kTestVpnHost, props.typeConfig.vpn.host);
+          assertEquals(mojom.VpnType.kIKEv2, props.typeConfig.vpn.type.value);
+          assertEquals('EAP', props.typeConfig.vpn.ipSec.authenticationType);
+          assertEquals(2, props.typeConfig.vpn.ipSec.ikeVersion);
+          assertEquals(1, props.typeConfig.vpn.ipSec.serverCaPems.length);
+          assertEquals(kCaPem, props.typeConfig.vpn.ipSec.serverCaPems[0]);
+          assertEquals('MSCHAPv2', props.typeConfig.vpn.ipSec.eap.outer);
+          assertEquals(kTestUsername, props.typeConfig.vpn.ipSec.eap.identity);
+          assertTrue(props.typeConfig.vpn.ipSec.saveCredentials);
+          assertTrue(props.typeConfig.vpn.ipSec.eap.saveCredentials);
+        });
+      });
+    });
   });
 
   suite('L2TP/IPsec', function() {
@@ -435,7 +556,7 @@ suite('network-config', function() {
       const configProperties = networkConfig.get('configProperties_');
       configProperties.name = kTestVpnName;
       configProperties.typeConfig.vpn.host = kTestVpnHost;
-      configProperties.typeConfig.vpn.l2tp.username = 'test-username';
+      configProperties.typeConfig.vpn.l2tp.username = kTestUsername;
     }
 
     test('Switch Authentication Type', function() {
@@ -446,7 +567,10 @@ suite('network-config', function() {
       // certificate should be hidden.
       networkConfig.set('vpnType_', 'L2TP_IPsec');
       Polymer.dom.flush();
+      assertEquals(2, networkConfig.get('ipsecAuthTypeItems_').length);
       assertEquals('PSK', networkConfig.ipsecAuthType_);
+      assertFalse(!!networkConfig.$$('#ipsec-local-id-input'));
+      assertFalse(!!networkConfig.$$('#ipsec-remote-id-input'));
       assertTrue(!!networkConfig.$$('#ipsec-auth-type'));
       assertTrue(!!networkConfig.$$('#l2tp-username-input'));
       assertTrue(!!networkConfig.$$('#ipsec-psk-input'));
@@ -462,6 +586,14 @@ suite('network-config', function() {
       assertTrue(!!networkConfig.$$('#l2tp-username-input'));
       assertTrue(!!networkConfig.$$('#vpnServerCa'));
       assertTrue(!!networkConfig.$$('#vpnUserCert'));
+
+      // Switch VPN type to IKEv2 and auth type to EAP, and then back to
+      // L2TP/IPsec. The auth type should be reset to PSK since EAP is not a
+      // valid value.
+      networkConfig.set('vpnType_', 'IKEv2');
+      networkConfig.set('ipsecAuthType_', 'EAP');
+      networkConfig.set('vpnType_', 'L2TP_IPsec');
+      assertEquals('PSK', networkConfig.ipsecAuthType_);
     });
 
     test('No Certs', function() {

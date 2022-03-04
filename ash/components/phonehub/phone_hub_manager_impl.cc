@@ -114,7 +114,7 @@ PhoneHubManagerImpl::PhoneHubManagerImpl(
       notification_processor_(
           std::make_unique<NotificationProcessor>(notification_manager_.get())),
       recent_apps_interaction_handler_(
-          features::IsPhoneHubRecentAppsEnabled()
+          features::IsEcheSWAEnabled()
               ? std::make_unique<RecentAppsInteractionHandlerImpl>(
                     pref_service,
                     multidevice_setup_client,
@@ -152,7 +152,6 @@ PhoneHubManagerImpl::PhoneHubManagerImpl(
               phone_model_.get())),
       camera_roll_manager_(features::IsPhoneHubCameraRollEnabled()
                                ? std::make_unique<CameraRollManagerImpl>(
-                                     pref_service,
                                      message_receiver_.get(),
                                      message_sender_.get(),
                                      multidevice_setup_client,

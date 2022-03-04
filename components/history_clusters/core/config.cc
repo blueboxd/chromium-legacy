@@ -17,6 +17,15 @@
 
 namespace history_clusters {
 
+namespace {
+
+Config& GetConfigInternal() {
+  static base::NoDestructor<Config> s_config;
+  return *s_config;
+}
+
+}  // namespace
+
 Config::Config() {
   // Override any parameters that may be provided by Finch.
   is_journeys_enabled_no_locale_check =
@@ -191,13 +200,17 @@ Config::Config() {
   split_clusters_at_search_visits = GetFieldTrialParamByFeatureAsBool(
       features::kOnDeviceClustering, "split_clusters_at_search_visits",
       split_clusters_at_search_visits);
+
+  should_label_clusters = GetFieldTrialParamByFeatureAsBool(
+      features::kOnDeviceClustering, "should_label_clusters",
+      should_label_clusters);
 }
 
 Config::Config(const Config& other) = default;
 Config::~Config() = default;
 
 void SetConfigForTesting(const Config& config) {
-  const_cast<Config&>(GetConfig()) = config;
+  GetConfigInternal() = config;
 }
 
 bool IsApplicationLocaleSupportedByJourneys(
@@ -226,8 +239,7 @@ bool IsApplicationLocaleSupportedByJourneys(
 }
 
 const Config& GetConfig() {
-  static base::NoDestructor<Config> s_config;
-  return *s_config;
+  return GetConfigInternal();
 }
 
 }  // namespace history_clusters

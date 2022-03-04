@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_OBSERVER_TYPES_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_OBSERVER_TYPES_H_
 
-#include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/stored_source.h"
@@ -36,11 +35,11 @@ struct CONTENT_EXPORT DeactivatedSource {
 class CONTENT_EXPORT CreateReportResult {
  public:
   explicit CreateReportResult(
-      AttributionTrigger::Result status,
+      AttributionTrigger::EventLevelResult status,
       absl::optional<AttributionReport> dropped_report = absl::nullopt,
       absl::optional<DeactivatedSource::Reason>
           dropped_report_source_deactivation_reason = absl::nullopt,
-      absl::optional<base::Time> report_time = absl::nullopt);
+      absl::optional<AttributionReport> new_report = absl::nullopt);
   ~CreateReportResult();
 
   CreateReportResult(const CreateReportResult&);
@@ -49,19 +48,25 @@ class CONTENT_EXPORT CreateReportResult {
   CreateReportResult& operator=(const CreateReportResult&);
   CreateReportResult& operator=(CreateReportResult&&);
 
-  AttributionTrigger::Result status() const;
+  AttributionTrigger::EventLevelResult status() const { return status_; }
 
-  const absl::optional<AttributionReport>& dropped_report() const;
+  const absl::optional<AttributionReport>& dropped_report() const {
+    return dropped_report_;
+  }
 
-  absl::optional<base::Time> report_time() const;
+  const absl::optional<AttributionReport>& new_report() const {
+    return new_report_;
+  }
+
+  absl::optional<AttributionReport>& new_report() { return new_report_; }
 
   absl::optional<DeactivatedSource> GetDeactivatedSource() const;
 
  private:
-  AttributionTrigger::Result status_;
+  AttributionTrigger::EventLevelResult status_;
 
-  // `AttributionTrigger::Result::kInternalError` is only associated with a
-  // dropped report if the browser succeeded in running the
+  // `AttributionTrigger::EventLevelResult::kInternalError` is only associated
+  // with a dropped report if the browser succeeded in running the
   // source-to-attribute logic.
   absl::optional<AttributionReport> dropped_report_;
 
@@ -70,7 +75,7 @@ class CONTENT_EXPORT CreateReportResult {
       dropped_report_source_deactivation_reason_;
 
   // Null unless `status` is `kSuccess` or `kSuccessDroppedLowerPriority`.
-  absl::optional<base::Time> report_time_;
+  absl::optional<AttributionReport> new_report_;
 };
 
 }  // namespace content

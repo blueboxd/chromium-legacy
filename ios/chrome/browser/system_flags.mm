@@ -8,10 +8,6 @@
 #include "ios/chrome/browser/system_flags.h"
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
-#include <dispatch/dispatch.h>
-
-#include <string>
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -37,7 +33,6 @@ NSString* const kAlternateDiscoverFeedServerURL =
 NSString* const kDisableDCHECKCrashes = @"DisableDCHECKCrashes";
 NSString* const kEnableStartupCrash = @"EnableStartupCrash";
 NSString* const kFirstRunForceEnabled = @"FirstRunForceEnabled";
-NSString* const kGaiaEnvironment = @"GAIAEnvironment";
 NSString* const kOriginServerHost = @"AlternateOriginServerHost";
 NSString* const kWhatsNewPromoStatus = @"WhatsNewPromoStatus";
 NSString* const kClearApplicationGroup = @"ClearApplicationGroup";
@@ -52,20 +47,12 @@ bool AlwaysDisplayFirstRun() {
       [[NSUserDefaults standardUserDefaults] boolForKey:kFirstRunForceEnabled];
 }
 
-GaiaEnvironment GetGaiaEnvironment() {
-  NSString* gaia_environment =
-      [[NSUserDefaults standardUserDefaults] objectForKey:kGaiaEnvironment];
-  if ([gaia_environment isEqualToString:@"Staging"])
-    return GAIA_ENVIRONMENT_STAGING;
-  if ([gaia_environment isEqualToString:@"Test"])
-    return GAIA_ENVIRONMENT_TEST;
-  return GAIA_ENVIRONMENT_PROD;
+std::string GetOriginServerHost() {
+  return base::SysNSStringToUTF8(GetOriginServerHostNSString());
 }
 
-std::string GetOriginServerHost() {
-  NSString* alternateHost =
-      [[NSUserDefaults standardUserDefaults] stringForKey:kOriginServerHost];
-  return base::SysNSStringToUTF8(alternateHost);
+NSString* GetOriginServerHostNSString() {
+  return [[NSUserDefaults standardUserDefaults] stringForKey:kOriginServerHost];
 }
 
 WhatsNewPromoStatus GetWhatsNewPromoStatus() {
@@ -83,9 +70,12 @@ WhatsNewPromoStatus GetWhatsNewPromoStatus() {
 }
 
 std::string getAlternateDiscoverFeedServerURL() {
-  NSString* alternateServerURL = [[NSUserDefaults standardUserDefaults]
+  return base::SysNSStringToUTF8(GetAlternateDiscoverFeedServerURL());
+}
+
+NSString* GetAlternateDiscoverFeedServerURL() {
+  return [[NSUserDefaults standardUserDefaults]
       stringForKey:kAlternateDiscoverFeedServerURL];
-  return base::SysNSStringToUTF8(alternateServerURL);
 }
 
 bool ShouldResetNoticeCardOnFeedStart() {

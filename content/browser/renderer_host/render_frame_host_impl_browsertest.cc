@@ -6561,7 +6561,7 @@ class RenderFrameHostImplAvoidUnnecessaryBeforeUnloadBrowserTest
  public:
   RenderFrameHostImplAvoidUnnecessaryBeforeUnloadBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(
-        features::kAvoidUnnecessaryBeforeUnloadCheck);
+        features::kAvoidUnnecessaryBeforeUnloadCheckPostTask);
   }
 
  private:
@@ -6570,7 +6570,7 @@ class RenderFrameHostImplAvoidUnnecessaryBeforeUnloadBrowserTest
 
 // Ensure that navigating with a frame tree of A(B(A)) results in the right
 // number of beforeunload messages sent when the feature
-// `kAvoidUnnecessaryBeforeUnloadCheck` is set.
+// `kAvoidUnnecessaryBeforeUnloadCheckPostTask` is set.
 IN_PROC_BROWSER_TEST_F(
     RenderFrameHostImplAvoidUnnecessaryBeforeUnloadBrowserTest,
     RendererInitiatedNavigationInABA) {
@@ -6701,7 +6701,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostImplBrowserTestWithStoragePartitioning,
     EXPECT_EQ(blink::StorageKey(blink::StorageKey::CreateWithOptionalNonce(
                   url::Origin::Create(child_rfh_url),
                   net::SchemefulSite(url::Origin::Create(child_rfh_url)),
-                  nullptr, blink::mojom::AncestorChainBit::kCrossSite)),
+                  nullptr, blink::mojom::AncestorChainBit::kSameSite)),
               child_rfh_2->storage_key());
 
     // The grandchild document should create a StorageKey using the child

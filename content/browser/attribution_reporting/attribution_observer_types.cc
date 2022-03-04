@@ -12,29 +12,30 @@
 namespace content {
 
 CreateReportResult::CreateReportResult(
-    AttributionTrigger::Result status,
+    AttributionTrigger::EventLevelResult status,
     absl::optional<AttributionReport> dropped_report,
     absl::optional<DeactivatedSource::Reason>
         dropped_report_source_deactivation_reason,
-    absl::optional<base::Time> report_time)
+    absl::optional<AttributionReport> new_report)
     : status_(status),
       dropped_report_(std::move(dropped_report)),
       dropped_report_source_deactivation_reason_(
           dropped_report_source_deactivation_reason),
-      report_time_(report_time) {
-  DCHECK((status_ == AttributionTrigger::Result::kSuccess &&
+      new_report_(std::move(new_report)) {
+  DCHECK((status_ == AttributionTrigger::EventLevelResult::kSuccess &&
           !dropped_report_.has_value()) ||
-         status_ == AttributionTrigger::Result::kNoMatchingImpressions ||
-         status_ == AttributionTrigger::Result::kInternalError ||
+         status_ ==
+             AttributionTrigger::EventLevelResult::kNoMatchingImpressions ||
+         status_ == AttributionTrigger::EventLevelResult::kInternalError ||
          dropped_report_.has_value());
 
   DCHECK(dropped_report_.has_value() ||
          !dropped_report_source_deactivation_reason_);
 
-  DCHECK_EQ(
-      status_ == AttributionTrigger::Result::kSuccess ||
-          status_ == AttributionTrigger::Result::kSuccessDroppedLowerPriority,
-      report_time_.has_value());
+  DCHECK_EQ(status_ == AttributionTrigger::EventLevelResult::kSuccess ||
+                status_ == AttributionTrigger::EventLevelResult::
+                               kSuccessDroppedLowerPriority,
+            new_report_.has_value());
 }
 
 CreateReportResult::~CreateReportResult() = default;
@@ -46,19 +47,6 @@ CreateReportResult& CreateReportResult::operator=(const CreateReportResult&) =
     default;
 CreateReportResult& CreateReportResult::operator=(CreateReportResult&&) =
     default;
-
-AttributionTrigger::Result CreateReportResult::status() const {
-  return status_;
-}
-
-const absl::optional<AttributionReport>& CreateReportResult::dropped_report()
-    const {
-  return dropped_report_;
-}
-
-absl::optional<base::Time> CreateReportResult::report_time() const {
-  return report_time_;
-}
 
 absl::optional<DeactivatedSource> CreateReportResult::GetDeactivatedSource()
     const {

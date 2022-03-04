@@ -65,6 +65,38 @@ CORE_EXPORT bool ParseEventTriggerData(
     const AtomicString& json_string,
     WTF::Vector<mojom::blink::EventTriggerDataPtr>& event_trigger_data);
 
+// Parses filter header of the form:
+//
+// {
+//   "abc": [],
+//   "xyz": ["123", "456"]
+// }
+//
+// Returns whether parsing was successful.
+CORE_EXPORT bool ParseFilters(const AtomicString& json_string,
+                              mojom::blink::AttributionFilterData& filter_data);
+
+// Example JSON schema:
+// [{
+//   "key_piece": "0x400",
+//   "source_keys": ["campaignCounts"]
+// },
+// {
+//   "key_piece": "0xA80",
+//   "source_keys": ["geoValue"]
+// }]
+
+CORE_EXPORT ResponseParseResult<mojom::blink::AttributionAggregatableTrigger>
+ParseAttributionAggregatableTrigger(const AtomicString& json_string);
+
+// Example JSON schema:
+// {
+//  "campaignCounts": 32768,
+//  "geoValue": 1664
+// }
+CORE_EXPORT ResponseParseResult<mojom::blink::AttributionAggregatableValues>
+ParseAttributionAggregatableValues(const AtomicString& json_string);
+
 }  // namespace blink::attribution_response_parsing
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ATTRIBUTION_RESPONSE_PARSING_H_

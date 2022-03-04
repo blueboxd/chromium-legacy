@@ -5,6 +5,8 @@
 /**
  * @fileoverview Handles gesture-based commands.
  */
+import {GestureInterface} from './gesture_interface.js';
+import {PointerHandler} from './pointer_handler.js';
 
 const RoleType = chrome.automation.RoleType;
 const Gesture = chrome.accessibilityPrivate.Gesture;

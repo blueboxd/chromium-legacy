@@ -5,17 +5,12 @@
 /**
  * @fileoverview ChromeVox braille commands.
  */
+import {DesktopAutomationInterface} from './desktop_automation_interface.js';
 
-goog.provide('BrailleCommandHandler');
-
-goog.require('EventGenerator');
-goog.require('EventSourceState');
-goog.require('DesktopAutomationHandler');
-goog.require('KeyCode');
-
-goog.scope(function() {
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
+
+export const BrailleCommandHandler = {};
 
 /**
  * Global setting for the enabled state of this handler.
@@ -24,6 +19,13 @@ const StateType = chrome.automation.StateType;
 BrailleCommandHandler.setEnabled = function(state) {
   BrailleCommandHandler.enabled_ = state;
 };
+
+chrome.runtime.onMessage.addListener(message => {
+  if (message.target === 'BrailleCommandHandler' &&
+      message.action === 'setEnabled') {
+    BrailleCommandHandler.setEnabled(message.value);
+  }
+});
 
 /**
  * Handles a braille command.
@@ -166,7 +168,7 @@ BrailleCommandHandler.onEditCommand_ = function(command) {
     return true;
   }
 
-  const textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
+  const textEditHandler = DesktopAutomationInterface.instance.textEditHandler;
   if (!textEditHandler || current.start.node !== textEditHandler.node) {
     return true;
   }
@@ -222,4 +224,3 @@ BrailleCommandHandler.onEditCommand_ = function(command) {
 
 /** @private {boolean} */
 BrailleCommandHandler.enabled_ = true;
-});  // goog.scope

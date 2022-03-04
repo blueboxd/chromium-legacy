@@ -210,6 +210,11 @@ const base::Feature kBorealisBigGl{"BorealisBigGl",
 const base::Feature kBorealisDiskManagement{"BorealisDiskManagement",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable borealis on this device. This won't necessarily allow it, since you
+// might fail subsequent checks.
+const base::Feature kBorealisPermitted{"BorealisPermitted",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Force the client to be on its beta version. If not set, the client will be on
 // its stable version.
 const base::Feature kBorealisForceBetaClient{"BorealisForceBetaClient",
@@ -464,10 +469,6 @@ const base::Feature kEcheSWA{"EcheSWA", base::FEATURE_DISABLED_BY_DEFAULT};
 // Moves Eche into a custom widget.
 const base::Feature kEcheCustomWidget{"EcheCustomWidget",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the naive resize for the Eche window.
-const base::Feature kEcheSWAResizing{"EcheSWAResizing",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the Debug Mode of Eche.
 const base::Feature kEcheSWADebugMode{"EcheSWADebugMode",
@@ -1067,11 +1068,6 @@ const base::Feature kPhoneHubCallNotification{
 const base::Feature kPhoneHubMonochromeNotificationIcons{
     "PhoneHubMonochromeNotificationIcons", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the Recent Apps feature in Phone Hub, which allows users to relaunch
-// the streamed app.
-const base::Feature kPhoneHubRecentApps{"PhoneHubRecentApps",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kPinSetupForManagedUsers{"PinSetupForManagedUsers",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -1109,6 +1105,10 @@ const base::Feature kProjectorAnnotator{"ProjectorAnnotator",
 // error messages.
 const base::Feature kProjectorAppDebug{"ProjectorAppDebug",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the Projector exclude transcript feature is enabled.
+const base::Feature kProjectorExcludeTranscript{
+    "ProjectorExcludeTranscript", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the quick dim prototype is enabled.
 const base::Feature kQuickDim{"QuickDim", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1609,10 +1609,6 @@ bool IsEcheCustomWidgetEnabled() {
   return base::FeatureList::IsEnabled(kEcheCustomWidget);
 }
 
-bool IsEcheSWAResizingEnabled() {
-  return base::FeatureList::IsEnabled(kEcheSWAResizing);
-}
-
 bool IsEcheSWADebugModeEnabled() {
   return base::FeatureList::IsEnabled(kEcheSWADebugMode);
 }
@@ -1907,10 +1903,6 @@ bool IsPhoneHubCallNotificationEnabled() {
   return base::FeatureList::IsEnabled(kPhoneHubCallNotification);
 }
 
-bool IsPhoneHubRecentAppsEnabled() {
-  return base::FeatureList::IsEnabled(kPhoneHubRecentApps);
-}
-
 bool IsPinAutosubmitBackfillFeatureEnabled() {
   return base::FeatureList::IsEnabled(kQuickUnlockPinAutosubmitBackfill);
 }
@@ -1950,6 +1942,10 @@ bool IsProjectorAnnotatorEnabled() {
 
 bool IsProjectorAppDebugMode() {
   return base::FeatureList::IsEnabled(kProjectorAppDebug);
+}
+
+bool IsProjectorExcludeTranscriptEnabled() {
+  return base::FeatureList::IsEnabled(kProjectorExcludeTranscript);
 }
 
 bool IsQuickDimEnabled() {

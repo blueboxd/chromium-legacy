@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -38,6 +37,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/layer_animation_stopped_waiter.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -181,10 +181,6 @@ class AppListBubbleViewTest : public AshTestBase {
   const char* GetFocusedViewName() {
     auto* view = GetFocusedView();
     return view ? view->GetClassName() : "none";
-  }
-
-  void WaitForLayerAnimation(ui::Layer* layer) {
-    GetAppListTestHelper()->WaitForLayerAnimation(layer);
   }
 
   base::test::ScopedFeatureList scoped_features_;
@@ -377,7 +373,7 @@ TEST_F(AppListBubbleViewTest, ShowAnimationCreatesAndDestroysLayers) {
   EXPECT_TRUE(apps_grid_view->layer());
 
   // Finish the animation.
-  WaitForLayerAnimation(apps_grid_view->layer());
+  LayerAnimationStoppedWaiter().Wait(apps_grid_view->layer());
 
   // Temporary layers are cleaned up.
   EXPECT_FALSE(continue_section->layer());
@@ -405,7 +401,7 @@ TEST_F(AppListBubbleViewTest, ShowAnimationDestroysAndRestoresGradientMask) {
 
   // Finish the animation.
   auto* apps_grid_view = GetAppsGridView();
-  WaitForLayerAnimation(apps_grid_view->layer());
+  LayerAnimationStoppedWaiter().Wait(apps_grid_view->layer());
 
   // Gradient mask layer is restored.
   EXPECT_TRUE(scroll_view->layer()->layer_mask_layer());
@@ -425,7 +421,7 @@ TEST_F(AppListBubbleViewTest, ShowAnimationDestroysAndRestoresShadow) {
 
   // Finish the animation.
   auto* apps_grid_view = GetAppsGridView();
-  WaitForLayerAnimation(apps_grid_view->layer());
+  LayerAnimationStoppedWaiter().Wait(apps_grid_view->layer());
 
   // Shadow is restored.
   EXPECT_TRUE(app_list_bubble_view->view_shadow_for_test());
@@ -443,16 +439,20 @@ TEST_F(AppListBubbleViewTest, ShowAnimationRecordsSmoothnessHistogram) {
   ShowAppList();
 
   // Wait for the animation to finish.
-  WaitForLayerAnimation(GetAppsGridView()->layer());
+  ui::Layer* layer = GetAppsGridView()->layer();
+  LayerAnimationStoppedWaiter().Wait(layer);
+
+  // Ensure there is one more frame presented after animation finishes to allow
+  // animation throughput data to be passed from cc to ui.
+  layer->GetCompositor()->ScheduleFullRedraw();
+  EXPECT_TRUE(ui::WaitForNextFrameToBePresented(layer->GetCompositor()));
 
   // Smoothness was recorded.
   histograms.ExpectTotalCount(
       "Apps.ClamshellLauncher.AnimationSmoothness.OpenAppsPage", 1);
 }
 
-// TODO(crbug.com/1300774): Disabled due to flakiness.
-TEST_F(AppListBubbleViewTest,
-       DISABLED_HideAnimationsRecordsSmoothnessHistogram) {
+TEST_F(AppListBubbleViewTest, HideAnimationsRecordsSmoothnessHistogram) {
   base::HistogramTester histograms;
 
   // Show the app list without animation.
@@ -464,19 +464,16 @@ TEST_F(AppListBubbleViewTest,
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   AppListBubbleView* view = GetBubblePresenter()->bubble_view_for_test();
-  ui::Compositor* compositor = view->layer()->GetCompositor();
+  ui::Layer* layer = view->layer();
 
-  // Run the hide animation and wait for it to finish. This doesn't use
-  // WaitForLayerAnimation() because the view and its layer are deleted at the
-  // end of the animation.
-  base::RunLoop run_loop;
-  view->StartHideAnimation(/*is_side_shelf=*/false, run_loop.QuitClosure());
-  run_loop.Run();
+  // Run the hide animation and wait for it to finish.
+  view->StartHideAnimation(/*is_side_shelf=*/false, base::DoNothing());
+  LayerAnimationStoppedWaiter().Wait(layer);
 
   // Ensure there is one more frame presented after animation finishes to allow
   // animation throughput data to be passed from cc to ui.
-  std::ignore =
-      ui::WaitForNextFrameToBePresented(compositor, base::Milliseconds(200));
+  layer->GetCompositor()->ScheduleFullRedraw();
+  EXPECT_TRUE(ui::WaitForNextFrameToBePresented(layer->GetCompositor()));
 
   // Smoothness was recorded.
   histograms.ExpectTotalCount(
@@ -493,7 +490,7 @@ TEST_F(AppListBubbleViewTest, ShutdownDuringHideAnimationDoesNotCrash) {
   // Show the app list and wait for the show animation to finish.
   AddAppItems(5);
   ShowAppList();
-  WaitForLayerAnimation(GetAppsGridView()->layer());
+  LayerAnimationStoppedWaiter().Wait(GetAppsGridView()->layer());
 
   // Dismiss the app list, but don't wait for the animation to finish.
   GetAppListTestHelper()->Dismiss();

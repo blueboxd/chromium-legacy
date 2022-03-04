@@ -919,13 +919,12 @@ void PopulateChromeWebUIFrameBinders(
       chromeos::settings::OSSettingsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::cellular_setup::mojom::CellularSetup,
+      ash::cellular_setup::mojom::CellularSetup,
       chromeos::settings::OSSettingsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::cellular_setup::mojom::ESimManager,
-      chromeos::settings::OSSettingsUI, chromeos::NetworkUI, chromeos::OobeUI>(
-      map);
+      ash::cellular_setup::mojom::ESimManager, chromeos::settings::OSSettingsUI,
+      chromeos::NetworkUI, chromeos::OobeUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       chromeos::crostini_installer::mojom::PageHandlerFactory,
@@ -936,7 +935,7 @@ void PopulateChromeWebUIFrameBinders(
       chromeos::CrostiniUpgraderUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::multidevice_setup::mojom::MultiDeviceSetup, chromeos::OobeUI,
+      ash::multidevice_setup::mojom::MultiDeviceSetup, chromeos::OobeUI,
       ash::multidevice::ProximityAuthUI,
       chromeos::multidevice_setup::MultiDeviceSetupDialogUI>(map);
 
@@ -945,7 +944,7 @@ void PopulateChromeWebUIFrameBinders(
       map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::multidevice_setup::mojom::PrivilegedHostDeviceSetter,
+      ash::multidevice_setup::mojom::PrivilegedHostDeviceSetter,
       chromeos::OobeUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<

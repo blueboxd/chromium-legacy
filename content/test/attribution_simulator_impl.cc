@@ -82,12 +82,14 @@ class AlwaysSetCookieChecker : public AttributionCookieChecker {
 class SentReportAccumulator : public AttributionReportSender {
  public:
   SentReportAccumulator(base::Value::ListStorage& reports,
+                        base::Value::ListStorage& debug_reports,
                         bool remove_report_ids,
                         AttributionReportTimeFormat report_time_format)
       : time_origin_(base::Time::Now()),
         remove_report_ids_(remove_report_ids),
         report_time_format_(report_time_format),
-        reports_(reports) {}
+        reports_(reports),
+        debug_reports_(debug_reports) {}
 
   ~SentReportAccumulator() override = default;
 
@@ -98,8 +100,9 @@ class SentReportAccumulator : public AttributionReportSender {
   SentReportAccumulator& operator=(SentReportAccumulator&&) = delete;
 
  private:
-  // AttributionManagerImpl::NetworkSender:
+  // AttributionManagerImpl::ReportSender:
   void SendReport(AttributionReport report,
+                  bool is_debug_report,
                   ReportSentCallback sent_callback) override {
     // TODO(linnan): Support aggregatable reports in the simulator.
     if (!absl::holds_alternative<AttributionReport::EventLevelData>(
@@ -113,7 +116,7 @@ class SentReportAccumulator : public AttributionReportSender {
 
     base::DictionaryValue value;
     value.SetKey("report", std::move(report_body));
-    value.SetStringKey("report_url", report.ReportURL().spec());
+    value.SetStringKey("report_url", report.ReportURL(is_debug_report).spec());
 
     static constexpr char kKeyReportTime[] = "report_time";
     base::TimeDelta report_time_delta = base::Time::Now() - time_origin_;
@@ -134,7 +137,11 @@ class SentReportAccumulator : public AttributionReportSender {
                              StoredSource::AttributionLogic::kFalsely);
     value.SetKey("test_info", std::move(test_info));
 
-    reports_.push_back(std::move(value));
+    if (is_debug_report) {
+      debug_reports_.push_back(std::move(value));
+    } else {
+      reports_.push_back(std::move(value));
+    }
 
     std::move(sent_callback)
         .Run(std::move(report), SendResult(SendResult::Status::kSent,
@@ -145,6 +152,7 @@ class SentReportAccumulator : public AttributionReportSender {
   const bool remove_report_ids_;
   const AttributionReportTimeFormat report_time_format_;
   base::Value::ListStorage& reports_;
+  base::Value::ListStorage& debug_reports_;
 };
 
 // Registers sources and triggers in the `AttributionManagerImpl` and records
@@ -216,19 +224,21 @@ class AttributionEventHandler : public AttributionObserver {
 
     std::stringstream reason;
     switch (result.status()) {
-      case AttributionTrigger::Result::kSuccess:
-      case AttributionTrigger::Result::kSuccessDroppedLowerPriority:
+      case AttributionTrigger::EventLevelResult::kSuccess:
+      case AttributionTrigger::EventLevelResult::kSuccessDroppedLowerPriority:
         // TODO(apaseltiner): Consider surfacing reports dropped due to
         // prioritization.
         return;
-      case AttributionTrigger::Result::kInternalError:
-      case AttributionTrigger::Result::kNoCapacityForConversionDestination:
-      case AttributionTrigger::Result::kNoMatchingImpressions:
-      case AttributionTrigger::Result::kDeduplicated:
-      case AttributionTrigger::Result::kExcessiveAttributions:
-      case AttributionTrigger::Result::kPriorityTooLow:
-      case AttributionTrigger::Result::kDroppedForNoise:
-      case AttributionTrigger::Result::kExcessiveReportingOrigins:
+      case AttributionTrigger::EventLevelResult::kInternalError:
+      case AttributionTrigger::EventLevelResult::
+          kNoCapacityForConversionDestination:
+      case AttributionTrigger::EventLevelResult::kNoMatchingImpressions:
+      case AttributionTrigger::EventLevelResult::kDeduplicated:
+      case AttributionTrigger::EventLevelResult::kExcessiveAttributions:
+      case AttributionTrigger::EventLevelResult::kPriorityTooLow:
+      case AttributionTrigger::EventLevelResult::kDroppedForNoise:
+      case AttributionTrigger::EventLevelResult::kExcessiveReportingOrigins:
+      case AttributionTrigger::EventLevelResult::kNoMatchingEventTriggers:
         reason << result.status();
         break;
     }
@@ -287,6 +297,8 @@ base::Value RunAttributionSimulation(
   }
 
   base::Value::ListStorage reports;
+  base::Value::ListStorage debug_reports;
+
   auto manager = AttributionManagerImpl::CreateForTesting(
       std::move(always_allow_reports_callback), user_data_directory,
       /*special_storage_policy=*/nullptr,
@@ -294,9 +306,9 @@ base::Value RunAttributionSimulation(
           options.noise_mode, options.delay_mode, std::move(rng),
           options.randomized_response_rates),
       std::make_unique<AlwaysSetCookieChecker>(),
-      /*network_sender=*/
-      std::make_unique<SentReportAccumulator>(
-          reports, options.remove_report_ids, options.report_time_format));
+      std::make_unique<SentReportAccumulator>(reports, debug_reports,
+                                              options.remove_report_ids,
+                                              options.report_time_format));
 
   base::Value::ListStorage rejected_sources;
   base::Value::ListStorage rejected_triggers;
@@ -328,6 +340,9 @@ base::Value RunAttributionSimulation(
 
   base::Value output(base::Value::Type::DICTIONARY);
   output.SetKey("reports", base::Value(std::move(reports)));
+
+  if (!debug_reports.empty())
+    output.SetKey("debug_reports", base::Value(std::move(debug_reports)));
 
   if (!rejected_sources.empty())
     output.SetKey("rejected_sources", base::Value(std::move(rejected_sources)));

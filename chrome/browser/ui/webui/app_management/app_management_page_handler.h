@@ -8,17 +8,21 @@
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ui/webui/app_management/app_management_shelf_delegate_chromeos.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list_handle.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/webui/resources/cr_components/app_management/app_management.mojom-forward.h"
+#include "ui/webui/resources/cr_components/app_management/app_management.mojom.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ui/webui/app_management/app_management_shelf_delegate_chromeos.h"
+#endif
 
 class Profile;
 
@@ -61,7 +65,7 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
   void SetPinned(const std::string& app_id,
                  apps::mojom::OptionalBool pinned) override;
   void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission) override;
+                     apps::PermissionPtr permission) override;
   void SetResizeLocked(const std::string& app_id, bool locked) override;
   void Uninstall(const std::string& app_id) override;
   void OpenNativeSettings(const std::string& app_id) override;

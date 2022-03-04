@@ -16,7 +16,6 @@
 #include "components/autofill_assistant/browser/script_parameters.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/trigger_scripts/trigger_script.h"
-#include "components/autofill_assistant/browser/user_data.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
@@ -75,7 +74,14 @@ class ProtocolUtils {
 
   // Create request to get user data.
   static std::string CreateGetUserDataRequest(
-      const CollectUserDataOptions& options);
+      uint64_t run_id,
+      bool request_name,
+      bool request_email,
+      bool request_phone,
+      bool request_shipping,
+      bool request_payment_methods,
+      const std::vector<std::string>& supported_card_networks,
+      const std::string& client_token);
 
   // Create an action from the |action|.
   static std::unique_ptr<Action> CreateAction(ActionDelegate* delegate,
@@ -101,6 +107,7 @@ class ProtocolUtils {
   // proto. Return false if parse failed, otherwise return true.
   static bool ParseActions(ActionDelegate* delegate,
                            const std::string& response,
+                           uint64_t* run_id,
                            std::string* return_global_payload,
                            std::string* return_script_payload,
                            std::vector<std::unique_ptr<Action>>* actions,

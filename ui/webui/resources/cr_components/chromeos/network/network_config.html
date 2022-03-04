@@ -102,6 +102,18 @@
               items="[[ipsecAuthTypeItems_]]" onc-prefix="VPN.IPsec.AuthType"
               disabled="[[hasGuid_(guid)]]">
           </network-config-select>
+          <template is="dom-if" if="[[showVpn_.IPsecEAP]]" restamp>
+            <network-config-input label="[[i18n('OncVPN-IPsec-Username')]]"
+                id="ipsec-eap-username-input"
+                value="{{eapProperties_.identity}}"
+                property="[[managedEapProperties_.identity]]">
+            </network-config-input>
+            <network-password-input label="[[i18n('OncVPN-IPsec-Password')]]"
+                id="ipsec-eap-password-input"
+                value="{{eapProperties_.password}}"
+                property="[[managedEapProperties_.password]]">
+            </network-password-input>
+          </template>
           <template is="dom-if" if="[[!showVpn_.IKEv2]]" restamp>
             <network-config-input label="[[i18n('OncVPN-L2TP-Username')]]"
                 id="l2tp-username-input"
@@ -123,6 +135,18 @@
                 value="{{configProperties_.typeConfig.vpn.ipSec.psk}}"
                 property="[[managedProperties_.typeProperties.vpn.ipSec.psk]]">
             </network-password-input>
+          </template>
+          <template is="dom-if" if="[[showVpn_.IKEv2]]" restamp>
+            <network-config-input label="[[i18n('OncVPN-IPsec-LocalIdentity')]]"
+                id="ipsec-local-id-input"
+                value="{{configProperties_.typeConfig.vpn.ipSec.localIdentity}}"
+                property="[[managedProperties_.typeProperties.vpn.ipSec.localIdentity]]">
+            </network-config-input>
+            <network-config-input label="[[i18n('OncVPN-IPsec-RemoteIdentity')]]"
+                id="ipsec-remote-id-input"
+                value="{{configProperties_.typeConfig.vpn.ipSec.remoteIdentity}}"
+                property="[[managedProperties_.typeProperties.vpn.ipSec.remoteIdentity]]">
+            </network-config-input>
           </template>
         </template>
         <template is="dom-if" if="[[showVpn_.OpenVPN]]" restamp>

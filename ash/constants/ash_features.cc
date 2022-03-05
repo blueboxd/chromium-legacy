@@ -579,7 +579,8 @@ const base::Feature kEolWarningNotifications{"EolWarningNotifications",
 
 // Enables or disables enterprise policy control for eSIM cellular networks.
 // See https://crbug.com/1231305.
-const base::Feature kESimPolicy{"ESimPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kESimPolicy{"ESimPolicy",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable support for touchpad with haptic feedback.
 const base::Feature kExoHapticFeedbackSupport("ExoHapticFeedbackSupport",
@@ -790,7 +791,7 @@ const base::Feature kHoldingSpaceInProgressDownloadsNotificationSuppression{
 
 // Controls whether the snooping protection prototype is enabled.
 const base::Feature kSnoopingProtection{"SnoopingProtection",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable dark mode support for the Chrome OS virtual keyboard.
 const base::Feature kVirtualKeyboardDarkMode{"VirtualKeyboardDarkMode",
@@ -892,6 +893,11 @@ const base::Feature kLauncherFolderRenameKeepsSortOrder{
 // Uses short intervals for launcher nudge for testing if enabled.
 const base::Feature kLauncherNudgeShortInterval{
     "LauncherNudgeShortInterval", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, the launcher nudge prefs will be reset at the start of each new
+// user session.
+const base::Feature kLauncherNudgeSessionReset{
+    "LauncherNudgeSessionReset", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables new flow for license packaged devices with enterprise license.
 const base::Feature kLicensePackagedOobeFlow{"LicensePackagedOobeFlow",
@@ -1111,7 +1117,7 @@ const base::Feature kProjectorExcludeTranscript{
     "ProjectorExcludeTranscript", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the quick dim prototype is enabled.
-const base::Feature kQuickDim{"QuickDim", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kQuickDim{"QuickDim", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the Quick Settings Network revamp, which updates Network
 // Quick Settings UI and related infrastructure. See https://crbug.com/1169479.
@@ -1150,7 +1156,7 @@ const base::Feature kReleaseNotesSuggestionChip{
     "ReleaseNotesSuggestionChip", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Reven Log Source on Chrome OS. This adds hardware
-// information to Feedback reports and chrome://system on CloudReady systems.
+// information to Feedback reports and chrome://system on ChromeOS Flex systems.
 const base::Feature kRevenLogSource{"RevenLogSource",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -1717,7 +1723,8 @@ bool IsHostnameSettingEnabled() {
 }
 
 bool IsSnoopingProtectionEnabled() {
-  return base::FeatureList::IsEnabled(kSnoopingProtection);
+  return base::FeatureList::IsEnabled(kSnoopingProtection) &&
+         ash::switches::HasHps();
 }
 
 bool IsIdleInhibitEnabled() {
@@ -1764,6 +1771,11 @@ bool IsLauncherFolderRenameKeepsSortOrderEnabled() {
 bool IsLauncherNudgeShortIntervalEnabled() {
   return IsProductivityLauncherEnabled() &&
          base::FeatureList::IsEnabled(kLauncherNudgeShortInterval);
+}
+
+bool IsLauncherNudgeSessionResetEnabled() {
+  return IsProductivityLauncherEnabled() &&
+         base::FeatureList::IsEnabled(kLauncherNudgeSessionReset);
 }
 
 bool IsLicensePackagedOobeFlowEnabled() {
@@ -1949,7 +1961,7 @@ bool IsProjectorExcludeTranscriptEnabled() {
 }
 
 bool IsQuickDimEnabled() {
-  return base::FeatureList::IsEnabled(kQuickDim);
+  return base::FeatureList::IsEnabled(kQuickDim) && ash::switches::HasHps();
 }
 
 bool IsQuickSettingsNetworkRevampEnabled() {

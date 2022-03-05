@@ -144,13 +144,21 @@ class ThemeProperties {
     COLOR_DOWNLOAD_SHELF,
     COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND,
     COLOR_DOWNLOAD_SHELF_BUTTON_TEXT,
+    COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR,
 
     // Infobar colors.
     COLOR_INFOBAR,
+    COLOR_INFOBAR_CONTENT_AREA_SEPARATOR,
     COLOR_INFOBAR_TEXT,
 
+    COLOR_SIDE_PANEL_CONTENT_AREA_SEPARATOR,
+
     // Status bubble colors.
-    COLOR_STATUS_BUBBLE,
+    COLOR_STATUS_BUBBLE_ACTIVE,
+    COLOR_STATUS_BUBBLE_INACTIVE,
+    COLOR_STATUS_BUBBLE_SHADOW,
+    COLOR_STATUS_BUBBLE_TEXT_ACTIVE,
+    COLOR_STATUS_BUBBLE_TEXT_INACTIVE,
 
     // /!\ If you make any changes to this enum, you must also increment
     // kThemePackVersion in browser_theme_pack.cc, or else themes will display

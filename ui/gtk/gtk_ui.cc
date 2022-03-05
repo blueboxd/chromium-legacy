@@ -937,6 +937,11 @@ void GtkUi::UpdateColors() {
 
   SkColor tab_border = GetBorderColor("GtkButton#button");
   // Separates the toolbar from the bookmark bar or butter bars.
+  colors_[ThemeProperties::COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR] =
+      tab_border;
+  colors_[ThemeProperties::COLOR_INFOBAR_CONTENT_AREA_SEPARATOR] = tab_border;
+  colors_[ThemeProperties::COLOR_SIDE_PANEL_CONTENT_AREA_SEPARATOR] =
+      tab_border;
   colors_[ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR] = tab_border;
   // Separates entries in the downloads bar.
   colors_[ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR] = tab_border;
@@ -995,7 +1000,6 @@ void GtkUi::UpdateColors() {
     color_map[ThemeProperties::COLOR_TOOLBAR] = tab_color;
     color_map[ThemeProperties::COLOR_DOWNLOAD_SHELF] = tab_color;
     color_map[ThemeProperties::COLOR_INFOBAR] = tab_color;
-    color_map[ThemeProperties::COLOR_STATUS_BUBBLE] = tab_color;
     color_map[ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE] =
         tab_color;
     color_map[ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_INACTIVE] =

@@ -5466,6 +5466,12 @@ const char kLauncherNudgeShortIntervalName[] =
 const char kLauncherNudgeShortIntervalDescription[] =
     "Enables short intervals for launcher nudge for testing";
 
+const char kLauncherNudgeSessionResetName[] =
+    "Enable resetting launcher nudge data";
+const char kLauncherNudgeSessionResetDescription[] =
+    "When enabled, this will reset the launcher nudge shown data on every new "
+    "user session, allowing the nudge to be shown again.";
+
 // Prefer keeping this section sorted to adding new definitions down here.
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -5593,10 +5599,6 @@ const char kWebuiFeedbackDescription[] =
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
 
-const char kCommanderName[] = "Commander";
-const char kCommanderDescription[] =
-    "Enable a text interface to browser features. Invoke with Ctrl-Space.";
-
 const char kDesktopRestructuredLanguageSettingsName[] =
     "Restructured Language Settings (Desktop)";
 const char kDesktopRestructuredLanguageSettingsDescription[] =
@@ -5606,6 +5608,10 @@ const char kDesktopDetailedLanguageSettingsName[] =
     "Detailed Language Settings (Desktop)";
 const char kDesktopDetailedLanguageSettingsDescription[] =
     "Enable the new detailed language settings page";
+
+const char kQuickCommandsName[] = "Quick Commands";
+const char kQuickCommandsDescription[] =
+    "Enable a text interface to browser features. Invoke with Ctrl-Space.";
 
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_FUCHSIA)
@@ -5714,10 +5720,6 @@ const char kSideSearchClearCacheWhenClosedName[] =
     "Side search clear cache when closed";
 const char kSideSearchClearCacheWhenClosedDescription[] =
     "Clears the side search cache when the side panel is closed.";
-
-const char kSideSearchStatePerTabName[] = "Side search state per tab";
-const char kSideSearchStatePerTabDescription[] =
-    "Enables a per-tab toggled state for the side search side panel";
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)

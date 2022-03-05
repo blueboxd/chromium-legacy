@@ -6,6 +6,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_base.h"
@@ -13,16 +14,16 @@
 #include "base/notreached.h"
 #include "base/time/clock.h"
 #include "components/optimization_guide/proto/models.pb.h"
+#include "components/segmentation_platform/internal/data_collection/dummy_training_data_collector.h"
 #include "components/segmentation_platform/internal/database/metadata_utils.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
 #include "components/segmentation_platform/internal/execution/feature_list_query_processor.h"
 #include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
 #include "components/segmentation_platform/internal/segmentation_ukm_helper.h"
+#include "components/segmentation_platform/public/features.h"
 
 using optimization_guide::proto::OptimizationTarget;
-
-const int kInvalidModelVersion = 0;
 
 namespace segmentation_platform {
 namespace {
@@ -133,6 +134,9 @@ class TrainingDataCollectorImpl : public TrainingDataCollector {
       if (hash_index_map.find(output_metric_hash) == hash_index_map.end())
         continue;
 
+      if (!segment_info.has_model_version())
+        continue;
+
       // Generate training data input.
       // TODO(xingliu): Validate immediate output is not included in the input
       // features and update the comment in model_metadata.proto.
@@ -143,23 +147,23 @@ class TrainingDataCollectorImpl : public TrainingDataCollector {
                          weak_ptr_factory_.GetWeakPtr(),
                          static_cast<float>(output_metric_sample),
                          hash_index_map[output_metric_hash],
-                         segment_info.segment_id()));
+                         segment_info.segment_id(),
+                         segment_info.model_version()));
     }
   }
 
   void OnGetInputTensor(float output_value,
                         int output_index,
                         OptimizationTarget segment_id,
+                        int64_t model_version,
                         bool success,
                         const std::vector<float>& inputs) {
     if (!success)
       return;
 
-    // TODO(xingliu): Plumb model version to here.
     auto ukm_source_id =
         SegmentationUkmHelper::GetInstance()->RecordTrainingData(
-            segment_id, /*model_version=*/kInvalidModelVersion, inputs,
-            {output_value}, {output_index});
+            segment_id, model_version, inputs, {output_value}, {output_index});
     if (ukm_source_id == ukm::kInvalidSourceId) {
       VLOG(1) << "Failed to collect training data for segment:" << segment_id;
     }
@@ -186,8 +190,13 @@ std::unique_ptr<TrainingDataCollector> TrainingDataCollector::Create(
     FeatureListQueryProcessor* processor,
     HistogramSignalHandler* histogram_signal_handler,
     base::Clock* clock) {
-  return std::make_unique<TrainingDataCollectorImpl>(
-      segment_info_database, processor, histogram_signal_handler, clock);
+  if (base::FeatureList::IsEnabled(
+          features::kSegmentationStructuredMetricsFeature)) {
+    return std::make_unique<TrainingDataCollectorImpl>(
+        segment_info_database, processor, histogram_signal_handler, clock);
+  }
+
+  return std::make_unique<DummyTrainingDataCollector>();
 }
 
 }  // namespace segmentation_platform

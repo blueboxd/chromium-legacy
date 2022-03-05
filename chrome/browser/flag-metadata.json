@@ -267,7 +267,7 @@
     "name": "arc-usb-device-attach-to-vm-experiment",
     "owners": [ "lgcheng" ],
     // Used on ChromeOS to temperorily attach unclaimed USB device to ARCVM
-    "expiry_milestone": 100
+    "expiry_milestone": 102
   },
   {
     "name": "arc-use-high-memory-dalvik-profile",
@@ -848,11 +848,6 @@
     "expiry_milestone": 102
   },
   {
-    "name": "commander",
-    "owners": [ "lgrey" ],
-    "expiry_milestone": 100
-  },
-  {
     "name": "compositor-threaded-scrollbar-scrolling",
     "owners": [ "arakeri@microsoft.com" ],
     "expiry_milestone": 90
@@ -1206,7 +1201,7 @@
   {
     "name": "device-force-scheduled-reboot",
     "owners": [ "sanjaperisic"],
-    "expiry_milestone": 101
+    "expiry_milestone": 102
   },
   {
     "name": "device-posture",
@@ -3937,6 +3932,11 @@
     "expiry_milestone": 104
   },
   {
+    "name": "launcher-nudge-session-reset",
+    "owners":["anasalazar@chromium.org", "wcwang@chromium.org"],
+    "expiry_milestone": 104
+  },
+  {
     "name": "launcher-nudge-short-interval",
     "owners": [ "wcwang", "//ash/app_list/OWNERS" ],
     "expiry_milestone": 104
@@ -5050,6 +5050,11 @@
     "name": "quick-answers-always-trigger-for-single-word",
     "owners": [ "croissant-eng", "updowndota" ],
     "expiry_milestone": 105
+  },
+  {
+    "name": "quick-commands",
+    "owners": [ "lgrey" ],
+    "expiry_milestone": 110
   },
   {
     "name": "quick-dim",

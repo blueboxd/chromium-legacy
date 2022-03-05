@@ -5,6 +5,7 @@
 /**
  * @fileoverview ChromeVox commands.
  */
+import {Color} from './color.js';
 import {DesktopAutomationInterface} from './desktop_automation_interface.js';
 import {GestureInterface} from './gesture_interface.js';
 import {SmartStickyMode} from './smart_sticky_mode.js';
@@ -1495,6 +1496,13 @@ export class CommandHandler extends CommandHandlerInterface {
    */
   init() {
     ChromeVoxKbHandler.commandHandler = this.onCommand.bind(this);
+
+    chrome.runtime.onMessage.addListener(message => {
+      if (message.target === 'CommandHandler' &&
+          message.action === 'onCommand') {
+        this.onCommand(message.value);
+      }
+    });
 
     chrome.commandLinePrivate.hasSwitch(
         'enable-experimental-accessibility-language-detection', (enabled) => {

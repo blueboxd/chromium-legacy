@@ -811,26 +811,6 @@
             ]
         }
     ],
-    "AutofillEnableVirtualCardsRiskBasedAuthentication": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillEnableVirtualCardsRiskBasedAuthentication"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillFixServerQueriesIfPasswordManagerIsEnabled": [
         {
             "platforms": [
@@ -1421,7 +1401,7 @@
             ]
         }
     ],
-    "Canvas2DStaysGPUOnReadback": [
+    "Canvas2dStaysGPUOnReadback": [
         {
             "platforms": [
                 "android",
@@ -1437,7 +1417,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "Canvas2DStaysGPUOnReadback"
+                        "Canvas2dStaysGPUOnReadback"
                     ]
                 }
             ]
@@ -3021,6 +3001,7 @@
                 {
                     "name": "Enabled_low_engaged_7_days",
                     "params": {
+                        "IPH_LowUserEngagementDetector_availability": ">=3",
                         "enable_feature_default_browser": "false",
                         "enable_feature_incognito_tab": "true",
                         "enable_feature_ntp_suggestion_card": "true",
@@ -3033,7 +3014,8 @@
                     },
                     "enable_features": [
                         "FeatureNotificationGuide",
-                        "SegmentationModelLowEngagedUsers"
+                        "SegmentationModelLowEngagedUsers",
+                        "UseFeatureEngagementForUserTargeting"
                     ]
                 }
             ]
@@ -3614,6 +3596,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "IOSSharedHighlightingColorChange"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSSharedHighlightingV2": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IOSSharedHighlightingV2"
                     ]
                 }
             ]
@@ -6076,6 +6073,21 @@
                     "enable_features": [
                         "IPH_SideSearch",
                         "SideSearch"
+                    ]
+                },
+                {
+                    "name": "SideSearchStatePerTabCacheControl",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:side_search_iph_tgr;comparator:==0;window:90;storage:360",
+                        "event_used": "name:side_search_opened;comparator:==0;window:90;storage:360",
+                        "session_rate": "<3"
+                    },
+                    "enable_features": [
+                        "IPH_SideSearch",
+                        "SideSearch",
+                        "SideSearchClearCacheWhenClosed",
+                        "SideSearchStatePerTab"
                     ]
                 }
             ]

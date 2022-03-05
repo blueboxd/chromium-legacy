@@ -43,6 +43,8 @@
     ThemeProperties::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND) \
   E(kColorDownloadShelfButtonText, \
     ThemeProperties::COLOR_DOWNLOAD_SHELF_BUTTON_TEXT) \
+  E(kColorDownloadShelfContentAreaSeparator, \
+    ThemeProperties::COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR) \
   E_CPONLY(kColorDownloadToolbarButtonActive) \
   E_CPONLY(kColorDownloadToolbarButtonInactive) \
   E_CPONLY(kColorDownloadToolbarButtonRingBackground) \
@@ -58,6 +60,8 @@
   E_CPONLY(kColorGooglePayLogo) \
   /* InfoBar colors. */ \
   E(kColorInfoBarBackground, ThemeProperties::COLOR_INFOBAR) \
+  E(kColorInfoBarContentAreaSeparator, \
+    ThemeProperties::COLOR_INFOBAR_CONTENT_AREA_SEPARATOR) \
   E(kColorInfoBarForeground, ThemeProperties::COLOR_INFOBAR_TEXT) \
   /* Location bar colors. */ \
   E(kColorLocationBarBorder, ThemeProperties::COLOR_LOCATION_BAR_BORDER) \
@@ -110,6 +114,17 @@
   /* Read Later button colors. */ \
   E(kColorReadLaterButtonHighlight, \
     ThemeProperties::COLOR_READ_LATER_BUTTON_HIGHLIGHT) \
+  /* Side panel colors. */ \
+  E(kColorSidePanelContentAreaSeparator, \
+    ThemeProperties::COLOR_SIDE_PANEL_CONTENT_AREA_SEPARATOR) \
+  /* Status bubble colors. */ \
+  E(kColorStatusBubbleBackgroundFrameActive, \
+    ThemeProperties::COLOR_STATUS_BUBBLE_ACTIVE) \
+  E(kColorStatusBubbleBackgroundFrameInactive, \
+    ThemeProperties::COLOR_STATUS_BUBBLE_INACTIVE) \
+  E_CPONLY(kColorStatusBubbleForegroundFrameActive) \
+  E_CPONLY(kColorStatusBubbleForegroundFrameInactive) \
+  E(kColorStatusBubbleShadow, ThemeProperties::COLOR_STATUS_BUBBLE_SHADOW) \
   /* Tab colors. */ \
   E(kColorTabBackgroundActiveFrameActive, \
     ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE) \
@@ -215,6 +230,10 @@
     ThemeProperties::COLOR_TAB_GROUP_BOOKMARK_BAR_CYAN) \
   E(kColorTabGroupBookmarkBarOrange, \
     ThemeProperties::COLOR_TAB_GROUP_BOOKMARK_BAR_ORANGE) \
+  E(kColorTabStrokeFrameActive, \
+    ThemeProperties::COLOR_TAB_STROKE_FRAME_ACTIVE) \
+  E(kColorTabStrokeFrameInactive, \
+    ThemeProperties::COLOR_TAB_STROKE_FRAME_INACTIVE) \
   /* Thumbnail tab colors. */ \
   E_CPONLY(kColorThumbnailTabBackground) \
   E_CPONLY(kColorThumbnailTabForeground) \
@@ -239,6 +258,10 @@
   E(kColorToolbarSeparator, \
     ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR) \
   E(kColorToolbarText, ThemeProperties::COLOR_TOOLBAR_TEXT) \
+  E(kColorToolbarTopSeparatorFrameActive, \
+    ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_ACTIVE) \
+  E(kColorToolbarTopSeparatorFrameInactive, \
+    ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_INACTIVE) \
   /* Window control button background colors */ \
   E(kColorWindowControlButtonBackgroundActive, \
     ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE) \

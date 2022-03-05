@@ -43,7 +43,6 @@ bool GetPlatformHighContrastColor(int id, SkColor* color) {
     case ThemeProperties::COLOR_DOWNLOAD_SHELF:
     case ThemeProperties::COLOR_INFOBAR:
     case ThemeProperties::COLOR_TOOLBAR:
-    case ThemeProperties::COLOR_STATUS_BUBBLE:
       system_theme_color = ui::NativeTheme::SystemThemeColor::kWindow;
       break;
 
@@ -67,7 +66,10 @@ bool GetPlatformHighContrastColor(int id, SkColor* color) {
 
     // Button Text Foreground
     case ThemeProperties::COLOR_BOOKMARK_BUTTON_ICON:
+    case ThemeProperties::COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR:
+    case ThemeProperties::COLOR_INFOBAR_CONTENT_AREA_SEPARATOR:
     case ThemeProperties::COLOR_INFOBAR_TEXT:
+    case ThemeProperties::COLOR_SIDE_PANEL_CONTENT_AREA_SEPARATOR:
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
     case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
     case ThemeProperties::COLOR_TOOLBAR_TEXT:

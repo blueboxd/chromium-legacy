@@ -16,8 +16,8 @@ _REPO_URL = 'https://dl.google.com/dl/android/maven2'
 _GROUP_NAME = 'com/google/android/datatransport'
 _MODULE_NAME = 'transport-api'
 _FILE_EXT = 'aar'
-_OVERRIDE_LATEST = None
-_PATCH_VERSION = 'cr0'
+_OVERRIDE_LATEST = '2.2.1'
+_PATCH_VERSION = 'cr1'
 
 
 def do_latest():

@@ -18,9 +18,8 @@ namespace {
 using TwoClientWebAppsIntegrationTestMacWinLinux =
     TwoClientWebAppsIntegrationTestBase;
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_37SiteA_17_20 \
   DISABLED_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_37SiteA_17_20
 #else
@@ -45,9 +44,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckLaunchIconShown();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_34SiteA_24 \
   DISABLED_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_34SiteA_24
 #else
@@ -71,9 +69,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckWindowCreated();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_34SiteA_22 \
   DISABLED_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_34SiteA_22
 #else
@@ -95,9 +92,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckTabCreated();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_37SiteA_18_19 \
   DISABLED_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_37SiteA_18_19
 #else
@@ -120,9 +116,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckLaunchIconNotShown();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_37SiteA_17_20 \
   DISABLED_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_37SiteA_17_20
 #else
@@ -147,9 +142,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckLaunchIconShown();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_34SiteA_24 \
   DISABLED_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_34SiteA_24
 #else
@@ -173,9 +167,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckWindowCreated();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_34SiteA_22 \
   DISABLED_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_34SiteA_22
 #else
@@ -197,8 +190,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckTabCreated();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_37SiteA_18_19 \
   DISABLED_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_37SiteA_18_19
 #else
@@ -221,9 +214,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckLaunchIconNotShown();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_37SiteA_17_20 \
   DISABLED_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_37SiteA_17_20
 #else
@@ -248,9 +240,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckLaunchIconShown();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_34SiteA_24 \
   DISABLED_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_34SiteA_24
 #else
@@ -274,9 +265,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckWindowCreated();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_34SiteA_22 \
   DISABLED_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_34SiteA_22
 #else
@@ -298,9 +288,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckTabCreated();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_37SiteA_18_19 \
   DISABLED_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_37SiteA_18_19
 #else
@@ -370,16 +359,14 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckTabCreated();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_30SiteC_12SiteC_40Client2_45SiteC_46SiteC_12SiteC_37SiteC_17_20 \
   DISABLED_WebAppIntegration_30SiteC_12SiteC_40Client2_45SiteC_46SiteC_12SiteC_37SiteC_17_20
 #else
 #define MAYBE_WebAppIntegration_30SiteC_12SiteC_40Client2_45SiteC_46SiteC_12SiteC_37SiteC_17_20 \
   WebAppIntegration_30SiteC_12SiteC_40Client2_45SiteC_46SiteC_12SiteC_37SiteC_17_20
 #endif
-
 IN_PROC_BROWSER_TEST_F(
     TwoClientWebAppsIntegrationTestMacWinLinux,
     MAYBE_WebAppIntegration_30SiteC_12SiteC_40Client2_45SiteC_46SiteC_12SiteC_37SiteC_17_20) {
@@ -413,9 +400,17 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckLaunchIconNotShown();
 }
 
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
+#define MAYBE_WebAppIntegration_41_30SiteA_42_40Client2_45SiteA \
+  DISABLED_WebAppIntegration_41_30SiteA_42_40Client2_45SiteA
+#else
+#define MAYBE_WebAppIntegration_41_30SiteA_42_40Client2_45SiteA \
+  WebAppIntegration_41_30SiteA_42_40Client2_45SiteA
+#endif
 IN_PROC_BROWSER_TEST_F(
     TwoClientWebAppsIntegrationTestMacWinLinux,
-    DISABLED_WebAppIntegration_41_30SiteA_42_40Client2_45SiteA) {
+    MAYBE_WebAppIntegration_41_30SiteA_42_40Client2_45SiteA) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
@@ -426,9 +421,17 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckAppInListNotLocallyInstalled("SiteA");
 }
 
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
+#define MAYBE_WebAppIntegration_41_31SiteA_42_40Client2_45SiteA \
+  DISABLED_WebAppIntegration_41_31SiteA_42_40Client2_45SiteA
+#else
+#define MAYBE_WebAppIntegration_41_31SiteA_42_40Client2_45SiteA \
+  WebAppIntegration_41_31SiteA_42_40Client2_45SiteA
+#endif
 IN_PROC_BROWSER_TEST_F(
     TwoClientWebAppsIntegrationTestMacWinLinux,
-    DISABLED_WebAppIntegration_41_31SiteA_42_40Client2_45SiteA) {
+    MAYBE_WebAppIntegration_41_31SiteA_42_40Client2_45SiteA) {
   // Test contents are generated by script. Please do not modify!
   // See `chrome/test/webapps/README.md` for more info.
   // Sheriffs: Disabling this test is supported.
@@ -439,8 +442,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckAppInListNotLocallyInstalled("SiteA");
 }
 
-// Flaky, see https://crbug.com/1273666
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_41_47SiteA_42_40Client2_45SiteA \
   DISABLED_WebAppIntegration_41_47SiteA_42_40Client2_45SiteA
 #else
@@ -472,8 +475,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsIntegrationTestMacWinLinux,
   helper_.CheckAppInListNotLocallyInstalled("SiteA");
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_41_30SiteC_42_40Client2_45SiteC \
   DISABLED_WebAppIntegration_41_30SiteC_42_40Client2_45SiteC
 #else
@@ -505,9 +508,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsIntegrationTestMacWinLinux,
   helper_.CheckAppInListNotLocallyInstalled("SiteC");
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_35SiteA_24 \
   DISABLED_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_35SiteA_24
 #else
@@ -531,9 +533,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckWindowCreated();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_35SiteA_24 \
   DISABLED_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_35SiteA_24
 #else
@@ -557,9 +558,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckWindowCreated();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_35SiteA_24 \
   DISABLED_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_46SiteA_12SiteA_35SiteA_24
 #else
@@ -583,9 +583,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckWindowCreated();
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_10SiteA_15SiteA_40Client1_15SiteA \
   DISABLED_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_10SiteA_15SiteA_40Client1_15SiteA
 #else
@@ -609,9 +608,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckAppNotInList("SiteA");
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_10SiteA_15SiteA_40Client1_15SiteA \
   DISABLED_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_10SiteA_15SiteA_40Client1_15SiteA
 #else
@@ -635,9 +633,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckAppNotInList("SiteA");
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_10SiteA_15SiteA_40Client1_15SiteA \
   DISABLED_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_10SiteA_15SiteA_40Client1_15SiteA
 #else
@@ -677,9 +674,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckAppNotInList("SiteA");
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_41_10SiteA_42_45SiteA \
   DISABLED_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_41_10SiteA_42_45SiteA
 #else
@@ -703,9 +699,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckAppInListNotLocallyInstalled("SiteA");
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_41_10SiteA_42_45SiteA \
   DISABLED_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_41_10SiteA_42_45SiteA
 #else
@@ -729,8 +724,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckAppInListNotLocallyInstalled("SiteA");
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_41_10SiteA_42_45SiteA \
   DISABLED_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_41_10SiteA_42_45SiteA
 #else
@@ -770,9 +765,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckAppInListNotLocallyInstalled("SiteA");
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_41_43SiteA_42_45SiteA \
   DISABLED_WebAppIntegration_30SiteA_24_12SiteA_40Client2_45SiteA_41_43SiteA_42_45SiteA
 #else
@@ -796,9 +790,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckAppInListNotLocallyInstalled("SiteA");
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_41_43SiteA_42_45SiteA \
   DISABLED_WebAppIntegration_31SiteA_24_12SiteA_40Client2_45SiteA_41_43SiteA_42_45SiteA
 #else
@@ -822,9 +815,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckAppInListNotLocallyInstalled("SiteA");
 }
 
-// TODO(crbug.com/1273666): Test failed on Mac.
-// TODO(crbug.com/1281950): Browsers size failure on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_41_43SiteA_42_45SiteA \
   DISABLED_WebAppIntegration_47SiteA_24_12SiteA_40Client2_45SiteA_41_43SiteA_42_45SiteA
 #else
@@ -848,8 +840,8 @@ IN_PROC_BROWSER_TEST_F(
   helper_.CheckAppInListNotLocallyInstalled("SiteA");
 }
 
-// TODO(crbug.com/1273666): Test failing frequently on Mac.
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1301414): Mac shims failing to launch on Mac debug and ASAN.
+#if BUILDFLAG(IS_MAC) && (defined(NDEBUG) || defined(ADDRESS_SANITIZER))
 #define MAYBE_WebAppIntegration_29SiteA_11SiteA_40Client2_45SiteA_41_43SiteA_42_45SiteA \
   DISABLED_WebAppIntegration_29SiteA_11SiteA_40Client2_45SiteA_41_43SiteA_42_45SiteA
 #else

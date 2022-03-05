@@ -378,6 +378,7 @@ public abstract class ChromeFeatureList {
     public static final String INTEREST_FEED_V2 = "InterestFeedV2";
     public static final String INTEREST_FEED_V2_HEARTS = "InterestFeedV2Hearts";
     public static final String INTEREST_FEED_V2_AUTOPLAY = "InterestFeedV2Autoplay";
+    public static final String HISTORY_JOURNEYS = "Journeys";
     public static final String KITKAT_SUPPORTED = "KitKatSupported";
     public static final String LEAK_DETECTION_UNAUTHENTICATED = "LeakDetectionUnauthenticated";
     public static final String LIGHTWEIGHT_REACTIONS = "LightweightReactions";
@@ -402,6 +403,7 @@ public abstract class ChromeFeatureList {
     public static final String MODAL_PERMISSION_DIALOG_VIEW = "ModalPermissionDialogView";
     public static final String METRICS_SETTINGS_ANDROID = "MetricsSettingsAndroid";
     public static final String NEW_WINDOW_APP_MENU = "NewWindowAppMenu";
+    public static final String NOTIFICATION_PERMISSION_VARIANT = "NotificationPermissionVariant";
     public static final String OFFLINE_INDICATOR = "OfflineIndicator";
     public static final String OFFLINE_INDICATOR_V2 = "OfflineIndicatorV2";
     public static final String OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS =

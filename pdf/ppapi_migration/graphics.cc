@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "pdf/ppapi_migration/callback.h"
 #include "pdf/ppapi_migration/image.h"
 #include "pdf/ppapi_migration/result_codes.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -52,15 +51,15 @@ SkiaGraphics::~SkiaGraphics() = default;
 // TODO(https://crbug.com/1099020): After completely switching to non-Pepper
 // plugin, make Flush() return false since there is no pending action for
 // syncing the client's snapshot.
-bool SkiaGraphics::Flush(ResultCallback callback) {
+bool SkiaGraphics::Flush(base::OnceClosure callback) {
   sk_sp<SkImage> snapshot = skia_graphics_->makeImageSnapshot();
   skia_graphics_->getCanvas()->drawImage(
       snapshot.get(), /*x=*/0, /*y=*/0, SkSamplingOptions(), /*paint=*/nullptr);
 
   client_->UpdateSnapshot(std::move(snapshot));
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), 0));
+  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                   std::move(callback));
   return true;
 }
 

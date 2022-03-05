@@ -3145,6 +3145,9 @@ extern const char kLauncherNudgeDescription[];
 extern const char kLauncherNudgeShortIntervalName[];
 extern const char kLauncherNudgeShortIntervalDescription[];
 
+extern const char kLauncherNudgeSessionResetName[];
+extern const char kLauncherNudgeSessionResetDescription[];
+
 // Prefer keeping this section sorted to adding new declarations down here.
 
 #endif  // #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -3228,14 +3231,14 @@ extern const char kWebuiFeedbackDescription[];
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
 
-extern const char kCommanderName[];
-extern const char kCommanderDescription[];
-
 extern const char kDesktopRestructuredLanguageSettingsName[];
 extern const char kDesktopRestructuredLanguageSettingsDescription[];
 
 extern const char kDesktopDetailedLanguageSettingsName[];
 extern const char kDesktopDetailedLanguageSettingsDescription[];
+
+extern const char kQuickCommandsName[];
+extern const char kQuickCommandsDescription[];
 
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
         // defined (OS_FUCHSIA)
@@ -3310,9 +3313,6 @@ extern const char kSideSearchDescription[];
 
 extern const char kSideSearchClearCacheWhenClosedName[];
 extern const char kSideSearchClearCacheWhenClosedDescription[];
-
-extern const char kSideSearchStatePerTabName[];
-extern const char kSideSearchStatePerTabDescription[];
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)

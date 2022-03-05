@@ -44,20 +44,6 @@ if (enable_pdf) {
     ]
   }
 
-  # Stub PPAPI module that just provides no-op entry points.
-  static_library("pdf_ppapi") {
-    sources = [ "pdf_ppapi.cc" ]
-
-    configs += [ ":strict" ]
-
-    public = [ "pdf_ppapi.h" ]
-
-    deps = [
-      "//base",
-      "//ppapi/c",
-    ]
-  }
-
   source_set("features") {
     sources = [ "pdf_features.cc" ]
 
@@ -252,7 +238,6 @@ if (enable_pdf) {
     sources = [
       "ppapi_migration/bitmap.cc",
       "ppapi_migration/bitmap.h",
-      "ppapi_migration/callback.h",
       "ppapi_migration/graphics.cc",
       "ppapi_migration/graphics.h",
       "ppapi_migration/image.cc",
@@ -471,8 +456,6 @@ if (enable_pdf) {
   group("features") {
   }
   group("pdf") {
-  }
-  group("pdf_ppapi") {
   }
   group("pdf_view_web_plugin") {
   }

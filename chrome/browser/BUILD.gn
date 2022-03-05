@@ -1784,6 +1784,8 @@ static_library("browser") {
     "update_client/chrome_update_query_params_delegate.h",
     "url_param_filter/cross_otr_metric_throttle.cc",
     "url_param_filter/cross_otr_metric_throttle.h",
+    "url_param_filter/url_param_classifications_loader.cc",
+    "url_param_filter/url_param_classifications_loader.h",
     "url_param_filter/url_param_filterer.cc",
     "url_param_filter/url_param_filterer.h",
     "usb/frame_usb_services.cc",
@@ -2790,6 +2792,8 @@ static_library("browser") {
       "android/feedback/connectivity_checker.cc",
       "android/feedback/screenshot_mode.h",
       "android/feedback/screenshot_task.cc",
+      "android/flags/bad_flags_snackbar_manager.cc",
+      "android/flags/bad_flags_snackbar_manager.h",
       "android/foreign_session_helper.cc",
       "android/foreign_session_helper.h",
       "android/historical_tab_saver.cc",
@@ -3135,6 +3139,8 @@ static_library("browser") {
       "flags/android/chrome_feature_list.h",
       "geolocation/geolocation_permission_context_delegate_android.cc",
       "geolocation/geolocation_permission_context_delegate_android.h",
+      "history_clusters/history_clusters_bridge.cc",
+      "history_clusters/history_clusters_bridge.h",
       "history_clusters/history_clusters_tab_helper_android.cc",
       "icon_loader_android.cc",
       "incognito/android/incognito_utils_android.cc",
@@ -6357,6 +6363,9 @@ static_library("browser") {
     if (is_linux || is_chromeos) {
       sources += [ "printing/printer_manager_dialog_linux.cc" ]
     }
+    if (is_fuchsia) {
+      sources += [ "printing/printer_manager_dialog_fuchsia.cc" ]
+    }
     if (enable_oop_printing) {
       sources += [
         "printing/print_backend_service_manager.cc",
@@ -7854,17 +7863,15 @@ static_library("test_support") {
   }
 
   if (enable_oop_printing) {
-    if (is_win || is_mac || is_linux || is_chromeos) {
-      sources += [
-        "printing/print_backend_service_test_impl.cc",
-        "printing/print_backend_service_test_impl.h",
-      ]
-      deps += [
-        "//chrome/services/printing:lib",
-        "//chrome/services/printing/public/mojom",
-        "//printing:test_support",
-      ]
-    }
+    sources += [
+      "printing/print_backend_service_test_impl.cc",
+      "printing/print_backend_service_test_impl.h",
+    ]
+    deps += [
+      "//chrome/services/printing:lib",
+      "//chrome/services/printing/public/mojom",
+      "//printing:test_support",
+    ]
   }
 
   if (enable_extensions) {

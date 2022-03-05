@@ -5034,12 +5034,13 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(optimization_guide::switches::kDebugLoggingEnabled)},
 
     {"history-journeys", flag_descriptions::kJourneysName,
-     flag_descriptions::kJourneysDescription, kOsDesktop,
+     flag_descriptions::kJourneysDescription, kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(history_clusters::internal::kJourneys)},
 
     {"history-journeys-omnibox-action",
      flag_descriptions::kJourneysOmniboxActionName,
-     flag_descriptions::kJourneysOmniboxActionDescription, kOsDesktop,
+     flag_descriptions::kJourneysOmniboxActionDescription,
+     kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(history_clusters::internal::kOmniboxAction)},
 
     {"history-journeys-on-device-clustering",
@@ -5052,7 +5053,8 @@ const FeatureEntry kFeatureEntries[] = {
          "HistoryJourneysOnDeviceClusteringBackend")},
 
     {"page-content-annotations", flag_descriptions::kPageContentAnnotationsName,
-     flag_descriptions::kPageContentAnnotationsDescription, kOsDesktop,
+     flag_descriptions::kPageContentAnnotationsDescription,
+     kOsDesktop | kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          optimization_guide::features::kPageContentAnnotations,
          kPageContentAnnotationsVariations,
@@ -6935,6 +6937,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"launcher-nudge", flag_descriptions::kLauncherNudgeName,
      flag_descriptions::kLauncherNudgeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kShelfLauncherNudge)},
+    {"launcher-nudge-session-reset",
+     flag_descriptions::kLauncherNudgeSessionResetName,
+     flag_descriptions::kLauncherNudgeSessionResetDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kLauncherNudgeSessionReset)},
     {"launcher-nudge-short-interval",
      flag_descriptions::kLauncherNudgeShortIntervalName,
      flag_descriptions::kLauncherNudgeShortIntervalDescription, kOsCrOS,
@@ -7128,9 +7134,9 @@ const FeatureEntry kFeatureEntries[] = {
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
-    {"commander", flag_descriptions::kCommanderName,
-     flag_descriptions::kCommanderDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kCommander)},
+    {"quick-commands", flag_descriptions::kQuickCommandsName,
+     flag_descriptions::kQuickCommandsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kQuickCommands)},
 
     {"desktop-restructured-language-settings",
      flag_descriptions::kDesktopRestructuredLanguageSettingsName,
@@ -7916,10 +7922,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSideSearchClearCacheWhenClosedName,
      flag_descriptions::kSideSearchClearCacheWhenClosedDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSideSearchClearCacheWhenClosed)},
-
-    {"side-search-state-per-tab", flag_descriptions::kSideSearchStatePerTabName,
-     flag_descriptions::kSideSearchStatePerTabDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kSideSearchStatePerTab)},
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

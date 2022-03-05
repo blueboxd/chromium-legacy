@@ -34,6 +34,7 @@
               "external/wpt/html/canvas/offscreen/manual/convert-to-blob",
               "external/wpt/scroll-animations",
               "external/wpt/requestidlecallback",
+              "external/wpt/web-animations/crashtests",
               "external/wpt/web-animations/timing-model/animations",
               "fast/events/pointerevents/pinch",
               "lifecycle",
@@ -1015,7 +1016,8 @@
     "bases": [
       "external/wpt/css/css-pseudo",
       "wpt_internal/css/css-pseudo",
-      "external/wpt/css/css-highlight-api"
+      "external/wpt/css/css-highlight-api",
+      "http/tests/inspector-protocol/css/highlight-pseudo-inheritance.js"
     ],
     "args": ["--enable-blink-features=HighlightInheritance"]
   },

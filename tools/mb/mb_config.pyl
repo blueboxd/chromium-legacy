@@ -87,7 +87,7 @@
 
       'android-arm64-proguard-rel': 'android_release_bot_minimal_symbols_arm64_webview_google_reclient',
       'android-bfcache-rel': 'android_release_bot_minimal_symbols_reclient',
-      'android-binary-size-generator': 'android_binary_size',
+      'android-binary-size-generator': 'android_binary_size_reclient',
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon_reclient',
       'android-cronet-arm-rel': 'android_cronet_release_bot_minimal_symbols_arm_no_neon_reclient',
       'android-cronet-arm64-dbg': 'android_cronet_debug_static_bot_arm64_reclient',
@@ -109,9 +109,9 @@
       'android-pie-arm64-coverage-experimental-rel': 'android_release_bot_arm64_webview_monochrome_expectations_reclient',
       'android-pie-arm64-rel': 'android_release_bot_minimal_symbols_arm64_webview_monochrome_reclient',
       'android-pie-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
-      'android-weblayer-with-aosp-webview-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_disable_proguard_chrome_google_reclient',
+      'android-weblayer-with-aosp-webview-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_disable_proguard_chrome_google',
       # Use webview_monochrome as this builder triggers tests on Android O & P
-      'android-weblayer-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_disable_proguard_webview_monochrome_reclient',
+      'android-weblayer-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_disable_proguard_webview_monochrome',
       'android-10-arm64-rel': 'android_release_bot_minimal_symbols_arm64_fastbuild_webview_trichrome_reclient',
       'android-11-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_reclient',
       'android-12-x64-rel': 'android_release_bot_minimal_symbols_x64_fastbuild_webview_trichrome_reclient',
@@ -286,6 +286,10 @@
       'Comparison Windows (reclient)': {
         'goma': 'gpu_tests_release_bot_minimal_symbols',
         'reclient': 'gpu_tests_release_bot_minimal_symbols_reclient',
+      },
+      'Comparison Simple Chrome (reclient)': {
+        'goma': 'chromeos_amd64-generic_use_fake_dbus_clients',
+        'reclient': 'chromeos_amd64-generic_use_fake_dbus_clients_reclient',
       },
       'Libfuzzer Upload Chrome OS ASan': 'libfuzzer_chromeos_asan_release_bot',
       'Libfuzzer Upload Linux ASan': 'libfuzzer_asan_release_bot',
@@ -1279,6 +1283,11 @@
       'official_optimize', 'stable_channel',
     ],
 
+    'android_binary_size_reclient': [
+      'android', 'chrome_with_codecs', 'reclient', 'minimal_symbols',
+      'official_optimize', 'stable_channel',
+    ],
+
     'android_cast_debug_static_bot_reclient': [
       'android', 'cast', 'clang', 'debug_static_bot_reclient',
     ],
@@ -1528,6 +1537,12 @@
       'no_secondary_abi',
     ],
 
+    'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_disable_proguard_chrome_google': [
+      'android', 'release_bot', 'minimal_symbols',
+      'android_fastbuild', 'x86', 'resource_allowlisting', 'disable_proguard',
+      'chrome_google'
+    ],
+
     'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_disable_proguard_chrome_google_reclient': [
       'android', 'release_bot_reclient', 'minimal_symbols',
       'android_fastbuild', 'x86', 'resource_allowlisting', 'disable_proguard',
@@ -1549,8 +1564,8 @@
       'strip_debug_info', 'android_fastbuild', 'webview_trichrome',
     ],
 
-    'android_release_bot_minimal_symbols_x86_fastbuild_disable_proguard_webview_monochrome_reclient': [
-      'android', 'release_bot_reclient', 'minimal_symbols', 'x86',
+    'android_release_bot_minimal_symbols_x86_fastbuild_disable_proguard_webview_monochrome': [
+      'android', 'release_bot', 'minimal_symbols', 'x86',
       'strip_debug_info', 'android_fastbuild', 'webview_monochrome',
       'disable_proguard'
     ],

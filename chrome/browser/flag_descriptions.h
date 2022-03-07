@@ -1230,8 +1230,11 @@ extern const char kPullToRefreshName[];
 extern const char kPullToRefreshDescription[];
 extern const char kPullToRefreshEnabledTouchscreen[];
 
-extern const char kPwaUpdateDialogForNameAndIconName[];
-extern const char kPwaUpdateDialogForNameAndIconDescription[];
+extern const char kPwaUpdateDialogForAppIconName[];
+extern const char kPwaUpdateDialogForAppIconDescription[];
+
+extern const char kPwaUpdateDialogForAppTitleName[];
+extern const char kPwaUpdateDialogForAppTitleDescription[];
 
 extern const char kQuicName[];
 extern const char kQuicDescription[];
@@ -2369,6 +2372,9 @@ extern const char kAppDiscoveryForOobeDescription[];
 
 extern const char kAppDiscoveryRemoteUrlSearchName[];
 extern const char kAppDiscoveryRemoteUrlSearchDescription[];
+
+extern const char kAppProvisioningStaticName[];
+extern const char kAppProvisioningStaticDescription[];
 
 extern const char kArcAccountRestrictionsName[];
 extern const char kArcAccountRestrictionsDescription[];

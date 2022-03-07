@@ -39,6 +39,7 @@ CreditCardFormEventLogger::CreditCardFormEventLogger(
                           is_in_any_main_frame,
                           form_interactions_ukm_logger,
                           client ? client->GetLogManager() : nullptr),
+      current_authentication_flow_(UnmaskAuthFlowType::kNone),
       personal_data_manager_(personal_data_manager),
       client_(client) {}
 
@@ -276,6 +277,7 @@ void CreditCardFormEventLogger::LogFormSubmitted(const FormStructure& form) {
   if (!has_logged_suggestion_filled_) {
     Log(FORM_EVENT_NO_SUGGESTION_SUBMITTED_ONCE, form);
   } else if (logged_suggestion_filled_was_masked_server_card_) {
+    DCHECK_NE(current_authentication_flow_, UnmaskAuthFlowType::kNone);
     Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SUBMITTED_ONCE, form);
 
     // Log BetterAuth.FlowEvents.
@@ -392,9 +394,9 @@ void CreditCardFormEventLogger::RecordCardUnmaskFlowEvent(
       flow_type_suffix = ".OtpFallbackFromFido";
       break;
     case UnmaskAuthFlowType::kNone:
-      // TODO(crbug.com/1300959): Fix Autofill.BetterAuth logging.
+      NOTREACHED();
       flow_type_suffix = "";
-      return;
+      break;
   }
   std::string card_type_suffix =
       latest_selected_card_was_virtual_card_ ? ".VirtualCard" : ".ServerCard";

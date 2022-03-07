@@ -10,6 +10,7 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/macros.h"
+#include "components/services/app_service/public/cpp/run_on_os_login_types.h"
 
 namespace {
 
@@ -593,19 +594,21 @@ bool AppUpdate::InstallReasonChanged() const {
           (mojom_delta_->install_reason != mojom_state_->install_reason));
 }
 
-apps::mojom::InstallSource AppUpdate::InstallSource() const {
+apps::InstallSource AppUpdate::InstallSource() const {
+  if (ShouldUseNonMojom()) {
+    GET_VALUE_WITH_DEFAULT_VALUE(install_source, InstallSource::kUnknown)
+  }
+
   if (mojom_delta_ &&
       (mojom_delta_->install_source != apps::mojom::InstallSource::kUnknown)) {
-    return mojom_delta_->install_source;
+    return ConvertMojomInstallSourceToInstallSource(
+        mojom_delta_->install_source);
   }
   if (mojom_state_) {
-    return mojom_state_->install_source;
+    return ConvertMojomInstallSourceToInstallSource(
+        mojom_state_->install_source);
   }
-  return apps::mojom::InstallSource::kUnknown;
-}
-
-apps::InstallSource AppUpdate::GetInstallSource() const {
-  GET_VALUE_WITH_DEFAULT_VALUE(install_source, InstallSource::kUnknown)
+  return apps::InstallSource::kUnknown;
 }
 
 bool AppUpdate::InstallSourceChanged() const {
@@ -905,18 +908,12 @@ bool AppUpdate::IntentFiltersChanged() const {
           (mojom_delta_->intent_filters != mojom_state_->intent_filters));
 }
 
-apps::mojom::OptionalBool AppUpdate::ResizeLocked() const {
-  if (mojom_delta_ &&
-      (mojom_delta_->resize_locked != apps::mojom::OptionalBool::kUnknown)) {
-    return mojom_delta_->resize_locked;
+absl::optional<bool> AppUpdate::ResizeLocked() const {
+  if (ShouldUseNonMojom()) {
+    GET_VALUE_WITH_FALLBACK(resize_locked, absl::nullopt);
   }
-  if (mojom_state_)
-    return mojom_state_->resize_locked;
-  return apps::mojom::OptionalBool::kUnknown;
-}
 
-absl::optional<bool> AppUpdate::GetResizeLocked() const {
-  GET_VALUE_WITH_FALLBACK(resize_locked, absl::nullopt);
+  CONVERT_MOJOM_OPTIONALBOOL_TO_OPTIONAL_VALUE(resize_locked)
 }
 
 bool AppUpdate::ResizeLockedChanged() const {
@@ -954,22 +951,26 @@ bool AppUpdate::WindowModeChanged() const {
           (mojom_delta_->window_mode != mojom_state_->window_mode));
 }
 
-apps::mojom::RunOnOsLoginPtr AppUpdate::RunOnOsLogin() const {
+absl::optional<apps::RunOnOsLogin> AppUpdate::RunOnOsLogin() const {
+  if (ShouldUseNonMojom()) {
+    if (delta_ && delta_->run_on_os_login.has_value()) {
+      return CloneRunOnOsLogin(delta_->run_on_os_login.value());
+    }
+    if (state_ && state_->run_on_os_login.has_value()) {
+      return CloneRunOnOsLogin(state_->run_on_os_login.value());
+    }
+    return absl::nullopt;
+  }
+
   if (mojom_delta_ && !mojom_delta_->run_on_os_login.is_null()) {
-    return mojom_delta_->run_on_os_login.Clone();
+    apps::RunOnOsLogin run_os_login = std::move(
+        *ConvertMojomRunOnOsLoginToRunOnOsLogin(mojom_delta_->run_on_os_login));
+    return run_os_login;
   }
   if (mojom_state_ && !mojom_state_->run_on_os_login.is_null()) {
-    return mojom_state_->run_on_os_login.Clone();
-  }
-  return apps::mojom::RunOnOsLoginPtr();
-}
-
-absl::optional<apps::RunOnOsLogin> AppUpdate::GetRunOnOsLogin() const {
-  if (delta_ && delta_->run_on_os_login.has_value()) {
-    return CloneRunOnOsLogin(delta_->run_on_os_login.value());
-  }
-  if (state_ && state_->run_on_os_login.has_value()) {
-    return CloneRunOnOsLogin(state_->run_on_os_login.value());
+    apps::RunOnOsLogin run_os_login = std::move(
+        *ConvertMojomRunOnOsLoginToRunOnOsLogin(mojom_state_->run_on_os_login));
+    return run_os_login;
   }
   return absl::nullopt;
 }
@@ -1046,10 +1047,11 @@ std::ostream& operator<<(std::ostream& out, const AppUpdate& app) {
     out << filter << std::endl;
   }
 
-  out << "ResizeLocked: " << app.ResizeLocked() << std::endl;
+  out << "ResizeLocked: " << PRINT_OPTIONAL_VALUE(ResizeLocked) << std::endl;
   out << "WindowMode: " << app.WindowMode() << std::endl;
-  if (app.RunOnOsLogin()) {
-    out << "RunOnOsLoginMode: " << app.RunOnOsLogin()->login_mode << std::endl;
+  if (app.RunOnOsLogin().has_value()) {
+    out << "RunOnOsLoginMode: "
+        << static_cast<int>(app.RunOnOsLogin().value().login_mode) << std::endl;
   }
 
   return out;

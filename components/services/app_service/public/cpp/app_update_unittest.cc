@@ -206,7 +206,7 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_install_reason_, u.GetInstallReason());
     EXPECT_EQ(expect_install_reason_changed_, u.InstallReasonChanged());
 
-    EXPECT_EQ(expect_install_source_, u.GetInstallSource());
+    EXPECT_EQ(expect_install_source_, u.InstallSource());
     EXPECT_EQ(expect_install_source_changed_, u.InstallSourceChanged());
 
     EXPECT_EQ(expect_policy_id_, u.PolicyId());
@@ -248,18 +248,13 @@ class AppUpdateTest : public testing::Test {
     EXPECT_TRUE(IsEqual(expect_intent_filters_, u.GetIntentFilters()));
     EXPECT_EQ(expect_intent_filters_changed_, u.IntentFiltersChanged());
 
-    EXPECT_EQ(expect_resize_locked_, u.GetResizeLocked());
+    EXPECT_EQ(expect_resize_locked_, u.ResizeLocked());
     EXPECT_EQ(expect_resize_locked_changed_, u.ResizeLockedChanged());
 
     EXPECT_EQ(expect_window_mode_, u.GetWindowMode());
     EXPECT_EQ(expect_window_mode_changed_, u.WindowModeChanged());
 
-    if (expect_run_on_os_login_.has_value()) {
-      ASSERT_TRUE(u.GetRunOnOsLogin().has_value());
-      EXPECT_EQ(expect_run_on_os_login_.value(), u.GetRunOnOsLogin().value());
-    } else {
-      ASSERT_FALSE(u.GetRunOnOsLogin().has_value());
-    }
+    EXPECT_EQ(expect_run_on_os_login_, u.RunOnOsLogin());
     EXPECT_EQ(expect_run_on_os_login_changed_, u.RunOnOsLoginChanged());
 
     EXPECT_EQ(account_id_, u.AccountId());

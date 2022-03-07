@@ -5665,7 +5665,7 @@ void NavigationRequest::DidCommitNavigation(
   if ((should_update_history_ && IsSameDocument() && !HasUserGesture() &&
        params.url == previous_main_frame_url) ||
       !render_frame_host_->GetPage().IsPrimary() ||
-      GetWebContents()->IsPortal()) {
+      frame_tree_node()->frame_tree()->IsPortal()) {
     should_update_history_ = false;
   }
   previous_main_frame_url_ = previous_main_frame_url;
@@ -6345,6 +6345,10 @@ bool NavigationRequest::IsPrerenderedPageActivation() {
 
   CHECK(prerender_frame_tree_node_id_.has_value());
   return prerender_frame_tree_node_id_ != RenderFrameHost::kNoFrameTreeNodeId;
+}
+
+bool NavigationRequest::IsInFencedFrameTree() {
+  return frame_tree_node()->IsInFencedFrameTree();
 }
 
 FrameType NavigationRequest::GetNavigatingFrameType() const {

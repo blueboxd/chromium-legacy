@@ -903,6 +903,10 @@ chromium-metrics-reviews@google.com.
 <histogram name="AutocompleteActionPredictor.PrerenderStatus"
     enum="AutocompleteActionPredictorPredictionStatus"
     expires_after="2022-08-07">
+  <obsolete>
+    Removed in M101. Use Prerender.Experimental.PredictionStatus.DirectUrlInput
+    instead.
+  </obsolete>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -4503,84 +4507,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Tracks whether the push notification request is registered correctly for
     Drive. Recorded when the push notification manager is initialized.
-  </summary>
-</histogram>
-
-<histogram name="DriveCommon.Lifecycle.FirstLaunchTime" units="ms"
-    expires_after="M102">
-  <owner>simmonsjosh@google.com</owner>
-  <owner>src/ui/file_manager/OWNERS</owner>
-  <summary>
-    How long did it take to launch Google Drive for the first time.
-  </summary>
-</histogram>
-
-<histogram name="DriveCommon.Lifecycle.Mount" enum="DriveMountStatus"
-    expires_after="M102">
-  <owner>simmonsjosh@google.com</owner>
-  <owner>src/ui/file_manager/OWNERS</owner>
-  <summary>Records outcomes of attempts to mount Google Drive.</summary>
-</histogram>
-
-<histogram name="DriveCommon.Lifecycle.MountTime" units="ms"
-    expires_after="M102">
-  <owner>simmonsjosh@google.com</owner>
-  <owner>src/ui/file_manager/OWNERS</owner>
-  <summary>How long did it take to mount Google Drive.</summary>
-</histogram>
-
-<histogram name="DriveCommon.Lifecycle.Unmount" enum="DriveMountStatus"
-    expires_after="M102">
-  <owner>simmonsjosh@google.com</owner>
-  <owner>src/ui/file_manager/OWNERS</owner>
-  <summary>Records outcomes of attempts to unmount Google Drive.</summary>
-</histogram>
-
-<histogram name="DriveCommon.LocalSearch.OfflineSearchTime" units="ms"
-    expires_after="M102">
-  <owner>simmonsjosh@google.com</owner>
-  <owner>src/ui/file_manager/OWNERS</owner>
-  <summary>
-    How long did it take to perform a lookup of pinned files in local Google
-    Drive cache.
-  </summary>
-</histogram>
-
-<histogram name="DriveCommon.LocalSearch.SharedSearchTime" units="ms"
-    expires_after="M102">
-  <owner>simmonsjosh@google.com</owner>
-  <owner>src/ui/file_manager/OWNERS</owner>
-  <summary>
-    How long did it take to perform a search of shared files in local Google
-    Drive cache.
-  </summary>
-</histogram>
-
-<histogram name="DriveCommon.LocalSearch.TextSearchTime" units="ms"
-    expires_after="M102">
-  <owner>simmonsjosh@google.com</owner>
-  <owner>src/ui/file_manager/OWNERS</owner>
-  <summary>
-    How long did it take to search a title in local Google Drive cache.
-  </summary>
-</histogram>
-
-<histogram name="DriveCommon.RemoteSearch.SharedSearchTime" units="ms"
-    expires_after="M102">
-  <owner>simmonsjosh@google.com</owner>
-  <owner>src/ui/file_manager/OWNERS</owner>
-  <summary>
-    How long did it take to perform a search of shared files in online Google
-    Drive.
-  </summary>
-</histogram>
-
-<histogram name="DriveCommon.RemoteSearch.TextSearchTime" units="ms"
-    expires_after="M102">
-  <owner>simmonsjosh@google.com</owner>
-  <owner>src/ui/file_manager/OWNERS</owner>
-  <summary>
-    How long did it take to perform a search in online Google Drive.
   </summary>
 </histogram>
 

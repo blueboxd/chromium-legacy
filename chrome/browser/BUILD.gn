@@ -2408,6 +2408,7 @@ static_library("browser") {
       "//ash/components/device_activity:device_activity",
       "//ash/components/timezone",
       "//ash/constants",
+      "//ash/services/device_sync/public/cpp:prefs",
       "//ash/services/multidevice_setup/public/cpp",
       "//ash/services/multidevice_setup/public/cpp:prefs",
       "//ash/webui/camera_app_ui",
@@ -2474,7 +2475,6 @@ static_library("browser") {
       "//chromeos/dbus/userdataauth:userdataauth",
       "//chromeos/dbus/userdataauth:userdataauth_proto",
       "//chromeos/dbus/util",
-      "//chromeos/services/device_sync/public/cpp:prefs",
       "//chromeos/services/network_health/public/mojom:mojom",
       "//chromeos/system",
       "//chromeos/tpm",
@@ -4937,6 +4937,8 @@ static_library("browser") {
       "//ash/public/cpp",
       "//ash/public/cpp/external_arc",
       "//ash/services/cellular_setup",
+      "//ash/services/device_sync/public/cpp:prefs",
+      "//ash/services/device_sync/public/mojom",
       "//ash/services/multidevice_setup",
       "//ash/services/multidevice_setup/public/cpp:first_run_field_trial",
       "//ash/services/multidevice_setup/public/mojom",
@@ -4986,8 +4988,6 @@ static_library("browser") {
       "//chromeos/services/bluetooth_config/public/mojom",
       "//chromeos/services/cros_healthd/public/cpp",
       "//chromeos/services/cros_healthd/public/mojom",
-      "//chromeos/services/device_sync/public/cpp:prefs",
-      "//chromeos/services/device_sync/public/mojom",
       "//chromeos/services/network_config",
       "//chromeos/services/network_config:in_process_instance",
       "//chromeos/services/network_config/public/mojom",
@@ -5181,17 +5181,17 @@ static_library("browser") {
       "lacros/automation_manager_lacros.h",
       "lacros/browser_service_lacros.cc",
       "lacros/browser_service_lacros.h",
-      "lacros/cert_db_initializer.h",
-      "lacros/cert_db_initializer_factory.cc",
-      "lacros/cert_db_initializer_factory.h",
-      "lacros/cert_db_initializer_impl.cc",
-      "lacros/cert_db_initializer_impl.h",
-      "lacros/cert_db_initializer_io_impl.cc",
-      "lacros/cert_db_initializer_io_impl.h",
+      "lacros/cert/cert_db_initializer.h",
+      "lacros/cert/cert_db_initializer_factory.cc",
+      "lacros/cert/cert_db_initializer_factory.h",
+      "lacros/cert/cert_db_initializer_impl.cc",
+      "lacros/cert/cert_db_initializer_impl.h",
+      "lacros/cert/cert_db_initializer_io_impl.cc",
+      "lacros/cert/cert_db_initializer_io_impl.h",
+      "lacros/cert/client_cert_store_lacros.cc",
+      "lacros/cert/client_cert_store_lacros.h",
       "lacros/chrome_browser_main_extra_parts_lacros.cc",
       "lacros/chrome_browser_main_extra_parts_lacros.h",
-      "lacros/client_cert_store_lacros.cc",
-      "lacros/client_cert_store_lacros.h",
       "lacros/device_settings_lacros.cc",
       "lacros/device_settings_lacros.h",
       "lacros/download_controller_client_lacros.cc",
@@ -6209,11 +6209,6 @@ static_library("browser") {
       "media_galleries/fileapi/mtp_file_stream_reader.cc",
       "media_galleries/fileapi/mtp_file_stream_reader.h",
     ]
-    if (is_chromeos_ash && use_dbus) {
-      # TODO(donna.wu@intel.com): push this into chrome/browser/chromeos
-      # and chrome/browser/media_galleries/chromeos
-      deps += [ "//services/device/public/mojom" ]
-    }
   }
 
   if (toolkit_views) {
@@ -6686,7 +6681,6 @@ static_library("browser") {
       "//extensions/components/javascript_dialog_extensions_client",
       "//google_apis/common",
       "//google_apis/drive",
-      "//services/device/public/mojom",
     ]
     if (is_chromeos_ash) {
       sources += [
@@ -6971,7 +6965,6 @@ static_library("browser") {
       "//media:media_buildflags",
       "//ppapi/host",
       "//ppapi/proxy:ipc",
-      "//services/device/public/mojom",
       "//services/network/public/mojom",
     ]
     if (is_chromeos_ash) {

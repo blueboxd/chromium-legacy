@@ -207,7 +207,8 @@ void LayoutInline::UpdateFromStyle() {
   SetHasReflection(false);
 }
 
-static LayoutObject* InFlowPositionedInlineAncestor(LayoutObject* p) {
+static const LayoutObject* InFlowPositionedInlineAncestor(
+    const LayoutObject* p) {
   while (p && p->IsLayoutInline()) {
     if (p->IsInFlowPositioned())
       return p;
@@ -538,6 +539,9 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
     before_child = LastChild();
 
   if (!new_child->IsInline() && !new_child->IsFloatingOrOutOfFlowPositioned() &&
+      // Table parts can be either inline or block. When creating its table
+      // wrapper, |CreateAnonymousTableWithParent| creates an inline table if
+      // the parent is |LayoutInline|.
       !new_child->IsTablePart()) {
     if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled()) &&
         !ForceLegacyLayout()) {
@@ -574,6 +578,18 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
 
     SplitFlow(before_child, new_box, new_child, old_continuation);
     return;
+  }
+
+  // If inserting an inline child before a block-in-inline, change
+  // |before_child| to the anonymous block. The anonymous block may need to be
+  // split if |before_child| is not the first child.
+  if (before_child && before_child->Parent() != this &&
+      RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled()) {
+    DCHECK(!ForceLegacyLayout());
+    DCHECK(before_child->Parent()->IsBlockInInline());
+    DCHECK(IsA<LayoutBlockFlow>(before_child->Parent()));
+    DCHECK_EQ(before_child->Parent()->Parent(), this);
+    before_child = SplitAnonymousBoxesAroundChild(before_child);
   }
 
   LayoutBoxModelObject::AddChild(new_child, before_child);
@@ -762,7 +778,7 @@ void LayoutInline::SplitFlow(LayoutObject* before_child,
 }
 
 LayoutBlockFlow* LayoutInline::CreateAnonymousContainerForBlockChildren(
-    bool split_flow) {
+    bool split_flow) const {
   NOT_DESTROYED();
   // We are placing a block inside an inline. We have to perform a split of this
   // inline into continuations. This involves creating an anonymous block box to
@@ -788,7 +804,7 @@ LayoutBlockFlow* LayoutInline::CreateAnonymousContainerForBlockChildren(
     // If inside an inline affected by in-flow positioning the block needs to be
     // affected by it too. Giving the block a layer like this allows it to
     // collect the x/y offsets from inline parents later.
-    if (LayoutObject* positioned_ancestor =
+    if (const LayoutObject* positioned_ancestor =
             InFlowPositionedInlineAncestor(this))
       new_style->SetPosition(positioned_ancestor->StyleRef().GetPosition());
   }
@@ -799,6 +815,16 @@ LayoutBlockFlow* LayoutInline::CreateAnonymousContainerForBlockChildren(
 
   return LayoutBlockFlow::CreateAnonymous(&GetDocument(), std::move(new_style),
                                           legacy);
+}
+
+LayoutBox* LayoutInline::CreateAnonymousBoxToSplit(
+    const LayoutBox* box_to_split) const {
+  NOT_DESTROYED();
+  DCHECK(box_to_split->IsAnonymous());
+  DCHECK(IsA<LayoutBlockFlow>(box_to_split));
+  DCHECK(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled());
+  DCHECK(!ForceLegacyLayout());
+  return CreateAnonymousContainerForBlockChildren(/* split_flow */ false);
 }
 
 void LayoutInline::AddChildToContinuation(LayoutObject* new_child,

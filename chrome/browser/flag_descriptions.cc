@@ -2174,11 +2174,15 @@ const char kPullToRefreshDescription[] =
     "Pull-to-refresh gesture in response to vertical overscroll.";
 const char kPullToRefreshEnabledTouchscreen[] = "Enabled for touchscreen only";
 
-const char kPwaUpdateDialogForNameAndIconName[] =
-    "Enable PWA install update dialog for name/icon changes";
-const char kPwaUpdateDialogForNameAndIconDescription[] =
-    "Enable a confirmation dialog that shows up when a PWA changes its "
-    "icon/name";
+const char kPwaUpdateDialogForAppIconName[] =
+    "Enable PWA install update dialog for icon changes";
+const char kPwaUpdateDialogForAppIconDescription[] =
+    "Enable a confirmation dialog that shows up when a PWA changes its icon";
+
+const char kPwaUpdateDialogForAppTitleName[] =
+    "Enable PWA install update dialog for name changes";
+const char kPwaUpdateDialogForAppTitleDescription[] =
+    "Enable a confirmation dialog that shows up when a PWA changes its name";
 
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
@@ -4127,6 +4131,12 @@ const char kAppDiscoveryRemoteUrlSearchName[] =
     "Remote URL app discovery results";
 const char kAppDiscoveryRemoteUrlSearchDescription[] =
     "Surface results from a URL in the app discovery service.";
+
+const char kAppProvisioningStaticName[] =
+    "App Provisioning with static server setup.";
+const char kAppProvisioningStaticDescription[] =
+    "Enables pulling apps from a static server setup to enable new app serving "
+    "possibilities. ";
 
 const char kArcAccountRestrictionsName[] = "Enable ARC account restrictions";
 const char kArcAccountRestrictionsDescription[] =

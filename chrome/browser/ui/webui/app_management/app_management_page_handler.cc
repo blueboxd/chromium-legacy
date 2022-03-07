@@ -24,7 +24,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/app_constants/constants.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
-#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/intent_constants.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list_handle.h"
@@ -48,7 +47,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #endif
 
-using apps::mojom::OptionalBool;
+using app_management::mojom::OptionalBool;
 
 namespace {
 
@@ -256,7 +255,8 @@ void AppManagementPageHandler::SetResizeLocked(const std::string& app_id,
                                                bool locked) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   apps::AppServiceProxyFactory::GetForProfile(profile_)->SetResizeLocked(
-      app_id, locked ? OptionalBool::kTrue : OptionalBool::kFalse);
+      app_id, locked ? apps::mojom::OptionalBool::kTrue
+                     : apps::mojom::OptionalBool::kFalse);
 #else
   NOTREACHED();
 #endif
@@ -300,27 +300,27 @@ void AppManagementPageHandler::GetOverlappingPreferredApps(
   std::move(callback).Run(std::move(app_ids).extract());
 }
 
-void AppManagementPageHandler::SetWindowMode(
-    const std::string& app_id,
-    apps::mojom::WindowMode window_mode) {
+void AppManagementPageHandler::SetWindowMode(const std::string& app_id,
+                                             apps::WindowMode window_mode) {
   // On ChromeOS, apps should always open in a new window,
   // hence window mode changes are not allowed.
 #if BUILDFLAG(IS_CHROMEOS)
   NOTREACHED();
 #else
   apps::AppServiceProxyFactory::GetForProfile(profile_)->SetWindowMode(
-      app_id, window_mode);
+      app_id, apps::ConvertWindowModeToMojomWindowMode(window_mode));
 #endif
 }
 
 void AppManagementPageHandler::SetRunOnOsLoginMode(
     const std::string& app_id,
-    apps::mojom::RunOnOsLoginMode run_on_os_login_mode) {
+    apps::RunOnOsLoginMode run_on_os_login_mode) {
 #if BUILDFLAG(IS_CHROMEOS)
   NOTREACHED();
 #else
   apps::AppServiceProxyFactory::GetForProfile(profile_)->SetRunOnOsLoginMode(
-      app_id, run_on_os_login_mode);
+      app_id, apps::ConvertRunOnOsLoginModeToMojomRunOnOsLoginMode(
+                  run_on_os_login_mode));
 #endif
 }
 
@@ -354,7 +354,7 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
     const apps::AppUpdate& update) {
   auto app = app_management::mojom::App::New();
   app->id = update.AppId();
-  app->type = update.AppType();
+  app->type = apps::ConvertMojomAppTypToAppType(update.AppType());
   app->title = update.Name();
 
   for (const auto& permission : update.Permissions()) {
@@ -371,7 +371,8 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
         apps::ConvertMojomPermissionToPermission(permission);
   }
 
-  app->install_reason = update.InstallReason();
+  app->install_reason =
+      apps::ConvertMojomInstallReasonToInstallReason(update.InstallReason());
   app->install_source = update.InstallSource();
 
   app->description = update.Description();
@@ -385,9 +386,8 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
   app->is_policy_pinned = shelf_delegate_.IsPolicyPinned(update.AppId())
                               ? OptionalBool::kTrue
                               : OptionalBool::kFalse;
-  app->resize_locked = update.ResizeLocked() == OptionalBool::kTrue;
-  app->hide_resize_locked =
-      update.ResizeLocked() == apps::mojom::OptionalBool::kUnknown;
+  app->resize_locked = update.ResizeLocked().value_or(false);
+  app->hide_resize_locked = !update.ResizeLocked().has_value();
 #endif
   app->is_preferred_app =
       preferred_apps_list_handle_.IsPreferredAppForSupportedLinks(
@@ -396,9 +396,14 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
   app->hide_pin_to_shelf =
       update.ShowInShelf() == apps::mojom::OptionalBool::kFalse ||
       ShouldHidePinToShelf(app->id);
-  app->window_mode = update.WindowMode();
+  app->window_mode =
+      apps::ConvertMojomWindowModeToWindowMode(update.WindowMode());
   app->supported_links = GetSupportedLinks(profile_, app->id);
-  app->run_on_os_login = update.RunOnOsLogin();
+  auto run_on_os_login = update.RunOnOsLogin();
+  if (run_on_os_login.has_value()) {
+    app->run_on_os_login = std::make_unique<apps::RunOnOsLogin>(
+        std::move(run_on_os_login.value()));
+  }
 
 // TODO(crbug/1245293): implement on Chrome OS.
 #if !BUILDFLAG(IS_CHROMEOS)

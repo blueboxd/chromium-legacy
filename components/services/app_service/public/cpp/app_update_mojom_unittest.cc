@@ -63,7 +63,7 @@ class AppUpdateMojomTest : public testing::Test {
   apps::mojom::InstallReason expect_install_reason_;
   bool expect_install_reason_changed_;
 
-  apps::mojom::InstallSource expect_install_source_;
+  apps::InstallSource expect_install_source_;
   bool expect_install_source_changed_;
 
   std::string expect_policy_id_;
@@ -105,13 +105,13 @@ class AppUpdateMojomTest : public testing::Test {
   std::vector<apps::mojom::IntentFilterPtr> expect_intent_filters_;
   bool expect_intent_filters_changed_;
 
-  apps::mojom::OptionalBool expect_resize_locked_;
+  absl::optional<bool> expect_resize_locked_;
   bool expect_resize_locked_changed_;
 
   apps::mojom::WindowMode expect_window_mode_;
   bool expect_window_mode_changed_;
 
-  apps::mojom::RunOnOsLoginPtr expect_run_on_os_login_;
+  absl::optional<apps::RunOnOsLogin> expect_run_on_os_login_;
   bool expect_run_on_os_login_changed_;
 
   AccountId account_id_ = AccountId::FromUserEmail("test@gmail.com");
@@ -271,7 +271,7 @@ class AppUpdateMojomTest : public testing::Test {
     expect_install_time_ = base::Time();
     expect_permissions_.clear();
     expect_install_reason_ = apps::mojom::InstallReason::kUnknown;
-    expect_install_source_ = apps::mojom::InstallSource::kUnknown;
+    expect_install_source_ = apps::InstallSource::kUnknown;
     expect_policy_id_ = "";
     expect_is_platform_app_ = absl::nullopt;
     expect_recommendable_ = absl::nullopt;
@@ -285,9 +285,9 @@ class AppUpdateMojomTest : public testing::Test {
     expect_has_badge_ = absl::nullopt;
     expect_paused_ = absl::nullopt;
     expect_intent_filters_.clear();
-    expect_resize_locked_ = apps::mojom::OptionalBool::kUnknown;
+    expect_resize_locked_ = absl::nullopt;
     expect_window_mode_ = apps::mojom::WindowMode::kUnknown;
-    expect_run_on_os_login_ = nullptr;
+    expect_run_on_os_login_ = absl::nullopt;
     ExpectNoChange();
     CheckExpects(u);
 
@@ -559,14 +559,14 @@ class AppUpdateMojomTest : public testing::Test {
     // InstallSource tests.
     if (state) {
       state->install_source = apps::mojom::InstallSource::kPlayStore;
-      expect_install_source_ = apps::mojom::InstallSource::kPlayStore;
+      expect_install_source_ = apps::InstallSource::kPlayStore;
       expect_install_source_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
       delta->install_source = apps::mojom::InstallSource::kSync;
-      expect_install_source_ = apps::mojom::InstallSource::kSync;
+      expect_install_source_ = apps::InstallSource::kSync;
       expect_install_source_changed_ = true;
       CheckExpects(u);
     }
@@ -921,14 +921,14 @@ class AppUpdateMojomTest : public testing::Test {
 
     if (state) {
       state->resize_locked = apps::mojom::OptionalBool::kFalse;
-      expect_resize_locked_ = apps::mojom::OptionalBool::kFalse;
+      expect_resize_locked_ = false;
       expect_resize_locked_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
       delta->resize_locked = apps::mojom::OptionalBool::kTrue;
-      expect_resize_locked_ = apps::mojom::OptionalBool::kTrue;
+      expect_resize_locked_ = true;
       expect_resize_locked_changed_ = true;
       CheckExpects(u);
     }
@@ -964,19 +964,19 @@ class AppUpdateMojomTest : public testing::Test {
     // RunOnOsLogin tests.
 
     if (state) {
-      auto runOnOsLoginTestPtr = apps::mojom::RunOnOsLogin::New(
-          apps::mojom::RunOnOsLoginMode::kNotRun, false);
-      state->run_on_os_login = runOnOsLoginTestPtr.Clone();
-      expect_run_on_os_login_ = runOnOsLoginTestPtr.Clone();
+      apps::RunOnOsLogin value(apps::RunOnOsLoginMode::kNotRun, false);
+      state->run_on_os_login =
+          apps::ConvertRunOnOsLoginToMojomRunOnOsLogin(value);
+      expect_run_on_os_login_ = std::move(value);
       expect_run_on_os_login_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
-      auto runOnOsLoginTestPtr = apps::mojom::RunOnOsLogin::New(
-          apps::mojom::RunOnOsLoginMode::kWindowed, false);
-      delta->run_on_os_login = runOnOsLoginTestPtr.Clone();
-      expect_run_on_os_login_ = runOnOsLoginTestPtr.Clone();
+      apps::RunOnOsLogin value(apps::RunOnOsLoginMode::kWindowed, false);
+      delta->run_on_os_login =
+          apps::ConvertRunOnOsLoginToMojomRunOnOsLogin(value);
+      expect_run_on_os_login_ = std::move(value);
       expect_run_on_os_login_changed_ = true;
       CheckExpects(u);
     }

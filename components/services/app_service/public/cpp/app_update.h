@@ -123,8 +123,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   apps::InstallReason GetInstallReason() const;
   bool InstallReasonChanged() const;
 
-  apps::mojom::InstallSource InstallSource() const;
-  apps::InstallSource GetInstallSource() const;
+  apps::InstallSource InstallSource() const;
   bool InstallSourceChanged() const;
 
   // An optional ID used for policy to identify the app.
@@ -174,16 +173,14 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   apps::IntentFilters GetIntentFilters() const;
   bool IntentFiltersChanged() const;
 
-  apps::mojom::OptionalBool ResizeLocked() const;
-  absl::optional<bool> GetResizeLocked() const;
+  absl::optional<bool> ResizeLocked() const;
   bool ResizeLockedChanged() const;
 
   apps::mojom::WindowMode WindowMode() const;
   apps::WindowMode GetWindowMode() const;
   bool WindowModeChanged() const;
 
-  apps::mojom::RunOnOsLoginPtr RunOnOsLogin() const;
-  absl::optional<apps::RunOnOsLogin> GetRunOnOsLogin() const;
+  absl::optional<apps::RunOnOsLogin> RunOnOsLogin() const;
   bool RunOnOsLoginChanged() const;
 
   const ::AccountId& AccountId() const;

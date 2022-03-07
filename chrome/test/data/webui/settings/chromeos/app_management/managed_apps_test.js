@@ -28,10 +28,10 @@ suite('<app-management-managed-apps>', () => {
     permissionOptions[PermissionType.kCamera] = createTriStatePermission(
         PermissionType.kCamera, TriState.kBlock, /*isManaged*/ true);
     const policyAppOptions = {
-      type: apps.mojom.AppType.kWeb,
-      isPinned: apps.mojom.OptionalBool.kTrue,
-      isPolicyPinned: apps.mojom.OptionalBool.kTrue,
-      installReason: apps.mojom.InstallReason.kPolicy,
+      type: appManagement.mojom.AppType.kWeb,
+      isPinned: appManagement.mojom.OptionalBool.kTrue,
+      isPolicyPinned: appManagement.mojom.OptionalBool.kTrue,
+      installReason: appManagement.mojom.InstallReason.kPolicy,
       permissions: app_management.FakePageHandler.createWebPermissions(
           permissionOptions),
     };

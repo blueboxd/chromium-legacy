@@ -67,6 +67,11 @@ const base::Feature kAppManagementAppDetails{"AppManagementAppDetails",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const base::Feature kAppProvisioningStatic{"AppProvisioningStatic",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 #if !BUILDFLAG(IS_ANDROID)
 // App Service related flags. See components/services/app_service/README.md.
 const base::Feature kAppServiceLoadIconWithoutMojom{
@@ -833,6 +838,14 @@ const base::Feature kPrivacyGuide{"PrivacyGuide",
 // background when closed.
 const base::Feature kPushMessagingBackgroundMode{
     "PushMessagingBackgroundMode", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Shows a confirmation dialog when updates to a PWAs icon has been detected.
+const base::Feature kPwaUpdateDialogForIcon{"PwaUpdateDialogForIcon",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Shows a confirmation dialog when updates to a PWAs name has been detected.
+const base::Feature kPwaUpdateDialogForName{"PwaUpdateDialogForName",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables using quiet prompts for notification permission requests.
 const base::Feature kQuietNotificationPrompts{"QuietNotificationPrompts",

@@ -119,8 +119,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   apps::Permissions GetPermissions() const;
   bool PermissionsChanged() const;
 
-  apps::mojom::InstallReason InstallReason() const;
-  apps::InstallReason GetInstallReason() const;
+  apps::InstallReason InstallReason() const;
   bool InstallReasonChanged() const;
 
   apps::InstallSource InstallSource() const;
@@ -131,7 +130,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   const std::string& PolicyId() const;
   bool PolicyIdChanged() const;
 
-  apps::mojom::OptionalBool InstalledInternally() const;
+  bool InstalledInternally() const;
 
   absl::optional<bool> IsPlatformApp() const;
   bool IsPlatformAppChanged() const;
@@ -176,8 +175,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   absl::optional<bool> ResizeLocked() const;
   bool ResizeLockedChanged() const;
 
-  apps::mojom::WindowMode WindowMode() const;
-  apps::WindowMode GetWindowMode() const;
+  apps::WindowMode WindowMode() const;
   bool WindowModeChanged() const;
 
   absl::optional<apps::RunOnOsLogin> RunOnOsLogin() const;

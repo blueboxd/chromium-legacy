@@ -14,10 +14,19 @@ import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.
 import {isSelectionEvent} from '../../common/utils.js';
 import {AmbientModeAlbum, TopicSource} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
-import {isRecentHighlightsAlbum} from '../utils.js';
+import {getPhotoCount, isRecentHighlightsAlbum} from '../utils.js';
 
-import {setAlbumSelected} from './ambient_controller.js';
-import {getAmbientProvider} from './ambient_interface_provider.js';
+export type AlbumSelectedChangedEvent = CustomEvent<{album: AmbientModeAlbum}>;
+
+declare global {
+  interface HTMLElementEventMap {
+    'album_selected_changed': AlbumSelectedChangedEvent;
+  }
+}
+
+export interface AlbumItem {
+  $: {image: HTMLElement;};
+}
 
 export class AlbumItem extends WithPersonalizationStore {
   static get is() {
@@ -79,16 +88,7 @@ export class AlbumItem extends WithPersonalizationStore {
       if (isRecentHighlightsAlbum(this.album)) {
         return this.i18n('ambientModeAlbumsSubpageRecentHighlightsDesc');
       }
-
-      if (this.album.numberOfPhotos <= 1) {
-        return this.i18n(
-            'ambientModeAlbumsSubpagePhotosNumSingularDesc',
-            this.album.numberOfPhotos);
-      }
-
-      return this.i18n(
-          'ambientModeAlbumsSubpagePhotosNumPluralDesc',
-          this.album.numberOfPhotos);
+      return getPhotoCount(this.album);
     }
 
     if (this.topicSource === TopicSource.kArtGallery) {
@@ -130,7 +130,9 @@ export class AlbumItem extends WithPersonalizationStore {
     event.preventDefault();
     event.stopPropagation();
     this.checked = !this.checked;
-    setAlbumSelected(this.album, getAmbientProvider());
+    this.dispatchEvent(new CustomEvent(
+        'album_selected_changed',
+        {bubbles: true, composed: true, detail: {album: this.album}}));
   }
 }
 

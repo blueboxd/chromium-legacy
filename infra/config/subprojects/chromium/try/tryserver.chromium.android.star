@@ -61,6 +61,9 @@ try_.orchestrator_builder(
     # TODO(crbug.com/1225851): Enable it on branch after running on CQ
     # branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
+    tryjob = try_.job(
+        experiment_percentage = 5,
+    ),
 )
 
 try_.compilator_builder(
@@ -118,19 +121,6 @@ try_.builder(
 
 try_.builder(
     name = "android-cronet-arm-dbg",
-    branch_selector = branches.STANDARD_MILESTONE,
-    main_list_view = "try",
-    tryjob = try_.job(
-        location_regexp = [
-            ".+/[+]/components/cronet/.+",
-            ".+/[+]/components/grpc_support/.+",
-            ".+/[+]/build/android/.+",
-            ".+/[+]/build/config/android/.+",
-        ],
-        location_regexp_exclude = [
-            ".+/[+]/components/cronet/ios/.+",
-        ],
-    ),
 )
 
 try_.builder(
@@ -150,14 +140,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "android-cronet-lollipop-arm-rel",
-)
-
-try_.builder(
-    name = "android-cronet-marshmallow-arm64-rel",
-)
-
-try_.builder(
     name = "android-cronet-x86-dbg",
 )
 
@@ -167,6 +149,20 @@ try_.builder(
 
 try_.builder(
     name = "android-cronet-x86-dbg-10-tests",
+    branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
+    main_list_view = "try",
+    tryjob = try_.job(
+        location_regexp = [
+            ".+/[+]/components/cronet/.+",
+            ".+/[+]/components/grpc_support/.+",
+            ".+/[+]/build/android/.+",
+            ".+/[+]/build/config/android/.+",
+        ],
+        location_regexp_exclude = [
+            ".+/[+]/components/cronet/ios/.+",
+        ],
+    ),
 )
 
 try_.builder(
@@ -251,6 +247,7 @@ try_.builder(
     name = "android-pie-arm64-dbg",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = False,
+    check_for_flakiness = True,
     cores = 16,
     goma_jobs = goma.jobs.J300,
     main_list_view = "try",

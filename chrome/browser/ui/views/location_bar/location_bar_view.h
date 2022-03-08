@@ -22,13 +22,11 @@
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
-#include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/location_bar/permission_chip.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/accuracy_tips/accuracy_service.h"
+#include "components/permissions/permission_prompt.h"
 #include "components/security_state/core/security_state.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -48,8 +46,10 @@ class IntentChipButton;
 class LocationIconView;
 enum class OmniboxPart;
 class OmniboxPopupView;
+class OmniboxViewViews;
 class PageActionIconController;
 class PageActionIconContainerView;
+class PermissionChip;
 class Profile;
 class SelectedKeywordView;
 
@@ -119,10 +119,6 @@ class LocationBarView : public LocationBar,
 
   // Helper to get the color for |part| using the current ThemeProvider.
   SkColor GetColor(OmniboxPart part) const;
-
-  // Returns the location bar border color blended with the toolbar color.
-  // It's guaranteed to be opaque.
-  SkColor GetOpaqueBorderColor() const;
 
   // Returns a background that paints an (optionally stroked) rounded rect with
   // the given color.
@@ -292,9 +288,6 @@ class LocationBarView : public LocationBar,
 
   // Returns the amount of space required to the right of the omnibox text.
   int GetMinimumTrailingWidth() const;
-
-  // The border color, drawn on top of the toolbar.
-  SkColor GetBorderColor() const;
 
   // The LocationBarView bounds, without the ends which have a border radius.
   // E.g., if the LocationBarView was 50dip long, and the border radius was 2,

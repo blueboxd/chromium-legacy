@@ -18,7 +18,7 @@ source_set("discover_feed") {
   deps = [
     "//base",
     "//components/keyed_service/core",
-    "//ios/public/provider/chrome/browser/discover_feed",
+    "//ios/public/provider/chrome/browser/signin:signin_sso_api",
   ]
   frameworks = [ "UIKit.framework" ]
 }
@@ -30,8 +30,6 @@ source_set("discover_feed") {
 source_set("discover_feed_factory") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "discover_feed_service_deprecated.h",
-    "discover_feed_service_deprecated.mm",
     "discover_feed_service_factory.h",
     "discover_feed_service_factory.mm",
   ]
@@ -40,10 +38,11 @@ source_set("discover_feed_factory") {
     "//base",
     "//components/keyed_service/ios",
     "//components/signin/public/identity_manager",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui/ntp:metrics",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/discover_feed",
+    "//ios/public/provider/chrome/browser/discover_feed:discover_feed_api",
   ]
 }

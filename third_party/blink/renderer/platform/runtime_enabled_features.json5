@@ -503,10 +503,6 @@
       status: "experimental",
     },
     {
-      name: "ConversionMeasurementEventSources",
-      status: "test",
-    },
-    {
       name: "CooperativeScheduling"
     },
     {
@@ -1143,7 +1139,7 @@
     },
     {
       name: "FontPalette",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "FontSrcLocalMatching",
@@ -1591,6 +1587,9 @@
       name: "NeverSlowMode",
     },
     {
+      name: "NewFlexboxSizing",
+    },
+    {
       name: "NoIdleEncodingForWebTests",
       status: "test",
     },
@@ -1900,8 +1899,7 @@
     },
     {
       name: "PriorityHints",
-      origin_trial_feature_name: "PriorityHintsAPI",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "PrivateNetworkAccessNonSecureContextsAllowed",

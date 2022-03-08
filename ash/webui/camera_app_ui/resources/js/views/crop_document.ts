@@ -540,8 +540,8 @@ export class CropDocument extends Review<boolean> {
       }
       this.initialCorners = [];
     } else {
-      const oldImageW = this.cornerSpaceSize?.width || newImageW;
-      const oldImageH = this.cornerSpaceSize?.height || newImageH;
+      const oldImageW = this.cornerSpaceSize.width;
+      const oldImageH = this.cornerSpaceSize.height;
       for (const corner of this.corners) {
         corner.pt = new Point(
             corner.pt.x / oldImageW * newImageW,
@@ -564,7 +564,7 @@ export class CropDocument extends Review<boolean> {
     this.updateCornerEl();
   }
 
-  async setReviewPhoto(blob: Blob): Promise<void> {
+  override async setReviewPhoto(blob: Blob): Promise<void> {
     const image = new Image();
     await this.loadImage(image, blob);
     this.imageOriginalSize = new Size(image.width, image.height);
@@ -580,7 +580,7 @@ export class CropDocument extends Review<boolean> {
     this.updateCornerElAriaLabel();
   }
 
-  layout(): void {
+  override layout(): void {
     super.layout();
 
     const rect = this.imageFrame.getBoundingClientRect();

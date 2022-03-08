@@ -3964,7 +3964,9 @@ void NavigationRequest::OnStartChecksComplete(
       browser_context, partition,
       std::make_unique<NavigationRequestInfo>(
           common_params_->Clone(), begin_params_.Clone(), sandbox_flags,
-          GetIsolationInfo(), frame_tree_node_->IsMainFrame(),
+          GetIsolationInfo(),
+          frame_tree_node_->current_frame_host()->IsInPrimaryMainFrame(),
+          frame_tree_node_->IsMainFrame(),
           IsSecureFrame(frame_tree_node_->parent()),
           frame_tree_node_->frame_tree_node_id(), report_raw_headers,
           upgrade_if_insecure_,
@@ -6345,10 +6347,6 @@ bool NavigationRequest::IsPrerenderedPageActivation() {
 
   CHECK(prerender_frame_tree_node_id_.has_value());
   return prerender_frame_tree_node_id_ != RenderFrameHost::kNoFrameTreeNodeId;
-}
-
-bool NavigationRequest::IsInFencedFrameTree() {
-  return frame_tree_node()->IsInFencedFrameTree();
 }
 
 FrameType NavigationRequest::GetNavigatingFrameType() const {

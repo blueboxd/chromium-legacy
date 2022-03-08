@@ -203,7 +203,7 @@ class AppUpdateTest : public testing::Test {
     EXPECT_TRUE(IsEqual(expect_permissions_, u.GetPermissions()));
     EXPECT_EQ(expect_permissions_changed_, u.PermissionsChanged());
 
-    EXPECT_EQ(expect_install_reason_, u.GetInstallReason());
+    EXPECT_EQ(expect_install_reason_, u.InstallReason());
     EXPECT_EQ(expect_install_reason_changed_, u.InstallReasonChanged());
 
     EXPECT_EQ(expect_install_source_, u.InstallSource());
@@ -251,7 +251,7 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_resize_locked_, u.ResizeLocked());
     EXPECT_EQ(expect_resize_locked_changed_, u.ResizeLockedChanged());
 
-    EXPECT_EQ(expect_window_mode_, u.GetWindowMode());
+    EXPECT_EQ(expect_window_mode_, u.WindowMode());
     EXPECT_EQ(expect_window_mode_changed_, u.WindowModeChanged());
 
     EXPECT_EQ(expect_run_on_os_login_, u.RunOnOsLogin());

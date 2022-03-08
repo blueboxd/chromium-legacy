@@ -7,8 +7,10 @@
  * the ambient mode settings.
  */
 
+import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './albums_subpage_element.js';
 import './ambient_weather_element.js';
+import './ambient_preview_element.js';
 import './toggle_row_element.js';
 import './topic_source_list_element.js';
 
@@ -43,6 +45,11 @@ export class AmbientSubpage extends WithPersonalizationStore {
       ambientModeEnabled_: Boolean,
       temperatureUnit_: Number,
       topicSource_: Number,
+      loadingSettings_: {
+        type: Boolean,
+        computed:
+            'computeLoadingSettings_(albums_, temperatureUnit_, topicSource_)',
+      }
     };
   }
 
@@ -121,8 +128,13 @@ export class AmbientSubpage extends WithPersonalizationStore {
     return path === Paths.Ambient;
   }
 
-  private shouldShowAlbums_(path: Paths): boolean {
-    return path === Paths.AmbientAlbums;
+  private shouldShowAlbums_(path: Paths, ambientModeEnabled: boolean): boolean {
+    return path === Paths.AmbientAlbums && ambientModeEnabled;
+  }
+
+  private computeLoadingSettings_(): boolean {
+    return this.albums_ === null || this.topicSource_ === null ||
+        this.temperatureUnit_ === null;
   }
 }
 

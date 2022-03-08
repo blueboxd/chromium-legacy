@@ -60,7 +60,7 @@ class AppUpdateMojomTest : public testing::Test {
   std::vector<apps::mojom::PermissionPtr> expect_permissions_;
   bool expect_permissions_changed_;
 
-  apps::mojom::InstallReason expect_install_reason_;
+  apps::InstallReason expect_install_reason_;
   bool expect_install_reason_changed_;
 
   apps::InstallSource expect_install_source_;
@@ -108,7 +108,7 @@ class AppUpdateMojomTest : public testing::Test {
   absl::optional<bool> expect_resize_locked_;
   bool expect_resize_locked_changed_;
 
-  apps::mojom::WindowMode expect_window_mode_;
+  apps::WindowMode expect_window_mode_;
   bool expect_window_mode_changed_;
 
   absl::optional<apps::RunOnOsLogin> expect_run_on_os_login_;
@@ -270,7 +270,7 @@ class AppUpdateMojomTest : public testing::Test {
     expect_last_launch_time_ = base::Time();
     expect_install_time_ = base::Time();
     expect_permissions_.clear();
-    expect_install_reason_ = apps::mojom::InstallReason::kUnknown;
+    expect_install_reason_ = apps::InstallReason::kUnknown;
     expect_install_source_ = apps::InstallSource::kUnknown;
     expect_policy_id_ = "";
     expect_is_platform_app_ = absl::nullopt;
@@ -286,7 +286,7 @@ class AppUpdateMojomTest : public testing::Test {
     expect_paused_ = absl::nullopt;
     expect_intent_filters_.clear();
     expect_resize_locked_ = absl::nullopt;
-    expect_window_mode_ = apps::mojom::WindowMode::kUnknown;
+    expect_window_mode_ = apps::WindowMode::kUnknown;
     expect_run_on_os_login_ = absl::nullopt;
     ExpectNoChange();
     CheckExpects(u);
@@ -523,14 +523,14 @@ class AppUpdateMojomTest : public testing::Test {
     // InstallReason tests.
     if (state) {
       state->install_reason = apps::mojom::InstallReason::kUser;
-      expect_install_reason_ = apps::mojom::InstallReason::kUser;
+      expect_install_reason_ = apps::InstallReason::kUser;
       expect_install_reason_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
       delta->install_reason = apps::mojom::InstallReason::kPolicy;
-      expect_install_reason_ = apps::mojom::InstallReason::kPolicy;
+      expect_install_reason_ = apps::InstallReason::kPolicy;
       expect_install_reason_changed_ = true;
       CheckExpects(u);
     }
@@ -943,14 +943,14 @@ class AppUpdateMojomTest : public testing::Test {
 
     if (state) {
       state->window_mode = apps::mojom::WindowMode::kBrowser;
-      expect_window_mode_ = apps::mojom::WindowMode::kBrowser;
+      expect_window_mode_ = apps::WindowMode::kBrowser;
       expect_window_mode_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
       delta->window_mode = apps::mojom::WindowMode::kWindow;
-      expect_window_mode_ = apps::mojom::WindowMode::kWindow;
+      expect_window_mode_ = apps::WindowMode::kWindow;
       expect_window_mode_changed_ = true;
       CheckExpects(u);
     }

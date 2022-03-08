@@ -371,8 +371,7 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
         apps::ConvertMojomPermissionToPermission(permission);
   }
 
-  app->install_reason =
-      apps::ConvertMojomInstallReasonToInstallReason(update.InstallReason());
+  app->install_reason = update.InstallReason();
   app->install_source = update.InstallSource();
 
   app->description = update.Description();
@@ -396,8 +395,7 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
   app->hide_pin_to_shelf =
       update.ShowInShelf() == apps::mojom::OptionalBool::kFalse ||
       ShouldHidePinToShelf(app->id);
-  app->window_mode =
-      apps::ConvertMojomWindowModeToWindowMode(update.WindowMode());
+  app->window_mode = update.WindowMode();
   app->supported_links = GetSupportedLinks(profile_, app->id);
   auto run_on_os_login = update.RunOnOsLogin();
   if (run_on_os_login.has_value()) {

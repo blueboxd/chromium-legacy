@@ -53,14 +53,16 @@ bool IsResponseParseError(
 }  // namespace
 
 AttributionSrcLoader::AttributionSrcLoader(LocalFrame* frame)
-    : local_frame_(frame) {}
+    : local_frame_(frame) {
+  DCHECK(local_frame_);
+}
 
 AttributionSrcLoader::~AttributionSrcLoader() = default;
 
 void AttributionSrcLoader::Register(const KURL& src_url,
                                     HTMLImageElement* element) {
   // Detached frames cannot/should not register new attributionsrcs.
-  if (!local_frame_)
+  if (!local_frame_->IsAttached())
     return;
 
   if (!src_url.ProtocolIsInHTTPFamily())
@@ -126,10 +128,6 @@ void AttributionSrcLoader::Register(const KURL& src_url,
   resource_context_map_.insert(
       resource, AttributionSrcContext{.type = AttributionSrcType::kUndetermined,
                                       .data_host = std::move(data_host)});
-}
-
-void AttributionSrcLoader::Shutdown() {
-  local_frame_ = nullptr;
 }
 
 void AttributionSrcLoader::ResponseReceived(Resource* resource,
@@ -279,6 +277,10 @@ void AttributionSrcLoader::HandleTriggerRegistration(
     return;
   }
 
+  trigger_data->debug_key =
+      attribution_response_parsing::ParseDebugKey(response.HttpHeaderField(
+          http_names::kAttributionReportingTriggerDebugKey));
+
   context.data_host->TriggerDataAvailable(std::move(trigger_data));
 }
 
@@ -286,7 +288,7 @@ void AttributionSrcLoader::LogAuditIssue(
     AttributionReportingIssueType issue_type,
     const String& string,
     HTMLElement* element) {
-  if (!local_frame_)
+  if (!local_frame_->IsAttached())
     return;
   AuditsIssue::ReportAttributionIssue(local_frame_->DomWindow(), issue_type,
                                       local_frame_->GetDevToolsFrameToken(),

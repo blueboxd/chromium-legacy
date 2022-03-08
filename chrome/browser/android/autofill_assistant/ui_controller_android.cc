@@ -965,14 +965,7 @@ bool UiControllerAndroid::OnBackButtonClicked() {
   }
 
   // execution_delegate_ must never be nullptr here!
-  auto back_button_settings =
-      execution_delegate_->GetClientSettings().back_button_settings;
-  if (back_button_settings.has_value()) {
-    execution_delegate_->OnStop(back_button_settings->message(),
-                                back_button_settings->undo_label());
-  } else {
-    CloseOrCancel(-1, Metrics::DropOutReason::BACK_BUTTON_CLICKED);
-  }
+  CloseOrCancel(-1, Metrics::DropOutReason::BACK_BUTTON_CLICKED);
   return true;
 }
 
@@ -1406,7 +1399,7 @@ void UiControllerAndroid::OnUserDataChanged(
                 env, *selected_phone_number,
                 base::android::GetDefaultLocaleString());
   const auto& selected_phone_number_errors =
-      user_data::GetPhoneNumberValidationErrors(selected_contact_profile,
+      user_data::GetPhoneNumberValidationErrors(selected_phone_number,
                                                 *collect_user_data_options);
 
   const autofill::AutofillProfile* selected_shipping_address =

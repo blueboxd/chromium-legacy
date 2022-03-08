@@ -830,6 +830,7 @@ if (is_android) {
       "../browser/subresource_filter/subresource_filter_browser_test_harness.cc",
       "../browser/subresource_filter/subresource_filter_browser_test_harness.h",
       "../browser/ui/autofill/payments/offer_notification_infobar_controller_impl_browsertest.cc",
+      "../browser/ui/webui/policy/policy_ui_browsertest.cc",
       "../renderer/autofill/fake_mojo_password_manager_driver.cc",
       "../renderer/autofill/fake_mojo_password_manager_driver.h",
       "../renderer/autofill/fake_password_generation_driver.cc",
@@ -919,6 +920,15 @@ if (is_android) {
       "//chrome/test/data/ssl/",
       "//content/test/data/",
     ]
+
+    if (dfmify_dev_ui) {
+      # If DevUI DFM is on, include Java classes and native resource split so
+      # that DevUI page tests would work.
+      deps += [
+        "//chrome/android/features/dev_ui:java",
+        "//chrome/android/modules/dev_ui/provider:java",
+      ]
+    }
   }
 
   test("android_sync_integration_tests") {
@@ -2089,7 +2099,6 @@ if (!is_android) {
       "../browser/ui/views/eye_dropper/eye_dropper_browsertest.cc",
       "../browser/ui/views/hats/hats_browsertest.cc",
       "../browser/ui/views/incognito_clear_browsing_data_dialog_browsertest.cc",
-      "../browser/ui/views/privacy_sandbox/privacy_sandbox_dialog_view_browsertest.cc",
       "../browser/ui/views/reader_mode/reader_mode_icon_view_browsertest.cc",
       "../browser/ui/views/sharing/remote_copy_browsertest.cc",
       "../browser/ui/views/sharing/shared_clipboard_browsertest.cc",
@@ -2541,6 +2550,11 @@ if (!is_android) {
     if (enable_captive_portal_detection) {
       sources +=
           [ "../browser/ssl/captive_portal_blocking_page_browsertest.cc" ]
+    }
+
+    if (is_chromeos_ash) {
+      sources +=
+          [ "../browser/lifetime/application_lifetime_chromeos_browsertest.cc" ]
     }
 
     if (!is_chromeos) {
@@ -5300,6 +5314,7 @@ test("unit_tests") {
       "../browser/metrics/usage_scenario/usage_scenario_data_store_unittest.cc",
       "../browser/notifications/muted_notification_handler_unittest.cc",
       "../browser/notifications/screen_capture_notification_blocker_unittest.cc",
+      "../browser/password_manager/chrome_webauthn_credentials_delegate_unittest.cc",
       "../browser/password_manager/generated_password_leak_detection_pref_unittest.cc",
       "../browser/performance_manager/test_support/page_discarding_utils.cc",
       "../browser/performance_manager/test_support/page_discarding_utils.h",

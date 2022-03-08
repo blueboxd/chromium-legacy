@@ -59,8 +59,9 @@ class FastPairHandshake {
     return fast_pair_data_encryptor_.get();
   }
 
-  // Returns whether or not this handshake has an active GATT connection.
-  virtual bool IsConnected() = 0;
+  FastPairGattServiceClient* fast_pair_gatt_service_client() {
+    return fast_pair_gatt_service_client_.get();
+  }
 
  protected:
   bool completed_successfully_ = false;

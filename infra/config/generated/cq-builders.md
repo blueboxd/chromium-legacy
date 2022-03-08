@@ -91,7 +91,7 @@ builder.
   Path regular expressions:
   * [`//.+/3pp/.+`](https://cs.chromium.org/search?q=+file:.+/3pp/)
 
-* [android-cronet-arm-dbg](https://ci.chromium.org/p/chromium/builders/try/android-cronet-arm-dbg) ([definition](https://cs.chromium.org/search?q=+file:/try.star$+""android-cronet-arm-dbg"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-cronet-arm-dbg""))
+* [android-cronet-x86-dbg-10-tests](https://ci.chromium.org/p/chromium/builders/try/android-cronet-x86-dbg-10-tests) ([definition](https://cs.chromium.org/search?q=+file:/try.star$+""android-cronet-x86-dbg-10-tests"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-cronet-x86-dbg-10-tests""))
 
   Path regular expressions:
   * [`//components/cronet/.+`](https://cs.chromium.org/chromium/src/components/cronet/)
@@ -444,6 +444,9 @@ as required builders.
 
 * [android-11-x86-rel](https://ci.chromium.org/p/chromium/builders/try/android-11-x86-rel) ([definition](https://cs.chromium.org/search?q=+file:/try.star$+""android-11-x86-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-11-x86-rel""))
   * Experiment percentage: 10.0
+
+* [android-12-x64-rel](https://ci.chromium.org/p/chromium/builders/try/android-12-x64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try.star$+""android-12-x64-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-12-x64-rel""))
+  * Experiment percentage: 5.0
 
 * [android-pie-arm64-coverage-experimental-rel](https://ci.chromium.org/p/chromium/builders/try/android-pie-arm64-coverage-experimental-rel) ([definition](https://cs.chromium.org/search?q=+file:/try.star$+""android-pie-arm64-coverage-experimental-rel"")) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+""android-pie-arm64-coverage-experimental-rel""))
   * Experiment percentage: 3.0

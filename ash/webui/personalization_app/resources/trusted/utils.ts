@@ -6,9 +6,11 @@
  * @fileoverview Utility functions to be used in trusted code.
  */
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 
-import {AmbientModeAlbum, GooglePhotosPhoto, WallpaperImage, WallpaperLayout} from '../trusted/personalization_app.mojom-webui.js';
+import {AmbientModeAlbum, GooglePhotosPhoto, TopicSource, WallpaperImage, WallpaperLayout} from '../trusted/personalization_app.mojom-webui.js';
+
 
 export function isWallpaperImage(obj: any): obj is WallpaperImage {
   return typeof obj?.assetId === 'bigint';
@@ -44,6 +46,14 @@ export function isNonEmptyString(maybeString: unknown): maybeString is string {
 }
 
 /**
+ * Checks if a number is within a range.
+ */
+export function inBetween(
+    num: number, minVal: number, maxVal: number): boolean {
+  return minVal <= num && num <= maxVal;
+}
+
+/**
  * Wallpaper images sometimes have a resolution suffix appended to the end of
  * the image. This is typically to fetch a high resolution image to show as the
  * user's wallpaper. We do not want the full resolution here, so remove the
@@ -66,4 +76,31 @@ export function hasHttpScheme(url: string): boolean {
  */
 export function isRecentHighlightsAlbum(album: AmbientModeAlbum): boolean {
   return album.id === 'RecentHighlights';
+}
+
+/**
+ * Returns the number of photos description in a given album.
+ */
+export function getPhotoCount(album: AmbientModeAlbum): string {
+  if (album.numberOfPhotos <= 1) {
+    return loadTimeData.getStringF(
+        'ambientModeAlbumsSubpagePhotosNumSingularDesc', album.numberOfPhotos);
+  }
+  return loadTimeData.getStringF(
+      'ambientModeAlbumsSubpagePhotosNumPluralDesc', album.numberOfPhotos);
+}
+
+/**
+ * Returns the topic source name.
+ */
+export function getTopicSourceName(topicSource: TopicSource): string {
+  switch (topicSource) {
+    case TopicSource.kGooglePhotos:
+      return loadTimeData.getString('ambientModeTopicSourceGooglePhotos');
+    case TopicSource.kArtGallery:
+      return loadTimeData.getString('ambientModeTopicSourceArtGallery');
+    default:
+      console.warn('Invalid TopicSource value.');
+      return '';
+  }
 }

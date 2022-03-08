@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.merchant_viewer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -82,6 +83,9 @@ public class MerchantTrustSignalsCoordinatorTest {
 
     @Mock
     private ObservableSupplier<Tab> mMockTabProvider;
+
+    @Mock
+    private Tab mMockTab;
 
     @Mock
     private ObservableSupplier<Profile> mMockProfileSupplier;
@@ -177,6 +181,9 @@ public class MerchantTrustSignalsCoordinatorTest {
         doReturn(mMockProfile).when(mMockProfileSupplier).get();
         doReturn(false).when(mMockProfile).isOffTheRecord();
         doReturn(FAKE_HOST).when(mMockGurl).getSpec();
+        doReturn(true).when(mMockTabProvider).hasValue();
+        doReturn(mMockTab).when(mMockTabProvider).get();
+        doReturn(mMockWebContents).when(mMockTab).getWebContents();
         doAnswer((Answer<String>) invocation -> mSerializedTimestamps)
                 .when(mMockPrefService)
                 .getString(eq(Pref.COMMERCE_MERCHANT_VIEWER_MESSAGES_SHOWN_TIME));
@@ -293,11 +300,9 @@ public class MerchantTrustSignalsCoordinatorTest {
     public void testMaybeDisplayMessage_ShouldNotExpediteMessage() {
         mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
+        verify(mMockMetrics, times(1)).recordUkmOnDataAvailable(eq(mMockWebContents));
         verify(mMockMerchantTrustStorage, times(1)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(1))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        eq((long) MerchantViewerConfig.getDefaultTrustSignalsMessageDelay()),
-                        any(Callback.class));
+        verifySchedulingMessage(true, false);
     }
 
     @SmallTest
@@ -305,11 +310,9 @@ public class MerchantTrustSignalsCoordinatorTest {
     public void testMaybeDisplayMessage_ShouldExpediteMessage() {
         mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, true);
 
+        verify(mMockMetrics, times(1)).recordUkmOnDataAvailable(eq(mMockWebContents));
         verify(mMockMerchantTrustStorage, times(1)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(1))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        eq((long) MerchantTrustMessageScheduler.MESSAGE_ENQUEUE_NO_DELAY),
-                        any(Callback.class));
+        verifySchedulingMessage(true, true);
     }
 
     @SmallTest
@@ -324,9 +327,7 @@ public class MerchantTrustSignalsCoordinatorTest {
         mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(0))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        anyLong(), any(Callback.class));
+        verifySchedulingMessage(false, false);
     }
 
     @SmallTest
@@ -337,10 +338,7 @@ public class MerchantTrustSignalsCoordinatorTest {
         mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(1))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        eq((long) MerchantViewerConfig.getDefaultTrustSignalsMessageDelay()),
-                        any(Callback.class));
+        verifySchedulingMessage(true, false);
     }
 
     @SmallTest
@@ -348,10 +346,9 @@ public class MerchantTrustSignalsCoordinatorTest {
     public void testMaybeDisplayMessage_NoMerchantTrustData() {
         mCoordinator.maybeDisplayMessage(null, mMessageContext, false);
 
+        verify(mMockMetrics, times(0)).recordUkmOnDataAvailable(eq(mMockWebContents));
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(0))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        anyLong(), any(Callback.class));
+        verifySchedulingMessage(false, false);
     }
 
     @SmallTest
@@ -362,9 +359,7 @@ public class MerchantTrustSignalsCoordinatorTest {
         mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(0))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        anyLong(), any(Callback.class));
+        verifySchedulingMessage(false, false);
     }
 
     @SmallTest
@@ -375,9 +370,7 @@ public class MerchantTrustSignalsCoordinatorTest {
         mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(0))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        anyLong(), any(Callback.class));
+        verifySchedulingMessage(false, false);
     }
 
     @SmallTest
@@ -394,9 +387,7 @@ public class MerchantTrustSignalsCoordinatorTest {
         mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(0))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        anyLong(), any(Callback.class));
+        verifySchedulingMessage(false, false);
     }
 
     @SmallTest
@@ -413,10 +404,7 @@ public class MerchantTrustSignalsCoordinatorTest {
         mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
         verify(mMockMerchantTrustStorage, times(1)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(1))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        eq((long) MerchantViewerConfig.getDefaultTrustSignalsMessageDelay()),
-                        any(Callback.class));
+        verifySchedulingMessage(true, false);
     }
 
     @SmallTest
@@ -427,9 +415,7 @@ public class MerchantTrustSignalsCoordinatorTest {
         mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(0))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        anyLong(), any(Callback.class));
+        verifySchedulingMessage(false, false);
     }
 
     @SmallTest
@@ -440,9 +426,7 @@ public class MerchantTrustSignalsCoordinatorTest {
         mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(0))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        anyLong(), any(Callback.class));
+        verifySchedulingMessage(false, false);
     }
 
     @SmallTest
@@ -454,9 +438,7 @@ public class MerchantTrustSignalsCoordinatorTest {
         mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(0))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        anyLong(), any(Callback.class));
+        verifySchedulingMessage(false, false);
     }
 
     @SmallTest
@@ -472,9 +454,7 @@ public class MerchantTrustSignalsCoordinatorTest {
         mCoordinator.maybeDisplayMessage(trustSignals, mMessageContext, false);
 
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(0))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        anyLong(), any(Callback.class));
+        verifySchedulingMessage(false, false);
     }
 
     @SmallTest
@@ -489,9 +469,7 @@ public class MerchantTrustSignalsCoordinatorTest {
         mCoordinator.maybeDisplayMessage(trustSignals, mMessageContext, false);
 
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(0))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        anyLong(), any(Callback.class));
+        verifySchedulingMessage(false, false);
     }
 
     @SmallTest
@@ -507,9 +485,7 @@ public class MerchantTrustSignalsCoordinatorTest {
         mCoordinator.maybeDisplayMessage(trustSignals, mMessageContext, false);
 
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantMessageScheduler, times(0))
-                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        anyLong(), any(Callback.class));
+        verifySchedulingMessage(false, false);
     }
 
     @SmallTest
@@ -520,6 +496,7 @@ public class MerchantTrustSignalsCoordinatorTest {
 
         mCoordinator.onMessageEnqueued(
                 new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents));
+        verify(mMockMetrics, times(1)).recordUkmOnMessageSeen(eq(mMockWebContents));
         verify(mCoordinator, times(1)).updateShownMessagesTimestamp();
         verify(mMockMerchantTrustStorage, times(1)).save(any(MerchantTrustSignalsEvent.class));
     }
@@ -545,6 +522,7 @@ public class MerchantTrustSignalsCoordinatorTest {
     public void testOnMessagePrimaryAction() {
         mCoordinator.onMessagePrimaryAction(mDummyMerchantTrustSignals, FAKE_URL);
         verify(mMockMetrics, times(1)).recordMetricsForMessageTapped();
+        verify(mMockMetrics, times(1)).recordUkmOnMessageClicked(eq(mMockWebContents));
         verify(mMockMetrics, times(1))
                 .recordMetricsForBottomSheetOpenedSource(eq(BottomSheetOpenedSource.FROM_MESSAGE));
         verify(mMockDetailsTabCoordinator, times(1))
@@ -655,5 +633,22 @@ public class MerchantTrustSignalsCoordinatorTest {
         })
                 .when(mMockMerchantTrustStorage)
                 .load(eq(hostname), any(Callback.class));
+    }
+
+    private void verifySchedulingMessage(boolean messageScheduled, boolean shouldExpediteMessage) {
+        if (messageScheduled) {
+            verify(mMockMerchantMessageScheduler, times(1))
+                    .schedule(any(PropertyModel.class), anyDouble(),
+                            any(MerchantTrustMessageContext.class),
+                            eq(shouldExpediteMessage
+                                            ? MerchantTrustMessageScheduler.MESSAGE_ENQUEUE_NO_DELAY
+                                            : (long) MerchantViewerConfig
+                                                      .getDefaultTrustSignalsMessageDelay()),
+                            any(Callback.class));
+        } else {
+            verify(mMockMerchantMessageScheduler, times(0))
+                    .schedule(any(PropertyModel.class), anyDouble(),
+                            any(MerchantTrustMessageContext.class), anyLong(), any(Callback.class));
+        }
     }
 }

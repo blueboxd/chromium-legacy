@@ -214,13 +214,14 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
           : ui::ColorTransform(ui::kColorIcon);
   mixer[kColorBookmarkBarSeparator] = {kColorToolbarSeparator};
   mixer[kColorCaptionButtonBackground] = {SK_ColorTRANSPARENT};
-  mixer[kColorDownloadShelf] = {kColorToolbar};
-  mixer[kColorDownloadShelfButtonBackground] = {kColorDownloadShelf};
+  mixer[kColorDownloadShelfBackground] = {kColorToolbar};
+  mixer[kColorDownloadShelfButtonBackground] = {kColorDownloadShelfBackground};
   mixer[kColorDownloadShelfButtonText] =
-      ui::PickGoogleColor(ui::kColorAccent, kColorDownloadShelf,
+      ui::PickGoogleColor(ui::kColorAccent, kColorDownloadShelfBackground,
                           color_utils::kMinimumReadableContrastRatio);
-  mixer[kColorDownloadShelfContentAreaSeparator] =
-      ui::AlphaBlend(kColorToolbarButtonIcon, kColorDownloadShelf, 0x3A);
+  mixer[kColorDownloadShelfContentAreaSeparator] = ui::AlphaBlend(
+      kColorToolbarButtonIcon, kColorDownloadShelfBackground, 0x3A);
+  mixer[kColorDownloadShelfForeground] = {kColorToolbarText};
   mixer[kColorDownloadToolbarButtonActive] = {ui::kColorThrobber};
   mixer[kColorDownloadToolbarButtonInactive] = {ui::kColorMidground};
   mixer[kColorDownloadToolbarButtonRingBackground] = {
@@ -240,6 +241,8 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       ui::AlphaBlend(kColorToolbarButtonIcon, kColorInfoBarBackground, 0x3A);
   mixer[kColorInfoBarForeground] = {kColorToolbarText};
   mixer[kColorLocationBarBorder] = {SkColorSetA(SK_ColorBLACK, 0x4D)};
+  mixer[kColorLocationBarBorderOpaque] =
+      ui::GetResultingPaintColor(kColorLocationBarBorder, kColorToolbar);
   mixer[kColorNewTabPageBackground] = {kColorToolbar};
   mixer[kColorNewTabPageHeader] = {SkColorSetRGB(0x96, 0x96, 0x96)};
   mixer[kColorNewTabPageLink] = {dark_mode ? gfx::kGoogleBlue300
@@ -255,6 +258,14 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       IncreaseLightness(kColorNewTabPageText, 0.40);
   mixer[kColorOmniboxBackground] = {dark_mode ? gfx::kGoogleGrey900
                                               : gfx::kGoogleGrey100};
+  mixer[kColorOmniboxChipBackgroundLowVisibility] = {
+      kColorTabBackgroundActiveFrameActive};
+  mixer[kColorOmniboxChipBackgroundNormalVisibility] = {
+      ui::kColorButtonBackground};
+  mixer[kColorOmniboxChipForegroundLowVisibility] = {
+      kColorTabForegroundActiveFrameActive};
+  mixer[kColorOmniboxChipForegroundNormalVisibility] = {
+      ui::kColorButtonForeground};
   mixer[kColorOmniboxText] =
       ui::GetColorWithMaxContrast(kColorOmniboxBackground);
   mixer[kColorReadLaterButtonHighlight] = {kColorAvatarButtonHighlightNormal};

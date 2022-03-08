@@ -10,6 +10,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "components/segmentation_platform/internal/database/metadata_utils.h"
+#include "components/segmentation_platform/internal/database/ukm_types.h"
 #include "components/segmentation_platform/internal/execution/custom_input_processor.h"
 #include "components/segmentation_platform/internal/execution/feature_processor_state.h"
 #include "components/segmentation_platform/internal/execution/sql_feature_processor.h"
@@ -63,8 +64,9 @@ void FeatureListQueryProcessor::ProcessFeatureList(
 
 void FeatureListQueryProcessor::ProcessNextInputFeature(
     std::unique_ptr<FeatureProcessorState> feature_processor_state) {
-  // Finished processing all input features.
-  if (feature_processor_state->IsFeatureListEmpty()) {
+  // Finished processing all input features or an error occurred.
+  if (feature_processor_state->IsFeatureListEmpty() ||
+      feature_processor_state->error()) {
     feature_processor_state->RunCallback();
     return;
   }

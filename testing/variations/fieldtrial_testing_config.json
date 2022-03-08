@@ -1217,6 +1217,25 @@
             ]
         }
     ],
+    "BackForwardDedicatedWorker": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BackForwardDedicatedWorker"
+                    ]
+                }
+            ]
+        }
+    ],
     "BaseAssistantIntegration": [
         {
             "platforms": [
@@ -4296,6 +4315,25 @@
             ]
         }
     ],
+    "MuteCompromisedPasswords": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MuteCompromisedPasswords"
+                    ]
+                }
+            ]
+        }
+    ],
     "MyChromeEverywhere": [
         {
             "platforms": [
@@ -4503,6 +4541,22 @@
                         "OmniboxUIExperimentMaxAutocompleteMatches",
                         "QuickActionSearchWidgetAndroid",
                         "QuickActionSearchWidgetAndroidDinoVariant"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxPedalsBatch1Android": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxPedalsAndroidBatch1",
+                        "OmniboxPedalsBatch3NonEnglish"
                     ]
                 }
             ]
@@ -6306,6 +6360,21 @@
             ]
         }
     ],
+    "SuppressToolbarCaptures": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SuppressToolbarCaptures"
+                    ]
+                }
+            ]
+        }
+    ],
     "SurfaceSyncThrottling": [
         {
             "platforms": [
@@ -7276,7 +7345,7 @@
             ]
         }
     ],
-    "WebProtectSaveAs": [
+    "WebProtectBypassJustification": [
         {
             "platforms": [
                 "chromeos",
@@ -7289,7 +7358,27 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "AllowSavePackageScanning"
+                        "kBypassJustificationEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebProtectNewEvents": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LoginEventReporting",
+                        "PasswordBreachEventReporting"
                     ]
                 }
             ]

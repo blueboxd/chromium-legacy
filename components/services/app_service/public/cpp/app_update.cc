@@ -567,19 +567,21 @@ bool AppUpdate::PermissionsChanged() const {
           (mojom_delta_->permissions != mojom_state_->permissions));
 }
 
-apps::mojom::InstallReason AppUpdate::InstallReason() const {
+apps::InstallReason AppUpdate::InstallReason() const {
+  if (ShouldUseNonMojom()) {
+    GET_VALUE_WITH_DEFAULT_VALUE(install_reason, InstallReason::kUnknown)
+  }
+
   if (mojom_delta_ &&
       (mojom_delta_->install_reason != apps::mojom::InstallReason::kUnknown)) {
-    return mojom_delta_->install_reason;
+    return ConvertMojomInstallReasonToInstallReason(
+        mojom_delta_->install_reason);
   }
   if (mojom_state_) {
-    return mojom_state_->install_reason;
+    return ConvertMojomInstallReasonToInstallReason(
+        mojom_state_->install_reason);
   }
-  return apps::mojom::InstallReason::kUnknown;
-}
-
-apps::InstallReason AppUpdate::GetInstallReason() const {
-  GET_VALUE_WITH_DEFAULT_VALUE(install_reason, InstallReason::kUnknown)
+  return apps::InstallReason::kUnknown;
 }
 
 bool AppUpdate::InstallReasonChanged() const {
@@ -645,17 +647,18 @@ bool AppUpdate::PolicyIdChanged() const {
           (mojom_delta_->policy_id != mojom_state_->policy_id));
 }
 
-apps::mojom::OptionalBool AppUpdate::InstalledInternally() const {
+bool AppUpdate::InstalledInternally() const {
   switch (InstallReason()) {
-    case apps::mojom::InstallReason::kUnknown:
-      return apps::mojom::OptionalBool::kUnknown;
-    case apps::mojom::InstallReason::kSystem:
-    case apps::mojom::InstallReason::kPolicy:
-    case apps::mojom::InstallReason::kOem:
-    case apps::mojom::InstallReason::kDefault:
-      return apps::mojom::OptionalBool::kTrue;
-    default:
-      return apps::mojom::OptionalBool::kFalse;
+    case apps::InstallReason::kSystem:
+    case apps::InstallReason::kPolicy:
+    case apps::InstallReason::kOem:
+    case apps::InstallReason::kDefault:
+      return true;
+    case apps::InstallReason::kUnknown:
+    case apps::InstallReason::kSync:
+    case apps::InstallReason::kUser:
+    case apps::InstallReason::kSubApp:
+      return false;
   }
 }
 
@@ -925,19 +928,19 @@ bool AppUpdate::ResizeLockedChanged() const {
           (mojom_delta_->resize_locked != mojom_state_->resize_locked));
 }
 
-apps::mojom::WindowMode AppUpdate::WindowMode() const {
+apps::WindowMode AppUpdate::WindowMode() const {
+  if (ShouldUseNonMojom()) {
+    GET_VALUE_WITH_DEFAULT_VALUE(window_mode, WindowMode::kUnknown)
+  }
+
   if (mojom_delta_ &&
       (mojom_delta_->window_mode != apps::mojom::WindowMode::kUnknown)) {
-    return mojom_delta_->window_mode;
+    return ConvertMojomWindowModeToWindowMode(mojom_delta_->window_mode);
   }
   if (mojom_state_) {
-    return mojom_state_->window_mode;
+    return ConvertMojomWindowModeToWindowMode(mojom_state_->window_mode);
   }
-  return apps::mojom::WindowMode::kUnknown;
-}
-
-apps::WindowMode AppUpdate::GetWindowMode() const {
-  GET_VALUE_WITH_DEFAULT_VALUE(window_mode, WindowMode::kUnknown)
+  return WindowMode::kUnknown;
 }
 
 bool AppUpdate::WindowModeChanged() const {
@@ -1025,7 +1028,10 @@ std::ostream& operator<<(std::ostream& out, const AppUpdate& app) {
     out << " is_managed: " << permission->is_managed << std::endl;
   }
 
-  out << "InstallReason: " << app.InstallReason() << std::endl;
+  out << "InstallReason: " << static_cast<int>(app.InstallReason())
+      << std::endl;
+  out << "InstallSource: " << static_cast<int>(app.InstallSource())
+      << std::endl;
   out << "PolicyId: " << app.PolicyId() << std::endl;
   out << "InstalledInternally: " << app.InstalledInternally() << std::endl;
   out << "IsPlatformApp: " << PRINT_OPTIONAL_VALUE(IsPlatformApp) << std::endl;
@@ -1048,7 +1054,7 @@ std::ostream& operator<<(std::ostream& out, const AppUpdate& app) {
   }
 
   out << "ResizeLocked: " << PRINT_OPTIONAL_VALUE(ResizeLocked) << std::endl;
-  out << "WindowMode: " << app.WindowMode() << std::endl;
+  out << "WindowMode: " << static_cast<int>(app.WindowMode()) << std::endl;
   if (app.RunOnOsLogin().has_value()) {
     out << "RunOnOsLoginMode: "
         << static_cast<int>(app.RunOnOsLogin().value().login_mode) << std::endl;

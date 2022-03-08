@@ -60,10 +60,13 @@ constexpr int kPreferredWidth = 640;
 constexpr int kClassicViewHeight = 48;
 constexpr int kDefaultViewHeight = 40;
 constexpr int kAnswerCardViewHeight = 80;
+constexpr int kKeyboardShortcutViewHeight = 64;
 constexpr int kPreferredIconViewWidth = 56;
 constexpr int kTextTrailPadding = 16;
 // Extra margin at the right of the rightmost action icon.
-constexpr int kActionButtonRightMargin = 8;
+constexpr int kClassicActionButtonRightMargin = 8;
+// Extra margin at the right of the rightmost action icon.
+constexpr int kDefaultActionButtonRightMargin = 12;
 // Text line height in the search result.
 constexpr int kPrimaryTextHeight = 20;
 constexpr int kAnswerCardDetailsLineHeight = 18;
@@ -77,6 +80,7 @@ constexpr int kImageIconCornerRadius = 4;
 
 constexpr int kSearchRatingStarPadding = 4;
 constexpr int kSearchRatingStarSize = 16;
+constexpr int kKeyboardShortcutTopMargin = 6;
 constexpr int kAnswerCardBorderMargin = 12;
 constexpr gfx::Insets kAnswerCardBorder(kAnswerCardBorderMargin,
                                         kAnswerCardBorderMargin,
@@ -269,6 +273,8 @@ SearchResultView::SearchResultView(
       std::make_unique<views::FlexLayoutView>());
   keyboard_shortcut_container_->SetCrossAxisAlignment(
       views::LayoutAlignment::kStretch);
+  keyboard_shortcut_container_->SetBorder(
+      views::CreateEmptyBorder(kKeyboardShortcutTopMargin, 0, 0, 0));
 
   title_container_ = title_and_details_container_->AddChildView(
       std::make_unique<views::FlexLayoutView>());
@@ -365,6 +371,8 @@ int SearchResultView::PreferredHeight() const {
     case SearchResultViewType::kClassic:
       return kClassicViewHeight;
     case SearchResultViewType::kDefault:
+      if (has_keyboard_shortcut_contents_)
+        return kKeyboardShortcutViewHeight;
       return kDefaultViewHeight;
     case SearchResultViewType::kAnswerCard:
       return kAnswerCardViewHeight;
@@ -385,6 +393,16 @@ int SearchResultView::SecondaryTextHeight() const {
       return kAnswerCardDetailsLineHeight;
     case SearchResultViewType::kDefault:
       return kPrimaryTextHeight;
+  }
+}
+
+int SearchResultView::ActionButtonRightMargin() const {
+  switch (view_type_) {
+    case SearchResultViewType::kClassic:
+      return kClassicActionButtonRightMargin;
+    case SearchResultViewType::kAnswerCard:
+    case SearchResultViewType::kDefault:
+      return kDefaultActionButtonRightMargin;
   }
 }
 
@@ -735,12 +753,13 @@ void SearchResultView::Layout() {
   badge_icon_->SetBoundsRect(badge_icon_bounds);
 
   const int max_actions_width =
-      (rect.right() - kActionButtonRightMargin - icon_bounds.right()) / 2;
+      (rect.right() - ActionButtonRightMargin() - icon_bounds.right()) / 2;
   int actions_width =
       std::min(max_actions_width, actions_view()->GetPreferredSize().width());
 
   gfx::Rect actions_bounds(rect);
-  actions_bounds.set_x(rect.right() - kActionButtonRightMargin - actions_width);
+  actions_bounds.set_x(rect.right() - ActionButtonRightMargin() -
+                       actions_width);
   actions_bounds.set_width(actions_width);
   actions_view()->SetBoundsRect(actions_bounds);
 
@@ -755,10 +774,10 @@ void SearchResultView::Layout() {
     text_bounds.set_width(
         rect.width() - kPreferredIconViewWidth - kTextTrailPadding -
         actions_view()->bounds().width() -
-        (actions_view()->children().empty() ? 0 : kActionButtonRightMargin));
+        (actions_view()->children().empty() ? 0 : ActionButtonRightMargin()));
   } else {
     text_bounds.set_width(rect.width() - kPreferredIconViewWidth -
-                          kTextTrailPadding - kActionButtonRightMargin);
+                          kTextTrailPadding - ActionButtonRightMargin());
   }
 
   if (!title_label_tags_.empty() && !details_label_tags_.empty()) {
@@ -767,10 +786,12 @@ void SearchResultView::Layout() {
         // SearchResultView needs additional space when
         // `has_keyboard_shortcut_contents_` is set to accommodate the
         // `keyboard_shortcut_container_`.
-        gfx::Size label_size(text_bounds.width(),
-                             has_keyboard_shortcut_contents_
-                                 ? PrimaryTextHeight() + SecondaryTextHeight()
-                                 : PrimaryTextHeight());
+        gfx::Size label_size(
+            text_bounds.width(),
+            PrimaryTextHeight() +
+                (has_keyboard_shortcut_contents_
+                     ? kKeyboardShortcutTopMargin + SecondaryTextHeight()
+                     : 0));
         gfx::Rect centered_text_bounds(text_bounds);
         centered_text_bounds.ClampToCenteredSize(label_size);
         text_container_->SetBoundsRect(centered_text_bounds);
@@ -778,8 +799,11 @@ void SearchResultView::Layout() {
       }
       case SearchResultViewType::kClassic:
       case SearchResultViewType::kAnswerCard: {
-        gfx::Size label_size(text_bounds.width(),
-                             PrimaryTextHeight() + SecondaryTextHeight());
+        gfx::Size label_size(
+            text_bounds.width(),
+            PrimaryTextHeight() + SecondaryTextHeight() +
+                (has_keyboard_shortcut_contents_ ? kKeyboardShortcutTopMargin
+                                                 : 0));
         gfx::Rect centered_text_bounds(text_bounds);
         centered_text_bounds.ClampToCenteredSize(label_size);
         text_container_->SetBoundsRect(centered_text_bounds);
@@ -825,15 +849,16 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
 
   gfx::Rect content_rect(rect);
 
-  if (selected() && !actions_view()->HasSelectedAction()) {
     switch (view_type_) {
       case SearchResultViewType::kDefault:
       case SearchResultViewType::kClassic:
-        canvas->FillRect(
-            content_rect,
-            AppListColorProvider::Get()->GetSearchResultViewHighlightColor());
-        PaintFocusBar(canvas, GetContentsBounds().origin(),
-                      /*height=*/GetContentsBounds().height());
+        if (selected() && !actions_view()->HasSelectedAction()) {
+          canvas->FillRect(
+              content_rect,
+              AppListColorProvider::Get()->GetSearchResultViewHighlightColor());
+          PaintFocusBar(canvas, GetContentsBounds().origin(),
+                        /*height=*/GetContentsBounds().height());
+        }
         break;
       case SearchResultViewType::kAnswerCard: {
         cc::PaintFlags flags;
@@ -842,11 +867,12 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
             AppListColorProvider::Get()->GetSearchResultViewHighlightColor());
         canvas->DrawRoundRect(content_rect,
                               kAnswerCardCardBackgroundCornerRadius, flags);
-        PaintFocusBar(canvas, gfx::Point(0, kAnswerCardFocusBarOffset),
-                      kAnswerCardFocusBarHeight);
+        if (selected()) {
+          PaintFocusBar(canvas, gfx::Point(0, kAnswerCardFocusBarOffset),
+                        kAnswerCardFocusBarHeight);
+        }
       } break;
     }
-  }
 }
 
 void SearchResultView::OnMouseEntered(const ui::MouseEvent& event) {

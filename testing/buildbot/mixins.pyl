@@ -428,6 +428,14 @@
       },
     },
   },
+  'gtest_run_disabled_only': {
+    '$mixin_append': {
+      'args': [
+        '--gtest_also_run_disabled_tests',
+        '--gtest_filter=*DISABLE*',
+      ],
+    },
+  },
   'hammerhead': {
     # Nexus 5
     'swarming': {
@@ -653,13 +661,6 @@
         'gpu': '10de:2184-440.100',
         'os': 'Ubuntu-18.04.5|Ubuntu-18.04.6',
         'pool': 'chromium.tests.gpu',
-      },
-    },
-  },
-  'lollipop': {
-    'swarming': {
-      'dimensions': {
-        'device_os': 'LMY48M',
       },
     },
   },

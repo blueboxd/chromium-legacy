@@ -89,6 +89,7 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_installer_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/ash/power/ml/smart_dim/ml_agent.h"
 #include "chrome/browser/ash/printing/cups_printers_manager.h"
 #include "chrome/browser/ash/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
@@ -97,6 +98,7 @@
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/component_updater/smart_dim_component_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
@@ -150,6 +152,7 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/update_client/update_client_errors.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/variations/pref_names.h"
@@ -371,25 +374,25 @@ api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
 }
 
 api::autotest_private::AppInstallSource GetAppInstallSource(
-    apps::mojom::InstallReason install_reason) {
+    apps::InstallReason install_reason) {
   switch (install_reason) {
-    case apps::mojom::InstallReason::kUnknown:
+    case apps::InstallReason::kUnknown:
       return api::autotest_private::AppInstallSource::
           APP_INSTALL_SOURCE_UNKNOWN;
-    case apps::mojom::InstallReason::kSystem:
+    case apps::InstallReason::kSystem:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_SYSTEM;
-    case apps::mojom::InstallReason::kPolicy:
+    case apps::InstallReason::kPolicy:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_POLICY;
-    case apps::mojom::InstallReason::kOem:
+    case apps::InstallReason::kOem:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_OEM;
-    case apps::mojom::InstallReason::kDefault:
+    case apps::InstallReason::kDefault:
       return api::autotest_private::AppInstallSource::
           APP_INSTALL_SOURCE_DEFAULT;
-    case apps::mojom::InstallReason::kSync:
+    case apps::InstallReason::kSync:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_SYNC;
-    case apps::mojom::InstallReason::kUser:
+    case apps::InstallReason::kUser:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_USER;
-    case apps::mojom::InstallReason::kSubApp:
+    case apps::InstallReason::kSubApp:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_SUBAPP;
   }
   NOTREACHED();
@@ -2862,6 +2865,64 @@ void AutotestPrivateBootstrapMachineLearningServiceFunction::ModelLoaded(
 void AutotestPrivateBootstrapMachineLearningServiceFunction::
     OnMojoDisconnect() {
   Respond(Error("ML Service connection error"));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateLoadSmartDimComponentFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateLoadSmartDimComponentFunction::
+    AutotestPrivateLoadSmartDimComponentFunction() = default;
+AutotestPrivateLoadSmartDimComponentFunction::
+    ~AutotestPrivateLoadSmartDimComponentFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateLoadSmartDimComponentFunction::Run() {
+  DVLOG(1) << "AutotestPrivateLoadSmartDimComponentFunction";
+
+  if (ash::power::ml::SmartDimMlAgent::GetInstance()->IsDownloadWorkerReady()) {
+    return RespondNow(NoArguments());
+  }
+
+  const std::string crx_id =
+      component_updater::SmartDimComponentInstallerPolicy::GetExtensionId();
+  g_browser_process->component_updater()->GetOnDemandUpdater().OnDemandUpdate(
+      crx_id, component_updater::OnDemandUpdater::Priority::FOREGROUND,
+      base::BindOnce(&AutotestPrivateLoadSmartDimComponentFunction::
+                         OnComponentUpdatedCallback,
+                     this));
+
+  timer_.Start(
+      FROM_HERE, base::Seconds(5),
+      base::BindRepeating(
+          &AutotestPrivateLoadSmartDimComponentFunction::TryRespond, this));
+
+  return RespondLater();
+}
+
+void AutotestPrivateLoadSmartDimComponentFunction::OnComponentUpdatedCallback(
+    update_client::Error error) {
+  if (error != update_client::Error::NONE &&
+      error != update_client::Error::UPDATE_IN_PROGRESS) {
+    Respond(Error(base::StringPrintf(
+        "On demand update of the SmartDim component failed with error: %d.",
+        static_cast<int>(error))));
+  }
+}
+
+void AutotestPrivateLoadSmartDimComponentFunction::TryRespond() {
+  ++timer_triggered_count_;
+  if (did_respond()) {
+    return;
+  }
+
+  if (ash::power::ml::SmartDimMlAgent::GetInstance()->IsDownloadWorkerReady()) {
+    Respond(NoArguments());
+  } else if (timer_triggered_count_ >= 12) {
+    Respond(Error("Timeout occurred before SmartDim component was loaded."));
+  } else {
+    timer_.Reset();
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -408,14 +408,20 @@ absl::optional<Components> Parse(const std::string& qr_url) {
   }
   ret.peer_identity = *peer_identity;
 
-  const auto it = qr_contents_map.find(cbor::Value(2));
+  auto it = qr_contents_map.find(cbor::Value(2));
   if (it != qr_contents_map.end()) {
     if (!it->second.is_integer()) {
       return absl::nullopt;
     }
     ret.num_known_domains = it->second.GetInteger();
-  } else {
-    ret.num_known_domains = 0;
+  }
+
+  it = qr_contents_map.find(cbor::Value(4));
+  if (it != qr_contents_map.end()) {
+    if (!it->second.is_bool()) {
+      return absl::nullopt;
+    }
+    ret.supports_linking = it->second.GetBool();
   }
 
   return ret;
@@ -434,6 +440,8 @@ std::string Encode(base::span<const uint8_t, kQRKeySize> qr_key) {
       2, static_cast<int64_t>(std::size(tunnelserver::kAssignedDomains)));
 
   qr_contents.emplace(3, static_cast<int64_t>(base::Time::Now().ToTimeT()));
+
+  qr_contents.emplace(4, true);  // client supports storing linking information.
 
   const absl::optional<std::vector<uint8_t>> qr_data =
       cbor::Writer::Write(cbor::Value(std::move(qr_contents)));
@@ -1052,6 +1060,15 @@ bool VerifyPairingSignature(
     base::span<const uint8_t, std::tuple_size<HandshakeHash>::value>
         handshake_hash,
     base::span<const uint8_t> signature) {
+  bssl::UniquePtr<EC_GROUP> p256(
+      EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
+  bssl::UniquePtr<EC_POINT> unused(EC_POINT_new(p256.get()));
+  if (EC_POINT_oct2point(p256.get(), unused.get(), peer_public_key_x962.data(),
+                         peer_public_key_x962.size(),
+                         /*ctx=*/nullptr) != 1) {
+    return false;
+  }
+
   bssl::UniquePtr<EC_KEY> identity_key = ECKeyFromSeed(identity_seed);
   std::array<uint8_t, SHA256_DIGEST_LENGTH> expected_signature =
       PairingSignature(identity_key.get(), peer_public_key_x962,

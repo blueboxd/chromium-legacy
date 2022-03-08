@@ -79,9 +79,10 @@ TestAggregationServiceImpl::TestAggregationServiceImpl(
       sender_(AggregatableReportSender::CreateForTesting(
           url_loader_factory,
           /*enable_debug_logging=*/true)),
-      assembler_(
-          AggregatableReportAssembler::CreateForTesting(/*manager=*/this,
-                                                        url_loader_factory)) {
+      assembler_(AggregatableReportAssembler::CreateForTesting(
+          /*storage_context=*/this,
+          url_loader_factory,
+          /*enable_debug_logging=*/true)) {
   DCHECK(clock);
 }
 
@@ -131,7 +132,9 @@ void TestAggregationServiceImpl::AssembleReport(
     AssembleRequest request,
     base::OnceCallback<void(base::Value::DictStorage)> callback) {
   AggregationServicePayloadContents payload_contents(
-      ConvertToOperation(request.operation), request.bucket, request.value,
+      ConvertToOperation(request.operation),
+      {AggregationServicePayloadContents::HistogramContribution{
+          .bucket = request.bucket, .value = request.value}},
       ConvertToProcessingType(request.processing_type));
 
   AggregatableReportSharedInfo shared_info(

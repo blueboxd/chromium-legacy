@@ -57,9 +57,6 @@ class ChromiumDepGraph {
         com_google_auto_value_auto_value_annotations: new PropertyOverride(
             licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
             licenseName: 'Apache 2.0'),
-        com_google_code_findbugs_jFormatString: new PropertyOverride(
-            licenseUrl: 'https://raw.githubusercontent.com/spotbugs/spotbugs/master/spotbugs/licenses/LICENSE.txt',
-            licenseName: 'GNU Lesser Public License'),
         com_google_code_gson_gson: new PropertyOverride(
             url: 'https://github.com/google/gson',
             licenseUrl: 'https://raw.githubusercontent.com/google/gson/master/LICENSE',
@@ -72,8 +69,6 @@ class ChromiumDepGraph {
             url: 'https://errorprone.info/',
             licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
             licenseName: 'Apache 2.0'),
-        com_google_errorprone_error_prone_core: new PropertyOverride(
-            overrideLatest: true),
         com_google_firebase_firebase_annotations: new PropertyOverride(
             description: 'Common annotations for Firebase SKDs.'),
         com_google_firebase_firebase_common: new PropertyOverride(
@@ -397,7 +392,8 @@ class ChromiumDepGraph {
             // Default to using largest version for version conflict resolution. See http://crbug.com/1040958.
             // https://docs.gradle.org/current/userguide/dependency_resolution.html#sec:version-conflict
             boolean useLowerVersion = (id in lowerVersionOverride)
-            boolean versionIsLower = dependency.module.id.version < dependencies.get(id).version
+            boolean versionIsLower = isVersionLower(dependency.module.id.version,
+                                                    dependencies.get(id).version)
             if (useLowerVersion != versionIsLower) {
                 return
             }
@@ -698,6 +694,35 @@ class ChromiumDepGraph {
         }
     }
 
+    // Checks if currentVersion is lower than versionInQuestion.
+    private boolean isVersionLower(String currentVersion, String versionInQuestion) {
+        List verA = currentVersion.tokenize('.')
+        List verB = versionInQuestion.tokenize('.')
+        int commonIndices = Math.min(verA.size(), verB.size())
+        for (int i = 0; i < commonIndices; ++i) {
+            // toInteger could fail as some versions are 2.11.alpha-06.
+            // so revert to a string comparison.
+            try {
+                int numA = verA[i].toInteger()
+                int numB = verB[i].toInteger()
+                if (numA == numB) {
+                  continue
+                }
+                return numA < numB
+
+            } catch (any) {
+                logger.debug('Using String comparison for a version check.')
+                // This could lead to issues where a version such as 2.11.alpha11
+                // is registered as less than 2.11.alpha9.
+                return verA[i] < verB[i]
+            }
+        }
+
+        // If we got this far then all the common indices are identical,
+        // so whichever version is longer is larger.
+        return verA.size() < verB.size()
+    }
+
     @AutoClone
     static class DependencyDescription {
 
@@ -723,7 +748,7 @@ class ChromiumDepGraph {
         // When set overrides the version downloaded by the 3pp fetch script to
         // be, instead of the latest available, the resolved version by gradle
         // in this run.
-        Boolean overrideLatest = true
+        Boolean overrideLatest
 
     }
 

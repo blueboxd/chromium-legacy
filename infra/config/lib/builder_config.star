@@ -8,6 +8,7 @@ load("@stdlib//internal/graph.star", "graph")
 load("@stdlib//internal/luci/common.star", "keys", "kinds", "triggerer")
 load("./args.star", "args")
 load("./nodes.star", "nodes")
+load("./structs.star", "structs")
 
 # TODO(gbeaty) Add support for PROVIDE_TEST_SPEC mirrors
 
@@ -27,9 +28,6 @@ def _enum(**kwargs):
     if "_values" in kwargs:
         fail("cannot create an enum value named '_values'")
     return struct(_values = kwargs.values(), **kwargs)
-
-def _struct_with_non_none_values(**kwargs):
-    return struct(**{k: v for k, v in kwargs.items() if v != None})
 
 _execution_mode = _enum(
     # The builder will perform compilation of any targets configured in the
@@ -57,9 +55,9 @@ def _gclient_config(*, config, apply_configs = None):
     """
     if not config:
         fail("config must be provided")
-    return _struct_with_non_none_values(
+    return struct(
         config = config,
-        apply_configs = args.listify(apply_configs) or None,
+        apply_configs = args.listify(apply_configs),
     )
 
 _build_config = _enum(
@@ -132,15 +130,15 @@ def _chromium_config(
         fail("CrOS boards can only be specified for target platform '{}'"
             .format(_target_platform.CHROMEOS))
 
-    return _struct_with_non_none_values(
+    return struct(
         config = config,
-        apply_configs = args.listify(apply_configs) or None,
+        apply_configs = args.listify(apply_configs),
         build_config = build_config,
         target_arch = target_arch,
         target_bits = target_bits,
         target_platform = target_platform,
-        target_cros_boards = args.listify(target_cros_boards) or None,
-        cros_boards_with_qemu_images = args.listify(cros_boards_with_qemu_images) or None,
+        target_cros_boards = args.listify(target_cros_boards),
+        cros_boards_with_qemu_images = args.listify(cros_boards_with_qemu_images),
     )
 
 def _android_config(*, config, apply_configs = None):
@@ -158,9 +156,9 @@ def _android_config(*, config, apply_configs = None):
     """
     if not config:
         fail("config must be provided")
-    return _struct_with_non_none_values(
+    return struct(
         config = config,
-        apply_configs = args.listify(apply_configs) or None,
+        apply_configs = args.listify(apply_configs),
     )
 
 def _test_results_config(*, config):
@@ -177,7 +175,7 @@ def _test_results_config(*, config):
     """
     if not config:
         fail("config must be provided")
-    return _struct_with_non_none_values(
+    return struct(
         config = config,
     )
 
@@ -195,7 +193,7 @@ def _skylab_upload_location(*, gs_bucket, gs_extra = None):
     """
     if not gs_bucket:
         fail("gs_bucket must be provided")
-    return _struct_with_non_none_values(
+    return struct(
         gs_bucket = gs_bucket,
         gs_extra = gs_extra,
     )
@@ -265,7 +263,7 @@ def _builder_spec(
     if not chromium_config:
         fail("chromium_config must be provided")
 
-    return _struct_with_non_none_values(
+    return struct(
         execution_mode = execution_mode,
         gclient_config = gclient_config,
         chromium_config = chromium_config,
@@ -300,7 +298,7 @@ def _rts_config(*, condition, recall = None):
     """
     if condition not in _rts_condition._values:
         fail("unknown RTS condition: {}".format(condition))
-    return _struct_with_non_none_values(
+    return struct(
         condition = condition,
         recall = recall,
     )
@@ -333,7 +331,7 @@ def _try_settings(
         A struct that can be passed to the `try_settings` argument of the
         builder.
     """
-    return _struct_with_non_none_values(
+    return struct(
         include_all_triggered_testers = include_all_triggered_testers,
         is_compile_only = is_compile_only,
         analyze_names = analyze_names,
@@ -342,7 +340,33 @@ def _try_settings(
         rts_config = rts_config,
     )
 
+def _copy_from(builder, modifier_fn = None):
+    """Details for specifying a builder spec in terms of another builder's.
+
+    Args:
+        builder: (str) The name of another builder to copy the spec from. The
+            name can be a simple name if it unambigously refers to another
+            builder.
+        modifier_fn: (func(builder_spec) -> builder_spec) An optional function
+            that can be used to modify the spec used by the builder. If
+            provided, the function will be called with the other builder's spec
+            and should return the spec to be used for the builder that is using
+            `copy_from`. See //lib/structs.star for functions to enable
+            returning a modified spec.
+    """
+    return struct(
+        # register_builder_config and the generator use the presence/absence of
+        # this attribute to distinguish builders specifying their own spec and
+        # builders copying from another
+        __copy_from__ = "__copy_from__",
+        builder = builder,
+        modifier_fn = modifier_fn,
+    )
+
 builder_config = struct(
+    # Function for expressing builder spec in terms of another builder's spec
+    copy_from = _copy_from,
+
     # Function and associated constants for defining builder spec
     builder_spec = _builder_spec,
     execution_mode = _execution_mode,
@@ -382,8 +406,11 @@ _BUILDER_CONFIG_MIRROR = nodes.create_link_node_type(
     _BUILDER_CONFIG,
 )
 
-def _struct_to_dict(obj):
-    return json.decode(json.encode(obj))
+_BUILDER_SPEC_COPY_FROM = nodes.create_link_node_type(
+    "builder_spec_copy_from",
+    _BUILDER_CONFIG,
+    _BUILDER_CONFIG,
+)
 
 def register_builder_config(bucket, name, builder_group, builder_spec, mirrors, try_settings):
     """Registers the builder config so the properties can be computed.
@@ -412,18 +439,17 @@ def register_builder_config(bucket, name, builder_group, builder_spec, mirrors, 
     if builder_spec and mirrors:
         fail("only one of builder_spec or mirrors can be set")
 
-    if try_settings:
-        try_settings = _struct_to_dict(try_settings)
-        include_all_triggered_testers = try_settings.pop("include_all_triggered_testers")
-    else:
-        include_all_triggered_testers = not mirrors
+    if not try_settings:
+        try_settings = _try_settings(include_all_triggered_testers = not mirrors)
     builder_config_key = _BUILDER_CONFIG.add(bucket, name, props = dict(
         builder_group = builder_group,
-        builder_spec = _struct_to_dict(builder_spec),
+        builder_spec = builder_spec,
         mirrors = mirrors,
-        include_all_triggered_testers = include_all_triggered_testers,
         try_settings = try_settings,
     ))
+
+    if hasattr(builder_spec, "__copy_from__"):
+        _BUILDER_SPEC_COPY_FROM.link(builder_config_key, builder_spec.builder)
 
     for m in mirrors or []:
         _BUILDER_CONFIG_MIRROR.link(builder_config_key, m)
@@ -437,123 +463,28 @@ def _builder_name(node):
         fail("got {}, expecting a node with a bucket-scoped key".format(node))
     return "{}/{}".format(container.id, key.id)
 
-def _get_parent_node(node):
-    builder_nodes = graph.children(node.key, kinds.BUILDER)
-    if len(builder_nodes) != 1:
-        fail(
-            "internal error: builder_config node should have edge to exactly 1 builder node",
-            node.trace,
-        )
-
-    # To find the builder config of the parent builder, we need to find the
-    # builder that triggers the builder we're looking at, then the builder
-    # config node will be the parent node of that builder.
-    #
-    # To find the parent builder, we traverse parent nodes of the builder node.
-    # The builder node will have builder_ref nodes as parents, which abstract
-    # being able to refer to a builder by bucket-qualified name (ci/foo-builder)
-    # or simple name (foo-builder). The builder_ref nodes will have triggerer
-    # nodes as parents, which abstract things that can trigger builders (pollers
-    # or builders). Finally, the triggerer nodes for builders will have a
-    # builder node as a parent.
-    triggerers = set()
-    parents = set()
-    for ref in graph.parents(builder_nodes[0].key, kinds.BUILDER_REF):
-        for t in graph.parents(ref.key, kinds.TRIGGERER):
-            triggerers = triggerers.union([t])
-            for b in graph.parents(t.key, kinds.BUILDER):
-                builder_configs = graph.parents(b.key, _BUILDER_CONFIG.kind)
-                if len(builder_configs) > 1:
-                    fail(
-                        "internal error: multiple builder_config parents for {}: {}"
-                            .format(b, builder_configs),
-                        b.trace,
-                    )
-                parents = parents.union(builder_configs)
-
-    if len(parents) > 1:
-        fail("{} has multiple parents: {}".format(
-            _builder_name(node),
-            sorted([_builder_name(p) for p in parents]),
-        ))
-
-    parent = list(parents)[0] if parents else None
-
-    execution_mode = node.props.builder_spec["execution_mode"]
-
-    if execution_mode == _execution_mode.TEST:
-        if len(triggerers) > 1:
-            fail(
-                "builder {} has execution_mode {} and has multiple triggerers: {}"
-                    .format(_builder_name(node), execution_mode, [t.key.id for t in triggerers]),
-                node.trace,
-            )
-        elif not triggerers:
-            fail(
-                "builder {} has execution_mode {} and has no parent"
-                    .format(_builder_name(node), execution_mode),
-                node.trace,
-            )
-        elif not parent:
-            fail(
-                "builder {} is triggered by {} which does not have a builder spec"
-                    .format(_builder_name(node), triggerers[0]),
-                node.trace,
-            )
-    elif execution_mode == _execution_mode.COMPILE_AND_TEST:
-        if parent:
-            fail(
-                "builder {} has execution_mode {} and has a parent: {}"
-                    .format(_builder_name(node), execution_mode, _builder_name(parent)),
-                node.trace,
-            )
-
-    return parent
-
-def _get_child_nodes(node):
-    builder_nodes = graph.children(node.key, kinds.BUILDER)
-    if len(builder_nodes) != 1:
-        fail("internal error: builder_config node should have edge to exactly 1 builder node", node.trace)
-
-    children = set()
-    for b in triggerer.targets(builder_nodes[0]):
-        b_children = graph.parents(b.key, _BUILDER_CONFIG.kind)
-        if not b_children:
-            fail("{} is triggered by {}, but does not have a builder spec".format(_builder_name(b), _builder_name(node)), b.trace)
-        if len(b_children) > 1:
-            fail("internal error: builder node should be the target of exactly 1 edge from a builder_config node", b.trace)
-        children = children.union(b_children)
-
-    execution_mode = node.props.builder_spec["execution_mode"]
-
-    if execution_mode != _execution_mode.COMPILE_AND_TEST and children:
-        fail("internal error: builder {} has execution_mode {} and has children: {}"
-            .format(_builder_name(node), execution_mode, sorted([_builder_name(c) for c in children])))
-
-    return children
-
-def _get_mirrored_builders(node):
+def _get_mirrored_builders(bc_state, node):
     nodes = _BUILDER_CONFIG_MIRROR.children(node.key)
 
     for mirror in nodes:
-        if not mirror.props.builder_spec:
+        if not bc_state.builder_spec(mirror):
             fail("builder {} mirrors builder {} which does not have a builder spec"
                 .format(_builder_name(node), _builder_name(mirror)))
 
     return nodes
 
-def _get_mirroring_builders(node):
-    if not node.props.builder_spec:
+def _get_mirroring_builders(bc_state, node):
+    if not bc_state.builder_spec(node):
         return []
 
     nodes = _BUILDER_CONFIG_MIRROR.parents(node.key)
 
     # If there are builders that mirror the parent of the current builder and
     # include all triggered testers, then they mirror the current builder also
-    parent = _get_parent_node(node)
+    parent = bc_state.parent(node)
     if parent:
         for m in _BUILDER_CONFIG_MIRROR.parents(parent.key):
-            if m.props.include_all_triggered_testers:
+            if m.props.try_settings.include_all_triggered_testers:
                 nodes.append(m)
 
     return nodes
@@ -568,10 +499,10 @@ def _builder_id(node):
         builder = node.key.id,
     )
 
-def _entry(node, parent = None):
+def _entry(bc_state, node, parent = None):
     builder_spec = dict(
         builder_group = node.props.builder_group,
-        **node.props.builder_spec
+        **structs.to_proto_properties(bc_state.builder_spec(node))
     )
     for src, dst in (
         ("gclient_config", "legacy_gclient_config"),
@@ -604,6 +535,8 @@ def _set_builder_config_property(ctx):
     if cfg == None:
         fail("There is no buildbucket configuration file to update properties")
 
+    bc_state = _bc_state()
+
     for bucket in cfg.buckets:
         bucket_name = bucket.name
         for builder in bucket.swarming.builders:
@@ -615,39 +548,39 @@ def _set_builder_config_property(ctx):
             entries = []
             builder_ids = []
             builder_ids_in_scope_for_testing = []
-            try_settings = dict(node.props.try_settings or {})
 
-            if node.props.builder_spec:
-                parent = _get_parent_node(node)
+            builder_spec = bc_state.builder_spec(node)
+            if builder_spec:
+                parent = bc_state.parent(node)
                 if parent:
-                    entries.append(_entry(parent))
-                entries.append(_entry(node, parent))
+                    entries.append(_entry(bc_state, parent))
+                entries.append(_entry(bc_state, node, parent))
                 builder_ids.append(_builder_id(node))
-                for child in _get_child_nodes(node):
-                    entries.append(_entry(child, node))
+                for child in bc_state.children(node):
+                    entries.append(_entry(bc_state, child, node))
                     builder_ids_in_scope_for_testing.append(_builder_id(child))
             else:
-                mirrors = _get_mirrored_builders(node)
+                mirrors = _get_mirrored_builders(bc_state, node)
 
                 encountered = {}
 
                 def add(node, parent = None):
                     node_id = (node.key.container.id, node.key.id)
                     if node_id not in encountered:
-                        entries.append(_entry(node, parent))
-                        if node.props.builder_spec["execution_mode"] == _execution_mode.COMPILE_AND_TEST:
+                        entries.append(_entry(bc_state, node, parent))
+                        if bc_state.builder_spec(node).execution_mode == _execution_mode.COMPILE_AND_TEST:
                             builder_ids.append(_builder_id(node))
                         else:
                             builder_ids_in_scope_for_testing.append(_builder_id(node))
                         encountered[node_id] = True
 
                 for m in mirrors:
-                    parent = _get_parent_node(m)
+                    parent = bc_state.parent(m)
                     if parent:
                         add(parent)
                     add(m, parent)
-                    if node.props.include_all_triggered_testers:
-                        for child in _get_child_nodes(m):
+                    if node.props.try_settings.include_all_triggered_testers:
+                        for child in bc_state.children(m):
                             add(child, m)
 
             if not entries:
@@ -662,15 +595,16 @@ def _set_builder_config_property(ctx):
                     entries = sorted(entries, key = lambda e: _builder_id_sort_key(e["builder_id"])),
                 ),
                 builder_ids = sorted(builder_ids, key = _builder_id_sort_key),
-                **try_settings
+                **structs.to_proto_properties(node.props.try_settings)
             )
+            builder_config.pop("include_all_triggered_testers", None)
 
             if builder_ids_in_scope_for_testing:
                 builder_config["builder_ids_in_scope_for_testing"] = (
                     sorted(builder_ids_in_scope_for_testing, key = _builder_id_sort_key)
                 )
 
-            mirroring_builders = _get_mirroring_builders(node)
+            mirroring_builders = _get_mirroring_builders(bc_state, node)
             if mirroring_builders:
                 builder_config["mirroring_builder_group_and_names"] = [
                     dict(group = group, builder = builder)
@@ -684,3 +618,188 @@ def _set_builder_config_property(ctx):
             builder.properties = json.encode(builder_properties)
 
 lucicfg.generator(_set_builder_config_property)
+
+# Capture the details of working with the graph in methods that use caching so
+# that we're not repeatedly traversing the graph to compute the same information
+
+def _node_cached(f):
+    cache = {}
+
+    def execute(node):
+        if node not in cache:
+            cache[node] = f(node)
+        return cache[node]
+
+    return execute
+
+def _bc_state():
+    def get_parent(node):
+        if node.key.kind != _BUILDER_CONFIG.kind:
+            fail("Expected {} node, got {}".format(_BUILDER_CONFIG.kind, node))
+
+        builder_nodes = graph.children(node.key, kinds.BUILDER)
+        if len(builder_nodes) != 1:
+            fail(
+                "internal error: builder_config node should have edge to exactly 1 builder node",
+                node.trace,
+            )
+
+        # To find the builder config of the parent builder, we need to find the
+        # builder that triggers the builder we're looking at, then the builder
+        # config node will be the parent node of that builder.
+        #
+        # To find the parent builder, we traverse parent nodes of the builder
+        # node. The builder node will have builder_ref nodes as parents, which
+        # abstract being able to refer to a builder by bucket-qualified name
+        # (ci/foo-builder) or simple name (foo-builder). The builder_ref nodes
+        # will have triggerer nodes as parents, which abstract things that can
+        # trigger builders (pollers or builders). Finally, the triggerer nodes
+        # for builders will have a builder node as a parent.
+        triggerers = set()
+        parents = set()
+        for ref in graph.parents(builder_nodes[0].key, kinds.BUILDER_REF):
+            for t in graph.parents(ref.key, kinds.TRIGGERER):
+                triggerers = triggerers.union([t])
+                for b in graph.parents(t.key, kinds.BUILDER):
+                    builder_configs = graph.parents(b.key, _BUILDER_CONFIG.kind)
+                    if len(builder_configs) > 1:
+                        fail(
+                            "internal error: multiple builder_config parents for {}: {}"
+                                .format(b, builder_configs),
+                            b.trace,
+                        )
+                    parents = parents.union(builder_configs)
+
+        if len(parents) > 1:
+            fail("{} has multiple parents: {}".format(
+                _builder_name(node),
+                sorted([_builder_name(p) for p in parents]),
+            ))
+
+        parent = list(parents)[0] if parents else None
+
+        execution_mode = bc_state.builder_spec(node).execution_mode
+
+        if execution_mode == _execution_mode.TEST:
+            if len(triggerers) > 1:
+                fail(
+                    "builder {} has multiple triggerers: {}"
+                        .format(_builder_name(node), [t.key.id for t in triggerers]),
+                    node.trace,
+                )
+            elif not triggerers:
+                fail(
+                    "builder {} has execution_mode {} and has no parent"
+                        .format(_builder_name(node), execution_mode),
+                    node.trace,
+                )
+            elif not parent:
+                fail(
+                    "builder {} is triggered by {} which does not have a builder spec"
+                        .format(_builder_name(node), triggerers[0]),
+                    node.trace,
+                )
+        elif execution_mode == _execution_mode.COMPILE_AND_TEST:
+            if parent:
+                fail(
+                    "builder {} has execution_mode {} and has a parent: {}"
+                        .format(_builder_name(node), execution_mode, _builder_name(parent)),
+                    node.trace,
+                )
+
+        return parent
+
+    def get_children(node):
+        if node.key.kind != _BUILDER_CONFIG.kind:
+            fail("Expected {} node, got {}".format(_BUILDER_CONFIG.kind, node))
+
+        builder_nodes = graph.children(node.key, kinds.BUILDER)
+        if len(builder_nodes) != 1:
+            fail(
+                "internal error: builder_config node should have edge to exactly 1 builder node",
+                node.trace,
+            )
+
+        children = set()
+        for b in triggerer.targets(builder_nodes[0]):
+            b_children = graph.parents(b.key, _BUILDER_CONFIG.kind)
+            if not b_children:
+                fail(
+                    "{} is triggered by {}, but does not have a builder spec"
+                        .format(_builder_name(b), _builder_name(node)),
+                    b.trace,
+                )
+            if len(b_children) > 1:
+                fail(
+                    "internal error: builder node should be the target of exactly 1 edge from a builder_config node",
+                    b.trace,
+                )
+            children = children.union(b_children)
+
+        execution_mode = bc_state.builder_spec(node).execution_mode
+
+        if execution_mode != _execution_mode.COMPILE_AND_TEST and children:
+            fail(
+                "internal error: builder {} has execution_mode {} and has children: {}"
+                    .format(_builder_name(node), execution_mode, sorted([_builder_name(c) for c in children])),
+                node.trace,
+            )
+
+        return children
+
+    # The builder specs can be recursively defined in that one builder could set
+    # its builder spec to be copied from a builder that in turn specifies its
+    # builder spec is copied from another builder. Starlark doesn't allow
+    # recursion or while loops, so loop over an arbitrarily large range
+    def builder_spec_getter():
+        builder_specs_by_node = {}
+
+        def get(node):
+            if node not in builder_specs_by_node:
+                builder_spec = node.props.builder_spec
+                if not hasattr(builder_spec, "__copy_from__"):
+                    builder_specs_by_node[node] = builder_spec
+                    return builder_spec
+
+                copy_froms = _BUILDER_SPEC_COPY_FROM.children(node.key)
+                if len(copy_froms) != 1:
+                    fail(
+                        "internal error: there should be exactly one builder to copy spec from",
+                        node.trace,
+                    )
+                copy_from = copy_froms[0]
+                builder_spec_to_copy = copy_from.props.builder_spec
+                if not builder_spec_to_copy:
+                    fail(
+                        "copying builder spec from builder that doesn't have one",
+                        node.trace,
+                    )
+                if hasattr(builder_spec_to_copy, "__copy_from__"):
+                    fail(
+                        "cannot copy the builder spec from a builder that is copying another builder spec",
+                        node.trace,
+                    )
+                builder_specs_by_node[copy_from] = builder_spec_to_copy
+
+                modifier_fn = builder_spec.modifier_fn
+                if modifier_fn:
+                    builder_spec_to_copy = modifier_fn(builder_spec_to_copy)
+                    if not builder_spec_to_copy:
+                        fail(
+                            "no builder returned from {}".format(modifier_fn),
+                            node.trace,
+                        )
+
+                builder_specs_by_node[node] = builder_spec_to_copy
+
+            return builder_specs_by_node[node]
+
+        return get
+
+    bc_state = struct(
+        parent = _node_cached(get_parent),
+        children = _node_cached(get_children),
+        builder_spec = builder_spec_getter(),
+    )
+
+    return bc_state

@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '0843ef6ded083754b203886d056d4351aa70a5b0',
+  'skia_revision': '88f90513a9ba47a9e3e0c09ab2403fa6b4e59cfc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '30e0d8719a889cd2eb37812ae4facd0e8f91bbfe',
+  'devtools_frontend_revision': '93b0c2cf90584dd67baa82d85f8225763876d69a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -372,7 +372,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'f61d2bfc3a7709680010baf1e53509c2467846cc',
+  'quiche_revision': '47549e0881a7e2cac18431ce744f90cfbda0a3ec',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -1735,7 +1735,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ae848a469e21cb6c84eba59db18d5ae6a57f974a',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'a04b8b504393d7d36ae1e173dcb223371c2e197b',
+    Var('webrtc_git') + '/src.git' + '@' + '57869dae117d164f66c0c3cb75cb9c078e07c922',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1824,7 +1824,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/eche_app/app',
-        'version': 'LJCbl3yiulMuHTfbRrF1Pgbgaahdn68zMCCvkQuZjhMC',
+        'version': 'ZpuWWOZwhn4j7SwQMvPc-NJOqV4p32nHSxVOFDH3a3MC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

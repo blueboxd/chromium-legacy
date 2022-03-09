@@ -63,6 +63,8 @@ const CGFloat kVoiceOverAnnouncementDelay = 1;
 @property(nonatomic, assign) BubbleArrowDirection arrowDirection;
 // The alignment of the underlying BubbleView's arrow.
 @property(nonatomic, assign) BubbleAlignment alignment;
+// Whether the bubble view controller is presented or dismissed.
+@property(nonatomic, assign, getter=isPresenting) BOOL presenting;
 // The block invoked when the bubble is dismissed (both via timer and via tap).
 // Is optional.
 @property(nonatomic, strong) ProceduralBlock dismissalCallback;
@@ -125,8 +127,6 @@ const CGFloat kVoiceOverAnnouncementDelay = 1;
 - (void)presentInViewController:(UIViewController*)parentViewController
                            view:(UIView*)parentView
                     anchorPoint:(CGPoint)anchorPoint {
-  [parentViewController addChildViewController:self.bubbleViewController];
-
   CGPoint anchorPointInParent =
       [parentView.window convertPoint:anchorPoint toView:parentView];
   self.bubbleViewController.view.frame =
@@ -136,7 +136,12 @@ const CGFloat kVoiceOverAnnouncementDelay = 1;
   if (CGRectIsEmpty(self.bubbleViewController.view.frame)) {
     return;
   }
+
+  self.presenting = YES;
+  [parentViewController addChildViewController:self.bubbleViewController];
   [parentView addSubview:self.bubbleViewController.view];
+  [self.bubbleViewController
+      didMoveToParentViewController:parentViewController];
   [self.bubbleViewController animateContentIn];
 
   [self.bubbleViewController.view
@@ -144,10 +149,8 @@ const CGFloat kVoiceOverAnnouncementDelay = 1;
   [parentView addGestureRecognizer:self.outsideBubbleTapRecognizer];
   [parentView addGestureRecognizer:self.swipeRecognizer];
 
-  CGFloat duration = kBubbleVisibilityDuration;
-
   self.bubbleDismissalTimer = [NSTimer
-      scheduledTimerWithTimeInterval:duration
+      scheduledTimerWithTimeInterval:kBubbleVisibilityDuration
                               target:self
                             selector:@selector(bubbleDismissalTimerFired:)
                             userInfo:nil
@@ -164,7 +167,7 @@ const CGFloat kVoiceOverAnnouncementDelay = 1;
 
   if (self.voiceOverAnnouncement) {
     // The VoiceOverAnnouncement should be dispatched after a delay to account
-    // the fact that it can be presented right after a screen change (for
+    // for the fact that it can be presented right after a screen change (for
     // example when the application or a new tab is opened). This screen change
     // is changing the VoiceOver focus to focus a newly visible element. If this
     // announcement is currently being read, it is cancelled. The added delay
@@ -185,7 +188,7 @@ const CGFloat kVoiceOverAnnouncementDelay = 1;
   // Because this object must stay in memory to handle the |userEngaged|
   // property correctly, it is possible for |dismissAnimated| to be called
   // multiple times. However, only the first call should have any effect.
-  if (!self.bubbleViewController.parentViewController) {
+  if (!self.presenting) {
     return;
   }
 
@@ -197,8 +200,7 @@ const CGFloat kVoiceOverAnnouncementDelay = 1;
       removeGestureRecognizer:self.outsideBubbleTapRecognizer];
   [self.swipeRecognizer.view removeGestureRecognizer:self.swipeRecognizer];
   [self.bubbleViewController dismissAnimated:animated];
-  [self.bubbleViewController willMoveToParentViewController:nil];
-  [self.bubbleViewController removeFromParentViewController];
+  self.presenting = NO;
 
   if (self.dismissalCallback) {
     self.dismissalCallback();

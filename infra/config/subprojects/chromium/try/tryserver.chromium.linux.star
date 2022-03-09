@@ -205,15 +205,7 @@ try_.builder(
 )
 
 try_.builder(
-    name = "linux-blink-heap-concurrent-marking-tsan-rel",
-)
-
-try_.builder(
     name = "linux-blink-heap-verification-try",
-)
-
-try_.builder(
-    name = "linux-blink-v8-oilpan",
 )
 
 try_.builder(

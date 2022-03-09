@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/containers/adapters.h"
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
@@ -503,6 +504,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   // reparented node or a newly-shown dialog box.
   BrowserAccessibility* focus = GetFocus();
   std::vector<ui::AXEventGenerator::TargetedEvent> deferred_events;
+  bool received_load_start_event = false;
   bool received_load_complete_event = false;
   for (const auto& targeted_event : event_generator()) {
     BrowserAccessibility* event_target = GetFromID(targeted_event.node_id);
@@ -517,6 +519,9 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     if (targeted_event.event_params.event ==
         ui::AXEventGenerator::Event::LOAD_COMPLETE) {
       received_load_complete_event = true;
+    } else if (targeted_event.event_params.event ==
+               ui::AXEventGenerator::Event::LOAD_START) {
+      received_load_start_event = true;
     }
 
     // IsDescendantOf() also returns true in the case of equality.
@@ -585,6 +590,16 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
       FireGeneratedEvent(ui::AXEventGenerator::Event::LOAD_COMPLETE,
                          retargeted);
       received_load_complete_event = true;
+    } else if (event.event_type == ax::mojom::Event::kLoadStart &&
+               !received_load_start_event) {
+      // If we already have a load-complete event, the load-start event is no
+      // longer relevant. In addition, some code checks for the presence of
+      // the "busy" state when firing a platform load-start event. If the page
+      // is no longer loading, this state will have been removed and the check
+      // will fail.
+      if (!received_load_complete_event)
+        FireGeneratedEvent(ui::AXEventGenerator::Event::LOAD_START, retargeted);
+      received_load_start_event = true;
     }
 
     FireBlinkEvent(event.event_type, retargeted, event.action_request_id);
@@ -1780,13 +1795,13 @@ void BrowserAccessibilityManager::BuildAXTreeHitTestCacheInternal(
   // assume the object that occurs later in the tree is on top of one that comes
   // before it.
   auto range = node->PlatformChildren();
-  for (auto child = range.rbegin(); child != range.rend(); ++child) {
+  for (const auto& child : base::Reversed(range)) {
     // Skip table columns because cells are only contained in rows,
     // not columns.
-    if (child->GetRole() == ax::mojom::Role::kColumn)
+    if (child.GetRole() == ax::mojom::Role::kColumn)
       continue;
 
-    BuildAXTreeHitTestCacheInternal(&(*child), storage);
+    BuildAXTreeHitTestCacheInternal(&child, storage);
   }
 
   storage->push_back(node);

@@ -75,16 +75,33 @@ bool CrosWindow::setBounds(double x, double y, double width, double height) {
   return true;
 }
 
-bool CrosWindow::setFullscreen(bool value) {
-  return false;
+// TODO(crbug.com/1253318): Refactor to trace errors through return value or
+// otherwise.
+void CrosWindow::setFullscreen(bool fullscreen) {
+  auto* cros_window_management =
+      window_management_->GetCrosWindowManagementOrNull();
+  if (!cros_window_management) {
+    return;
+  }
+  cros_window_management->SetFullscreen(window_->id, fullscreen);
 }
 
-bool CrosWindow::maximize() {
-  return false;
+void CrosWindow::maximize() {
+  auto* cros_window_management =
+      window_management_->GetCrosWindowManagementOrNull();
+  if (!cros_window_management) {
+    return;
+  }
+  cros_window_management->Maximize(window_->id);
 }
 
-bool CrosWindow::minimize() {
-  return false;
+void CrosWindow::minimize() {
+  auto* cros_window_management =
+      window_management_->GetCrosWindowManagementOrNull();
+  if (!cros_window_management) {
+    return;
+  }
+  cros_window_management->Minimize(window_->id);
 }
 
 bool CrosWindow::raise() {

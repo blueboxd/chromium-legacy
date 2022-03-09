@@ -1055,6 +1055,7 @@ void LaunchURL(base::WeakPtr<ChromeContentBrowserClient> client,
                content::WebContents::Getter web_contents_getter,
                ui::PageTransition page_transition,
                bool is_primary_main_frame,
+               bool is_in_fenced_frame_tree,
                network::mojom::WebSandboxFlags sandbox_flags,
                bool has_user_gesture,
                const absl::optional<url::Origin>& initiating_origin,
@@ -1095,9 +1096,10 @@ void LaunchURL(base::WeakPtr<ChromeContentBrowserClient> client,
   //
   // This block adds an extra logic, gating external protocol in iframes to have
   // one of:
-  // - 'allow-popups'
   // - 'allow-top-navigation'
+  // - 'allow-top-navigation-to-custom-protocols'
   // - 'allow-top-navigation-by-user-navigation' + user-activation
+  // - 'allow-popups'
   //
   // See https://crbug.com/1148777
   if (!is_primary_main_frame) {
@@ -1105,8 +1107,7 @@ void LaunchURL(base::WeakPtr<ChromeContentBrowserClient> client,
     auto allow = [&](SandboxFlags flag) {
       return (sandbox_flags & flag) == SandboxFlags::kNone;
     };
-    bool allowed = (allow(SandboxFlags::kPopups)) ||
-                   (allow(SandboxFlags::kTopNavigation)) ||
+    bool allowed = (allow(SandboxFlags::kTopNavigationToCustomProtocols)) ||
                    (allow(SandboxFlags::kTopNavigationByUserActivation) &&
                     has_user_gesture);
 
@@ -1117,14 +1118,38 @@ void LaunchURL(base::WeakPtr<ChromeContentBrowserClient> client,
             rfh, blink::mojom::WebFeature::kExternalProtocolBlockedBySandbox);
       }
 
-      if (base::FeatureList::IsEnabled(
-              features::kSandboxExternalProtocolBlocked) &&
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
               kDisableSandboxExternalProtocolSwitch)) {
-        rfh->AddMessageToConsole(
-            blink::mojom::ConsoleMessageLevel::kError,
-            "Navigation to external protocol blocked by sandbox.");
-        return;
+        if (base::FeatureList::IsEnabled(
+                features::kSandboxExternalProtocolBlocked)) {
+          rfh->AddMessageToConsole(
+              blink::mojom::ConsoleMessageLevel::kError,
+              "Navigation to external protocol blocked by sandbox, because it "
+              "doesn't contain any of: "
+              "'allow-top-navigation-to-custom-protocols', "
+              "'allow-top-navigation-by-user-activation', "
+              "'allow-top-navigation', or "
+              "'allow-popups'. See "
+              "https://chromestatus.com/feature/5680742077038592 and "
+              "https://chromeenterprise.google/policies/"
+              "#SandboxExternalProtocolBlocked");
+          return;
+        }
+
+        if (base::FeatureList::IsEnabled(
+                features::kSandboxExternalProtocolBlockedWarning)) {
+          rfh->AddMessageToConsole(
+              blink::mojom::ConsoleMessageLevel::kError,
+              "After Chrome M103, navigation toward external protocol "
+              "will be blocked by sandbox, if it doesn't contain any of:"
+              "'allow-top-navigation-to-custom-protocols', "
+              "'allow-top-navigation-by-user-activation', "
+              "'allow-top-navigation', or "
+              "'allow-popups'. See "
+              "https://chromestatus.com/feature/5680742077038592 and "
+              "https://chromeenterprise.google/policies/"
+              "#SandboxExternalProtocolBlocked");
+        }
       }
     }
   }
@@ -1149,7 +1174,8 @@ void LaunchURL(base::WeakPtr<ChromeContentBrowserClient> client,
   } else {
     ExternalProtocolHandler::LaunchUrl(
         url, std::move(web_contents_getter), page_transition, has_user_gesture,
-        initiating_origin, std::move(initiator_document));
+        is_in_fenced_frame_tree, initiating_origin,
+        std::move(initiator_document));
   }
 }
 
@@ -5519,6 +5545,7 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
     int frame_tree_node_id,
     content::NavigationUIData* navigation_data,
     bool is_primary_main_frame,
+    bool is_in_fenced_frame_tree,
     network::mojom::WebSandboxFlags sandbox_flags,
     ui::PageTransition page_transition,
     bool has_user_gesture,
@@ -5553,8 +5580,9 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
       FROM_HERE,
       base::BindOnce(&LaunchURL, weak_factory_.GetWeakPtr(), url,
                      std::move(web_contents_getter), page_transition,
-                     is_primary_main_frame, sandbox_flags, has_user_gesture,
-                     initiating_origin, std::move(weak_initiator_document)));
+                     is_primary_main_frame, is_in_fenced_frame_tree,
+                     sandbox_flags, has_user_gesture, initiating_origin,
+                     std::move(weak_initiator_document)));
   return true;
 }
 

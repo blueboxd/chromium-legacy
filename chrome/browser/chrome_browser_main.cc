@@ -155,6 +155,7 @@
 #include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/service/variations_service.h"
+#include "components/variations/synthetic_trial_registry.h"
 #include "components/variations/synthetic_trials_active_group_id_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_crash_keys.h"
@@ -164,6 +165,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -567,9 +569,9 @@ ChromeBrowserMainParts::~ChromeBrowserMainParts() {
 void ChromeBrowserMainParts::SetupMetrics() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::SetupMetrics");
   metrics::MetricsService* metrics = browser_process_->metrics_service();
-  metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
+  metrics->GetSyntheticTrialRegistry()->AddSyntheticTrialObserver(
       variations::VariationsIdsProvider::GetInstance());
-  metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
+  metrics->GetSyntheticTrialRegistry()->AddSyntheticTrialObserver(
       variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();
@@ -1597,8 +1599,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate)) {
     component_updater::RegisterComponentsForUpdate();
   } else {
-    component_updater::FirstPartySetsComponentInstallerPolicy::
-        SendFileToNetworkService(base::File());
+    // Initialize First-Party Sets even if component updater is disabled.
+    content::FirstPartySetsHandler::GetInstance()->SetPublicFirstPartySets(
+        base::File());
   }
 
   // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.

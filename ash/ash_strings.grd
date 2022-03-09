@@ -1616,11 +1616,23 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_INLINE_REPLY_BUTTON" desc="Label for the inline reply button inside a PhoneHub notification.">
         Reply
       </message>
-      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
-        Get notifications from your phone on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
-      </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_SET_UP_BUTTON" desc="Label for the set up button to start the opt in flow to show notifications from the phone.">
         Set up
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_APPS_OPT_IN_DESCRIPTION" desc="Description for the notification and apps opt in view.">
+        View your phone's recent photos, media, notifications, and messaging apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
+        View your phone's notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_CAMERA_ROLL_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
+        View your phone's recent photos, media, and notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_APPS_OPT_IN_DESCRIPTION" desc="Description for the apps opt in view.">
+        Access your phone's messaging apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_OPT_IN_DESCRIPTION" desc="Description for the camera roll opt in view.">
+        View your phone's recent photos and media on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_HOTSPOT_FAILED_TITLE" desc="Title inside a PhoneHub notification when enable hotspot failed to find a connection.">
         Hotspot connection failed
@@ -2095,6 +2107,12 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CLICK_TO_ACTIVATE" desc="The label used in quick settings to indicate an unactivated cellular network that can be clicked to launch activation through setup flow. [CHAR_LIMIT=29]">
         Click to activate
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_UNAVAILABLE_SIM_NETWORK" desc="Label used in quick settings to indicate a SIM network that is not available to be setup. [CHAR_LIMIT=29]">
+        Not activated. Contact your carrier.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_A11Y_UNAVAILABLE_SIM_NETWORK" desc="Accessibility label used in quick settings to indicate for a SIM network that is not available to be setup. [CHAR_LIMIT=29]">
+       <ph name="NETWORK_NAME">$1<ex>Verizon</ex></ph> is not activated.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CLICK_TO_UNLOCK" desc="The label used in quick settings to indicate a cellular network is locked and clicking on it will open unlock dialog in chrome OS settings. [CHAR_LIMIT=29]">
         Click to unlock
@@ -4689,7 +4707,7 @@ New install
         Delete this search from your history?
       </message>
       <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS" desc="Detailed explanation message for removing removing an omnibox search result from launcher search results UI. This is a text in the dialog shown to the user when they try to remove a suggested omnibox search result from list of results shown in the launcher search - the omnibox search result may appear if the search query in launcher search matches a previous user search. The dialog asks the user to confirm the result removal.">
-        You searched for this query before. Deleting this search from your history will permanently remove it from your Google Account across all of your devices. 
+        You searched for this query before. Deleting this search from your history will permanently remove it from your Google Account across all of your devices.
       </message>
       <message name="IDS_REMOVE_SUGGESTION_BUTTON_LABEL" desc="Remove suggestion button label">
         Delete
@@ -4732,6 +4750,9 @@ New install
       </message>
       <message name="IDS_APP_LIST_CONTINUE_OPENED_YESTERDAY" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown.">
         Opened yesterday
+      </message>
+      <message name="IDS_APP_LIST_OPEN_TAB_HINT" desc="Shown alongside launcher search results which will take the user to an open tab when clicked.">
+        Go to this tab
       </message>
       <message name="IDS_APP_LIST_START_ASSISTANT" desc="Tooltip for the button that starts Google Assistant from the search box in the app list.">
         Google Assistant

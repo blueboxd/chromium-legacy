@@ -1,6 +1,6 @@
 <style import="cr-shared-style">
   :host {
-    --action-height: 34px;
+    --action-height: 32px;
     border: solid 1px var(--google-grey-500);
     border-radius: calc(var(--action-height) / 2);
     display: flex;
@@ -37,6 +37,7 @@
   }
 
   :host-context(.focus-outline-visible):host(:focus) {
+    border: solid 1px transparent;
     box-shadow: inset 0 0 0 2px var(--google-blue-600);
   }
 

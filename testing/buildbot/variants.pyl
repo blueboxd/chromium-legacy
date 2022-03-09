@@ -387,7 +387,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M100',
-          'revision': 'version:100.0.4896.26',
+          'revision': 'version:100.0.4896.28',
         }
       ],
     },
@@ -411,7 +411,31 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M99',
-          'revision': 'version:99.0.4844.64',
+          'revision': 'version:99.0.4844.65',
+        }
+      ],
+    },
+  },
+  'WEBLAYER_10_AND_M_IMPL_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE': {
+    'args': [
+      '--webview-apk-path=apks/AOSP_SystemWebView.apk',
+      '--test-runner-outdir',
+      '.',
+      '--client-outdir',
+      '.',
+      '--implementation-outdir',
+      '../../weblayer_instrumentation_test_M98/out/Release',
+      '--test-expectations',
+      '../../weblayer/browser/android/javatests/skew/expectations.txt',
+      '--impl-version=98',
+    ],
+    'identifier': 'with_impl_from_98',
+    'swarming': {
+      'cipd_packages': [
+        {
+          'cipd_package': 'chromium/testing/weblayer-x86',
+          'location': 'weblayer_instrumentation_test_M98',
+          'revision': 'version:98.0.4758.109',
         }
       ],
     },
@@ -507,7 +531,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M100',
-          'revision': 'version:100.0.4896.26',
+          'revision': 'version:100.0.4896.28',
         }
       ],
     },
@@ -531,7 +555,31 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M99',
-          'revision': 'version:99.0.4844.64',
+          'revision': 'version:99.0.4844.65',
+        }
+      ],
+    },
+  },
+  'WEBLAYER_IMPL_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE': {
+    'args': [
+      '--webview-apk-path=apks/SystemWebView.apk',
+      '--test-runner-outdir',
+      '.',
+      '--client-outdir',
+      '.',
+      '--implementation-outdir',
+      '../../weblayer_instrumentation_test_M98/out/Release',
+      '--test-expectations',
+      '../../weblayer/browser/android/javatests/skew/expectations.txt',
+      '--impl-version=98',
+    ],
+    'identifier': 'with_impl_from_98',
+    'swarming': {
+      'cipd_packages': [
+        {
+          'cipd_package': 'chromium/testing/weblayer-x86',
+          'location': 'weblayer_instrumentation_test_M98',
+          'revision': 'version:98.0.4758.109',
         }
       ],
     },
@@ -627,7 +675,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M100',
-          'revision': 'version:100.0.4896.26',
+          'revision': 'version:100.0.4896.28',
         }
       ],
     },
@@ -651,7 +699,31 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M99',
-          'revision': 'version:99.0.4844.64',
+          'revision': 'version:99.0.4844.65',
+        }
+      ],
+    },
+  },
+  'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE': {
+    'args': [
+      '--webview-apk-path=apks/SystemWebView.apk',
+      '--test-runner-outdir',
+      '.',
+      '--client-outdir',
+      '../../weblayer_instrumentation_test_M98/out/Release',
+      '--implementation-outdir',
+      '.',
+      '--test-expectations',
+      '../../weblayer/browser/android/javatests/skew/expectations.txt',
+      '--client-version=98',
+    ],
+    'identifier': 'with_client_from_98',
+    'swarming': {
+      'cipd_packages': [
+        {
+          'cipd_package': 'chromium/testing/weblayer-x86',
+          'location': 'weblayer_instrumentation_test_M98',
+          'revision': 'version:98.0.4758.109',
         }
       ],
     },
@@ -749,8 +821,8 @@
   'CROS_ATLAS_RELEASE_BETA': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_chrome_version': '99.0.4844.46',
-      'cros_img': 'atlas-release/R99-14469.33.0',
+      'cros_chrome_version': '100.0.4896.25',
+      'cros_img': 'atlas-release/R100-14526.16.0',
     },
     'enabled': True,
     'identifier': 'ATLAS_RELEASE_BETA',
@@ -785,8 +857,8 @@
   'CROS_EVE_RELEASE_BETA': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_chrome_version': '99.0.4844.46',
-      'cros_img': 'eve-release/R99-14469.33.0',
+      'cros_chrome_version': '100.0.4896.25',
+      'cros_img': 'eve-release/R100-14526.16.0',
     },
     'enabled': True,
     'identifier': 'EVE_RELEASE_BETA',
@@ -857,8 +929,8 @@
   'CROS_OCTOPUS_RELEASE_BETA': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_chrome_version': '99.0.4844.46',
-      'cros_img': 'octopus-release/R99-14469.33.0',
+      'cros_chrome_version': '100.0.4896.25',
+      'cros_img': 'octopus-release/R100-14526.16.0',
     },
     'enabled': True,
     'identifier': 'OCTOPUS_RELEASE_BETA',

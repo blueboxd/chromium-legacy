@@ -10600,7 +10600,7 @@
       When this setting is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will perform verification of server certificates using the legacy certificate verifier provided by the platform.
       When this setting is not set, the built-in or the legacy certificate verifier may be used.
 
-      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for <ph name="MAC_OS_NAME">macOS</ph> version 104, when support for the legacy certificate verifier on <ph name="MAC_OS_NAME">macOS</ph> is planned to be removed.
+      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for <ph name="MAC_OS_NAME">macOS</ph> version 107, when support for the legacy certificate verifier on <ph name="MAC_OS_NAME">macOS</ph> is planned to be removed.
       ''',
     },
     {
@@ -20124,7 +20124,7 @@
 
       This defaults to True: security feature enabled.
 
-      This can be used by administrators who need more time to update their internal website affected by this new restriction. This Enterprise policy is temporary; it's intended to be removed after <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 104.
+      This can be used by administrators who need more time to update their internal website affected by this new restriction. This Enterprise policy is temporary; it's intended to be removed after <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 117.
       ''',
     },
     {

@@ -14,7 +14,7 @@ import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '//resources/cr_elements/policy/cr_policy_indicator.m.js';
 import '//resources/cr_elements/shared_style_css.m.js';
 import '//resources/cr_elements/shared_vars_css.m.js';
-import '../os_settings_icons_css.m.js';
+import '../os_settings_icons_css.js';
 import './esim_install_error_dialog.js';
 
 import {Button, ButtonBarState, ButtonState, CellularSetupPageName} from '//resources/cr_components/chromeos/cellular_setup/cellular_types.m.js';
@@ -32,7 +32,7 @@ import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.j
 import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from '../multidevice_page/multidevice_browser_proxy.m.js';
-import {MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, PhoneHubNotificationAccessProhibitedReason, PhoneHubNotificationAccessStatus, SmartLockSignInEnabledState} from '../multidevice_page/multidevice_constants.m.js';
+import {MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, PhoneHubFeatureAccessProhibitedReason, PhoneHubFeatureAccessStatus, SmartLockSignInEnabledState} from '../multidevice_page/multidevice_constants.m.js';
 
 Polymer({
   _template: html`{__html_template__}`,

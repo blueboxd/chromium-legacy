@@ -292,6 +292,7 @@ class CONTENT_EXPORT NavigationRequest
   bool IsInPrimaryMainFrame() const override;
   bool IsInPrerenderedMainFrame() override;
   bool IsPrerenderedPageActivation() override;
+  bool IsInFencedFrameTree() override;
   FrameType GetNavigatingFrameType() const override;
   bool IsRendererInitiated() override;
   bool IsSameOrigin() override;
@@ -336,6 +337,7 @@ class CONTENT_EXPORT NavigationRequest
       std::unique_ptr<NavigationThrottle> navigation_throttle) override;
   bool IsDeferredForTesting() override;
   bool IsCommitDeferringConditionDeferredForTesting() override;
+  CommitDeferringCondition* GetCommitDeferringConditionForTesting() override;
   bool WasStartedFromContextMenu() override;
   const GURL& GetSearchableFormURL() override;
   const std::string& GetSearchableFormEncoding() override;

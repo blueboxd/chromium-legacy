@@ -51,6 +51,7 @@ extern const base::Feature kNtpPhotosModuleCustomizedOptInTitle;
 extern const base::Feature kNtpPhotosModuleCustomizedOptInArtWork;
 extern const base::Feature kNtpSafeBrowsingModule;
 extern const base::Feature kNtpModulesDragAndDrop;
+extern const base::Feature kNtpModulesFirstRunExperience;
 
 extern const base::Feature kNtpHandleMostVisitedNavigationExplicitly;
 
@@ -113,10 +114,13 @@ extern const char kRealboxMatchSearchboxThemeParam[];
 // The following are Feature params for Discount user consent v2.
 // This indicates the Discount Consent v2 variation on the NTP Cart module.
 enum class DiscountConsentNtpVariation {
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   kDefault = 0,
   kStringChange = 1,
   kInline = 2,
   kDialog = 3,
+  kMaxValue = kDialog
 };
 
 // Param indicates the ConsentV2 variation. See DiscountConsentNtpVariation

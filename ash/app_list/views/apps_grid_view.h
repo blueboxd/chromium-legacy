@@ -330,10 +330,14 @@ class ASH_EXPORT AppsGridView : public views::View,
       base::RepeatingCallback<void(bool aborted,
                                    AppListReorderAnimationStatus status)>;
 
-  // Add a callback that runs at the end of the app list reorder.
+  // Adds a callback that runs at the end of the app list reorder.
   void AddReorderCallbackForTest(TestReorderDoneCallbackType done_callback);
 
-  // Add a callback that runs at the end of the fade out animation triggered
+  // Adds a closure that runs at the start of the fade out animation triggered
+  // by reorder.
+  void AddFadeOutAnimationStartClosureForTest(base::OnceClosure start_closure);
+
+  // Adds a closure that runs at the end of the fade out animation triggered
   // by reorder.
   void AddFadeOutAnimationDoneClosureForTest(base::OnceClosure done_closure);
 
@@ -380,9 +384,6 @@ class ASH_EXPORT AppsGridView : public views::View,
     // The view index of the last visible item on the apps grid.
     int last_index = 0;
   };
-
-  // The cardified apps grid should be scaled down by this factor.
-  static constexpr float kCardifiedScale = 0.84f;
 
   // The duration in ms for most of the apps grid view animations.
   static constexpr int kDefaultAnimationDuration = 200;
@@ -1020,6 +1021,9 @@ class ASH_EXPORT AppsGridView : public views::View,
   // (2) Fade in animation is aborted or ends normally.
   std::queue<TestReorderDoneCallbackType>
       reorder_animation_callback_queue_for_test_;
+
+  // A closure that runs at the start of the fade out animation.
+  base::OnceClosure fade_out_start_closure_for_test_;
 
   // A closure that runs at the end of the fade out animation.
   base::OnceClosure fade_out_done_closure_for_test_;

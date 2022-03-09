@@ -31,16 +31,15 @@
 
 namespace chromeos {
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace multidevice_setup {
-namespace mojom = ::ash::multidevice_setup::mojom;
-}
-
 namespace settings {
 
 namespace {
 
 const char kCameraRollAccessStatus[] = "cameraRollAccessStatus";
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace multidevice_setup = ::ash::multidevice_setup;
+
 const char kPageContentDataModeKey[] = "mode";
 const char kPageContentDataHostDeviceNameKey[] = "hostDeviceName";
 const char kPageContentDataBetterTogetherStateKey[] = "betterTogetherState";
@@ -494,11 +493,11 @@ void MultideviceHandler::HandleAttemptAppsSetup(const base::Value::List& args) {
   DCHECK(features::IsEchePhoneHubPermissionsOnboarding());
   DCHECK(!apps_access_operation_);
 
-  ash::eche_app::AppsAccessManager::AccessStatus apps_access_status =
+  phonehub::MultideviceFeatureAccessManager::AccessStatus apps_access_status =
       apps_access_manager_->GetAccessStatus();
 
-  if (apps_access_status !=
-      ash::eche_app::AppsAccessManager::AccessStatus::kAvailableButNotGranted) {
+  if (apps_access_status != phonehub::MultideviceFeatureAccessManager::
+                                AccessStatus::kAvailableButNotGranted) {
     PA_LOG(WARNING) << "Cannot request apps access setup flow; current "
                     << "status: " << apps_access_status;
     return;
@@ -640,13 +639,14 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
   page_content_dictionary->SetInteger(
       kCameraRollAccessStatus, static_cast<int32_t>(camera_roll_access_status));
 
-  ash::eche_app::AppsAccessManager::AccessStatus apps_access_status =
-      ash::eche_app::AppsAccessManager::AccessStatus::kAvailableButNotGranted;
+  phonehub::MultideviceFeatureAccessManager::AccessStatus apps_access_status =
+      phonehub::MultideviceFeatureAccessManager::AccessStatus::
+          kAvailableButNotGranted;
   if (apps_access_manager_)
     apps_access_status = apps_access_manager_->GetAccessStatus();
   bool is_apps_access_granted =
       apps_access_status ==
-      ash::eche_app::AppsAccessManager::AccessStatus::kAccessGranted;
+      phonehub::MultideviceFeatureAccessManager::AccessStatus::kAccessGranted;
 
   page_content_dictionary->SetBoolKey(kIsPhoneHubAppsAccessGranted,
                                       is_apps_access_granted);
@@ -669,10 +669,13 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
   page_content_dictionary->SetBoolKey(kIsNearbyShareDisallowedByPolicy,
                                       is_nearby_share_disallowed_by_policy);
 
-  page_content_dictionary->SetBoolKey(
-      kIsPhoneHubPermissionsDialogSupported,
+  bool is_phone_hub_permissions_dialog_supported =
       base::FeatureList::IsEnabled(
-          chromeos::features::kEchePhoneHubPermissionsOnboarding));
+          chromeos::features::kEchePhoneHubPermissionsOnboarding) ||
+      base::FeatureList::IsEnabled(chromeos::features::kPhoneHubCameraRoll);
+  page_content_dictionary->SetBoolean(
+      kIsPhoneHubPermissionsDialogSupported,
+      is_phone_hub_permissions_dialog_supported);
 
   return page_content_dictionary;
 }

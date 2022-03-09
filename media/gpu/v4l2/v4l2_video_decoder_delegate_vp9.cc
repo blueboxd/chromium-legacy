@@ -7,6 +7,7 @@
 #include <linux/media/vp9-ctrls-upstream.h>
 
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "media/filters/vp9_parser.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_decode_surface.h"
@@ -291,7 +292,8 @@ DecodeStatus V4L2VideoDecoderDelegateVP9::SubmitDecode(
                          .ptr = &v4l2_compressed_hdr_probs});
   }
 
-  struct v4l2_ext_controls ctrls = {.count = ext_ctrls.size(),
+  const __u32 ext_ctrls_size = base::checked_cast<__u32>(ext_ctrls.size());
+  struct v4l2_ext_controls ctrls = {.count = ext_ctrls_size,
                                     .controls = ext_ctrls.data()};
   scoped_refptr<V4L2DecodeSurface> dec_surface =
       VP9PictureToV4L2DecodeSurface(pic.get());

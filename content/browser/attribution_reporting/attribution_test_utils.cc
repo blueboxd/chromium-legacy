@@ -122,7 +122,7 @@ base::Time ConfigurableStorageDelegate::GetEventLevelReportTime(
 }
 
 int ConfigurableStorageDelegate::GetMaxAttributionsPerSource(
-    CommonSourceInfo::SourceType source_type) const {
+    AttributionSourceType source_type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return max_attributions_per_source_;
 }
@@ -180,12 +180,12 @@ void ConfigurableStorageDelegate::ShuffleReports(
 }
 
 double ConfigurableStorageDelegate::GetRandomizedResponseRate(
-    CommonSourceInfo::SourceType source_type) const {
+    AttributionSourceType source_type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (source_type) {
-    case CommonSourceInfo::SourceType::kNavigation:
+    case AttributionSourceType::kNavigation:
       return randomized_response_rates_.navigation;
-    case CommonSourceInfo::SourceType::kEvent:
+    case AttributionSourceType::kEvent:
       return randomized_response_rates_.event;
   }
 }
@@ -204,15 +204,15 @@ int64_t ConfigurableStorageDelegate::GetAggregatableBudgetPerSource() const {
 
 uint64_t ConfigurableStorageDelegate::SanitizeTriggerData(
     uint64_t trigger_data,
-    CommonSourceInfo::SourceType source_type) const {
+    AttributionSourceType source_type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (source_type) {
-    case CommonSourceInfo::SourceType::kNavigation:
+    case AttributionSourceType::kNavigation:
       if (!navigation_trigger_data_cardinality_)
         return trigger_data;
 
       return trigger_data % *navigation_trigger_data_cardinality_;
-    case CommonSourceInfo::SourceType::kEvent:
+    case AttributionSourceType::kEvent:
       if (!event_trigger_data_cardinality_)
         return trigger_data;
 
@@ -415,8 +415,7 @@ SourceBuilder& SourceBuilder::SetReportingOrigin(url::Origin origin) {
   return *this;
 }
 
-SourceBuilder& SourceBuilder::SetSourceType(
-    CommonSourceInfo::SourceType source_type) {
+SourceBuilder& SourceBuilder::SetSourceType(AttributionSourceType source_type) {
   source_type_ = source_type;
   return *this;
 }
@@ -591,11 +590,31 @@ ReportBuilder& ReportBuilder::SetReportId(
   return *this;
 }
 
+ReportBuilder& ReportBuilder::SetReportId(
+    absl::optional<AttributionReport::AggregatableAttributionData::Id> id) {
+  aggregatable_attribution_report_id_ = id;
+  return *this;
+}
+
+ReportBuilder& ReportBuilder::SetAggregatableHistogramContributions(
+    std::vector<AggregatableHistogramContribution> contributions) {
+  DCHECK(!contributions.empty());
+  contributions_ = std::move(contributions);
+  return *this;
+}
+
 AttributionReport ReportBuilder::Build() const {
   return AttributionReport(
       attribution_info_, report_time_, external_report_id_,
       AttributionReport::EventLevelData(trigger_data_, priority_,
                                         randomized_trigger_rate_, report_id_));
+}
+
+AttributionReport ReportBuilder::BuildAggregatableAttribution() const {
+  return AttributionReport(
+      attribution_info_, report_time_, external_report_id_,
+      AttributionReport::AggregatableAttributionData(
+          contributions_, aggregatable_attribution_report_id_));
 }
 
 AggregatableKeyProtoBuilder::AggregatableKeyProtoBuilder() = default;
@@ -733,25 +752,6 @@ bool operator==(const AggregatableHistogramContribution& a,
   return tie(a) == tie(b);
 }
 
-bool operator==(const AggregatableAttribution::ContributionAndExternalId& a,
-                const AggregatableAttribution::ContributionAndExternalId& b) {
-  const auto tie = [](const AggregatableAttribution::ContributionAndExternalId&
-                          contribution_and_id) {
-    return std::make_tuple(contribution_and_id.contribution,
-                           contribution_and_id.external_report_id);
-  };
-  return tie(a) == tie(b);
-}
-
-bool operator==(const AggregatableAttribution& a, AggregatableAttribution& b) {
-  const auto tie = [](const AggregatableAttribution& aggregatable_attribution) {
-    return std::make_tuple(aggregatable_attribution.attribution_info(),
-                           aggregatable_attribution.report_time(),
-                           aggregatable_attribution.contributions_and_ids());
-  };
-  return tie(a) == tie(b);
-}
-
 // Does not compare ID as it is set by the underlying sqlite db and
 // should not be tested.
 bool operator==(const AttributionReport::EventLevelData& a,
@@ -767,9 +767,9 @@ bool operator==(const AttributionReport::EventLevelData& a,
 // should not be tested.
 // Also does not compare the assembled report as it is returned by the
 // aggregation service from all the other data.
-bool operator==(const AttributionReport::AggregatableContributionData& a,
-                const AttributionReport::AggregatableContributionData& b) {
-  return a.contribution == b.contribution;
+bool operator==(const AttributionReport::AggregatableAttributionData& a,
+                const AttributionReport::AggregatableAttributionData& b) {
+  return a.contributions == b.contributions;
 }
 
 // Does not compare source or report IDs, as they are set by the underlying
@@ -866,13 +866,12 @@ std::ostream& operator<<(std::ostream& out, RateLimitResult result) {
   return out;
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         CommonSourceInfo::SourceType source_type) {
+std::ostream& operator<<(std::ostream& out, AttributionSourceType source_type) {
   switch (source_type) {
-    case CommonSourceInfo::SourceType::kNavigation:
+    case AttributionSourceType::kNavigation:
       out << "kNavigation";
       break;
-    case CommonSourceInfo::SourceType::kEvent:
+    case AttributionSourceType::kEvent:
       out << "kEvent";
       break;
   }
@@ -1002,32 +1001,6 @@ std::ostream& operator<<(
              << ",value=" << contribution.value() << "}";
 }
 
-std::ostream& operator<<(
-    std::ostream& out,
-    const AggregatableAttribution::ContributionAndExternalId&
-        contribution_and_id) {
-  return out << "{contribution=" << contribution_and_id.contribution
-             << ",external_report_id=" << contribution_and_id.external_report_id
-             << "}";
-}
-
-std::ostream& operator<<(
-    std::ostream& out,
-    const AggregatableAttribution& aggregatable_attribution) {
-  out << "{attribution_info=" << aggregatable_attribution.attribution_info()
-      << ",report_time=" << aggregatable_attribution.report_time()
-      << ",contributions_and_ids=[";
-
-  const char* separator = "";
-  for (const auto& contribution_and_id :
-       aggregatable_attribution.contributions_and_ids()) {
-    out << separator << contribution_and_id;
-    separator = ", ";
-  }
-
-  return out << "]}";
-}
-
 std::ostream& operator<<(std::ostream& out,
                          const AttributionReport::EventLevelData& data) {
   return out << "{trigger_data=" << data.trigger_data
@@ -1039,9 +1012,16 @@ std::ostream& operator<<(std::ostream& out,
 
 std::ostream& operator<<(
     std::ostream& out,
-    const AttributionReport::AggregatableContributionData& data) {
-  return out << "{contribution=" << data.contribution
-             << ",id=" << (data.id ? base::NumberToString(**data.id) : "null")
+    const AttributionReport::AggregatableAttributionData& data) {
+  out << "{contributions=[";
+
+  const char* separator = "";
+  for (const auto& contribution : data.contributions) {
+    out << separator << contribution;
+    separator = ", ";
+  }
+
+  return out << "],id=" << (data.id ? base::NumberToString(**data.id) : "null")
              << "}";
 }
 
@@ -1049,8 +1029,7 @@ namespace {
 std::ostream& operator<<(
     std::ostream& out,
     const absl::variant<AttributionReport::EventLevelData,
-                        AttributionReport::AggregatableContributionData>&
-        data) {
+                        AttributionReport::AggregatableAttributionData>& data) {
   absl::visit([&out](const auto& v) { out << v; }, data);
   return out;
 }

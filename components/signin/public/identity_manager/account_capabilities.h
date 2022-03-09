@@ -9,8 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "components/signin/public/identity_manager/tribool.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
 
 namespace base {
 class Value;
@@ -27,16 +32,21 @@ class AccountCapabilities {
   AccountCapabilities& operator=(const AccountCapabilities& other);
   AccountCapabilities& operator=(AccountCapabilities&& other) noexcept;
 
+#if BUILDFLAG(IS_ANDROID)
+  static AccountCapabilities ConvertFromJavaAccountCapabilities(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& accountCapabilities);
+
+  base::android::ScopedJavaLocalRef<jobject> ConvertToJavaAccountCapabilities(
+      JNIEnv* env) const;
+#endif
+
   // Chrome can offer extended promos for turning on Sync to accounts with this
   // capability.
   signin::Tribool can_offer_extended_chrome_sync_promos() const;
 
   // Chrome can run privacy sandbox trials for accounts with this capability.
-  signin::Tribool can_run_chrome_privacy_sandbox_trials() const {
-    // TODO(crbug.com/1298865): Replace with the actual capability when it is
-    // available and update tests.
-    return can_offer_extended_chrome_sync_promos();
-  }
+  signin::Tribool can_run_chrome_privacy_sandbox_trials() const;
 
   // Whether none of the capabilities has `signin::Tribool::kUnknown`.
   bool AreAllCapabilitiesKnown() const;

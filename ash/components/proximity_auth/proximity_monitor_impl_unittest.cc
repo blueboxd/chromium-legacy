@@ -88,8 +88,8 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   ~ProximityAuthProximityMonitorImplTest() override {}
 
   void InitializeTest(bool multidevice_flags_enabled) {
-    fake_multidevice_setup_client_ = std::make_unique<
-        chromeos::multidevice_setup::FakeMultiDeviceSetupClient>();
+    fake_multidevice_setup_client_ =
+        std::make_unique<ash::multidevice_setup::FakeMultiDeviceSetupClient>();
 
     monitor_ = std::make_unique<ProximityMonitorImpl>(
         remote_device_, fake_client_channel_.get());
@@ -106,24 +106,21 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   void ProvideRssi(absl::optional<int32_t> rssi) {
     RunPendingTasks();
 
-    std::vector<chromeos::secure_channel::mojom::ConnectionCreationDetail>
-        creation_details{
-            chromeos::secure_channel::mojom::ConnectionCreationDetail::
-                REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
+    std::vector<ash::secure_channel::mojom::ConnectionCreationDetail>
+        creation_details{ash::secure_channel::mojom::ConnectionCreationDetail::
+                             REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
 
-    chromeos::secure_channel::mojom::BluetoothConnectionMetadataPtr
+    ash::secure_channel::mojom::BluetoothConnectionMetadataPtr
         bluetooth_connection_metadata_ptr;
     if (rssi) {
       bluetooth_connection_metadata_ptr =
-          chromeos::secure_channel::mojom::BluetoothConnectionMetadata::New(
-              *rssi);
+          ash::secure_channel::mojom::BluetoothConnectionMetadata::New(*rssi);
     }
 
-    chromeos::secure_channel::mojom::ConnectionMetadataPtr
-        connection_metadata_ptr =
-            chromeos::secure_channel::mojom::ConnectionMetadata::New(
-                creation_details, std::move(bluetooth_connection_metadata_ptr),
-                "channel_binding_data");
+    ash::secure_channel::mojom::ConnectionMetadataPtr connection_metadata_ptr =
+        ash::secure_channel::mojom::ConnectionMetadata::New(
+            creation_details, std::move(bluetooth_connection_metadata_ptr),
+            "channel_binding_data");
     fake_client_channel_->InvokePendingGetConnectionMetadataCallback(
         std::move(connection_metadata_ptr));
   }
@@ -137,7 +134,7 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
   NiceMock<device::MockBluetoothDevice> remote_bluetooth_device_;
   std::unique_ptr<ash::secure_channel::FakeClientChannel> fake_client_channel_;
   chromeos::multidevice::RemoteDeviceRef remote_device_;
-  std::unique_ptr<chromeos::multidevice_setup::FakeMultiDeviceSetupClient>
+  std::unique_ptr<ash::multidevice_setup::FakeMultiDeviceSetupClient>
       fake_multidevice_setup_client_;
 
   // The proximity monitor under test.

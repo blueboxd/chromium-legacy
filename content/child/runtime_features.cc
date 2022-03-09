@@ -194,8 +194,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 #endif
     {wf::EnableAccessibilityUseAXPositionForDocumentMarkers,
      features::kUseAXPositionForDocumentMarkers},
-    {wf::EnableAllowActivationDelegationAttr,
-     features::kAllowActivationDelegationAttr},
     {wf::EnableAOMAriaRelationshipProperties,
      features::kEnableAriaElementReflection},
     {wf::EnableAutoplayIgnoresWebAudio, media::kAutoplayIgnoreWebAudio},
@@ -310,6 +308,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableWebXRViewportScale, device::features::kWebXrIncubations},
     {wf::EnableRemoveMobileViewportDoubleTap,
      features::kRemoveMobileViewportDoubleTap},
+    {wf::EnableZeroCopyTabCapture, blink::features::kZeroCopyTabCapture},
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
@@ -368,6 +367,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kPrefersColorSchemeClientHintHeader},
           {"FirstPartySets", features::kFirstPartySets},
           {"SanitizerAPI", blink::features::kSanitizerAPI},
+          {"SecureContextFixForWorkers",
+           blink::features::kSecureContextFixForWorkers},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI},
           {"TargetBlankImpliesNoOpener",
            blink::features::kTargetBlankImpliesNoOpener},

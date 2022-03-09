@@ -419,7 +419,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1303626")
     public void testNavigationFromUserGestureInSubFrame() {
         mActivityTestRule.startMainActivityOnBlankPage();
         loadUrlAndWaitForIntentUrl(
@@ -436,7 +435,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1303626")
     public void testNavigationFromXHRCallbackInSubFrame() {
         mActivityTestRule.startMainActivityOnBlankPage();
         loadUrlAndWaitForIntentUrl(
@@ -810,6 +808,7 @@ public class UrlOverridingTest {
     @Test
     @LargeTest
     @Features.EnableFeatures({ChromeFeatureList.PRERENDER2})
+    @DisabledTest(message = "https://crbug.com/1304292")
     public void testClearRedirectHandlerOnPageActivation() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
 

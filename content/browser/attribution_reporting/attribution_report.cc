@@ -14,6 +14,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -51,33 +52,42 @@ AttributionReport::EventLevelData& AttributionReport::EventLevelData::operator=(
 
 AttributionReport::EventLevelData::~EventLevelData() = default;
 
-AttributionReport::AggregatableContributionData::AggregatableContributionData(
-    AggregatableHistogramContribution contribution,
+AttributionReport::AggregatableAttributionData::AggregatableAttributionData(
+    std::vector<AggregatableHistogramContribution> contributions,
     absl::optional<Id> id)
-    : contribution(std::move(contribution)), id(id) {}
+    : contributions(std::move(contributions)), id(id) {}
 
-AttributionReport::AggregatableContributionData::AggregatableContributionData(
-    const AggregatableContributionData& other) = default;
+AttributionReport::AggregatableAttributionData::AggregatableAttributionData(
+    const AggregatableAttributionData&) = default;
 
-AttributionReport::AggregatableContributionData&
-AttributionReport::AggregatableContributionData::operator=(
-    const AggregatableContributionData& other) = default;
+AttributionReport::AggregatableAttributionData&
+AttributionReport::AggregatableAttributionData::operator=(
+    const AggregatableAttributionData&) = default;
 
-AttributionReport::AggregatableContributionData::AggregatableContributionData(
-    AggregatableContributionData&& other) = default;
+AttributionReport::AggregatableAttributionData::AggregatableAttributionData(
+    AggregatableAttributionData&&) = default;
 
-AttributionReport::AggregatableContributionData&
-AttributionReport::AggregatableContributionData::operator=(
-    AggregatableContributionData&& other) = default;
+AttributionReport::AggregatableAttributionData&
+AttributionReport::AggregatableAttributionData::operator=(
+    AggregatableAttributionData&&) = default;
 
-AttributionReport::AggregatableContributionData::
-    ~AggregatableContributionData() = default;
+AttributionReport::AggregatableAttributionData::~AggregatableAttributionData() =
+    default;
+
+base::CheckedNumeric<int64_t>
+AttributionReport::AggregatableAttributionData::BudgetRequired() const {
+  base::CheckedNumeric<int64_t> budget_required = 0;
+  for (const AggregatableHistogramContribution& contribution : contributions) {
+    budget_required += contribution.value();
+  }
+  return budget_required;
+}
 
 AttributionReport::AttributionReport(
     AttributionInfo attribution_info,
     base::Time report_time,
     base::GUID external_report_id,
-    absl::variant<EventLevelData, AggregatableContributionData> data)
+    absl::variant<EventLevelData, AggregatableAttributionData> data)
     : attribution_info_(std::move(attribution_info)),
       report_time_(report_time),
       external_report_id_(std::move(external_report_id)),
@@ -107,7 +117,7 @@ GURL AttributionReport::ReportURL(bool debug) const {
       return kEventEndpointPath;
     }
 
-    const char* operator()(const AggregatableContributionData&) {
+    const char* operator()(const AggregatableAttributionData&) {
       static constexpr char kAggregateEndpointPath[] =
           "report-aggregate-attribution";
       return kAggregateEndpointPath;
@@ -152,10 +162,10 @@ base::Value AttributionReport::ReportBody() const {
 
       const char* source_type = nullptr;
       switch (common_source_info.source_type()) {
-        case CommonSourceInfo::SourceType::kNavigation:
+        case AttributionSourceType::kNavigation:
           source_type = "navigation";
           break;
-        case CommonSourceInfo::SourceType::kEvent:
+        case AttributionSourceType::kEvent:
           source_type = "event";
           break;
       }
@@ -180,7 +190,7 @@ base::Value AttributionReport::ReportBody() const {
       return dict;
     }
 
-    base::Value operator()(const AggregatableContributionData& data) {
+    base::Value operator()(const AggregatableAttributionData& data) {
       DCHECK(data.assembled_report.has_value());
 
       const CommonSourceInfo& common_info =
@@ -190,10 +200,14 @@ base::Value AttributionReport::ReportBody() const {
       dict.emplace("source_site", common_info.ImpressionSite().Serialize());
       dict.emplace("attribution_destination",
                    common_info.ConversionDestination().Serialize());
-      dict.emplace(
-          "source_registration_time",
-          base::NumberToString(common_info.impression_time().ToJavaTime() /
-                               base::Time::kMillisecondsPerSecond));
+
+      // source_registration_time is rounded to the nearest whole day and in
+      // seconds.
+      dict.emplace("source_registration_time",
+                   base::NumberToString(
+                       (common_info.impression_time() - base::Time::UnixEpoch())
+                           .RoundToMultiple(base::Days(1))
+                           .InSeconds()));
 
       if (absl::optional<uint64_t> debug_key = common_info.debug_key())
         dict.emplace("source_debug_key", base::NumberToString(*debug_key));
@@ -216,7 +230,7 @@ absl::optional<AttributionReport::Id> AttributionReport::ReportId() const {
 }
 
 std::string AttributionReport::PrivacyBudgetKey() const {
-  DCHECK(absl::holds_alternative<AggregatableContributionData>(data_));
+  DCHECK(absl::holds_alternative<AggregatableAttributionData>(data_));
 
   std::unique_ptr<crypto::SecureHash> ctx =
       crypto::SecureHash::Create(crypto::SecureHash::Algorithm::SHA256);

@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
+#include "chrome/browser/flags/android/chrome_session_state.h"
 #include "chrome/browser/flags/jni_headers/ChromeFeatureList_jni.h"
 #include "chrome/browser/notifications/chime/android/features.h"
 #include "chrome/browser/performance_hints/performance_hints_features.h"
@@ -269,6 +270,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kServiceManagerForDownload,
     &kShareButtonInTopToolbar,
     &kSharedClipboardUI,
+    &kShowScrollableMVTOnNTP,
     &kSpannableInlineAutocomplete,
     &kSpecialLocaleWrapper,
     &kSpecialUserDecision,
@@ -373,8 +375,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kSyncUseSessionsUnregisterDelay,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &video_tutorials::features::kVideoTutorials,
-    &webapps::features::kInstallableAmbientBadgeMessage,
     &webapps::features::kInstallableAmbientBadgeInfoBar,
+    &webapps::features::kInstallableAmbientBadgeMessage,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
@@ -646,9 +648,6 @@ const base::Feature kExperimentsForAgsa{"ExperimentsForAgsa",
 const base::Feature kExploreSites{"ExploreSites",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kFixedUmaSessionResumeOrder{
-    "FixedUmaSessionResumeOrder", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kGridTabSwitcherForTablets{
     "GridTabSwitcherForTablets", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -747,6 +746,9 @@ const base::Feature kServiceManagerForDownload{
 
 const base::Feature kShareButtonInTopToolbar{"ShareButtonInTopToolbar",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kShowScrollableMVTOnNTP{"ShowScrollableMVTOnNTP",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSpannableInlineAutocomplete{
     "SpannableInlineAutocomplete", base::FEATURE_ENABLED_BY_DEFAULT};

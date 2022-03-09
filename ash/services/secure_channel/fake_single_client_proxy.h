@@ -88,8 +88,7 @@ class FakeSingleClientProxyDelegate : public SingleClientProxy::Delegate {
   }
 
   void set_connection_metadata_for_next_call(
-      chromeos::secure_channel::mojom::ConnectionMetadataPtr
-          connection_metadata_for_next_call) {
+      mojom::ConnectionMetadataPtr connection_metadata_for_next_call) {
     connection_metadata_for_next_call_ =
         std::move(connection_metadata_for_next_call);
   }
@@ -110,13 +109,11 @@ class FakeSingleClientProxyDelegate : public SingleClientProxy::Delegate {
                               base::OnceClosure on_sent_callback) override;
   void RegisterPayloadFile(
       int64_t payload_id,
-      chromeos::secure_channel::mojom::PayloadFilesPtr payload_files,
+      mojom::PayloadFilesPtr payload_files,
       FileTransferUpdateCallback file_transfer_update_callback,
       base::OnceCallback<void(bool)> registration_result_callback) override;
   void GetConnectionMetadata(
-      base::OnceCallback<void(
-          chromeos::secure_channel::mojom::ConnectionMetadataPtr)> callback)
-      override;
+      base::OnceCallback<void(mojom::ConnectionMetadataPtr)> callback) override;
   void OnClientDisconnected(const base::UnguessableToken& proxy_id) override;
 
   std::vector<std::tuple<std::string, std::string, base::OnceClosure>>
@@ -124,18 +121,11 @@ class FakeSingleClientProxyDelegate : public SingleClientProxy::Delegate {
   base::flat_map<int64_t, RegisterPayloadFileRequest>
       register_payload_file_requests_;
   bool register_payload_file_result_ = true;
-  chromeos::secure_channel::mojom::ConnectionMetadataPtr
-      connection_metadata_for_next_call_;
+  mojom::ConnectionMetadataPtr connection_metadata_for_next_call_;
   base::OnceClosure on_client_disconnected_closure_;
   base::UnguessableToken disconnected_proxy_id_;
 };
 
 }  // namespace ash::secure_channel
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace chromeos::secure_channel {
-using ::ash::secure_channel::FakeSingleClientProxy;
-using ::ash::secure_channel::FakeSingleClientProxyDelegate;
-}  // namespace chromeos::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FAKE_SINGLE_CLIENT_PROXY_H_

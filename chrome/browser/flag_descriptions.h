@@ -735,6 +735,9 @@ extern const char kEnableWebAuthenticationCableDiscoCredsDescription[];
 extern const char kEnableWebAuthenticationChromeOSAuthenticatorName[];
 extern const char kEnableWebAuthenticationChromeOSAuthenticatorDescription[];
 
+extern const char kEnableZeroCopyTabCaptureName[];
+extern const char kEnableZeroCopyTabCaptureDescription[];
+
 extern const char kExperimentalWebAssemblyFeaturesName[];
 extern const char kExperimentalWebAssemblyFeaturesDescription[];
 
@@ -930,6 +933,9 @@ extern const char kLensCameraAssistedSearchDescription[];
 
 extern const char kLogJsConsoleMessagesName[];
 extern const char kLogJsConsoleMessagesDescription[];
+
+extern const char kUnthrottledNestedTimeoutName[];
+extern const char kUnthrottledNestedTimeoutDescription[];
 
 extern const char kMediaRouterCastAllowAllIPsName[];
 extern const char kMediaRouterCastAllowAllIPsDescription[];
@@ -2185,6 +2191,9 @@ extern const char kNtpSafeBrowsingModuleDescription[];
 extern const char kNtpModulesDragAndDropName[];
 extern const char kNtpModulesDragAndDropDescription[];
 
+extern const char kNtpModulesFirstRunExperienceName[];
+extern const char kNtpModulesFirstRunExperienceDescription[];
+
 extern const char kNtpModulesRedesignedName[];
 extern const char kNtpModulesRedesignedDescription[];
 
@@ -3111,6 +3120,9 @@ extern const char kUseFakeDeviceForMediaStreamDescription[];
 
 extern const char kUseMultipleOverlaysName[];
 extern const char kUseMultipleOverlaysDescription[];
+
+extern const char kUXStudy1Name[];
+extern const char kUXStudy1Description[];
 
 extern const char kVaapiJpegImageDecodeAccelerationName[];
 extern const char kVaapiJpegImageDecodeAccelerationDescription[];

@@ -387,15 +387,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "linux-blink-heap-concurrent-marking-tsan-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|blink",
-        short_name = "CM",
-    ),
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.builder(
     name = "linux-blink-heap-verification",
     console_view_entry = consoles.console_view_entry(
         category = "linux|blink",
@@ -406,16 +397,6 @@ ci.builder(
     goma_backend = None,
     reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
-    name = "linux-blink-v8-oilpan",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|blink",
-        short_name = "VO",
-    ),
-    notifies = ["linux-blink-fyi-bots"],
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -755,7 +736,7 @@ ci.builder(
     ),
     os = os.WINDOWS_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_jobs = 80,
     reclient_instance = rbe_instance.DEFAULT,
 )
 
@@ -768,7 +749,7 @@ ci.builder(
     ),
     os = os.WINDOWS_DEFAULT,
     goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_jobs = 80,
     reclient_instance = rbe_instance.DEFAULT,
 )
 

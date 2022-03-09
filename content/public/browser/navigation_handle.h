@@ -47,6 +47,7 @@ class ProxyServer;
 }  // namespace net
 
 namespace content {
+class CommitDeferringCondition;
 struct GlobalRenderFrameHostId;
 struct GlobalRequestID;
 class NavigationEntry;
@@ -122,10 +123,15 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // constant over the navigation lifetime.
   virtual bool IsInPrerenderedMainFrame() = 0;
 
-  // Prerender2
+  // Prerender2:
   // Returns true if this navigation will activate a prerendered page. It is
   // only meaningful to call this after BeginNavigation().
   virtual bool IsPrerenderedPageActivation() = 0;
+
+  // FencedFrame:
+  // Returns true if the navigation is taking place in a frame in a fenced frame
+  // tree.
+  virtual bool IsInFencedFrameTree() = 0;
 
   // Returns the type of the frame in which this navigation is taking place.
   virtual FrameType GetNavigatingFrameType() const = 0;
@@ -560,6 +566,11 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // Returns a reference to NavigationHandle Java counterpart.
   virtual const base::android::JavaRef<jobject>& GetJavaNavigationHandle() = 0;
 #endif
+
+  // Returns the CommitDeferringCondition that is currently preventing this
+  // navigation from committing, or nullptr if the navigation isn't currently
+  // blocked on a CommitDeferringCondition.
+  virtual CommitDeferringCondition* GetCommitDeferringConditionForTesting() = 0;
 };
 
 }  // namespace content

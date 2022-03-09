@@ -16,6 +16,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
@@ -2255,21 +2256,18 @@ void QuotaManagerImpl::SetQuotaChangeCallbackForTesting(
   quota_change_callback_ = std::move(storage_pressure_event_callback);
 }
 
-void QuotaManagerImpl::SetQuotaDatabaseForTesting(
-    std::unique_ptr<QuotaDatabase> database) {
-  DCHECK(database);
-  database_ = std::move(database);
-
-  // Initialize usage trackers after database is set.
-  temporary_usage_tracker_ = std::make_unique<UsageTracker>(
-      this, client_types_[StorageType::kTemporary], StorageType::kTemporary,
-      special_storage_policy_.get());
-  persistent_usage_tracker_ = std::make_unique<UsageTracker>(
-      this, client_types_[StorageType::kPersistent], StorageType::kPersistent,
-      special_storage_policy_.get());
-  syncable_usage_tracker_ = std::make_unique<UsageTracker>(
-      this, client_types_[StorageType::kSyncable], StorageType::kSyncable,
-      special_storage_policy_.get());
+void QuotaManagerImpl::CorruptDatabaseForTesting(
+    base::OnceCallback<void(const base::FilePath&)> corrupter,
+    base::OnceCallback<void(QuotaError)> callback) {
+  PostTaskAndReplyWithResultForDBThread(
+      base::BindOnce(
+          [](base::OnceCallback<void(const base::FilePath&)> corrupter,
+             QuotaDatabase* database) {
+            return database->CorruptForTesting(  // IN-TEST
+                std::move(corrupter));
+          },
+          std::move(corrupter)),
+      std::move(callback));
 }
 
 void QuotaManagerImpl::ReportHistogram() {

@@ -42,6 +42,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 
 namespace ash {
@@ -304,7 +305,7 @@ class ContinueSectionViewClamshellModeTest
 class ContinueSectionViewTabletModeTest : public ContinueSectionViewTestBase {
  public:
   ContinueSectionViewTabletModeTest()
-      : ContinueSectionViewTestBase(/*tablet_mode*/ true) {}
+      : ContinueSectionViewTestBase(/*tablet_mode=*/true) {}
   ~ContinueSectionViewTabletModeTest() override = default;
 };
 
@@ -490,6 +491,141 @@ TEST_F(ContinueSectionViewClamshellModeTest, PressEnterOpensSearchResult) {
   // The item was activated.
   TestAppListClient* client = GetAppListTestHelper()->app_list_client();
   EXPECT_EQ("id1", client->last_opened_search_result());
+}
+
+TEST_F(ContinueSectionViewClamshellModeTest, DownArrowMovesFocusVertically) {
+  AddSearchResult("id0", AppListSearchResultType::kFileChip);
+  AddSearchResult("id1", AppListSearchResultType::kFileChip);
+  AddSearchResult("id2", AppListSearchResultType::kDriveChip);
+  AddSearchResult("id3", AppListSearchResultType::kDriveChip);
+  EnsureLauncherShown();
+  VerifyResultViewsUpdated();
+
+  ContinueTaskView* task0 = GetResultViewAt(0);
+  ContinueTaskView* task1 = GetResultViewAt(1);
+  ContinueTaskView* task2 = GetResultViewAt(2);
+  ContinueTaskView* task3 = GetResultViewAt(3);
+  ASSERT_FALSE(task0->HasFocus());
+  ASSERT_FALSE(task1->HasFocus());
+  ASSERT_FALSE(task2->HasFocus());
+  ASSERT_FALSE(task3->HasFocus());
+
+  // Down arrow from search box moves to first continue task.
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  EXPECT_TRUE(task0->HasFocus());
+  EXPECT_FALSE(task1->HasFocus());
+  EXPECT_FALSE(task2->HasFocus());
+  EXPECT_FALSE(task3->HasFocus());
+
+  // Down arrow from first continue task moves down by one row, focusing
+  // `task2` instead of the next task in tab order (`task1`).
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  EXPECT_FALSE(task0->HasFocus());
+  EXPECT_FALSE(task1->HasFocus());
+  EXPECT_TRUE(task2->HasFocus());
+  EXPECT_FALSE(task3->HasFocus());
+
+  // Down again moves focus out of continue section.
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  EXPECT_FALSE(task0->HasFocus());
+  EXPECT_FALSE(task1->HasFocus());
+  EXPECT_FALSE(task2->HasFocus());
+  EXPECT_FALSE(task3->HasFocus());
+}
+
+TEST_F(ContinueSectionViewClamshellModeTest, UpArrowMovesFocusVertically) {
+  AddSearchResult("id0", AppListSearchResultType::kFileChip);
+  AddSearchResult("id1", AppListSearchResultType::kFileChip);
+  AddSearchResult("id2", AppListSearchResultType::kDriveChip);
+  AddSearchResult("id3", AppListSearchResultType::kDriveChip);
+  EnsureLauncherShown();
+  VerifyResultViewsUpdated();
+
+  ContinueTaskView* task0 = GetResultViewAt(0);
+  ContinueTaskView* task1 = GetResultViewAt(1);
+  ContinueTaskView* task2 = GetResultViewAt(2);
+  ContinueTaskView* task3 = GetResultViewAt(3);
+  ASSERT_FALSE(task0->HasFocus());
+  ASSERT_FALSE(task1->HasFocus());
+  ASSERT_FALSE(task2->HasFocus());
+  ASSERT_FALSE(task3->HasFocus());
+
+  // Focus the last task (in the second row, second column).
+  task3->RequestFocus();
+  EXPECT_FALSE(task0->HasFocus());
+  EXPECT_FALSE(task1->HasFocus());
+  EXPECT_FALSE(task2->HasFocus());
+  EXPECT_TRUE(task3->HasFocus());
+
+  // Up arrow moves up by one row, focusing `task1` instead of the previous
+  // task in tab order (`task2`).
+  PressAndReleaseKey(ui::VKEY_UP);
+  EXPECT_FALSE(task0->HasFocus());
+  EXPECT_TRUE(task1->HasFocus());
+  EXPECT_FALSE(task2->HasFocus());
+  EXPECT_FALSE(task3->HasFocus());
+
+  // Up again moves focus out of continue section.
+  PressAndReleaseKey(ui::VKEY_UP);
+  EXPECT_FALSE(task0->HasFocus());
+  EXPECT_FALSE(task1->HasFocus());
+  EXPECT_FALSE(task2->HasFocus());
+  EXPECT_FALSE(task3->HasFocus());
+}
+
+TEST_F(ContinueSectionViewClamshellModeTest, FocusingChipScrollsToShowLabel) {
+  auto* helper = GetAppListTestHelper();
+  helper->AddContinueSuggestionResults(4);
+  // Add enough apps to allow the apps page to scroll.
+  helper->AddAppItems(50);
+  EnsureLauncherShown();
+  VerifyResultViewsUpdated();
+
+  // Up arrow moves focus to the last row of the apps grid, forcing the apps
+  // page to scroll.
+  PressAndReleaseKey(ui::VKEY_UP);
+  auto* scroll_view = helper->GetBubbleAppsPage()->scroll_view();
+  const int initial_scroll_offset = scroll_view->GetVisibleRect().y();
+  ASSERT_GT(initial_scroll_offset, 0);
+
+  // Down arrow twice moves focus to search box, then to continue section.
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  ASSERT_TRUE(GetResultViewAt(0)->HasFocus());
+
+  // Scroll view has scrolled to the top to reveal the label.
+  const int final_scroll_offset = scroll_view->GetVisibleRect().y();
+  EXPECT_EQ(final_scroll_offset, 0);
+}
+
+TEST_F(ContinueSectionViewClamshellModeTest,
+       FocusingPrivacyNoticeScrollsToShowNotice) {
+  auto* helper = GetAppListTestHelper();
+  helper->AddContinueSuggestionResults(4);
+  // Add enough apps to allow the apps page to scroll.
+  helper->AddAppItems(50);
+  ResetPrivacyNoticePref();
+
+  EnsureLauncherShown();
+  VerifyResultViewsUpdated();
+  ASSERT_TRUE(IsPrivacyNoticeVisible());
+
+  // Up arrow moves focus to the last row of the apps grid, forcing the apps
+  // page to scroll.
+  PressAndReleaseKey(ui::VKEY_UP);
+  auto* scroll_view = helper->GetBubbleAppsPage()->scroll_view();
+  const int initial_scroll_offset = scroll_view->GetVisibleRect().y();
+  ASSERT_GT(initial_scroll_offset, 0);
+
+  // Down arrow twice moves focus to search box, then to privacy notice.
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  auto* privacy_notice = GetContinueSectionView()->GetPrivacyNoticeForTest();
+  ASSERT_TRUE(privacy_notice->toast_button()->HasFocus());
+
+  // Scroll view has scrolled to the top to reveal the whole notice.
+  const int final_scroll_offset = scroll_view->GetVisibleRect().y();
+  EXPECT_EQ(final_scroll_offset, 0);
 }
 
 // Regression test for https://crbug.com/1273170.

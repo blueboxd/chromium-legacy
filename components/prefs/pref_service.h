@@ -150,6 +150,17 @@ class COMPONENTS_PREFS_EXPORT PrefService {
     // the Preference.
     bool IsExtensionModifiable() const;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // Returns true if the Preference value is currently being controlled by a
+    // standalone browser (lacros) and not by any higher-priority source.
+    bool IsStandaloneBrowserControlled() const;
+
+    // Returns true if a standalone browser (lacros) can change the Preference
+    // value, which is the case if no higher-priority source than the standalone
+    // browser store controls the Preference.
+    bool IsStandaloneBrowserModifiable() const;
+#endif
+
     // Return the registration flags for this pref as a bitmask of
     // PrefRegistry::PrefRegistrationFlags.
     uint32_t registration_flags() const { return registration_flags_; }
@@ -245,14 +256,18 @@ class COMPONENTS_PREFS_EXPORT PrefService {
 
   // If the path is valid (i.e., registered), update the pref value in the user
   // prefs.
-  // To set the value of dictionary or list values in the pref tree use
-  // Set(), but to modify the value of a dictionary or list use either
-  // ListPrefUpdate or DictionaryPrefUpdate from scoped_user_pref_update.h.
+  //
+  // To set the value of dictionary or list values in the pref tree, use
+  // SetDict()/SetList(), but to modify the value of a dictionary or list use
+  // either DictionaryPrefUpdate or ListPrefUpdate from
+  // scoped_user_pref_update.h.
   void Set(const std::string& path, const base::Value& value);
   void SetBoolean(const std::string& path, bool value);
   void SetInteger(const std::string& path, int value);
   void SetDouble(const std::string& path, double value);
   void SetString(const std::string& path, const std::string& value);
+  void SetDict(const std::string& path, base::Value::Dict dict);
+  void SetList(const std::string& path, base::Value::List list);
   void SetFilePath(const std::string& path, const base::FilePath& value);
 
   // Int64 helper methods that actually store the given value as a string.
@@ -380,6 +395,14 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // observation.
   void AddPrefObserverAllPrefs(PrefObserver* obs);
   void RemovePrefObserverAllPrefs(PrefObserver* obs);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Write extension-controlled prefs from Lacros in ash.
+  void SetStandaloneBrowserPref(const std::string& path,
+                                const base::Value& value);
+  // Clear extension-controlled prefs from Lacros in ash.
+  void RemoveStandaloneBrowserPref(const std::string& path);
+#endif
 
 #if BUILDFLAG(IS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();

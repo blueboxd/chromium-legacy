@@ -66,21 +66,20 @@ async function navigateToRecent(appId, type = RecentFilterType.ALL) {
   };
 
   if (await isFiltersInRecentsEnabled()) {
-    await remoteCall.waitAndClickElement(
-        appId, ['span[root-type-icon="recent"]']);
+    await remoteCall.waitAndClickElement(appId, ['[root-type-icon="recent"]']);
     // "All" button is activated by default, no need to click.
     if (type !== RecentFilterType.ALL) {
       await remoteCall.waitAndClickElement(
-          appId, [`button[file-type-filter="${type}"]`]);
+          appId, [`[file-type-filter="${type}"]`]);
     }
     // Check the corresponding filter button is activated.
     await remoteCall.waitForElement(
-        appId, [`button[file-type-filter="${type}"].active`]);
+        appId, [`[file-type-filter="${type}"].active`]);
     // Breadcrumb should always be "/Recents" if the flag is on.
     await verifyBreadcrumbsPath(appId, breadcrumbMap[RecentFilterType.ALL]);
   } else {
     await remoteCall.waitAndClickElement(
-        appId, [`span[root-type-icon="recent"][recent-file-type="${type}"]`]);
+        appId, [`[root-type-icon="recent"][recent-file-type="${type}"]`]);
     await verifyBreadcrumbsPath(appId, breadcrumbMap[type]);
   }
 }
@@ -401,4 +400,24 @@ testcase.recentVideosDownloadsAndDrive = async () => {
   // from Drive should be shown too.
   await verifyRecentVideos(
       appId, [RECENTLY_MODIFIED_VIDEO, RECENTLY_MODIFIED_VIDEO]);
+};
+
+/**
+ * Tests if an active filter button is clicked again, it will become inactive
+ * and the "All" filter button will become active and focus.
+ */
+testcase.recentsFilterResetToAll = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+  navigateToRecent(appId, RecentFilterType.AUDIO);
+  // Clicks the active "Audio" filter button.
+  await remoteCall.waitAndClickElement(
+      appId, ['[file-type-filter="audio"].active']);
+  // Verifies the "All" button is focus and all recent files are shown.
+  await remoteCall.waitForElement(
+      appId, ['button[file-type-filter="all"].active']);
+  const focusedElement =
+      await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+  chrome.test.assertEq('all', focusedElement.attributes['file-type-filter']);
+  verifyCurrentEntries(appId, RECENT_ENTRY_SET);
 };

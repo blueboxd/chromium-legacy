@@ -1297,9 +1297,9 @@ interface CloseWatcher : EventTarget
     attribute @@toStringTag
     getter oncancel
     getter onclose
+    method close
     method constructor
     method destroy
-    method signalClosed
     setter oncancel
     setter onclose
 interface Comment : CharacterData
@@ -2662,7 +2662,6 @@ interface FeaturePolicy
     method getAllowlistForFeature
 interface FederatedCredential : Credential
     static method logoutRps
-    static method revoke
     attribute @@toStringTag
     getter iconURL
     getter name
@@ -2671,6 +2670,7 @@ interface FederatedCredential : Credential
     method constructor
     method login
     method logout
+    method revoke
 interface File : Blob
     attribute @@toStringTag
     getter lastModified

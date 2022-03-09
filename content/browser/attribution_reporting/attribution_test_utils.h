@@ -20,7 +20,7 @@
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
-#include "content/browser/attribution_reporting/aggregatable_attribution.h"
+#include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_sources.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
@@ -31,6 +31,7 @@
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_reporting.pb.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
@@ -55,9 +56,9 @@ class AttributionTrigger;
 
 enum class RateLimitResult : int;
 
-const CommonSourceInfo::SourceType kSourceTypes[] = {
-    CommonSourceInfo::SourceType::kNavigation,
-    CommonSourceInfo::SourceType::kEvent,
+const AttributionSourceType kSourceTypes[] = {
+    AttributionSourceType::kNavigation,
+    AttributionSourceType::kEvent,
 };
 
 class MockAttributionReportingContentBrowserClient
@@ -82,11 +83,6 @@ class MockAttributionHost : public AttributionHost {
   explicit MockAttributionHost(WebContents* contents);
 
   ~MockAttributionHost() override;
-
-  MOCK_METHOD(void,
-              RegisterImpression,
-              (const blink::Impression& impression),
-              (override));
 
   MOCK_METHOD(void,
               RegisterConversion,
@@ -162,7 +158,7 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   base::Time GetEventLevelReportTime(const CommonSourceInfo& source,
                                      base::Time trigger_time) const override;
   int GetMaxAttributionsPerSource(
-      CommonSourceInfo::SourceType source_type) const override;
+      AttributionSourceType source_type) const override;
   int GetMaxSourcesPerOrigin() const override;
   int GetMaxAttributionsPerOrigin() const override;
   RateLimitConfig GetRateLimits() const override;
@@ -173,13 +169,13 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   absl::optional<OfflineReportDelayConfig> GetOfflineReportDelayConfig()
       const override;
   void ShuffleReports(std::vector<AttributionReport>& reports) override;
-  double GetRandomizedResponseRate(CommonSourceInfo::SourceType) const override;
+  double GetRandomizedResponseRate(AttributionSourceType) const override;
   RandomizedResponse GetRandomizedResponse(
       const CommonSourceInfo& source) override;
   int64_t GetAggregatableBudgetPerSource() const override;
   uint64_t SanitizeTriggerData(
       uint64_t trigger_data,
-      CommonSourceInfo::SourceType source_type) const override;
+      AttributionSourceType source_type) const override;
 
   void set_max_attributions_per_source(int max);
 
@@ -346,7 +342,7 @@ class SourceBuilder {
 
   SourceBuilder& SetReportingOrigin(url::Origin origin);
 
-  SourceBuilder& SetSourceType(CommonSourceInfo::SourceType source_type);
+  SourceBuilder& SetSourceType(AttributionSourceType source_type);
 
   SourceBuilder& SetPriority(int64_t priority);
 
@@ -377,8 +373,7 @@ class SourceBuilder {
   url::Origin impression_origin_;
   url::Origin conversion_origin_;
   url::Origin reporting_origin_;
-  CommonSourceInfo::SourceType source_type_ =
-      CommonSourceInfo::SourceType::kNavigation;
+  AttributionSourceType source_type_ = AttributionSourceType::kNavigation;
   int64_t priority_ = 0;
   StoredSource::AttributionLogic attribution_logic_ =
       StoredSource::AttributionLogic::kTruthfully;
@@ -468,7 +463,15 @@ class ReportBuilder {
   ReportBuilder& SetReportId(
       absl::optional<AttributionReport::EventLevelData::Id> id);
 
+  ReportBuilder& SetReportId(
+      absl::optional<AttributionReport::AggregatableAttributionData::Id> id);
+
+  ReportBuilder& SetAggregatableHistogramContributions(
+      std::vector<AggregatableHistogramContribution> contributions);
+
   AttributionReport Build() const;
+
+  AttributionReport BuildAggregatableAttribution() const;
 
  private:
   AttributionInfo attribution_info_;
@@ -478,6 +481,9 @@ class ReportBuilder {
   base::GUID external_report_id_;
   double randomized_trigger_rate_ = 0;
   absl::optional<AttributionReport::EventLevelData::Id> report_id_;
+  absl::optional<AttributionReport::AggregatableAttributionData::Id>
+      aggregatable_attribution_report_id_;
+  std::vector<AggregatableHistogramContribution> contributions_;
 };
 
 // Helper class to construct a `proto::AttributionAggregatableKey` for testing.
@@ -554,16 +560,11 @@ bool operator==(const StoredSource& a, const StoredSource& b);
 bool operator==(const AggregatableHistogramContribution& a,
                 const AggregatableHistogramContribution& b);
 
-bool operator==(const AggregatableAttribution::ContributionAndExternalId& a,
-                const AggregatableAttribution::ContributionAndExternalId& b);
-
-bool operator==(const AggregatableAttribution& a, AggregatableAttribution& b);
-
 bool operator==(const AttributionReport::EventLevelData& a,
                 const AttributionReport::EventLevelData& b);
 
-bool operator==(const AttributionReport::AggregatableContributionData& a,
-                const AttributionReport::AggregatableContributionData& b);
+bool operator==(const AttributionReport::AggregatableAttributionData& a,
+                const AttributionReport::AggregatableAttributionData& b);
 
 bool operator==(const AttributionReport& a, const AttributionReport& b);
 
@@ -578,8 +579,7 @@ std::ostream& operator<<(std::ostream& out, DeactivatedSource::Reason reason);
 
 std::ostream& operator<<(std::ostream& out, RateLimitResult result);
 
-std::ostream& operator<<(std::ostream& out,
-                         CommonSourceInfo::SourceType source_type);
+std::ostream& operator<<(std::ostream& out, AttributionSourceType source_type);
 
 std::ostream& operator<<(
     std::ostream& out,
@@ -606,21 +606,12 @@ std::ostream& operator<<(std::ostream& out, const StoredSource& source);
 std::ostream& operator<<(std::ostream& out,
                          const AggregatableHistogramContribution& contribution);
 
-std::ostream& operator<<(
-    std::ostream& out,
-    const AggregatableAttribution::ContributionAndExternalId&
-        contribution_and_id);
-
-std::ostream& operator<<(
-    std::ostream& out,
-    const AggregatableAttribution& aggregatable_attribution);
-
 std::ostream& operator<<(std::ostream& out,
                          const AttributionReport::EventLevelData& data);
 
 std::ostream& operator<<(
     std::ostream& out,
-    const AttributionReport::AggregatableContributionData& data);
+    const AttributionReport::AggregatableAttributionData& data);
 
 std::ostream& operator<<(std::ostream& out, const AttributionReport& report);
 
@@ -755,12 +746,12 @@ MATCHER_P(ReportURLIs, matcher, "") {
 
 // `CreateReportResult` matchers
 
-MATCHER_P(CreateReportStatusIs, matcher, "") {
-  return ExplainMatchResult(matcher, arg.status(), result_listener);
+MATCHER_P(CreateReportEventLevelStatusIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.event_level_status(), result_listener);
 }
 
-MATCHER_P(DroppedReportIs, matcher, "") {
-  return ExplainMatchResult(matcher, arg.dropped_report(), result_listener);
+MATCHER_P(DroppedReportsAre, matcher, "") {
+  return ExplainMatchResult(matcher, arg.dropped_reports(), result_listener);
 }
 
 MATCHER_P(DeactivatedSourceIs, matcher, "") {
@@ -768,8 +759,8 @@ MATCHER_P(DeactivatedSourceIs, matcher, "") {
                             result_listener);
 }
 
-MATCHER_P(NewReportIs, matcher, "") {
-  return ExplainMatchResult(matcher, arg.new_report(), result_listener);
+MATCHER_P(NewReportsAre, matcher, "") {
+  return ExplainMatchResult(matcher, arg.new_reports(), result_listener);
 }
 
 struct AttributionFilterSizeTestCase {

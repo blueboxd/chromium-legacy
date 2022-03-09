@@ -38,7 +38,7 @@ export abstract class PDFViewerBaseElement extends PolymerElement {
     return 'pdf-viewer-base';
   }
 
-  static get properties() {
+  static get properties(): any {
     return {
       showErrorDialog: {
         type: Boolean,
@@ -103,22 +103,12 @@ export abstract class PDFViewerBaseElement extends PolymerElement {
     plugin.setAttribute(
         'background-color', this.getBackgroundColor().toString());
 
-    type StreamInfoWithExtras = chrome.mimeHandlerPrivate.StreamInfo&{
-      // Appended in main.js
-      javascript: 'allow' | 'block',
-      // Appended in browser_api.js
-      tabUrl: string,
-    };
-
-    const javascript =
-        (this.browserApi!.getStreamInfo() as StreamInfoWithExtras).javascript ||
-        'block';
+    const javascript = this.browserApi!.getStreamInfo().javascript || 'block';
     plugin.setAttribute('javascript', javascript);
 
     if (this.browserApi!.getStreamInfo().embedded) {
       plugin.setAttribute(
-          'top-level-url',
-          (this.browserApi!.getStreamInfo() as StreamInfoWithExtras).tabUrl);
+          'top-level-url', this.browserApi!.getStreamInfo().tabUrl!);
     } else {
       plugin.toggleAttribute('full-frame', true);
     }
@@ -142,6 +132,8 @@ export abstract class PDFViewerBaseElement extends PolymerElement {
     return plugin;
   }
 
+  abstract init(browserApi: BrowserApi): void;
+
   /**
    * Initializes the PDF viewer.
    * @param browserApi The interface with the browser.
@@ -149,7 +141,7 @@ export abstract class PDFViewerBaseElement extends PolymerElement {
    * @param sizer The viewport's sizer element.
    * @param content The viewport's content element.
    */
-  init(
+  protected initInternal(
       browserApi: BrowserApi, scroller: HTMLElement, sizer: HTMLElement,
       content: HTMLElement) {
     this.browserApi = browserApi;
@@ -362,6 +354,10 @@ export abstract class PDFViewerBaseElement extends PolymerElement {
                                       DocumentDimensionsMessageData) {
     this.documentDimensions = documentDimensions;
     this.isUserInitiatedEvent = false;
+
+    // TODO(crbug.com/1260303): Remove suppression once viewport.js is migrated
+    // to TypeScript.
+    // @ts-ignore:next-line
     this.viewport_!.setDocumentDimensions(this.documentDimensions);
     this.paramsParser!.setViewportDimensions(this.viewport_!.size);
     this.isUserInitiatedEvent = true;

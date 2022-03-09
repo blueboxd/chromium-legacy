@@ -144,10 +144,6 @@ void WebRuntimeFeatures::EnableAdTagging(bool enable) {
   RuntimeEnabledFeatures::SetAdTaggingEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableAllowActivationDelegationAttr(bool enable) {
-  RuntimeEnabledFeatures::SetAllowActivationDelegationAttrEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableCacheInlineScriptCode(bool enable) {
   RuntimeEnabledFeatures::SetCacheInlineScriptCodeEnabled(enable);
 }
@@ -194,6 +190,10 @@ void WebRuntimeFeatures::EnableDevicePosture(bool enable) {
 
 void WebRuntimeFeatures::EnableRemoveMobileViewportDoubleTap(bool enable) {
   RuntimeEnabledFeatures::SetRemoveMobileViewportDoubleTapEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableZeroCopyTabCapture(bool enable) {
+  RuntimeEnabledFeatures::SetZeroCopyTabCaptureEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableFencedFrames(bool enable) {

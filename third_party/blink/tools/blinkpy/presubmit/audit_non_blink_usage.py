@@ -570,6 +570,9 @@ _CONFIG = [
             # Used in network service types.
             'net::SiteForCookies',
 
+            # PartitionAlloc
+            'partition_alloc::.+',
+
             # Some test helpers live in the blink::test namespace.
             'test::.+',
 
@@ -1347,6 +1350,14 @@ _CONFIG = [
             'webrtc::AudioTransport',
             'webrtc::kAdmMaxDeviceNameSize',
             'webrtc::kAdmMaxGuidSize',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/webshare/',
+        ],
+        'allowed': [
+            'base::SafeBaseName',
         ]
     },
     {

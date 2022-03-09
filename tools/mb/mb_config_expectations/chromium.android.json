@@ -373,10 +373,11 @@
       "target_cpu": "arm64",
       "target_os": "android",
       "use_crash_key_stubs": true,
-      "use_goma": true,
       "use_hashed_jni_names": true,
       "use_partition_alloc": false,
       "use_platform_icu_alternatives": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
       "use_thin_lto": false
     }
   },
@@ -435,19 +436,6 @@
       "use_rbe": true,
       "use_remoteexec": true,
       "use_thin_lto": false
-    }
-  },
-  "android-incremental-dbg": {
-    "gn_args": {
-      "ffmpeg_branding": "Chrome",
-      "incremental_install": true,
-      "is_component_build": true,
-      "is_debug": true,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "target_os": "android",
-      "use_rbe": true,
-      "use_remoteexec": true
     }
   },
   "android-marshmallow-arm64-rel": {

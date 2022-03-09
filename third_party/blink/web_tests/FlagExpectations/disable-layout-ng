@@ -13,6 +13,7 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 virtual/no-forced-frame-updates/external/wpt/html/dom/render-blocking/header-inserted-preload-link.tentative.html [ Timeout ]
 crbug.com/626703 external/wpt/geolocation-API/getCurrentPosition_permission_allow.https.html [ Timeout ]
 crbug.com/626703 external/wpt/geolocation-API/enabled-by-feature-policy-attribute-redirect-on-load.https.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/geolocation-API/enabled-by-feature-policy-attribute.https.sub.html [ Timeout ]
@@ -260,7 +261,7 @@ crbug.com/470421 external/wpt/css/css-flexbox/flexbox-flex-basis-content-001b.ht
 crbug.com/470421 external/wpt/css/css-flexbox/flexbox-flex-basis-content-002a.html [ Failure ]
 crbug.com/470421 external/wpt/css/css-flexbox/flexbox-flex-basis-content-002b.html [ Failure ]
 crbug.com/470421 external/wpt/css/css-flexbox/fixed-table-layout-with-percentage-width-in-flex-item.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-flexbox/dynamic-isize-change-002.html [ Pass Failure Crash ]
+crbug.com/591099 external/wpt/css/css-flexbox/dynamic-isize-change-002.html [ Crash Failure Pass ]
 crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
 crbug.com/1255340 external/wpt/css/css-flexbox/percentage-heights-016.html [ Failure ]
 crbug.com/1255340 external/wpt/css/css-flexbox/percentage-heights-017.html [ Failure ]
@@ -942,6 +943,9 @@ crbug.com/591099 virtual/gpu-rasterization/images/favicon-as-image.html [ Failur
 
 ### virtual/layout_ng_flex_frag/
 virtual/layout_ng_flex_frag/* [ Skip ]
+
+### virtual/layout_ng_table_frag/
+virtual/layout_ng_table_frag/* [ Skip ]
 
 ### virtual/layout_ng_printing/
 virtual/layout_ng_printing/* [ Skip ]

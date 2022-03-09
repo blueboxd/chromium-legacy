@@ -907,24 +907,6 @@
           'isolated_scripts': 'cronet_rel_isolated_scripts',
         },
       },
-      'android-incremental-dbg': {
-        'test_suites': {
-          'gtest_tests': 'android_incremental_tests',
-        },
-        'mixins': [
-          'has_native_resultdb_integration'
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
-              'os': 'Android',
-            },
-          ],
-        },
-        'os_type': 'android',
-      },
       'android-marshmallow-arm64-rel': {
         'mixins': [
           'has_native_resultdb_integration',
@@ -1544,6 +1526,11 @@
         ],
       },
       'chromeos-arm-generic-rel': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'chromeos-arm64-generic-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
@@ -3271,17 +3258,6 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
-      'linux-blink-heap-concurrent-marking-tsan-rel': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_gtests',
-        },
-        'gtest_args': [
-          '--enable-features=BlinkHeapConcurrentMarking',
-        ],
-      },
       'linux-blink-heap-verification': {
         'mixins': [
           'linux-bionic',
@@ -3305,15 +3281,6 @@
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_web_tests_and_wpt_webdriver_isolated_scripts',
-        },
-      },
-      'linux-blink-v8-oilpan': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'linux-blink-v8-sandbox-future-dbg': {
@@ -5452,6 +5419,9 @@
         },
       },
       'Mojo ChromiumOS': {
+        'mixins': [
+          'linux-bionic',
+        ],
         'test_suites': {
           'gtest_tests': 'mojo_chromiumos_fyi_gtests',
         },

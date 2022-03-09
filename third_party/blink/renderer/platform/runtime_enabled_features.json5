@@ -174,10 +174,6 @@
       status: "test",
     },
     {
-      // Deprecated, see UserActivationPostMessageTransfer.
-      name: "AllowActivationDelegationAttr",
-    },
-    {
       name: "AllowContentInitiatedDataUrlNavigations",
     },
     {
@@ -1202,6 +1198,11 @@
         },
     },
     {
+      // Enables the getDisplayMediaSet API for multi surface capture.
+      name: "GetDisplayMediaSet",
+      depends_on: ["GetDisplayMedia"],
+    },
+    {
       name: "GravitySensor",
       status: "stable",
     },
@@ -2069,6 +2070,10 @@
     },
     {
       name: "ScrollUnification",
+    },
+    {
+      name: "SecureContextFixForSharedWorkers",
+      status: "experimental",
     },
     {
       name: "SecureContextFixForWorkers",

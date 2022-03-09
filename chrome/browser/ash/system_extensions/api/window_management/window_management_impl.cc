@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/system_extensions/api/window_management/window_management_impl.h"
+
+#include "ash/wm/window_state.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -12,6 +14,7 @@
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/blink/public/mojom/chromeos/system_extensions/window_management/cros_window_management.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
@@ -58,6 +61,32 @@ void WindowManagementImpl::SetWindowBounds(const base::UnguessableToken& id,
   // TODO(crbug.com/1253318): Ensure this works with multiple screens.
   if (target) {
     target->SetBounds(gfx::Rect(x, y, width, height));
+  }
+}
+
+void WindowManagementImpl::SetFullscreen(const base::UnguessableToken& id,
+                                         bool fullscreen) {
+  aura::Window* target = GetWindow(id);
+  // TODO(b/223320570): Add error handling for stale ids.
+  if (!target) {
+    return;
+  }
+  views::Widget::GetWidgetForNativeWindow(target)->SetFullscreen(fullscreen);
+}
+
+void WindowManagementImpl::Maximize(const base::UnguessableToken& id) {
+  aura::Window* target = GetWindow(id);
+  // TODO(b/223320570): Add error handling for stale ids.
+  if (target) {
+    WindowState::Get(target)->Maximize();
+  }
+}
+
+void WindowManagementImpl::Minimize(const base::UnguessableToken& id) {
+  aura::Window* target = GetWindow(id);
+  // TODO(b/223320570): Add error handling for stale ids.
+  if (target) {
+    WindowState::Get(target)->Minimize();
   }
 }
 

@@ -8,9 +8,9 @@ import("//pdf/features.gni")
 # Viewer.
 pdf_non_webcomponents_files = [
   "bookmark_type.ts",
-  "local_storage_proxy.js",
-  "navigator.js",
-  "pdf_viewer_wrapper.js",
+  "local_storage_proxy.ts",
+  "navigator.ts",
+  "pdf_viewer_wrapper.ts",
   "pdf_internal_plugin_wrapper.ts",
 ]
 
@@ -18,8 +18,7 @@ if (enable_ink) {
   pdf_non_webcomponents_files += [
     "annotation_tool.ts",
     "ink_controller.js",
-    "ink/drawing_canvas_externs.js",
-    "ink/ink_api.js",
+    "ink/ink_api.ts",
   ]
 }
 
@@ -36,7 +35,7 @@ pdf_webcomponents_files = [
   "elements/viewer-thumbnail-bar.ts",
   "elements/viewer-thumbnail.ts",
   "elements/viewer-toolbar.ts",
-  "pdf_viewer.js",
+  "pdf_viewer.ts",
 ]
 
 if (enable_ink) {
@@ -65,20 +64,20 @@ print_preview_webcomponents_files = [
 # Files to pass directly to preprocess_if_expr() that are shared by PDF Viewer
 # and Print Preview.
 shared_non_webcomponents_files = [
-  "browser_api.js",
+  "browser_api.ts",
   "constants.ts",
   "controller.js",
   "gesture_detector.ts",
-  "internal_plugin.js",
-  "main.js",
+  "internal_plugin.ts",
+  "main.ts",
   "metrics.ts",
-  "open_pdf_params_parser.js",
+  "open_pdf_params_parser.ts",
   "pdf_scripting_api.js",
   "pdf_viewer_base.ts",
-  "pdf_viewer_utils.js",
+  "pdf_viewer_utils.ts",
   "viewport.js",
-  "viewport_scroller.js",
-  "zoom_manager.js",
+  "viewport_scroller.ts",
+  "zoom_manager.ts",
 ]
 
 # Files that need to be passed to html_to_js() that are shared by PDF Viewer

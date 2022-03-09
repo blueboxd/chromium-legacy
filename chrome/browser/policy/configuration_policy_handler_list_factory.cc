@@ -143,6 +143,7 @@
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/ash/accessibility/magnifier_type.h"
 #include "chrome/browser/ash/app_restore/full_restore_prefs.h"
+#include "chrome/browser/ash/arc/policy/arc_policy_handler.h"
 #include "chrome/browser/ash/borealis/borealis_prefs.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
@@ -1013,34 +1014,34 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kTouchVirtualKeyboardEnabled,
     base::Value::Type::BOOLEAN },
   { key::kEasyUnlockAllowed,
-    chromeos::multidevice_setup::kSmartLockAllowedPrefName,
+    ash::multidevice_setup::kSmartLockAllowedPrefName,
     base::Value::Type::BOOLEAN },
   { key::kSmartLockSigninAllowed,
-    chromeos::multidevice_setup::kSmartLockSigninAllowedPrefName,
+    ash::multidevice_setup::kSmartLockSigninAllowedPrefName,
     base::Value::Type::BOOLEAN },
   { key::kInstantTetheringAllowed,
-    chromeos::multidevice_setup::kInstantTetheringAllowedPrefName,
+    ash::multidevice_setup::kInstantTetheringAllowedPrefName,
     base::Value::Type::BOOLEAN },
   { key::kSmsMessagesAllowed,
-    chromeos::multidevice_setup::kMessagesAllowedPrefName,
+    ash::multidevice_setup::kMessagesAllowedPrefName,
     base::Value::Type::BOOLEAN },
   { key::kPhoneHubAllowed,
-    chromeos::multidevice_setup::kPhoneHubAllowedPrefName,
+    ash::multidevice_setup::kPhoneHubAllowedPrefName,
     base::Value::Type::BOOLEAN },
   { key::kPhoneHubCameraRollAllowed,
-    chromeos::multidevice_setup::kPhoneHubCameraRollAllowedPrefName,
+    ash::multidevice_setup::kPhoneHubCameraRollAllowedPrefName,
     base::Value::Type::BOOLEAN },
   { key::kPhoneHubNotificationsAllowed,
-    chromeos::multidevice_setup::kPhoneHubNotificationsAllowedPrefName,
+    ash::multidevice_setup::kPhoneHubNotificationsAllowedPrefName,
     base::Value::Type::BOOLEAN },
   { key::kPhoneHubTaskContinuationAllowed,
-    chromeos::multidevice_setup::kPhoneHubTaskContinuationAllowedPrefName,
+    ash::multidevice_setup::kPhoneHubTaskContinuationAllowedPrefName,
     base::Value::Type::BOOLEAN },
   { key::kWifiSyncAndroidAllowed,
-    chromeos::multidevice_setup::kWifiSyncAllowedPrefName,
+    ash::multidevice_setup::kWifiSyncAllowedPrefName,
     base::Value::Type::BOOLEAN },
   { key::kEcheAllowed,
-    chromeos::multidevice_setup::kEcheAllowedPrefName,
+    ash::multidevice_setup::kEcheAllowedPrefName,
     base::Value::Type::BOOLEAN },
   { key::kCaptivePortalAuthenticationIgnoresProxy,
     prefs::kCaptivePortalAuthenticationIgnoresProxy,
@@ -2190,6 +2191,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<LacrosAvailabilityPolicyHandler>());
   handlers->AddHandler(std::make_unique<BooleanDisablingPolicyHandler>(
       key::kFastPairEnabled, ash::prefs::kFastPairEnabled));
+  handlers->AddHandler(std::make_unique<arc::ArcPolicyHandler>());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // On most platforms, there is a legacy policy

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/services/secure_channel/client_connection_parameters.h"
 #include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
@@ -13,9 +14,6 @@
 namespace ash::secure_channel {
 
 namespace {
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace mojom = ::chromeos::secure_channel::mojom;
 
 const char kBleListenerReadableRequestTypeForLogging[] = "BLE Listener";
 

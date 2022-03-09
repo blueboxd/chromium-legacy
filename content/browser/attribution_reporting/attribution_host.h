@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/containers/flat_map.h"
-#include "content/browser/attribution_reporting/common_source_info.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host_receiver_set.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -80,7 +80,6 @@ class CONTENT_EXPORT AttributionHost
 
   // blink::mojom::ConversionHost:
   void RegisterConversion(blink::mojom::ConversionPtr conversion) override;
-  void RegisterImpression(const blink::Impression& impression) override;
   void RegisterDataHost(mojo::PendingReceiver<blink::mojom::AttributionDataHost>
                             data_host) override;
 
@@ -96,7 +95,7 @@ class CONTENT_EXPORT AttributionHost
   // impression origin and reporting origin and the impressionorigin, reporting
   // origin, and conversion destination are potentially trustworthy. Returns
   // whether the impression was stored.
-  bool VerifyAndStoreImpression(CommonSourceInfo::SourceType source_type,
+  bool VerifyAndStoreImpression(AttributionSourceType source_type,
                                 const url::Origin& impression_origin,
                                 const blink::Impression& impression,
                                 AttributionManager& attribution_manager);

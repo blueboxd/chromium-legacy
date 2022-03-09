@@ -93,10 +93,9 @@
       'android-cronet-arm64-dbg': 'android_cronet_debug_static_bot_arm64_reclient',
       'android-cronet-arm64-rel': 'android_cronet_release_bot_minimal_symbols_arm64_reclient',
       'android-cronet-asan-arm-rel': 'android_cronet_release_bot_minimal_symbols_arm_no_neon_clang_asan_reclient',
-      'android-cronet-marshmallow-arm64-perf-rel': 'android_cronet_release_bot_minimal_symbols_arm64',
+      'android-cronet-marshmallow-arm64-perf-rel': 'android_cronet_release_bot_minimal_symbols_arm64_reclient',
       'android-cronet-x86-dbg': 'android_cronet_debug_static_bot_x86_reclient',
       'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86_reclient',
-      'android-incremental-dbg': 'android_incremental_debug_bot_reclient',
 
       # This bot must use the gpu_tests mixin to match 'Android FYI Release (Nexus 5X)'
       # on the chromium.gpu waterfall, which it mirrors via trybots.pyl.
@@ -155,6 +154,7 @@
       'chromeos-amd64-generic-rel': 'chromeos_amd64-generic_use_fake_dbus_clients_vm_optimized',
       'chromeos-arm-generic-dbg': 'chromeos_arm-generic_dbg',
       'chromeos-arm-generic-rel': 'chromeos_arm-generic',
+      'chromeos-arm64-generic-rel': 'chromeos_arm64-generic',
       'chromeos-kevin-rel': 'chromeos_kevin_dchecks',
       'lacros-amd64-generic-binary-size-rel': 'chromeos_amd64-generic_lacros_rel',
       'lacros-amd64-generic-rel': 'chromeos_amd64-generic_lacros_rel',
@@ -250,12 +250,12 @@
       'Libfuzzer Upload iOS Catalyst Debug': 'ios_catalyst_debug_static_bot_compile_only_libfuzzer_no_dsyms_no_lld_no_remoting',
       'Libfuzzer Upload Linux32 ASan': 'libfuzzer_asan_release_bot_x86_reclient',
       'Libfuzzer Upload Linux32 ASan Debug': 'libfuzzer_asan_debug_bot_x86_reclient',
-      'Libfuzzer Upload Linux32 V8-ARM ASan': 'libfuzzer_asan_release_bot_x86_v8_arm',
-      'Libfuzzer Upload Linux32 V8-ARM ASan Debug': 'libfuzzer_asan_debug_bot_x86_v8_arm',
+      'Libfuzzer Upload Linux32 V8-ARM ASan': 'libfuzzer_asan_release_bot_x86_v8_arm_reclient',
+      'Libfuzzer Upload Linux32 V8-ARM ASan Debug': 'libfuzzer_asan_debug_bot_x86_v8_arm_reclient',
       'Libfuzzer Upload Linux ASan': 'libfuzzer_asan_release_bot_reclient',
       'Libfuzzer Upload Linux ASan Debug': 'libfuzzer_asan_debug_bot_reclient',
-      'Libfuzzer Upload Linux V8-ARM64 ASan': 'libfuzzer_asan_release_bot_v8_arm64',
-      'Libfuzzer Upload Linux V8-ARM64 ASan Debug': 'libfuzzer_asan_debug_bot_v8_arm64',
+      'Libfuzzer Upload Linux V8-ARM64 ASan': 'libfuzzer_asan_release_bot_v8_arm64_reclient',
+      'Libfuzzer Upload Linux V8-ARM64 ASan Debug': 'libfuzzer_asan_debug_bot_v8_arm64_reclient',
       'Libfuzzer Upload Linux MSan': 'libfuzzer_msan_release_bot_reclient',
       'Libfuzzer Upload Linux UBSan': 'libfuzzer_ubsan_release_bot_reclient',
       'Libfuzzer Upload Mac ASan': 'libfuzzer_mac_asan_shared_release_bot',
@@ -301,7 +301,6 @@
       'Libfuzzer Upload Windows ASan': 'libfuzzer_windows_asan_release_bot',
       'Linux Builder (j-500) (reclient)': 'gpu_tests_release_bot_reclient',
       'Linux CFI (reclient shadow)': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_reclient',
-      'Linux Builder (j-500) (reclient)': 'gpu_tests_release_bot_reclient',
       'Linux Viz': 'release_trybot_minimal_symbols_reclient',
       'lacros-amd64-generic-rel-fyi': 'chromeos_amd64-generic_lacros_rel',
       'lacros-amd64-generic-rel-skylab-fyi': 'chromeos_amd64-generic_lacros_rel_fyi',
@@ -358,7 +357,6 @@
       'linux-blink-animation-use-time-delta': 'debug_bot_enable_blink_animation_use_time_delta',
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_minimal_symbols_tsan',
       'linux-blink-heap-verification': 'release_bot_enable_blink_heap_verification_dcheck_always_on_reclient',
-      'linux-blink-v8-oilpan': 'release_bot_enable_v8_oilpan_dcheck_always_on',
       'linux-blink-v8-sandbox-future-dbg': 'debug_bot_enable_v8_sandbox_future',
       'linux-chromeos-code-coverage': 'chromeos_with_codecs_release_bot_coverage',
       'linux-chromeos-js-code-coverage': 'chromeos_with_codecs_release_bot_javascript_coverage',
@@ -530,7 +528,7 @@
       'Leak Detection Linux': 'release_bot',
       'Linux Builder (dbg)': 'gpu_tests_debug_bot_reclient',
       'Linux Builder (dbg)(32)': 'gpu_tests_debug_bot_x86_reclient',
-      'Linux Builder': 'gpu_tests_release_bot_do_typecheck',
+      'Linux Builder': 'gpu_tests_release_bot_do_typecheck_reclient',
       'Linux Builder (Wayland)': 'gpu_tests_wayland_release_bot_reclient',
       'Network Service Linux': 'release_bot',
       'fuchsia-arm64-cast': 'release_bot_fuchsia_arm64_cast',
@@ -1045,7 +1043,6 @@
       'linux-autofill-assistant': 'autofill_assistant_release_trybot',
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_tsan',
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
-      'linux-blink-v8-oilpan': 'release_trybot_enable_v8_oilpan',
       'linux-bfcache-rel': 'release_bot_blink',
       'linux-bionic-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange',
       'linux-clang-tidy-dbg': 'debug_bot',
@@ -1475,10 +1472,6 @@
 
     'android_debug_trybot_x64_webview_trichrome_webview_shell': [
       'android', 'debug_bot', 'x64', 'webview_trichrome', 'webview_shell',
-    ],
-
-    'android_incremental_debug_bot_reclient': [
-      'android', 'incremental', 'debug_bot_reclient',
     ],
 
     'android_official_optimize_reclient': [
@@ -1953,6 +1946,10 @@
 
     'chromeos_arm-generic': [
       'chromeos_device', 'arm-generic',
+    ],
+
+    'chromeos_arm64-generic': [
+      'chromeos_device', 'arm64-generic',
     ],
 
     'chromeos_arm-generic_cfi_thin_lto_official': [
@@ -2468,8 +2465,8 @@
       'gpu_tests', 'release_bot',
     ],
 
-    'gpu_tests_release_bot_do_typecheck': [
-      'gpu_tests', 'release_bot', 'devtools_do_typecheck',
+    'gpu_tests_release_bot_do_typecheck_reclient': [
+      'gpu_tests', 'release_bot_reclient', 'devtools_do_typecheck',
     ],
 
     'gpu_tests_wayland_release_bot_reclient': [
@@ -2709,16 +2706,16 @@
       'libfuzzer', 'asan', 'debug_bot_reclient', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
     ],
 
-    'libfuzzer_asan_debug_bot_v8_arm64': [
-      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64', 'disable_seed_corpus',
+    'libfuzzer_asan_debug_bot_v8_arm64_reclient': [
+      'libfuzzer', 'asan', 'debug_bot_reclient', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64', 'disable_seed_corpus',
     ],
 
     'libfuzzer_asan_debug_bot_x86_reclient': [
       'libfuzzer', 'asan', 'debug_bot_reclient', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host',  'disable_seed_corpus',
     ],
 
-    'libfuzzer_asan_debug_bot_x86_v8_arm': [
-      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm',  'disable_seed_corpus',
+    'libfuzzer_asan_debug_bot_x86_v8_arm_reclient': [
+      'libfuzzer', 'asan', 'debug_bot_reclient', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm',  'disable_seed_corpus',
     ],
 
     'libfuzzer_chromeos_asan_release_bot': [
@@ -2733,16 +2730,16 @@
       'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'mojo_fuzzer', 'shared_release_bot_reclient',
     ],
 
-    'libfuzzer_asan_release_bot_v8_arm64': [
-      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64', 'disable_seed_corpus',
+    'libfuzzer_asan_release_bot_v8_arm64_reclient': [
+      'libfuzzer', 'asan', 'shared_release_bot_reclient', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'v8_simulate_arm64', 'disable_seed_corpus',
     ],
 
     'libfuzzer_asan_release_bot_x86_reclient': [
       'libfuzzer', 'asan', 'shared_release_bot_reclient', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86', 'x86_host', 'disable_seed_corpus',
     ],
 
-    'libfuzzer_asan_release_bot_x86_v8_arm': [
-      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm', 'disable_seed_corpus',
+    'libfuzzer_asan_release_bot_x86_v8_arm_reclient': [
+      'libfuzzer', 'asan', 'shared_release_bot_reclient', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'x86_host', 'v8_simulate_arm', 'disable_seed_corpus',
     ],
 
     'libfuzzer_asan_release_trybot': [
@@ -3054,16 +3051,6 @@
       'release_bot_blink_reclient', 'enable_blink_heap_verification', 'dcheck_always_on',
     ],
 
-    'release_bot_enable_v8_oilpan_dcheck_always_on': [
-      'release_bot_blink',
-      'enable_v8_oilpan',
-      'dcheck_always_on',
-      # Assignment checks during prefinalizers is currently only enabled in DCHECK builds.
-      'enable_v8_oilpan_check_assignments_in_prefinalizers',
-      # Live byte verification is currently only enabled in DCHECK builds.
-      'enable_v8_oilpan_live_byte_verification',
-    ],
-
     'release_bot_extended_tracing': [
       'release_bot', 'extended_tracing',
     ],
@@ -3146,10 +3133,6 @@
 
     'release_trybot_enable_blink_heap_verification': [
       'release_trybot_blink', 'enable_blink_heap_verification',
-    ],
-
-    'release_trybot_enable_v8_oilpan': [
-      'release_trybot_blink', 'enable_v8_oilpan',
     ],
 
     'release_trybot_extended_tracing': [
@@ -3364,6 +3347,10 @@
 
     'arm-generic': {
       'args_file': '//build/args/chromeos/arm-generic.gni',
+    },
+
+    'arm64-generic': {
+      'args_file': '//build/args/chromeos/arm64-generic.gni',
     },
 
     'arm-generic-crostoolchain': {
@@ -3631,18 +3618,6 @@
       'gn_args': 'enable_rust=true',
     },
 
-    'enable_v8_oilpan': {
-      'gn_args': 'enable_blink_heap_use_v8_oilpan=true',
-    },
-
-    'enable_v8_oilpan_check_assignments_in_prefinalizers': {
-      'gn_args': 'cppgc_enable_check_assignments_in_prefinalizers=true',
-    },
-
-    'enable_v8_oilpan_live_byte_verification': {
-      'gn_args': 'cppgc_enable_verify_live_bytes=true',
-    },
-
     'enable_vulkan': {
       'gn_args': 'enable_vulkan=true',
     },
@@ -3747,10 +3722,6 @@
 
     'include_unwind_tables': {
       'gn_args': 'exclude_unwind_tables=false',
-    },
-
-    'incremental': {
-      'gn_args': 'incremental_install=true',
     },
 
     'internal_gles_conform_tests': {

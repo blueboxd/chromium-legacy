@@ -43,6 +43,15 @@
           'shards': 2,
         },
       },
+      'android-12-x64-rel': {
+        'args': [
+          # https://crbug.com/1289764
+          '--gtest_filter=-All/ChromeBrowsingDataLifetimeManagerScheduledRemovalTest.History/*',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+      },
       'android-marshmallow-arm64-rel': {
         'swarming': {
           'quickrun_shards': 3,
@@ -444,12 +453,6 @@
       'linux-blink-animation-use-time-delta': {
         'args': [
           '--debug',
-        ],
-      },
-      'linux-blink-heap-concurrent-marking-tsan-rel': {
-        'args': [
-          '--release',
-          '--flag-specific=enable-blink-heap-concurrent-marking',
         ],
       },
       'linux-blink-web-tests-force-accessibility-rel': {
@@ -1172,11 +1175,6 @@
           '--gtest_filter=-FieldFormatterTest.DifferentLocales',
         ],
       },
-      'linux-blink-heap-concurrent-marking-tsan-rel': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
       # https://crbug.com/1111979,
       'linux-lacros-code-coverage': {
         'args': [
@@ -1315,7 +1313,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.content_browsertests.filter',
         ],
         'swarming': {
-          'shards': 20,
+          'shards': 25,
         },
       },
       'android-arm64-proguard-rel': {
@@ -1357,11 +1355,6 @@
           # Flaking with only 20 shards with 40-60 minute runs.
           # https://crbug.com/1230118
           'shards': 30,
-        },
-      },
-      'linux-blink-heap-concurrent-marking-tsan-rel': {
-        'swarming': {
-          'shards': 4,
         },
       },
       'linux-chromeos-code-coverage': {
@@ -2379,11 +2372,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.net_unittests.filter',
         ],
-      },
-      'linux-blink-heap-concurrent-marking-tsan-rel': {
-        'swarming': {
-          'shards': 4,
-        }
       },
       'linux-chromeos-dbg': {
         'swarming': {
@@ -3509,11 +3497,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.blink_unittests.filter',
         ],
-      },
-      'linux-blink-heap-concurrent-marking-tsan-rel': {
-        'swarming': {
-          'shards': 2,
-        },
       },
     },
   },

@@ -65,6 +65,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kPrefersColorSchemeClientHintHeader;
 BLINK_COMMON_EXPORT extern const base::Feature kViewportHeightClientHintHeader;
 BLINK_COMMON_EXPORT extern const base::Feature kFullUserAgent;
+BLINK_COMMON_EXPORT extern const base::Feature kPath2DPaintCache;
 
 enum class FencedFramesImplementationType {
   kShadowDOM,
@@ -467,6 +468,10 @@ BLINK_COMMON_EXPORT bool IsAllowURNsInIframeEnabled();
 
 BLINK_COMMON_EXPORT extern const base::Feature kBrowsingTopics;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsNumberOfTopTopicsPerEpoch;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsUseRandomTopicProbabilityPercent;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsMaxNumberOfApiUsageContextEntriesToLoadPerEpoch;
 
 // Control switch for minimizing processing in the WebRTC APM when all audio
@@ -661,6 +666,12 @@ BLINK_COMMON_EXPORT extern const base::Feature kEventPath;
 
 // If enabled, the minor version of the User-Agent string will be reduced.
 BLINK_COMMON_EXPORT extern const base::Feature kReduceUserAgentMinorVersion;
+
+BLINK_COMMON_EXPORT extern const base::Feature kSecureContextFixForWorkers;
+
+// If enabled, the `getDisplayMedia()` family of APIs will ask for NV12 frames,
+// which should trigger a zero-copy path in the tab capture code.
+BLINK_COMMON_EXPORT extern const base::Feature kZeroCopyTabCapture;
 
 }  // namespace features
 }  // namespace blink

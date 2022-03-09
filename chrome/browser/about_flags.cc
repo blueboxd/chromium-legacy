@@ -236,6 +236,7 @@
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/memory/memory_ablation_study.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/assistant/buildflags.h"
@@ -694,6 +695,14 @@ const FeatureEntry::Choice kTopChromeTouchUiChoices[] = {
      switches::kTopChromeTouchUiEnabled}};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+const FeatureEntry::Choice kUXStudy1Choices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {memory::kUXStudy1A, memory::kUXStudy1Switch, memory::kUXStudy1A},
+    {memory::kUXStudy1B, memory::kUXStudy1Switch, memory::kUXStudy1B},
+    {memory::kUXStudy1C, memory::kUXStudy1Switch, memory::kUXStudy1C},
+    {memory::kUXStudy1D, memory::kUXStudy1Switch, memory::kUXStudy1D},
+};
+
 const char kLacrosAvailabilityIgnoreInternalName[] =
     "lacros-availability-ignore";
 const char kLacrosOnlyInternalName[] = "lacros-only";
@@ -2891,6 +2900,13 @@ const FeatureEntry::FeatureVariation kTabStripImprovementsTabWidthVariations[] =
 };
 #endif  // BUILDFLAG(IS_ANDROID)
 
+const FeatureEntry::FeatureParam kUnthrottledNestedTimeout_NestingLevel = {
+    "nesting", "100"};
+
+const FeatureEntry::FeatureVariation kUnthrottledNestedTimeout_Variations[] = {
+    {"100", &kUnthrottledNestedTimeout_NestingLevel, 1, nullptr},
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -3340,6 +3356,9 @@ const FeatureEntry kFeatureEntries[] = {
     {kLacrosStabilityInternalName, flag_descriptions::kLacrosStabilityName,
      flag_descriptions::kLacrosStabilityDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kLacrosStabilityChoices)},
+    {"uxstudy1", flag_descriptions::kUXStudy1Name,
+     flag_descriptions::kUXStudy1Description, kOsCrOS,
+     MULTI_VALUE_TYPE(kUXStudy1Choices)},
     {"lacros-profile-migration-for-any-user",
      flag_descriptions::kLacrosProfileMigrationForAnyUserName,
      flag_descriptions::kLacrosProfileMigrationForAnyUserDescription, kOsCrOS,
@@ -5321,6 +5340,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpModulesDragAndDropDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kNtpModulesDragAndDrop)},
 
+    {"ntp-modules-first-run-experience",
+     flag_descriptions::kNtpModulesFirstRunExperienceName,
+     flag_descriptions::kNtpModulesFirstRunExperienceDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpModulesFirstRunExperience)},
+
     {"ntp-modules-redesigned", flag_descriptions::kNtpModulesRedesignedName,
      flag_descriptions::kNtpModulesRedesignedDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kNtpModulesRedesigned)},
@@ -5482,6 +5506,15 @@ const FeatureEntry kFeatureEntries[] = {
          kEnableWebAuthenticationChromeOSAuthenticatorDescription,
      kOsCrOS, FEATURE_VALUE_TYPE(device::kWebAuthCrosPlatformAuthenticator)},
 #endif
+
+    {
+        "zero-copy-tab-capture",
+        flag_descriptions::kEnableZeroCopyTabCaptureName,
+        flag_descriptions::kEnableZeroCopyTabCaptureDescription,
+        kOsMac,
+        FEATURE_VALUE_TYPE(blink::features::kZeroCopyTabCapture),
+    },
+
 #if BUILDFLAG(ENABLE_PDF)
     {"accessible-pdf-form", flag_descriptions::kAccessiblePDFFormName,
      flag_descriptions::kAccessiblePDFFormDescription, kOsDesktop,
@@ -8258,6 +8291,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"download-bubble", flag_descriptions::kDownloadBubbleName,
      flag_descriptions::kDownloadBubbleDescription, kOsLinux | kOsMac | kOsWin,
      FEATURE_VALUE_TYPE(safe_browsing::kDownloadBubble)},
+
+    {"unthrottled-nested-timeout",
+     flag_descriptions::kUnthrottledNestedTimeoutName,
+     flag_descriptions::kUnthrottledNestedTimeoutDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         blink::features::kMaxUnthrottledTimeoutNestingLevel,
+         kUnthrottledNestedTimeout_Variations,
+         "NestingLevel")},
 
     {"reduce-user-agent-minor-version",
      flag_descriptions::kReduceUserAgentMinorVersionName,

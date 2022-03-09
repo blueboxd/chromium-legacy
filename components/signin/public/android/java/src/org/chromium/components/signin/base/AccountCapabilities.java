@@ -6,6 +6,7 @@ package org.chromium.components.signin.base;
 
 import androidx.annotation.NonNull;
 
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.signin.AccountCapabilitiesConstants;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.Tribool;
@@ -24,9 +25,22 @@ public class AccountCapabilities {
     public static final Set<String> SUPPORTED_ACCOUNT_CAPABILITY_NAMES = new HashSet<String>() {
         { add(AccountCapabilitiesConstants.IS_SUBJECT_TO_PARENTAL_CONTROLS_CAPABILITY_NAME); }
         { add(AccountCapabilitiesConstants.CAN_OFFER_EXTENDED_CHROME_SYNC_PROMOS_CAPABILITY_NAME); }
+        { add(AccountCapabilitiesConstants.CAN_RUN_CHROME_PRIVACY_SANDBOX_TRIALS_CAPABILITY_NAME); }
     };
 
     private final Map<String, Boolean> mAccountCapabilities = new HashMap<>();
+
+    @CalledByNative
+    public AccountCapabilities(String[] capabilityNames, boolean[] capabilityValues) {
+        assert capabilityNames.length == capabilityValues.length;
+        for (int i = 0; i < capabilityNames.length; i += 1) {
+            final String capabilityName = capabilityNames[i];
+            assert SUPPORTED_ACCOUNT_CAPABILITY_NAMES.contains(capabilityName)
+                : "Capability name not supported in Chrome: "
+                    + capabilityName;
+            mAccountCapabilities.put(capabilityName, capabilityValues[i]);
+        }
+    }
 
     public AccountCapabilities() {}
 
@@ -37,8 +51,10 @@ public class AccountCapabilities {
      */
     public static AccountCapabilities parseFromCapabilitiesResponse(
             Map<String, Integer> capabilityResponses) {
+        assert capabilityResponses.size() == SUPPORTED_ACCOUNT_CAPABILITY_NAMES.size();
         AccountCapabilities capabilities = new AccountCapabilities();
         for (String capabilityName : SUPPORTED_ACCOUNT_CAPABILITY_NAMES) {
+            assert capabilityResponses.containsKey(capabilityName);
             @AccountManagerDelegate.CapabilityResponse
             int hasCapability = capabilityResponses.get(capabilityName);
             capabilities.setAccountCapability(capabilityName, hasCapability);
@@ -82,9 +98,18 @@ public class AccountCapabilities {
     }
 
     /**
+     * @return canRunChromePrivacySandboxTrials capability value.
+     */
+    public @Tribool int canRunChromePrivacySandboxTrials() {
+        return getCapabilityByName(
+                AccountCapabilitiesConstants.CAN_RUN_CHROME_PRIVACY_SANDBOX_TRIALS_CAPABILITY_NAME);
+    }
+
+    /**
      * @param capabilityName the name of the capability to lookup.
      * @return the capability value associated to the name.
      */
+    @CalledByNative
     private @Tribool int getCapabilityByName(@NonNull String capabilityName) {
         if (!mAccountCapabilities.containsKey(capabilityName)) {
             return Tribool.UNKNOWN;

@@ -2318,19 +2318,6 @@ void WebContentsImpl::WriteIntoTrace(perfetto::TracedValue context) {
            primary_frame_tree_.root()->frame_tree_node_id());
 }
 
-void WebContentsImpl::DisallowActivationNavigationsForBug1234857() {
-  disallow_activation_navigations_ = true;
-
-  // Flush any inactive frames since they will never be activated.
-  ForEachRenderFrameHost(base::BindRepeating([](RenderFrameHostImpl* rfh) {
-    // Just look at main frames since we only need to call
-    // IsInactiveAndDisallowActivation() on the main frame.
-    if (!rfh->GetParent())
-      rfh->IsInactiveAndDisallowActivation(
-          DisallowActivationReasonId::kBug1234857);
-  }));
-}
-
 const base::Location& WebContentsImpl::GetCreatorLocation() {
   return creator_location_;
 }
@@ -2498,7 +2485,7 @@ void WebContentsImpl::AttachInnerWebContents(
       render_frame_host_impl->frame_tree_node()) {
     inner_web_contents_impl->SetFocusedFrame(
         inner_web_contents_impl->primary_frame_tree_.root(),
-        render_frame_host_impl->GetSiteInstance());
+        render_frame_host_impl->GetSiteInstance()->group());
   }
   outer_render_manager->set_attach_complete();
 
@@ -7481,10 +7468,6 @@ void WebContentsImpl::RegisterExistingOriginToPreventOptInIsolation(
   }
 }
 
-bool WebContentsImpl::IsActivationNavigationDisallowedForBug1234857() {
-  return disallow_activation_navigations_;
-}
-
 void WebContentsImpl::DidChangeName(RenderFrameHostImpl* render_frame_host,
                                     const std::string& name) {
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::DidChangeName",
@@ -7686,9 +7669,9 @@ void WebContentsImpl::SetFocusedFrameTree(FrameTree* frame_tree_to_focus) {
 }
 
 void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
-                                      SiteInstance* source) {
+                                      SiteInstanceGroup* source) {
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::SetFocusedFrame",
-                        "frame_tree_node", node, "source_site_instance",
+                        "frame_tree_node", node, "source_site_instance_group",
                         source);
   node->frame_tree()->SetFocusedFrame(node, source);
 
@@ -7718,7 +7701,8 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
   } else if (node_.OuterContentsFrameTreeNode() &&
              node_.OuterContentsFrameTreeNode()
                      ->current_frame_host()
-                     ->GetSiteInstance() == source) {
+                     ->GetSiteInstance()
+                     ->group() == source) {
     // A GuestView embedding a fenced frame will have an
     // OuterContentsFrameTreeNode. However, it will not have the same site
     // instance because a FencedFrame creates a new BrowsingInstance.

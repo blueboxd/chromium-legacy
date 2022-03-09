@@ -121,6 +121,11 @@ const base::Feature kPageEntitiesPageContentAnnotations{
 const base::Feature kPageVisibilityPageContentAnnotations{
     "PageVisibilityPageContentAnnotations", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// This feature flag does not allow for the entities model to load the name and
+// prefix filters.
+const base::Feature kPageEntitiesModelBypassFilters{
+    "PageEntitiesModelBypassFilters", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables push notification of hints.
 const base::Feature kPushNotifications{"OptimizationGuidePushNotifications",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
@@ -419,7 +424,7 @@ bool IsModelDownloadingEnabled() {
 bool IsUnrestrictedModelDownloadingEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
       kOptimizationGuideModelDownloading, "unrestricted_model_downloading",
-      true);
+      false);
 }
 
 bool IsPageContentAnnotationEnabled() {
@@ -457,6 +462,10 @@ bool ShouldExecutePageEntitiesModelOnPageContent(const std::string& locale) {
   return base::FeatureList::IsEnabled(kPageEntitiesPageContentAnnotations) &&
          IsSupportedLocaleForFeature(locale,
                                      kPageEntitiesPageContentAnnotations);
+}
+
+bool ShouldProvideFilterPathForPageEntitiesModel() {
+  return !base::FeatureList::IsEnabled(kPageEntitiesModelBypassFilters);
 }
 
 bool ShouldExecutePageVisibilityModelOnPageContent(const std::string& locale) {

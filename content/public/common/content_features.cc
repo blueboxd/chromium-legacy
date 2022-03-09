@@ -17,13 +17,6 @@ namespace features {
 
 // All features in alphabetical order.
 
-// Enables the allowActivationDelegation attribute on iframes.
-// https://www.chromestatus.com/feature/6025124331388928
-//
-// TODO(mustaq): Deprecated, see kUserActivationPostMessageTransfer.
-const base::Feature kAllowActivationDelegationAttr{
-    "AllowActivationDelegationAttr", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables content-initiated, main frame navigations to data URLs.
 // TODO(meacer): Remove when the deprecation is complete.
 //               https://www.chromestatus.com/feature/5669602927312896
@@ -669,15 +662,6 @@ const base::Feature kProcessSharingWithStrictSiteInstances{
 // local frame interface which will handle the messages at a higher priority.
 const base::Feature kHighPriorityBeforeUnload{
     "HighPriorityBeforeUnload", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the Aggregation Service. See crbug.com/1207974.
-const base::Feature kPrivacySandboxAggregationService = {
-    "PrivacySandboxAggregationService", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::FeatureParam<std::string>
-    kPrivacySandboxAggregationServiceTrustedServerUrlParam{
-        &kPrivacySandboxAggregationService, "trusted_server_url",
-        "https://server.example.com/.well-known/aggregation-service/keys.json"};
 
 // Enables Private Network Access checks for all types of web workers.
 //

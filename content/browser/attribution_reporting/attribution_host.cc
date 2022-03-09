@@ -17,6 +17,7 @@
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager_provider.h"
 #include "content/browser/attribution_reporting/attribution_page_metrics.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -221,12 +222,12 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
     return;
   }
 
-  VerifyAndStoreImpression(CommonSourceInfo::SourceType::kNavigation,
+  VerifyAndStoreImpression(AttributionSourceType::kNavigation,
                            impression_origin, impression, *attribution_manager);
 }
 
 bool AttributionHost::VerifyAndStoreImpression(
-    CommonSourceInfo::SourceType source_type,
+    AttributionSourceType source_type,
     const url::Origin& impression_origin,
     const blink::Impression& impression,
     AttributionManager& attribution_manager) {
@@ -320,30 +321,6 @@ void AttributionHost::NotifyImpressionInitiatedByPage(
   conversion_page_metrics_->OnImpression(reporting_origin);
 }
 
-void AttributionHost::RegisterImpression(const blink::Impression& impression) {
-  // If there is no conversion manager available, ignore any impression
-  // registrations.
-  AttributionManager* attribution_manager =
-      attribution_manager_provider_->GetManager(web_contents());
-  if (!attribution_manager)
-    return;
-
-  content::RenderFrameHost* render_frame_host =
-      receivers_.GetCurrentTargetFrame()->GetMainFrame();
-
-  // AttributionHost calls are delayed in blink if pre-rendering.
-  DCHECK_NE(content::RenderFrameHost::LifecycleState::kPrerendering,
-            render_frame_host->GetLifecycleState());
-
-  const url::Origin& impression_origin =
-      render_frame_host->GetLastCommittedOrigin();
-  if (VerifyAndStoreImpression(CommonSourceInfo::SourceType::kEvent,
-                               impression_origin, impression,
-                               *attribution_manager)) {
-    NotifyImpressionInitiatedByPage(impression_origin, impression);
-  }
-}
-
 void AttributionHost::RegisterDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host) {
   // If there is no attribution manager available, ignore any registrations.
@@ -411,7 +388,7 @@ void AttributionHost::ReportAttributionForCurrentNavigation(
 
   // No navigation in progress and we've already committed the destination for
   // the conversion, so just store the impression.
-  VerifyAndStoreImpression(CommonSourceInfo::SourceType::kNavigation,
+  VerifyAndStoreImpression(AttributionSourceType::kNavigation,
                            impression_origin, impression, *attribution_manager);
 }
 

@@ -591,7 +591,7 @@
   {
     "name": "bluetooth-revamp",
     "owners": [ "khorimoto", "cros-connectivity@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 102
   },
   {
     "name": "bluetooth-sessionized-metrics",
@@ -878,7 +878,7 @@
   {
     "name": "context-menu-google-lens-chip",
     "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 103
   },
   { "name":"context-menu-phase2",
       "owners":["gambard", "bling-flags@google.com"],
@@ -901,17 +901,17 @@
   {
     "name": "context-menu-search-with-google-lens",
     "owners": [ "benwgold@google.com", "lens-chrome@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 103
   },
   {
     "name": "context-menu-shop-with-google-lens",
     "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 103
   },
   {
     "name": "context-menu-translate-with-google-lens",
     "owners": [ "juanmojica@google.com", "hakop@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 103
   },
   {
     "name": "contextual-nudges",
@@ -2361,7 +2361,7 @@
   {
     "name": "enable-lens-region-search",
     "owners": [ "stanfield@google.com", "benwgold@google.com", "juanmojica@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 103
   },
   {
     "name": "enable-libinput-to-handle-touchpad",
@@ -2635,12 +2635,12 @@
   {
     "name": "enable-portals",
     "owners": [ "jbroman", "//third_party/blink/renderer/core/html/portal/OWNERS" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "enable-portals-cross-origin",
     "owners": [ "jbroman", "//third_party/blink/renderer/core/html/portal/OWNERS" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "enable-preconnect-to-search",
@@ -3168,22 +3168,22 @@
   {
     "name": "enforce-system-aec",
     "owners": [ "peah" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 102
   },
   {
     "name": "enforce-system-aec-agc",
     "owners": [ "peah" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 102
   },
   {
     "name": "enforce-system-aec-ns",
     "owners": [ "peah" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 102
   },
   {
     "name": "enforce-system-aec-ns-agc",
     "owners": [ "peah" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 102
   },
  {
     "name": "enhanced_clipboard",
@@ -3543,7 +3543,7 @@
   {
     "name": "google-lens-sdk-intent",
     "owners": [ "juanmojica@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 103
   },
   {
     "name": "google-mobile-services-passwords",
@@ -4311,6 +4311,11 @@
   {
     "name": "ntp-modules-drag-and-drop",
     "owners": [ "lydialam", "mahmadi", "tiborg" ],
+    "expiry_milestone": 105
+  },
+  {
+    "name": "ntp-modules-first-run-experience",
+    "owners": [ "mahmadi", "pauladedeji", "tiborg" ],
     "expiry_milestone": 105
   },
   {
@@ -5874,6 +5879,13 @@
     "expiry_milestone": -1
   },
   {
+    "name": "unthrottled-nested-timeout",
+    "owners": [
+      "etiennep@google.com", "shaseley@google.com"
+    ],
+    "expiry_milestone": 105
+  },
+  {
     "name": "upcoming-sharing-features",
     "owners": [ "ellyjones", "chrome-sharing-eng@google.com" ],
     "expiry_milestone": 110
@@ -6032,6 +6044,11 @@
     "name": "username-first-flow-filling",
     "owners": [ "kazinova@google.com", "kolos" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "uxstudy1",
+    "owners": [ "erikchen", "meredithguo@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "verbose-logging-in-nacl",
@@ -6213,6 +6230,11 @@
     "name": "xsurface-metrics-reporting",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "zero-copy-tab-capture",
+    "owners": [ "bialpio@chromium.org", "media-capture-dev@chromium.org" ],
+    "expiry_milestone": 104
   },
   {
     "name": "zero-copy-video-capture",

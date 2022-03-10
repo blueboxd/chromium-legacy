@@ -1641,6 +1641,7 @@ if (!is_android) {
       "../browser/content_settings/sound_content_setting_observer_browsertest.cc",
       "../browser/crash_recovery_browsertest.cc",
       "../browser/custom_handlers/protocol_handler_registry_browsertest.cc",
+      "../browser/data_use_measurement/chrome_data_use_measurement_browsertest.cc",
       "../browser/device_api/managed_configuration_api_browsertest.cc",
       "../browser/devtools/device/adb/adb_client_socket_browsertest.cc",
       "../browser/devtools/device/adb/mock_adb_server.cc",
@@ -2065,6 +2066,7 @@ if (!is_android) {
       "../browser/ui/permission_bubble/permission_bubble_browser_test_util.h",
       "../browser/ui/popup_browsertest.cc",
       "../browser/ui/prefs/prefs_tab_helper_browsertest.cc",
+      "../browser/ui/privacy_sandbox/privacy_sandbox_dialog_helper_browsertest.cc",
       "../browser/ui/profile_error_browsertest.cc",
       "../browser/ui/read_later/read_later_test_utils.cc",
       "../browser/ui/read_later/read_later_test_utils.h",
@@ -2507,7 +2509,7 @@ if (!is_android) {
         "../browser/lacros/app_mode/kiosk_session_service_browsertest.cc",
         "../browser/lacros/lacros_extension_apps_controller_browsertest.cc",
         "../browser/lacros/lacros_extension_apps_publisher_browsertest.cc",
-        "../browser/web_applications/app_service/web_apps_publisher_host_browsertest.cc",
+        "../browser/web_applications/app_service/lacros_web_apps_controller_browsertest.cc",
       ]
       deps += [
         "//chromeos/crosapi/mojom",
@@ -4201,10 +4203,6 @@ if (!is_android) {
         "../browser/ui/webui/tab_strip/chrome_content_browser_client_tab_strip_part_browsertest.cc",
         "../browser/ui/webui/tab_strip/tab_strip_ui_browsertest.cc",
       ]
-    }
-
-    if (enable_side_search) {
-      sources += [ "../browser/ui/views/side_search/side_search_browser_controller_browsertest.cc" ]
     }
 
     if (enable_spellcheck) {
@@ -8853,6 +8851,7 @@ if (!is_android && !is_fuchsia) {
       "//ui/events:events_interactive_ui_tests",
       "//ui/events:gesture_detection",
       "//ui/events:test_support",
+      "//ui/views",
       "//ui/web_dialogs:test_support",
     ]
     if (include_js_tests) {
@@ -9204,6 +9203,10 @@ if (!is_android && !is_fuchsia) {
     if (enable_print_preview) {
       sources += [ "../browser/window_placement/window_placement_printing_interactive_uitest.cc" ]
     }
+
+    if (enable_side_search) {
+      sources += [ "../browser/ui/views/side_search/side_search_browser_controller_interactive_uitest.cc" ]
+    }
   }
 }
 
@@ -9499,6 +9502,10 @@ if (!is_android && !is_fuchsia) {
       "//third_party/leveldatabase",
     ]
 
+    if (is_chromeos_ash) {
+      deps += [ "//chrome/browser/ash/crosapi:browser_util" ]
+    }
+
     data_deps = [
       "//testing:test_scripts_shared",
       "//testing/buildbot/filters:sync_integration_tests_filters",
@@ -9530,6 +9537,7 @@ if (!is_android && !is_fuchsia) {
     }
     if (is_chromeos_ash) {
       sources += [
+        "../browser/sync/test/integration/ash_lacros_sync_test.cc",
         "../browser/sync/test/integration/single_client_app_list_sync_test.cc",
         "../browser/sync/test/integration/single_client_arc_package_sync_test.cc",
         "../browser/sync/test/integration/single_client_os_preferences_sync_test.cc",
@@ -9670,6 +9678,7 @@ if (!is_android && !is_fuchsia) {
       "../browser/password_manager/password_manager_test_base.h",
       "../browser/password_manager/passwords_navigation_observer.cc",
       "../browser/password_manager/passwords_navigation_observer.h",
+      "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
       "base/interactive_ui_tests_main.cc",
     ]
 
@@ -9721,6 +9730,7 @@ if (!is_android && !is_fuchsia) {
       "//third_party/libpng",
       "//ui/base:test_support",
       "//ui/resources:ui_test_pak",
+      "//ui/views",
       "//ui/web_dialogs:test_support",
     ]
 

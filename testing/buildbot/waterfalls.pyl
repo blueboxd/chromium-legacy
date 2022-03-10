@@ -3214,9 +3214,6 @@
       'lacros-amd64-generic-rel-skylab-fyi': {
         'additional_compile_targets': [
           'chrome',
-          'linux_symbols',
-          'symupload',
-          'strip_chrome_binary',
         ],
         'test_suites': {
           'skylab_tests': 'lacros_amd64_generic_rel_skylab_fyi',
@@ -3464,6 +3461,15 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
+        },
+      },
+      'mac-fieldtrial-rel': {
+        'mixins': [
+          'mac_11_arm64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'fieldtrial_browser_tests',
+          'isolated_scripts': 'fieldtrial_isolated_scripts',
         },
       },
       'mac-hermetic-upgrade-rel': {
@@ -5484,7 +5490,7 @@
         'mixins': [ 'marshmallow' ],
         'test_suites': {
           'gtest_tests': 'rust_gtests',
-          # Currently `build_rust_unit_tests` is false on Android (because
+          # Currently `can_build_rust_unit_tests` is false on Android (because
           # `rustc_can_link` is false).
           # TODO(https://crbug.com/1260120): Cover `rust_native_tests` here.
         },

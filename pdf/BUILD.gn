@@ -240,8 +240,6 @@ if (enable_pdf) {
       "ppapi_migration/bitmap.h",
       "ppapi_migration/graphics.cc",
       "ppapi_migration/graphics.h",
-      "ppapi_migration/image.cc",
-      "ppapi_migration/image.h",
       "ppapi_migration/result_codes.h",
       "ppapi_migration/url_loader.cc",
       "ppapi_migration/url_loader.h",
@@ -264,7 +262,6 @@ if (enable_pdf) {
   static_library("pdf_view_web_plugin") {
     visibility = [
       ":*",
-      "//chrome/renderer",
       "//components/pdf/renderer",
     ]
 
@@ -456,7 +453,5 @@ if (enable_pdf) {
   group("features") {
   }
   group("pdf") {
-  }
-  group("pdf_view_web_plugin") {
   }
 }

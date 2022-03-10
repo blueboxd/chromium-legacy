@@ -2030,9 +2030,6 @@ extern const char kRequestDesktopSiteExceptionsDescription[];
 extern const char kRequestDesktopSiteGlobalName[];
 extern const char kRequestDesktopSiteGlobalDescription[];
 
-extern const char kSwapAndroidShareHubRowsName[];
-extern const char kSwapAndroidShareHubRowsDescription[];
-
 extern const char kRequestDesktopSiteForTabletsName[];
 extern const char kRequestDesktopSiteForTabletsDescription[];
 
@@ -2106,6 +2103,9 @@ extern const char kVoiceButtonInTopToolbarDescription[];
 
 extern const char kWebFeedName[];
 extern const char kWebFeedDescription[];
+
+extern const char kWebFeedOnboardingName[];
+extern const char kWebFeedOnboardingDescription[];
 
 extern const char kWebFeedSortName[];
 extern const char kWebFeedSortDescription[];
@@ -3013,6 +3013,15 @@ extern const char kPhoneHubCameraRollDescription[];
 
 extern const char kProductivityLauncherName[];
 extern const char kProductivityLauncherDescription[];
+
+extern const char kProjectorName[];
+extern const char kProjectorDescription[];
+
+extern const char kProjectorAnnotatorName[];
+extern const char kProjectorAnnotatorDescription[];
+
+extern const char kProjectorExcludeTranscriptName[];
+extern const char kProjectorExcludeTranscriptDescription[];
 
 extern const char kForceShowContinueSectionName[];
 extern const char kForceShowContinueSectionDescription[];

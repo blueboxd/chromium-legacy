@@ -92,7 +92,7 @@ void RenderBlockingResourceManager::FontPreloadingStarted(
   if (font_resource->IsLoaded())
     return;
 
-  if (font_preload_timer_has_fired_ || !awaiting_parser_inserted_body_)
+  if (font_preload_timer_has_fired_ || document_->body())
     return;
 
   FontPreloadFinishObserver* observer =
@@ -111,7 +111,7 @@ void RenderBlockingResourceManager::ImperativeFontLoadingStarted(
   if (font_face->LoadStatus() != FontFace::kLoading)
     return;
 
-  if (font_preload_timer_has_fired_ || !awaiting_parser_inserted_body_)
+  if (font_preload_timer_has_fired_ || document_->body())
     return;
 
   ImperativeFontLoadFinishedCallback* callback =
@@ -162,8 +162,28 @@ void RenderBlockingResourceManager::DisableFontPreloadTimeoutForTest() {
     font_preload_timer_.Stop();
 }
 
+bool RenderBlockingResourceManager::AddPendingStylesheet(
+    const Node& owner_node) {
+  if (document_->body())
+    return false;
+  DCHECK(!pending_stylesheet_owner_nodes_.Contains(&owner_node));
+  pending_stylesheet_owner_nodes_.insert(&owner_node);
+  return true;
+}
+
+bool RenderBlockingResourceManager::RemovePendingStylesheet(
+    const Node& owner_node) {
+  auto iter = pending_stylesheet_owner_nodes_.find(&owner_node);
+  if (iter == pending_stylesheet_owner_nodes_.end())
+    return false;
+  pending_stylesheet_owner_nodes_.erase(iter);
+  document_->RenderBlockingResourceUnblocked();
+  return true;
+}
+
 void RenderBlockingResourceManager::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
+  visitor->Trace(pending_stylesheet_owner_nodes_);
   visitor->Trace(font_preload_finish_observers_);
   visitor->Trace(font_preload_timer_);
 }

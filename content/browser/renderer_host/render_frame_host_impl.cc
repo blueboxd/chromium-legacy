@@ -272,6 +272,11 @@
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #endif
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#include "content/browser/accessibility/ax_screen_ai_annotator.h"
+#include "ui/accessibility/accessibility_features.h"
+#endif
+
 namespace content {
 
 #if defined(AX_FAIL_FAST_BUILD)
@@ -1390,8 +1395,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       code_cache_host_receivers_(
           GetProcess()->GetStoragePartition()->GetGeneratedCodeCacheContext()),
       fenced_frame_status_(
-          frame_tree_node_->IsInFencedFrameTree()
-              ? (frame_tree_node_->IsFencedFrameRoot()
+          IsInFencedFrameTree()
+              ? (IsFencedFrameRootNoStatus()
                      ? FencedFrameStatus::kFencedFrameRoot
                      : FencedFrameStatus::kIframeNestedWithinFencedFrame)
               : FencedFrameStatus::kNotNestedInFencedFrame) {
@@ -1917,6 +1922,57 @@ bool RenderFrameHostImpl::IsDescendantOfWithinFrameTree(
 
 bool RenderFrameHostImpl::IsFencedFrameRoot() {
   return fenced_frame_status_ == FencedFrameStatus::kFencedFrameRoot;
+}
+
+bool RenderFrameHostImpl::IsFencedFrameRootNoStatus() {
+  if (!blink::features::IsFencedFramesEnabled())
+    return false;
+
+  switch (blink::features::kFencedFramesImplementationTypeParam.Get()) {
+    case blink::features::FencedFramesImplementationType::kMPArch: {
+      return is_main_frame() &&
+             frame_tree()->type() == FrameTree::Type::kFencedFrame;
+    }
+    case blink::features::FencedFramesImplementationType::kShadowDOM: {
+      // Different from the MPArch case, the ShadowDOM implementation of fenced
+      // frame lives in the same FrameTree as its parent, so we need to check
+      // its effective frame policy instead.
+      return browsing_context_state_->effective_frame_policy().is_fenced;
+    }
+    default:
+      return false;
+  }
+}
+
+bool RenderFrameHostImpl::IsInFencedFrameTree() {
+  if (!blink::features::IsFencedFramesEnabled())
+    return false;
+
+  switch (blink::features::kFencedFramesImplementationTypeParam.Get()) {
+    case blink::features::FencedFramesImplementationType::kMPArch:
+      return frame_tree()->type() == FrameTree::Type::kFencedFrame;
+    case blink::features::FencedFramesImplementationType::kShadowDOM: {
+      // FrameTreeNode may not necessarily be initialized in which case,
+      // determining fenced frame information will require a valid
+      // RenderFrameHost.
+      if (browsing_context_state_->effective_frame_policy().is_fenced) {
+        return true;
+      }
+
+      RenderFrameHostImpl* node = GetParent();
+      while (node) {
+        if (node->browsing_context_state()
+                ->effective_frame_policy()
+                .is_fenced) {
+          return true;
+        }
+        node = node->GetParent() ? node->GetParent() : nullptr;
+      }
+      return false;
+    }
+    default:
+      return false;
+  }
 }
 
 bool RenderFrameHostImpl::IsNestedWithinFencedFrame() {
@@ -2571,8 +2627,32 @@ void RenderFrameHostImpl::AccessibilityPerformAction(
       view->SetLastPointerType(ui::EventPointerType::kTouch);
   }
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  if (action_data.action == ax::mojom::Action::kRunScreenAi) {
+    RunScreenAIAnnotator();
+    return;
+  }
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+
   render_accessibility_->PerformAction(action_data);
 }
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+void RenderFrameHostImpl::RunScreenAIAnnotator() {
+  if (!features::IsScreenAIEnabled())
+    return;
+  if (!ax_screen_ai_annotator_) {
+    mojo::AssociatedRemote<screen_ai::mojom::ScreenAIAnnotator>
+        screen_ai_annotator;
+    GetRemoteAssociatedInterfaces()->GetInterface(&screen_ai_annotator);
+
+    ax_screen_ai_annotator_ = std::make_unique<AXScreenAIAnnotator>(
+        this, std::move(screen_ai_annotator));
+  }
+
+  ax_screen_ai_annotator_->Run();
+}
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 bool RenderFrameHostImpl::AccessibilityViewHasFocus() {
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
@@ -3814,13 +3894,15 @@ FrameTreeNode* RenderFrameHostImpl::AddChild(
     int frame_routing_id,
     mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
     const blink::LocalFrameToken& frame_token,
-    const blink::FramePolicy& frame_policy) {
+    const blink::FramePolicy& frame_policy,
+    std::string frame_name,
+    std::string frame_unique_name) {
   // Initialize the RenderFrameHost for the new node.  We always create child
   // frames in the same SiteInstance as the current frame, and they can swap to
   // a different one if they navigate away.
-  child->render_manager()->InitChild(GetSiteInstance(), frame_routing_id,
-                                     std::move(frame_remote), frame_token,
-                                     frame_policy);
+  child->render_manager()->InitChild(
+      GetSiteInstance(), frame_routing_id, std::move(frame_remote), frame_token,
+      frame_policy, frame_name, frame_unique_name);
 
   // Other renderer processes in this BrowsingInstance may need to find out
   // about the new frame.  Create a proxy for the child frame in all
@@ -4022,8 +4104,8 @@ void RenderFrameHostImpl::DidFailLoadWithError(const GURL& url,
 void RenderFrameHostImpl::DidFocusFrame() {
   TRACE_EVENT("navigation", "RenderFrameHostImpl::DidFocusFrame",
               ChromeTrackEvent::kRenderFrameHost, *this,
-              ChromeTrackEvent::kSiteInstance,
-              *static_cast<SiteInstanceImpl*>(GetSiteInstance()));
+              ChromeTrackEvent::kSiteInstanceGroup,
+              *GetSiteInstance()->group());
   // We don't handle this IPC signal for non-active RenderFrameHost.
   if (!IsActive())
     return;
@@ -5720,7 +5802,10 @@ void RenderFrameHostImpl::DidBlockNavigation(
 }
 
 void RenderFrameHostImpl::DidChangeLoadProgress(double load_progress) {
-  if (!is_main_frame())
+  // We should not be invoking DidChangeLoadProgress for subframes or fenced
+  // frames as we only update the observers for primary/ prerender main frame
+  // load progress change.
+  if (!is_main_frame() || IsFencedFrameRoot())
     return;
 
   if (load_progress < GetPage().load_progress())
@@ -8564,7 +8649,7 @@ void RenderFrameHostImpl::HandleRendererDebugURL(const GURL& url) {
   // the renderer process is done handling the URL.
   // TODO(crbug.com/1254130): Remove the test dependency on this behavior.
   if (!url.SchemeIs(url::kJavaScriptScheme)) {
-    bool was_loading = frame_tree()->IsLoading();
+    bool was_loading = frame_tree()->LoadingTree()->IsLoading();
     is_loading_ = true;
     frame_tree_node()->DidStartLoading(true /* should_show_loading_ui */,
                                        was_loading);
@@ -10753,7 +10838,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // racy DidStopLoading Mojo method resets the loading state that was set to
   // true in CommitNavigation.
   if (!is_loading()) {
-    bool was_loading = frame_tree()->IsLoading();
     // In general, loading ui is only shown for cross-document navigations,
     // because same-document navigations are already complete by the time the
     // renderer notifies the browser process of the navigation.
@@ -10764,6 +10848,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
         same_document_params->same_document_navigation_type ==
             blink::mojom::SameDocumentNavigationType::
                 kAppHistoryTransitionWhile;
+
+    bool was_loading = frame_tree()->LoadingTree()->IsLoading();
     is_loading_ = true;
     frame_tree_node()->DidStartLoading(should_show_loading_ui, was_loading);
   }
@@ -12703,11 +12789,13 @@ void RenderFrameHostImpl::IsClipboardPasteContentAllowed(
 }
 
 RenderFrameHostImpl* RenderFrameHostImpl::GetParentOrOuterDocument() {
-  return frame_tree_node()->GetParentOrOuterDocument();
+  return frame_tree_node()->GetParentOrOuterDocumentHelper(
+      /*escape_guest_view=*/false);
 }
 
 RenderFrameHostImpl* RenderFrameHostImpl::GetParentOrOuterDocumentOrEmbedder() {
-  return frame_tree_node()->GetParentOrOuterDocumentOrEmbedder();
+  return frame_tree_node()->GetParentOrOuterDocumentHelper(
+      /*escape_guest_view=*/true);
 }
 
 RenderFrameHostImpl* RenderFrameHostImpl::GetOutermostMainFrameOrEmbedder() {
@@ -13105,8 +13193,9 @@ void RenderFrameHostImpl::SetFrameTreeNode(FrameTreeNode& frame_tree_node) {
   switch (features::GetBrowsingContextMode()) {
     case (features::BrowsingContextStateImplementationType::
               kLegacyOneToOneWithFrameTreeNode):
-      browsing_context_state_ =
-          frame_tree_node_->render_manager()->browsing_context_state();
+      browsing_context_state_ = frame_tree_node_->render_manager()
+                                    ->current_frame_host()
+                                    ->browsing_context_state();
       break;
     case (features::BrowsingContextStateImplementationType::
               kSwapForCrossBrowsingInstanceNavigations):

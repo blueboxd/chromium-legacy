@@ -49,7 +49,7 @@ mojom::WebUIAttributionSourcePtr WebUIAttributionSource(
       source.source_type(), source.priority(),
       source.debug_key() ? mojom::AttributionDebugKey::New(*source.debug_key())
                          : nullptr,
-      dedup_keys, attributability);
+      dedup_keys, source.filter_data().filter_values(), attributability);
 }
 
 void ForwardSourcesToWebUI(
@@ -60,10 +60,22 @@ void ForwardSourcesToWebUI(
   web_ui_sources.reserve(active_sources.size());
 
   for (const StoredSource& source : active_sources) {
-    auto attributability =
-        source.attribution_logic() == StoredSource::AttributionLogic::kNever
-            ? Attributability::kNoised
-            : Attributability::kAttributable;
+    Attributability attributability;
+    if (source.attribution_logic() == StoredSource::AttributionLogic::kNever) {
+      attributability = Attributability::kNoised;
+    } else {
+      switch (source.active_state()) {
+        case StoredSource::ActiveState::kActive:
+          attributability = Attributability::kAttributable;
+          break;
+        case StoredSource::ActiveState::kReachedEventLevelAttributionLimit:
+          attributability = Attributability::kReachedEventLevelAttributionLimit;
+          break;
+        case StoredSource::ActiveState::kInactive:
+          NOTREACHED();
+          return;
+      }
+    }
 
     web_ui_sources.push_back(WebUIAttributionSource(
         source.common_info(), attributability, source.dedup_keys()));
@@ -211,9 +223,6 @@ void AttributionInternalsHandlerImpl::OnSourceDeactivated(
     case DeactivatedSource::Reason::kReplacedByNewerSource:
       attributability = Attributability::kReplacedByNewerSource;
       break;
-    case DeactivatedSource::Reason::kReachedAttributionLimit:
-      attributability = Attributability::kReachedAttributionLimit;
-      break;
   }
 
   auto source = WebUIAttributionSource(deactivated_source.source.common_info(),
@@ -317,6 +326,10 @@ void AttributionInternalsHandlerImpl::OnTriggerHandled(
       break;
     case AttributionTrigger::EventLevelResult::kNoMatchingEventTriggers:
       status = mojom::WebUIAttributionReport::Status::kNoMatchingEventTriggers;
+      break;
+    case AttributionTrigger::EventLevelResult::kNoMatchingSourceFilterData:
+      status =
+          mojom::WebUIAttributionReport::Status::kNoMatchingSourceFilterData;
       break;
     case AttributionTrigger::EventLevelResult::kInternalError:
       // `kInternalError` doesn't always have a dropped report.

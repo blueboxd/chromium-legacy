@@ -449,11 +449,6 @@ void AttributionManagerImpl::OnReportStored(CreateReportResult result) {
     NotifyReportsChanged();
   }
 
-  if (absl::optional<DeactivatedSource> source =
-          result.GetDeactivatedSource()) {
-    NotifySourceDeactivated(*source);
-  }
-
   for (auto& observer : observers_)
     observer.OnTriggerHandled(result);
 }
@@ -747,7 +742,7 @@ void AttributionManagerImpl::AssembleAggregatableReport(
           AggregationServicePayloadContents(
               AggregationServicePayloadContents::Operation::kHistogram,
               std::move(contributions),
-              AggregationServicePayloadContents::ProcessingType::kSingleServer),
+              AggregationServicePayloadContents::AggregationMode::kDefault),
           AggregatableReportSharedInfo(
               report.report_time(), report.PrivacyBudgetKey(),
               report.external_report_id(),

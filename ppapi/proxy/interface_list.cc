@@ -76,11 +76,9 @@
 #include "ppapi/c/private/ppb_ext_crx_file_system_private.h"
 #include "ppapi/c/private/ppb_file_io_private.h"
 #include "ppapi/c/private/ppb_file_ref_private.h"
-#include "ppapi/c/private/ppb_flash_font_file.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_isolated_file_system_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
-#include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_tcp_server_socket_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/c/private/ppb_testing_private.h"
@@ -112,7 +110,6 @@
 #include "ppapi/proxy/ppp_instance_proxy.h"
 #include "ppapi/proxy/ppp_messaging_proxy.h"
 #include "ppapi/proxy/ppp_mouse_lock_proxy.h"
-#include "ppapi/proxy/ppp_pdf_proxy.h"
 #include "ppapi/proxy/ppp_printing_proxy.h"
 #include "ppapi/proxy/ppp_text_input_proxy.h"
 #include "ppapi/proxy/ppp_video_decoder_proxy.h"
@@ -180,14 +177,6 @@ InterfaceList::InterfaceList() {
   {
     Permission current_required_permission = PERMISSION_PRIVATE;
     #include "ppapi/thunk/interfaces_ppb_private.h"
-  }
-  {
-    Permission current_required_permission = PERMISSION_FLASH;
-    #include "ppapi/thunk/interfaces_ppb_private_flash.h"
-  }
-  {
-    Permission current_required_permission = PERMISSION_PDF;
-    #include "ppapi/thunk/interfaces_ppb_private_pdf.h"
   }
 #endif  // !BUILDFLAG(IS_NACL)
   {
@@ -286,8 +275,6 @@ InterfaceList::InterfaceList() {
   AddProxy(API_ID_PPP_TEXT_INPUT, &ProxyFactory<PPP_TextInput_Proxy>);
   AddPPP(PPP_TEXTINPUT_DEV_INTERFACE, PPP_TextInput_Proxy::GetProxyInterface());
 #if !BUILDFLAG(IS_NACL)
-  AddProxy(API_ID_PPP_PDF, &ProxyFactory<PPP_Pdf_Proxy>);
-  AddPPP(PPP_PDF_INTERFACE, PPP_Pdf_Proxy::GetProxyInterface());
   AddProxy(API_ID_PPP_VIDEO_DECODER_DEV, &ProxyFactory<PPP_VideoDecoder_Proxy>);
   AddPPP(PPP_VIDEODECODER_DEV_INTERFACE,
          PPP_VideoDecoder_Proxy::GetProxyInterface());

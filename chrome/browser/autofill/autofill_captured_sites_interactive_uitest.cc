@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/translate/translate_bubble_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -97,6 +98,13 @@ class AutofillCapturedSitesInteractiveTest
     int tries = 0;
     while (tries < attempts) {
       tries++;
+
+      // Translation bubbles and address-save prompts and others may overlap
+      // with and thus prevent the Autofill popup, so we preemptively close all
+      // bubbles.
+      translate::test_utils::CloseCurrentBubble(browser());
+      TryToCloseAllPrompts(web_contents);
+
       autofill_manager->client()->HideAutofillPopup(
           autofill::PopupHidingReason::kViewDestroyed);
 
@@ -249,10 +257,7 @@ class AutofillCapturedSitesInteractiveTest
                               features::kAutofillDisplaceRemovedForms,
                               features::kAutofillShowTypePredictions,
                               features::kAutofillUseUnassociatedListedElements},
-        // Disable AutofillAddressProfileSavePrompt to prevent popup from
-        // interfering with autofill select dialog.
-        // TODO(crbug.com/1300919) -Add save prompt verification and re-enable.
-        /*disabled_features=*/{features::kAutofillAddressProfileSavePrompt});
+        /*disabled_features=*/{});
     command_line->AppendSwitchASCII(
         variations::switches::kVariationsOverrideCountry, "us");
     AutofillUiTest::SetUpCommandLine(command_line);
@@ -326,11 +331,13 @@ IN_PROC_BROWSER_TEST_P(AutofillCapturedSitesInteractiveTest, Recipe) {
   captured_sites_test_utils::PrintInstructions(
       "autofill_captured_sites_interactive_uitest");
 
-  // Prints the path of the test to be executed.
-  if (GetParam().bug_number.empty())
+  // Prints the name of the site to be executed. Prints bug number if exists.
+  if (GetParam().bug_number) {
+    VLOG(1) << GetParam().site_name << ": crbug.com/"
+            << GetParam().bug_number.value();
+  } else {
     VLOG(1) << GetParam().site_name;
-  else
-    VLOG(1) << GetParam().site_name << ": crbug.com/" << GetParam().bug_number;
+  }
 
   base::FilePath src_dir;
   ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));

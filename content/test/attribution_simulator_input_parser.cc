@@ -104,17 +104,19 @@ class AttributionSimulatorInputParser {
     static constexpr char kKeySources[] = "sources";
     if (base::Value* sources = input.FindKey(kKeySources)) {
       auto context = PushContext(kKeySources);
-      ParseList(*sources, base::BindRepeating(
-                              &AttributionSimulatorInputParser::ParseSource,
+      ParseList(
+          std::move(*sources),
+          base::BindRepeating(&AttributionSimulatorInputParser::ParseSource,
                               base::Unretained(this)));
     }
 
     static constexpr char kKeyTriggers[] = "triggers";
     if (base::Value* triggers = input.FindKey(kKeyTriggers)) {
       auto context = PushContext(kKeyTriggers);
-      ParseList(*triggers, base::BindRepeating(
-                               &AttributionSimulatorInputParser::ParseTrigger,
-                               base::Unretained(this)));
+      ParseList(
+          std::move(*triggers),
+          base::BindRepeating(&AttributionSimulatorInputParser::ParseTrigger,
+                              base::Unretained(this)));
     }
 
     if (has_error_)
@@ -150,22 +152,23 @@ class AttributionSimulatorInputParser {
     return writer;
   }
 
-  void ParseList(base::Value& values,
-                 base::RepeatingCallback<void(base::Value)> callback) {
+  template <typename T>
+  void ParseList(T&& values,
+                 base::RepeatingCallback<void(decltype(values))> callback) {
     if (!values.is_list()) {
       *Error() << "must be a list";
       return;
     }
 
     size_t index = 0;
-    for (base::Value& value : values.GetList()) {
+    for (auto&& value : values.GetList()) {
       auto index_context = PushContext(index);
-      callback.Run(std::move(value));
+      callback.Run(std::forward<T>(value));
       index++;
     }
   }
 
-  void ParseSource(base::Value source) {
+  void ParseSource(base::Value&& source) {
     if (!EnsureDictionary(source))
       return;
 
@@ -174,16 +177,24 @@ class AttributionSimulatorInputParser {
     url::Origin reporting_origin = ParseOrigin(source, "reporting_origin");
     absl::optional<AttributionSourceType> source_type = ParseSourceType(source);
 
-    base::Value* cfg = ParseRegistrationConfig(source);
-    if (!cfg)
-      return;
+    uint64_t source_event_id = 0;
+    url::Origin destination_origin;
+    absl::optional<uint64_t> debug_key;
+    int64_t priority = 0;
+    base::TimeDelta expiry;
+    AttributionFilterData filter_data;
 
-    uint64_t source_event_id = ParseRequiredUint64(*cfg, "source_event_id");
-    url::Origin destination_origin = ParseOrigin(*cfg, "destination");
-    absl::optional<uint64_t> debug_key = ParseOptionalUint64(*cfg, "debug_key");
-    int64_t priority = ParseOptionalInt64(*cfg, "priority").value_or(0);
-    base::TimeDelta expiry = ParseSourceExpiry(*cfg).value_or(base::Days(30));
-    AttributionFilterData filter_data = ParseFilterData(*cfg, "filter_data");
+    if (!ParseRegistrationConfig(
+            source, base::BindLambdaForTesting([&](const base::Value& cfg) {
+              source_event_id = ParseRequiredUint64(cfg, "source_event_id");
+              destination_origin = ParseOrigin(cfg, "destination");
+              debug_key = ParseOptionalUint64(cfg, "debug_key");
+              priority = ParseOptionalInt64(cfg, "priority").value_or(0);
+              expiry = ParseSourceExpiry(cfg).value_or(base::Days(30));
+              filter_data = ParseFilterData(cfg, "filter_data");
+            }))) {
+      return;
+    }
 
     // TODO(linnan): Support aggregatable reports in the simulator.
 
@@ -201,7 +212,7 @@ class AttributionSimulatorInputParser {
         std::move(source));
   }
 
-  void ParseTrigger(base::Value trigger) {
+  void ParseTrigger(base::Value&& trigger) {
     if (!EnsureDictionary(trigger))
       return;
 
@@ -209,18 +220,25 @@ class AttributionSimulatorInputParser {
     url::Origin reporting_origin = ParseOrigin(trigger, "reporting_origin");
     net::SchemefulSite destination(ParseOrigin(trigger, "destination"));
 
-    const base::Value* cfg = ParseRegistrationConfig(trigger);
-    if (!cfg)
-      return;
+    uint64_t trigger_data = 0;
+    uint64_t event_source_trigger_data = 0;
+    absl::optional<uint64_t> debug_key;
+    absl::optional<uint64_t> dedup_key;
+    int64_t priority = 0;
 
-    uint64_t trigger_data =
-        ParseOptionalUint64(*cfg, "trigger_data").value_or(0);
-    uint64_t event_source_trigger_data =
-        ParseOptionalUint64(*cfg, "event_source_trigger_data").value_or(0);
-    absl::optional<uint64_t> debug_key = ParseOptionalUint64(*cfg, "debug_key");
-    absl::optional<uint64_t> dedup_key =
-        ParseOptionalUint64(*cfg, "deduplication_key");
-    int64_t priority = ParseOptionalInt64(*cfg, "priority").value_or(0);
+    if (!ParseRegistrationConfig(
+            trigger, base::BindLambdaForTesting([&](const base::Value& cfg) {
+              trigger_data =
+                  ParseOptionalUint64(cfg, "trigger_data").value_or(0);
+              event_source_trigger_data =
+                  ParseOptionalUint64(cfg, "event_source_trigger_data")
+                      .value_or(0);
+              debug_key = ParseOptionalUint64(cfg, "debug_key");
+              dedup_key = ParseOptionalUint64(cfg, "deduplication_key");
+              priority = ParseOptionalInt64(cfg, "priority").value_or(0);
+            }))) {
+      return;
+    }
 
     if (has_error_)
       return;
@@ -332,28 +350,31 @@ class AttributionSimulatorInputParser {
     return source_type;
   }
 
-  base::Value* ParseRegistrationConfig(base::Value& dict) {
+  bool ParseRegistrationConfig(
+      base::Value& dict,
+      base::OnceCallback<void(const base::Value&)> callback) {
     static constexpr char kKey[] = "registration_config";
 
     auto context = PushContext(kKey);
 
-    base::Value* cfg = dict.FindKey(kKey);
+    const base::Value* cfg = dict.FindKey(kKey);
     if (!cfg) {
       *Error() << "must be present";
-      return nullptr;
+      return false;
     }
 
     if (!EnsureDictionary(*cfg))
-      return nullptr;
+      return false;
 
-    return cfg;
+    std::move(callback).Run(*cfg);
+    return true;
   }
 
-  AttributionFilterData ParseFilterData(base::Value& dict,
+  AttributionFilterData ParseFilterData(const base::Value& dict,
                                         base::StringPiece key) {
     auto context = PushContext(key);
 
-    base::Value* value = dict.FindKey(key);
+    const base::Value* value = dict.FindKey(key);
     if (!value)
       return AttributionFilterData();
 
@@ -361,26 +382,27 @@ class AttributionSimulatorInputParser {
       return AttributionFilterData();
 
     AttributionFilterData::FilterValues::container_type container;
-    for (auto [filter, values_list] : std::move(value->GetDict())) {
+    for (auto [filter, values_list] : value->GetDict()) {
       auto filter_context = PushContext(filter);
       std::vector<std::string> values;
 
-      ParseList(values_list, base::BindLambdaForTesting([&](base::Value value) {
+      ParseList(values_list,
+                base::BindLambdaForTesting([&](const base::Value& value) {
                   if (!value.is_string()) {
                     *Error() << "must be a string";
                   } else {
-                    values.emplace_back(std::move(value.GetString()));
+                    values.emplace_back(value.GetString());
                   }
                 }));
 
-      container.emplace_back(std::move(filter), std::move(values));
+      container.emplace_back(filter, std::move(values));
     }
 
     absl::optional<AttributionFilterData> filter_data =
-        AttributionFilterData::FromFilterValues(std::move(container));
+        AttributionFilterData::FromSourceFilterValues(std::move(container));
     // TODO(apaseltiner): Provide more detailed information.
     if (!filter_data)
-      *Error() << "too big";
+      *Error() << "invalid";
 
     return std::move(filter_data).value_or(AttributionFilterData());
   }

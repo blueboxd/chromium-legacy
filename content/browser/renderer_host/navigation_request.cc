@@ -146,6 +146,7 @@
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/security/address_space_feature.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
@@ -325,6 +326,31 @@ bool DoesHeaderContainClientHint(
   return headers.GetHeader(header, &value) && value == "?1";
 }
 
+void LogUserAgentOverrideHistogram(const std::string& user_agent) {
+  std::string ua_original = GetContentClient()->browser()->GetUserAgent();
+  base::UmaHistogramEnumeration("Navigation.UserAgentStringType",
+                                UserAgentStringType::kOverriden);
+
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kUserAgentOverrideExperiment)) {
+    return;
+  }
+
+  auto it = user_agent.find(ua_original);
+  blink::UserAgentOverride::UserAgentOverrideHistogram histogram =
+      blink::UserAgentOverride::UserAgentOverrideHistogram::UserAgentOverriden;
+  if (it == 0) {
+    histogram = blink::UserAgentOverride::UserAgentOverrideHistogram::
+        UserAgentOverrideSuffix;
+  } else if (it != std::string::npos) {
+    histogram = blink::UserAgentOverride::UserAgentOverrideHistogram::
+        UserAgentOverrideSubstring;
+  }
+
+  base::UmaHistogramEnumeration(
+      blink::UserAgentOverride::kUserAgentOverrideHistogram, histogram);
+}
+
 // Computes the value that should be set for the User-Agent header, based on the
 // values of relevant headers like Sec-CH-UA-Reduced or Sec-CH-UA-Full.  If
 // `user_agent_override` is non-empty, `user_agent_override` is returned as the
@@ -333,8 +359,7 @@ std::string ComputeUserAgentValue(const net::HttpRequestHeaders& headers,
                                   const std::string& user_agent_override,
                                   content::BrowserContext* context) {
   if (!user_agent_override.empty()) {
-    base::UmaHistogramEnumeration("Navigation.UserAgentStringType",
-                                  UserAgentStringType::kOverriden);
+    LogUserAgentOverrideHistogram(user_agent_override);
     return user_agent_override;
   }
 
@@ -1567,12 +1592,16 @@ NavigationRequest::NavigationRequest(
     BrowserContext* browser_context = controller->GetBrowserContext();
     ClientHintsControllerDelegate* client_hints_delegate =
         browser_context->GetClientHintsControllerDelegate();
-    if (client_hints_delegate) {
+    // Loading an about:srcdoc url on the main frame will cause a failure later
+    // and GetTentativeOriginAtRequestTime() can't handle it until then.
+    if ((CheckAboutSrcDoc() != AboutSrcDocCheckResult::BLOCK_REQUEST) &&
+        client_hints_delegate) {
       net::HttpRequestHeaders client_hints_headers;
       AddNavigationRequestClientHintsHeaders(
-          url::Origin::Create(common_params_->url), &client_hints_headers,
+          GetTentativeOriginAtRequestTime(), &client_hints_headers,
           browser_context, client_hints_delegate, is_overriding_user_agent(),
-          frame_tree_node_, commit_params_->frame_policy.container_policy);
+          frame_tree_node_, commit_params_->frame_policy.container_policy,
+          common_params_->url);
       headers.MergeFrom(client_hints_headers);
     }
 
@@ -1886,6 +1915,7 @@ bool NavigationRequest::NeedFencedFrameURLMapping() {
 
 void NavigationRequest::OnFencedFrameURLMappingComplete(
     absl::optional<GURL> mapped_url,
+    absl::optional<AdAuctionData> ad_auction_data,
     absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
         pending_ad_components_map) {
   is_deferred_on_fenced_frame_url_mapping_ = false;
@@ -2981,8 +3011,12 @@ UrlInfo NavigationRequest::GetUrlInfo() {
   // response yet and don't have the final `sandbox_flags_to_commit_`, and
   // if the state of the kOrigin flag changes, we'll detect the change and
   // recompute the target SiteInstance elsewhere.
+  // Note: We don't try to process-isolate about:blank URLs since that would
+  // prevent the parent frame from interacting with them, and they would be
+  // stuck as empty content.
   bool is_origin_restricted_sandbox = false;
-  if (SiteIsolationPolicy::AreIsolatedSandboxedIframesEnabled()) {
+  if (SiteIsolationPolicy::AreIsolatedSandboxedIframesEnabled() &&
+      !GetURL().IsAboutBlank()) {
     if (state_ >= WILL_PROCESS_RESPONSE) {
       is_origin_restricted_sandbox =
           (policy_container_navigation_bundle_->FinalPolicies().sandbox_flags &
@@ -3602,15 +3636,8 @@ void NavigationRequest::OnRequestFailedInternal(
     return;
 
   if (collapse_frame) {
-    bool is_inner_frame_tree =
-        frame_tree_node_->frame_tree()->type() == FrameTree::Type::kFencedFrame;
-    FrameTreeNode* node_to_collapse =
-        is_inner_frame_tree
-            ? frame_tree_node_->render_manager()->GetOuterDelegateNode()
-            : frame_tree_node_;
-
     DCHECK_EQ(net::ERR_BLOCKED_BY_CLIENT, status.error_code);
-    node_to_collapse->SetCollapsed(true);
+    frame_tree_node_->SetCollapsed(true);
   }
 
   is_mhtml_or_subframe_ = false;
@@ -4085,16 +4112,18 @@ void NavigationRequest::OnRedirectChecksComplete(
                                       net::HTTP_TEMPORARY_REDIRECT) {
       std::vector<network::mojom::WebClientHintsType> client_hints =
           LookupAcceptCHForCommit(source_origin, client_hints_delegate,
-                                  frame_tree_node_);
+                                  frame_tree_node_,
+                                  commit_params_->redirects.back());
       RemoveOriginTrialHintsFromAcceptCH(commit_params_->redirects.back(),
                                          client_hints_delegate, response_head,
                                          client_hints, frame_tree_node_);
     }
 
     AddNavigationRequestClientHintsHeaders(
-        url::Origin::Create(common_params_->url), &client_hints_extra_headers,
+        GetTentativeOriginAtRequestTime(), &client_hints_extra_headers,
         browser_context, client_hints_delegate, is_overriding_user_agent(),
-        frame_tree_node_, commit_params_->frame_policy.container_policy);
+        frame_tree_node_, commit_params_->frame_policy.container_policy,
+        common_params_->url);
     modified_headers.MergeFrom(client_hints_extra_headers);
     // On a redirect, unless devtools has overridden the User-Agent header, if
     // the Critical-CH header has Sec-CH-UA-Reduced, then we should send the
@@ -4495,8 +4524,8 @@ void NavigationRequest::CommitNavigation() {
           frame_tree_node_);
     }
     commit_params_->enabled_client_hints =
-        LookupAcceptCHForCommit(url::Origin::Create(common_params_->url),
-                                client_hints_delegate, frame_tree_node_);
+        LookupAcceptCHForCommit(GetOriginToCommit(), client_hints_delegate,
+                                frame_tree_node_, common_params_->url);
     RemoveOriginTrialHintsFromAcceptCH(
         common_params_->url, client_hints_delegate, response(),
         commit_params_->enabled_client_hints, frame_tree_node_);
@@ -6659,8 +6688,9 @@ void NavigationRequest::SetIsOverridingUserAgent(bool override_ua) {
       browser_context->GetClientHintsControllerDelegate();
   if (client_hints_delegate) {
     UpdateNavigationRequestClientUaHeaders(
-        url::Origin::Create(common_params_->url), client_hints_delegate,
-        is_overriding_user_agent(), frame_tree_node_, &headers);
+        GetTentativeOriginAtRequestTime(), client_hints_delegate,
+        is_overriding_user_agent(), frame_tree_node_, &headers,
+        common_params_->url);
   }
   headers.SetHeader(
       net::HttpRequestHeaders::kUserAgent,

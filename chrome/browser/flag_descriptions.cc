@@ -3552,11 +3552,6 @@ const char kRequestDesktopSiteGlobalDescription[] =
     "An option in `Site settings` to persistently request the "
     "desktop version of websites.";
 
-const char kSwapAndroidShareHubRowsName[] = "Swap Android share hub rows.";
-const char kSwapAndroidShareHubRowsDescription[] =
-    "Swap the order of the first-party and third-party rows in the Android "
-    "share hub.";
-
 const char kRequestDesktopSiteForTabletsName[] =
     "Request desktop site for tablets on Android";
 const char kRequestDesktopSiteForTabletsDescription[] =
@@ -3691,6 +3686,10 @@ const char kVoiceButtonInTopToolbarDescription[] =
 const char kWebFeedName[] = "Web Feed";
 const char kWebFeedDescription[] =
     "Allows users to keep up with and consume web content.";
+
+const char kWebFeedOnboardingName[] = "Web Feed Onboarding";
+const char kWebFeedOnboardingDescription[] =
+    "Helps the user discover and use the web feed.";
 
 const char kWebFeedSortName[] = "Web Feed Sort";
 const char kWebFeedSortDescription[] =
@@ -5242,6 +5241,19 @@ const char kProductivityLauncherName[] =
 const char kProductivityLauncherDescription[] =
     "To evaluate an enhanced Launcher experience that aims to improve app "
     "workflows by optimizing access to apps, app content, and app actions.";
+
+const char kProjectorName[] = "Enable Projector";
+const char kProjectorDescription[] =
+    "Enables Projects SWA and associated recording tools";
+
+const char kProjectorAnnotatorName[] = "Enable Projector annotator";
+const char kProjectorAnnotatorDescription[] =
+    "Turns on annotator tools when recording a screen capture using projector";
+
+const char kProjectorExcludeTranscriptName[] =
+    "Enable Projector exclude transcript feature";
+const char kProjectorExcludeTranscriptDescription[] =
+    "Support excluding segment of Projector recording by excluding transcript";
 
 const char kForceShowContinueSectionName[] =
     "App Launcher: Force Continue Section Suggestions";

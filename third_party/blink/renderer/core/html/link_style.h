@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LINK_STYLE_H_
 
 #include "third_party/blink/renderer/core/css/style_engine.h"
-#include "third_party/blink/renderer/core/css/style_engine_context.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/html/link_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
@@ -36,7 +35,7 @@ class LinkStyle final : public LinkResource, ResourceClient {
   bool HasLoaded() const override { return loaded_sheet_; }
   void Trace(Visitor*) const override;
 
-  void StartLoadingDynamicSheet();
+  void SetToPendingState();
   void NotifyLoadedSheetAndAllCriticalSubresources(
       Node::LoadedSheetErrorStatus);
   bool SheetLoaded();
@@ -76,7 +75,6 @@ class LinkStyle final : public LinkResource, ResourceClient {
   DisabledState disabled_state_;
   PendingSheetType pending_sheet_type_;
   RenderBlockingBehavior render_blocking_behavior_;
-  StyleEngineContext style_engine_context_;
   bool explicitly_enabled_;
   bool loading_;
   bool fired_load_;

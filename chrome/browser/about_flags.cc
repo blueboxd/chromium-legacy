@@ -2900,6 +2900,19 @@ const FeatureEntry::FeatureVariation kTabStripImprovementsTabWidthVariations[] =
 };
 #endif  // BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kUpmAndroidShadowSyncingUsers[] = {
+    {password_manager::features::kUpmExperimentVariationParam.name,
+     password_manager::features::kUpmExperimentVariationOption[1].name}};
+
+const FeatureEntry::FeatureVariation
+    kUnifiedPasswordManagerAndroidVariations[] = {
+        // Skip kEnableForSyncingUsers which is the default Enabled param.
+        {"Shadow Traffic only", kUpmAndroidShadowSyncingUsers,
+         std::size(kUpmAndroidShadowSyncingUsers), nullptr},
+};
+#endif  // BUILDFLAG(IS_ANDROID)
+
 const FeatureEntry::FeatureParam kUnthrottledNestedTimeout_NestingLevel = {
     "nesting", "100"};
 
@@ -4333,6 +4346,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(feed::kWebFeed,
                                     kWebFeedVariations,
                                     "WebFeed")},
+    {"web-feed-onboarding", flag_descriptions::kWebFeedOnboardingName,
+     flag_descriptions::kWebFeedOnboardingDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feed::kWebFeedOnboarding)},
     {"web-feed-sort", flag_descriptions::kWebFeedSortName,
      flag_descriptions::kWebFeedSortDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kWebFeedSort)},
@@ -7711,8 +7727,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"google-mobile-services-passwords",
      flag_descriptions::kUnifiedPasswordManagerAndroidName,
      flag_descriptions::kUnifiedPasswordManagerAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kUnifiedPasswordManagerAndroid)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         password_manager::features::kUnifiedPasswordManagerAndroid,
+         kUnifiedPasswordManagerAndroidVariations,
+         "UnifiedPasswordManagerAndroid")},
 #endif
 
     {"extension-workflow-justification",
@@ -7842,13 +7860,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUpdatedConnectionSecurityIndicatorsDescription,
      kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kUpdatedConnectionSecurityIndicators)},
-
-#if BUILDFLAG(IS_ANDROID)
-    {"swap-android-share-hub-rows",
-     flag_descriptions::kSwapAndroidShareHubRowsName,
-     flag_descriptions::kSwapAndroidShareHubRowsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(share::kSwapAndroidShareHubRows)},
-#endif
 
     {"enable-drdc", flag_descriptions::kEnableDrDcName,
      flag_descriptions::kEnableDrDcDescription, kOsAll,
@@ -8315,6 +8326,19 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppProvisioningStaticName,
      flag_descriptions::kAppProvisioningStaticDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAppProvisioningStatic)},
+
+    {"enable-projector", flag_descriptions::kProjectorName,
+     flag_descriptions::kProjectorDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kProjector)},
+
+    {"enable-projector-annotator", flag_descriptions::kProjectorAnnotatorName,
+     flag_descriptions::kProjectorAnnotatorDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kProjectorAnnotator)},
+
+    {"enable-projector-exclude-transcript",
+     flag_descriptions::kProjectorExcludeTranscriptName,
+     flag_descriptions::kProjectorExcludeTranscriptDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kProjectorExcludeTranscript)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

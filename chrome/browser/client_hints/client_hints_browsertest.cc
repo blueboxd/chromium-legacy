@@ -1530,13 +1530,20 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UserAgentOverrideClientHints) {
       .GetLastCommittedEntry()
       ->SetIsOverridingUserAgent(true);
 
+  // Since no value was provided for client hints, they are sent with blank or
+  // false values.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kUrl));
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       web_contents,
       "window.domAutomationController.send(document.body.textContent);",
       &header_value));
-  // Since no value was provided for client hints, they are not sent.
-  EXPECT_EQ("foo\nNone\nNone", header_value);
+  EXPECT_EQ("foo\n\n?0", header_value);
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractString(web_contents,
+                                    "window.domAutomationController.send(JSON."
+                                    "stringify(navigator.userAgentData));",
+                                    &header_value));
+  EXPECT_EQ(R"({"brands":[],"mobile":false})", header_value);
 
   // Now actually provide values for the hints.
   blink::UserAgentOverride ua_override;
@@ -1552,6 +1559,14 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, UserAgentOverrideClientHints) {
       "window.domAutomationController.send(document.body.textContent);",
       &header_value));
   EXPECT_EQ("foobar\n\"Foobarnator\";v=\"3.14\"\n?1", header_value);
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractString(web_contents,
+                                    "window.domAutomationController.send(JSON."
+                                    "stringify(navigator.userAgentData));",
+                                    &header_value));
+  EXPECT_EQ(
+      R"({"brands":[{"brand":"Foobarnator","version":"3.14"}],"mobile":true})",
+      header_value);
 }
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, EmptyAcceptCH) {
@@ -3358,6 +3373,11 @@ class SameOriginUaOriginTrialBrowserTest
         base::StrCat({kOriginUrl, "/accept_ch_ua_iframe_request.html"}));
   }
 
+  GURL accept_ch_ua_iframe_sandbox_request_url() const {
+    return GURL(base::StrCat(
+        {kOriginUrl, "/accept_ch_ua_iframe_sandbox_request.html"}));
+  }
+
   GURL critical_ch_ua_subresource_request_url() const {
     return GURL(
         base::StrCat({kOriginUrl, "/critical_ch_ua_subresource_request.html"}));
@@ -3773,6 +3793,29 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
+                       IframeRequestUaWithValidOriginTrialTokenIgnoreSandbox) {
+  SetTestOptions(
+      {
+          /*has_ot_token=*/true,
+          /*valid_ot_token=*/true,
+          /*has_accept_ch_header=*/true,
+          /*has_critical_ch_header=*/false,
+      },
+      {accept_ch_ua_iframe_sandbox_request_url(), simple_request_url()});
+
+  // Ensure that frames with sandbox flags don't interfere with the origin trial
+  NavigateAndCheckHeaders(accept_ch_ua_iframe_sandbox_request_url(),
+                          /*ch_ua_reduced_expected=*/GetParam() ==
+                              UserAgentOriginTrialTestType::UAReduction,
+                          /*ch_ua_exist_expected=*/true);
+
+  CheckSecClientHintUaCount();
+
+  // Make sure the last intercepted URL was the request for the embedded iframe.
+  EXPECT_EQ(last_request_url().path(), "/simple.html");
+}
+
+IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
                        IframeRequestUaWithValidOriginTrialTokenAndCriticalCH) {
   SetTestOptions(
       {/*has_ot_token=*/true, /*valid_ot_token=*/true,
@@ -3861,7 +3904,7 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
 
   // Since the UA override was set, the UA client hints are *not* added to the
   // request.
-  CheckUaOriginTrialClientHint(/*ch_ua_expected=*/false);
+  CheckUaOriginTrialClientHint(/*ch_ua_expected=*/true);
   // Make sure the overridden UA string is the one sent.
   CheckUserAgentString(user_agent_override);
 
@@ -3890,7 +3933,7 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
 
   // Since the UA override was set, the UA client hints are *not* added to the
   // request.
-  CheckUaOriginTrialClientHint(/*ch_ua_expected=*/false);
+  CheckUaOriginTrialClientHint(/*ch_ua_expected=*/true);
   // Make sure the overridden UA string is the one sent.
   CheckUserAgentString(user_agent_override);
 }
@@ -3914,7 +3957,7 @@ IN_PROC_BROWSER_TEST_P(SameOriginUaOriginTrialBrowserTest,
 
   // Since the UA override was set, the UA client hints are *not* added to the
   // request.
-  CheckUaOriginTrialClientHint(/*ch_ua_expected=*/false);
+  CheckUaOriginTrialClientHint(/*ch_ua_expected=*/true);
   // Make sure the overridden UA string is the one sent.
   CheckUserAgentString(user_agent_override);
 }

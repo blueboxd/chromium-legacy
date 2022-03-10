@@ -1304,7 +1304,7 @@
     {
       name: "LayoutNGBlockFragmentation",
       implied_by: ["LayoutNGFlexFragmentation", "LayoutNGGridFragmentation", "LayoutNGPrinting", "LayoutNGTableFragmentation"],
-      status: "test",
+      status: "stable",
     },
     {
       name: "LayoutNGBlockInInline",
@@ -2133,7 +2133,7 @@
     },
     {
       name: "SharedAutofill",
-      status: "experimental",
+      status: "test",
     },
     {
       name: "SharedStorageAPI",
@@ -2582,8 +2582,9 @@
       status: "experimental",
     },
     {
+      // Draft WebGL extensions are deliberately not enabled by experimental web
+      // platform features.
       name: "WebGLDraftExtensions",
-      status: "experimental",
     },
     {
       name: "WebGLImageChromium",

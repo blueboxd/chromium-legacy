@@ -150,7 +150,7 @@ void LinkStyle::NotifyLoadedSheetAndAllCriticalSubresources(
   fired_load_ = true;
 }
 
-void LinkStyle::StartLoadingDynamicSheet() {
+void LinkStyle::SetToPendingState() {
   DCHECK_LT(pending_sheet_type_, kBlocking);
   AddPendingSheet(kBlocking);
 }
@@ -176,7 +176,7 @@ void LinkStyle::AddPendingSheet(PendingSheetType type) {
 
   if (pending_sheet_type_ == kNonBlocking)
     return;
-  GetDocument().GetStyleEngine().AddPendingSheet(style_engine_context_);
+  GetDocument().GetStyleEngine().AddPendingSheet(*owner_);
 }
 
 void LinkStyle::RemovePendingSheet() {
@@ -192,8 +192,7 @@ void LinkStyle::RemovePendingSheet() {
     return;
   }
 
-  GetDocument().GetStyleEngine().RemovePendingSheet(*owner_,
-                                                    style_engine_context_);
+  GetDocument().GetStyleEngine().RemovePendingSheet(*owner_);
 }
 
 void LinkStyle::SetDisabledState(bool disabled) {
@@ -281,7 +280,10 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   // Don't hold up layout tree construction and script execution on
   // stylesheets that are not needed for the layout at the moment.
   bool critical_style = media_query_matches && !owner_->IsAlternate();
-  bool render_blocking = critical_style && owner_->IsCreatedByParser();
+  bool render_blocking =
+      critical_style && (owner_->IsCreatedByParser() ||
+                         (RuntimeEnabledFeatures::BlockingAttributeEnabled() &&
+                          owner_->blocking().IsRenderBlocking()));
 
   AddPendingSheet(render_blocking ? kBlocking : kNonBlocking);
 

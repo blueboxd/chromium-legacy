@@ -74,10 +74,15 @@ struct BLINK_COMMON_EXPORT UserAgentMetadata {
 // Like above, this has legacy IPC traits in
 // content/public/common/common_param_traits_macros.h
 struct BLINK_COMMON_EXPORT UserAgentOverride {
-  // Helper which sets only UA, no client hints.
+  // Helper which sets only UA with blank client hints.
   static UserAgentOverride UserAgentOnly(const std::string& ua) {
     UserAgentOverride result;
     result.ua_string_override = ua;
+
+    // If ua is empty, it's assumed the system default should be used
+    if (!ua.empty())
+      result.ua_metadata_override = UserAgentMetadata();
+
     return result;
   }
 
@@ -89,6 +94,18 @@ struct BLINK_COMMON_EXPORT UserAgentOverride {
   // should be used. If this is null, and |ua_string_override| is non-empty,
   // no UA client hints will be sent.
   absl::optional<UserAgentMetadata> ua_metadata_override;
+
+  static constexpr char kUserAgentOverrideHistogram[] =
+      "Blink.UseCounter.UserAgentOverride";
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum UserAgentOverrideHistogram {
+    UserAgentOverriden = 0,
+    UserAgentOverrideSubstring = 1,
+    UserAgentOverrideSuffix = 2,
+    kMaxValue = UserAgentOverrideSuffix,
+  };
 };
 
 bool BLINK_COMMON_EXPORT operator==(const UserAgentMetadata& a,

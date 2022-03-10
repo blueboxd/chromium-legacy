@@ -17,7 +17,7 @@ pdf_non_webcomponents_files = [
 if (enable_ink) {
   pdf_non_webcomponents_files += [
     "annotation_tool.ts",
-    "ink_controller.js",
+    "ink_controller.ts",
     "ink/ink_api.ts",
   ]
 }
@@ -66,16 +66,16 @@ print_preview_webcomponents_files = [
 shared_non_webcomponents_files = [
   "browser_api.ts",
   "constants.ts",
-  "controller.js",
+  "controller.ts",
   "gesture_detector.ts",
   "internal_plugin.ts",
   "main.ts",
   "metrics.ts",
   "open_pdf_params_parser.ts",
-  "pdf_scripting_api.js",
+  "pdf_scripting_api.ts",
   "pdf_viewer_base.ts",
   "pdf_viewer_utils.ts",
-  "viewport.js",
+  "viewport.ts",
   "viewport_scroller.ts",
   "zoom_manager.ts",
 ]

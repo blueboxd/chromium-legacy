@@ -134,6 +134,10 @@ public class ReactionLayout extends RelativeLayout {
                                 screenHeight - (layoutParams.topMargin - mHeight);
                         ReactionLayout.this.setLayoutParams(layoutParams);
                         break;
+                    case MotionEvent.ACTION_UP:
+                        view.announceForAccessibility(mContext.getString(
+                                R.string.lightweight_reactions_reaction_moved_announcement));
+                        break;
                 }
                 return true;
             }
@@ -223,6 +227,10 @@ public class ReactionLayout extends RelativeLayout {
 
     private void setUpDeleteButton() {
         mDeleteButton = findViewById(R.id.delete_button);
-        mDeleteButton.setOnClickListener(view -> mSceneEditorDelegate.removeReaction(this));
+        mDeleteButton.setOnClickListener(view -> {
+            view.announceForAccessibility(mContext.getString(
+                    R.string.lightweight_reactions_reaction_deleted_announcement));
+            mSceneEditorDelegate.removeReaction(this);
+        });
     }
 }

@@ -164,7 +164,7 @@ void StyleRuleImport::RequestStyleSheet() {
     // the sheet being imported is pending.
     if (parent_style_sheet_ && parent_style_sheet_->LoadCompleted() &&
         root_sheet == parent_style_sheet_) {
-      parent_style_sheet_->StartLoadingDynamicSheet();
+      parent_style_sheet_->SetToPendingState();
     }
   }
 }

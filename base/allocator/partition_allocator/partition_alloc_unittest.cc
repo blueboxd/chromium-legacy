@@ -310,8 +310,8 @@ class PartitionAllocTest : public testing::TestWithParam<bool> {
   }
 
   void TearDown() override {
-    allocator.root()->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans |
-                                  PartitionPurgeDiscardUnusedSystemPages);
+    allocator.root()->PurgeMemory(PurgeFlags::kDecommitEmptySlotSpans |
+                                  PurgeFlags::kDiscardUnusedSystemPages);
     PartitionAllocGlobalUninitForTesting();
   }
 
@@ -1195,16 +1195,20 @@ TEST_P(PartitionAllocTest, IsValidPtrDelta) {
   }
 }
 
-TEST_P(PartitionAllocTest, GetSlotStartMultiplePages) {
+// TODO(crbug.com/1217582): Disabled since the `real_size` is never set or set incorrectly.
+TEST_P(PartitionAllocTest, DISABLED_GetSlotStartMultiplePages) {
   // Find the smallest bucket with multiple PartitionPages.
   size_t real_size;
+  bool init_real_size = false;
   for (PartitionBucket<ThreadSafe>& bucket : allocator.root()->buckets) {
     if (bucket.num_system_pages_per_slot_span >
         NumSystemPagesPerPartitionPage()) {
       real_size = bucket.slot_size;
+      init_real_size = true;
       break;
     }
   }
+  ASSERT_TRUE(init_real_size);
 
   const size_t requested_size = real_size - kExtraAllocSize;
   // Double check we don't end up with 0 or negative size.
@@ -2501,7 +2505,7 @@ TEST_P(PartitionAllocTest, Purge) {
     EXPECT_EQ(SystemPageSize(), stats->decommittable_bytes);
     EXPECT_EQ(SystemPageSize(), stats->resident_bytes);
   }
-  allocator.root()->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans);
+  allocator.root()->PurgeMemory(PurgeFlags::kDecommitEmptySlotSpans);
   {
     MockPartitionStatsDumper dumper;
     allocator.root()->DumpStats("mock_allocator", false /* detailed dump */,
@@ -2516,7 +2520,7 @@ TEST_P(PartitionAllocTest, Purge) {
   }
   // Calling purge again here is a good way of testing we didn't mess up the
   // state of the free cache ring.
-  allocator.root()->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans);
+  allocator.root()->PurgeMemory(PurgeFlags::kDecommitEmptySlotSpans);
 
   // A single-slot but non-direct-mapped allocation size.
   size_t single_slot_size = 512 * 1024;
@@ -2525,7 +2529,7 @@ TEST_P(PartitionAllocTest, Purge) {
   char* big_ptr = reinterpret_cast<char*>(
       allocator.root()->Alloc(single_slot_size, type_name));
   allocator.root()->Free(big_ptr);
-  allocator.root()->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans);
+  allocator.root()->PurgeMemory(PurgeFlags::kDecommitEmptySlotSpans);
 
   CHECK_PAGE_IN_CORE(ptr - kPointerOffset, false);
   CHECK_PAGE_IN_CORE(big_ptr - kPointerOffset, false);
@@ -2613,7 +2617,7 @@ TEST_P(PartitionAllocTest, PurgeDiscardableSecondPage) {
     EXPECT_EQ(2 * SystemPageSize(), stats->resident_bytes);
   }
   CHECK_PAGE_IN_CORE(ptr2 - kPointerOffset, true);
-  allocator.root()->PurgeMemory(PartitionPurgeDiscardUnusedSystemPages);
+  allocator.root()->PurgeMemory(PurgeFlags::kDiscardUnusedSystemPages);
   CHECK_PAGE_IN_CORE(ptr2 - kPointerOffset, false);
   EXPECT_EQ(3u, slot_span->num_unprovisioned_slots);
 
@@ -2647,7 +2651,7 @@ TEST_P(PartitionAllocTest, PurgeDiscardableFirstPage) {
     EXPECT_EQ(2 * SystemPageSize(), stats->resident_bytes);
   }
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, true);
-  allocator.root()->PurgeMemory(PartitionPurgeDiscardUnusedSystemPages);
+  allocator.root()->PurgeMemory(PurgeFlags::kDiscardUnusedSystemPages);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, false);
 
   allocator.root()->Free(ptr2);
@@ -2687,7 +2691,7 @@ TEST_P(PartitionAllocTest, PurgeDiscardableNonPageSizedAlloc) {
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (SystemPageSize() * 2), true);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (SystemPageSize() * 3), true);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (SystemPageSize() * 4), true);
-  allocator.root()->PurgeMemory(PartitionPurgeDiscardUnusedSystemPages);
+  allocator.root()->PurgeMemory(PurgeFlags::kDiscardUnusedSystemPages);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, true);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + SystemPageSize(), false);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (SystemPageSize() * 2), true);
@@ -2735,7 +2739,7 @@ TEST_P(PartitionAllocTest, PurgeDiscardableManyPages) {
   for (size_t i = 0; i < kFirstAllocPages; i++)
     CHECK_PAGE_IN_CORE(p.PageAtIndex(i), true);
 
-  allocator.root()->PurgeMemory(PartitionPurgeDiscardUnusedSystemPages);
+  allocator.root()->PurgeMemory(PurgeFlags::kDiscardUnusedSystemPages);
 
   for (size_t i = 0; i < kSecondAllocPages; i++)
     CHECK_PAGE_IN_CORE(p.PageAtIndex(i), true);
@@ -2746,7 +2750,7 @@ TEST_P(PartitionAllocTest, PurgeDiscardableManyPages) {
 TEST_P(PartitionAllocTest, PurgeDiscardableWithFreeListRewrite) {
   // This sub-test tests truncation of the provisioned slots in a trickier
   // case where the freelist is rewritten.
-  allocator.root()->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans);
+  allocator.root()->PurgeMemory(PurgeFlags::kDecommitEmptySlotSpans);
   char* ptr1 = reinterpret_cast<char*>(
       allocator.root()->Alloc(SystemPageSize() - kExtraAllocSize, type_name));
   void* ptr2 =
@@ -2790,7 +2794,7 @@ TEST_P(PartitionAllocTest, PurgeDiscardableWithFreeListRewrite) {
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + SystemPageSize(), true);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (SystemPageSize() * 2), true);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (SystemPageSize() * 3), true);
-  allocator.root()->PurgeMemory(PartitionPurgeDiscardUnusedSystemPages);
+  allocator.root()->PurgeMemory(PurgeFlags::kDiscardUnusedSystemPages);
   EXPECT_EQ(1u, slot_span->num_unprovisioned_slots);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, true);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + SystemPageSize(), false);
@@ -2813,7 +2817,7 @@ TEST_P(PartitionAllocTest, PurgeDiscardableWithFreeListRewrite) {
 
 TEST_P(PartitionAllocTest, PurgeDiscardableDoubleTruncateFreeList) {
   // This sub-test is similar, but tests a double-truncation.
-  allocator.root()->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans);
+  allocator.root()->PurgeMemory(PurgeFlags::kDecommitEmptySlotSpans);
   char* ptr1 = reinterpret_cast<char*>(
       allocator.root()->Alloc(SystemPageSize() - kExtraAllocSize, type_name));
   void* ptr2 =
@@ -2852,7 +2856,7 @@ TEST_P(PartitionAllocTest, PurgeDiscardableDoubleTruncateFreeList) {
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + SystemPageSize(), true);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (SystemPageSize() * 2), true);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + (SystemPageSize() * 3), true);
-  allocator.root()->PurgeMemory(PartitionPurgeDiscardUnusedSystemPages);
+  allocator.root()->PurgeMemory(PurgeFlags::kDiscardUnusedSystemPages);
   EXPECT_EQ(2u, slot_span->num_unprovisioned_slots);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, true);
   CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset + SystemPageSize(), true);
@@ -3296,7 +3300,7 @@ TEST_P(PartitionAllocTest, Bookkeeping) {
 
   // Now everything should be decommitted. The reserved space for super pages
   // stays the same and will never go away (by design).
-  root.PurgeMemory(PartitionPurgeDecommitEmptySlotSpans);
+  root.PurgeMemory(PurgeFlags::kDecommitEmptySlotSpans);
   expected_committed_size = 0;
   EXPECT_EQ(expected_committed_size, root.total_size_of_committed_pages);
   EXPECT_EQ(expected_max_committed_size, root.max_size_of_committed_pages);
@@ -3907,8 +3911,8 @@ TEST_P(PartitionAllocTest, CrossPartitionRootRealloc) {
   EXPECT_TRUE(ptr);
 
   // Create new root and call PurgeMemory to simulate ConfigurePartitions().
-  allocator.root()->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans |
-                                PartitionPurgeDiscardUnusedSystemPages);
+  allocator.root()->PurgeMemory(PurgeFlags::kDecommitEmptySlotSpans |
+                                PurgeFlags::kDiscardUnusedSystemPages);
   auto* new_root = new PartitionRoot<ThreadSafe>({
       PartitionOptions::AlignedAlloc::kDisallowed,
       PartitionOptions::ThreadCache::kDisabled,
@@ -4185,7 +4189,7 @@ TEST_P(PartitionAllocTest, EmptySlotSpanSizeIsCapped) {
             single_slot_count * single_slot_size);
 
   // Nothing left after explicit purge.
-  root.PurgeMemory(PartitionPurgeDecommitEmptySlotSpans);
+  root.PurgeMemory(PurgeFlags::kDecommitEmptySlotSpans);
   EXPECT_EQ(TS_UNCHECKED_READ(root.empty_slot_spans_dirty_bytes), 0u);
 
   for (void* ptr : allocated_memory)
@@ -4289,14 +4293,14 @@ TEST_P(PartitionAllocTest, SortFreelist) {
     allocator.root()->Free(ptr);
   allocations.clear();
 
-  allocator.root()->PurgeMemory(PartitionPurgeDiscardUnusedSystemPages);
+  allocator.root()->PurgeMemory(PurgeFlags::kDiscardUnusedSystemPages);
 
   size_t bucket_index = SizeToIndex(allocation_size + kExtraAllocSize);
   auto& bucket = allocator.root()->buckets[bucket_index];
   EXPECT_TRUE(bucket.active_slot_spans_head->freelist_is_sorted());
 
   // Can sort again.
-  allocator.root()->PurgeMemory(PartitionPurgeDiscardUnusedSystemPages);
+  allocator.root()->PurgeMemory(PurgeFlags::kDiscardUnusedSystemPages);
   EXPECT_TRUE(bucket.active_slot_spans_head->freelist_is_sorted());
 
   for (size_t i = 0; i < count; ++i) {

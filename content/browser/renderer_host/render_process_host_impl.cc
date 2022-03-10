@@ -2275,7 +2275,9 @@ void RenderProcessHostImpl::WriteIntoTrace(perfetto::TracedValue context) {
   // perfetto::TracedValue` and the one taking `perfetto::TracedProto<...>`).
   auto dict = std::move(context).WriteDictionary();
   dict.Add("id", GetID());
-  dict.Add("process_lock", GetProcessLock().ToString());
+  // Can be null in the unittests.
+  if (ChildProcessSecurityPolicyImpl::GetInstance())
+    dict.Add("process_lock", GetProcessLock().ToString());
 }
 
 void RenderProcessHostImpl::EnableBlinkRuntimeFeatures(
@@ -2486,8 +2488,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN)
-  registry->AddInterface(
-      base::BindRepeating(&KeySystemSupportImpl::BindReceiver));
+  AddUIThreadInterface(
+      registry.get(), base::BindRepeating(&KeySystemSupportImpl::BindReceiver));
 #endif
 
   AddUIThreadInterface(

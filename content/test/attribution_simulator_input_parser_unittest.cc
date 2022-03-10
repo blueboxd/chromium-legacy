@@ -154,13 +154,58 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
                   .SetExpiry(base::Days(10))  // rounded to whole number of days
                   .SetPriority(0)             // default
                   .SetDebugKey(absl::nullopt)  // default
-                  .SetFilterData(*AttributionFilterData::FromFilterValues({
-                      {"a", {}},
-                      {"b", {"c", "d"}},
-                  }))
+                  .SetFilterData(
+                      *AttributionFilterData::FromSourceFilterValues({
+                          {"a", {}},
+                          {"b", {"c", "d"}},
+                      }))
                   .Build(),
               _))));
   EXPECT_THAT(error_stream.str(), IsEmpty());
+}
+
+TEST(AttributionSimulatorInputParserTest, OutputRetainsInputJSON) {
+  constexpr char kJson[] = R"json({
+    "sources": [
+      {
+        "source_type": "navigation",
+        "source_time": 1643235574,
+        "reporting_origin": "https://r.test",
+        "source_origin": "https://s.test",
+        "registration_config": {
+          "source_event_id": "123",
+          "destination": "https://d.test",
+          "filter_data": {"a": ["b", "c"]},
+          "expiry": "864000000",
+          "priority": "-5",
+          "debug_key": "14"
+        }
+      }
+    ],
+    "triggers": [
+      {
+        "trigger_time": 1643235576,
+        "reporting_origin": "https://a.r.test",
+        "destination": " https://a.d1.test",
+        "registration_config": {
+          "trigger_data": "10",
+          "event_source_trigger_data": "3",
+          "priority": "-5",
+          "deduplication_key": "123",
+          "debug_key": "14"
+        }
+      }
+    ]})json";
+
+  const base::Value value = base::test::ParseJson(kJson);
+  std::stringstream error_stream;
+  EXPECT_THAT(
+      ParseAttributionSimulationInput(value.Clone(), kOffsetTime, error_stream),
+      Optional(ElementsAre(
+          Pair(_, base::test::IsJson(
+                      value.FindKey("sources")->GetIfList()->front())),
+          Pair(_, base::test::IsJson(
+                      value.FindKey("triggers")->GetIfList()->front())))));
 }
 
 TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
@@ -349,7 +394,7 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         }]})json",
     },
     {
-        R"(["sources"][0]["source_event_id"]: must be a uint64 formatted)",
+        R"(["sources"][0]["registration_config"]["source_event_id"]: must be a uint64 formatted)",
         R"json({"sources": [{
           "source_type": "navigation",
           "source_time": 1643235574,
@@ -361,7 +406,7 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         }]})json",
     },
     {
-        R"(["sources"][0]["destination"]: must be a valid origin)",
+        R"(["sources"][0]["registration_config"]["destination"]: must be a valid origin)",
         R"json({"sources": [{
           "source_type": "navigation",
           "source_time": 1643235574,
@@ -386,7 +431,7 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         }]})json",
     },
     {
-        R"(["sources"][0]["expiry"]: must be a positive number of)",
+        R"(["sources"][0]["registration_config"]["expiry"]: must be a positive number of)",
         R"json({"sources": [{
           "source_type": "navigation",
           "source_time": 1643235574,
@@ -400,7 +445,7 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         }]})json",
     },
     {
-        R"(["sources"][0]["priority"]: must be an int64)",
+        R"(["sources"][0]["registration_config"]["priority"]: must be an int64)",
         R"json({"sources": [{
           "source_type": "navigation",
           "source_time": 1643235574,
@@ -414,7 +459,7 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         }]})json",
     },
     {
-        R"(["sources"][0]["source_event_id"]: must be a uint64 formatted)",
+        R"(["sources"][0]["registration_config"]["source_event_id"]: must be a uint64 formatted)",
         R"json({"sources": [{
           "source_type": "navigation",
           "source_time": 1643235574,
@@ -427,7 +472,7 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         }]})json",
     },
     {
-        R"(["sources"][0]["filter_data"]: must be a dictionary)",
+        R"(["sources"][0]["registration_config"]["filter_data"]: must be a dictionary)",
         R"json({"sources": [{
           "source_type": "navigation",
           "source_time": 1643235574,
@@ -441,7 +486,7 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         }]})json",
     },
     {
-        R"(["sources"][0]["filter_data"]["a"]: must be a list)",
+        R"(["sources"][0]["registration_config"]["filter_data"]["a"]: must be a list)",
         R"json({"sources": [{
           "source_type": "navigation",
           "source_time": 1643235574,
@@ -457,7 +502,7 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         }]})json",
     },
     {
-        R"(["sources"][0]["filter_data"]["a"][0]: must be a string)",
+        R"(["sources"][0]["registration_config"]["filter_data"]["a"][0]: must be a string)",
         R"json({"sources": [{
           "source_type": "navigation",
           "source_time": 1643235574,

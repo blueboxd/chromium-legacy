@@ -197,6 +197,7 @@ class DocumentServiceBase;
 }  // namespace internal
 
 class AgentSchedulingGroupHost;
+class AXScreenAIAnnotator;
 class BrowsingContextState;
 class CodeCacheHostImpl;
 class CrossOriginEmbedderPolicyReporter;
@@ -634,7 +635,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int frame_routing_id,
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
-      const blink::FramePolicy& frame_policy);
+      const blink::FramePolicy& frame_policy,
+      std::string frame_name,
+      std::string frame_unique_name);
   void RemoveChild(FrameTreeNode* child);
   void ResetChildren();
 
@@ -2415,7 +2418,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns the BrowsingContextState associated with this RenderFrameHostImpl.
   // See class comments in BrowsingContextState for a more detailed description.
-  scoped_refptr<BrowsingContextState>& browsing_context_state() {
+  const scoped_refptr<BrowsingContextState>& browsing_context_state() const {
     return browsing_context_state_;
   }
 
@@ -2442,6 +2445,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // TODO(https://crbug.com/1262098): used to track down crash.
   std::unique_ptr<CheckOnDeleteRef> EnableCheckIfDeleted();
+
+  // TODO: While FencedFrame shadow DOM implementation exists and is dependent
+  // on the effective frame policy in BrowsingContextState, fenced frame status
+  // is dependent on FrameTreeNode being initialized and associated with a
+  // RenderFrameHostImpl. However, it may need to be accessed before node
+  // initialization, which is the reason for these methods. For example,
+  // RenderFrameHostImpl needs to have access to the effective frame policy
+  // (which is stored in FrameReplicationState), and we need to call this
+  // inside RenderFrameHostImpl's constructor (where FrameTreeNode doesn't
+  // have current RenderFrameHost yet). Remove these methods when shadow DOM is
+  // also removed.
+  bool IsFencedFrameRootNoStatus();
+  bool IsInFencedFrameTree();
 
  protected:
   friend class RenderFrameHostFactory;
@@ -3303,6 +3319,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   perfetto::protos::pbzero::RenderFrameHost::LifecycleState
   LifecycleStateToProto();
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  void RunScreenAIAnnotator();
+#endif
+
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
   // It is kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
@@ -4130,6 +4150,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
       back_forward_cache_disabling_features_callback_for_testing_;
 
   int check_if_deleted_request_count_ = 0;
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  // Manages the snapshot processing by Screen AI, if enabled.
+  std::unique_ptr<AXScreenAIAnnotator> ax_screen_ai_annotator_;
+#endif
 
   // BrowserInterfaceBroker implementation through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently

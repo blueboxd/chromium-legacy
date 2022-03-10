@@ -2278,8 +2278,8 @@
   },
   {
     "name": "enable-idle-inhibit",
-    "owners": [ "aswolfers" ],
-    "expiry_milestone": 100
+    "owners": [ "aswolfers", "chromeos-gfx-compositor@google.com" ],
+    "expiry_milestone": 103
   },
   {
     "name": "enable-ikev2-vpn",
@@ -2656,6 +2656,21 @@
     "name": "enable-prerender2",
     "owners": [ "//content/browser/prerender/OWNERS" ],
     "expiry_milestone": 104
+  },
+  {
+    "name": "enable-projector",
+    "owners": [ "llin", "cros-projector@google.com" ],
+    "expiry_milestone": 105
+  },
+  {
+    "name": "enable-projector-annotator",
+    "owners": [ "llin", "cros-projector@google.com" ],
+    "expiry_milestone": 105
+  },
+  {
+    "name": "enable-projector-exclude-transcript",
+    "owners": [ "llin", "cros-projector@google.com" ],
+    "expiry_milestone": 105
   },
   {
     "name": "enable-quic",
@@ -3208,7 +3223,7 @@
   {
     "name": "esim-policy",
     "owners": [ "azeemarshad", "jiajunz@google.com", "cros-connectivity@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 103
   },
   {
     "name": "ev-details-in-page-info",
@@ -5450,7 +5465,7 @@
   {
     "name": "shopping-list",
     "owners": [ "mdjones", "chrome-shopping-eng@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 103
   },
   {
     "name": "show-autofill-type-predictions",
@@ -5611,11 +5626,6 @@
     "name": "suppress-toolbar-captures",
     "owners": [ "pnoland@google.com" ],
     "expiry_milestone": 104
-  },
-  {
-    "name": "swap-android-share-hub-rows",
-    "owners": [ "ellyjones", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 100
   },
   {
     "name": "sync-android-promos-revamp",
@@ -6126,6 +6136,11 @@
     "name": "web-feed-ios",
     "owners": [ "adamta", "sczs", "tinazwang" ],
     "expiry_milestone": 105
+  },
+  {
+    "name": "web-feed-onboarding",
+    "owners": ["//chrome/android/feed/OWNERS", "feed@chromium.org" ],
+    "expiry_milestone": 110
   },
   {
     "name": "web-feed-sort",

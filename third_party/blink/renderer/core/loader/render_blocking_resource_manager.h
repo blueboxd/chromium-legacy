@@ -15,6 +15,7 @@ namespace blink {
 class Document;
 class FontResource;
 class FontFace;
+class Node;
 class ResourceFinishObserver;
 
 // https://html.spec.whatwg.org/#render-blocking-mechanism with some extensions.
@@ -28,15 +29,24 @@ class CORE_EXPORT RenderBlockingResourceManager final
   RenderBlockingResourceManager& operator=(
       const RenderBlockingResourceManager&) = delete;
 
-  void WillInsertBody() { awaiting_parser_inserted_body_ = false; }
-
-  // https://html.spec.whatwg.org/#render-blocked
-  bool IsRenderBlocked() const {
-    return awaiting_parser_inserted_body_ || HasRenderBlockingResources();
+  bool HasRenderBlockingResources() const {
+    return pending_stylesheet_owner_nodes_.size() ||
+           font_preload_finish_observers_.size() ||
+           imperative_font_loading_count_;
   }
 
-  // TODO(crbug.com/1271296): Use this class to handle render-blocking scripts,
-  // stylesheets and preloads.
+  // TODO(crbug.com/1271296): Use this class to handle render-blocking scripts
+  // and preloads.
+
+  bool HasPendingStylesheets() const {
+    return pending_stylesheet_owner_nodes_.size();
+  }
+  // Returns true if the sheet is successfully added as a render-blocking
+  // resource.
+  bool AddPendingStylesheet(const Node& owner_node);
+  // If the sheet is a render-blocking resource, removes it and returns true;
+  // otherwise, returns false with no operation.
+  bool RemovePendingStylesheet(const Node& owner_node);
 
   // We additionally allow font preloading (via <link rel="preload"> or Font
   // Loading API) to block rendering for a short period, so that preloaded fonts
@@ -53,16 +63,18 @@ class CORE_EXPORT RenderBlockingResourceManager final
  private:
   friend class RenderBlockingResourceManagerTest;
 
-  bool HasRenderBlockingResources() const {
-    return font_preload_finish_observers_.size() ||
-           imperative_font_loading_count_;
-  }
-
   // Exposed to unit tests only.
   void SetFontPreloadTimeoutForTest(base::TimeDelta timeout);
   void DisableFontPreloadTimeoutForTest();
 
   Member<Document> document_;
+
+  // Tracks the currently loading top-level stylesheets which block
+  // rendering from starting. Sheets loaded using the @import directive are not
+  // directly included in this set. See:
+  // https://html.spec.whatwg.org/multipage/links.html#link-type-stylesheet
+  // https://html.spec.whatwg.org/multipage/semantics.html#update-a-style-block
+  HeapHashSet<Member<const Node>> pending_stylesheet_owner_nodes_;
 
   // Need to hold strong references here, otherwise they'll be GC-ed immediately
   // as Resource only holds weak references.
@@ -73,11 +85,6 @@ class CORE_EXPORT RenderBlockingResourceManager final
   HeapTaskRunnerTimer<RenderBlockingResourceManager> font_preload_timer_;
   base::TimeDelta font_preload_timeout_;
   bool font_preload_timer_has_fired_ = false;
-
-  // https://html.spec.whatwg.org/#awaiting-parser-inserted-body-flag
-  // Initialized to true as RenderBlockingResourceManager is created only on
-  // HTML documents
-  bool awaiting_parser_inserted_body_ = true;
 };
 
 }  // namespace blink

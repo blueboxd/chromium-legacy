@@ -31,17 +31,90 @@ namespace content {
 
 BrowsingContextState::BrowsingContextState(
     blink::mojom::FrameReplicationStatePtr replication_state,
-    raw_ptr<RenderFrameHostImpl> parent)
-    : replication_state_(std::move(replication_state)), parent_(parent) {}
+    raw_ptr<RenderFrameHostImpl> parent,
+    absl::optional<BrowsingInstanceId> browsing_instance_id)
+    : replication_state_(std::move(replication_state)),
+      parent_(parent),
+      browsing_instance_id_(browsing_instance_id) {}
 
 BrowsingContextState::~BrowsingContextState() = default;
 
 RenderFrameProxyHost* BrowsingContextState::GetRenderFrameProxyHost(
     SiteInstanceGroup* site_instance_group) const {
+  if (features::GetBrowsingContextMode() ==
+      features::BrowsingContextStateImplementationType::
+          kSwapForCrossBrowsingInstanceNavigations) {
+    // CHECK to verify that the proxy is being accessed from the correct
+    // BrowsingContextState. As both BrowsingContextState (in non-legacy mode)
+    // and RenderFrameProxyHost (via SiteInstance) are tied to a given
+    // BrowsingInstance, the browsing instance id of the BrowsingContextState
+    // (in the non-legacy mode) and of the SiteInstanceGroup should match.
+    // If they do not, the code calling this method has likely chosen the
+    // wrong BrowsingContextGroup (e.g. one from the current RenderFrameHost
+    // rather than from speculative or vice versa) – as this can lead to
+    // various unpredictable bugs in proxy management logic, we want to
+    // crash the browser here when this condition fails.
+    //
+    // Note that the outer delegate and opener proxies are an exception and the
+    // only cases of a proxy associated with a SiteInstanceGroup from another
+    // BrowsingInstance. Meanwhile, for openers the opener and openee have to be
+    // in the same BrowsingInstance as well.
+    // TODO(crbug.com/1270671): Add exception here for outer delegate proxies.
+    CHECK_EQ(browsing_instance_id_.value(),
+             site_instance_group->browsing_instance_id());
+  }
   auto it = proxy_hosts_.find(site_instance_group->GetId());
   if (it != proxy_hosts_.end())
     return it->second.get();
   return nullptr;
+}
+
+void BrowsingContextState::DeleteRenderFrameProxyHost(
+    SiteInstanceGroup* site_instance_group) {
+  if (features::GetBrowsingContextMode() ==
+      features::BrowsingContextStateImplementationType::
+          kSwapForCrossBrowsingInstanceNavigations) {
+    // See comments in GetRenderFrameProxyHost for why this check is needed.
+    CHECK_EQ(browsing_instance_id_.value(),
+             site_instance_group->browsing_instance_id());
+  }
+  site_instance_group->RemoveObserver(this);
+  proxy_hosts_.erase(site_instance_group->GetId());
+}
+
+RenderFrameProxyHost* BrowsingContextState::CreateRenderFrameProxyHost(
+    SiteInstance* site_instance,
+    const scoped_refptr<RenderViewHostImpl>& rvh,
+    FrameTreeNode* frame_tree_node) {
+  if (features::GetBrowsingContextMode() ==
+      features::BrowsingContextStateImplementationType::
+          kLegacyOneToOneWithFrameTreeNode) {
+    DCHECK_EQ(this,
+              frame_tree_node->current_frame_host()->browsing_context_state());
+  }
+
+  if (features::GetBrowsingContextMode() ==
+      features::BrowsingContextStateImplementationType::
+          kSwapForCrossBrowsingInstanceNavigations) {
+    // See comments in GetRenderFrameProxyHost for why this check is needed.
+    CHECK_EQ(browsing_instance_id_.value(),
+             site_instance->GetBrowsingInstanceId());
+  }
+
+  auto site_instance_group_id =
+      static_cast<SiteInstanceImpl*>(site_instance)->group()->GetId();
+  CHECK(proxy_hosts_.find(site_instance_group_id) == proxy_hosts_.end())
+      << "A proxy already existed for this SiteInstanceGroup.";
+  RenderFrameProxyHost* proxy_host =
+      new RenderFrameProxyHost(site_instance, std::move(rvh), frame_tree_node);
+  proxy_hosts_[site_instance_group_id] = base::WrapUnique(proxy_host);
+  static_cast<SiteInstanceImpl*>(site_instance)->group()->AddObserver(this);
+
+  TRACE_EVENT_INSTANT(
+      "navigation", "BrowsingContextState::CreateRenderFrameProxyHost",
+      perfetto::protos::pbzero::ChromeTrackEvent::kRenderFrameProxyHost,
+      *proxy_host);
+  return proxy_host;
 }
 
 size_t BrowsingContextState::GetProxyCount() {
@@ -219,12 +292,6 @@ void BrowsingContextState::RenderProcessGone(
       ->SetRenderFrameProxyCreated(false);
 }
 
-void BrowsingContextState::DeleteRenderFrameProxyHost(
-    SiteInstanceGroup* site_instance_group) {
-  site_instance_group->RemoveObserver(this);
-  proxy_hosts_.erase(site_instance_group->GetId());
-}
-
 void BrowsingContextState::SendFramePolicyUpdatesToProxies(
     SiteInstance* parent_site_instance,
     const blink::FramePolicy& frame_policy) {
@@ -238,31 +305,11 @@ void BrowsingContextState::SendFramePolicyUpdatesToProxies(
   }
 }
 
-RenderFrameProxyHost* BrowsingContextState::CreateRenderFrameProxyHost(
-    SiteInstance* site_instance,
-    const scoped_refptr<RenderViewHostImpl>& rvh,
-    FrameTreeNode* frame_tree_node) {
-  if (features::GetBrowsingContextMode() ==
-      features::BrowsingContextStateImplementationType::
-          kLegacyOneToOneWithFrameTreeNode) {
-    DCHECK_EQ(this,
-              frame_tree_node->current_frame_host()->browsing_context_state());
+void BrowsingContextState::ResetProxyHosts() {
+  for (const auto& pair : proxy_hosts_) {
+    pair.second->site_instance_group()->RemoveObserver(this);
   }
-
-  auto site_instance_group_id =
-      static_cast<SiteInstanceImpl*>(site_instance)->group()->GetId();
-  CHECK(proxy_hosts_.find(site_instance_group_id) == proxy_hosts_.end())
-      << "A proxy already existed for this SiteInstanceGroup.";
-  RenderFrameProxyHost* proxy_host =
-      new RenderFrameProxyHost(site_instance, std::move(rvh), frame_tree_node);
-  proxy_hosts_[site_instance_group_id] = base::WrapUnique(proxy_host);
-  static_cast<SiteInstanceImpl*>(site_instance)->group()->AddObserver(this);
-
-  TRACE_EVENT_INSTANT(
-      "navigation", "BrowsingContextState::CreateRenderFrameProxyHost",
-      perfetto::protos::pbzero::ChromeTrackEvent::kRenderFrameProxyHost,
-      *proxy_host);
-  return proxy_host;
+  proxy_hosts_.clear();
 }
 
 }  // namespace content

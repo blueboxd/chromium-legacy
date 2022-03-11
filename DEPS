@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '1df655a42746dc24911d11dbf9df92c836329240',
+  'skia_revision': '38b9591b5a04df9a6455f5eab71bd115d3531d43',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -261,7 +261,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '5fe1d628eea84fa855bccfbfa2db2ce13e433623',
+  'angle_revision': '7eb7596abf0b24518334f43fc1396ebfffe6e27c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -704,7 +704,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/toji/webvr.info.git' + '@' + 'c58ae99b9ff9e2aa4c524633519570bf33536248',
 
   'src/docs/website': {
-    'url': Var('chromium_git') + '/website.git' + '@' + '9422a276bfab2fc6c678ddfbc9cdd9e261dea5d5',
+    'url': Var('chromium_git') + '/website.git' + '@' + '114ebea78653c805b9f6d82f468afa0906581855',
   },
 
   'src/ios/third_party/earl_grey2/src': {
@@ -892,7 +892,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'vxGk90QHPBQsOTCcyJiO1qBTFb45cFlJN6PPT_TkAtAC',
+          'version': 's4aBuB5ULb4MMqBp4Xevo2Tf9qk_S5FxWr2xxansx68C',
       },
     ],
     'condition': 'checkout_android',
@@ -1100,7 +1100,7 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'a032e6c91c727c9d91cdbd6de4fbf6f9e4ea8f04',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '3020ffa8086a78f5f6c28495422399100b4c5b84',
       'condition': 'checkout_chromeos',
   },
 
@@ -1581,7 +1581,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/android/aemu/release/linux-amd64',
-              'version': 'xDzb5APOwwnhvaFkJ9E8OnIWTjeFlJDpoWHc7YYH49gC'
+              'version': 'YO8A0Tzu80blSokpQu6vQnJGtfLTZomogUVr58id7JIC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1794,7 +1794,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c0eb04622906ffac512df4e652d2b124a06a8974',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2a009d5635d8a2e8378500d5ef0a6a055848dbdd',
     'condition': 'checkout_src_internal',
   },
 
@@ -1824,7 +1824,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'UzIHRVp1xEmVQ_5D-Cc6C5j9UinQU7sURRSiZ8SjbEIC',
+        'version': 'FQrB_pyrPB2fJKfqOwGnjIp2s6CVZuiBvsNlfnJEqQUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1835,7 +1835,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'MLOomNW7tNEjnsV1u2jKRURIup5kDXE9Bpjw68zETSUC',
+        'version': 'dh_YHPWmoL2G3JcogVHcLkDFWERSeZ1EI7Hqj1cS-3UC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

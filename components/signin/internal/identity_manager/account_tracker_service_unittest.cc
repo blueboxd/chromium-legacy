@@ -267,10 +267,11 @@ class AccountTrackerServiceTest : public testing::Test {
 
   void CheckAccountCapabilities(AccountKey account_key,
                                 const AccountInfo& info) {
-    EXPECT_EQ(AccountKeyToAccountCapability(account_key)
-                  ? signin::Tribool::kTrue
-                  : signin::Tribool::kFalse,
-              info.capabilities.can_offer_extended_chrome_sync_promos());
+    AccountCapabilities expected_capabilities;
+    AccountCapabilitiesTestMutator mutator(&expected_capabilities);
+    mutator.SetAllSupportedCapabilities(
+        AccountKeyToAccountCapability(account_key));
+    EXPECT_EQ(info.capabilities, expected_capabilities);
   }
 
   testing::AssertionResult CheckAccountTrackerEvents(
@@ -472,7 +473,7 @@ void AccountTrackerServiceTest::ReturnAccountCapabilitiesFetchSuccess(
   IssueAccessToken(account_key);
   AccountCapabilities capabilities;
   AccountCapabilitiesTestMutator mutator(&capabilities);
-  mutator.set_can_offer_extended_chrome_sync_promos(
+  mutator.SetAllSupportedCapabilities(
       AccountKeyToAccountCapability(account_key));
   fake_account_capabilities_fetcher_factory_->CompleteAccountCapabilitiesFetch(
       AccountKeyToAccountId(account_key), capabilities);
@@ -652,10 +653,14 @@ TEST_F(AccountTrackerServiceTest,
   CheckAccountCapabilities(kAccountKeyAlpha, account_info);
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(AccountTrackerServiceTest,
        TokenAvailable_AccountCapabilitiesFetcherDisabled) {
   account_fetcher()->EnableAccountCapabilitiesFetcherForTest(false);
+  base::test::ScopedFeatureList scoped_feature_list;
+#if !BUILDFLAG(IS_IOS)
+  scoped_feature_list.InitAndDisableFeature(
+      switches::kEnableFetchingAccountCapabilities);
+#endif  // !BUILDFLAG(IS_IOS)
   SimulateTokenAvailable(kAccountKeyAlpha);
   EXPECT_TRUE(account_fetcher()->AreAllAccountCapabilitiesFetched());
   EXPECT_TRUE(CheckAccountTrackerEvents({}));
@@ -663,10 +668,11 @@ TEST_F(AccountTrackerServiceTest,
       AccountKeyToAccountId(kAccountKeyAlpha));
   EXPECT_FALSE(account_info.capabilities.AreAllCapabilitiesKnown());
 }
-#endif
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
-    BUILDFLAG(IS_CHROMEOS_LACROS)
+// iOS doesn't support the kEnableFetchingAccountCapabilities feature.
+// TODO(https://crbug.com/1305191): enable these tests on iOS once the feature
+// is supported.
+#if !BUILDFLAG(IS_IOS)
 TEST_F(AccountTrackerServiceTest,
        TokenAvailable_AccountCapabilitiesFetcherEnabled) {
   account_fetcher()->EnableAccountCapabilitiesFetcherForTest(false);
@@ -682,7 +688,7 @@ TEST_F(AccountTrackerServiceTest,
   ReturnAccountCapabilitiesFetchSuccess(kAccountKeyAlpha);
   EXPECT_TRUE(account_fetcher()->AreAllAccountCapabilitiesFetched());
 }
-#endif
+#endif  // !BUILDFLAG(IS_IOS)
 
 TEST_F(AccountTrackerServiceTest, TokenAvailableTwice_UserInfoOnce) {
   SimulateTokenAvailable(kAccountKeyAlpha);

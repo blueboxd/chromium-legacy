@@ -44,6 +44,7 @@ class FocusgroupControllerTest : public PageTestBase {
 
   void AssertForwardDoesntMoveFocusWhenOutOfFocusgroup(int key);
   void AssertForwardDoesntMoveFocusWhenOnFocusgroupRoot(int key);
+  void AssertForwardDoesntMoveWhenOnNonFocusgroupItem(int key);
   void AssertForwardMovesToNextItem(int key);
   void AssertForwardDoesntMoveWhenOnlyOneItem(int key);
   void AssertForwardDoesntMoveWhenOnlyOneItemAndWraps(int key);
@@ -66,6 +67,7 @@ class FocusgroupControllerTest : public PageTestBase {
 
   void AssertBackwardDoesntMoveFocusWhenOutOfFocusgroup(int key);
   void AssertBackwardDoesntMoveFocusWhenOnFocusgroupRoot(int key);
+  void AssertBackwardDoesntMoveWhenOnNonFocusgroupItem(int key);
   void AssertBackwardMovesFocusToPreviousItem(int key);
   void AssertBackwardSkipsNonFocusableItems(int key);
   void AssertBackwardDoesntMoveWhenOnlyOneItem(int key);
@@ -276,6 +278,157 @@ TEST_F(FocusgroupControllerTest, WrapsInDirection) {
                                       FocusgroupDirection::kForwardVertical));
 }
 
+TEST_F(FocusgroupControllerTest, FocusgroupExtendsInAxis) {
+  FocusgroupFlags focusgroup = FocusgroupFlags::kNone;
+  FocusgroupFlags extending_focusgroup = FocusgroupFlags::kNone;
+
+  ASSERT_FALSE(utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                              FocusgroupDirection::kNone));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardHorizontal));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardVertical));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kForwardHorizontal));
+  ASSERT_FALSE(utils::FocusgroupExtendsInAxis(
+      extending_focusgroup, focusgroup, FocusgroupDirection::kForwardVertical));
+
+  focusgroup |= FocusgroupFlags::kHorizontal | FocusgroupFlags::kVertical;
+
+  ASSERT_FALSE(utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                              FocusgroupDirection::kNone));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardHorizontal));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardVertical));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kForwardHorizontal));
+  ASSERT_FALSE(utils::FocusgroupExtendsInAxis(
+      extending_focusgroup, focusgroup, FocusgroupDirection::kForwardVertical));
+
+  extending_focusgroup |=
+      FocusgroupFlags::kHorizontal | FocusgroupFlags::kVertical;
+
+  ASSERT_FALSE(utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                              FocusgroupDirection::kNone));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardHorizontal));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardVertical));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kForwardHorizontal));
+  ASSERT_FALSE(utils::FocusgroupExtendsInAxis(
+      extending_focusgroup, focusgroup, FocusgroupDirection::kForwardVertical));
+
+  extending_focusgroup = FocusgroupFlags::kExtend;
+
+  ASSERT_TRUE(utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                             FocusgroupDirection::kNone));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardHorizontal));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardVertical));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kForwardHorizontal));
+  ASSERT_FALSE(utils::FocusgroupExtendsInAxis(
+      extending_focusgroup, focusgroup, FocusgroupDirection::kForwardVertical));
+
+  extending_focusgroup |= FocusgroupFlags::kHorizontal;
+
+  ASSERT_TRUE(utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                             FocusgroupDirection::kNone));
+  ASSERT_TRUE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardHorizontal));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardVertical));
+  ASSERT_TRUE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kForwardHorizontal));
+  ASSERT_FALSE(utils::FocusgroupExtendsInAxis(
+      extending_focusgroup, focusgroup, FocusgroupDirection::kForwardVertical));
+
+  extending_focusgroup |= FocusgroupFlags::kVertical;
+
+  ASSERT_TRUE(utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                             FocusgroupDirection::kNone));
+  ASSERT_TRUE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardHorizontal));
+  ASSERT_TRUE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardVertical));
+  ASSERT_TRUE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kForwardHorizontal));
+  ASSERT_TRUE(utils::FocusgroupExtendsInAxis(
+      extending_focusgroup, focusgroup, FocusgroupDirection::kForwardVertical));
+
+  focusgroup = FocusgroupFlags::kNone;
+  extending_focusgroup = FocusgroupFlags::kExtend |
+                         FocusgroupFlags::kHorizontal |
+                         FocusgroupFlags::kVertical;
+
+  ASSERT_FALSE(utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                              FocusgroupDirection::kNone));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardHorizontal));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardVertical));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kForwardHorizontal));
+  ASSERT_FALSE(utils::FocusgroupExtendsInAxis(
+      extending_focusgroup, focusgroup, FocusgroupDirection::kForwardVertical));
+
+  focusgroup |= FocusgroupFlags::kVertical;
+
+  ASSERT_TRUE(utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                             FocusgroupDirection::kNone));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardHorizontal));
+  ASSERT_TRUE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardVertical));
+  ASSERT_FALSE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kForwardHorizontal));
+  ASSERT_TRUE(utils::FocusgroupExtendsInAxis(
+      extending_focusgroup, focusgroup, FocusgroupDirection::kForwardVertical));
+
+  focusgroup |= FocusgroupFlags::kHorizontal;
+
+  ASSERT_TRUE(utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                             FocusgroupDirection::kNone));
+  ASSERT_TRUE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardHorizontal));
+  ASSERT_TRUE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kBackwardVertical));
+  ASSERT_TRUE(
+      utils::FocusgroupExtendsInAxis(extending_focusgroup, focusgroup,
+                                     FocusgroupDirection::kForwardHorizontal));
+  ASSERT_TRUE(utils::FocusgroupExtendsInAxis(
+      extending_focusgroup, focusgroup, FocusgroupDirection::kForwardVertical));
+}
+
 TEST_F(FocusgroupControllerTest, FindNearestFocusgroupAncestor) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <div>
@@ -345,6 +498,66 @@ TEST_F(FocusgroupControllerTest, NextElement) {
   ASSERT_EQ(utils::NextElement(fg1, /* skip_subtree */ true), fg2);
   ASSERT_EQ(utils::NextElement(fg3, /* skip_subtree */ false), item4);
   ASSERT_EQ(utils::NextElement(item4, /* skip_subtree */ false), item5);
+}
+
+TEST_F(FocusgroupControllerTest, PreviousElement) {
+  GetDocument().body()->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
+    <div id=fg1 focusgroup>
+      <span id=item1></span>
+      <span id=item2 tabindex=-1></span>
+    </div>
+    <div id=fg2 focusgroup>
+      <span id=item3 tabindex=-1></span>
+    </div>
+    <div id=fg3 focusgroup>
+        <template shadowroot=open>
+          <span id=item4 tabindex=-1></span>
+        </template>
+    </div>
+    <span id=item5 tabindex=-1></span>
+  )HTML");
+  auto* fg3 = GetElementById("fg3");
+  ASSERT_TRUE(fg3);
+
+  auto* item3 = GetElementById("item3");
+  auto* item4 = fg3->GetShadowRoot()->getElementById("item4");
+  auto* item5 = GetElementById("item5");
+  ASSERT_TRUE(item3);
+  ASSERT_TRUE(item4);
+  ASSERT_TRUE(item5);
+
+  ASSERT_EQ(utils::PreviousElement(item5), item4);
+  ASSERT_EQ(utils::PreviousElement(item4), fg3);
+  ASSERT_EQ(utils::PreviousElement(fg3), item3);
+}
+
+TEST_F(FocusgroupControllerTest, LastElementWithin) {
+  GetDocument().body()->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
+    <div id=fg1 focusgroup>
+      <span id=item1></span>
+      <span id=item2 tabindex=-1></span>
+    </div>
+    <div id=fg2 focusgroup>
+        <template shadowroot=open>
+          <span id=item3 tabindex=-1></span>
+          <span id=item4></span>
+        </template>
+    </div>
+    <span id=item5 tabindex=-1></span>
+  )HTML");
+  auto* fg1 = GetElementById("fg1");
+  auto* fg2 = GetElementById("fg2");
+  ASSERT_TRUE(fg1);
+  ASSERT_TRUE(fg2);
+
+  auto* item2 = GetElementById("item2");
+  auto* item4 = fg2->GetShadowRoot()->getElementById("item4");
+  ASSERT_TRUE(item2);
+  ASSERT_TRUE(item4);
+
+  ASSERT_EQ(utils::LastElementWithin(fg1), item2);
+  ASSERT_EQ(utils::LastElementWithin(fg2), item4);
+  ASSERT_EQ(utils::LastElementWithin(item4), nullptr);
 }
 
 TEST_F(FocusgroupControllerTest, IsFocusgroupItem) {
@@ -520,6 +733,40 @@ TEST_F(FocusgroupControllerTest, ArrowDownDoesntMoveFocusWhenOnFocusgroupRoot) {
 TEST_F(FocusgroupControllerTest,
        ArrowRightDoesntMoveFocusWhenOnFocusgroupRoot) {
   AssertForwardDoesntMoveFocusWhenOnFocusgroupRoot(ui::DomKey::ARROW_RIGHT);
+}
+
+// When the focus is set on a focusable element that isn't a focusgroup item, an
+// arrow key press shouldn't move the focus at all.
+void FocusgroupControllerTest::AssertForwardDoesntMoveWhenOnNonFocusgroupItem(
+    int key) {
+  ASSERT_TRUE(key == ui::DomKey::ARROW_DOWN || key == ui::DomKey::ARROW_RIGHT);
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <div tabindex=-1 focusgroup>
+      <div>
+        <span id=nonitem1 tabindex=0></span>
+      </div>
+      <span id=item1 tabindex=0></span>
+      <span id=item2 tabindex=-1></span>
+    </div>
+  )HTML");
+  auto* nonitem1 = GetElementById("nonitem1");
+  ASSERT_TRUE(nonitem1);
+  nonitem1->focus();
+
+  // Send the key pressed event from that element.
+  auto* event = KeyDownEvent(key, nonitem1);
+  SendEvent(event);
+
+  // The focus shouldn't have moved.
+  ASSERT_EQ(GetDocument().FocusedElement(), nonitem1);
+}
+
+TEST_F(FocusgroupControllerTest, ArrowDownDoesntMoveWhenOnNonFocusgroupItem) {
+  AssertForwardDoesntMoveWhenOnNonFocusgroupItem(ui::DomKey::ARROW_DOWN);
+}
+
+TEST_F(FocusgroupControllerTest, ArrowRightDoesntMoveWhenOnNonFocusgroupItem) {
+  AssertForwardDoesntMoveWhenOnNonFocusgroupItem(ui::DomKey::ARROW_RIGHT);
 }
 
 // When the focus is set on a focusgroup item, an arrow key press should move
@@ -1320,12 +1567,6 @@ TEST_F(FocusgroupControllerTest,
   AssertForwardWrapsAndSkipsOrthogonalInnerFocusgroup(ui::DomKey::ARROW_RIGHT);
 }
 
-// TODO(bebeaudr): All tests starting with "DISABLED_TDD_" are expected to
-// purposefully fail but should eventually be enabled and pass. As part of our
-// efforts on implementing the focusgroup feature, we adopt a test driven
-// development approach to guide our implementation of the core parts of the
-// algorithm.
-
 // *****************************************************************************
 // FORWARD NAVIGATION - UP ARROW & LEFT ARROW
 // *****************************************************************************
@@ -1393,6 +1634,40 @@ TEST_F(FocusgroupControllerTest, ArrowLeftDoesntMoveFocusWhenOnFocusgroupRoot) {
   AssertBackwardDoesntMoveFocusWhenOnFocusgroupRoot(ui::DomKey::ARROW_LEFT);
 }
 
+// When the focus is set on a focusable element that isn't a focusgroup item, an
+// arrow key press shouldn't move the focus at all.
+void FocusgroupControllerTest::AssertBackwardDoesntMoveWhenOnNonFocusgroupItem(
+    int key) {
+  ASSERT_TRUE(key == ui::DomKey::ARROW_UP || key == ui::DomKey::ARROW_LEFT);
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <div tabindex=-1 focusgroup>
+      <div>
+        <span id=nonitem1 tabindex=0></span>
+      </div>
+      <span id=item1 tabindex=0></span>
+      <span id=item2 tabindex=-1></span>
+    </div>
+  )HTML");
+  auto* nonitem1 = GetElementById("nonitem1");
+  ASSERT_TRUE(nonitem1);
+  nonitem1->focus();
+
+  // Send the key pressed event from that element.
+  auto* event = KeyDownEvent(key, nonitem1);
+  SendEvent(event);
+
+  // The focus shouldn't have moved.
+  ASSERT_EQ(GetDocument().FocusedElement(), nonitem1);
+}
+
+TEST_F(FocusgroupControllerTest, ArrowUpDoesntMoveWhenOnNonFocusgroupItem) {
+  AssertBackwardDoesntMoveWhenOnNonFocusgroupItem(ui::DomKey::ARROW_UP);
+}
+
+TEST_F(FocusgroupControllerTest, ArrowLeftDoesntMoveWhenOnNonFocusgroupItem) {
+  AssertBackwardDoesntMoveWhenOnNonFocusgroupItem(ui::DomKey::ARROW_LEFT);
+}
+
 // When the focus is set on the last element of a focusgroup, a backward key
 // press should move the focus to the previous item.
 void FocusgroupControllerTest::AssertBackwardMovesFocusToPreviousItem(int key) {
@@ -1417,12 +1692,11 @@ void FocusgroupControllerTest::AssertBackwardMovesFocusToPreviousItem(int key) {
   ASSERT_EQ(GetDocument().FocusedElement(), item1);
 }
 
-TEST_F(FocusgroupControllerTest, DISABLED_TDD_ArrowUpMovesFocusToPreviousItem) {
+TEST_F(FocusgroupControllerTest, ArrowUpMovesFocusToPreviousItem) {
   AssertBackwardMovesFocusToPreviousItem(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftMovesFocusToPreviousItem) {
+TEST_F(FocusgroupControllerTest, ArrowLeftMovesFocusToPreviousItem) {
   AssertBackwardMovesFocusToPreviousItem(ui::DomKey::ARROW_LEFT);
 }
 
@@ -1453,11 +1727,11 @@ void FocusgroupControllerTest::AssertBackwardSkipsNonFocusableItems(int key) {
   ASSERT_EQ(GetDocument().FocusedElement(), item1);
 }
 
-TEST_F(FocusgroupControllerTest, DISABLED_TDD_ArrowUpSkipsNonFocusableItems) {
+TEST_F(FocusgroupControllerTest, ArrowUpSkipsNonFocusableItems) {
   AssertBackwardSkipsNonFocusableItems(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest, DISABLED_TDD_ArrowLeftSkipsNonFocusableItems) {
+TEST_F(FocusgroupControllerTest, ArrowLeftSkipsNonFocusableItems) {
   AssertBackwardSkipsNonFocusableItems(ui::DomKey::ARROW_LEFT);
 }
 
@@ -1484,13 +1758,11 @@ void FocusgroupControllerTest::AssertBackwardDoesntMoveWhenOnlyOneItem(
   ASSERT_EQ(GetDocument().FocusedElement(), item1);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpDoesntMoveWhenOnlyOneItem) {
+TEST_F(FocusgroupControllerTest, ArrowUpDoesntMoveWhenOnlyOneItem) {
   AssertBackwardDoesntMoveWhenOnlyOneItem(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftDoesntMoveWhenOnlyOneItem) {
+TEST_F(FocusgroupControllerTest, ArrowLeftDoesntMoveWhenOnlyOneItem) {
   AssertBackwardDoesntMoveWhenOnlyOneItem(ui::DomKey::ARROW_LEFT);
 }
 
@@ -1517,13 +1789,11 @@ void FocusgroupControllerTest::AssertBackwardDoesntMoveWhenOnlyOneItemAndWraps(
   ASSERT_EQ(GetDocument().FocusedElement(), item1);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpDoesntMoveWhenOnlyOneItemAndWraps) {
+TEST_F(FocusgroupControllerTest, ArrowUpDoesntMoveWhenOnlyOneItemAndWraps) {
   AssertBackwardDoesntMoveWhenOnlyOneItemAndWraps(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftDoesntMoveWhenOnlyOneItemAndWraps) {
+TEST_F(FocusgroupControllerTest, ArrowLeftDoesntMoveWhenOnlyOneItemAndWraps) {
   AssertBackwardDoesntMoveWhenOnlyOneItemAndWraps(ui::DomKey::ARROW_LEFT);
 }
 
@@ -1563,13 +1833,11 @@ void FocusgroupControllerTest::AssertBackwardDoesntMoveFocusAxisNotSupported(
   ASSERT_EQ(GetDocument().FocusedElement(), item2);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpDoesntMoveFocusAxisNotSupported) {
+TEST_F(FocusgroupControllerTest, ArrowUpDoesntMoveFocusAxisNotSupported) {
   AssertBackwardDoesntMoveFocusAxisNotSupported(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftDoesntMoveFocusAxisNotSupported) {
+TEST_F(FocusgroupControllerTest, ArrowLeftDoesntMoveFocusAxisNotSupported) {
   AssertBackwardDoesntMoveFocusAxisNotSupported(ui::DomKey::ARROW_LEFT);
 }
 
@@ -1613,12 +1881,12 @@ void FocusgroupControllerTest::
 }
 
 TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpMovesFocusWhenInArrowAxisOnlyFocusgroup) {
+       ArrowUpMovesFocusWhenInArrowAxisOnlyFocusgroup) {
   AssertBackwardMovesFocusWhenInArrowAxisOnlyFocusgroup(ui::DomKey::ARROW_UP);
 }
 
 TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftMovesFocusWhenInArrowAxisOnlyFocusgroup) {
+       ArrowLeftMovesFocusWhenInArrowAxisOnlyFocusgroup) {
   AssertBackwardMovesFocusWhenInArrowAxisOnlyFocusgroup(ui::DomKey::ARROW_LEFT);
 }
 
@@ -1655,13 +1923,11 @@ void FocusgroupControllerTest::AssertBackwardDescendIntoExtendingFocusgroup(
   ASSERT_EQ(GetDocument().FocusedElement(), item3);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpDescendIntoExtendingFocusgroup) {
+TEST_F(FocusgroupControllerTest, ArrowUpDescendIntoExtendingFocusgroup) {
   AssertBackwardDescendIntoExtendingFocusgroup(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftDescendIntoExtendingFocusgroup) {
+TEST_F(FocusgroupControllerTest, ArrowLeftDescendIntoExtendingFocusgroup) {
   AssertBackwardDescendIntoExtendingFocusgroup(ui::DomKey::ARROW_LEFT);
 }
 
@@ -1695,13 +1961,11 @@ void FocusgroupControllerTest::AssertBackwardSkipsNonFocusgroupSubtree(
   ASSERT_EQ(GetDocument().FocusedElement(), item1);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpSkipsNonFocusgroupSubtree) {
+TEST_F(FocusgroupControllerTest, ArrowUpSkipsNonFocusgroupSubtree) {
   AssertBackwardSkipsNonFocusgroupSubtree(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftSkipsNonFocusgroupSubtree) {
+TEST_F(FocusgroupControllerTest, ArrowLeftSkipsNonFocusgroupSubtree) {
   AssertBackwardSkipsNonFocusgroupSubtree(ui::DomKey::ARROW_LEFT);
 }
 
@@ -1759,13 +2023,11 @@ void FocusgroupControllerTest::AssertBackwardSkipsOrthogonalFocusgroup(
   ASSERT_EQ(GetDocument().FocusedElement(), item1);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpSkipsOrthogonalFocusgroup) {
+TEST_F(FocusgroupControllerTest, ArrowUpSkipsOrthogonalFocusgroup) {
   AssertBackwardSkipsOrthogonalFocusgroup(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftSkipsOrthogonalFocusgroup) {
+TEST_F(FocusgroupControllerTest, ArrowLeftSkipsOrthogonalFocusgroup) {
   AssertBackwardSkipsOrthogonalFocusgroup(ui::DomKey::ARROW_LEFT);
 }
 
@@ -1802,11 +2064,11 @@ void FocusgroupControllerTest::AssertBackwardSkipsRootFocusgroup(int key) {
   ASSERT_EQ(GetDocument().FocusedElement(), item1);
 }
 
-TEST_F(FocusgroupControllerTest, DISABLED_TDD_ArrowUpSkipsRootFocusgroup) {
+TEST_F(FocusgroupControllerTest, ArrowUpSkipsRootFocusgroup) {
   AssertBackwardSkipsRootFocusgroup(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest, DISABLED_TDD_ArrowLeftSkipsRootFocusgroup) {
+TEST_F(FocusgroupControllerTest, ArrowLeftSkipsRootFocusgroup) {
   AssertBackwardSkipsRootFocusgroup(ui::DomKey::ARROW_LEFT);
 }
 
@@ -1844,13 +2106,11 @@ void FocusgroupControllerTest::AssertBackwardSkipsEmptyWrappingFocusgroup(
   ASSERT_EQ(GetDocument().FocusedElement(), item1);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpSkipsEmptyWrappingFocusgroup) {
+TEST_F(FocusgroupControllerTest, ArrowUpSkipsEmptyWrappingFocusgroup) {
   AssertBackwardSkipsEmptyWrappingFocusgroup(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftSkipsEmptyWrappingFocusgroup) {
+TEST_F(FocusgroupControllerTest, ArrowLeftSkipsEmptyWrappingFocusgroup) {
   AssertBackwardSkipsEmptyWrappingFocusgroup(ui::DomKey::ARROW_LEFT);
 }
 
@@ -1893,13 +2153,11 @@ void FocusgroupControllerTest::AssertBackwardSkipsRootFocusgroupComplexCase(
   ASSERT_EQ(GetDocument().FocusedElement(), item1);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpSkipsRootFocusgroupComplexCase) {
+TEST_F(FocusgroupControllerTest, ArrowUpSkipsRootFocusgroupComplexCase) {
   AssertBackwardSkipsRootFocusgroupComplexCase(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftSkipsRootFocusgroupComplexCase) {
+TEST_F(FocusgroupControllerTest, ArrowLeftSkipsRootFocusgroupComplexCase) {
   AssertBackwardSkipsRootFocusgroupComplexCase(ui::DomKey::ARROW_LEFT);
 }
 
@@ -1967,13 +2225,12 @@ void FocusgroupControllerTest::
   ASSERT_EQ(GetDocument().FocusedElement(), item1);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpSkipsOrthogonalFocusgroupComplexCase) {
+TEST_F(FocusgroupControllerTest, ArrowUpSkipsOrthogonalFocusgroupComplexCase) {
   AssertBackwardSkipsOrthogonalFocusgroupComplexCase(ui::DomKey::ARROW_UP);
 }
 
 TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftSkipsOrthogonalFocusgroupComplexCase) {
+       ArrowLeftSkipsOrthogonalFocusgroupComplexCase) {
   AssertBackwardSkipsOrthogonalFocusgroupComplexCase(ui::DomKey::ARROW_LEFT);
 }
 
@@ -2035,13 +2292,11 @@ void FocusgroupControllerTest::AssertBackwardAscendsToParentFocusgroup(
   ASSERT_EQ(GetDocument().FocusedElement(), item2);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpAscendsToParentFocusgroup) {
+TEST_F(FocusgroupControllerTest, ArrowUpAscendsToParentFocusgroup) {
   AssertBackwardAscendsToParentFocusgroup(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftAscendsToParentFocusgroup) {
+TEST_F(FocusgroupControllerTest, ArrowLeftAscendsToParentFocusgroup) {
   AssertBackwardAscendsToParentFocusgroup(ui::DomKey::ARROW_LEFT);
 }
 
@@ -2068,13 +2323,11 @@ void FocusgroupControllerTest::AssertBackwardDoesntWrapWhenNotSupported(
   ASSERT_EQ(GetDocument().FocusedElement(), item1);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpDoesntWrapWhenNotSupported) {
+TEST_F(FocusgroupControllerTest, ArrowUpDoesntWrapWhenNotSupported) {
   AssertBackwardDoesntWrapWhenNotSupported(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftDoesntWrapWhenNotSupported) {
+TEST_F(FocusgroupControllerTest, ArrowLeftDoesntWrapWhenNotSupported) {
   AssertBackwardDoesntWrapWhenNotSupported(ui::DomKey::ARROW_LEFT);
 }
 
@@ -2104,11 +2357,11 @@ void FocusgroupControllerTest::AssertBackwardWrapsSuccessfully(int key) {
   ASSERT_EQ(GetDocument().FocusedElement(), item3);
 }
 
-TEST_F(FocusgroupControllerTest, DISABLED_TDD_ArrowUpWrapsSuccessfully) {
+TEST_F(FocusgroupControllerTest, ArrowUpWrapsSuccessfully) {
   AssertBackwardWrapsSuccessfully(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest, DISABLED_TDD_ArrowLeftWrapsSuccessfully) {
+TEST_F(FocusgroupControllerTest, ArrowLeftWrapsSuccessfully) {
   AssertBackwardWrapsSuccessfully(ui::DomKey::ARROW_LEFT);
 }
 
@@ -2152,12 +2405,11 @@ void FocusgroupControllerTest::AssertBackwardWrapsSuccessfullyInAxis(int key) {
   ASSERT_EQ(GetDocument().FocusedElement(), item3);
 }
 
-TEST_F(FocusgroupControllerTest, DISABLED_TDD_ArrowUpWrapsSuccessfullyInAxis) {
+TEST_F(FocusgroupControllerTest, ArrowUpWrapsSuccessfullyInAxis) {
   AssertBackwardWrapsSuccessfullyInAxis(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftWrapsSuccessfullyInAxis) {
+TEST_F(FocusgroupControllerTest, ArrowLeftWrapsSuccessfullyInAxis) {
   AssertBackwardWrapsSuccessfullyInAxis(ui::DomKey::ARROW_LEFT);
 }
 
@@ -2200,13 +2452,11 @@ void FocusgroupControllerTest::AssertBackwardDoesntWrapInOrthogonalAxis(
   ASSERT_EQ(GetDocument().FocusedElement(), item1);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpDoesntWrapInOrthogonalAxis) {
+TEST_F(FocusgroupControllerTest, ArrowUpDoesntWrapInOrthogonalAxis) {
   AssertBackwardDoesntWrapInOrthogonalAxis(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftDoesntWrapInOrthogonalAxis) {
+TEST_F(FocusgroupControllerTest, ArrowLeftDoesntWrapInOrthogonalAxis) {
   AssertBackwardDoesntWrapInOrthogonalAxis(ui::DomKey::ARROW_LEFT);
 }
 
@@ -2258,12 +2508,12 @@ void FocusgroupControllerTest::
 }
 
 TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpWrapsSuccessfullyInExtendingFocusgroup) {
+       ArrowUpWrapsSuccessfullyInExtendingFocusgroup) {
   AssertBackwardWrapsSuccessfullyInExtendingFocusgroup(ui::DomKey::ARROW_UP);
 }
 
 TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftWrapsSuccessfullyInExtendingFocusgroup) {
+       ArrowLeftWrapsSuccessfullyInExtendingFocusgroup) {
   AssertBackwardWrapsSuccessfullyInExtendingFocusgroup(ui::DomKey::ARROW_LEFT);
 }
 
@@ -2303,13 +2553,11 @@ void FocusgroupControllerTest::AssertBackwardWrapsSuccessfullyInComplexCase(
   ASSERT_EQ(GetDocument().FocusedElement(), item3);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowUpWrapsSuccessfullyInComplexCase) {
+TEST_F(FocusgroupControllerTest, ArrowUpWrapsSuccessfullyInComplexCase) {
   AssertBackwardWrapsSuccessfullyInComplexCase(ui::DomKey::ARROW_UP);
 }
 
-TEST_F(FocusgroupControllerTest,
-       DISABLED_TDD_ArrowLeftWrapsSuccessfullyInComplexCase) {
+TEST_F(FocusgroupControllerTest, ArrowLeftWrapsSuccessfullyInComplexCase) {
   AssertBackwardWrapsSuccessfullyInComplexCase(ui::DomKey::ARROW_LEFT);
 }
 }  // namespace blink

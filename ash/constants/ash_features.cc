@@ -292,11 +292,6 @@ const base::Feature kClipboardHistoryNudgeSessionReset{
 const base::Feature kClipboardHistoryScreenshotNudge{
     "ClipboardHistoryScreenshotNudge", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables compositing-based throttling to throttle appropriate frame sinks that
-// do not need to be refreshed at high fps.
-const base::Feature kCompositingBasedThrottling{
-    "CompositingBasedThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables contextual nudges for gesture education.
 const base::Feature kContextualNudges{"ContextualNudges",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -468,7 +463,7 @@ const base::Feature kEcheSWA{"EcheSWA", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Moves Eche into a custom widget.
 const base::Feature kEcheCustomWidget{"EcheCustomWidget",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the Debug Mode of Eche.
 const base::Feature kEcheSWADebugMode{"EcheSWADebugMode",
@@ -1565,10 +1560,6 @@ bool IsLauncherItemColorSyncEnabled() {
 
 bool IsClipboardHistoryScreenshotNudgeEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryScreenshotNudge);
-}
-
-bool IsCompositingBasedThrottlingEnabled() {
-  return base::FeatureList::IsEnabled(kCompositingBasedThrottling);
 }
 
 bool IsCryptohomeRecoveryFlowEnabled() {

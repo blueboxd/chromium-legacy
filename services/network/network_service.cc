@@ -49,6 +49,7 @@
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/public/dns_config_overrides.h"
 #include "net/dns/public/dns_over_https_config.h"
+#include "net/dns/public/doh_provider_entry.h"
 #include "net/dns/system_dns_config_change_notifier.h"
 #include "net/dns/test_dns_config_service.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -407,13 +408,14 @@ void NetworkService::ReplaceSystemDnsConfigForTesting() {
 }
 
 void NetworkService::SetTestDohConfigForTesting(
+    net::SecureDnsMode secure_dns_mode,
     const net::DnsOverHttpsConfig& doh_config) {
   DCHECK_EQ(dns_config_overrides_set_by_, FunctionTag::None);
   dns_config_overrides_set_by_ = FunctionTag::SetTestDohConfigForTesting;
 
   // Overlay DoH settings on top of the system config, whenever it is received.
   net::DnsConfigOverrides overrides;
-  overrides.secure_dns_mode = net::SecureDnsMode::kSecure;
+  overrides.secure_dns_mode = secure_dns_mode;
   overrides.dns_over_https_config = doh_config;
   host_resolver_manager_->SetDnsConfigOverrides(std::move(overrides));
 
@@ -543,9 +545,16 @@ void NetworkService::ConfigureStubHostResolver(
   overrides.secure_dns_mode = secure_dns_mode;
   overrides.allow_dns_over_https_upgrade =
       base::FeatureList::IsEnabled(features::kDnsOverHttpsUpgrade);
-  overrides.disabled_upgrade_providers =
-      SplitString(features::kDnsOverHttpsUpgradeDisabledProvidersParam.Get(),
-                  ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  // Instruct HostResolverManager not to auto-upgrade any DoH providers whose
+  // features are disabled.
+  std::vector<std::string> disabled_providers;
+  for (const net::DohProviderEntry* provider :
+       net::DohProviderEntry::GetList()) {
+    if (!base::FeatureList::IsEnabled(provider->feature))
+      disabled_providers.push_back(provider->provider);
+  }
+  if (!disabled_providers.empty())
+    overrides.disabled_upgrade_providers.emplace(std::move(disabled_providers));
 
   host_resolver_manager_->SetDnsConfigOverrides(overrides);
 }

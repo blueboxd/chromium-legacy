@@ -1579,7 +1579,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(ENABLE_EXTENSIONS) && (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX))
+#if BUILDFLAG(ENABLE_EXTENSIONS) && (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_FUCHSIA))
   { key::kChromeAppsEnabled,
     extensions::pref_names::kChromeAppsEnabled,
     base::Value::Type::BOOLEAN },
@@ -1620,6 +1620,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kWindowPlacementBlockedForUrls,
     prefs::kManagedWindowPlacementBlockedForUrls,
     base::Value::Type::LIST },
+  { key::kWebSQLAccess,
+    policy_prefs::kWebSQLAccess,
+    base::Value::Type::BOOLEAN },
 #if !BUILDFLAG(IS_ANDROID)
   { key::kWebAuthenticationRemoteProxiedRequestsAllowed,
     webauthn::pref_names::kRemoteProxiedRequestsAllowed,

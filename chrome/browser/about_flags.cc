@@ -2427,9 +2427,13 @@ const FeatureEntry::FeatureVariation kDrawPredictedPointVariations[] = {
 #if BUILDFLAG(IS_ANDROID)
 const FeatureEntry::FeatureParam kFedCmVariationAutoSignin[] = {
     {features::kFedCmAutoSigninFieldTrialParamName, "true"}};
+const FeatureEntry::FeatureParam kFedCmVariationIdpSignout[] = {
+    {features::kFedCmIdpSignoutFieldTrialParamName, "true"}};
 const FeatureEntry::FeatureVariation kFedCmFeatureVariations[] = {
-    {"- with FedCM auto-signin", kFedCmVariationAutoSignin,
-     std::size(kFedCmVariationAutoSignin), nullptr}};
+    {"- with FedCM auto sign-in", kFedCmVariationAutoSignin,
+     std::size(kFedCmVariationAutoSignin), nullptr},
+    {"- with FedCM IDP sign-out", kFedCmVariationIdpSignout,
+     std::size(kFedCmVariationIdpSignout), nullptr}};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -3273,10 +3277,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableUnifiedDesktopName,
      flag_descriptions::kAshEnableUnifiedDesktopDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableUnifiedDesktop)},
-    {"enable-compositing-based-throttling",
-     flag_descriptions::kCompositingBasedThrottling,
-     flag_descriptions::kCompositingBasedThrottlingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kCompositingBasedThrottling)},
     {"bluetooth-fix-a2dp-packet-size",
      flag_descriptions::kBluetoothFixA2dpPacketSizeName,
      flag_descriptions::kBluetoothFixA2dpPacketSizeDescription, kOsCrOS,
@@ -8340,6 +8340,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kProjectorExcludeTranscriptDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kProjectorExcludeTranscript)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    {"web-sql-access", flag_descriptions::kWebSQLAccessName,
+     flag_descriptions::kWebSQLAccessDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kWebSQLAccess)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -26,7 +26,7 @@ import {SiteSettingsDelegate} from './site_settings_mixin.js';
 const patternRegExp = new RegExp(
     '^' +
     // Scheme; optional.
-    '((http|https|\\*)://)?' +
+    '((http|https)://)?' +
     // Hostname or localhost, required.
     '([a-z0-9\\.-]+\\.[a-z0-9]+|localhost)' +
     // Port, optional.
@@ -146,7 +146,7 @@ export class SitePermissionsEditUrlDialogElement extends PolymerElement {
       return;
     }
 
-    this.delegate.removeUserSpecifiedSite(this.siteSet, this.siteToEdit)
+    this.delegate.removeUserSpecifiedSites(this.siteSet, [this.siteToEdit])
         .then(() => {
           this.addUserSpecifiedSite_(pattern);
         });
@@ -158,7 +158,7 @@ export class SitePermissionsEditUrlDialogElement extends PolymerElement {
   }
 
   private addUserSpecifiedSite_(pattern: string) {
-    this.delegate.addUserSpecifiedSite(this.siteSet, pattern)
+    this.delegate.addUserSpecifiedSites(this.siteSet, [pattern])
         .then(
             () => {
               this.$.dialog.close();

@@ -138,6 +138,18 @@
       'ios_runtime_cache_15_2',
     ],
   },
+  'SIM_IPAD_AIR_2_15_4': {
+    'args': [
+      '--platform',
+      'iPad Air 2',
+      '--version',
+      '15.4'
+    ],
+    'identifier': 'iPad Air 2 15.4',
+    'mixins': [
+      'ios_runtime_cache_15_4',
+    ],
+  },
   'SIM_IPAD_AIR_3RD_GEN_14_5': {
     'args': [
       '--platform',
@@ -212,6 +224,18 @@
       'ios_runtime_cache_15_2',
     ],
   },
+  'SIM_IPHONE_6S_15_4': {
+    'args': [
+      '--platform',
+      'iPhone 6s',
+      '--version',
+      '15.4',
+    ],
+    'identifier': 'iPhone 6s 15.4',
+    'mixins': [
+      'ios_runtime_cache_15_4',
+    ],
+  },
   'SIM_IPHONE_6S_PLUS_14_4': {
     'args': [
       '--platform',
@@ -246,6 +270,18 @@
     'identifier': 'iPhone 6s Plus 15.2',
     'mixins': [
       'ios_runtime_cache_15_2',
+    ],
+  },
+  'SIM_IPHONE_6S_PLUS_15_4': {
+    'args': [
+      '--platform',
+      'iPhone 6s Plus',
+      '--version',
+      '15.4',
+    ],
+    'identifier': 'iPhone 6s Plus 15.4',
+    'mixins': [
+      'ios_runtime_cache_15_4',
     ],
   },
   'SIM_IPHONE_7_14_4': {
@@ -284,6 +320,18 @@
       'ios_runtime_cache_15_2',
     ],
   },
+  'SIM_IPHONE_7_15_4': {
+    'args': [
+      '--platform',
+      'iPhone 7',
+      '--version',
+      '15.4',
+    ],
+    'identifier': 'iPhone 7 15.4',
+    'mixins': [
+      'ios_runtime_cache_15_4',
+    ],
+  },
   'SIM_IPHONE_SE_1ST_GEN_14_4': {
     'args': [
       '--platform',
@@ -318,6 +366,18 @@
     'identifier': 'iPhone SE (1st generation) 15.2',
     'mixins': [
       'ios_runtime_cache_15_2',
+    ],
+  },
+  'SIM_IPHONE_SE_1ST_GEN_15_4': {
+    'args': [
+      '--platform',
+      'iPhone SE (1st generation)',
+      '--version',
+      '15.4',
+    ],
+    'identifier': 'iPhone SE (1st generation) 15.4',
+    'mixins': [
+      'ios_runtime_cache_15_4',
     ],
   },
   'SIM_IPHONE_X_14_4': {
@@ -368,6 +428,18 @@
       'ios_runtime_cache_15_2',
     ],
   },
+  'SIM_IPHONE_X_15_4': {
+    'args': [
+      '--platform',
+      'iPhone X',
+      '--version',
+      '15.4',
+    ],
+    'identifier': 'iPhone X 15.4',
+    'mixins': [
+      'ios_runtime_cache_15_4',
+    ],
+  },
   'WEBLAYER_10_AND_M_IMPL_SKEW_TESTS_NTH_MILESTONE': {
     'args': [
       '--webview-apk-path=apks/AOSP_SystemWebView.apk',
@@ -387,7 +459,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M100',
-          'revision': 'version:100.0.4896.39',
+          'revision': 'version:100.0.4896.40',
         }
       ],
     },
@@ -531,7 +603,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M100',
-          'revision': 'version:100.0.4896.39',
+          'revision': 'version:100.0.4896.40',
         }
       ],
     },
@@ -675,7 +747,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M100',
-          'revision': 'version:100.0.4896.39',
+          'revision': 'version:100.0.4896.40',
         }
       ],
     },
@@ -812,8 +884,8 @@
   'CROS_ATLAS_RELEASE_DEV': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_chrome_version': '100.0.4896.13',
-      'cros_img': 'atlas-release/R100-14526.6.0',
+      'cros_chrome_version': '101.0.4928.0',
+      'cros_img': 'atlas-release/R101-14553.0.0',
     },
     'enabled': True,
     'identifier': 'ATLAS_RELEASE_DEV',
@@ -848,8 +920,8 @@
   'CROS_EVE_RELEASE_DEV': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_chrome_version': '101.0.4918.0',
-      'cros_img': 'eve-release/R101-14543.0.0',
+      'cros_chrome_version': '101.0.4928.0',
+      'cros_img': 'eve-release/R101-14553.0.0',
     },
     'enabled': True,
     'identifier': 'EVE_RELEASE_DEV',

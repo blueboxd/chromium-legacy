@@ -5073,6 +5073,42 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <!-- End Extension Settings Overridden Dialog strings. -->
 
+      <!-- Deprecated Apps Deletion Dialog strings. -->
+      <message name="IDS_DEPRECATED_APPS_RENDERER_TITLE" desc="The title of the deprecated app dialog">
+        {NUM_APPS, plural,
+        =1 {Unsupported App}
+        other {Unsupported Apps}}
+      </message>
+      <message name="IDS_DEPRECATED_APPS_MONITOR_RENDERER" desc="States how many deprecated apps are present, with a link to a help article">
+        {NUM_APPS, plural,
+        =1 {1 of your apps is no longer supported. <ph name="LEARN_MORE">$1<ex>Learn more</ex></ph>}
+        other {# of your apps are no longer supported. <ph name="LEARN_MORE">$1<ex>Learn more</ex></ph>}}
+      </message>
+      <message name="IDS_DEPRECATED_APPS_LEARN_MORE" desc="Redirects to a link with more information on chrome apps deprecation">
+        Learn more
+      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_DEPRECATED_APPS_OK_LABEL" desc="Label for OK button on deprecated apps dialog">
+          {NUM_APPS, plural,
+          =1 {Delete App Now}
+          other {Delete Apps Now}}
+        </message>
+        <message name="IDS_DEPRECATED_APPS_CANCEL_LABEL" desc="Label for Cancel button on deprecated apps dialog">
+          Ask Next Time
+        </message>
+      </if>
+        <if expr="not use_titlecase">
+        <message name="IDS_DEPRECATED_APPS_OK_LABEL" desc="Label for OK button on deprecated apps dialog">
+          {NUM_APPS, plural,
+          =1 {Delete app now}
+          other {Delete apps now}}
+        </message>
+        <message name="IDS_DEPRECATED_APPS_CANCEL_LABEL" desc="Label for Cancel button on deprecated apps dialog">
+          Ask next time
+        </message>
+      </if>
+      <!-- End Deprecated Apps Deletion Dialog strings. -->
+
       <!-- Extensions Menu bubble -->
       <message name="IDS_EXTENSIONS_MENU_TITLE" desc="Title of the Extensions Menu">
         Extensions
@@ -6824,11 +6860,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- User Education Tutorial Strings -->
+      <message name="IDS_TUTORIAL_RESTART_TUTORIAL" desc="The text shown on the button for restarting a tutorial">
+        Restart tutorial
+      </message>
+      <message name="IDS_TUTORIAL_CLOSE_TUTORIAL" desc="The text shown on the button for closing a tutorial">
+        Close
+      </message>
       <message name="IDS_TUTORIAL_TAB_GROUP_ADD_TAB_TO_GROUP" desc="The description of the add tab step in the tab group tutorial">
         Right-Click on a Tab and select "Add Tab To New Group"
       </message>
       <message name="IDS_TUTORIAL_TAB_GROUP_EDIT_BUBBLE" desc="The description of the editor bubble step in the tab group tutorial">
-        Name your group and choose a color
+        Name your group, choose a color, and tap Enter
       </message>
       <message name="IDS_TUTORIAL_TAB_GROUP_DRAG_TAB" desc="The description of the drag step in the tab group tutorial">
         Try dragging other open tabs to your group

@@ -3197,6 +3197,9 @@ if (!is_android) {
         # TaskManagerView is not used or built on Mac.
         sources += [ "../browser/ui/views/task_manager_view_browsertest.cc" ]
       }
+      if (is_win || is_mac || is_linux || is_fuchsia) {
+        sources += [ "../browser/ui/views/web_apps/deprecated_apps_dialog_view_browsertest.cc" ]
+      }
       if (is_chromeos_ash) {
         sources += [
           "../browser/ui/views/select_file_dialog_extension_browsertest.cc",
@@ -4976,6 +4979,8 @@ test("unit_tests") {
     "../browser/policy/messaging_layer/upload/dm_server_upload_service_unittest.cc",
     "../browser/policy/messaging_layer/upload/record_handler_impl_unittest.cc",
     "../browser/policy/messaging_layer/upload/record_upload_request_builder_unittest.cc",
+    "../browser/policy/messaging_layer/upload/test_util.cc",
+    "../browser/policy/messaging_layer/upload/test_util.h",
     "../browser/policy/messaging_layer/upload/upload_client_unittest.cc",
     "../browser/policy/messaging_layer/upload/upload_provider_unittest.cc",
     "../browser/policy/messaging_layer/util/dm_token_retriever_provider_unittest.cc",
@@ -6435,6 +6440,7 @@ test("unit_tests") {
       "../browser/ui/webui/history/foreign_session_handler_unittest.cc",
       "../browser/ui/webui/managed_ui_handler_unittest.cc",
       "../browser/ui/webui/management/management_ui_handler_unittest.cc",
+      "../browser/ui/webui/metrics_reporter/metrics_reporter_unittest.cc",
       "../browser/ui/webui/new_tab_page/new_tab_page_handler_unittest.cc",
       "../browser/ui/webui/privacy_sandbox/privacy_sandbox_dialog_handler_unittest.cc",
       "../browser/ui/webui/read_later/read_later_page_handler_unittest.cc",
@@ -6897,6 +6903,8 @@ test("unit_tests") {
       "../browser/nearby_sharing/webrtc_request_builder_unittest.cc",
       "../browser/nearby_sharing/webrtc_signaling_messenger_unittest.cc",
       "../browser/nearby_sharing/wifi_credentials_attachment_unittest.cc",
+      "../browser/nearby_sharing/wifi_network_configuration/fake_wifi_network_configuration_handler.cc",
+      "../browser/nearby_sharing/wifi_network_configuration/fake_wifi_network_configuration_handler.h",
       "../browser/nearby_sharing/wifi_network_configuration/wifi_network_configuration_handler_unittest.cc",
       "../browser/notifications/chrome_ash_message_center_client_unittest.cc",
       "../browser/notifications/web_page_notifier_controller_unittest.cc",
@@ -8909,6 +8917,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/ui/read_later/read_later_test_utils.cc",
         "../browser/ui/read_later/read_later_test_utils.h",
         "../browser/ui/views/autofill/payments/offer_notification_bubble_views_interactive_uitest.cc",
+        "../browser/ui/views/autofill/payments/virtual_card_enroll_bubble_views_interactive_uitest.cc",
         "../browser/ui/views/autofill/payments/virtual_card_manual_fallback_bubble_views_interactive_uitest.cc",
         "../browser/ui/views/bookmarks/bookmark_bar_view_test.cc",
         "../browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h",

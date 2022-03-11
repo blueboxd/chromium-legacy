@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "pdf/buildflags.h"
 
 // Keep in identical order as the header file, see the comment at the top
 // for formatting rules.
@@ -35,11 +36,11 @@ const char kEnableMediaInternalsName[] = "Media-internals page";
 const char kEnableMediaInternalsDescription[] =
     "Enables the chrome://media-internals debug page.";
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PDF)
 const char kAccessiblePDFFormName[] = "Accessible PDF Forms";
 const char kAccessiblePDFFormDescription[] =
     "Enables accessibility support for PDF forms.";
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
+#endif
 
 const char kAccountIdMigrationName[] = "Account ID migration";
 const char kAccountIdMigrationDescription[] =
@@ -634,11 +635,6 @@ const char kChromeWhatsNewInMainMenuNewBadgeDescription[] =
     "Enables 'New' promo badge on 'What's New' in the Help portion of the main "
     "menu.";
 #endif
-
-const char kCompositingBasedThrottling[] = "Compositing-based Throttling";
-const char kCompositingBasedThrottlingDescription[] =
-    "Enables compositing-based throttling to throttle appropriate frame sinks "
-    "that do not need to be refreshed at high fps.";
 
 const char kDarkLightTestName[] = "Dark/light mode of system UI";
 const char kDarkLightTestDescription[] =
@@ -2926,6 +2922,10 @@ const char kReduceUserAgentMinorVersionDescription[] =
     "Reduce the minor, build, and patch versions in the User-Agent string.  "
     "The Chrome version in the User-Agent string will be reported as "
     "Chrome/<major_version>.0.0.0.";
+
+const char kWebSQLAccessName[] = "Allows access to WebSQL APIs";
+const char kWebSQLAccessDescription[] =
+    "The WebSQL API is enabled by default, but can be disabled here.";
 
 // Android ---------------------------------------------------------------------
 

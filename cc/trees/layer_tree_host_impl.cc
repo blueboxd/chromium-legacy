@@ -566,10 +566,13 @@ void LayerTreeHostImpl::BeginMainFrameAborted(
 
 void LayerTreeHostImpl::ReadyToCommit(
     const viz::BeginFrameArgs& commit_args,
-    const BeginMainFrameMetrics* begin_main_frame_metrics) {
+    const BeginMainFrameMetrics* begin_main_frame_metrics,
+    bool commit_timeout) {
   frame_trackers_.NotifyMainFrameProcessed(commit_args);
-  if (!is_measuring_smoothness_ && begin_main_frame_metrics &&
-      begin_main_frame_metrics->should_measure_smoothness) {
+  if (!is_measuring_smoothness_ &&
+      ((begin_main_frame_metrics &&
+        begin_main_frame_metrics->should_measure_smoothness) ||
+       commit_timeout)) {
     is_measuring_smoothness_ = true;
     total_frame_counter_.Reset();
     dropped_frame_counter_.OnFcpReceived();
@@ -602,6 +605,14 @@ void LayerTreeHostImpl::FinishCommit(
   TRACE_EVENT0("cc,benchmark", "LayerTreeHostImpl::FinishCommit");
   LayerTreeImpl* tree = sync_tree();
   tree->PullPropertiesFrom(state, unsafe_state);
+
+  // Check whether the impl scroll animating node was removed by the commit.
+  if (ElementId impl_only_scrolling_element =
+          mutator_host()->ImplOnlyScrollAnimatingElement()) {
+    if (!tree->property_trees()->HasElement(impl_only_scrolling_element)) {
+      mutator_host()->ImplOnlyScrollAnimatingElementRemoved();
+    }
+  }
   PullLayerTreeHostPropertiesFrom(state);
 
   // Transfer image decode requests to the impl thread.
@@ -674,10 +685,6 @@ void LayerTreeHostImpl::CommitComplete() {
 
   if (CommitToActiveTree()) {
     active_tree_->HandleScrollbarShowRequests();
-
-    // Property tree nodes have been updated by the commit. Update elements
-    // available on active tree to start/stop ticking animations.
-    UpdateElements(ElementListType::ACTIVE);
 
     // We have to activate animations here or "IsActive()" is true on the layers
     // but the animations aren't activated yet so they get ignored by
@@ -1544,10 +1551,6 @@ void LayerTreeHostImpl::SetEnableFrameRateThrottling(
   enable_frame_rate_throttling_ = enable_frame_rate_throttling;
 }
 
-void LayerTreeHostImpl::UpdateElements(ElementListType changed_list) {
-  mutator_host()->UpdateRegisteredElementIds(changed_list);
-}
-
 void LayerTreeHostImpl::InvalidateContentOnImplSide() {
   DCHECK(!pending_tree_);
   // Invalidation should never be ran outside the impl frame for non
@@ -2354,10 +2357,11 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   if (std::unique_ptr<gfx::DelegatedInkMetadata> delegated_ink_metadata =
           active_tree_->take_delegated_ink_metadata()) {
     delegated_ink_metadata->set_frame_time(CurrentBeginFrameArgs().frame_time);
-    TRACE_EVENT_INSTANT1(
+    TRACE_EVENT_WITH_FLOW1(
         "delegated_ink_trails",
         "Delegated Ink Metadata set on compositor frame metadata",
-        TRACE_EVENT_SCOPE_THREAD, "ink metadata",
+        TRACE_ID_GLOBAL(delegated_ink_metadata->trace_id()),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "metadata",
         delegated_ink_metadata->ToString());
     metadata.delegated_ink_metadata = std::move(delegated_ink_metadata);
   }
@@ -3353,10 +3357,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     pending_tree_->PushPropertiesTo(active_tree_.get());
     if (!pending_tree_->LayerListIsEmpty())
       pending_tree_->property_trees()->ResetAllChangeTracking();
-
-    // Property tree nodes have been updated by PushLayerProperties. Update
-    // elements available on active tree to start/stop ticking animations.
-    UpdateElements(ElementListType::ACTIVE);
 
     active_tree_->lifecycle().AdvanceTo(LayerTreeLifecycle::kNotSyncing);
 

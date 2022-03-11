@@ -491,28 +491,14 @@ void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader,
   loader = nullptr;
 }
 
-void FrameLoader::DidFinishSameDocumentNavigation(
+void FrameLoader::ProcessScrollForSameDocumentNavigation(
     const KURL& url,
     WebFrameLoadType frame_load_type,
-    HistoryItem* history_item) {
-  // If we have a state object, we cannot also be a new navigation.
-  scoped_refptr<SerializedScriptValue> state_object =
-      history_item ? history_item->StateObject() : nullptr;
-  DCHECK(!state_object || frame_load_type == WebFrameLoadType::kBackForward);
-
-  // onpopstate might change view state, so stash for later restore.
-  absl::optional<HistoryItem::ViewState> view_state;
-  if (history_item) {
-    view_state = history_item->GetViewState();
-  }
-
-  frame_->DomWindow()->StatePopped(state_object
-                                       ? std::move(state_object)
-                                       : SerializedScriptValue::NullValue());
-
+    absl::optional<HistoryItem::ViewState> view_state,
+    mojom::blink::ScrollRestorationType scroll_restoration_type) {
   if (view_state) {
     RestoreScrollPositionAndViewState(frame_load_type, *view_state,
-                                      history_item->ScrollRestorationType());
+                                      scroll_restoration_type);
   }
 
   // We need to scroll to the fragment whether or not a hash change occurred,
@@ -1361,8 +1347,10 @@ String FrameLoader::ApplyUserAgentOverrideAndLog(
           UserAgentOverrideSubstring;
     }
 
-    document_loader_->GetUseCounter().CountUserAgentOverride(histogram,
-                                                             frame_.Get());
+    if (document_loader_) {
+      document_loader_->GetUseCounter().CountUserAgentOverride(histogram,
+                                                               frame_.Get());
+    }
   }
 
   return user_agent_override;

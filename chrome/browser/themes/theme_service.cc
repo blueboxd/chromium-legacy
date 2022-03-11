@@ -73,6 +73,10 @@
 #include "extensions/browser/extension_registry_observer.h"
 #endif
 
+#if BUILDFLAG(IS_LINUX)
+#include "ui/views/linux_ui/linux_ui.h"
+#endif
+
 using TP = ThemeProperties;
 
 // Helpers --------------------------------------------------------------------
@@ -119,6 +123,18 @@ absl::optional<ui::ColorId> ThemeProviderColorIdToColorId(int color_id) {
       {TP::COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR,
        kColorDownloadShelfContentAreaSeparator},
       {TP::COLOR_DOWNLOAD_SHELF_FOREGROUND, kColorDownloadShelfForeground},
+      {TP::COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND,
+       kColorFeaturePromoBubbleBackground},
+      {TP::COLOR_FEATURE_PROMO_BUBBLE_BUTTON_BORDER,
+       kColorFeaturePromoBubbleButtonBorder},
+      {TP::COLOR_FEATURE_PROMO_BUBBLE_CLOSE_BUTTON_INK_DROP,
+       kColorFeaturePromoBubbleCloseButtonInkDrop},
+      {TP::COLOR_FEATURE_PROMO_BUBBLE_DEFAULT_BUTTON_BACKGROUND,
+       kColorFeaturePromoBubbleDefaultButtonBackground},
+      {TP::COLOR_FEATURE_PROMO_BUBBLE_DEFAULT_BUTTON_FOREGROUND,
+       kColorFeaturePromoBubbleDefaultButtonForeground},
+      {TP::COLOR_FEATURE_PROMO_BUBBLE_FOREGROUND,
+       kColorFeaturePromoBubbleForeground},
       {TP::COLOR_FLYING_INDICATOR_BACKGROUND, kColorFlyingIndicatorBackground},
       {TP::COLOR_FLYING_INDICATOR_FOREGROUND, kColorFlyingIndicatorForeground},
       {TP::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND,
@@ -490,12 +506,27 @@ ThemeService::BrowserThemeProvider::GetColorProviderColor(int id) const {
   if (base::FeatureList::IsEnabled(
           features::kColorProviderRedirectionForThemeProvider)) {
     if (auto provider_color_id = ThemeProviderColorIdToColorId(id)) {
-      const auto* const native_theme =
-          incognito_ ? ui::NativeTheme::GetInstanceForDarkUI()
-                     : ui::NativeTheme::GetInstanceForNativeUi();
+      const ui::NativeTheme* native_theme = nullptr;
+
+      if (incognito_) {
+        native_theme = ui::NativeTheme::GetInstanceForDarkUI();
+      } else {
+        native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+#if BUILDFLAG(IS_LINUX)
+        if (const auto* linux_ui = views::LinuxUI::instance()) {
+          // TODO(crbug.com/1304441): Naively passing nullptr might be
+          // problematic. If this is not an issue, remove this parameter from
+          // GetNativeTheme().
+          native_theme = linux_ui->GetNativeTheme(nullptr);
+        }
+#endif
+      }
+
+      auto color_provider_key = native_theme->GetColorProviderKey(
+          GetThemeSupplier(), delegate_->ShouldUseCustomFrame());
       auto* color_provider =
           ui::ColorProviderManager::Get().GetColorProviderFor(
-              native_theme->GetColorProviderKey(GetThemeSupplier()));
+              color_provider_key);
       return color_provider->GetColor(provider_color_id.value());
     }
   }
@@ -600,6 +631,14 @@ void ThemeService::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 
 CustomThemeSupplier* ThemeService::GetThemeSupplier() const {
   return theme_supplier_.get();
+}
+
+bool ThemeService::ShouldUseCustomFrame() const {
+#if BUILDFLAG(IS_LINUX)
+  return profile_->GetPrefs()->GetBoolean(prefs::kUseCustomChromeFrame);
+#else
+  return true;
+#endif
 }
 
 void ThemeService::SetTheme(const extensions::Extension* extension) {

@@ -330,7 +330,8 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
       bool scroll_and_viewport_changes_synced);
   virtual void ReadyToCommit(
       const viz::BeginFrameArgs& commit_args,
-      const BeginMainFrameMetrics* begin_main_frame_metrics);
+      const BeginMainFrameMetrics* begin_main_frame_metrics,
+      bool commit_timeout = false);
   virtual void BeginCommit(int source_frame_number);
   virtual void FinishCommit(CommitState& commit_state,
                             const ThreadUnsafeCommitState& unsafe_state);
@@ -397,10 +398,6 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   void SetPrefersReducedMotion(bool prefers_reduced_motion);
 
   void SetMayThrottleIfUndrawnFrames(bool may_throttle_if_undrawn_frames);
-
-  // Updates registered ElementIds present in |changed_list|. Call this after
-  // changing the property trees for the |changed_list| trees.
-  void UpdateElements(ElementListType changed_list);
 
   // Analogous to a commit, this function is used to create a sync tree and
   // add impl-side invalidations to it.

@@ -4,14 +4,15 @@
 
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
-import {DefaultUserImage, UserInfo} from '../personalization_app.mojom-webui.js';
+import {DefaultUserImage, UserImage, UserInfo} from '../personalization_app.mojom-webui.js';
 
 export interface UserState {
   defaultUserImages: Array<DefaultUserImage>|null;
-  image: Url|null;
+  image: UserImage|null;
   info: UserInfo|null;
   profileImage: Url|null;
   isCameraPresent: boolean;
+  lastExternalUserImage: UserImage|null;
 }
 
 export function emptyState(): UserState {
@@ -21,5 +22,6 @@ export function emptyState(): UserState {
     info: null,
     profileImage: null,
     isCameraPresent: false,
+    lastExternalUserImage: null,
   };
 }

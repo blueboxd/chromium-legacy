@@ -476,12 +476,6 @@ CHAR_LIMIT guidelines:
       <message name="IDS_AUTOFILL_CREATE_PROFILE" desc="Button that allows the user to create a new profile (which contains the user's name, address, etc) that will be automatically filled into web page forms. [CHAR_LIMIT=32]">
         Add address
       </message>
-      <message name="IDS_AUTOFILL_CREATE_CREDIT_CARD" desc="Button that allows the user to add a new card that will be automatically filled into web page forms. This can be either credit, debit, or prepaid card. [CHAR_LIMIT=32]">
-        Add card
-      </message>
-      <message name="IDS_AUTOFILL_EDIT_CREDIT_CARD" desc="Button that allows the user to edit a card that can be automatically filled into web page forms. This can be either credit, debit, or prepaid card. [CHAR_LIMIT=32]">
-        Edit card
-      </message>
      <message name="IDS_AUTOFILL_PROFILE_EDITOR_COUNTRY" desc="Label for a spinner input field containing a list of countries or regions [CHAR_LIMIT=32]">
         Country/Region
       </message>
@@ -5148,6 +5142,10 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Reaction deleted
       </message>
 
+      <message name="IDS_LIGHTWEIGHT_REACTIONS_REACTION_DUPLICATED_ANNOUNCEMENT" is_accessibility_with_no_ui="true" desc="The accessibility text to read when a reaction is duplicated.">
+        Reaction duplicated
+      </message>
+
       <message name="IDS_LIGHTWEIGHT_REACTIONS_TOOLBAR_ANNOUNCEMENT" is_accessibility_with_no_ui="true" desc="The accessibility text to read when the lightweight reactions toolbar is selected. The user can then select a reaction from the toolbar to place on the screen.">
         Choose an emotion
       </message>
@@ -5156,8 +5154,16 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Reaction changed
       </message>
 
+      <message name="IDS_LIGHTWEIGHT_REACTIONS_REACTION_ADDED_ANNOUNCEMENT" is_accessibility_with_no_ui="true" desc="The accessibility text to read when a reaction is added to the scene.">
+        Reaction added
+      </message>
+
       <message name="IDS_LIGHTWEIGHT_REACTIONS_RESIZE_AND_ROTATE_BUTTON" is_accessibility_with_no_ui="true" desc="The accessibility text to read when the resize and rotate editing tool is selected. The user can then resize and rotate the reaction on the scene.">
         Resize and rotate
+      </message>
+
+      <message name="IDS_LIGHTWEIGHT_REACTIONS_REACTION_ADJUSTED_ANNOUNCEMENT" is_accessibility_with_no_ui="true" desc="The accessibility text to read when a reaction is resized or rotated.">
+        Reaction adjusted
       </message>
 
       <message name="IDS_LIGHTWEIGHT_REACTIONS_DUPLICATE_BUTTON" is_accessibility_with_no_ui="true" desc="The accessibility text to read when the duplicate editing tool is selected. The user can then dupicate the reaction on the scene.">

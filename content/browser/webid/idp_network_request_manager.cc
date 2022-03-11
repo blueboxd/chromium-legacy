@@ -345,7 +345,10 @@ std::unique_ptr<IdpNetworkRequestManager> IdpNetworkRequestManager::Create(
     return nullptr;
 
   // Use the browser process URL loader factory because it has cross-origin
-  // read blocking disabled.
+  // read blocking disabled. This is safe because even though these are
+  // renderer-initiated fetches, the browser parses the responses and does not
+  // leak the values to the renderer. The renderer should only learn information
+  // when the user selects an account to sign in.
   return std::make_unique<IdpNetworkRequestManager>(
       provider, host->GetLastCommittedOrigin(),
       host->GetStoragePartition()->GetURLLoaderFactoryForBrowserProcess(),
@@ -872,13 +875,7 @@ IdpNetworkRequestManager::CreateUncredentialedUrlLoader(
   auto resource_request = std::make_unique<network::ResourceRequest>();
 
   resource_request->url = target_url;
-  // TODO(yigu): credentials_mode should be kOmit, but for prototyping
-  // purposes it is useful to be able to run test IdPs on services that always
-  // require cookies. This needs to be changed back when a better solution is
-  // found or those test IdPs are no longer required.
-  // See https://crbug.com/1159177.
-  resource_request->credentials_mode =
-      network::mojom::CredentialsMode::kInclude;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
                                       kRequestBodyContentType);
   AddCsrfHeader(resource_request.get());

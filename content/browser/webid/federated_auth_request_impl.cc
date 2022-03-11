@@ -91,8 +91,8 @@ std::string GetConsoleErrorMessage(FederatedAuthRequestResult status) {
       return "The provider's FedCM manifest configuration cannot be found.";
     }
     case FederatedAuthRequestResult::kErrorFetchingManifestNoResponse: {
-      return "The response body is empty when fetching the provider's "
-             "FedCM manifest configuration.";
+      return "The provider's FedCM manifest configuration fetch resulted in an "
+             "error response code.";
     }
     case FederatedAuthRequestResult::kErrorFetchingManifestInvalidResponse: {
       return "Provider's FedCM manifest configuration is invalid.";
@@ -101,8 +101,8 @@ std::string GetConsoleErrorMessage(FederatedAuthRequestResult status) {
       return "The provider's client metadata endpoint cannot be found.";
     }
     case FederatedAuthRequestResult::kErrorFetchingClientMetadataNoResponse: {
-      return "The response body is empty when fetching the provider's client "
-             "metadata.";
+      return "The provider's client metadata fetch resulted in an error "
+             "response code.";
     }
     case FederatedAuthRequestResult::
         kErrorFetchingClientMetadataInvalidResponse: {
@@ -123,18 +123,20 @@ std::string GetConsoleErrorMessage(FederatedAuthRequestResult status) {
       return "The provider's accounts list endpoint cannot be found.";
     }
     case FederatedAuthRequestResult::kErrorFetchingAccountsNoResponse: {
-      return "The response body is empty when fetching the provider's accounts "
-             "list.";
+      return "The provider's accounts list fetch resulted in an error response "
+             "code.";
     }
     case FederatedAuthRequestResult::kErrorFetchingAccountsInvalidResponse: {
-      return "Provider's accounts list is invalid.";
+      return "Provider's accounts list is invalid. Should have received an "
+             "\"accounts\" list, where each account must have at least \"id\", "
+             "\"name\", and \"email\".";
     }
     case FederatedAuthRequestResult::kErrorFetchingIdTokenHttpNotFound: {
       return "The provider's id token endpoint cannot be found.";
     }
     case FederatedAuthRequestResult::kErrorFetchingIdTokenNoResponse: {
-      return "The response body is empty when fetching the provider's id "
-             "token.";
+      return "The provider's id token fetch resulted in an error response "
+             "code.";
     }
     case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse: {
       return "Provider's id token is invalid.";
@@ -254,6 +256,17 @@ void FederatedAuthRequestImpl::RequestIdToken(
   start_time_ = base::TimeTicks::Now();
   delay_timer_.Reset();
 
+  // TODO(npm): FedCM is currently restricted to contexts where third party
+  // cookies are not blocked.  Once the privacy improvements for the API are
+  // implemented, remove this restriction. See https://crbug.com/1304396.
+  if (GetApiPermissionContext() &&
+      GetApiPermissionContext()->AreThirdPartyCookiesBlocked()) {
+    // TODO(npm): this should probably record to a metric value, and issue a
+    // distinct console error message.
+    CompleteRequest(FederatedAuthRequestResult::kError, "",
+                    /*should_call_callback=*/false);
+    return;
+  }
   network_manager_ = CreateNetworkManager(provider);
   if (!network_manager_) {
     RecordRequestIdTokenStatus(IdTokenStatus::kNoNetworkManager,
@@ -354,6 +367,11 @@ void FederatedAuthRequestImpl::Revoke(
 void FederatedAuthRequestImpl::LogoutRps(
     std::vector<blink::mojom::LogoutRpsRequestPtr> logout_requests,
     blink::mojom::FederatedAuthRequest::LogoutRpsCallback callback) {
+  if (!IsFedCmIdpSignoutEnabled()) {
+    std::move(callback).Run(LogoutRpsStatus::kError);
+    return;
+  }
+
   if (HasPendingRequest()) {
     std::move(callback).Run(LogoutRpsStatus::kErrorTooManyRequests);
     return;
@@ -469,18 +487,25 @@ void FederatedAuthRequestImpl::OnManifestFetched(
   endpoints_.accounts = ResolveManifestUrl(endpoints.accounts);
   endpoints_.client_metadata = ResolveManifestUrl(endpoints.client_metadata);
 
-  if (endpoints_.token.is_empty() || endpoints_.accounts.is_empty() ||
-      endpoints_.client_metadata.is_empty()) {
-    RecordRequestIdTokenStatus(IdTokenStatus::kManifestInvalidResponse,
-                               render_frame_host_->GetPageUkmSourceId());
-    CompleteRequest(
-        FederatedAuthRequestResult::kErrorFetchingManifestInvalidResponse, "",
-        /*should_call_callback=*/false);
-    return;
-  }
-  if (!IsEndpointUrlValid(endpoints_.token) ||
-      !IsEndpointUrlValid(endpoints_.accounts) ||
-      !IsEndpointUrlValid(endpoints_.client_metadata)) {
+  bool is_token_valid = IsEndpointUrlValid(endpoints_.token);
+  bool is_accounts_valid = IsEndpointUrlValid(endpoints_.accounts);
+  bool is_client_metadata_valid =
+      IsEndpointUrlValid(endpoints_.client_metadata);
+  if (!is_token_valid || !is_accounts_valid || !is_client_metadata_valid) {
+    std::string message =
+        "Manifest is missing or has an invalid URL for the following "
+        "endpoints:\n";
+    if (!is_token_valid) {
+      message += "\"id_token_endpoint\"\n";
+    }
+    if (!is_accounts_valid) {
+      message += "\"accounts_endpoint\"\n";
+    }
+    if (!is_client_metadata_valid) {
+      message += "\"client_metadata_endpoint\"\n";
+    }
+    render_frame_host_->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError, message);
     RecordRequestIdTokenStatus(IdTokenStatus::kManifestInvalidResponse,
                                render_frame_host_->GetPageUkmSourceId());
     CompleteRequest(
@@ -534,6 +559,10 @@ void FederatedAuthRequestImpl::OnManifestFetchedForRevoke(
 
   GURL revocation_url = ResolveManifestUrl(endpoints.revocation);
   if (!IsEndpointUrlValid(revocation_url)) {
+    render_frame_host_->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        "Manifest is missing or has an invalid URL for the following required "
+        "endpoint: \"revocation_endpoint\"");
     RecordRevokeStatus(RevokeStatusForMetrics::kRevokeUrlIsCrossOrigin,
                        render_frame_host_->GetPageUkmSourceId());
     CompleteRevokeRequest(RevokeStatus::kError,
@@ -975,8 +1004,9 @@ void FederatedAuthRequestImpl::CompleteRequest(
     AddConsoleErrorMessage(result);
   }
 
-  bool should_run_callback = should_call_callback ||
-                             network_manager_->IsMockIdpNetworkRequestManager();
+  bool should_run_callback =
+      should_call_callback ||
+      (network_manager_ && network_manager_->IsMockIdpNetworkRequestManager());
   CleanUp();
 
   if (should_run_callback) {
@@ -1069,6 +1099,11 @@ void FederatedAuthRequestImpl::SetSharingPermissionDelegateForTests(
     FederatedIdentitySharingPermissionContextDelegate*
         sharing_permission_delegate) {
   sharing_permission_delegate_ = sharing_permission_delegate;
+}
+
+void FederatedAuthRequestImpl::SetApiPermissionDelegateForTests(
+    FederatedIdentityApiPermissionContextDelegate* api_permission_delegate) {
+  api_permission_delegate_ = api_permission_delegate;
 }
 
 FederatedIdentityActiveSessionPermissionContextDelegate*

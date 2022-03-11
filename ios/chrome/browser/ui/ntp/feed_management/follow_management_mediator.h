@@ -7,13 +7,13 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/ntp/feed_management/follow_management_delegate.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/followed_web_channels_data_source.h"
+#import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 
 // The intermediary between the model and view layers for the follow management
 // UI.
 @interface FollowManagementMediator
-    : NSObject <FollowedWebChannelsDataSource, FollowManagementDelegate>
+    : NSObject <FollowedWebChannelsDataSource, TableViewFaviconDataSource>
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_FEED_MANAGEMENT_FOLLOW_MANAGEMENT_MEDIATOR_H_

@@ -37,7 +37,7 @@ AccountCapabilitiesFetcherGaia::~AccountCapabilitiesFetcherGaia() {
   RecordFetchResultAndDuration(FetchResult::kCancelled);
 }
 
-void AccountCapabilitiesFetcherGaia::Start() {
+void AccountCapabilitiesFetcherGaia::StartImpl() {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("AccountFetcherService", "GetAccessToken",
                                     this);
   fetch_start_time_ = base::TimeTicks::Now();
@@ -62,7 +62,8 @@ void AccountCapabilitiesFetcherGaia::OnGetTokenSuccess(
   const int kMaxRetries = 3;
   gaia_oauth_client_->GetAccountCapabilities(
       token_response.access_token,
-      {kCanOfferExtendedChromeSyncPromosCapabilityName}, kMaxRetries, this);
+      AccountCapabilities::GetSupportedAccountCapabilityNames(), kMaxRetries,
+      this);
 }
 
 void AccountCapabilitiesFetcherGaia::OnGetTokenFailure(

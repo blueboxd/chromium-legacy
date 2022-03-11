@@ -421,6 +421,9 @@ ci.builder(
     ),
     notifies = ["v8-sandbox-fyi-bots"],
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -431,6 +434,9 @@ ci.builder(
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     schedule = "with 12h interval",
     triggered_by = [],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -505,6 +511,9 @@ ci.builder(
     ),
     notifies = ["chrome-memory-safety"],
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -513,6 +522,9 @@ ci.builder(
         category = "linux",
     ),
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -521,8 +533,10 @@ ci.builder(
         category = "linux",
     ),
     experimental = True,
-    goma_backend = goma.backend.RBE_PROD,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -531,8 +545,10 @@ ci.builder(
         category = "linux",
     ),
     experimental = True,
-    goma_backend = goma.backend.RBE_PROD,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -541,8 +557,10 @@ ci.builder(
         category = "linux",
     ),
     experimental = True,
-    goma_backend = goma.backend.RBE_PROD,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 # This is launching & collecting entirely isolated tests.
@@ -567,6 +585,9 @@ ci.builder(
     ),
     notifies = ["headless-owners"],
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -639,6 +660,9 @@ ci.builder(
         short_name = "lnx",
     ),
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(

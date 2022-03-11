@@ -1891,6 +1891,7 @@ static_library("browser") {
     "//components/sync_device_info",
     "//content/public/browser",
     "//ipc",
+    "//pdf:buildflags",
     "//services/data_decoder/public/mojom",
     "//services/image_annotation/public/mojom",
     "//sql",
@@ -3359,6 +3360,7 @@ static_library("browser") {
       "//chrome/browser/notifications/chime/android",
       "//chrome/browser/notifications/scheduler/public",
       "//chrome/browser/optimization_guide/android:jni_headers",
+      "//chrome/browser/partnercustomizations:jni_headers",
       "//chrome/browser/password_check/android:jni_headers",
       "//chrome/browser/password_check/android:password_check_enums_srcjar",
       "//chrome/browser/password_edit_dialog/android",
@@ -6226,6 +6228,7 @@ static_library("browser") {
     deps += [
       "//components/user_notes:features",
       "//components/user_notes/browser",
+      "//components/user_notes/interfaces",
       "//components/user_notes/model",
     ]
   }

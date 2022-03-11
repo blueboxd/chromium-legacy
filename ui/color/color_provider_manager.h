@@ -41,8 +41,17 @@ class COMPONENT_EXPORT(COLOR) ColorProviderManager {
     kHigh,
   };
   enum class SystemTheme {
+    // Classic theme, used in the default or users' chosen theme.
     kDefault,
+    // Custom theme that follow the system style,
+    // currently used only when GTK theme is on.
     kCustom,
+  };
+  enum class FrameType {
+    // Chrome renders the browser frame.
+    kChromium,
+    // Native system renders the browser frame. Currently GTK only.
+    kNative,
   };
 
   // Threadsafe not because ColorProviderManager requires it but because a
@@ -73,6 +82,7 @@ class COMPONENT_EXPORT(COLOR) ColorProviderManager {
     Key(ColorMode color_mode,
         ContrastMode contrast_mode,
         SystemTheme system_theme,
+        FrameType frame_type,
         scoped_refptr<InitializerSupplier> custom_theme);
     Key(const Key&);
     Key& operator=(const Key&);
@@ -81,14 +91,15 @@ class COMPONENT_EXPORT(COLOR) ColorProviderManager {
     ContrastMode contrast_mode;
     ElevationMode elevation_mode;
     SystemTheme system_theme;
+    FrameType frame_type;
     scoped_refptr<InitializerSupplier> custom_theme;
 
     bool operator<(const Key& other) const {
       return std::make_tuple(color_mode, contrast_mode, elevation_mode,
-                             system_theme, custom_theme) <
+                             system_theme, frame_type, custom_theme) <
              std::make_tuple(other.color_mode, other.contrast_mode,
                              other.elevation_mode, other.system_theme,
-                             other.custom_theme);
+                             other.frame_type, other.custom_theme);
     }
   };
 

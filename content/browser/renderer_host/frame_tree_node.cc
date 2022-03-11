@@ -543,8 +543,8 @@ void FrameTreeNode::DidStartLoading(bool should_show_loading_ui,
   if (frame_tree() == frame_tree()->LoadingTree())
     DidChangeLoadProgress(blink::kInitialLoadProgress);
 
-  // Notify the RenderFrameHostManager of the event.
-  render_manager()->OnDidStartLoading();
+  // Notify the proxies of the event.
+  current_frame_host()->browsing_context_state()->OnDidStartLoading();
   base::UmaHistogramTimes(
       base::StrCat({"Navigation.DidStartLoading.",
                     IsMainFrame() ? "MainFrame" : "Subframe"}),
@@ -563,8 +563,8 @@ void FrameTreeNode::DidStopLoading() {
   if (frame_tree() == frame_tree()->LoadingTree())
     DidChangeLoadProgress(blink::kFinalLoadProgress);
 
-  // Notify the RenderFrameHostManager of the event.
-  render_manager()->OnDidStopLoading();
+  // Notify the proxies of the event.
+  current_frame_host()->browsing_context_state()->OnDidStopLoading();
 
   FrameTree* loading_tree = frame_tree()->LoadingTree();
   // When loading tree is null, ignore invoking DidStopLoadingNode as the frame
@@ -791,6 +791,7 @@ void FrameTreeNode::WriteIntoTrace(perfetto::TracedValue context) const {
   auto dict = std::move(context).WriteDictionary();
   dict.Add("id", frame_tree_node_id());
   dict.Add("is_main_frame", IsMainFrame());
+  dict.Add("current_frame_host", current_frame_host());
 }
 
 void FrameTreeNode::WriteIntoTrace(
@@ -800,6 +801,10 @@ void FrameTreeNode::WriteIntoTrace(
   proto->set_frame_tree_node_id(frame_tree_node_id());
   proto->set_has_speculative_render_frame_host(
       !!render_manager()->speculative_frame_host());
+  if (current_frame_host()) {
+    current_frame_host()->WriteIntoTrace(proto.WriteNestedMessage(
+        perfetto::protos::pbzero::FrameTreeNodeInfo::kCurrentFrameHost));
+  }
 }
 
 bool FrameTreeNode::HasNavigation() {

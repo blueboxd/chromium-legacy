@@ -337,33 +337,33 @@ api::autotest_private::ShelfItemStatus GetShelfItemStatus(
   return api::autotest_private::ShelfItemStatus::SHELF_ITEM_STATUS_NONE;
 }
 
-api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
+api::autotest_private::AppType GetAppType(apps::AppType type) {
   switch (type) {
-    case apps::mojom::AppType::kArc:
+    case apps::AppType::kArc:
       return api::autotest_private::AppType::APP_TYPE_ARC;
-    case apps::mojom::AppType::kBuiltIn:
+    case apps::AppType::kBuiltIn:
       return api::autotest_private::AppType::APP_TYPE_BUILTIN;
-    case apps::mojom::AppType::kCrostini:
+    case apps::AppType::kCrostini:
       return api::autotest_private::AppType::APP_TYPE_CROSTINI;
-    case apps::mojom::AppType::kChromeApp:
-    case apps::mojom::AppType::kExtension:
+    case apps::AppType::kChromeApp:
+    case apps::AppType::kExtension:
       return api::autotest_private::AppType::APP_TYPE_EXTENSION;
-    case apps::mojom::AppType::kPluginVm:
+    case apps::AppType::kPluginVm:
       return api::autotest_private::AppType::APP_TYPE_PLUGINVM;
-    case apps::mojom::AppType::kWeb:
-    case apps::mojom::AppType::kSystemWeb:
+    case apps::AppType::kWeb:
+    case apps::AppType::kSystemWeb:
       return api::autotest_private::AppType::APP_TYPE_WEB;
-    case apps::mojom::AppType::kUnknown:
+    case apps::AppType::kUnknown:
       return api::autotest_private::AppType::APP_TYPE_NONE;
-    case apps::mojom::AppType::kMacOs:
+    case apps::AppType::kMacOs:
       return api::autotest_private::AppType::APP_TYPE_MACOS;
-    case apps::mojom::AppType::kStandaloneBrowser:
+    case apps::AppType::kStandaloneBrowser:
       return api::autotest_private::AppType::APP_TYPE_STANDALONEBROWSER;
-    case apps::mojom::AppType::kRemote:
+    case apps::AppType::kRemote:
       return api::autotest_private::AppType::APP_TYPE_REMOTE;
-    case apps::mojom::AppType::kBorealis:
+    case apps::AppType::kBorealis:
       return api::autotest_private::AppType::APP_TYPE_BOREALIS;
-    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
+    case apps::AppType::kStandaloneBrowserChromeApp:
       // Intentionally fall-through for now.
       // TODO(https://crbug.com/1225848): Figure out appropriate behavior for
       // Lacros-hosted chrome-apps.
@@ -1413,56 +1413,51 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
   ExtensionActionManager* extension_action_manager =
       ExtensionActionManager::Get(browser_context());
 
-  base::ListValue extensions_values;
+  base::Value::List extensions_values;
   ExtensionList all;
   all.insert(all.end(), extensions.begin(), extensions.end());
   all.insert(all.end(), disabled_extensions.begin(), disabled_extensions.end());
   for (ExtensionList::const_iterator it = all.begin(); it != all.end(); ++it) {
     const Extension* extension = it->get();
     std::string id = extension->id();
-    std::unique_ptr<base::DictionaryValue> extension_value(
-        new base::DictionaryValue);
-    extension_value->SetStringKey("id", id);
-    extension_value->SetStringKey("version", extension->VersionString());
-    extension_value->SetStringKey("name", extension->name());
-    extension_value->SetStringKey("publicKey", extension->public_key());
-    extension_value->SetStringKey("description", extension->description());
-    extension_value->SetStringKey(
-        "backgroundUrl", BackgroundInfo::GetBackgroundURL(extension).spec());
-    extension_value->SetStringKey(
-        "optionsUrl", OptionsPageInfo::GetOptionsPage(extension).spec());
+    base::Value::Dict extension_value;
+    extension_value.Set("id", id);
+    extension_value.Set("version", extension->VersionString());
+    extension_value.Set("name", extension->name());
+    extension_value.Set("publicKey", extension->public_key());
+    extension_value.Set("description", extension->description());
+    extension_value.Set("backgroundUrl",
+                        BackgroundInfo::GetBackgroundURL(extension).spec());
+    extension_value.Set("optionsUrl",
+                        OptionsPageInfo::GetOptionsPage(extension).spec());
 
-    extension_value->SetKey("hostPermissions",
-                            GetHostPermissions(extension, false));
-    extension_value->SetKey("effectiveHostPermissions",
-                            GetHostPermissions(extension, true));
-    extension_value->SetKey("apiPermissions", GetAPIPermissions(extension));
+    extension_value.Set("hostPermissions",
+                        GetHostPermissions(extension, false));
+    extension_value.Set("effectiveHostPermissions",
+                        GetHostPermissions(extension, true));
+    extension_value.Set("apiPermissions", GetAPIPermissions(extension));
 
     ManifestLocation location = extension->location();
-    extension_value->SetBoolKey("isComponent",
-                                location == ManifestLocation::kComponent);
-    extension_value->SetBoolKey("isInternal",
-                                location == ManifestLocation::kInternal);
-    extension_value->SetBoolKey("isUserInstalled",
-                                location == ManifestLocation::kInternal ||
-                                    Manifest::IsUnpackedLocation(location));
-    extension_value->SetBoolKey("isEnabled", service->IsExtensionEnabled(id));
-    extension_value->SetBoolKey(
-        "allowedInIncognito", util::IsIncognitoEnabled(id, browser_context()));
+    extension_value.Set("isComponent",
+                        location == ManifestLocation::kComponent);
+    extension_value.Set("isInternal", location == ManifestLocation::kInternal);
+    extension_value.Set("isUserInstalled",
+                        location == ManifestLocation::kInternal ||
+                            Manifest::IsUnpackedLocation(location));
+    extension_value.Set("isEnabled", service->IsExtensionEnabled(id));
+    extension_value.Set("allowedInIncognito",
+                        util::IsIncognitoEnabled(id, browser_context()));
     const ExtensionAction* action =
         extension_action_manager->GetExtensionAction(*extension);
-    extension_value->SetBoolKey(
-        "hasPageAction",
-        action && action->action_type() == ActionInfo::TYPE_PAGE);
+    extension_value.Set("hasPageAction", action && action->action_type() ==
+                                                       ActionInfo::TYPE_PAGE);
 
     extensions_values.Append(std::move(extension_value));
   }
 
-  std::unique_ptr<base::DictionaryValue> return_value(
-      new base::DictionaryValue);
-  return_value->SetKey("extensions", std::move(extensions_values));
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(return_value))));
+  base::Value::Dict return_value;
+  return_value.Set("extensions", std::move(extensions_values));
+  return RespondNow(OneArgument(base::Value(std::move(return_value))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1651,11 +1646,11 @@ AutotestPrivateGetVisibleNotificationsFunction::Run() {
 
   message_center::NotificationList::Notifications notification_set =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
-  auto values = std::make_unique<base::ListValue>();
+  base::Value::List values;
   for (auto* notification : notification_set)
-    values->Append(MakeDictionaryFromNotification(*notification));
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(values))));
+    values.Append(base::Value::FromUniquePtrValue(
+        MakeDictionaryFromNotification(*notification)));
+  return RespondNow(OneArgument(base::Value(std::move(values))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

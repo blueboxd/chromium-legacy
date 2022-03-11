@@ -26,6 +26,7 @@
     ThemeProperties::COLOR_AVATAR_BUTTON_HIGHLIGHT_SYNC_ERROR) \
   E(kColorAvatarButtonHighlightSyncPaused, \
     ThemeProperties::COLOR_AVATAR_BUTTON_HIGHLIGHT_SYNC_PAUSED) \
+  E_CPONLY(kColorAvatarStrokeLight) \
   /* Bookmark bar colors. */ \
   E(kColorBookmarkBarBackground, \
     ThemeProperties::COLOR_BOOKMARK_BAR_BACKGROUND) \
@@ -50,6 +51,19 @@
   E_CPONLY(kColorDownloadToolbarButtonActive) \
   E_CPONLY(kColorDownloadToolbarButtonInactive) \
   E_CPONLY(kColorDownloadToolbarButtonRingBackground) \
+  /* Feature Promo bubble colors. */ \
+  E(kColorFeaturePromoBubbleBackground, \
+    ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND) \
+  E(kColorFeaturePromoBubbleButtonBorder, \
+    ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_BUTTON_BORDER) \
+  E(kColorFeaturePromoBubbleCloseButtonInkDrop, \
+    ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_CLOSE_BUTTON_INK_DROP) \
+  E(kColorFeaturePromoBubbleDefaultButtonBackground, \
+    ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_DEFAULT_BUTTON_BACKGROUND) \
+  E(kColorFeaturePromoBubbleDefaultButtonForeground, \
+    ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_DEFAULT_BUTTON_FOREGROUND) \
+  E(kColorFeaturePromoBubbleForeground, \
+    ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_FOREGROUND) \
   /* Flying Indicator colors. */ \
   E(kColorFlyingIndicatorBackground, \
     ThemeProperties::COLOR_FLYING_INDICATOR_BACKGROUND) \
@@ -74,10 +88,13 @@
   E(kColorNewTabPageHeader, ThemeProperties::COLOR_NTP_HEADER) \
   E(kColorNewTabPageLink, ThemeProperties::COLOR_NTP_LINK) \
   E(kColorNewTabPageLogo, ThemeProperties::COLOR_NTP_LOGO) \
+  E_CPONLY(kColorNewTabPageLogoUnthemed) \
   E(kColorNewTabPageMostVisitedTileBackground, \
     ThemeProperties::COLOR_NTP_SHORTCUT) \
+  E_CPONLY(kColorNewTabPageMostVisitedTileBackgroundUnthemed) \
   E(kColorNewTabPageSectionBorder, ThemeProperties::COLOR_NTP_SECTION_BORDER) \
   E(kColorNewTabPageText, ThemeProperties::COLOR_NTP_TEXT) \
+  E_CPONLY(kColorNewTabPageTextUnthemed) \
   E(kColorNewTabPageTextLight, ThemeProperties::COLOR_NTP_TEXT_LIGHT) \
   /* Omnibox colors. */ \
   E(kColorOmniboxBackground, ThemeProperties::COLOR_OMNIBOX_BACKGROUND) \

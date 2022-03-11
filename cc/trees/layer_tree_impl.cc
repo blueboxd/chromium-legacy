@@ -652,10 +652,6 @@ void LayerTreeImpl::PullPropertiesFrom(
 
   MoveChangeTrackingToLayers();
 
-  // Updating elements affects whether animations are in effect based on their
-  // properties so run after pushing updated animation properties.
-  host_impl_->UpdateElements(ElementListType::PENDING);
-
   lifecycle().AdvanceTo(LayerTreeLifecycle::kNotSyncing);
 }
 
@@ -874,10 +870,11 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   presentation_callbacks_.clear();
 
   if (delegated_ink_metadata_) {
-    TRACE_EVENT_INSTANT1("delegated_ink_trails",
-                         "Delegated ink metadata pushed to tree",
-                         TRACE_EVENT_SCOPE_THREAD, "point",
-                         delegated_ink_metadata_->point().ToString());
+    TRACE_EVENT_WITH_FLOW1("delegated_ink_trails",
+                           "Delegated ink metadata pushed to tree",
+                           TRACE_ID_GLOBAL(delegated_ink_metadata_->trace_id()),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "metadata", delegated_ink_metadata_->ToString());
     target_tree->set_delegated_ink_metadata(std::move(delegated_ink_metadata_));
   }
 
@@ -950,35 +947,6 @@ bool LayerTreeImpl::IsElementInPropertyTree(ElementId element_id) const {
 
 ElementListType LayerTreeImpl::GetElementTypeForAnimation() const {
   return IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
-}
-
-void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
-                                          LayerImpl* layer) {
-  if (!element_id)
-    return;
-
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("layer-element"),
-               "LayerTreeImpl::AddToElementLayerList", "element",
-               element_id.ToString());
-
-  if (!settings().use_layer_lists) {
-    host_impl_->mutator_host()->RegisterElementId(element_id,
-                                                  GetElementTypeForAnimation());
-  }
-}
-
-void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
-  if (!element_id)
-    return;
-
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("layer-element"),
-               "LayerTreeImpl::RemoveFromElementLayerList", "element",
-               element_id.ToString());
-
-  if (!settings().use_layer_lists) {
-    host_impl_->mutator_host()->UnregisterElementId(
-        element_id, GetElementTypeForAnimation());
-  }
 }
 
 void LayerTreeImpl::SetTransformMutated(ElementId element_id,

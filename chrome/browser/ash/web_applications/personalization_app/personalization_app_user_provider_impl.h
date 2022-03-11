@@ -9,10 +9,12 @@
 #include "ash/webui/personalization_app/personalization_app_user_provider.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/camera_presence_notifier.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_file_selector.h"
+#include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -21,6 +23,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Profile;
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace content {
 class WebUI;
@@ -62,6 +68,8 @@ class PersonalizationAppUserProviderImpl
 
   void SelectCameraImage(::mojo_base::BigBuffer data) override;
 
+  void SelectLastExternalUserImage() override;
+
   void OnFileSelected(const base::FilePath& path);
 
   // user_manager::UserManager::Observer:
@@ -80,8 +88,15 @@ class PersonalizationAppUserProviderImpl
   void OnCameraImageDecoded(scoped_refptr<base::RefCountedBytes> photo_bytes,
                             const SkBitmap& decoded_bitmap);
 
+  void OnExternalUserImageEncoded(std::vector<unsigned char> encoded_png);
+
+  void UpdateUserImageObserver(
+      ash::personalization_app::mojom::UserImagePtr user_image);
+
   // Pointer to profile of user that opened personalization SWA. Not owned.
   raw_ptr<Profile> profile_ = nullptr;
+
+  std::unique_ptr<user_manager::UserImage> last_external_user_image_;
 
   base::ScopedObservation<user_manager::UserManager,
                           user_manager::UserManager::Observer>
@@ -99,8 +114,13 @@ class PersonalizationAppUserProviderImpl
 
   std::unique_ptr<ash::UserImageFileSelector> user_image_file_selector_;
 
+  scoped_refptr<base::SequencedTaskRunner> image_encoding_task_runner_;
+
   base::WeakPtrFactory<PersonalizationAppUserProviderImpl> weak_ptr_factory_{
       this};
+
+  base::WeakPtrFactory<PersonalizationAppUserProviderImpl>
+      image_encoding_weak_ptr_factory_{this};
 
   base::WeakPtrFactory<PersonalizationAppUserProviderImpl>
       image_decode_weak_ptr_factory_{this};

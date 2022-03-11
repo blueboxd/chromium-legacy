@@ -12,12 +12,13 @@ import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {isSelectionEvent} from '../../common/utils.js';
-import {DefaultUserImage} from '../personalization_app.mojom-webui.js';
+import {DefaultUserImage, UserImage} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 
 import {AvatarCamera, AvatarCameraMode} from './avatar_camera_element.js';
 import {fetchDefaultUserImages} from './user_controller.js';
 import {getUserProvider} from './user_interface_provider.js';
+import {selectLastExternalUserImageUrl} from './user_selectors.js';
 
 export interface AvatarList {
   $: {avatarCamera: AvatarCamera}
@@ -59,7 +60,8 @@ export class AvatarList extends WithPersonalizationStore {
   private profileImage_: Url|null;
   private isCameraPresent_: boolean;
   private cameraMode_: AvatarCameraMode|null;
-  private image_: Url|null;
+  private image_: UserImage|null;
+  private lastExternalUserImageUrl_: Url|null;
 
   connectedCallback() {
     super.connectedCallback();
@@ -70,6 +72,8 @@ export class AvatarList extends WithPersonalizationStore {
     this.watch<AvatarList['isCameraPresent_']>(
         'isCameraPresent_', state => state.user.isCameraPresent);
     this.watch<AvatarList['image_']>('image_', state => state.user.image);
+    this.watch<AvatarList['lastExternalUserImageUrl_']>(
+        'lastExternalUserImageUrl_', selectLastExternalUserImageUrl);
     this.updateFromStore();
     fetchDefaultUserImages(getUserProvider(), this.getStore());
   }
@@ -89,15 +93,17 @@ export class AvatarList extends WithPersonalizationStore {
   }
 
   private getProfileImageAriaSelected_(
-      profileImage: Url|null, selectedImage: Url|null): string {
-    return (!!profileImage && !!selectedImage &&
-            selectedImage.url === profileImage.url)
-        .toString();
+      profileImage: Url|null, selectedImage: UserImage|null): string {
+    return (!!profileImage && !!selectedImage?.profileImage).toString();
   }
 
   private getDefaultUserImageAriaSelected_(
-      image: DefaultUserImage, selectedImage: Url|null): string {
-    return (!!selectedImage && selectedImage.url === image.url.url).toString();
+      image: DefaultUserImage, selectedImage: UserImage|null): string {
+    return (image.index === selectedImage?.defaultImage?.index).toString();
+  }
+
+  private getExternalImageAriaSelected_(image: UserImage|null): string {
+    return (!!image?.externalImage).toString();
   }
 
   private onSelectProfileImage_(event: Event) {
@@ -106,6 +112,13 @@ export class AvatarList extends WithPersonalizationStore {
     }
 
     getUserProvider().selectProfileImage();
+  }
+
+  private onSelectLastExternalUserImage_(event: Event) {
+    if (!isSelectionEvent(event)) {
+      return;
+    }
+    getUserProvider().selectLastExternalUserImage();
   }
 
   private openCamera_() {

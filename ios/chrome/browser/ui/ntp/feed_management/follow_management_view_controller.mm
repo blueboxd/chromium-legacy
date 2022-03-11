@@ -5,8 +5,14 @@
 #import "ios/chrome/browser/ui/ntp/feed_management/follow_management_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/ui/follow/follow_block_types.h"
+#import "ios/chrome/browser/ui/follow/followed_web_channel.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/followed_web_channel_item.h"
-#import "ios/chrome/browser/ui/ntp/feed_management/web_channel.h"
+#import "ios/chrome/browser/ui/ntp/feed_management/followed_web_channels_data_source.h"
+#import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
+#import "ios/chrome/common/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -36,18 +42,48 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self loadModel];
 }
 
+#pragma mark - UITableView
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cellToReturn = [super tableView:tableView
+                             cellForRowAtIndexPath:indexPath];
+  TableViewItem* tableViewItem =
+      [self.tableViewModel itemAtIndexPath:indexPath];
+
+  FollowedWebChannelItem* followedWebChannelItem =
+      base::mac::ObjCCastStrict<FollowedWebChannelItem>(tableViewItem);
+  FollowedWebChannelCell* followedWebChannelCell =
+      base::mac::ObjCCastStrict<FollowedWebChannelCell>(cellToReturn);
+  CrURL* faviconURL = followedWebChannelItem.followedWebChannel.faviconURL;
+
+  [self.faviconDataSource faviconForURL:faviconURL
+                             completion:^(FaviconAttributes* attributes) {
+                               // Only set favicon if the cell hasn't been
+                               // reused.
+                               if (followedWebChannelCell.followedWebChannel ==
+                                   followedWebChannelItem.followedWebChannel) {
+                                 DCHECK(attributes);
+                                 [followedWebChannelCell.faviconView
+                                     configureWithAttributes:attributes];
+                               }
+                             }];
+  return cellToReturn;
+}
+
 #pragma mark - ChromeTableViewController
 
 - (void)loadModel {
   [super loadModel];
-  NSArray<WebChannel*>* webChannels = self.dataSource.followedWebChannels;
+  NSArray<FollowedWebChannel*>* followedWebChannels =
+      self.followedWebChannelsDataSource.followedWebChannels;
 
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:DefaultSectionIdentifier];
-  for (WebChannel* webChannel in webChannels) {
+  for (FollowedWebChannel* followedWebChannel in followedWebChannels) {
     FollowedWebChannelItem* item = [[FollowedWebChannelItem alloc]
         initWithType:FollowedWebChannelItemType];
-    item.webChannel = webChannel;
+    item.followedWebChannel = followedWebChannel;
     [model addItem:item toSectionWithIdentifier:DefaultSectionIdentifier];
   }
 }
@@ -91,17 +127,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   FollowedWebChannelItem* item =
       base::mac::ObjCCastStrict<FollowedWebChannelItem>(
           [self.tableViewModel itemAtIndexPath:indexPath]);
-  WebChannel* webChannel = item.webChannel;
-  [self.delegate unfollowWebChannel:webChannel
-                         completion:^(BOOL success) {
-                           if (success) {
-                             // TODO(crbug.com/1296745): Show success snackbar
-                             // with undo button.
-                           } else {
-                             // TODO(crbug.com/1296745): Show failure snackbar
-                             // with try again button.
-                           }
-                         }];
+
+  item.followedWebChannel.unfollowRequestBlock(^(BOOL success) {
+    if (success) {
+      // TODO(crbug.com/1296745): Show success snackbar
+      // with undo button. Also remove row.
+    } else {
+      // TODO(crbug.com/1296745): Show failure snackbar
+      // with try again button.
+    }
+  });
 }
 
 @end

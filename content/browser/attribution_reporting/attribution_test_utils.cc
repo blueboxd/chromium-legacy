@@ -28,6 +28,10 @@ namespace content {
 
 namespace {
 
+using ::testing::AllOf;
+using ::testing::Field;
+using ::testing::Property;
+
 const char kDefaultImpressionOrigin[] = "https://impression.test/";
 const char kDefaultTriggerOrigin[] = "https://sub.conversion.test/";
 const char kDefaultTriggerDestination[] = "https://conversion.test/";
@@ -686,7 +690,8 @@ AggregatableSourcesMojoBuilder::Build() const {
 bool operator==(const AttributionTrigger::EventTriggerData& a,
                 const AttributionTrigger::EventTriggerData& b) {
   const auto tie = [](const AttributionTrigger::EventTriggerData& t) {
-    return std::make_tuple(t.data, t.priority, t.dedup_key, t.source_type);
+    return std::make_tuple(t.data, t.priority, t.dedup_key, t.filters,
+                           t.not_filters);
   };
   return tie(a) == tie(b);
 }
@@ -845,9 +850,6 @@ std::ostream& operator<<(std::ostream& out,
     case AttributionTrigger::EventLevelResult::kExcessiveReportingOrigins:
       out << "excessiveReportingOrigins";
       break;
-    case AttributionTrigger::EventLevelResult::kNoMatchingEventTriggers:
-      out << "noMatchingEventTriggers";
-      break;
     case AttributionTrigger::EventLevelResult::kNoMatchingSourceFilterData:
       out << "noMatchingSourceFilterData";
       break;
@@ -907,7 +909,8 @@ std::ostream& operator<<(
              << (event_trigger.dedup_key
                      ? base::NumberToString(*event_trigger.dedup_key)
                      : "null")
-             << ",source_type=" << event_trigger.source_type << "}";
+             << ",filters=" << event_trigger.filters
+             << ",not_filters=" << event_trigger.not_filters << "}";
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -1182,6 +1185,38 @@ std::ostream& operator<<(
     std::ostream& out,
     const AttributionAggregatableSources& aggregatable_sources) {
   return out << "{proto=" << aggregatable_sources.proto() << "}";
+}
+
+EventTriggerDataMatcherConfig::~EventTriggerDataMatcherConfig() = default;
+
+::testing::Matcher<const AttributionTrigger::EventTriggerData&>
+EventTriggerDataMatches(const EventTriggerDataMatcherConfig& cfg) {
+  return AllOf(
+      Field("data", &AttributionTrigger::EventTriggerData::data, cfg.data),
+      Field("priority", &AttributionTrigger::EventTriggerData::priority,
+            cfg.priority),
+      Field("dedup_key", &AttributionTrigger::EventTriggerData::dedup_key,
+            cfg.dedup_key),
+      Field("filters", &AttributionTrigger::EventTriggerData::filters,
+            cfg.filters),
+      Field("not_filters", &AttributionTrigger::EventTriggerData::not_filters,
+            cfg.not_filters));
+}
+
+AttributionTriggerMatcherConfig::~AttributionTriggerMatcherConfig() = default;
+
+::testing::Matcher<AttributionTrigger> AttributionTriggerMatches(
+    const AttributionTriggerMatcherConfig& cfg) {
+  return AllOf(
+      Property("conversion_destination",
+               &AttributionTrigger::conversion_destination,
+               cfg.conversion_destination),
+      Property("reporting_origin", &AttributionTrigger::reporting_origin,
+               cfg.reporting_origin),
+      Property("filters", &AttributionTrigger::filters, cfg.filters),
+      Property("debug_key", &AttributionTrigger::debug_key, cfg.debug_key),
+      Property("event_triggers", &AttributionTrigger::event_triggers,
+               cfg.event_triggers));
 }
 
 std::vector<AttributionReport> GetAttributionReportsForTesting(

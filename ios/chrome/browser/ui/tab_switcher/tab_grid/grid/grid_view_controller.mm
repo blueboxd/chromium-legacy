@@ -338,6 +338,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
         NSIndexSet* allSectionsIndexSet =
             [NSIndexSet indexSetWithIndexesInRange:allSectionsRange];
         [strongSelf.collectionView reloadSections:allSectionsIndexSet];
+        if (mode == TabGridModeNormal) {
+          // After transition from other modes to the normal mode, the
+          // selection border doesn't show around the selection item. The
+          // collection view needs to be updated with the selected item again
+          // for it to appear correctly.
+          [self.collectionView
+              selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
+                           animated:NO
+                     scrollPosition:UICollectionViewScrollPositionTop];
+        }
       }
                completion:nil];
 
@@ -347,14 +357,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [self.selectedSharableEditingItemIDs removeAllObjects];
     if (IsTabsSearchEnabled())
       self.searchText = nil;
-    // After transition from the selection mode to the normal mode, the
-    // selection border doesn't show around the selection item. The collection
-    // view needs to be updated with the selected item again for it to appear
-    // correctly.
-    [self.collectionView
-        selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                     animated:NO
-               scrollPosition:UICollectionViewScrollPositionNone];
   }
 }
 
@@ -598,7 +600,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       !_searchText.length) {
     return CGSizeZero;
   }
-  return CGSizeMake(collectionView.bounds.size.width, kGridHeaderHeight);
+  CGFloat height = UIContentSizeCategoryIsAccessibilityCategory(
+                       self.traitCollection.preferredContentSizeCategory)
+                       ? kGridHeaderAccessibilityHeight
+                       : kGridHeaderHeight;
+
+  return CGSizeMake(collectionView.bounds.size.width, height);
 }
 
 // This prevents the user from dragging a cell past the plus sign cell (the last
@@ -978,8 +985,14 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // Whether the view is visible or not, the delegate must be updated.
   [self.delegate gridViewController:self didChangeItemCount:self.items.count];
   [self updateFractionVisibleOfLastItem];
-  if (IsTabsSearchEnabled() && _searchText.length)
-    [self updateSearchResultsHeader];
+  if (IsTabsSearchEnabled() && _mode == TabGridModeSearch) {
+    if (_searchText.length)
+      [self updateSearchResultsHeader];
+    [self.collectionView
+        setContentOffset:CGPointMake(
+                             0, -self.collectionView.adjustedContentInset.top)
+                animated:NO];
+  }
 }
 
 - (void)insertItem:(TabSwitcherItem*)item

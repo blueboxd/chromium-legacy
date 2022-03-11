@@ -122,6 +122,14 @@ class OffTheRecordProfileImpl : public Profile {
   content::FileSystemAccessPermissionContext*
   GetFileSystemAccessPermissionContext() override;
   void RecordPrimaryMainFrameNavigation() override;
+  content::FederatedIdentityActiveSessionPermissionContextDelegate*
+  GetFederatedIdentityActiveSessionPermissionContext() override;
+  content::FederatedIdentityRequestPermissionContextDelegate*
+  GetFederatedIdentityRequestPermissionContext() override;
+  content::FederatedIdentitySharingPermissionContextDelegate*
+  GetFederatedIdentitySharingPermissionContext() override;
+  content::FederatedIdentityApiPermissionContextDelegate*
+  GetFederatedIdentityApiPermissionContext() override;
 
  protected:
   // Profile implementation.

@@ -610,6 +610,11 @@ static void UpdateCompositorViewportProperties(
     }
   }
 
+  if (RuntimeEnabledFeatures::FixedElementsDontOverscrollEnabled()) {
+    property_tree_manager.SetOverscrollNodeId(
+        ids.overscroll_elasticity_transform);
+    property_tree_manager.SetFixedElementsDontOverscroll(true);
+  }
   layer_tree_host->RegisterViewportPropertyIds(ids);
 }
 
@@ -748,9 +753,6 @@ void PaintArtifactCompositor::Update(
   auto layers = layer_list_builder.Finalize();
   property_tree_manager.UpdateConditionalRenderSurfaceReasons(layers);
   root_layer_->SetChildLayerList(std::move(layers));
-
-  // Update the host's active registered elements from the new property tree.
-  host->UpdateActiveElements();
 
   // Mark the property trees as having been rebuilt.
   host->property_trees()->set_needs_rebuild(false);

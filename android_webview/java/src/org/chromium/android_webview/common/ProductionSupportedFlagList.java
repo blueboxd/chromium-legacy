@@ -106,6 +106,8 @@ public final class ProductionSupportedFlagList {
                     "Avoid extra copy for video frames when possible"),
             Flag.baseFeature(GpuFeatures.WEBVIEW_THREAD_SAFE_MEDIA,
                     "Use thread-safe media path, requires Android P."),
+            Flag.baseFeature(VizFeatures.WEBVIEW_NEW_INVALIDATE_HEURISTIC,
+                    "More robust heuristic for calling Invalidate"),
             Flag.baseFeature(
                     VizFeatures.WEBVIEW_VULKAN_INTERMEDIATE_BUFFER, "For debugging vulkan"),
             Flag.baseFeature(
@@ -194,6 +196,9 @@ public final class ProductionSupportedFlagList {
             Flag.commandLine(AwSwitches.WEBVIEW_DISABLE_APPS_PACKAGE_NAMES_ALLOWLIST_COMPONENT,
                     "Disable downloading the apps package names allowlist component by the "
                             + "component updater."),
+            Flag.commandLine(AwSwitches.WEBVIEW_DISABLE_PACKAGE_ALLOWLIST_THROTTLING,
+                    "Disables throttling querying apps package names allowlist components in"
+                            + "WebView clients."),
             Flag.baseFeature(AwFeatures.WEBVIEW_EMPTY_COMPONENT_LOADER_POLICY,
                     "Enables loading a fake empty (no-op) component during WebView startup."),
             Flag.commandLine(AwSwitches.WEBVIEW_SELECTIVE_IMAGE_INVERSION_DARKENING,

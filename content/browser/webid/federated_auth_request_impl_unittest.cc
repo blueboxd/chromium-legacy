@@ -19,6 +19,7 @@
 #include "content/browser/webid/fedcm_metrics.h"
 #include "content/browser/webid/federated_auth_request_service.h"
 #include "content/browser/webid/test/mock_active_session_permission_delegate.h"
+#include "content/browser/webid/test/mock_api_permission_delegate.h"
 #include "content/browser/webid/test/mock_identity_request_dialog_controller.h"
 #include "content/browser/webid/test/mock_idp_network_request_manager.h"
 #include "content/browser/webid/test/mock_request_permission_delegate.h"
@@ -164,22 +165,39 @@ static const MockClientIdConfiguration kClientMetadataInvalidResponse{
 static const MockClientIdConfiguration kClientMetadataNoPrivacyPolicyUrl{
     FetchStatus::kSuccess, "", ""};
 
-static const AuthRequestTestCase kMediatedTestCases[]{
-    {"Error parsing FedCM manifest for Mediated mode missing token endpoint",
-     {kIdpTestOrigin, kClientId, kNonce},
-     {RequestIdTokenStatus::kError,
-      FederatedAuthRequestResult::kErrorFetchingManifestInvalidResponse,
-      kEmptyToken},
-     {kToken, FetchStatus::kInvalidResponseError, absl::nullopt,
-      kAccountsEndpoint, "", kClientMetadataEndpoint, kMediatedNoop}},
+static const AuthRequestTestCase kMissingTokenEndpoint{
+    "Error parsing FedCM manifest for Mediated mode missing token endpoint",
+    {kIdpTestOrigin, kClientId, kNonce},
+    {RequestIdTokenStatus::kError,
+     FederatedAuthRequestResult::kErrorFetchingManifestInvalidResponse,
+     kEmptyToken},
+    {kToken, FetchStatus::kSuccess, absl::nullopt, kAccountsEndpoint, "",
+     kClientMetadataEndpoint, kMediatedNoop}};
 
-    {"Error parsing FedCM manifest for Mediated mode missing accounts endpoint",
-     {kIdpTestOrigin, kClientId, kNonce},
-     {RequestIdTokenStatus::kError,
-      FederatedAuthRequestResult::kErrorFetchingManifestInvalidResponse,
-      kEmptyToken},
-     {kToken, FetchStatus::kSuccess, absl::nullopt, "", kTokenEndpoint,
-      kClientMetadataEndpoint, kMediatedNoop}},
+static const AuthRequestTestCase kMissingAccountsEndpoint{
+    "Error parsing FedCM manifest for Mediated mode missing accounts endpoint",
+    {kIdpTestOrigin, kClientId, kNonce},
+    {RequestIdTokenStatus::kError,
+     FederatedAuthRequestResult::kErrorFetchingManifestInvalidResponse,
+     kEmptyToken},
+    {kToken, FetchStatus::kSuccess, absl::nullopt, "", kTokenEndpoint,
+     kClientMetadataEndpoint, kMediatedNoop}};
+
+static const AuthRequestTestCase kMissingClientMetadata{
+    "Error parsing FedCM manifest for Mediated mode missing client metadata "
+    "endpoint",
+    {kIdpTestOrigin, kClientId, kNonce},
+    {RequestIdTokenStatus::kError,
+     FederatedAuthRequestResult::kErrorFetchingManifestInvalidResponse,
+     kEmptyToken},
+    {kToken, FetchStatus::kSuccess, absl::nullopt, kAccountsEndpoint,
+     kTokenEndpoint, "", kMediatedNoop}};
+
+static const AuthRequestTestCase kMediatedTestCases[]{
+    kMissingTokenEndpoint,
+    kMissingAccountsEndpoint,
+    kMissingClientMetadata,
+
     {"Error due to accounts endpoint in different origin than identity "
      "provider",
      {kIdpTestOrigin, kClientId, kNonce},
@@ -427,6 +445,12 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
     mock_active_session_permission_delegate_ =
         std::make_unique<NiceMock<MockActiveSessionPermissionDelegate>>();
 
+    mock_sharing_permission_delegate_ =
+        std::make_unique<NiceMock<MockSharingPermissionDelegate>>();
+
+    auth_request_service_->GetImplForTesting()
+        ->SetSharingPermissionDelegateForTests(
+            mock_sharing_permission_delegate_.get());
     return *auth_request_service_->GetImplForTesting();
   }
 
@@ -682,6 +706,8 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
       mock_request_permission_delegate_;
   std::unique_ptr<NiceMock<MockActiveSessionPermissionDelegate>>
       mock_active_session_permission_delegate_;
+  std::unique_ptr<NiceMock<MockSharingPermissionDelegate>>
+      mock_sharing_permission_delegate_;
 
   base::OnceClosure close_idp_window_callback_;
 
@@ -741,8 +767,8 @@ TEST_P(BasicFederatedAuthRequestImplTest, FederatedAuthRequestIssue) {
           {FederatedAuthRequestResult::kErrorFetchingManifestHttpNotFound,
            "The provider's FedCM manifest configuration cannot be found."},
           {FederatedAuthRequestResult::kErrorFetchingManifestNoResponse,
-           "The response body is empty when fetching the provider's "
-           "FedCM manifest configuration."},
+           "The provider's FedCM manifest configuration fetch resulted in an "
+           "error response code."},
           {FederatedAuthRequestResult::kErrorFetchingManifestInvalidResponse,
            "Provider's FedCM manifest configuration is invalid."},
           {FederatedAuthRequestResult::kErrorFetchingSignin,
@@ -751,15 +777,17 @@ TEST_P(BasicFederatedAuthRequestImplTest, FederatedAuthRequestIssue) {
            "Provider's sign-in response is invalid."},
           {FederatedAuthRequestResult::kError, "Error retrieving an id token."},
           {FederatedAuthRequestResult::kErrorFetchingAccountsNoResponse,
-           "The response body is empty when fetching the provider's accounts "
-           "list."},
+           "The provider's accounts list fetch resulted in an error response "
+           "code."},
           {FederatedAuthRequestResult::kErrorFetchingAccountsInvalidResponse,
-           "Provider's accounts list is invalid."},
+           "Provider's accounts list is invalid. Should have received an "
+           "\"accounts\" list, where each account must "
+           "have at least \"id\", \"name\", and \"email\"."},
           {FederatedAuthRequestResult::kErrorFetchingClientMetadataHttpNotFound,
            "The provider's client metadata endpoint cannot be found."},
           {FederatedAuthRequestResult::kErrorFetchingClientMetadataNoResponse,
-           "The response body is empty when fetching the provider's client "
-           "metadata."},
+           "The provider's client metadata fetch resulted in an error response "
+           "code."},
           {FederatedAuthRequestResult::
                kErrorFetchingClientMetadataInvalidResponse,
            "Provider's client metadata is invalid."},
@@ -774,13 +802,101 @@ TEST_P(BasicFederatedAuthRequestImplTest, FederatedAuthRequestIssue) {
   if (!expected_message) {
     EXPECT_EQ(0u, messages.size());
   } else {
-    ASSERT_EQ(1u, messages.size());
-    EXPECT_EQ(expected_message.value(), messages[0]);
+    ASSERT_LE(1u, messages.size());
+    EXPECT_EQ(expected_message.value(), messages[messages.size() - 1]);
   }
+}
+
+TEST_F(BasicFederatedAuthRequestImplTest, MissingTokenEndpoint) {
+  const auto& test_case = kMissingTokenEndpoint;
+  CreateAuthRequest(GURL(test_case.inputs.provider));
+  SetMockExpectations(test_case);
+  auto auth_response =
+      PerformAuthRequest(test_case.inputs.client_id, test_case.inputs.nonce,
+                         test_case.inputs.prefer_auto_sign_in);
+  std::vector<std::string> messages =
+      RenderFrameHostTester::For(main_rfh())->GetConsoleMessages();
+  ASSERT_EQ(2U, messages.size());
+  EXPECT_EQ(
+      "Manifest is missing or has an invalid URL for the following "
+      "endpoints:\n"
+      "\"id_token_endpoint\"\n",
+      messages[0]);
+  EXPECT_EQ("Provider's FedCM manifest configuration is invalid.", messages[1]);
+}
+
+TEST_F(BasicFederatedAuthRequestImplTest, MissingAccountsEndpoint) {
+  const auto& test_case = kMissingAccountsEndpoint;
+  CreateAuthRequest(GURL(test_case.inputs.provider));
+  SetMockExpectations(test_case);
+  auto auth_response =
+      PerformAuthRequest(test_case.inputs.client_id, test_case.inputs.nonce,
+                         test_case.inputs.prefer_auto_sign_in);
+  std::vector<std::string> messages =
+      RenderFrameHostTester::For(main_rfh())->GetConsoleMessages();
+  ASSERT_EQ(2U, messages.size());
+  EXPECT_EQ(
+      "Manifest is missing or has an invalid URL for the following "
+      "endpoints:\n"
+      "\"accounts_endpoint\"\n",
+      messages[0]);
+  EXPECT_EQ("Provider's FedCM manifest configuration is invalid.", messages[1]);
+}
+
+TEST_F(BasicFederatedAuthRequestImplTest, MissingClientMetadataEndpoint) {
+  const auto& test_case = kMissingClientMetadata;
+  CreateAuthRequest(GURL(test_case.inputs.provider));
+  SetMockExpectations(test_case);
+  auto auth_response =
+      PerformAuthRequest(test_case.inputs.client_id, test_case.inputs.nonce,
+                         test_case.inputs.prefer_auto_sign_in);
+  std::vector<std::string> messages =
+      RenderFrameHostTester::For(main_rfh())->GetConsoleMessages();
+  ASSERT_EQ(2U, messages.size());
+  EXPECT_EQ(
+      "Manifest is missing or has an invalid URL for the following "
+      "endpoints:\n"
+      "\"client_metadata_endpoint\"\n",
+      messages[0]);
+  EXPECT_EQ("Provider's FedCM manifest configuration is invalid.", messages[1]);
+}
+
+TEST_F(BasicFederatedAuthRequestImplTest, AllInvalidEndpoints) {
+  // Both an empty url and cross origin urls are invalid endpoints.
+  AuthRequestTestCase test_case = {
+      "FedCM manifest missing all endpoints",
+      {kIdpTestOrigin, kClientId, kNonce},
+      {RequestIdTokenStatus::kError,
+       FederatedAuthRequestResult::kErrorFetchingManifestInvalidResponse,
+       kEmptyToken},
+      {kToken, FetchStatus::kSuccess, absl::nullopt,
+       "https://cross-origin-1.com", "", "https://cross-origin-2.com",
+       kMediatedNoop}};
+  CreateAuthRequest(GURL(test_case.inputs.provider));
+  SetMockExpectations(test_case);
+  auto auth_response =
+      PerformAuthRequest(test_case.inputs.client_id, test_case.inputs.nonce,
+                         test_case.inputs.prefer_auto_sign_in);
+  std::vector<std::string> messages =
+      RenderFrameHostTester::For(main_rfh())->GetConsoleMessages();
+  ASSERT_EQ(2U, messages.size());
+  EXPECT_EQ(
+      "Manifest is missing or has an invalid URL for the following "
+      "endpoints:\n"
+      "\"id_token_endpoint\"\n"
+      "\"accounts_endpoint\"\n"
+      "\"client_metadata_endpoint\"\n",
+      messages[0]);
+  EXPECT_EQ("Provider's FedCM manifest configuration is invalid.", messages[1]);
 }
 
 // Test Logout method success with multiple relying parties.
 TEST_F(BasicFederatedAuthRequestImplTest, LogoutSuccessMultiple) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeatureWithParameters(
+      features::kFedCm,
+      {{features::kFedCmIdpSignoutFieldTrialParamName, "true"}});
+
   CreateAuthRequest(GURL(kIdpTestOrigin));
 
   auto request1 = MakeLogoutRequest("https://rp1.example", "user123");
@@ -801,6 +917,11 @@ TEST_F(BasicFederatedAuthRequestImplTest, LogoutSuccessMultiple) {
 
 // Test Logout without session permission granted.
 TEST_F(BasicFederatedAuthRequestImplTest, LogoutWithoutPermission) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeatureWithParameters(
+      features::kFedCm,
+      {{features::kFedCmIdpSignoutFieldTrialParamName, "true"}});
+
   CreateAuthRequest(GURL(kIdpTestOrigin));
 
   // logout_return_count is not set here because there should be no
@@ -879,19 +1000,15 @@ TEST_F(BasicFederatedAuthRequestImplTest,
 TEST_F(BasicFederatedAuthRequestImplTest,
        LoginStateShouldBeSignInForReturningUser) {
   const auto& test_case = kSuccessfulMediatedSignUpTestCase;
-  auto& auth_request = CreateAuthRequest(GURL(test_case.inputs.provider));
+  CreateAuthRequest(GURL(test_case.inputs.provider));
   SetMockExpectations(test_case);
-  // Set specific expectations for sharing permission:
-  NiceMock<MockSharingPermissionDelegate> mock_sharing_permission_delegate;
-  auth_request.SetSharingPermissionDelegateForTests(
-      &mock_sharing_permission_delegate);
 
   // Pretend the sharing permission has been granted for this account.
   //
   // TODO(majidvp): Ideally we would use the kRpTestOrigin for second argument
   // but web contents has not navigated to that URL so origin() is null in
   // tests. We should fix this.
-  EXPECT_CALL(mock_sharing_permission_delegate,
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
               HasSharingPermissionForAccount(
                   url::Origin::Create(GURL(kIdpTestOrigin)), _, "1234"))
       .WillOnce(Return(true));
@@ -905,20 +1022,16 @@ TEST_F(BasicFederatedAuthRequestImplTest,
 TEST_F(BasicFederatedAuthRequestImplTest,
        LoginStateSuccessfulSignUpGrantsSharingPermission) {
   const auto& test_case = kSuccessfulMediatedSignUpTestCase;
-  auto& auth_request = CreateAuthRequest(GURL(test_case.inputs.provider));
+  CreateAuthRequest(GURL(test_case.inputs.provider));
   SetMockExpectations(test_case);
-  // Set specific expectations for sharing permission.
-  NiceMock<MockSharingPermissionDelegate> mock_sharing_permission_delegate;
-  auth_request.SetSharingPermissionDelegateForTests(
-      &mock_sharing_permission_delegate);
 
-  EXPECT_CALL(mock_sharing_permission_delegate,
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
               HasSharingPermissionForAccount(_, _, _))
       .WillOnce(Return(false));
   // TODO(majidvp): Ideally we would use the kRpTestOrigin for second argument
   // but web contents has not navigated to that URL so origin() is null in
   // tests. We should fix this.
-  EXPECT_CALL(mock_sharing_permission_delegate,
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
               GrantSharingPermissionForAccount(
                   url::Origin::Create(GURL(kIdpTestOrigin)), _, "1234"))
       .Times(1);
@@ -931,17 +1044,13 @@ TEST_F(BasicFederatedAuthRequestImplTest,
 TEST_F(BasicFederatedAuthRequestImplTest,
        LoginStateFailedSignUpNotGrantSharingPermission) {
   const auto& test_case = kFailedMediatedSignUpTestCase;
-  auto& auth_request = CreateAuthRequest(GURL(test_case.inputs.provider));
+  CreateAuthRequest(GURL(test_case.inputs.provider));
   SetMockExpectations(test_case);
-  // Set specific expectations for sharing permission.
-  NiceMock<MockSharingPermissionDelegate> mock_sharing_permission_delegate;
-  auth_request.SetSharingPermissionDelegateForTests(
-      &mock_sharing_permission_delegate);
 
-  EXPECT_CALL(mock_sharing_permission_delegate,
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
               HasSharingPermissionForAccount(_, _, _))
       .WillOnce(Return(false));
-  EXPECT_CALL(mock_sharing_permission_delegate,
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
               GrantSharingPermissionForAccount(_, _, _))
       .Times(0);
 
@@ -958,19 +1067,15 @@ TEST_F(BasicFederatedAuthRequestImplTest, AutoSignInForReturningUser) {
 
   AccountList displayed_accounts;
   const auto& test_case = kSuccessfulMediatedAutoSignInTestCase;
-  auto& auth_request = CreateAuthRequest(GURL(test_case.inputs.provider));
+  CreateAuthRequest(GURL(test_case.inputs.provider));
   SetMockExpectations(test_case);
-  // Set specific expectations for sharing permission:
-  NiceMock<MockSharingPermissionDelegate> mock_sharing_permission_delegate;
-  auth_request.SetSharingPermissionDelegateForTests(
-      &mock_sharing_permission_delegate);
 
   // Pretend the sharing permission has been granted for this account.
   //
   // TODO(majidvp): Ideally we would use the kRpTestOrigin for second argument
   // but web contents has not navigated to that URL so origin() is null in
   // tests. We should fix this.
-  EXPECT_CALL(mock_sharing_permission_delegate,
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
               HasSharingPermissionForAccount(
                   url::Origin::Create(GURL(kIdpTestOrigin)), _, "1234"))
       .WillOnce(Return(true));
@@ -1043,19 +1148,15 @@ TEST_F(BasicFederatedAuthRequestImplTest, AutoSignInWithScreenReader) {
 
   AccountList displayed_accounts;
   const auto& test_case = kSuccessfulMediatedAutoSignInTestCase;
-  auto& auth_request = CreateAuthRequest(GURL(test_case.inputs.provider));
+  CreateAuthRequest(GURL(test_case.inputs.provider));
   SetMockExpectations(test_case);
-  // Set specific expectations for sharing permission:
-  NiceMock<MockSharingPermissionDelegate> mock_sharing_permission_delegate;
-  auth_request.SetSharingPermissionDelegateForTests(
-      &mock_sharing_permission_delegate);
 
   // Pretend the sharing permission has been granted for this account.
   //
   // TODO(majidvp): Ideally we would use the kRpTestOrigin for second argument
   // but web contents has not navigated to that URL so origin() is null in
   // tests. We should fix this.
-  EXPECT_CALL(mock_sharing_permission_delegate,
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
               HasSharingPermissionForAccount(
                   url::Origin::Create(GURL(kIdpTestOrigin)), _, "1234"))
       .WillOnce(Return(true));
@@ -1167,12 +1268,8 @@ TEST_F(FederatedAuthRequestImplTest, RevokeNoPermission) {
 
 TEST_F(BasicFederatedAuthRequestImplTest, MetricsForSuccessfulSignUpCase) {
   const auto& test_case = kSuccessfulMediatedSignUpTestCase;
-  auto& auth_request = CreateAuthRequest(GURL(test_case.inputs.provider));
+  CreateAuthRequest(GURL(test_case.inputs.provider));
   SetMockExpectations(test_case);
-  // Sets specific expectations for sharing permission.
-  NiceMock<MockSharingPermissionDelegate> mock_sharing_permission_delegate;
-  auth_request.SetSharingPermissionDelegateForTests(
-      &mock_sharing_permission_delegate);
 
   EXPECT_EQ(test_case.config.Mediated_conf.accounts.size(), 1u);
 
@@ -1211,15 +1308,11 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForSuccessfulSignUpCase) {
 
 TEST_F(BasicFederatedAuthRequestImplTest, MetricsForSuccessfulSignInCase) {
   const auto& test_case = kSuccessfulMediatedSignUpTestCase;
-  auto& auth_request = CreateAuthRequest(GURL(test_case.inputs.provider));
+  CreateAuthRequest(GURL(test_case.inputs.provider));
   SetMockExpectations(test_case);
-  // Sets specific expectations for sharing permission.
-  NiceMock<MockSharingPermissionDelegate> mock_sharing_permission_delegate;
-  auth_request.SetSharingPermissionDelegateForTests(
-      &mock_sharing_permission_delegate);
 
   // Pretends that the sharing permission has been granted for this account.
-  EXPECT_CALL(mock_sharing_permission_delegate,
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
               HasSharingPermissionForAccount(
                   url::Origin::Create(GURL(kIdpTestOrigin)), _, "1234"))
       .WillOnce(Return(true));
@@ -1274,12 +1367,8 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForNotSelectingAccount) {
        kClientMetadataEndpoint,
        {FetchStatus::kSuccess, kAccounts, absl::nullopt,
         /*customized_dialog=*/true}}};
-  auto& auth_request = CreateAuthRequest(GURL(test_case.inputs.provider));
+  CreateAuthRequest(GURL(test_case.inputs.provider));
   SetMockExpectations(test_case);
-  // Sets specific expectations for sharing permission:
-  NiceMock<MockSharingPermissionDelegate> mock_sharing_permission_delegate;
-  auth_request.SetSharingPermissionDelegateForTests(
-      &mock_sharing_permission_delegate);
 
   EXPECT_CALL(*mock_dialog_controller(),
               ShowAccountsDialog(_, _, _, _, _, _, _))
@@ -1339,15 +1428,11 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForWebContentsVisible) {
   ASSERT_EQ(web_contents_impl->GetVisibility(), Visibility::VISIBLE);
 
   const auto& test_case = kSuccessfulMediatedSignUpTestCase;
-  auto& auth_request = CreateAuthRequest(GURL(test_case.inputs.provider));
+  CreateAuthRequest(GURL(test_case.inputs.provider));
   SetMockExpectations(test_case);
-  // Sets specific expectations for sharing permission.
-  NiceMock<MockSharingPermissionDelegate> mock_sharing_permission_delegate;
-  auth_request.SetSharingPermissionDelegateForTests(
-      &mock_sharing_permission_delegate);
 
   // Pretends that the sharing permission has been granted for this account.
-  EXPECT_CALL(mock_sharing_permission_delegate,
+  EXPECT_CALL(*mock_sharing_permission_delegate_,
               HasSharingPermissionForAccount(
                   url::Origin::Create(GURL(kIdpTestOrigin)), _, "1234"))
       .WillOnce(Return(true));
@@ -1393,6 +1478,23 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForWebContentsInvisible) {
 
   histogram_tester.ExpectBucketCount("Blink.FedCm.WebContentsVisible", 0, 1);
   histogram_tester.ExpectTotalCount("Blink.FedCm.WebContentsVisible", 1);
+}
+
+TEST_F(BasicFederatedAuthRequestImplTest,
+       DisabledWhenThirdPartyCookiesBlocked) {
+  const auto& test_case = kSuccessfulMediatedAutoSignInTestCase;
+  CreateAuthRequest(GURL(test_case.inputs.provider));
+  NiceMock<MockApiPermissionDelegate> mock_api_permission_delegate;
+  auth_request_service_->GetImplForTesting()->SetApiPermissionDelegateForTests(
+      &mock_api_permission_delegate);
+  // Not calling SetMockExpectations(test_case) because the testcase is rejected
+  // early on, before the network manager is actually created.
+  EXPECT_CALL(mock_api_permission_delegate, AreThirdPartyCookiesBlocked())
+      .WillOnce(Return(true));
+  auto auth_response =
+      PerformAuthRequest(test_case.inputs.client_id, test_case.inputs.nonce,
+                         test_case.inputs.prefer_auto_sign_in);
+  EXPECT_EQ(auth_response.first, RequestIdTokenStatus::kError);
 }
 
 }  // namespace content

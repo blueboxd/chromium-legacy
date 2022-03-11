@@ -76,8 +76,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   // Equivalently, there are no previous deltas for the AppId.
   bool StateIsNull() const;
 
-  apps::mojom::AppType AppType() const;
-  apps::AppType GetAppType() const;
+  apps::AppType AppType() const;
 
   const std::string& AppId() const;
 
@@ -115,8 +114,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   base::Time InstallTime() const;
   bool InstallTimeChanged() const;
 
-  std::vector<apps::mojom::PermissionPtr> Permissions() const;
-  apps::Permissions GetPermissions() const;
+  apps::Permissions Permissions() const;
   bool PermissionsChanged() const;
 
   apps::InstallReason InstallReason() const;

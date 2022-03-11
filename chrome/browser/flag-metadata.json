@@ -1680,11 +1680,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "enable-compositing-based-throttling",
-    "owners": [ "yjliu", "chromeos-perf@google.com"],
-    "expiry_milestone": 98
-  },
-  {
     "name": "enable-conditional-tabstrip",
     "owners": [ "memex-team@google.com" ],
     "expiry_milestone": 90
@@ -5313,7 +5308,7 @@
   {
     "name": "scroll-unification",
     "owners": [ "skobes@chromium.org", "input-dev@chromium.org" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 105
   },
   {
     "name": "scrollable-tabstrip",
@@ -6161,6 +6156,11 @@
     "name": "web-share",
     "owners": [ "mhochk@microsoft.com", "ericwilligers@google.com", "hatalat@microsoft.com" ],
     "expiry_milestone": 114
+  },
+  {
+    "name": "web-sql-access",
+    "owners": [ "arichiv"],
+    "expiry_milestone": 113
   },
   {
     "name": "webnotes-dynamic-templates",

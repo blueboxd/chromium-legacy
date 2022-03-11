@@ -1085,9 +1085,9 @@ ScriptPromise CredentialsContainer::get(
         // TODO(yigu): Ideally the logic should be handled in CredentialManager
         // via Get. However currently it's only for password management and we
         // should refactor the logic to make it generic.
-        if (!RuntimeEnabledFeatures::WebIDEnabled(context)) {
+        if (!RuntimeEnabledFeatures::FedCmEnabled(context)) {
           resolver->Reject(MakeGarbageCollected<DOMException>(
-              DOMExceptionCode::kNotSupportedError, "Invalid provider entry"));
+              DOMExceptionCode::kNotSupportedError, "FedCM is not supported"));
           return promise;
         }
         // Log the UseCounter only when the WebID flag is enabled.
@@ -1103,7 +1103,7 @@ ScriptPromise CredentialsContainer::get(
         if (!provider_url.IsValid() || client_id == "") {
           resolver->Reject(MakeGarbageCollected<DOMException>(
               DOMExceptionCode::kInvalidStateError,
-              "Provided provider information is incomplete."));
+              "Provider information is incomplete."));
           return promise;
         }
         // We disallow redirects (in idp_network_request_manager.cc), so it is
@@ -1118,8 +1118,9 @@ ScriptPromise CredentialsContainer::get(
           return promise;
         }
 
-        FederatedCredential* credential =
-            FederatedCredential::Create(provider_url, client_id, options);
+        FederatedCredential* credential = FederatedCredential::Create(
+            provider_url, client_id, federated_identity_provider->getHintOr(""),
+            options);
         resolver->Resolve(credential);
         return promise;
       }

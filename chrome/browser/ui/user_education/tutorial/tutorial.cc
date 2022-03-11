@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/user_education/help_bubble_params.h"
 #include "chrome/browser/ui/user_education/tutorial/tutorial_description.h"
 #include "chrome/browser/ui/user_education/tutorial/tutorial_service.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -31,9 +32,12 @@ Tutorial::StepBuilder::BuildFromDescriptionStep(
     const TutorialDescription::Step& step,
     absl::optional<std::pair<int, int>> progress,
     bool is_last_step,
+    bool can_be_restarted,
     TutorialService* tutorial_service) {
   Tutorial::StepBuilder step_builder(step);
-  step_builder.SetProgress(progress).SetIsLastStep(is_last_step);
+  step_builder.SetProgress(progress)
+      .SetIsLastStep(is_last_step)
+      .SetCanBeRestarted(can_be_restarted);
 
   return step_builder.Build(tutorial_service);
 }
@@ -113,6 +117,12 @@ Tutorial::StepBuilder& Tutorial::StepBuilder::SetNameElementsCallback(
   return *this;
 }
 
+Tutorial::StepBuilder& Tutorial::StepBuilder::SetCanBeRestarted(
+    bool can_be_restarted_) {
+  can_be_restarted = can_be_restarted_;
+  return *this;
+}
+
 std::unique_ptr<ui::InteractionSequence::Step> Tutorial::StepBuilder::Build(
     TutorialService* tutorial_service) {
   std::unique_ptr<ui::InteractionSequence::StepBuilder>
@@ -178,27 +188,55 @@ Tutorial::StepBuilder::BuildMaybeShowBubbleCallback(
       [](TutorialService* tutorial_service, std::u16string title_text_,
          std::u16string body_text_, HelpBubbleArrow arrow_,
          absl::optional<std::pair<int, int>> progress_, bool is_last_step_,
-         ui::InteractionSequence* sequence, ui::TrackedElement* element) {
+         bool can_be_restarted_, ui::InteractionSequence* sequence,
+         ui::TrackedElement* element) {
         DCHECK(tutorial_service);
 
         tutorial_service->HideCurrentBubbleIfShowing();
-
-        base::RepeatingClosure abort_callback = base::BindRepeating(
-            [](TutorialService* tutorial_service) {
-              tutorial_service->AbortTutorial();
-            },
-            base::Unretained(tutorial_service));
 
         HelpBubbleParams params;
         params.title_text = title_text_;
         params.body_text = body_text_;
         params.tutorial_progress = progress_;
         params.arrow = arrow_;
-        if (!is_last_step_) {
-          params.timeout = base::TimeDelta();
-          params.dismiss_callback = abort_callback;
-        } else {
+        params.timeout = base::TimeDelta();
+        params.dismiss_callback = base::BindOnce(
+            [](TutorialService* tutorial_service) {
+              tutorial_service->AbortTutorial();
+            },
+            base::Unretained(tutorial_service));
+
+        if (is_last_step_) {
           params.body_icon = &vector_icons::kCelebrationIcon;
+          params.dismiss_callback = base::BindOnce(
+              [](TutorialService* tutorial_service) {
+                tutorial_service->CompleteTutorial();
+              },
+              base::Unretained(tutorial_service));
+
+          if (can_be_restarted_) {
+            HelpBubbleButtonParams restart_button;
+            restart_button.text =
+                l10n_util::GetStringUTF16(IDS_TUTORIAL_RESTART_TUTORIAL);
+            restart_button.is_default = false;
+            restart_button.callback = base::BindOnce(
+                [](TutorialService* tutorial_service) {
+                  tutorial_service->RestartTutorial();
+                },
+                base::Unretained(tutorial_service));
+            params.buttons.emplace_back(std::move(restart_button));
+          }
+
+          HelpBubbleButtonParams close_button;
+          close_button.text =
+              l10n_util::GetStringUTF16(IDS_TUTORIAL_CLOSE_TUTORIAL);
+          close_button.is_default = true;
+          close_button.callback = base::BindOnce(
+              [](TutorialService* tutorial_service) {
+                tutorial_service->CompleteTutorial();
+              },
+              base::Unretained(tutorial_service));
+          params.buttons.emplace_back(std::move(close_button));
         }
 
         std::unique_ptr<HelpBubble> bubble =
@@ -207,7 +245,7 @@ Tutorial::StepBuilder::BuildMaybeShowBubbleCallback(
         tutorial_service->SetCurrentBubble(std::move(bubble));
       },
       base::Unretained(tutorial_service), title_text, body_text, step_.arrow,
-      progress, is_last_step);
+      progress, is_last_step, can_be_restarted);
 }
 
 ui::InteractionSequence::StepEndCallback
@@ -246,32 +284,19 @@ std::unique_ptr<Tutorial> Tutorial::Builder::BuildFromDescription(
             ? absl::make_optional(std::make_pair(current_step, max_progress))
             : absl::nullopt;
     builder.AddStep(Tutorial::StepBuilder::BuildFromDescriptionStep(
-        step, progress, is_last_step, tutorial_service));
+        step, progress, is_last_step, description.can_be_restarted,
+        tutorial_service));
   }
   DCHECK_EQ(current_step, max_progress);
 
   builder.SetAbortedCallback(base::BindOnce(
-      [](TutorialService* tutorial_service, TutorialHistograms* histograms,
-         ui::TrackedElement* last_element, ui::ElementIdentifier last_id,
+      [](TutorialService* tutorial_service, ui::TrackedElement* last_element,
+         ui::ElementIdentifier last_id,
          ui::InteractionSequence::StepType last_step_type,
          ui::InteractionSequence::AbortedReason aborted_reason) {
         tutorial_service->AbortTutorial();
-        // TODO:(crbug.com/1295165) provide step number information from the
-        // interaction sequence into the abort callback.
-        if (histograms)
-          histograms->RecordComplete(false);
-        UMA_HISTOGRAM_BOOLEAN("Tutorial.Completion", false);
       },
-      tutorial_service, description.histograms.get()));
-
-  builder.SetCompletedCallback(base::BindOnce(
-      [](TutorialService* tutorial_service, TutorialHistograms* histograms) {
-        tutorial_service->CompleteTutorial();
-        if (histograms)
-          histograms->RecordComplete(true);
-        UMA_HISTOGRAM_BOOLEAN("Tutorial.Completion", true);
-      },
-      tutorial_service, description.histograms.get()));
+      tutorial_service));
 
   return builder.Build();
 }

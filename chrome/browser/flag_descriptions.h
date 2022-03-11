@@ -14,7 +14,7 @@
 #include "components/nacl/common/buildflags.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
-#include "ppapi/buildflags/buildflags.h"
+#include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/buildflags.h"
 
@@ -50,10 +50,10 @@ extern const char kAcceleratedVideoEncodeDescription[];
 extern const char kEnableMediaInternalsName[];
 extern const char kEnableMediaInternalsDescription[];
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PDF)
 extern const char kAccessiblePDFFormName[];
 extern const char kAccessiblePDFFormDescription[];
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
+#endif
 
 extern const char kAccountIdMigrationName[];
 extern const char kAccountIdMigrationDescription[];
@@ -353,9 +353,6 @@ extern const char kChromeWhatsNewUIDescription[];
 extern const char kChromeWhatsNewInMainMenuNewBadgeName[];
 extern const char kChromeWhatsNewInMainMenuNewBadgeDescription[];
 #endif
-
-extern const char kCompositingBasedThrottling[];
-extern const char kCompositingBasedThrottlingDescription[];
 
 extern const char kDarkLightTestName[];
 extern const char kDarkLightTestDescription[];
@@ -1667,6 +1664,9 @@ extern const char kDurableClientHintsCacheDescription[];
 
 extern const char kReduceUserAgentMinorVersionName[];
 extern const char kReduceUserAgentMinorVersionDescription[];
+
+extern const char kWebSQLAccessName[];
+extern const char kWebSQLAccessDescription[];
 
 // Android --------------------------------------------------------------------
 

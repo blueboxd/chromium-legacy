@@ -543,6 +543,13 @@
       status: "stable",
     },
     {
+      // Support CSS Values Level 4 calc simplification and serialization
+      // as specified in the specs below.
+      // https://drafts.csswg.org/css-values-4/#calc-simplification
+      // https://drafts.csswg.org/css-values-4/#calc-serialize
+      name: "CSSCalcSimplificationAndSerialization"
+    },
+    {
       // https://drafts.csswg.org/css-cascade-5/#layering
       name: "CSSCascadeLayers",
       status: "stable",
@@ -746,7 +753,7 @@
     },
     {
       name: "CSSPseudoHas",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "CSSPseudoHasInSnapshotProfile",
@@ -1066,6 +1073,16 @@
       status: "experimental"
     },
     {
+      name: "FedCm",
+      origin_trial_feature_name: "FedCM",
+      origin_trial_allows_third_party: true,
+      status: "test",
+    },
+    {
+      name: "FedCmIdpSignout",
+      status: "test",
+    },
+    {
       name: "FencedFrames",
       // This helps enable and expose the <fencedframe> element, but note that
       // blink::features::kFencedFrames must be enabled as well, similar to
@@ -1114,6 +1131,10 @@
     },
     {
       name: "FirstPartySets",
+    },
+    {
+      name: "FixedElementsDontOverscroll",
+      status: "experimental",
     },
     {
       name: "Fledge",
@@ -1558,7 +1579,7 @@
       status: "stable",
     },
     {
-      name: "NavigationCounter",
+      name: "NavigationId",
       status: "experimental",
     },
     {
@@ -2416,6 +2437,7 @@
     },
     {
       name: "ViewportHeightClientHintHeader",
+      origin_trial_feature_name: "ViewportHeightClientHintHeader",
       status: "experimental",
     },
     {
@@ -2606,12 +2628,6 @@
     {
       name: "WebHID",
       status: {"Android": "", "default": "stable"},
-    },
-    {
-      name: "WebID",
-      origin_trial_feature_name: "FedCM",
-      origin_trial_allows_third_party: true,
-      status: "test",
     },
     {
       name: "WebNFC",

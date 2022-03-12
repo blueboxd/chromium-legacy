@@ -257,7 +257,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'd5e5800c849055a7e0151570ead2fbb220093200',
+  'v8_revision': '66abac1618549ec11882a93528d531777f64697a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'fd58dbb2159dba3792765c25b686e606fdecb336',
+  'devtools_frontend_revision': 'e50aa1ba6453cd91d4f0aa0822a20f3b9920b638',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -368,7 +368,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '3d9dc0c7f86250e6687117a9f16f18c2faa13d20',
+  'dawn_revision': 'b0ebbda24875e9bf4110651e47bef6425e197eed',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1581,7 +1581,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/android/aemu/release/linux-amd64',
-              'version': 'YO8A0Tzu80blSokpQu6vQnJGtfLTZomogUVr58id7JIC'
+              'version': 'BJ4LMBf6Bif0PT5jXuQXLgTjcjiW6e3Djb1BhFDTnqcC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1600,7 +1600,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '74c521bfeb086cda4486584c4feabe03da6fdf63',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'f2eff71ac32b81ecb93396f9e51973f52a22c4d4',
 
   'src/third_party/r8': {
       'packages': [
@@ -1794,7 +1794,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2a009d5635d8a2e8378500d5ef0a6a055848dbdd',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@83f3df1f91e8e4903abbac19d922211f236b780d',
     'condition': 'checkout_src_internal',
   },
 
@@ -1846,7 +1846,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'G7J9Ryf19vynLd7Xz2FVwy4ySz9nmx0J8y24MlSyZv4C',
+        'version': 'txsS216YucHQSOkgC9VKvUMj2Q7tcrKg9XaiXhzZuFcC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

@@ -237,12 +237,6 @@ class COMPONENT_EXPORT(SQL) Database {
   }
   void reset_error_callback() { error_callback_.Reset(); }
 
-#if DCHECK_IS_ON()
-  bool HasErrorCallback(base::PassKey<Recovery>) const {
-    return !error_callback_.is_null();
-  }
-#endif  // DCHECK_IS_ON()
-
   // Developer-friendly database ID used in logging output and memory dumps.
   void set_histogram_tag(const std::string& tag);
 
@@ -269,20 +263,30 @@ class COMPONENT_EXPORT(SQL) Database {
 
   // Initialization ------------------------------------------------------------
 
-  // Initializes the SQL database for the given file, returning true if the
-  // file could be opened. You can call this or OpenInMemory.
-  [[nodiscard]] bool Open(const base::FilePath& path);
+  // Opens or creates a database on disk.
+  //
+  // `db_file_path` points to the file storing database pages. Other files
+  // associated with the database (rollback journal, write-ahead log,
+  // shared-memory file) may be created.
+  //
+  // Returns true in case of success, false in case of failure.
+  [[nodiscard]] bool Open(const base::FilePath& db_file_path);
 
-  // Initializes the SQL database for a temporary in-memory database. There
-  // will be no associated file on disk, and the initial database will be
-  // empty. You can call this or Open.
+  // Alternative to Open() that creates an in-memory database.
+  //
+  // Returns true in case of success, false in case of failure.
+  //
+  // The memory associated with the database will be released when the database
+  // is closed.
   [[nodiscard]] bool OpenInMemory();
 
-  // Create a temporary on-disk database.  The database will be
-  // deleted after close.  This kind of database is similar to
-  // OpenInMemory() for small databases, but can page to disk if the
-  // database becomes large.
-  [[nodiscard]] bool OpenTemporary();
+  // Alternative to Open() that creates a temporary on-disk database.
+  //
+  // Returns true in case of success, false in case of failure.
+  //
+  // The files associated with the temporary database will be deleted when the
+  // database is closed.
+  [[nodiscard]] bool OpenTemporary(base::PassKey<Recovery>);
 
   // Returns true if the database has been successfully opened.
   bool is_open() const { return static_cast<bool>(db_); }
@@ -293,17 +297,17 @@ class COMPONENT_EXPORT(SQL) Database {
   // an uninitialized or already-closed database.
   void Close();
 
-  // Reads the first <cache-size>*<page-size> bytes of the file to prime the
-  // filesystem cache.  This can be more efficient than faulting pages
-  // individually.  Since this involves blocking I/O, it should only be used if
-  // the caller will immediately read a substantial amount of data from the
-  // database.
+  // Hints the file system that the database will be accessed soon.
   //
-  // TODO(shess): Design a set of histograms or an experiment to inform this
-  // decision.  Preloading should almost always improve later performance
-  // numbers for this database simply because it pulls operations forward, but
-  // if the data isn't actually used soon then preloading just slows down
-  // everything else.
+  // This method should be called on databases that are on the critical path to
+  // Chrome startup. Informing the filesystem about our expected access pattern
+  // early on reduces the likelihood that we'll be blocked on disk I/O. This has
+  // a high impact on startup time.
+  //
+  // This method should not be used for non-critical databases. While using it
+  // will likely improve micro-benchmarks involving one specific database,
+  // overuse risks randomizing the disk I/O scheduler, slowing down Chrome
+  // startup.
   void Preload();
 
   // Release all non-essential memory associated with this database connection.
@@ -610,14 +614,36 @@ class COMPONENT_EXPORT(SQL) Database {
   FRIEND_TEST_ALL_PREFIXES(SQLDatabaseTest, RegisterIntentToUpload);
   FRIEND_TEST_ALL_PREFIXES(SQLiteFeaturesTest, WALNoClose);
 
-  // Internal initialize function used by both Init and InitInMemory. The file
-  // name is always 8 bits since we want to use the 8-bit version of
-  // sqlite3_open. The string can also be sqlite's special ":memory:" string.
+  // Enables a special behavior for OpenInternal().
+  enum class OpenMode {
+    // No special behavior.
+    kNone = 0,
+
+    // Retry if the database error handler is invoked and closes the database.
+    // Database error handlers that call RazeAndClose() take advantage of this.
+    kRetryOnPoision = 1,
+
+    // Open an in-memory database. Used by OpenInMemory().
+    kInMemory = 2,
+
+    // Open a temporary database. Used by OpenTemporary().
+    kTemporary = 3,
+  };
+
+  // Implements Open(), OpenInMemory(), and OpenTemporary().
   //
-  // |retry_flag| controls retrying the open if the error callback
-  // addressed errors using RazeAndClose().
-  enum Retry { NO_RETRY = 0, RETRY_ON_POISON };
-  bool OpenInternal(const std::string& file_name, Retry retry_flag);
+  // `db_file_path` is a UTF-8 path to the file storing the database pages. The
+  // path must be empty if `mode` is kTemporary. The path must be the SQLite
+  // magic memory path string if `mode` is kMemory.
+  bool OpenInternal(const std::string& file_name, OpenMode mode);
+
+  // Configures the underlying sqlite3* object via sqlite3_db_config().
+  //
+  // To minimize the number of possible SQLite code paths executed in Chrome,
+  // this method must be called right after the underlying sqlite3* object is
+  // obtained from sqlite3_open*(), before any other sqlite3_*() methods are
+  // called on the object.
+  void ConfigureSqliteDatabaseObject();
 
   // Internal close function used by Close() and RazeAndClose().
   // |forced| indicates that orderly-shutdown checks should not apply.
@@ -825,7 +851,7 @@ class COMPONENT_EXPORT(SQL) Database {
 
   // Used by ReleaseCacheMemoryIfNeeded() to track if new changes have happened
   // since memory was last released.
-  int total_changes_at_last_release_ = 0;
+  int64_t total_changes_at_last_release_ = 0;
 
   // Called when a SQLite error occurs.
   //

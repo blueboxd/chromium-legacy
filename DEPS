@@ -253,11 +253,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '38b9591b5a04df9a6455f5eab71bd115d3531d43',
+  'skia_revision': '6d19271fb1480980ed524a6fc65f9cc381bd64ce',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '66abac1618549ec11882a93528d531777f64697a',
+  'v8_revision': '44f09131aa3efbc5af27140ebc50eb91b05e15db',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'e50aa1ba6453cd91d4f0aa0822a20f3b9920b638',
+  'devtools_frontend_revision': 'b7e5ed7cbe72a86698854eca087ef664df56ac71',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -809,7 +809,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'Cs36UbjGlF-44XDMgKBSc79RKl1DXvsK87SixSKQkk8C',
+          'version': 'YNzbPkctKFxte66KO8Wymh0PXzQhwxGAQ4xxoi5OprkC',
         },
       ],
       'dep_type': 'cipd',
@@ -820,7 +820,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': '3P9zHykqgezNmEyT1p4jPJaH5DnZNw7qWdYl0zIXTFoC',
+          'version': '8IlpBO5qLpyUUpasANjC3mGcUCaRJIBW9ynrYVlv_fQC',
         },
       ],
       'dep_type': 'cipd',
@@ -831,7 +831,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': '1xnqxY0HxsLuxzYbBketQJLD_ARSLgGtjNE4V2K9IDgC',
+          'version': 'EzxNLbM7tQuau53lfvUqPxf_aYWNhlmwka5GMd359jIC',
         },
       ],
       'dep_type': 'cipd',
@@ -1581,7 +1581,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/android/aemu/release/linux-amd64',
-              'version': 'BJ4LMBf6Bif0PT5jXuQXLgTjcjiW6e3Djb1BhFDTnqcC'
+              'version': 'Cd3D_CXZauqcJ15SvrkqqXzRod2Q0D4n_lojqomafAIC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1794,7 +1794,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@83f3df1f91e8e4903abbac19d922211f236b780d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f5b2c8c4c81357aa90258b235a55f74798204d6f',
     'condition': 'checkout_src_internal',
   },
 
@@ -1824,7 +1824,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'FQrB_pyrPB2fJKfqOwGnjIp2s6CVZuiBvsNlfnJEqQUC',
+        'version': 'cAdqtOWSLrdBayruhFV3SkiuZL1dkruiPf6x5-yKni4C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1835,7 +1835,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'dh_YHPWmoL2G3JcogVHcLkDFWERSeZ1EI7Hqj1cS-3UC',
+        'version': 'PBsOHXfin9NWIVZ2Dm8t_V2TLd6bPBOk8zJG09sIRacC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

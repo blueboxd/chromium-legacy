@@ -50,6 +50,16 @@ namespace {
 
 bool enable_mmap_by_default_ = true;
 
+// The name of the main database associated with a sqlite3* connection.
+//
+// SQLite has the ability to ATTACH multiple databases to the same connection.
+// As a consequence, some SQLite APIs require the connection-specific database
+// name. This is the right name to be passed to such APIs.
+static constexpr char kSqliteMainDatabaseName[] = "main";
+
+// Magic path value telling sqlite3_open_v2() to open an in-memory database.
+static constexpr char kSqliteOpenInMemoryPath[] = ":memory:";
+
 // Spin for up to a second waiting for the lock to clear when setting
 // up the database.
 // TODO(shess): Better story on this.  http://crbug.com/56559
@@ -274,19 +284,25 @@ void Database::DisableMmapByDefault() {
 }
 
 bool Database::Open(const base::FilePath& path) {
-  TRACE_EVENT1("sql", "Database::Open", "path", path.MaybeAsASCII());
-  return OpenInternal(AsUTF8ForSQL(path), RETRY_ON_POISON);
+  DCHECK(!path.empty());
+
+  std::string path_string = AsUTF8ForSQL(path);
+  DCHECK_NE(path_string, kSqliteOpenInMemoryPath)
+      << "Path conflicts with SQLite magic identifier";
+
+  TRACE_EVENT1("sql", "Database::Open", "path", path_string);
+  return OpenInternal(path_string, OpenMode::kRetryOnPoision);
 }
 
 bool Database::OpenInMemory() {
   TRACE_EVENT0("sql", "Database::OpenInMemory");
   in_memory_ = true;
-  return OpenInternal(":memory:", NO_RETRY);
+  return OpenInternal(kSqliteOpenInMemoryPath, OpenMode::kInMemory);
 }
 
-bool Database::OpenTemporary() {
+bool Database::OpenTemporary(base::PassKey<Recovery>) {
   TRACE_EVENT0("sql", "Database::OpenTemporary");
-  return OpenInternal("", NO_RETRY);
+  return OpenInternal(std::string(), OpenMode::kTemporary);
 }
 
 void Database::CloseInternal(bool forced) {
@@ -366,16 +382,14 @@ void Database::Preload() {
 
   // Maximum number of bytes that will be prefetched from the database.
   //
-  // This limit is very aggressive. Here are the trade-offs involved.
-  // 1) Accessing bytes that weren't preread is very expensive on
-  //    performance-critical databases, so the limit must exceed the expected
-  //    sizes of feature databases.
-  // 2) On some platforms (Windows 7 and, currently, macOS), base::PreReadFile()
-  //    falls back to a synchronous read, and blocks until the entire file is
-  //    read into memory. So, there's a tangible cost to reading data that would
-  //    get evicted before base::PreReadFile() completes. This cost needs to be
-  //    balanced with the benefit reading the entire database at once, and
-  //    avoiding seeks on spinning disks.
+  // This limit is very aggressive. The main trade-off involved is that having
+  // SQLite block on reading from disk has a high impact on Chrome startup cost
+  // for the databases that are on the critical path to startup. So, the limit
+  // must exceed the expected sizes of databases on the critical path.
+  //
+  // On Windows 7, base::PreReadFile() falls back to a synchronous read, and
+  // blocks until the entire file is read into memory. This is a minor factor at
+  // this point, because Chrome has very limited support for Windows 7.
   constexpr int kPreReadSize = 128 * 1024 * 1024;  // 128 MB
   base::PreReadFile(DbPath(), /*is_executable=*/false, kPreReadSize);
 }
@@ -444,7 +458,7 @@ void Database::ReleaseCacheMemoryIfNeeded(bool implicit_change_performed) {
 
   // If no changes have been made, skip flushing.  This allows the first page of
   // the database to remain in cache across multiple reads.
-  const int total_changes = sqlite3_total_changes(db_);
+  const int64_t total_changes = sqlite3_total_changes64(db_);
   if (total_changes == total_changes_at_last_release_)
     return;
 
@@ -1527,9 +1541,20 @@ const char* Database::GetErrorMessage() const {
   return sqlite3_errmsg(db_);
 }
 
-bool Database::OpenInternal(const std::string& file_name,
-                            Database::Retry retry_flag) {
-  TRACE_EVENT1("sql", "Database::OpenInternal", "path", file_name);
+bool Database::OpenInternal(const std::string& db_file_path,
+                            Database::OpenMode mode) {
+  TRACE_EVENT1("sql", "Database::OpenInternal", "path", db_file_path);
+
+  DCHECK(mode != OpenMode::kTemporary || db_file_path.empty())
+      << "Temporary databases should be open with an empty file path";
+
+  if (mode == OpenMode::kInMemory) {
+    DCHECK_EQ(db_file_path, kSqliteOpenInMemoryPath)
+        << "In-memory databases should be open with the magic :memory: path";
+  } else {
+    DCHECK_NE(db_file_path, kSqliteOpenInMemoryPath)
+        << "Database file path conflicts with SQLite magic identifier";
+  }
 
   if (db_) {
     DLOG(DCHECK) << "sql::Database is already open.";
@@ -1563,69 +1588,68 @@ bool Database::OpenInternal(const std::string& file_name,
   //
   // SQLITE_OPEN_EXRESCODE enables the full range of SQLite error codes. See
   // https://www.sqlite.org/rescode.html for details.
-  constexpr int open_flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE |
-                             SQLITE_OPEN_EXRESCODE | SQLITE_OPEN_PRIVATECACHE;
-
-  int err = sqlite3_open_v2(file_name.c_str(), &db_, open_flags, vfs_name);
-  if (err != SQLITE_OK) {
-    OnSqliteError(err, nullptr, "-- sqlite3_open()");
+  int open_flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE |
+                   SQLITE_OPEN_EXRESCODE | SQLITE_OPEN_PRIVATECACHE;
+  int sqlite_result_code =
+      sqlite3_open_v2(db_file_path.c_str(), &db_, open_flags, vfs_name);
+  if (sqlite_result_code != SQLITE_OK) {
+    OnSqliteError(sqlite_result_code, nullptr, "-- sqlite3_open_v2()");
     bool was_poisoned = poisoned_;
     Close();
 
-    if (was_poisoned && retry_flag == RETRY_ON_POISON)
-      return OpenInternal(file_name, NO_RETRY);
+    if (was_poisoned && mode == OpenMode::kRetryOnPoision)
+      return OpenInternal(db_file_path, OpenMode::kNone);
     return false;
   }
+
+  ConfigureSqliteDatabaseObject();
 
   // If indicated, enable shared mode ("NORMAL") on the database, so it can be
   // opened by multiple processes. This needs to happen before WAL mode is
   // enabled.
   //
   // TODO(crbug.com/1120969): Remove support for non-exclusive mode.
+  static_assert(
+      SQLITE_DEFAULT_LOCKING_MODE == 1,
+      "Chrome assumes SQLite is configured to default to EXCLUSIVE locking");
   if (!options_.exclusive_locking) {
     if (!Execute("PRAGMA locking_mode=NORMAL"))
       return false;
   }
 
-  // The use of SQLite's non-standard string quoting is not allowed in Chrome.
+  // The sqlite3_open*() methods only perform I/O on the database file if a hot
+  // journal is found. Force SQLite to parse the header and database schema, so
+  // we can signal irrecoverable corruption early.
   //
-  // Allowing double-quoted string literals is now considered a misfeature by
-  // SQLite authors. See https://www.sqlite.org/quirks.html#dblquote
-  err = sqlite3_db_config(db_, SQLITE_DBCONFIG_DQS_DDL, 0, nullptr);
-  DCHECK_EQ(err, SQLITE_OK)
-      << "sqlite3_db_config(SQLITE_DBCONFIG_DQS_DDL) should not fail";
-  err = sqlite3_db_config(db_, SQLITE_DBCONFIG_DQS_DML, 0, nullptr);
-  DCHECK_EQ(err, SQLITE_OK)
-      << "sqlite3_db_config(SQLITE_DBCONFIG_DQS_DML) should not fail";
-
-  // The use of triggers is discouraged for Chrome code. Thanks to this
-  // configuration change, triggers are not executed. CREATE TRIGGER and DROP
-  // TRIGGER still succeed.
-  err = sqlite3_db_config(db_, SQLITE_DBCONFIG_ENABLE_TRIGGER, 0, nullptr);
-  DCHECK_EQ(err, SQLITE_OK) << "sqlite3_db_config() should not fail";
-
-  err = sqlite3_db_config(db_, SQLITE_DBCONFIG_ENABLE_VIEW,
-                          options_.enable_views_discouraged ? 1 : 0, nullptr);
-  DCHECK_EQ(err, SQLITE_OK) << "sqlite3_db_config() should not fail";
-
-  // sqlite3_open() does not actually read the database file (unless a hot
-  // journal is found).  Successfully executing this pragma on an existing
-  // database requires a valid header on page 1.  ExecuteAndReturnErrorCode() to
-  // get the error code before error callback (potentially) overwrites.
-  // TODO(shess): For now, just probing to see what the lay of the
-  // land is.  If it's mostly SQLITE_NOTADB, then the database should
-  // be razed.
-  err = ExecuteAndReturnErrorCode("PRAGMA auto_vacuum");
-  if (err != SQLITE_OK) {
-    OnSqliteError(err, nullptr, "PRAGMA auto_vacuum");
+  // sqlite3_table_column_metadata() causes SQLite to parse the database schema.
+  // Since the schema is stored inside a table B-tree, parsing the schema
+  // implies parsing the database header.
+  //
+  // sqlite3_table_column_metadata() can be used with a null database name, but
+  // that will cause it to search for the table in all databases that are
+  // ATTACHed to the connection. While Chrome features (almost) never use
+  // ATTACHed databases, we prefer to be explicit here.
+  //
+  // sqlite3_table_column_metadata() can be used with a null column name, and
+  // will report on the existence of the table with the given name. This is
+  // sufficient for the purpose of getting SQLite to parse the database schema.
+  // See https://www.sqlite.org/c3ref/table_column_metadata.html for details.
+  static constexpr char kSqliteSchemaTable[] = "sqlite_schema";
+  sqlite_result_code = sqlite3_table_column_metadata(
+      db_, kSqliteMainDatabaseName, kSqliteSchemaTable, /*zColumnName=*/nullptr,
+      /*pzDataType=*/nullptr, /*pzCollSeq=*/nullptr, /*pNotNull=*/nullptr,
+      /*pPrimaryKey=*/nullptr, /*pAutoinc=*/nullptr);
+  if (sqlite_result_code != SQLITE_OK) {
+    OnSqliteError(sqlite_result_code, nullptr,
+                  "-- sqlite3_table_column_metadata()");
 
     // Retry or bail out if the error handler poisoned the handle.
     // TODO(shess): Move this handling to one place (see also sqlite3_open).
     //              Possibly a wrapper function?
     if (poisoned_) {
       Close();
-      if (retry_flag == RETRY_ON_POISON)
-        return OpenInternal(file_name, NO_RETRY);
+      if (mode == OpenMode::kRetryOnPoision)
+        return OpenInternal(db_file_path, OpenMode::kNone);
       return false;
     }
   }
@@ -1668,8 +1692,8 @@ bool Database::OpenInternal(const std::string& file_name,
   }
 
   if (options_.cache_size != 0) {
-    const std::string cache_size_sql =
-        base::StringPrintf("PRAGMA cache_size=%d", options_.cache_size);
+    const std::string cache_size_sql = base::StrCat(
+        {"PRAGMA cache_size=", base::NumberToString(options_.cache_size)});
     std::ignore = ExecuteWithTimeout(cache_size_sql.c_str(), kBusyTimeout);
   }
 
@@ -1685,8 +1709,8 @@ bool Database::OpenInternal(const std::string& file_name,
   // (hundreds of kilobytes to many megabytes).
   sqlite3_file* file = nullptr;
   sqlite3_int64 db_size = 0;
-  int rc = GetSqlite3FileAndSize(db_, &file, &db_size);
-  if (rc == SQLITE_OK && db_size > 16 * 1024) {
+  sqlite_result_code = GetSqlite3FileAndSize(db_, &file, &db_size);
+  if (sqlite_result_code == SQLITE_OK && db_size > 16 * 1024) {
     int chunk_size = 4 * 1024;
     if (db_size > 128 * 1024)
       chunk_size = 32 * 1024;
@@ -1699,16 +1723,16 @@ bool Database::OpenInternal(const std::string& file_name,
   // capped by SQLITE_MAX_MMAP_SIZE, which could be different between 32-bit and
   // 64-bit platforms.
   size_t mmap_size = mmap_disabled_ ? 0 : GetAppropriateMmapSize();
-  std::string mmap_sql =
-      base::StringPrintf("PRAGMA mmap_size=%" PRIuS, mmap_size);
-  std::ignore = Execute(mmap_sql.c_str());
+  std::string pragma_mmap_size_sql =
+      base::StrCat({"PRAGMA mmap_size=", base::NumberToString(mmap_size)});
+  std::ignore = Execute(pragma_mmap_size_sql.c_str());
 
   // Determine if memory-mapping has actually been enabled.  The Execute() above
   // can succeed without changing the amount mapped.
   mmap_enabled_ = false;
   {
-    Statement s(GetUniqueStatement("PRAGMA mmap_size"));
-    if (s.Step() && s.ColumnInt64(0) > 0)
+    Statement pragma_mmap_size(GetUniqueStatement("PRAGMA mmap_size"));
+    if (pragma_mmap_size.Step() && pragma_mmap_size.ColumnInt64(0) > 0)
       mmap_enabled_ = true;
   }
 
@@ -1716,9 +1740,38 @@ bool Database::OpenInternal(const std::string& file_name,
   memory_dump_provider_ =
       std::make_unique<DatabaseMemoryDumpProvider>(db_, histogram_tag_);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      memory_dump_provider_.get(), "sql::Database", nullptr);
+      memory_dump_provider_.get(), "sql::Database", /*task_runner=*/nullptr);
 
   return true;
+}
+
+void Database::ConfigureSqliteDatabaseObject() {
+  // The use of SQLite's non-standard string quoting is not allowed in Chrome.
+  //
+  // Allowing double-quoted string literals is now considered a misfeature by
+  // SQLite authors. See https://www.sqlite.org/quirks.html#dblquote
+  int sqlite_result_code =
+      sqlite3_db_config(db_, SQLITE_DBCONFIG_DQS_DDL, 0, nullptr);
+  DCHECK_EQ(sqlite_result_code, SQLITE_OK)
+      << "sqlite3_db_config(SQLITE_DBCONFIG_DQS_DDL) should not fail";
+  sqlite_result_code =
+      sqlite3_db_config(db_, SQLITE_DBCONFIG_DQS_DML, 0, nullptr);
+  DCHECK_EQ(sqlite_result_code, SQLITE_OK)
+      << "sqlite3_db_config(SQLITE_DBCONFIG_DQS_DML) should not fail";
+
+  // The use of triggers is discouraged for Chrome code. Thanks to this
+  // configuration change, triggers are not executed. CREATE TRIGGER and DROP
+  // TRIGGER still succeed.
+  sqlite_result_code =
+      sqlite3_db_config(db_, SQLITE_DBCONFIG_ENABLE_TRIGGER, 0, nullptr);
+  DCHECK_EQ(sqlite_result_code, SQLITE_OK)
+      << "sqlite3_db_config() should not fail";
+
+  sqlite_result_code =
+      sqlite3_db_config(db_, SQLITE_DBCONFIG_ENABLE_VIEW,
+                        options_.enable_views_discouraged ? 1 : 0, nullptr);
+  DCHECK_EQ(sqlite_result_code, SQLITE_OK)
+      << "sqlite3_db_config() should not fail";
 }
 
 void Database::DoRollback() {

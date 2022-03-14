@@ -110,6 +110,7 @@ class MockWriterDelegate : public zip::WriterDelegate {
   MOCK_METHOD2(WriteBytes, bool(const char*, int));
   MOCK_METHOD1(SetTimeModified, void(const base::Time&));
   MOCK_METHOD1(SetPosixFilePermissions, void(int));
+  MOCK_METHOD0(OnError, void());
 };
 
 bool ExtractCurrentEntryToFilePath(zip::ZipReader* reader,
@@ -828,13 +829,14 @@ TEST_F(ZipReaderTest, ExtractCurrentEntryPrepareFailure) {
   ASSERT_FALSE(reader.ExtractCurrentEntry(&mock_writer));
 }
 
-// Test that when WriterDelegate::WriteBytes returns false, no other methods on
-// the delegate are called and the extraction fails.
+// Test that when WriterDelegate::WriteBytes returns false, only the OnError
+// method on the delegate is called and the extraction fails.
 TEST_F(ZipReaderTest, ExtractCurrentEntryWriteBytesFailure) {
   testing::StrictMock<MockWriterDelegate> mock_writer;
 
   EXPECT_CALL(mock_writer, PrepareOutput()).WillOnce(Return(true));
   EXPECT_CALL(mock_writer, WriteBytes(_, _)).WillOnce(Return(false));
+  EXPECT_CALL(mock_writer, OnError());
 
   base::FilePath target_path(FILE_PATH_LITERAL("foo/bar/quux.txt"));
   ZipReader reader;
@@ -903,34 +905,39 @@ class FileWriterDelegateTest : public ::testing::Test {
     ASSERT_TRUE(file_.IsValid());
   }
 
-  // Writes data to the file, leaving the current position at the end of the
-  // write.
-  void PopulateFile() {
-    static const char kSomeData[] = "this sure is some data.";
-    static const size_t kSomeDataLen = sizeof(kSomeData) - 1;
-    ASSERT_NE(-1LL, file_.Write(0LL, kSomeData, kSomeDataLen));
-  }
-
   base::FilePath temp_file_path_;
   base::File file_;
 };
 
-TEST_F(FileWriterDelegateTest, WriteToStartAndTruncate) {
-  // Write stuff and advance.
-  PopulateFile();
+TEST_F(FileWriterDelegateTest, WriteToEnd) {
+  const std::string payload = "This is the actualy payload data.\n";
 
-  // This should rewind, write, then truncate.
-  static const char kSomeData[] = "short";
-  static const int kSomeDataLen = sizeof(kSomeData) - 1;
   {
     FileWriterDelegate writer(&file_);
+    EXPECT_EQ(0, writer.file_length());
     ASSERT_TRUE(writer.PrepareOutput());
-    ASSERT_TRUE(writer.WriteBytes(kSomeData, kSomeDataLen));
+    ASSERT_TRUE(writer.WriteBytes(payload.data(), payload.size()));
+    EXPECT_EQ(payload.size(), writer.file_length());
   }
-  ASSERT_EQ(kSomeDataLen, file_.GetLength());
-  char buf[kSomeDataLen] = {};
-  ASSERT_EQ(kSomeDataLen, file_.Read(0LL, buf, kSomeDataLen));
-  ASSERT_EQ(std::string(kSomeData), std::string(buf, kSomeDataLen));
+
+  EXPECT_EQ(payload.size(), file_.GetLength());
+}
+
+TEST_F(FileWriterDelegateTest, EmptyOnError) {
+  const std::string payload = "This is the actualy payload data.\n";
+
+  {
+    FileWriterDelegate writer(&file_);
+    EXPECT_EQ(0, writer.file_length());
+    ASSERT_TRUE(writer.PrepareOutput());
+    ASSERT_TRUE(writer.WriteBytes(payload.data(), payload.size()));
+    EXPECT_EQ(payload.size(), writer.file_length());
+    EXPECT_EQ(payload.size(), file_.GetLength());
+    writer.OnError();
+    EXPECT_EQ(0, writer.file_length());
+  }
+
+  EXPECT_EQ(0, file_.GetLength());
 }
 
 }  // namespace zip

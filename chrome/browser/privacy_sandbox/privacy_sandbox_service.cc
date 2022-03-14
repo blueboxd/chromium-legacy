@@ -183,23 +183,63 @@ void PrivacySandboxService::DialogActionOccurred(
       // the old Privacy Sandbox pref.
       pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabledV2, true);
       pref_service_->SetBoolean(prefs::kPrivacySandboxNoticeDisplayed, true);
+      base::RecordAction(
+          base::UserMetricsAction("Settings.PrivacySandbox.Notice.Shown"));
+      break;
+    }
+    case (DialogAction::kNoticeOpenSettings): {
+      base::RecordAction(base::UserMetricsAction(
+          "Settings.PrivacySandbox.Notice.OpenedSettings"));
+      break;
+    }
+    case (DialogAction::kNoticeAcknowledge): {
+      base::RecordAction(base::UserMetricsAction(
+          "Settings.PrivacySandbox.Notice.Acknowledged"));
+      break;
+    }
+    case (DialogAction::kNoticeDismiss): {
+      base::RecordAction(
+          base::UserMetricsAction("Settings.PrivacySandbox.Notice.Dismissed"));
+      break;
+    }
+    case (DialogAction::kNoticeClosedNoInteraction): {
+      base::RecordAction(base::UserMetricsAction(
+          "Settings.PrivacySandbox.Notice.ClosedNoInteraction"));
+      break;
+    }
+    case (DialogAction::kConsentShown): {
+      base::RecordAction(
+          base::UserMetricsAction("Settings.PrivacySandbox.Consent.Shown"));
       break;
     }
     case (DialogAction::kConsentAccepted): {
       pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabledV2, true);
       pref_service_->SetBoolean(prefs::kPrivacySandboxConsentDecisionMade,
                                 true);
+      base::RecordAction(
+          base::UserMetricsAction("Settings.PrivacySandbox.Consent.Accepted"));
       break;
     }
     case (DialogAction::kConsentDeclined): {
       pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabledV2, false);
       pref_service_->SetBoolean(prefs::kPrivacySandboxConsentDecisionMade,
                                 true);
+      base::RecordAction(
+          base::UserMetricsAction("Settings.PrivacySandbox.Consent.Declined"));
       break;
     }
-    default: {
-      // TODO(crbug.com/1286384): Record received actions in metrics.
+    case (DialogAction::kConsentMoreInfoOpened): {
+      base::RecordAction(base::UserMetricsAction(
+          "Settings.PrivacySandbox.Consent.LearnMoreExpanded"));
+      break;
     }
+    case (DialogAction::kConsentClosedNoDecision): {
+      base::RecordAction(base::UserMetricsAction(
+          "Settings.PrivacySandbox.Consent.ClosedNoInteraction"));
+      break;
+    }
+    default:
+      break;
   }
 }
 
@@ -496,10 +536,78 @@ void PrivacySandboxService::RecordPrivacySandboxHistogram(
   base::UmaHistogramEnumeration("Settings.PrivacySandbox.Enabled", state);
 }
 
+void PrivacySandboxService::RecordPrivacySandbox3StartupMetrics() {
+  const std::string privacy_sandbox_startup_histogram =
+      "Settings.PrivacySandbox.StartupState";
+  const bool sandbox_v2_enabled =
+      pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabledV2);
+
+  // Handle PS V1 prefs disabled.
+  if (pref_service_->GetBoolean(
+          prefs::kPrivacySandboxNoConfirmationSandboxDisabled)) {
+    base::UmaHistogramEnumeration(
+        privacy_sandbox_startup_histogram,
+        sandbox_v2_enabled ? PSStartupStates::kDialogOffV1OffEnabled
+                           : PSStartupStates::kDialogOffV1OffDisabled);
+    return;
+  }
+  // Handle 3PC disabled.
+  if (pref_service_->GetBoolean(
+          prefs::kPrivacySandboxNoConfirmationThirdPartyCookiesBlocked)) {
+    base::UmaHistogramEnumeration(
+        privacy_sandbox_startup_histogram,
+        sandbox_v2_enabled ? PSStartupStates::kDialogOff3PCOffEnabled
+                           : PSStartupStates::kDialogOff3PCOffDisabled);
+    return;
+  }
+  // Handle managed.
+  if (pref_service_->GetBoolean(
+          prefs::kPrivacySandboxNoConfirmationSandboxManaged)) {
+    base::UmaHistogramEnumeration(
+        privacy_sandbox_startup_histogram,
+        sandbox_v2_enabled ? PSStartupStates::kDialogOffManagedEnabled
+                           : PSStartupStates::kDialogOffManagedDisabled);
+    return;
+  }
+  // Handle restricted.
+  if (pref_service_->GetBoolean(
+          prefs::kPrivacySandboxNoConfirmationSandboxRestricted)) {
+    base::UmaHistogramEnumeration(privacy_sandbox_startup_histogram,
+                                  PSStartupStates::kDialogOffRestricted);
+    return;
+  }
+  if (privacy_sandbox::kPrivacySandboxSettings3ConsentRequired.Get()) {
+    if (!pref_service_->GetBoolean(prefs::kPrivacySandboxConsentDecisionMade)) {
+      base::UmaHistogramEnumeration(privacy_sandbox_startup_histogram,
+                                    PSStartupStates::kDialogWaiting);
+      return;
+    }
+    base::UmaHistogramEnumeration(privacy_sandbox_startup_histogram,
+                                  sandbox_v2_enabled
+                                      ? PSStartupStates::kConsentShownEnabled
+                                      : PSStartupStates::kConsentShownDisabled);
+  } else {  // Notice required.
+    if (!pref_service_->GetBoolean(prefs::kPrivacySandboxNoticeDisplayed)) {
+      base::UmaHistogramEnumeration(privacy_sandbox_startup_histogram,
+                                    PSStartupStates::kDialogWaiting);
+      return;
+    }
+    base::UmaHistogramEnumeration(privacy_sandbox_startup_histogram,
+                                  sandbox_v2_enabled
+                                      ? PSStartupStates::kNoticeShownEnabled
+                                      : PSStartupStates::kNoticeShownDisabled);
+  }
+}
+
 void PrivacySandboxService::LogPrivacySandboxState() {
   // Do not record metrics for non-regular profiles.
   if (profile_type_ != profile_metrics::BrowserProfileType::kRegular)
     return;
+
+  // Start by recording any metrics for Privacy Sandbox 3.
+  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3)) {
+    RecordPrivacySandbox3StartupMetrics();
+  }
 
   // Check policy status first.
   std::string default_cookie_setting_provider;

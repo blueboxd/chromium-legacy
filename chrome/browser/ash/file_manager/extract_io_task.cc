@@ -30,6 +30,7 @@ ExtractIOTask::ExtractIOTask(
       progress_.sources.emplace_back(source_url, absl::nullopt);
     }
   }
+  extractCount_ = progress_.sources.size();
 }
 
 ExtractIOTask::~ExtractIOTask() {}
@@ -37,8 +38,10 @@ ExtractIOTask::~ExtractIOTask() {}
 void ExtractIOTask::ZipExtractCallback(bool success) {
   progress_.state = success ? State::kSuccess : State::kError;
   progress_callback_.Run(progress_);
-  // TODO(crbug.com/953256) Track count here and call for last unpack only.
-  Complete();
+  DCHECK_GT(extractCount_, 0);
+  if (--extractCount_ == 0) {
+    Complete();
+  }
 }
 
 void ExtractIOTask::Execute(IOTask::ProgressCallback progress_callback,
@@ -59,6 +62,11 @@ void ExtractIOTask::Execute(IOTask::ProgressCallback progress_callback,
                                   weak_ptr_factory_.GetWeakPtr()));
     } else {
       progress_.state = State::kError;
+      // We won't get a callback so reduce the count and maybe finalise.
+      DCHECK_GT(extractCount_, 0);
+      if (--extractCount_ == 0) {
+        Complete();
+      }
     }
   }
 }

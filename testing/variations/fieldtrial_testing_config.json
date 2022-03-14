@@ -826,6 +826,29 @@
             ]
         }
     ],
+    "AutofillEnableSupportForParsingWithSharedLabels": [
+        {
+            "platforms": [
+                "android_webview",
+                "android_weblayer",
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillEnableSupportForParsingWithSharedLabels"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillFixServerQueriesIfPasswordManagerIsEnabled": [
         {
             "platforms": [
@@ -884,6 +907,29 @@
             ]
         }
     ],
+    "AutofillLabelAffixRemoval": [
+        {
+            "platforms": [
+                "android_webview",
+                "android_weblayer",
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillLabelAffixRemoval"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillMorePredictableDesktopUI": [
         {
             "platforms": [
@@ -912,6 +958,29 @@
                         "AutofillTypeSpecificPopupWidth",
                         "AutofillUseConsistentPopupSettingsIcons",
                         "AutofillVisualImprovementsForSuggestionUi"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillRetrieveOverallPredictionsFromCache": [
+        {
+            "platforms": [
+                "android_webview",
+                "android_weblayer",
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillRetrieveOverallPredictionsFromCache"
                     ]
                 }
             ]

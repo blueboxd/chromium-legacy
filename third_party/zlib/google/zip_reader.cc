@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "third_party/zlib/google/redact.h"
 #include "third_party/zlib/google/zip_internal.h"
 
 #if defined(USE_SYSTEM_MINIZIP)
@@ -55,15 +56,6 @@ std::ostream& operator<<(std::ostream& out, UnzipError error) {
       return out << "UNZ" << static_cast<int>(error);
   }
 #undef SWITCH_ERR
-}
-
-struct Redact {
-  explicit Redact(const base::FilePath& path) : path(path) {}
-  const base::FilePath& path;
-};
-
-std::ostream& operator<<(std::ostream& out, Redact r) {
-  return LOG_IS_ON(INFO) ? out << "'" << r.path << "'" : out << "(redacted)";
 }
 
 // A writer delegate that writes to a given string.
@@ -317,17 +309,19 @@ bool ZipReader::ExtractCurrentEntry(WriterDelegate* delegate,
     remaining_capacity -= num_bytes_to_write;
   }
 
+  if (const int err = unzCloseCurrentFile(zip_file_); err != UNZ_OK) {
+    LOG(ERROR) << "Cannot extract file " << Redact(entry_.path)
+               << " from ZIP: " << UnzipError(err);
+    entire_file_extracted = false;
+  }
+
   if (entire_file_extracted) {
     delegate->SetPosixFilePermissions(entry_.posix_mode);
     if (entry_.last_modified != base::Time::UnixEpoch()) {
       delegate->SetTimeModified(entry_.last_modified);
     }
-  }
-
-  if (const int err = unzCloseCurrentFile(zip_file_); err != UNZ_OK) {
-    LOG(ERROR) << "Cannot extract file " << Redact(entry_.path)
-               << " from ZIP: " << UnzipError(err);
-    return false;
+  } else {
+    delegate->OnError();
   }
 
   return entire_file_extracted;
@@ -504,14 +498,16 @@ FileWriterDelegate::FileWriterDelegate(base::File owned_file)
   DCHECK_EQ(file_, &owned_file_);
 }
 
-FileWriterDelegate::~FileWriterDelegate() {
-  if (!file_->SetLength(file_length_)) {
-    DVPLOG(1) << "Failed updating length of written file";
-  }
-}
+FileWriterDelegate::~FileWriterDelegate() {}
 
 bool FileWriterDelegate::PrepareOutput() {
-  return file_->Seek(base::File::FROM_BEGIN, 0) >= 0;
+  DCHECK(file_);
+  const bool ok = file_->IsValid();
+  if (ok) {
+    DCHECK_EQ(file_->GetLength(), 0)
+        << " The output file should be initially empty";
+  }
+  return ok;
 }
 
 bool FileWriterDelegate::WriteBytes(const char* data, int num_bytes) {
@@ -531,11 +527,16 @@ void FileWriterDelegate::SetPosixFilePermissions(int mode) {
 #endif
 }
 
+void FileWriterDelegate::OnError() {
+  file_length_ = 0;
+  file_->SetLength(0);
+}
+
 // FilePathWriterDelegate ------------------------------------------------------
 
-FilePathWriterDelegate::FilePathWriterDelegate(
-    const base::FilePath& output_file_path)
-    : output_file_path_(output_file_path) {}
+FilePathWriterDelegate::FilePathWriterDelegate(base::FilePath output_file_path)
+    : FileWriterDelegate(base::File()),
+      output_file_path_(std::move(output_file_path)) {}
 
 FilePathWriterDelegate::~FilePathWriterDelegate() {}
 
@@ -545,24 +546,19 @@ bool FilePathWriterDelegate::PrepareOutput() {
   if (!base::CreateDirectory(output_file_path_.DirName()))
     return false;
 
-  file_.Initialize(output_file_path_,
-                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  return file_.IsValid();
+  owned_file_.Initialize(output_file_path_, base::File::FLAG_CREATE_ALWAYS |
+                                                base::File::FLAG_WRITE);
+  return FileWriterDelegate::PrepareOutput();
 }
 
-bool FilePathWriterDelegate::WriteBytes(const char* data, int num_bytes) {
-  return num_bytes == file_.WriteAtCurrentPos(data, num_bytes);
-}
+void FilePathWriterDelegate::OnError() {
+  FileWriterDelegate::OnError();
+  owned_file_.Close();
 
-void FilePathWriterDelegate::SetTimeModified(const base::Time& time) {
-  file_.Close();
-  base::TouchFile(output_file_path_, base::Time::Now(), time);
-}
-
-void FilePathWriterDelegate::SetPosixFilePermissions(int mode) {
-#if defined(OS_POSIX)
-  zip::SetPosixFilePermissions(file_.GetPlatformFile(), mode);
-#endif
+  if (!base::DeleteFile(output_file_path_)) {
+    LOG(ERROR) << "Cannot delete partially extracted file "
+               << Redact(output_file_path_);
+  }
 }
 
 }  // namespace zip

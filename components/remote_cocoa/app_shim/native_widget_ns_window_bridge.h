@@ -45,7 +45,6 @@ class NativeWidgetNSWindowHost;
 class TextInputHost;
 }  // namespace mojom
 
-class NativeWidgetNSWindowFullscreenController;
 class NativeWidgetNSWindowHostHelper;
 class CocoaMouseCapture;
 class CocoaWindowMoveLoop;
@@ -62,6 +61,7 @@ using remote_cocoa::CocoaMouseCaptureDelegate;
 class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
     : public remote_cocoa::mojom::NativeWidgetNSWindow,
       public display::DisplayObserver,
+      public NativeWidgetNSWindowFullscreenController::Client,
       public ui::CATransactionCoordinator::PreCommitObserver,
       public CocoaMouseCaptureDelegate {
  public:
@@ -133,6 +133,10 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   // does not match |actual_fullscreen_state|, a new transition will begin.
   void OnFullscreenTransitionComplete(bool actual_fullscreen_state);
 
+  // Transition the window into or out of fullscreen. This will immediately
+  // invert the value of target_fullscreen_state().
+  void ToggleDesiredFullscreenState(bool async = false);
+
   // Called by the NSWindowDelegate when the size of the window changes.
   void OnSizeChanged();
 
@@ -177,17 +181,20 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
     return child_windows_;
   }
 
-  NativeWidgetNSWindowFullscreenController& fullscreen_controller() {
-    return fullscreen_controller_;
+  NativeWidgetNSWindowFullscreenController* fullscreen_controller() {
+    return fullscreen_controller_.get();
   }
-
   bool target_fullscreen_state() const {
-    return fullscreen_controller_.GetTargetFullscreenState();
+    if (fullscreen_controller_)
+      return fullscreen_controller_->GetTargetFullscreenState();
+    return target_fullscreen_state_;
   }
   bool window_visible() const { return window_visible_; }
   bool wants_to_be_visible() const { return wants_to_be_visible_; }
   bool in_fullscreen_transition() const {
-    return fullscreen_controller_.IsInFullscreenTransition();
+    if (fullscreen_controller_)
+      return fullscreen_controller_->IsInFullscreenTransition();
+    return in_fullscreen_transition_;
   }
 
   // Whether to run a custom animation for the provided |transition|.
@@ -203,6 +210,18 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   void OnDisplayRemoved(const display::Display& old_display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
+
+  // NativeWidgetNSWindowFullscreenController::Client:
+  void FullscreenControllerTransitionStart(bool is_target_fullscreen) override;
+  void FullscreenControllerTransitionComplete(bool is_fullscreen) override;
+  void FullscreenControllerSetFrame(const gfx::Rect& frame,
+                                    base::TimeDelta& transition_time) override;
+  void FullscreenControllerToggleFullscreen() override;
+  void FullscreenControllerCloseWindow() override;
+  int64_t FullscreenControllerGetDisplayId() const override;
+  gfx::Rect FullscreenControllerGetFrameForDisplay(
+      int64_t display_id) const override;
+  gfx::Rect FullscreenControllerGetFrame() const override;
 
   // ui::CATransactionCoordinator::PreCommitObserver:
   bool ShouldWaitInPreCommit() override;
@@ -237,8 +256,9 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   void SetTransitionsToAnimate(
       remote_cocoa::mojom::VisibilityTransition transitions) override;
   void SetVisibleOnAllSpaces(bool always_visible) override;
-  void EnterFullscreen(int64_t target_display_id) override;
-  void ExitFullscreen() override;
+  void SetFullscreen(bool fullscreen) override;
+  void EnterFullscreen(int64_t target_display_id);
+  void ExitFullscreen();
   void SetCanAppearInExistingFullscreenSpaces(
       bool can_appear_in_existing_fullscreen_spaces) override;
   void SetMiniaturized(bool miniaturized) override;
@@ -280,7 +300,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
 
  private:
   friend class views::test::BridgedNativeWidgetTestApi;
-  friend class NativeWidgetNSWindowFullscreenController;
 
   // Attach child windows, if the window is visible (see comment inline).
   void OrderChildren();
@@ -372,8 +391,26 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   remote_cocoa::mojom::VisibilityTransition transitions_to_animate_ =
       remote_cocoa::mojom::VisibilityTransition::kBoth;
 
-  // Manager of fullscreen state transitions.
-  NativeWidgetNSWindowFullscreenController fullscreen_controller_{this};
+  // Whether this window wants to be fullscreen. If a fullscreen animation is in
+  // progress then it might not be actually fullscreen.
+  bool target_fullscreen_state_ = false;
+
+  // Whether this window is in a fullscreen transition, and the fullscreen state
+  // can not currently be changed.
+  bool in_fullscreen_transition_ = false;
+
+  // Trying to close an NSWindow during a fullscreen transition will cause the
+  // window to lock up. Use this to track if CloseWindow was called during a
+  // fullscreen transition, to defer the -[NSWindow close] call until the
+  // transition is complete.
+  // https://crbug.com/945237
+  bool has_deferred_window_close_ = false;
+
+  // Manager of fullscreen state transitions. If this is non-nullptr, then it
+  // replaces `target_fullscreen_state_`, `in_fullscreen_transition_`, and
+  // `has_deferred_window_close_`.
+  std::unique_ptr<NativeWidgetNSWindowFullscreenController>
+      fullscreen_controller_;
 
   // Stores the value last read from -[NSWindow isVisible], to detect visibility
   // changes.

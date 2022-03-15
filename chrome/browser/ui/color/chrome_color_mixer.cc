@@ -215,6 +215,8 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
           : ui::ColorTransform(ui::kColorIcon);
   mixer[kColorBookmarkBarSeparator] = {kColorToolbarSeparator};
   mixer[kColorCaptionButtonBackground] = {SK_ColorTRANSPARENT};
+  mixer[kColorDesktopMediaTabListBorder] = {ui::kColorMidground};
+  mixer[kColorDesktopMediaTabListPreviewBackground] = {ui::kColorMidground};
   mixer[kColorDownloadShelfBackground] = {kColorToolbar};
   mixer[kColorDownloadShelfButtonBackground] = {kColorDownloadShelfBackground};
   mixer[kColorDownloadShelfButtonText] =
@@ -277,6 +279,10 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorNewTabPageTextUnthemed] = {gfx::kGoogleGrey050};
   mixer[kColorNewTabPageTextLight] =
       IncreaseLightness(kColorNewTabPageText, 0.40);
+  mixer[kColorOmniboxAnswerIconBackground] = {
+      ui::kColorButtonBackgroundProminent};
+  mixer[kColorOmniboxAnswerIconForeground] = {
+      ui::kColorButtonForegroundProminent};
   mixer[kColorOmniboxBackground] = {dark_mode ? gfx::kGoogleGrey900
                                               : gfx::kGoogleGrey100};
   mixer[kColorOmniboxChipBackgroundLowVisibility] = {
@@ -289,7 +295,14 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       ui::kColorButtonForeground};
   mixer[kColorOmniboxText] =
       ui::GetColorWithMaxContrast(kColorOmniboxBackground);
+  mixer[kColorOverlayWindowBackgroundColor] = {SK_ColorBLACK};
+  mixer[kColorPaymentRequestRowBackgroundHighlighted] = {
+      SkColorSetA(SK_ColorBLACK, 0x0D)};
+  mixer[kColorQrCodeBackground] = {SK_ColorWHITE};
+  mixer[kColorQrCodeBorder] = {ui::kColorMidground};
   mixer[kColorReadLaterButtonHighlight] = {kColorAvatarButtonHighlightNormal};
+  mixer[kColorScreenshotCapturedImageBackground] = {ui::kColorBubbleBackground};
+  mixer[kColorScreenshotCapturedImageBorder] = {ui::kColorMidground};
   mixer[kColorSidePanelContentAreaSeparator] = {
       kColorToolbarContentAreaSeparator};
   mixer[kColorStatusBubbleBackgroundFrameActive] = {
@@ -439,4 +452,20 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorWindowControlButtonBackgroundActive] = {ui::kColorFrameActive};
   mixer[kColorWindowControlButtonBackgroundInactive] = {
       ui::kColorFrameInactive};
+
+  // Apply high contrast recipes if necessary.
+  if (!ShouldApplyHighContrastColors(key))
+    return;
+  mixer[kColorDownloadShelfContentAreaSeparator] = {
+      kColorToolbarContentAreaSeparator};
+  mixer[kColorInfoBarContentAreaSeparator] = {
+      kColorToolbarContentAreaSeparator};
+  mixer[kColorLocationBarBorder] = {kColorToolbarText};
+  mixer[kColorToolbar] = {dark_mode ? SK_ColorBLACK : SK_ColorWHITE};
+  mixer[kColorToolbarContentAreaSeparator] = {kColorToolbarText};
+  mixer[kColorToolbarText] = {dark_mode ? SK_ColorWHITE : SK_ColorBLACK};
+  mixer[kColorToolbarTopSeparatorFrameActive] = {dark_mode ? SK_ColorDKGRAY
+                                                           : SK_ColorLTGRAY};
+  mixer[ui::kColorFrameActive] = {SK_ColorDKGRAY};
+  mixer[ui::kColorFrameInactive] = {SK_ColorGRAY};
 }

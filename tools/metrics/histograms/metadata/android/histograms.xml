@@ -186,6 +186,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.AppLaunch.DurationDrawWasBlocked" units="ms"
     expires_after="2022-08-21">
+  <obsolete>
+    Removed 03/2022. Superseded by
+    Android.AppLaunch.DurationDrawWasBlocked.OnInitialTab
+  </obsolete>
   <owner>sinansahin@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <owner>skym@chromium.org</owner>
@@ -194,6 +198,34 @@ chromium-metrics-reviews@google.com.
     Records how long the initial tab's draw was blocked, if it was. Recorded
     when the active tab is restored or an initial tab is created in
     ChromeTabbedActivity.
+  </summary>
+</histogram>
+
+<histogram name="Android.AppLaunch.DurationDrawWasBlocked.OnInitialTab"
+    units="ms" expires_after="2022-08-21">
+  <owner>sinansahin@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>skym@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
+  <summary>
+    Records how long the initial tab's draw was blocked, if it was. Recorded no
+    more than once per cold start. Recorded when the active tab is restored or
+    an initial tab is created in ChromeTabbedActivity. Recorded always except
+    when the overview page is shown during startup.
+  </summary>
+</histogram>
+
+<histogram name="Android.AppLaunch.DurationDrawWasBlocked.OnOverviewPage"
+    units="ms" expires_after="2022-08-21">
+  <owner>sinansahin@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>skym@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
+  <summary>
+    Records how long the overview page's draw was blocked, if it was. Recorded
+    no more than once per cold start. Recorded when the overview page state is
+    initialized in ChromeTabbedActivity and only when overview page was shown
+    during startup.
   </summary>
 </histogram>
 
@@ -383,7 +415,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskCanceled"
-    enum="BackgroundTaskId" expires_after="2022-07-03">
+    enum="BackgroundTaskId" expires_after="2022-09-11">
   <owner>fgorski@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>Records that a specific background task has been canceled.</summary>
@@ -412,7 +444,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskExpired"
-    enum="BackgroundTaskId" expires_after="2022-07-03">
+    enum="BackgroundTaskId" expires_after="2022-09-11">
   <owner>fgorski@chromium.org</owner>
   <owner>nator@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
@@ -423,7 +455,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskLoadedNative"
-    enum="BackgroundTaskId" expires_after="2022-07-03">
+    enum="BackgroundTaskId" expires_after="2022-09-11">
   <owner>fgorski@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>
@@ -472,14 +504,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskStarted"
-    enum="BackgroundTaskId" expires_after="2022-07-03">
+    enum="BackgroundTaskId" expires_after="2022-09-11">
   <owner>fgorski@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>Records that a specific background task has been started.</summary>
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskStopped"
-    enum="BackgroundTaskId" expires_after="2022-07-03">
+    enum="BackgroundTaskId" expires_after="2022-09-11">
   <owner>fgorski@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>
@@ -970,7 +1002,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.DropInWebContent.DistanceDip"
-    units="dp" expires_after="2022-07-01">
+    units="dp" expires_after="2022-09-11">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -984,7 +1016,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.DropInWebContent.Duration"
-    units="ms" expires_after="2022-07-01">
+    units="ms" expires_after="2022-09-11">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1016,7 +1048,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.TargetType"
-    enum="AndroidDragTargetType" expires_after="2022-07-01">
+    enum="AndroidDragTargetType" expires_after="2022-09-11">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1205,7 +1237,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.Blink.DLFontsLatencyFailure2"
-    units="microseconds" expires_after="2022-06-30">
+    units="microseconds" expires_after="2022-09-11">
   <owner>drott@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
   <summary>
@@ -1219,7 +1251,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.Blink.DLFontsLatencySuccess2"
-    units="microseconds" expires_after="2022-06-30">
+    units="microseconds" expires_after="2022-09-11">
   <owner>drott@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
   <summary>
@@ -1248,7 +1280,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.FetchAllFontFiles.Time" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -1293,7 +1325,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.MatchLocalFontByUniqueName.Time" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -1561,7 +1593,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Jank.AsyncTaskGetOnUiThreadStatus"
-    enum="AsyncTaskStatus" expires_after="2022-07-11">
+    enum="AsyncTaskStatus" expires_after="2022-09-11">
   <owner>smaier@chromium.org</owner>
   <owner>agrieve@chromium.org</owner>
   <summary>
@@ -2427,7 +2459,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.PhotoPicker.EnumerationTime" units="ms"
-    expires_after="2022-06-01">
+    expires_after="2022-09-11">
   <owner>finnur@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3146,7 +3178,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Callback.Counts" enum="WebViewCallbackType"
-    expires_after="2022-07-11">
+    expires_after="2022-09-11">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>Records the invocation count of WebView callbacks.</summary>
@@ -3175,7 +3207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.GetFilesDuration" units="ms"
-    expires_after="2022-07-01">
+    expires_after="2022-09-11">
   <owner>nator@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -3187,7 +3219,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.GetFilesResult"
-    enum="WebViewComponentUpdaterGetFilesResult" expires_after="2022-07-01">
+    enum="WebViewComponentUpdaterGetFilesResult" expires_after="2022-09-11">
   <owner>nator@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -3210,7 +3242,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.UnexpectedExit"
-    enum="Boolean" expires_after="2022-07-01">
+    enum="Boolean" expires_after="2022-09-11">
   <owner>nator@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -3222,7 +3254,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.ComponentUpdater.UpdateJobDuration" units="ms"
-    expires_after="2022-07-01">
+    expires_after="2022-09-11">
   <owner>nator@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -3615,7 +3647,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Metrics.PackagesAllowList.RecordStatus"
-    enum="AppPackageNameLoggingRuleStatus" expires_after="2022-07-01">
+    enum="AppPackageNameLoggingRuleStatus" expires_after="2022-09-11">
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -3920,7 +3952,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.SecureCookieAction" enum="SecureCookieAction"
-    expires_after="2022-07-11">
+    expires_after="2022-09-11">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4124,8 +4156,73 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.WebView.VisibleScreenCoverage.Global" units="%"
+    expires_after="2023-02-25">
+  <owner>mvanouwerkerk@google.com</owner>
+  <owner>ntfschr@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the number of seconds any WebView was visible (the view itself was
+    visible, and was attached to the view hierarchy of a visible window) by
+    screen coverage percentage. The screen coverage of all WebViews is merged so
+    overlaps do not count more than once and do not increase the percentage.
+    Updated with every Metrics upload. Not recorded when there is no visible
+    WebView. Fractional percentages are rounded down. Note that the seconds are
+    logged as the count for the percentages.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.VisibleScreenCoverage.PerWebView" units="%"
+    expires_after="2023-02-25">
+  <owner>mvanouwerkerk@google.com</owner>
+  <owner>ntfschr@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the number of seconds each WebView was visible (the view itself was
+    visible, and was attached to the view hierarchy of a visible window) by
+    screen coverage percentage. The screen coverage of these WebViews is not
+    merged. Updated with every Metrics upload. Not recorded when there is no
+    visible WebView. Fractional percentages are rounded down. Note that the
+    seconds are logged as the count for the percentages.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.VisibleScreenCoverage.PerWebView.{scheme}"
+    units="%" expires_after="2023-02-25">
+  <owner>mvanouwerkerk@google.com</owner>
+  <owner>ntfschr@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the number of seconds each WebView was visible (the view itself was
+    visible, and was attached to the view hierarchy of a visible window) with a
+    {scheme} scheme in the primary main frame by screen coverage percentage. The
+    screen coverage of these WebViews is not merged. Updated with every Metrics
+    upload. Not recorded when there is no visible WebView. Fractional
+    percentages are rounded down. Note that the seconds are logged as the count
+    for the percentages.
+  </summary>
+  <token key="scheme">
+    <variant name="about"/>
+    <variant name="blob"/>
+    <variant name="chrome"/>
+    <variant name="content"/>
+    <variant name="data"/>
+    <variant name="empty"/>
+    <variant name="file"/>
+    <variant name="ftp"/>
+    <variant name="http"/>
+    <variant name="https"/>
+    <variant name="intent"/>
+    <variant name="javascript"/>
+    <variant name="unknown"/>
+  </token>
+</histogram>
+
 <histogram name="Android.WebView.WebViewOpenWebVisible.ScreenPortion2"
     enum="WebViewOpenWebScreenPortion" expires_after="2022-08-01">
+  <obsolete>
+    Deprecated in March 2022.
+  </obsolete>
   <owner>idries@google.com</owner>
   <owner>ntfschr@chromium.org</owner>
   <owner>peconn@chromium.org</owner>

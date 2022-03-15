@@ -25,7 +25,6 @@
 #import "components/remote_cocoa/app_shim/mouse_capture.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_frameless_nswindow.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
-#include "components/remote_cocoa/app_shim/native_widget_ns_window_fullscreen_controller.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_host_helper.h"
 #include "components/remote_cocoa/app_shim/select_file_dialog_bridge.h"
 #import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
@@ -588,8 +587,13 @@ void NativeWidgetNSWindowBridge::CreateContentView(uint64_t ns_view_id,
 }
 
 void NativeWidgetNSWindowBridge::CloseWindow() {
-  if (fullscreen_controller_.HasDeferredWindowClose())
-    return;
+  if (fullscreen_controller_) {
+    if (fullscreen_controller_->HasDeferredWindowClose())
+      return;
+  } else {
+    if (has_deferred_window_close_)
+      return;
+  }
 
   // Keep |window| on the stack so that the ObjectiveC block below can capture
   // it and properly increment the reference count bound to the posted task.
@@ -632,9 +636,16 @@ void NativeWidgetNSWindowBridge::CloseWindow() {
   [window orderOut:nil];
 
   // Defer closing windows until after fullscreen transitions complete.
-  fullscreen_controller_.OnWindowWantsToClose();
-  if (fullscreen_controller_.HasDeferredWindowClose())
-    return;
+  if (fullscreen_controller_) {
+    fullscreen_controller_->OnWindowWantsToClose();
+    if (fullscreen_controller_->HasDeferredWindowClose())
+      return;
+  } else {
+    if (in_fullscreen_transition_) {
+      has_deferred_window_close_ = true;
+      return;
+    }
+  }
 
   // Many tests assume that base::RunLoop().RunUntilIdle() is always sufficient
   // to execute a close. However, in rare cases, -performSelector:..afterDelay:0
@@ -881,7 +892,17 @@ void NativeWidgetNSWindowBridge::SetCursor(NSCursor* cursor) {
 }
 
 void NativeWidgetNSWindowBridge::OnWindowWillClose() {
-  fullscreen_controller_.OnWindowWillClose();
+  if (fullscreen_controller_) {
+    fullscreen_controller_->OnWindowWillClose();
+  } else {
+    // If a window closes while in a fullscreen transition, then the window will
+    // hang in a zombie-like state.
+    // https://crbug.com/945237
+    if (in_fullscreen_transition_) {
+      DLOG(ERROR) << "-[NSWindow close] while in fullscreen transition will "
+                     "trigger zombie windows.";
+    }
+  }
 
   [window_ setCommandHandler:nil];
   [window_ setCommandDispatcherDelegate:nil];
@@ -922,14 +943,88 @@ void NativeWidgetNSWindowBridge::OnWindowWillClose() {
 
 void NativeWidgetNSWindowBridge::OnFullscreenTransitionStart(
     bool target_fullscreen_state) {
+  DCHECK(!fullscreen_controller_);
+  DCHECK_NE(target_fullscreen_state, target_fullscreen_state_);
+  target_fullscreen_state_ = target_fullscreen_state;
+  in_fullscreen_transition_ = true;
+
   host_->OnWindowFullscreenTransitionStart(target_fullscreen_state);
 }
 
 void NativeWidgetNSWindowBridge::OnFullscreenTransitionComplete(
     bool actual_fullscreen_state) {
+  DCHECK(!fullscreen_controller_);
+  in_fullscreen_transition_ = false;
+
   // Add any children that were skipped during the fullscreen transition.
   OrderChildren();
-  host_->OnWindowFullscreenTransitionComplete(actual_fullscreen_state);
+
+  if (has_deferred_window_close_) {
+    [ns_window() close];
+    return;
+  }
+
+  if (target_fullscreen_state_ == actual_fullscreen_state) {
+    host_->OnWindowFullscreenTransitionComplete(actual_fullscreen_state);
+    return;
+  }
+
+  // The transition completed, but into the wrong state. This can happen when
+  // there are calls to change the fullscreen state whilst mid-transition.
+  // First update to reflect reality so that OnTargetFullscreenStateChanged()
+  // expects the change.
+  target_fullscreen_state_ = actual_fullscreen_state;
+  ToggleDesiredFullscreenState(true /* async */);
+}
+
+void NativeWidgetNSWindowBridge::ToggleDesiredFullscreenState(bool async) {
+  DCHECK(!fullscreen_controller_);
+  // If there is currently an animation into or out of fullscreen, then AppKit
+  // emits the string "not in fullscreen state" to stdio and does nothing. For
+  // this case, schedule a transition back into the desired state when the
+  // animation completes.
+  if (in_fullscreen_transition_) {
+    target_fullscreen_state_ = !target_fullscreen_state_;
+    return;
+  }
+
+  // Going fullscreen implicitly makes the window visible. AppKit does this.
+  // That is, -[NSWindow isVisible] is always true after a call to -[NSWindow
+  // toggleFullScreen:]. Unfortunately, this change happens after AppKit calls
+  // -[NSWindowDelegate windowWillEnterFullScreen:], and AppKit doesn't send an
+  // orderWindow message. So intercepting the implicit change is hard.
+  // Luckily, to trigger externally, the window typically needs to be visible in
+  // the first place. So we can just ensure the window is visible here instead
+  // of relying on AppKit to do it, and not worry that OnVisibilityChanged()
+  // won't be called for externally triggered fullscreen requests.
+  if (!window_visible_)
+    SetVisibilityState(WindowVisibilityState::kShowInactive);
+
+  // Enable fullscreen collection behavior because:
+  // 1: -[NSWindow toggleFullscreen:] would otherwise be ignored,
+  // 2: the fullscreen button must be enabled so the user can leave fullscreen.
+  // This will be reset when a transition out of fullscreen completes.
+  gfx::SetNSWindowCanFullscreen(window_, true);
+
+  // Until 10.13, AppKit would obey a call to -toggleFullScreen: made inside
+  // OnFullscreenTransitionComplete(). Starting in 10.13, it behaves as though
+  // the transition is still in progress and just emits "not in a fullscreen
+  // state" when trying to exit fullscreen in the same runloop that entered it.
+  // To handle this case, invoke -toggleFullScreen: asynchronously.
+  if (async) {
+    [window_ performSelector:@selector(toggleFullScreen:)
+                  withObject:nil
+                  afterDelay:0];
+  } else {
+    // Suppress synchronous CA transactions during AppKit fullscreen transition
+    // since there is no need for updates during such transition.
+    // Re-layout and re-paint will be done after the transtion. See
+    // https://crbug.com/875707 for potiential problems if we don't suppress.
+    // |ca_transaction_sync_suppressed_| will be reset to false when the next
+    // frame comes in.
+    ca_transaction_sync_suppressed_ = true;
+    [window_ toggleFullScreen:nil];
+  }
 }
 
 void NativeWidgetNSWindowBridge::OnSizeChanged() {
@@ -1002,8 +1097,16 @@ void NativeWidgetNSWindowBridge::SetSizeConstraints(const gfx::Size& min_size,
                                                     const gfx::Size& max_size,
                                                     bool is_resizable,
                                                     bool is_maximizable) {
-  if (!fullscreen_controller_.CanResize())
-    return;
+  if (fullscreen_controller_) {
+    if (!fullscreen_controller_->CanResize())
+      return;
+  } else {
+    // Don't modify the size constraints or fullscreen collection behavior while
+    // in fullscreen or during a transition. OnFullscreenTransitionComplete will
+    // reset these after leaving fullscreen.
+    if (target_fullscreen_state_ || in_fullscreen_transition_)
+      return;
+  }
 
   bool shows_resize_controls =
       is_resizable && (min_size.IsEmpty() || min_size != max_size);
@@ -1174,6 +1277,57 @@ void NativeWidgetNSWindowBridge::OnDisplayMetricsChanged(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetNSWindowBridge, NativeWidgetNSWindowFullscreenController::Client:
+
+void NativeWidgetNSWindowBridge::FullscreenControllerTransitionStart(
+    bool is_target_fullscreen) {
+  host_->OnWindowFullscreenTransitionStart(is_target_fullscreen);
+}
+
+void NativeWidgetNSWindowBridge::FullscreenControllerTransitionComplete(
+    bool is_fullscreen) {
+  // Add any children that were skipped during the fullscreen transition.
+  OrderChildren();
+  host_->OnWindowFullscreenTransitionComplete(is_fullscreen);
+}
+
+void NativeWidgetNSWindowBridge::FullscreenControllerSetFrame(
+    const gfx::Rect& frame,
+    base::TimeDelta& transition_time) {
+  NSRect ns_frame = gfx::ScreenRectToNSRect(frame);
+  transition_time = base::Seconds([window_ animationResizeTime:ns_frame]);
+  [window_ setFrame:ns_frame display:NO animate:YES];
+}
+
+void NativeWidgetNSWindowBridge::FullscreenControllerToggleFullscreen() {
+  [window_ toggleFullScreen:nil];
+}
+
+void NativeWidgetNSWindowBridge::FullscreenControllerCloseWindow() {
+  [window_ close];
+}
+
+int64_t NativeWidgetNSWindowBridge::FullscreenControllerGetDisplayId() const {
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(window_.get())
+      .id();
+}
+
+gfx::Rect NativeWidgetNSWindowBridge::FullscreenControllerGetFrameForDisplay(
+    int64_t display_id) const {
+  display::Display display;
+  if (display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
+                                                            &display)) {
+    return display.work_area();
+  }
+  return gfx::Rect();
+}
+
+gfx::Rect NativeWidgetNSWindowBridge::FullscreenControllerGetFrame() const {
+  return gfx::ScreenRectFromNSRect([window_ frame]);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetNSWindowBridge, ui::CATransactionObserver
 
 bool NativeWidgetNSWindowBridge::ShouldWaitInPreCommit() {
@@ -1183,6 +1337,14 @@ bool NativeWidgetNSWindowBridge::ShouldWaitInPreCommit() {
     return false;
   if (!bridged_view_)
     return false;
+  if (fullscreen_controller_) {
+    // Suppress synchronous CA transactions during AppKit fullscreen transition
+    // since there is no need for updates during such transition.
+    // Re-layout and re-paint will be done after the transition. See
+    // https://crbug.com/875707 for potiential problems if we don't suppress.
+    if (fullscreen_controller_->IsInFullscreenTransition())
+      return false;
+  }
   return content_dip_size_ != compositor_frame_dip_size_;
 }
 
@@ -1214,7 +1376,15 @@ void NativeWidgetNSWindowBridge::SetVisibleOnAllSpaces(bool always_visible) {
   gfx::SetNSWindowVisibleOnAllWorkspaces(window_, always_visible);
 }
 
+void NativeWidgetNSWindowBridge::SetFullscreen(bool fullscreen) {
+  DCHECK(!fullscreen_controller_);
+  if (fullscreen == target_fullscreen_state_)
+    return;
+  ToggleDesiredFullscreenState();
+}
+
 void NativeWidgetNSWindowBridge::EnterFullscreen(int64_t target_display_id) {
+  DCHECK(fullscreen_controller_);
   // Going fullscreen implicitly makes the window visible. AppKit does this.
   // That is, -[NSWindow isVisible] is always true after a call to -[NSWindow
   // toggleFullScreen:]. Unfortunately, this change happens after AppKit calls
@@ -1235,11 +1405,12 @@ void NativeWidgetNSWindowBridge::EnterFullscreen(int64_t target_display_id) {
   // completes.
   gfx::SetNSWindowCanFullscreen(window_, true);
 
-  fullscreen_controller_.EnterFullscreen();
+  fullscreen_controller_->EnterFullscreen(target_display_id);
 }
 
 void NativeWidgetNSWindowBridge::ExitFullscreen() {
-  fullscreen_controller_.ExitFullscreen();
+  DCHECK(fullscreen_controller_);
+  fullscreen_controller_->ExitFullscreen();
 }
 
 void NativeWidgetNSWindowBridge::SetCanAppearInExistingFullscreenSpaces(

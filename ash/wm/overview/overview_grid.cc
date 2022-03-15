@@ -1054,7 +1054,7 @@ void OverviewGrid::OnDisplayMetricsChanged() {
   if (split_view_drag_indicators_)
     split_view_drag_indicators_->OnDisplayBoundsChanged();
 
-  UpdateCannotSnapWarningVisibility();
+  UpdateCannotSnapWarningVisibility(/*animate=*/true);
 
   // In case of split view mode, the grid bounds and item positions will be
   // updated in |OnSplitViewDividerPositionChanged|.
@@ -1749,7 +1749,6 @@ void OverviewGrid::ShowDesksTemplatesGrid(bool was_zero_state) {
                                         /*expanded_desks_bar_button=*/true);
   }
   desks_bar_view_->UpdateButtonsForDesksTemplatesGrid();
-  overview_session_->UpdateAccessibilityFocus();
 }
 
 void OverviewGrid::HideDesksTemplatesGrid(bool exit_overview) {
@@ -1795,7 +1794,6 @@ void OverviewGrid::HideDesksTemplatesGrid(bool exit_overview) {
       /*animate=*/true,
       base::BindOnce(&OverviewGrid::OnDesksTemplatesGridFadedOut,
                      weak_ptr_factory_.GetWeakPtr()));
-  overview_session_->UpdateAccessibilityFocus();
 }
 
 bool OverviewGrid::IsShowingDesksTemplatesGrid() const {
@@ -2004,7 +2002,7 @@ void OverviewGrid::OnSplitViewStateChanged(
   }
 
   // Update the cannot snap warnings and adjust the grid bounds.
-  UpdateCannotSnapWarningVisibility();
+  UpdateCannotSnapWarningVisibility(/*animate=*/true);
   SetBoundsAndUpdatePositions(GetGridBoundsInScreen(root_window_),
                               /*ignored_items=*/{}, /*animate=*/false);
 
@@ -2401,9 +2399,9 @@ gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
                                               root_window_);
 }
 
-void OverviewGrid::UpdateCannotSnapWarningVisibility() {
+void OverviewGrid::UpdateCannotSnapWarningVisibility(bool animate) {
   for (auto& overview_mode_item : window_list_)
-    overview_mode_item->UpdateCannotSnapWarningVisibility();
+    overview_mode_item->UpdateCannotSnapWarningVisibility(animate);
 }
 
 void OverviewGrid::OnSaveDeskAsTemplateButtonPressed() {

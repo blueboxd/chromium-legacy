@@ -2104,6 +2104,7 @@ if (!is_android) {
       "../browser/ui/views/eye_dropper/eye_dropper_browsertest.cc",
       "../browser/ui/views/hats/hats_browsertest.cc",
       "../browser/ui/views/incognito_clear_browsing_data_dialog_browsertest.cc",
+      "../browser/ui/views/privacy_sandbox/privacy_sandbox_dialog_view_browsertest.cc",
       "../browser/ui/views/reader_mode/reader_mode_icon_view_browsertest.cc",
       "../browser/ui/views/sharing/remote_copy_browsertest.cc",
       "../browser/ui/views/sharing/shared_clipboard_browsertest.cc",
@@ -4425,6 +4426,7 @@ if (is_chromeos_lacros) {
       "../browser/ui/browser_navigator_browsertest_chromeos.cc",
       "../browser/ui/views/location_bar/intent_chip_button_browsertest.cc",
       "../browser/ui/views/profiles/profile_picker_view_browsertest.cc",
+      "../browser/web_applications/app_service/lacros_web_apps_controller_lacros_browsertest.cc",
     ]
 
     deps = [
@@ -4979,12 +4981,12 @@ test("unit_tests") {
     "../browser/policy/messaging_layer/upload/dm_server_upload_service_unittest.cc",
     "../browser/policy/messaging_layer/upload/record_handler_impl_unittest.cc",
     "../browser/policy/messaging_layer/upload/record_upload_request_builder_unittest.cc",
-    "../browser/policy/messaging_layer/upload/test_util.cc",
-    "../browser/policy/messaging_layer/upload/test_util.h",
     "../browser/policy/messaging_layer/upload/upload_client_unittest.cc",
     "../browser/policy/messaging_layer/upload/upload_provider_unittest.cc",
     "../browser/policy/messaging_layer/util/dm_token_retriever_provider_unittest.cc",
     "../browser/policy/messaging_layer/util/report_queue_manual_test_context_unittest.cc",
+    "../browser/policy/messaging_layer/util/test.cc",
+    "../browser/policy/messaging_layer/util/test.h",
     "../browser/policy/messaging_layer/util/user_dm_token_retriever_unittest.cc",
     "../browser/policy/profile_policy_connector_unittest.cc",
     "../browser/policy/webusb_allow_devices_for_urls_policy_handler_unittest.cc",
@@ -5135,6 +5137,7 @@ test("unit_tests") {
     "../browser/ui/webui/log_web_ui_url_unittest.cc",
     "../browser/update_client/chrome_update_query_params_delegate_unittest.cc",
     "../browser/url_param_filter/cross_otr_metric_throttle_unittest.cc",
+    "../browser/url_param_filter/url_param_classifications_loader_unittest.cc",
     "../browser/url_param_filter/url_param_filterer_unittest.cc",
     "../browser/visibility_timer_tab_helper_unittest.cc",
     "../browser/vr/vr_tab_helper_unittest.cc",
@@ -8222,6 +8225,7 @@ test("unit_tests") {
       "//chrome/browser/supervised_user:test_support",
       "//chrome/browser/supervised_user/kids_chrome_management:proto",
       "//chrome/browser/supervised_user/supervised_user_error_page:unit_tests",
+      "//chrome/browser/supervised_user/supervised_user_features",
       "//chrome/browser/supervised_user/supervised_user_features:unit_tests",
     ]
   }

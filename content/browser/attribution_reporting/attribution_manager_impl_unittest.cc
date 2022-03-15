@@ -279,8 +279,6 @@ class AttributionManagerImplTest : public testing::Test {
     report_sender_ = report_sender.get();
 
     attribution_manager_ = AttributionManagerImpl::CreateForTesting(
-        AttributionManagerImpl::DefaultIsReportAllowedCallback(
-            browser_context_.get()),
         dir_.GetPath(), mock_storage_policy_, std::move(storage_delegate),
         std::move(cookie_checker), std::move(report_sender),
         static_cast<StoragePartitionImpl*>(
@@ -554,7 +552,7 @@ TEST_F(AttributionManagerImplTest,
   report_sender_->RunCallbacksAndReset({SendResult::Status::kTransientFailure});
 
   // kFailed = 1.
-  histograms.ExpectUniqueSample("Conversions.ReportSendOutcome", 1, 1);
+  histograms.ExpectUniqueSample("Conversions.ReportSendOutcome2", 1, 1);
 }
 
 TEST_F(AttributionManagerImplTest, RetryLogicOverridesGetReportTimer) {
@@ -621,7 +619,7 @@ TEST_F(AttributionManagerImplTest,
   EXPECT_THAT(StoredReports(), IsEmpty());
 
   // kFailed = 1.
-  histograms.ExpectUniqueSample("Conversions.ReportSendOutcome", 1, 1);
+  histograms.ExpectUniqueSample("Conversions.ReportSendOutcome2", 1, 1);
 }
 
 TEST_F(AttributionManagerImplTest, QueuedReportAlwaysFails_StopsSending) {
@@ -655,7 +653,7 @@ TEST_F(AttributionManagerImplTest, QueuedReportAlwaysFails_StopsSending) {
   EXPECT_THAT(StoredReports(), IsEmpty());
 
   // kFailed = 1.
-  histograms.ExpectUniqueSample("Conversions.ReportSendOutcome", 1, 1);
+  histograms.ExpectUniqueSample("Conversions.ReportSendOutcome2", 1, 1);
 }
 
 TEST_F(AttributionManagerImplTest, ReportExpiredAtStartup_Sent) {
@@ -691,7 +689,7 @@ TEST_F(AttributionManagerImplTest, ReportSent_Deleted) {
   EXPECT_THAT(report_sender_->calls(), IsEmpty());
 
   // kSent = 0.
-  histograms.ExpectUniqueSample("Conversions.ReportSendOutcome", 0, 1);
+  histograms.ExpectUniqueSample("Conversions.ReportSendOutcome2", 0, 1);
 }
 
 TEST_F(AttributionManagerImplTest, QueuedReportSent_ObserversNotified) {
@@ -734,11 +732,11 @@ TEST_F(AttributionManagerImplTest, QueuedReportSent_ObserversNotified) {
        SendResult::Status::kSent, SendResult::Status::kTransientFailure});
 
   // kSent = 0.
-  histograms.ExpectBucketCount("Conversions.ReportSendOutcome", 0, 2);
+  histograms.ExpectBucketCount("Conversions.ReportSendOutcome2", 0, 2);
   // kFailed = 1.
-  histograms.ExpectBucketCount("Conversions.ReportSendOutcome", 1, 0);
+  histograms.ExpectBucketCount("Conversions.ReportSendOutcome2", 1, 0);
   // kDropped = 2.
-  histograms.ExpectBucketCount("Conversions.ReportSendOutcome", 2, 1);
+  histograms.ExpectBucketCount("Conversions.ReportSendOutcome2", 2, 1);
 }
 
 TEST_F(AttributionManagerImplTest, TriggerHandled_ObserversNotified) {
@@ -1224,7 +1222,7 @@ TEST_F(AttributionManagerImplTest, EmbedderDisallowsReporting_ReportNotSent) {
   EXPECT_THAT(report_sender_->calls(), IsEmpty());
 
   // kDropped = 2.
-  histograms.ExpectBucketCount("Conversions.ReportSendOutcome", 2, 1);
+  histograms.ExpectBucketCount("Conversions.ReportSendOutcome2", 2, 1);
 }
 
 TEST_F(AttributionManagerImplTest,
@@ -1617,12 +1615,15 @@ TEST_F(AttributionManagerImplTest,
 
 TEST_F(AttributionManagerImplTest,
        AggregateReportAssemblySucceeded_ReportSent) {
+  base::HistogramTester histograms;
+
   attribution_manager_->HandleSource(SourceBuilder().Build());
 
   const auto aggregatable_attribution =
       ReportBuilder(
           AttributionInfoBuilder(
               SourceBuilder().SetSourceId(StoredSource::Id(1)).BuildStored())
+              .SetTime(base::Time::Now())
               .Build())
           .SetReportTime(base::Time::Now() + base::Hours(1))
           .SetAggregatableHistogramContributions(
@@ -1658,16 +1659,29 @@ TEST_F(AttributionManagerImplTest,
   aggregation_service_->RunCallback(0, std::move(report),
                                     AggregationService::AssemblyStatus::kOk);
   EXPECT_THAT(report_sender_->calls(), SizeIs(1));
+  report_sender_->RunCallbacksAndReset({SendResult::Status::kSent});
+
+  // kSuccess = 0.
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.AssembleReportStatus", 0, 1);
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly", 60, 1);
+  // kSent = 0.
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.ReportSendOutcome", 0, 1);
 }
 
 TEST_F(AttributionManagerImplTest,
        AggregateReportAssemblyFailed_ReportNotSent) {
+  base::HistogramTester histograms;
+
   attribution_manager_->HandleSource(SourceBuilder().Build());
 
   attribution_manager_->AddAggregatableAttributionForTesting(
       ReportBuilder(
           AttributionInfoBuilder(
               SourceBuilder().SetSourceId(StoredSource::Id(1)).BuildStored())
+              .SetTime(base::Time::Now())
               .Build())
           .SetReportTime(base::Time::Now() + base::Hours(1))
           .SetAggregatableHistogramContributions(
@@ -1684,9 +1698,20 @@ TEST_F(AttributionManagerImplTest,
   aggregation_service_->RunCallback(
       0, absl::nullopt, AggregationService::AssemblyStatus::kAssemblyFailed);
   EXPECT_THAT(report_sender_->calls(), SizeIs(0));
+
+  // kAssembleReportFailed = 3.
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.AssembleReportStatus", 3, 1);
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly", 60, 1);
+  // kFailedToAssemble = 3.
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.ReportSendOutcome", 3, 1);
 }
 
 TEST_F(AttributionManagerImplTest, AggregationServiceDisabled_ReportNotSent) {
+  base::HistogramTester histograms;
+
   ShutdownAggregationService();
 
   attribution_manager_->HandleSource(SourceBuilder().Build());
@@ -1695,6 +1720,7 @@ TEST_F(AttributionManagerImplTest, AggregationServiceDisabled_ReportNotSent) {
       ReportBuilder(
           AttributionInfoBuilder(
               SourceBuilder().SetSourceId(StoredSource::Id(1)).BuildStored())
+              .SetTime(base::Time::Now())
               .Build())
           .SetReportTime(base::Time::Now() + base::Hours(1))
           .SetAggregatableHistogramContributions(
@@ -1703,6 +1729,15 @@ TEST_F(AttributionManagerImplTest, AggregationServiceDisabled_ReportNotSent) {
 
   task_environment_.FastForwardBy(base::Hours(1));
   EXPECT_THAT(report_sender_->calls(), IsEmpty());
+
+  // kAggregationServiceUnavailable = 1.
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.AssembleReportStatus", 1, 1);
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly", 60, 1);
+  // kFailedToAssemble = 3.
+  histograms.ExpectUniqueSample(
+      "Conversions.AggregatableReport.ReportSendOutcome", 3, 1);
 }
 
 TEST_F(AttributionManagerImplTest, EventAndAggregateReportsStored_BothSent) {

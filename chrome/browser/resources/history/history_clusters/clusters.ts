@@ -24,7 +24,6 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {BrowserProxyImpl} from './browser_proxy.js';
 import {getTemplate} from './clusters.html.js';
 import {Cluster, PageCallbackRouter, PageHandlerRemote, QueryResult, URLVisit} from './history_clusters.mojom-webui.js';
-import {ClusterAction, MetricsProxyImpl} from './metrics_proxy.js';
 
 /**
  * @fileoverview This file provides a custom element that requests and shows
@@ -136,7 +135,7 @@ class HistoryClustersElement extends PolymerElement {
     this.callbackRouter_ = BrowserProxyImpl.getInstance().callbackRouter;
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     // Register a per-document singleton focus outline manager. Some of our
@@ -155,7 +154,7 @@ class HistoryClustersElement extends PolymerElement {
             this.onVisitsRemoved_.bind(this));
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     assert(this.onClustersQueryResultListenerId_);
     this.callbackRouter_.removeListener(this.onClustersQueryResultListenerId_);
@@ -204,8 +203,6 @@ class HistoryClustersElement extends PolymerElement {
   private onRemoveCluster_(event: CustomEvent<number>) {
     const index = event.detail;
     this.splice('result_.clusters', index, 1);
-    MetricsProxyImpl.getInstance().recordClusterAction(
-        ClusterAction.DELETED, index);
   }
 
   /**

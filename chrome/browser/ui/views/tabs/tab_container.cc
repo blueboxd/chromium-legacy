@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
+#include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_group_highlight.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
@@ -299,6 +300,10 @@ TabContainer::TabContainer(TabStripController* controller,
 }
 
 TabContainer::~TabContainer() {
+  // The animations may reference the tabs or group views. Shut down the
+  // animation before we destroy any animated views.
+  StopAnimating(false);
+
   // Since TabGroupViews expects be able to remove the views it creates, clear
   // |group_views_| before removing the remaining children below.
   group_views_.clear();
@@ -319,6 +324,17 @@ Tab* TabContainer::AddTab(std::unique_ptr<Tab> tab,
       std::move(tab), GetViewInsertionIndex(group, absl::nullopt, model_index));
   tabs_view_model_.Add(tab_ptr, model_index);
   layout_helper_->InsertTabAt(model_index, tab_ptr, pinned);
+
+  // Don't animate the first tab, it looks weird, and don't animate anything
+  // if the containing window isn't visible yet.
+  if (GetTabCount() > 1 && GetWidget() && GetWidget()->IsVisible()) {
+    StartInsertTabAnimation(model_index);
+  } else {
+    CompleteAnimationAndLayout();
+  }
+
+  UpdateAccessibleTabIndices();
+
   return tab_ptr;
 }
 
@@ -329,12 +345,23 @@ void TabContainer::MoveTab(Tab* tab, int from_model_index, int to_model_index) {
   layout_helper_->MoveTab(tab->group(), from_model_index, to_model_index);
 }
 
-void TabContainer::RemoveTabFromViewModel(int index) {
-  UpdateHoverCard(nullptr, TabController::HoverCardUpdateType::kTabRemoved);
+void TabContainer::RemoveTab(int model_index, bool was_active) {
+  UpdateClosingModeOnRemovedTab(model_index, was_active);
 
-  Tab* tab = GetTabAtModelIndex(index);
-  tabs_view_model_.Remove(index);
-  layout_helper_->RemoveTabAt(index, tab);
+  PrepareForAnimation();
+
+  Tab* tab = GetTabAtModelIndex(model_index);
+  tab->SetClosing(true);
+
+  RemoveTabFromViewModel(model_index);
+
+  UpdateIdealBounds();
+  AnimateToIdealBounds();
+
+  // Animate the tab closed.
+  AnimateTabClosed(tab, model_index);
+
+  UpdateAccessibleTabIndices();
 }
 
 void TabContainer::ScrollTabToVisible(int model_index) {
@@ -529,6 +556,27 @@ void TabContainer::OnTabSlotAnimationProgressed(TabSlotView* view) {
     UpdateTabGroupVisuals(view->group().value());
 }
 
+void TabContainer::PrepareForAnimation() {
+  if (drag_context_ && !drag_context_->IsDragSessionActive() &&
+      !TabDragController::IsAttachedTo(drag_context_)) {
+    for (int i = 0; i < GetTabCount(); ++i)
+      GetTabAtModelIndex(i)->set_dragging(false);
+  }
+}
+
+void TabContainer::UpdateIdealBounds() {
+  if (GetTabCount() == 0)
+    return;  // Should only happen during creation/destruction, ignore.
+
+  // Update |last_available_width_| in case there is a different amount of
+  // available width than there was in the last layout (e.g. if the tabstrip
+  // is currently hidden).
+  last_available_width_ = GetAvailableWidthForTabContainer();
+
+  const int available_width_for_tabs = CalculateAvailableWidthForTabs();
+  layout_helper()->UpdateIdealBounds(available_width_for_tabs);
+}
+
 void TabContainer::AnimateToIdealBounds() {
   UpdateHoverCard(nullptr, TabController::HoverCardUpdateType::kAnimating);
 
@@ -585,6 +633,33 @@ void TabContainer::AnimateToIdealBounds() {
   // existing preferred size and layout (which may now be incorrect), we need to
   // signal this explicitly.
   PreferredSizeChanged();
+}
+
+void TabContainer::InvalidateIdealBounds() {
+  last_layout_size_ = gfx::Size();
+}
+
+void TabContainer::StopAnimating(bool layout) {
+  if (!bounds_animator_.IsAnimating())
+    return;
+
+  bounds_animator_.Cancel();
+
+  if (layout)
+    CompleteAnimationAndLayout();
+}
+
+void TabContainer::CompleteAnimationAndLayout() {
+  last_available_width_ = GetAvailableWidthForTabContainer();
+  last_layout_size_ = size();
+
+  bounds_animator().Cancel();
+
+  UpdateIdealBounds();
+  SnapToIdealBounds();
+
+  SetTabSlotVisibility();
+  SchedulePaint();
 }
 
 int TabContainer::CalculateAvailableWidthForTabs() const {
@@ -700,42 +775,35 @@ void TabContainer::SetTabSlotVisibility() {
   }
 }
 
-void TabContainer::OnTabWillBeRemovedAt(int model_index, bool was_active) {
-  // The tab at |model_index| has already been removed from the model, but is
-  // still in |tabs_view_model_|.  Index math with care!
-  const int model_count = GetTabCount() - 1;
-  const int tab_overlap = TabStyle::GetTabOverlap();
-  if (in_tab_close() && model_count > 0 && model_index != model_count) {
-    // The user closed a tab other than the last tab. Set
-    // override_available_width_for_tabs_ so that as the user closes tabs with
-    // the mouse a tab continues to fall under the mouse.
-    int next_active_index = controller_->GetActiveIndex();
-    DCHECK(IsValidModelIndex(next_active_index));
-    if (model_index <= next_active_index) {
-      // At this point, model's internal state has already been updated.
-      // |contents| has been detached from model and the active index has been
-      // updated. But the tab for |contents| isn't removed yet. Thus, we need to
-      // fix up next_active_index based on it.
-      next_active_index++;
-    }
-    Tab* next_active_tab = GetTabAtModelIndex(next_active_index);
-    Tab* tab_being_removed = GetTabAtModelIndex(model_index);
-
-    int size_delta = tab_being_removed->width();
-    if (!tab_being_removed->data().pinned && was_active &&
-        layout_helper_->active_tab_width() >
-            layout_helper_->inactive_tab_width()) {
-      // When removing an active, non-pinned tab, an inactive tab will be made
-      // active and thus given the active width. Thus the width being removed
-      // from the container is really the current width of whichever inactive
-      // tab will be made active.
-      size_delta = next_active_tab->width();
-    }
-
-    override_available_width_for_tabs_ =
-        tabs_view_model_.ideal_bounds(model_count).right() - size_delta +
-        tab_overlap;
+void TabContainer::Layout() {
+  if (base::FeatureList::IsEnabled(features::kScrollableTabStrip)) {
+    // With tab scrolling, the tab container is solely responsible for its own
+    // width.
+    // It should never be larger than its preferred width.
+    const int max_width = CalculatePreferredSize().width();
+    // It should never be smaller than its minimum width.
+    const int min_width = GetMinimumSize().width();
+    // If it can, it should fit within the tab strip region.
+    const int available_width = GetAvailableWidthForTabContainer();
+    // It should be as wide as possible subject to the above constraints.
+    const int width = std::min(max_width, std::max(min_width, available_width));
+    SetBounds(0, 0, width, GetLayoutConstant(TAB_HEIGHT));
+    SetTabSlotVisibility();
   }
+
+  if (bounds_animator_.IsAnimating()) {
+    // Hide tabs that have animated at least partially out of the clip region.
+    SetTabSlotVisibility();
+    return;
+  }
+
+  // Only do a layout if our size or the available width changed.
+  const int available_width = GetAvailableWidthForTabContainer();
+  if (last_layout_size_ == size() && last_available_width_ == available_width)
+    return;
+  if (drag_context_->IsDragSessionActive())
+    return;
+  CompleteAnimationAndLayout();
 }
 
 void TabContainer::PaintChildren(const views::PaintInfo& paint_info) {
@@ -778,6 +846,32 @@ gfx::Size TabContainer::GetMinimumSize() const {
   return gfx::Size(minimum_width, GetLayoutConstant(TAB_HEIGHT));
 }
 
+gfx::Size TabContainer::CalculatePreferredSize() const {
+  int preferred_width;
+  // The tab container needs to always exactly fit the bounds of the tabs so
+  // that NTB can be laid out just to the right of the rightmost tab. When the
+  // tabs aren't at their ideal bounds (i.e. during animation or a drag), we
+  // need to size ourselves to exactly fit wherever the tabs *currently* are.
+  if (bounds_animator_.IsAnimating() || drag_context_->IsDragSessionActive()) {
+    // The visual order of the tabs can be out of sync with the logical order,
+    // so we have to check all of them to find the visually trailing-most one.
+    int max_x = 0;
+    for (auto* child : children()) {
+      max_x = std::max(max_x, child->bounds().right());
+    }
+    // The tabs span from 0 to |max_x|, so |max_x| is the current width
+    // occupied by tabs. We report the current width as our preferred width so
+    // that the tab strip is sized to exactly fit the current position of the
+    // tabs.
+    preferred_width = max_x;
+  } else {
+    preferred_width = override_available_width_for_tabs_.value_or(
+        layout_helper_->CalculatePreferredWidth());
+  }
+
+  return gfx::Size(preferred_width, GetLayoutConstant(TAB_HEIGHT));
+}
+
 views::View* TabContainer::GetTooltipHandlerForPoint(const gfx::Point& point) {
   if (!HitTestPoint(point))
     return nullptr;
@@ -816,11 +910,95 @@ views::View* TabContainer::TargetForRect(views::View* root,
   return this;
 }
 
+void TabContainer::StartInsertTabAnimation(int model_index) {
+  PrepareForAnimation();
+
+  ExitTabClosingMode();
+
+  gfx::Rect bounds = GetTabAtModelIndex(model_index)->bounds();
+  bounds.set_height(GetLayoutConstant(TAB_HEIGHT));
+
+  // Adjust the starting bounds of the new tab.
+  const int tab_overlap = TabStyle::GetTabOverlap();
+  if (model_index > 0) {
+    // If we have a tab to our left, start at its right edge.
+    bounds.set_x(GetTabAtModelIndex(model_index - 1)->bounds().right() -
+                 tab_overlap);
+  } else if (model_index + 1 < GetTabCount()) {
+    // Otherwise, if we have a tab to our right, start at its left edge.
+    bounds.set_x(GetTabAtModelIndex(model_index + 1)->bounds().x());
+  } else {
+    NOTREACHED() << "First tab inserted into the tabstrip should not animate.";
+  }
+
+  // Start at the width of the overlap in order to animate at the same speed
+  // the surrounding tabs are moving, since at this width the subsequent tab
+  // is naturally positioned at the same X coordinate.
+  bounds.set_width(tab_overlap);
+  GetTabAtModelIndex(model_index)->SetBoundsRect(bounds);
+
+  // Animate in to the full width.
+  UpdateIdealBounds();
+  AnimateToIdealBounds();
+}
+
+void TabContainer::RemoveTabFromViewModel(int index) {
+  Tab* tab = GetTabAtModelIndex(index);
+  bool tab_was_active = tab->IsActive();
+
+  UpdateHoverCard(nullptr, TabController::HoverCardUpdateType::kTabRemoved);
+
+  tabs_view_model_.Remove(index);
+  layout_helper_->RemoveTabAt(index, tab);
+
+  if (tab_was_active)
+    tab->ActiveStateChanged();
+}
+
 void TabContainer::OnTabCloseAnimationCompleted(Tab* tab) {
   DCHECK(tab->closing());
 
   std::unique_ptr<Tab> deleter(tab);
   layout_helper_->OnTabDestroyed(tab);
+}
+
+void TabContainer::UpdateClosingModeOnRemovedTab(int model_index,
+                                                 bool was_active) {
+  // The tab at |model_index| has already been removed from the model, but is
+  // still in |tabs_view_model_|.  Index math with care!
+  const int model_count = GetTabCount() - 1;
+  const int tab_overlap = TabStyle::GetTabOverlap();
+  if (in_tab_close() && model_count > 0 && model_index != model_count) {
+    // The user closed a tab other than the last tab. Set
+    // override_available_width_for_tabs_ so that as the user closes tabs with
+    // the mouse a tab continues to fall under the mouse.
+    int next_active_index = controller_->GetActiveIndex();
+    DCHECK(IsValidModelIndex(next_active_index));
+    if (model_index <= next_active_index) {
+      // At this point, model's internal state has already been updated.
+      // |contents| has been detached from model and the active index has been
+      // updated. But the tab for |contents| isn't removed yet. Thus, we need to
+      // fix up next_active_index based on it.
+      next_active_index++;
+    }
+    Tab* next_active_tab = GetTabAtModelIndex(next_active_index);
+    Tab* tab_being_removed = GetTabAtModelIndex(model_index);
+
+    int size_delta = tab_being_removed->width();
+    if (!tab_being_removed->data().pinned && was_active &&
+        layout_helper_->active_tab_width() >
+            layout_helper_->inactive_tab_width()) {
+      // When removing an active, non-pinned tab, an inactive tab will be made
+      // active and thus given the active width. Thus the width being removed
+      // from the container is really the current width of whichever inactive
+      // tab will be made active.
+      size_delta = next_active_tab->width();
+    }
+
+    override_available_width_for_tabs_ =
+        tabs_view_model_.ideal_bounds(model_count).right() - size_delta +
+        tab_overlap;
+  }
 }
 
 int TabContainer::GetViewInsertionIndex(

@@ -12,18 +12,20 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/policy/core/device_attributes_fake.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-using testing::_;
 
 namespace arc {
 
@@ -31,8 +33,12 @@ namespace {
 
 typedef std::pair</*input=*/base::Value, /*expected_output=*/base::Value>
     Parameter;
-typedef Parameter ParameterGetter();
+typedef Parameter ParameterGetter(bool);
 
+constexpr const char kKey1[] = "key1";
+constexpr const char kKey2[] = "key2";
+
+constexpr char kTestGaiaId[] = "0123456789";
 constexpr char kTestEmail[] = "username@somedomain.com";
 constexpr char kTestEmailName[] = "username";
 constexpr char kTestEmailDomain[] = "somedomain.com";
@@ -40,12 +46,13 @@ constexpr char kTestDeviceSerialNumber[] = "CAFE1337";
 constexpr char kTestDeviceDirectoryId[] = "85729104-ef7a-5718d62e72ca";
 constexpr char kTestDeviceAssetId[] = "admin provided test asset ID";
 constexpr char kTestDeviceAnnotatedLocation[] = "admin provided test location";
+constexpr const char kVariablePattern[] = "${%s}";
 
-Parameter SampleWithoutVariables() {
+Parameter SampleWithoutVariables(bool is_affiliated) {
   // Set up an |input| Value without variables.
   base::Value input(base::Value::Type::DICTIONARY);
-  input.SetStringKey("key1", "value1");
-  input.SetStringKey("key2", "value2");
+  input.SetStringKey(kKey1, "value1");
+  input.SetStringKey(kKey2, "value2");
 
   // Expected |output| is the same as the input.
   base::Value output = input.Clone();
@@ -53,7 +60,7 @@ Parameter SampleWithoutVariables() {
   return std::make_pair(std::move(input), std::move(output));
 }
 
-Parameter SampleWithVariables() {
+Parameter SampleWithVariables(bool is_affiliated) {
   constexpr const char kUserEmailKey[] = "user_email";
   constexpr const char kUserNameKey[] = "user_name";
   constexpr const char kUserDomainKey[] = "user_domain";
@@ -92,15 +99,19 @@ Parameter SampleWithVariables() {
   output.SetStringKey(kUserEmailKey, kTestEmail);
   output.SetStringKey(kUserNameKey, kTestEmailName);
   output.SetStringKey(kUserDomainKey, kTestEmailDomain);
-  output.SetStringKey(kDeviceSerialNumberKey, kTestDeviceSerialNumber);
-  output.SetStringKey(kDeviceDirectoryIdKey, kTestDeviceDirectoryId);
-  output.SetStringKey(kDeviceAssetIdKey, kTestDeviceAssetId);
-  output.SetStringKey(kDeviceLocationKey, kTestDeviceAnnotatedLocation);
+  output.SetStringKey(kDeviceSerialNumberKey,
+                      is_affiliated ? kTestDeviceSerialNumber : "");
+  output.SetStringKey(kDeviceDirectoryIdKey,
+                      is_affiliated ? kTestDeviceDirectoryId : "");
+  output.SetStringKey(kDeviceAssetIdKey,
+                      is_affiliated ? kTestDeviceAssetId : "");
+  output.SetStringKey(kDeviceLocationKey,
+                      is_affiliated ? kTestDeviceAnnotatedLocation : "");
 
   return std::make_pair(std::move(input), std::move(output));
 }
 
-Parameter SampleWithNestedVariables() {
+Parameter SampleWithNestedVariables(bool is_affiliated) {
   constexpr const char kNameKey[] = "name";
   constexpr const char kEmailKey[] = "email";
   constexpr const char kSerialNumberKey[] = "serial_number";
@@ -109,12 +120,9 @@ Parameter SampleWithNestedVariables() {
   constexpr const char kNestedEmailKey[] = "sub.subsub.email";
   constexpr const char kNestedSerialNumberKey[] = "sub.subsub.serial_number";
   constexpr const char kKey0[] = "key0";
-  constexpr const char kKey1[] = "key1";
-  constexpr const char kKey2[] = "key2";
   constexpr const char kValue0[] = "value0";
   constexpr const char kValue1[] = "value1";
   constexpr const char kValue2[] = "value2";
-  constexpr const char kVariablePattern[] = "${%s}";
 
   const std::string kUserEmailVariable =
       base::StringPrintf(kVariablePattern, kUserEmail);
@@ -138,17 +146,19 @@ Parameter SampleWithNestedVariables() {
   base::Value output = input.Clone();
   output.SetStringKey(kNameKey, kTestEmailName);
   output.SetStringPath(kNestedEmailKey, kTestEmail);
-  output.SetStringPath(kNestedSerialNumberKey, kTestDeviceSerialNumber);
+  output.SetStringPath(kNestedSerialNumberKey,
+                       is_affiliated ? kTestDeviceSerialNumber : "");
 
   return std::make_pair(std::move(input), std::move(output));
 }
 
-Parameter SampleWithVariableChains() {
+Parameter SampleWithVariableChains(bool is_affiliated) {
   constexpr const char kChain1[] = "chain1";
   constexpr const char kChain2[] = "chain2";
   constexpr const char kChain3[] = "chain3";
-  constexpr const char kChain2Pattern[] = "${%s:%s}";
-  constexpr const char kChain3Pattern[] = "${%s:%s:%s}";
+  constexpr const char kChain2Pattern[] = "chain ${%s:%s} like so";
+  constexpr const char kChain3Pattern[] = "chain ${%s:%s:%s} like so";
+  constexpr const char kChainReplacedPattern[] = "chain %s like so";
 
   const std::string kChainVariable1 =
       base::StringPrintf(kChain2Pattern, kUserEmail, kUserEmailDomain);
@@ -158,6 +168,14 @@ Parameter SampleWithVariableChains() {
   const std::string kChainVariable3 = base::StringPrintf(
       kChain2Pattern, kDeviceAnnotatedLocation, kDeviceAssetId);
 
+  const std::string kReplacedChain1 =
+      base::StringPrintf(kChainReplacedPattern, kTestEmail);
+  const std::string kReplacedChain2 =
+      base::StringPrintf(kChainReplacedPattern,
+                         is_affiliated ? kTestDeviceAssetId : kTestEmailDomain);
+  const std::string kReplacedChain3 = base::StringPrintf(
+      kChainReplacedPattern, is_affiliated ? kTestDeviceAnnotatedLocation : "");
+
   // Set up an |input| Value with some variable chains.
   base::Value input(base::Value::Type::DICTIONARY);
   input.SetStringKey(kChain1, kChainVariable1);
@@ -166,19 +184,18 @@ Parameter SampleWithVariableChains() {
 
   // Set up an |output| Value where variables have been replaced.
   base::Value output(base::Value::Type::DICTIONARY);
-  output.SetStringKey(kChain1, kTestEmail);
-  output.SetStringKey(kChain2, kTestDeviceAssetId);
-  output.SetStringKey(kChain3, kTestDeviceAnnotatedLocation);
+  output.SetStringKey(kChain1, kReplacedChain1);
+  output.SetStringKey(kChain2, kReplacedChain2);
+  output.SetStringKey(kChain3, kReplacedChain3);
 
   return std::make_pair(std::move(input), std::move(output));
 }
 
 }  // namespace
 
-class ManagedConfigurationVariablesTest
-    : public testing::TestWithParam<ParameterGetter*> {
- protected:
-  void SetUp() override {
+class ManagedConfigurationVariablesBase {
+ public:
+  void DoSetUp(bool is_affiliated) {
     // Set up fake StatisticsProvider.
     statistics_provider_.SetMachineStatistic(
         chromeos::system::kSerialNumberKeyForTest, kTestDeviceSerialNumber);
@@ -186,12 +203,24 @@ class ManagedConfigurationVariablesTest
         &statistics_provider_);
 
     // Set up a fake user and capture its profile.
-    profile_.reset(IdentityTestEnvironmentProfileAdaptor::
-                       CreateProfileForIdentityTestEnvironment()
-                           .release());
-    IdentityTestEnvironmentProfileAdaptor adaptor(profile_.get());
-    adaptor.identity_test_env()->SetPrimaryAccount(kTestEmail,
-                                                   signin::ConsentLevel::kSync);
+    auto* const user_manager = new ash::FakeChromeUserManager();
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(user_manager));
+    const AccountId account_id(
+        AccountId::FromUserEmailGaiaId(kTestEmail, kTestGaiaId));
+    user_manager->AddUserWithAffiliation(account_id, is_affiliated);
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
+    ASSERT_TRUE(profile_manager_->SetUp());
+    profile_ = profile_manager_->CreateTestingProfile(
+        kTestEmail, IdentityTestEnvironmentProfileAdaptor::
+                        GetIdentityTestEnvironmentFactories());
+    ASSERT_TRUE(profile_);
+
+    const auto adaptor =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_);
+    adaptor->identity_test_env()->SetPrimaryAccount(
+        kTestEmail, signin::ConsentLevel::kSignin);
 
     // Set up fake device attributes.
     fake_device_attributes_ = std::make_unique<policy::FakeDeviceAttributes>();
@@ -201,35 +230,62 @@ class ManagedConfigurationVariablesTest
         kTestDeviceAnnotatedLocation);
   }
 
-  void TearDown() override { profile_.reset(); }
+  void DoTearDown() {
+    fake_device_attributes_.reset();
+    profile_manager_.reset();
+    scoped_user_manager_.reset();
+  }
 
-  const Profile* profile() { return profile_.get(); }
-
-  // Return the input parameter. Must be called from a parameterized test.
-  base::Value& mutable_input() { return parameter().first; }
-
-  // Return the expected output parameter. Must be called from a parameterized
-  // test.
-  const base::Value& expected_output() { return parameter().second; }
+  const Profile* profile() { return profile_; }
 
   policy::FakeDeviceAttributes* device_attributes() {
     return fake_device_attributes_.get();
   }
 
  private:
-  Parameter& parameter() {
-    if (!parameter_.has_value())
-      parameter_ = (*GetParam())();
-    return parameter_.value();
-  }
-
   content::BrowserTaskEnvironment task_environment_;
 
-  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
+
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+
+  TestingProfile* profile_;
 
   chromeos::system::FakeStatisticsProvider statistics_provider_;
 
   std::unique_ptr<policy::FakeDeviceAttributes> fake_device_attributes_;
+};
+
+class ManagedConfigurationVariablesTest
+    : public ManagedConfigurationVariablesBase,
+      public testing::Test {
+ protected:
+  void SetUp() override { DoSetUp(/*is_affiliated=*/true); }
+  void TearDown() override { DoTearDown(); }
+};
+
+class ManagedConfigurationVariablesAffiliatedTest
+    : public ManagedConfigurationVariablesBase,
+      public testing::TestWithParam<std::tuple<bool, ParameterGetter*>> {
+ protected:
+  void SetUp() override { DoSetUp(is_affiliated()); }
+
+  void TearDown() override { DoTearDown(); }
+
+  // Return the input parameter.
+  base::Value& mutable_input() { return parameter().first; }
+
+  // Return the expected output parameter.
+  const base::Value& expected_output() { return parameter().second; }
+
+ private:
+  bool is_affiliated() { return std::get<0>(GetParam()); }
+
+  Parameter& parameter() {
+    if (!parameter_.has_value())
+      parameter_ = (*std::get<1>(GetParam()))(is_affiliated());
+    return parameter_.value();
+  }
 
   absl::optional<Parameter> parameter_;
 };
@@ -307,17 +363,58 @@ TEST_F(ManagedConfigurationVariablesTest, IgnoresInvalidVariables) {
   EXPECT_EQ(*dict.FindStringKey(kInvalidKey3), kInvalidChain3);
 }
 
-TEST_P(ManagedConfigurationVariablesTest, ReplacesVariables) {
+TEST_F(ManagedConfigurationVariablesTest, RespectsSpecialCharacters) {
+  // Setup a |dict| with an asset ID variable.
+  const std::string kVariable =
+      base::StringPrintf(kVariablePattern, kDeviceAssetId);
+
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey(kKey1, kVariable);
+
+  // Setup a fake asset ID using special characters.
+  constexpr char kSpecialCharacters[] =
+      "`~!@#$%^&*(),_-+={[}}|\\\\:,;\"'<,>.?/{}\",";
+  device_attributes()->SetFakeDeviceAssetId(kSpecialCharacters);
+  RecursivelyReplaceManagedConfigurationVariables(profile(),
+                                                  device_attributes(), &dict);
+  // Expect special characters were replaced correctly.
+  EXPECT_EQ(*dict.FindStringKey(kKey1), kSpecialCharacters);
+}
+
+TEST_F(ManagedConfigurationVariablesTest, RecursiveValuesAreReplacedCorrectly) {
+  // Setup a |dict| with asset ID and location variables.
+  const std::string kVariable1 =
+      base::StringPrintf(kVariablePattern, kDeviceAssetId);
+  const std::string kVariable2 =
+      base::StringPrintf(kVariablePattern, kDeviceAnnotatedLocation);
+
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey(kKey1, kVariable1);
+  dict.SetStringKey(kKey2, kVariable2);
+
+  // Setup fake asset ID and location that are also valid variables.
+  device_attributes()->SetFakeDeviceAssetId(kVariable2);
+  device_attributes()->SetFakeDeviceAnotatedLocation(kVariable1);
+  RecursivelyReplaceManagedConfigurationVariables(profile(),
+                                                  device_attributes(), &dict);
+  // Expect variables are replaced only once without an infinite loop.
+  EXPECT_EQ(*dict.FindStringKey(kKey1), kVariable2);
+  EXPECT_EQ(*dict.FindStringKey(kKey2), kVariable1);
+}
+
+TEST_P(ManagedConfigurationVariablesAffiliatedTest, ReplacesVariables) {
   RecursivelyReplaceManagedConfigurationVariables(
       profile(), device_attributes(), &mutable_input());
   EXPECT_EQ(mutable_input(), expected_output());
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         ManagedConfigurationVariablesTest,
-                         testing::Values(&SampleWithoutVariables,
-                                         &SampleWithVariables,
-                                         &SampleWithNestedVariables,
-                                         &SampleWithVariableChains));
+INSTANTIATE_TEST_SUITE_P(
+    WIP,
+    ManagedConfigurationVariablesAffiliatedTest,
+    testing::Combine(testing::Bool(),
+                     testing::Values(&SampleWithoutVariables,
+                                     &SampleWithVariables,
+                                     &SampleWithNestedVariables,
+                                     &SampleWithVariableChains)));
 
 }  // namespace arc

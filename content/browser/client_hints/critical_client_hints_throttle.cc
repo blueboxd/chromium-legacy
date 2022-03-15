@@ -46,6 +46,8 @@ CriticalClientHintsThrottle::CriticalClientHintsThrottle(
   LogCriticalCHStatus(CriticalCHRestart::kNavigationStarted);
 }
 
+CriticalClientHintsThrottle::~CriticalClientHintsThrottle() = default;
+
 void CriticalClientHintsThrottle::BeforeWillProcessResponse(
     const GURL& response_url,
     const network::mojom::URLResponseHead& response_head,
@@ -57,6 +59,18 @@ void CriticalClientHintsThrottle::BeforeWillProcessResponse(
       !response_head.parsed_headers->accept_ch ||
       !response_head.parsed_headers->critical_ch)
     return;
+
+  url::Origin response_origin = url::Origin::Create(response_url);
+
+  // Only restart once per-Origin (per navigation)
+  if (restarted_origins_.contains(response_origin))
+    return;
+
+  if (!ShouldAddClientHints(
+          response_origin, FrameTreeNode::GloballyFindByID(frame_tree_node_id_),
+          client_hint_delegate_)) {
+    return;
+  }
 
   // Ensure that only hints in the accept-ch header are examined
   blink::EnabledClientHints hints;
@@ -76,9 +90,6 @@ void CriticalClientHintsThrottle::BeforeWillProcessResponse(
 
   LogCriticalCHStatus(CriticalCHRestart::kHeaderPresent);
 
-  url::Origin response_origin = url::Origin::Create(response_url);
-  // TODO(crbug.com/1228536): This isn't really used, just in the other call to
-  // the same function. A refactor is probably in order.
   net::HttpRequestHeaders modified_headers;
   if (ShouldRestartWithHints(response_origin, critical_hints,
                              modified_headers)) {
@@ -87,6 +98,7 @@ void CriticalClientHintsThrottle::BeforeWillProcessResponse(
         response_origin, response_head.parsed_headers,
         response_head.headers.get(), context_, client_hint_delegate_,
         FrameTreeNode::GloballyFindByID(frame_tree_node_id_));
+    restarted_origins_.insert(response_origin);
     delegate_->RestartWithURLResetAndFlags(/*additional_load_flags=*/0);
   }
 }

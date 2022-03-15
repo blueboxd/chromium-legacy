@@ -232,12 +232,6 @@ extern const char kAutofillHighlightOnlyChangedValuesInPreviewModeDescription[];
 extern const char kAutofillParseMerchantPromoCodeFieldsName[];
 extern const char kAutofillParseMerchantPromoCodeFieldsDescription[];
 
-extern const char kAutofillProfileClientValidationName[];
-extern const char kAutofillProfileClientValidationDescription[];
-
-extern const char kAutofillProfileServerValidationName[];
-extern const char kAutofillProfileServerValidationDescription[];
-
 extern const char kAutofillSaveAndFillVPAName[];
 extern const char kAutofillSaveAndFillVPADescription[];
 
@@ -985,6 +979,9 @@ extern const char kNotificationsSystemFlagDescription[];
 
 extern const char kOriginAgentClusterDefaultName[];
 extern const char kOriginAgentClusterDefaultDescription[];
+
+extern const char kOmitCorsClientCertName[];
+extern const char kOmitCorsClientCertDescription[];
 
 extern const char kOmniboxActiveSearchEnginesName[];
 extern const char kOmniboxActiveSearchEnginesDescription[];
@@ -2036,6 +2033,9 @@ extern const char kRequestDesktopSiteForTabletsDescription[];
 extern const char kSecurePaymentConfirmationAndroidName[];
 extern const char kSecurePaymentConfirmationAndroidDescription[];
 
+extern const char kShowScrollableMVTOnNTPAndroidName[];
+extern const char kShowScrollableMVTOnNTPAndroidDescription[];
+
 extern const char kSendTabToSelfV2Name[];
 extern const char kSendTabToSelfV2Description[];
 
@@ -2296,6 +2296,9 @@ extern const char kPrintWithPostScriptType42FontsDescription[];
 
 extern const char kPrintWithReducedRasterizationName[];
 extern const char kPrintWithReducedRasterizationDescription[];
+
+extern const char kReadPrinterCapabilitiesWithXpsName[];
+extern const char kReadPrinterCapabilitiesWithXpsDescription[];
 
 extern const char kUseXpsForPrintingName[];
 extern const char kUseXpsForPrintingDescription[];

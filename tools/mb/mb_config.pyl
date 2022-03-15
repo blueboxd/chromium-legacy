@@ -55,8 +55,8 @@
       'fuchsia-official': 'fuchsia_official_optimize_goma',
       'linux-archive-rel': 'release_bot_reclient',
       'linux-archive-dbg': 'debug_bot_reclient',
-      'linux-archive-tagged': 'official_optimize_goma',
-      'linux-official': 'official_optimize_goma',
+      'linux-archive-tagged': 'official_optimize_reclient',
+      'linux-official': 'official_optimize_reclient',
       'mac-archive-rel': 'release_bot_mac_strip_minimal_symbols',
       'mac-archive-dbg': 'debug_bot',
       'mac-archive-tagged': 'official_optimize_goma',
@@ -285,6 +285,10 @@
         'goma': 'gpu_tests_release_bot',
         'reclient': 'gpu_tests_release_bot_reclient',
       },
+      'Comparison Windows (8 cores) (reclient)': {
+        'goma': 'gpu_tests_release_bot_minimal_symbols',
+        'reclient': 'gpu_tests_release_bot_minimal_symbols_reclient',
+      },
       'Comparison Windows (reclient)': {
         'goma': 'gpu_tests_release_bot_minimal_symbols',
         'reclient': 'gpu_tests_release_bot_minimal_symbols_reclient',
@@ -339,6 +343,7 @@
       'fuchsia-fyi-x64-asan': 'asan_lsan_bot_fuchsia',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
+      'fuchsia-fyi-x64-reviver': 'release_bot_fuchsia',
       'fuchsia-fyi-x64-wst': 'fuchsia_workstation_bot',
       'ios14-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
       'ios14-sdk-simulator': 'ios_simulator_debug_static_bot_xctest_arm64',
@@ -537,12 +542,12 @@
       'fuchsia-arm64-cast': 'release_bot_fuchsia_arm64_cast',
       'fuchsia-x64-cast': 'release_bot_fuchsia_cast',
       'fuchsia-x64-dbg': 'debug_bot_fuchsia_compile_only_reclient',
-      'linux-bfcache-rel': 'release_bot_blink',
-      'linux-bionic-rel': 'gpu_tests_release_bot',
-      'linux-extended-tracing-rel': 'release_bot_extended_tracing',
+      'linux-bfcache-rel': 'release_bot_blink_reclient',
+      'linux-bionic-rel': 'gpu_tests_release_bot_reclient',
+      'linux-extended-tracing-rel': 'release_bot_extended_tracing_reclient',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
-      'linux-trusty-rel': 'gpu_tests_release_bot',
-      'linux-xenial-rel': 'gpu_tests_release_bot',
+      'linux-trusty-rel': 'gpu_tests_release_bot_reclient',
+      'linux-xenial-rel': 'gpu_tests_release_bot_reclient',
     },
 
     'chromium.mac': {
@@ -2982,6 +2987,10 @@
       'official_optimize_goma',
     ],
 
+    'official_optimize_reclient': [
+      'official_optimize_reclient',
+    ],
+
     'official_optimize_goma_trybot': [
       'official_optimize_goma_trybot',
     ],
@@ -3065,8 +3074,8 @@
       'release_bot_blink_reclient', 'enable_blink_heap_verification', 'dcheck_always_on',
     ],
 
-    'release_bot_extended_tracing': [
-      'release_bot', 'extended_tracing',
+    'release_bot_extended_tracing_reclient': [
+      'release_bot_reclient', 'extended_tracing',
     ],
 
     'release_bot_fuchsia': [

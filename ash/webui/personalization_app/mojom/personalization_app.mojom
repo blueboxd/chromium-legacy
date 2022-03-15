@@ -231,7 +231,8 @@ interface WallpaperProvider {
         bool preview_mode) => (bool success);
 
     // Sets the Google Photos photo with the given id as the wallpaper.
-    SelectGooglePhotosPhoto(string id) => (bool success);
+    SelectGooglePhotosPhoto(string id, WallpaperLayout layout) =>
+        (bool success);
 
     // Sets the custom layout for current wallpaper
     SetCustomWallpaperLayout(WallpaperLayout layout);
@@ -367,6 +368,14 @@ interface UserProvider {
   SelectLastExternalUserImage();
 };
 
+// The animation theme for screen saver. Should be kept in sync with
+// |ash::AmbientAnimationTheme|.
+enum AnimationTheme {
+  kSlideshow = 0,
+  kFeelTheBreeze = 1,
+  kFloatOnBy = 2,
+};
+
 // The source of the screensaver images come from.
 enum TopicSource {
   // Google Photos.
@@ -410,6 +419,9 @@ interface AmbientObserver {
   // Retrieves information whether ambient mode is enabled.
   OnAmbientModeEnabledChanged(bool ambient_mode_enabled);
 
+  // Notifies the JS side the current state of AnimationTheme.
+  OnAnimationThemeChanged(AnimationTheme animation_theme);
+
   // Notifies the JS side about the current state of TopicSource.
   OnTopicSourceChanged(TopicSource topic_source);
 
@@ -431,6 +443,9 @@ interface AmbientProvider {
 
   // Binds a listener to start receiving updates on ambient mode pref changes.
   SetAmbientObserver(pending_remote<AmbientObserver> observer);
+
+  // Sets the ambient animation theme.
+  SetAnimationTheme(AnimationTheme animation_theme);
 
   // Sets the ambient mode topic source.
   SetTopicSource(TopicSource topic_source);

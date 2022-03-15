@@ -77,7 +77,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.CanonicalURLResult" enum="CanonicalURLResult"
-    expires_after="2022-07-11">
+    expires_after="2022-09-11">
   <owner>pkl@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
@@ -339,12 +339,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.RecentTabsManager.TotalTabsFromOtherDevicesOpenAll"
-    units="count" expires_after="2022-04-19">
+    units="count" expires_after="2023-04-19">
   <owner>sczs@chromium.org</owner>
   <owner>edchin@chromium.org</owner>
   <summary>
     Records the total number of tabs opened when Open all was selected from
-    other devices in Recent Tabs.
+    other devices in Recent Tabs, iOS only.
   </summary>
 </histogram>
 
@@ -855,7 +855,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileFre.Progress" enum="MobileFreProgress"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
@@ -1135,7 +1135,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.IntentToCreationTime" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>

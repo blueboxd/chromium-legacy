@@ -6293,6 +6293,12 @@ void RenderFrameHostImpl::SuddenTerminationDisablerChanged(
   switch (disabler_type) {
     case blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler:
       DCHECK_NE(has_before_unload_handler_, present);
+      if (IsNestedWithinFencedFrame()) {
+        bad_message::ReceivedBadMessage(
+            GetProcess(),
+            bad_message::RFH_BEFOREUNLOAD_HANDLER_NOT_ALLOWED_IN_FENCED_FRAME);
+        return;
+      }
       has_before_unload_handler_ = present;
       break;
     case blink::mojom::SuddenTerminationDisablerType::kPageHideHandler:
@@ -6301,6 +6307,12 @@ void RenderFrameHostImpl::SuddenTerminationDisablerChanged(
       break;
     case blink::mojom::SuddenTerminationDisablerType::kUnloadHandler:
       DCHECK_NE(has_unload_handler_, present);
+      if (IsNestedWithinFencedFrame()) {
+        bad_message::ReceivedBadMessage(
+            GetProcess(),
+            bad_message::RFH_UNLOAD_HANDLER_NOT_ALLOWED_IN_FENCED_FRAME);
+        return;
+      }
       has_unload_handler_ = present;
       break;
     case blink::mojom::SuddenTerminationDisablerType::kVisibilityChangeHandler:
@@ -9362,12 +9374,14 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
 bool RenderFrameHostImpl::WindowPlacementAllowsFullscreen() {
   if (!delegate_->IsTransientAllowFullscreenActive())
     return false;
-  auto* controller =
-      PermissionControllerImpl::FromBrowserContext(GetBrowserContext());
-  return controller &&
-         controller->GetPermissionStatusForFrame(
-             PermissionType::WINDOW_PLACEMENT, this, GetLastCommittedURL()) ==
-             blink::mojom::PermissionStatus::GRANTED;
+
+  content::PermissionController* permission_controller =
+      GetBrowserContext()->GetPermissionController();
+  DCHECK(permission_controller);
+
+  return permission_controller->GetPermissionStatusForCurrentDocument(
+             PermissionType::WINDOW_PLACEMENT, this) ==
+         blink::mojom::PermissionStatus::GRANTED;
 }
 
 mojo::AssociatedRemote<mojom::NavigationClient>
@@ -10040,10 +10054,7 @@ void RenderFrameHostImpl::GetSpeechSynthesis(
 void RenderFrameHostImpl::GetSensorProvider(
     mojo::PendingReceiver<device::mojom::SensorProvider> receiver) {
   if (!sensor_provider_proxy_) {
-    sensor_provider_proxy_ = std::make_unique<SensorProviderProxyImpl>(
-        PermissionControllerImpl::FromBrowserContext(
-            GetProcess()->GetBrowserContext()),
-        this);
+    sensor_provider_proxy_ = std::make_unique<SensorProviderProxyImpl>(this);
   }
   sensor_provider_proxy_->Bind(std::move(receiver));
 }
@@ -10174,7 +10185,7 @@ void RenderFrameHostImpl::GetManagedConfigurationService(
 void RenderFrameHostImpl::GetFontAccessManager(
     mojo::PendingReceiver<blink::mojom::FontAccessManager> receiver) {
   GetStoragePartition()->GetFontAccessManager()->BindReceiver(
-      GetLastCommittedOrigin(), GetGlobalId(), std::move(receiver));
+      GetGlobalId(), std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindComputePressureHost(

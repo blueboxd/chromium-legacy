@@ -574,8 +574,7 @@ const base::Feature kEolWarningNotifications{"EolWarningNotifications",
 
 // Enables or disables enterprise policy control for eSIM cellular networks.
 // See https://crbug.com/1231305.
-const base::Feature kESimPolicy{"ESimPolicy",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kESimPolicy{"ESimPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable support for touchpad with haptic feedback.
 const base::Feature kExoHapticFeedbackSupport("ExoHapticFeedbackSupport",
@@ -622,7 +621,7 @@ const base::Feature kFastPairSoftwareScanning{
 // flag controls the first tier, whose support is very good.
 // https://crbug.com/1216245
 const base::Feature kFilesArchivemount{"FilesArchivemount",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables mounting various archive formats (in two tiers) in Files App. This
 // flag controls the second tier, whose support is more experimental.
@@ -1429,6 +1428,11 @@ const base::Feature kDeviceActiveClientDailyCheckMembership{
     "DeviceActiveClientDailyCheckMembership",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables PSM CheckIn for the monthly device active pings
+// on Chrome OS.
+const base::Feature kDeviceActiveClientMonthlyCheckIn{
+    "DeviceActiveClientMonthlyCheckIn", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables PSM CheckMembership for monthly device active pings
 // on Chrome OS.
 const base::Feature kDeviceActiveClientMonthlyCheckMembership{
@@ -1473,6 +1477,10 @@ bool IsAdjustSplitViewForVKEnabled() {
 
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
+}
+
+bool IsAmbientModeAnimationEnabled() {
+  return base::FeatureList::IsEnabled(kAmbientModeAnimationFeature);
 }
 
 bool IsAmbientModeDevUseProdEnabled() {

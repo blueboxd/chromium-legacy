@@ -163,6 +163,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDeviceActiveClient;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDeviceActiveClientDailyCheckMembership;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kDeviceActiveClientMonthlyCheckIn;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDeviceActiveClientMonthlyCheckMembership;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDeviceForceScheduledReboot;
@@ -563,6 +565,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool AreImprovedScreenCaptureSettingsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool DoWindowsFollowCursor();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAdjustSplitViewForVKEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAllowAmbientEQEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeAnimationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeDevUseProdEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModePhotoPreviewEnabled();

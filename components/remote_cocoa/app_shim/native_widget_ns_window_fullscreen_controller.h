@@ -7,8 +7,11 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/display/types/display_constants.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace remote_cocoa {
 
@@ -16,8 +19,46 @@ class NativeWidgetNSWindowBridge;
 
 class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowFullscreenController {
  public:
-  explicit NativeWidgetNSWindowFullscreenController(
-      NativeWidgetNSWindowBridge* bridge);
+  class Client {
+   public:
+    // Called when a transition between fullscreen and windowed (or vice-versa).
+    // If `is_target_fullscreen` is true, then the target of the transition is
+    // fullscreen.
+    virtual void FullscreenControllerTransitionStart(
+        bool is_target_fullscreen) = 0;
+
+    // Called when a transition between fullscreen and windowed is complete.
+    // If `is_fullscreen` is true, then the window is now fullscreen.
+    virtual void FullscreenControllerTransitionComplete(bool is_fullscreen) = 0;
+
+    // Set the window's frame to the specified rectangle. Populate
+    // `transition_time` with the time that it will take for this transition
+    // to complete.
+    virtual void FullscreenControllerSetFrame(
+        const gfx::Rect& frame,
+        base::TimeDelta& transition_time) = 0;
+
+    // Call -[NSWindow toggleFullscreen:].
+    virtual void FullscreenControllerToggleFullscreen() = 0;
+
+    // Call -[NSWindow close]. Note that this call may result in the caller
+    // being destroyed.
+    virtual void FullscreenControllerCloseWindow() = 0;
+
+    // Return the display id for the display that the window is currently on.
+    virtual int64_t FullscreenControllerGetDisplayId() const = 0;
+
+    // Return the frame that should be set prior to transitioning to fullscreen
+    // on the display specified by `display_id`. If `display_id` is invalid,
+    // then return an empty rectangle.
+    virtual gfx::Rect FullscreenControllerGetFrameForDisplay(
+        int64_t display_id) const = 0;
+
+    // Get the window's current frame.
+    virtual gfx::Rect FullscreenControllerGetFrame() const = 0;
+  };
+
+  explicit NativeWidgetNSWindowFullscreenController(Client* client);
   NativeWidgetNSWindowFullscreenController(
       const NativeWidgetNSWindowFullscreenController&) = delete;
   NativeWidgetNSWindowFullscreenController& operator=(
@@ -25,7 +66,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowFullscreenController {
   ~NativeWidgetNSWindowFullscreenController();
 
   // Called by NativeWidget::SetFullscreen.
-  void EnterFullscreen();
+  void EnterFullscreen(int64_t target_display_id);
   void ExitFullscreen();
 
   // Called from NativeWidgetNSWindowBridge:CloseWindow, indicating that the
@@ -61,6 +102,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowFullscreenController {
   enum class State {
     // In windowed mode.
     kWindowed,
+    // Moving the window to the target display on which it will go fullscreen.
+    kWindowedMovingToFullscreenTarget,
     // In transition to enter fullscreen mode. This encompases the following
     // states:
     // - From the kWindowed state, a task for ToggleFullscreen has been
@@ -81,12 +124,24 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowFullscreenController {
     //   OnWindowDidExitFullscreen nor OnWindowDidEnterFullscreen have been
     //   called yet.
     kExitFullscreenTransition,
+    // Moving the window back to its original position from before it entered
+    // fullscreen.
+    kWindowedRestoringOriginalFrame,
     // The window has been closed.
     kClosed,
   };
   struct PendingState {
     bool is_fullscreen = false;
+    int64_t display_id = display::kInvalidDisplayId;
   };
+
+  // Move the window to `target_display_id`, and then post a task to go
+  // fullscreen.
+  void MoveToTargetDisplayThenToggleFullscreen(int64_t target_display_id);
+
+  // Set the window's frame back to `windowed_frame_`, and then return to
+  // the kWindowed state.
+  void RestoreWindowedFrame();
 
   // Helper function wrapping -[NSWindow toggleFullscreen:].
   void ToggleFullscreen();
@@ -110,6 +165,13 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowFullscreenController {
   // transition, then that final requested state is stored in `pending_state_`.
   absl::optional<PendingState> pending_state_;
 
+  // If we call setFrame while in fullscreen transitions, then we will need to
+  // restore the original window frame when we return to windowed mode. We save
+  // that original frame in `windowed_frame_`, and set set
+  // `restore_windowed_frame_` to true if we call setFrame.
+  bool restore_windowed_frame_ = false;
+  absl::optional<gfx::Rect> windowed_frame_;
+
   // Trying to close an NSWindow during a fullscreen transition will cause the
   // window to lock up. Use this to track if CloseWindow was called during a
   // fullscreen transition, to defer the -[NSWindow close] call until the
@@ -118,7 +180,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowFullscreenController {
   bool has_deferred_window_close_ = false;
 
   // Weak, owns `this`.
-  const raw_ptr<NativeWidgetNSWindowBridge> window_bridge_;
+  const raw_ptr<Client> client_;
   base::WeakPtrFactory<NativeWidgetNSWindowFullscreenController> weak_factory_{
       this};
 };

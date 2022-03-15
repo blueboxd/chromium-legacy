@@ -188,6 +188,7 @@ ci.builder(
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
+    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.builder(
@@ -399,6 +400,9 @@ ci.builder(
         category = "bfcache",
         short_name = "bfc",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -407,6 +411,9 @@ ci.builder(
         category = "release",
         short_name = "trc",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -426,6 +433,10 @@ ci.builder(
     ),
     os = os.LINUX_BIONIC,
     tree_closing = False,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
+    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.builder(
@@ -435,6 +446,9 @@ ci.builder(
         short_name = "tru",
     ),
     os = os.LINUX_TRUSTY,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -444,4 +458,7 @@ ci.builder(
         short_name = "xen",
     ),
     os = os.LINUX_XENIAL,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )

@@ -67,6 +67,7 @@
 #include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -230,6 +231,52 @@ struct OriginTrialTestOptions {
   bool valid_ot_token = true;
   bool has_accept_ch_header = true;
   bool has_critical_ch_header = false;
+};
+
+class AlternatingCriticalCHRequestHandler {
+ public:
+  AlternatingCriticalCHRequestHandler() = default;
+  net::test_server::EmbeddedTestServer::HandleRequestCallback
+  GetRequestHandler() {
+    return base::BindRepeating(
+        &AlternatingCriticalCHRequestHandler::DifferentCriticalCH,
+        base::Unretained(this));
+  }
+
+  int request_count() { return request_count_; }
+
+  static constexpr char kCriticaCH[] = "/critical-ch";
+
+ private:
+  // A response that flips between two critical-ch headers
+  std::unique_ptr<net::test_server::HttpResponse> DifferentCriticalCH(
+      const net::test_server::HttpRequest& request) {
+    if (request.relative_url != kCriticaCH) {
+      return nullptr;
+    }
+
+    request_count_++;
+
+    std::unique_ptr<net::test_server::BasicHttpResponse> response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+
+    // Always send client hints different from what were received.
+    if (request.headers.find(GetCHToken()) != request.headers.end())
+      critical_ch_state_ = !critical_ch_state_;
+
+    response->AddCustomHeader("Accept-CH", GetCHToken());
+    response->AddCustomHeader("Critical-CH", GetCHToken());
+
+    return std::move(response);
+  }
+
+  std::string GetCHToken() {
+    return critical_ch_state_ ? "sec-ch-ua-arch" : "sec-ch-ua-bitness";
+  }
+
+  bool critical_ch_state_ = true;
+  int request_count_ = 0;
+  absl::optional<GURL> redirect_location_;
 };
 
 }  // namespace
@@ -3069,6 +3116,69 @@ IN_PROC_BROWSER_TEST_F(
   // The request should not have been resent, so ch-ua-full-version should also
   // not be present.
   EXPECT_EQ(observed_ch_ua_full_version(), absl::nullopt);
+}
+
+// TODO(crbug.com/1305212): Test multiple origins in a redirect chain
+IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest, OneRestartSingleOrigin) {
+  AlternatingCriticalCHRequestHandler handler;
+  net::test_server::EmbeddedTestServer https_server =
+      net::test_server::EmbeddedTestServer(
+          net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+
+  https_server.RegisterRequestHandler(handler.GetRequestHandler());
+
+  ASSERT_TRUE(https_server.Start());
+
+  base::HistogramTester histogram;
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      https_server.GetURL(AlternatingCriticalCHRequestHandler::kCriticaCH)));
+  histogram.ExpectBucketCount("ClientHints.CriticalCHRestart",
+                              2 /*=kNavigationRestarted*/, 1);
+  EXPECT_EQ(2, handler.request_count());
+}
+
+IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest,
+                       OneRestartPerNavigation) {
+  AlternatingCriticalCHRequestHandler handler;
+  net::test_server::EmbeddedTestServer https_server =
+      net::test_server::EmbeddedTestServer(
+          net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+
+  https_server.RegisterRequestHandler(handler.GetRequestHandler());
+
+  ASSERT_TRUE(https_server.Start());
+
+  // Two navigations, two separate restarts
+  base::HistogramTester histogram;
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      https_server.GetURL(AlternatingCriticalCHRequestHandler::kCriticaCH)));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      https_server.GetURL(AlternatingCriticalCHRequestHandler::kCriticaCH)));
+  histogram.ExpectBucketCount("ClientHints.CriticalCHRestart",
+                              2 /*=kNavigationRestarted*/, 2);
+  EXPECT_EQ(4, handler.request_count());
+}
+
+IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest,
+                       CriticalClientHintInsecureRedirect) {
+  net::test_server::EmbeddedTestServer http_server;
+  http_server.AddDefaultHandlers();
+  ASSERT_TRUE(http_server.Start());
+
+  // After the redirect, the second response will have the Critical-CH and will
+  // restart. The final request wil contain the correct headers.
+  GURL url = http_server.GetURL("/server-redirect?" +
+                                critical_ch_ua_full_version_list_url().spec());
+
+  blink::UserAgentMetadata ua = embedder_support::GetUserAgentMetadata();
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  const std::string expected_ch_ua_full_version_list =
+      ua.SerializeBrandFullVersionList();
+  EXPECT_THAT(observed_ch_ua_full_version_list(),
+              Optional(Eq(expected_ch_ua_full_version_list)));
 }
 
 class ClientHintsBrowserTestWithEmulatedMedia

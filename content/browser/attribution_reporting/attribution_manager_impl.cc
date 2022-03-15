@@ -58,7 +58,18 @@ enum class ConversionReportSendOutcome {
   kSent = 0,
   kFailed = 1,
   kDropped = 2,
-  kMaxValue = kDropped
+  kFailedToAssemble = 3,
+  kMaxValue = kFailedToAssemble,
+};
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class AssembleAggregatableReportStatus {
+  kSuccess = 0,
+  kAggregationServiceUnavailable = 1,
+  kCreateRequestFailed = 2,
+  kAssembleReportFailed = 3,
+  kMaxValue = kAssembleReportFailed,
 };
 
 // The shared-task runner for all attribution storage operations. Note that
@@ -102,45 +113,65 @@ ConversionReportSendOutcome ConvertToConversionReportSendOutcome(
       return ConversionReportSendOutcome::kFailed;
     case SendResult::Status::kDropped:
       return ConversionReportSendOutcome::kDropped;
+    case SendResult::Status::kFailedToAssemble:
+      return ConversionReportSendOutcome::kFailedToAssemble;
   }
 }
 
-// Called when |report| is to be sent over network, for logging metrics.
+void RecordAssembleAggregatableReportStatus(
+    AssembleAggregatableReportStatus status) {
+  base::UmaHistogramEnumeration(
+      "Conversions.AggregatableReport.AssembleReportStatus", status);
+}
+
+// Called when |report| is to be sent over network for event-level reports or
+// to be assembled for aggregatable reports, for logging metrics.
 void LogMetricsOnReportSend(const AttributionReport& report, base::Time now) {
-  // TODO(crbug.com/1285319): Log metrics for aggregatable reports.
-  if (!absl::holds_alternative<AttributionReport::EventLevelData>(
+  if (absl::holds_alternative<AttributionReport::EventLevelData>(
           report.data())) {
-    return;
+    // Use a large time range to capture users that might not open the browser
+    // for a long time while a conversion report is pending. Revisit this
+    // range if it is non-ideal for real world data.
+    const AttributionInfo& attribution_info = report.attribution_info();
+    base::Time original_report_time = ComputeReportTime(
+        attribution_info.source.common_info(), attribution_info.time);
+    base::TimeDelta time_since_original_report_time =
+        now - original_report_time;
+    base::UmaHistogramCustomTimes(
+        "Conversions.ExtraReportDelay2", time_since_original_report_time,
+        base::Seconds(1), base::Days(24), /*buckets=*/100);
+
+    base::TimeDelta time_from_conversion_to_report_send =
+        report.report_time() - attribution_info.time;
+    UMA_HISTOGRAM_COUNTS_1000("Conversions.TimeFromConversionToReportSend",
+                              time_from_conversion_to_report_send.InHours());
+  } else {
+    DCHECK(
+        absl::holds_alternative<AttributionReport::AggregatableAttributionData>(
+            report.data()));
+    base::TimeDelta time_from_conversion_to_report_assembly =
+        report.report_time() - report.attribution_info().time;
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly",
+        time_from_conversion_to_report_assembly.InMinutes());
   }
-
-  // Use a large time range to capture users that might not open the browser for
-  // a long time while a conversion report is pending. Revisit this range if it
-  // is non-ideal for real world data.
-  const AttributionInfo& attribution_info = report.attribution_info();
-  base::Time original_report_time = ComputeReportTime(
-      attribution_info.source.common_info(), attribution_info.time);
-  base::TimeDelta time_since_original_report_time = now - original_report_time;
-  base::UmaHistogramCustomTimes(
-      "Conversions.ExtraReportDelay2", time_since_original_report_time,
-      base::Seconds(1), base::Days(24), /*buckets=*/100);
-
-  base::TimeDelta time_from_conversion_to_report_send =
-      report.report_time() - attribution_info.time;
-  UMA_HISTOGRAM_COUNTS_1000("Conversions.TimeFromConversionToReportSend",
-                            time_from_conversion_to_report_send.InHours());
 }
 
 // Called when |report| is sent, failed or dropped, for logging metrics.
 void LogMetricsOnReportCompleted(const AttributionReport& report,
                                  SendResult::Status status) {
-  // TODO(crbug.com/1285319): Log metrics for aggregatable reports.
-  if (!absl::holds_alternative<AttributionReport::EventLevelData>(
+  if (absl::holds_alternative<AttributionReport::EventLevelData>(
           report.data())) {
-    return;
+    base::UmaHistogramEnumeration("Conversions.ReportSendOutcome2",
+                                  ConvertToConversionReportSendOutcome(status));
+  } else {
+    DCHECK(
+        absl::holds_alternative<AttributionReport::AggregatableAttributionData>(
+            report.data()));
+    base::UmaHistogramEnumeration(
+        "Conversions.AggregatableReport.ReportSendOutcome",
+        ConvertToConversionReportSendOutcome(status));
   }
-
-  base::UmaHistogramEnumeration("Conversions.ReportSendOutcome",
-                                ConvertToConversionReportSendOutcome(status));
 }
 
 std::unique_ptr<AttributionStorageDelegate> MakeStorageDelegate() {
@@ -176,30 +207,19 @@ void AttributionManagerImpl::RunInMemoryForTesting() {
   AttributionStorageSql::RunInMemoryForTesting();
 }
 
-// static
-AttributionManagerImpl::IsReportAllowedCallback
-AttributionManagerImpl::DefaultIsReportAllowedCallback(
-    BrowserContext* browser_context) {
-  return base::BindRepeating(
-      [](BrowserContext* browser_context, const AttributionReport& report) {
-        const CommonSourceInfo& common_info =
-            report.attribution_info().source.common_info();
-        return GetContentClient()
-            ->browser()
-            ->IsConversionMeasurementOperationAllowed(
-                browser_context,
-                ContentBrowserClient::ConversionMeasurementOperation::kReport,
-                &common_info.impression_origin(),
-                &common_info.conversion_origin(),
-                &common_info.reporting_origin());
-      },
-      browser_context);
+bool AttributionManagerImpl::IsReportAllowed(const AttributionReport& report) {
+  const CommonSourceInfo& common_info =
+      report.attribution_info().source.common_info();
+  return GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
+      storage_partition_->browser_context(),
+      ContentBrowserClient::ConversionMeasurementOperation::kReport,
+      &common_info.impression_origin(), &common_info.conversion_origin(),
+      &common_info.reporting_origin());
 }
 
 // static
 std::unique_ptr<AttributionManagerImpl>
 AttributionManagerImpl::CreateForTesting(
-    IsReportAllowedCallback is_report_allowed_callback,
     const base::FilePath& user_data_directory,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     std::unique_ptr<AttributionStorageDelegate> storage_delegate,
@@ -207,8 +227,7 @@ AttributionManagerImpl::CreateForTesting(
     std::unique_ptr<AttributionReportSender> report_sender,
     StoragePartitionImpl* storage_partition) {
   return absl::WrapUnique(new AttributionManagerImpl(
-      storage_partition, std::move(is_report_allowed_callback),
-      user_data_directory, std::move(special_storage_policy),
+      storage_partition, user_data_directory, std::move(special_storage_policy),
       std::move(storage_delegate), std::move(cookie_checker),
       std::move(report_sender),
       /*data_host_manager=*/nullptr));
@@ -220,7 +239,6 @@ AttributionManagerImpl::AttributionManagerImpl(
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy)
     : AttributionManagerImpl(
           storage_partition,
-          DefaultIsReportAllowedCallback(storage_partition->browser_context()),
           user_data_directory,
           std::move(special_storage_policy),
           MakeStorageDelegate(),
@@ -232,7 +250,6 @@ AttributionManagerImpl::AttributionManagerImpl(
 
 AttributionManagerImpl::AttributionManagerImpl(
     StoragePartitionImpl* storage_partition,
-    IsReportAllowedCallback is_report_allowed_callback,
     const base::FilePath& user_data_directory,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     std::unique_ptr<AttributionStorageDelegate> storage_delegate,
@@ -240,7 +257,6 @@ AttributionManagerImpl::AttributionManagerImpl(
     std::unique_ptr<AttributionReportSender> report_sender,
     std::unique_ptr<AttributionDataHostManager> data_host_manager)
     : storage_partition_(storage_partition),
-      is_report_allowed_callback_(std::move(is_report_allowed_callback)),
       attribution_storage_(base::SequenceBound<AttributionStorageSql>(
           g_storage_task_runner.Get(),
           user_data_directory,
@@ -253,7 +269,7 @@ AttributionManagerImpl::AttributionManagerImpl(
       cookie_checker_(std::move(cookie_checker)),
       report_sender_(std::move(report_sender)),
       weak_factory_(this) {
-  DCHECK(is_report_allowed_callback_);
+  DCHECK(storage_partition_);
   DCHECK(cookie_checker_);
   DCHECK(report_sender_);
 }
@@ -457,7 +473,7 @@ void AttributionManagerImpl::MaybeSendDebugReport(AttributionReport&& report) {
   const AttributionInfo& attribution_info = report.attribution_info();
   if (!attribution_info.debug_key ||
       !attribution_info.source.common_info().debug_key() ||
-      !is_report_allowed_callback_.Run(report)) {
+      !IsReportAllowed(report)) {
     return;
   }
 
@@ -572,7 +588,7 @@ void AttributionManagerImpl::SendReports(std::vector<AttributionReport> reports,
       continue;
     }
 
-    if (!is_report_allowed_callback_.Run(report)) {
+    if (!IsReportAllowed(report)) {
       // If measurement is disallowed, just drop the report on the floor. We
       // need to make sure we forward that the report was "sent" to ensure it is
       // deleted from storage, etc. This simulates sending the report through a
@@ -702,16 +718,14 @@ void AttributionManagerImpl::AssembleAggregatableReport(
     AttributionReport report,
     bool is_debug_report,
     ReportSentCallback callback) {
-  // TODO(crbug.com/1285319): Add metrics for early exit.
-
-  AggregationServiceImpl* aggregation_service = nullptr;
-  if (storage_partition_)
-    aggregation_service = storage_partition_->GetAggregationService();
-
+  AggregationServiceImpl* aggregation_service =
+      storage_partition_->GetAggregationService();
   if (!aggregation_service) {
-    std::move(callback).Run(
-        std::move(report),
-        SendResult(SendResult::Status::kDropped, /*http_response_code=*/0));
+    RecordAssembleAggregatableReportStatus(
+        AssembleAggregatableReportStatus::kAggregationServiceUnavailable);
+    std::move(callback).Run(std::move(report),
+                            SendResult(SendResult::Status::kFailedToAssemble,
+                                       /*http_response_code=*/0));
     return;
   }
 
@@ -750,9 +764,11 @@ void AttributionManagerImpl::AssembleAggregatableReport(
               attribution_info.source.common_info().reporting_origin(),
               debug_mode));
   if (!request.has_value()) {
-    std::move(callback).Run(
-        std::move(report),
-        SendResult(SendResult::Status::kDropped, /*http_response_code=*/0));
+    RecordAssembleAggregatableReportStatus(
+        AssembleAggregatableReportStatus::kCreateRequestFailed);
+    std::move(callback).Run(std::move(report),
+                            SendResult(SendResult::Status::kFailedToAssemble,
+                                       /*http_response_code=*/0));
     return;
   }
 
@@ -769,10 +785,15 @@ void AttributionManagerImpl::OnAggregatableReportAssembled(
     ReportSentCallback callback,
     absl::optional<AggregatableReport> assembled_report,
     AggregationService::AssemblyStatus status) {
+  RecordAssembleAggregatableReportStatus(
+      assembled_report.has_value()
+          ? AssembleAggregatableReportStatus::kSuccess
+          : AssembleAggregatableReportStatus::kAssembleReportFailed);
+
   if (!assembled_report.has_value()) {
-    std::move(callback).Run(
-        std::move(report),
-        SendResult(SendResult::Status::kDropped, /*http_response_code=*/0));
+    std::move(callback).Run(std::move(report),
+                            SendResult(SendResult::Status::kFailedToAssemble,
+                                       /*http_response_code=*/0));
     return;
   }
 

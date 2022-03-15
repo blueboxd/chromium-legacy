@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/policy/messaging_layer/upload/upload_client.h"
-#include "chrome/browser/policy/messaging_layer/upload/test_util.h"
+#include "chrome/browser/policy/messaging_layer/util/test.h"
 
 #include <tuple>
 
@@ -210,7 +210,8 @@ TEST_P(UploadClientTest, CreateUploadClientAndUploadRecords) {
 }
 )JSON";
   EXPECT_CALL(*client, UploadEncryptedReport(
-                           AllOf(DoesRequestContainRecord(base::StringPrintf(
+                           AllOf(IsDataUploadRequestValid(),
+                                 DoesRequestContainRecord(base::StringPrintf(
                                      matched_record_template, 0)),
                                  DoesRequestContainRecord(base::StringPrintf(
                                      matched_record_template, 1)),

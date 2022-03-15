@@ -5556,6 +5556,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPrintWithReducedRasterizationDescription, kOsWin,
      FEATURE_VALUE_TYPE(printing::features::kPrintWithReducedRasterization)},
 
+    {"read-printer-capabilities-with-xps",
+     flag_descriptions::kReadPrinterCapabilitiesWithXpsName,
+     flag_descriptions::kReadPrinterCapabilitiesWithXpsDescription, kOsWin,
+     FEATURE_VALUE_TYPE(printing::features::kReadPrinterCapabilitiesWithXps)},
+
     {"use-xps-for-printing", flag_descriptions::kUseXpsForPrintingName,
      flag_descriptions::kUseXpsForPrintingDescription, kOsWin,
      FEATURE_VALUE_TYPE(printing::features::kUseXpsForPrinting)},
@@ -5584,6 +5589,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-instant-start", flag_descriptions::kInstantStartName,
      flag_descriptions::kInstantStartDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kInstantStart)},
+
+    {"enable-show-scrollable-mvt-on-ntp",
+     flag_descriptions::kShowScrollableMVTOnNTPAndroidName,
+     flag_descriptions::kShowScrollableMVTOnNTPAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kShowScrollableMVTOnNTPAndroid)},
 
     {"enable-close-tab-suggestions",
      flag_descriptions::kCloseTabSuggestionsName,
@@ -8347,6 +8357,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebSQLAccessDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kWebSQLAccess)},
 
+    {"omit-cors-client-cert", flag_descriptions::kOmitCorsClientCertName,
+     flag_descriptions::kOmitCorsClientCertDescription, kOsAll,
+     FEATURE_VALUE_TYPE(network::features::kOmitCorsClientCert)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -8462,11 +8476,12 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
     return !ash::features::IsWallpaperWebUIEnabled();
 
   // Only show Google Photos wallpaper integration flag if:
-  // * channel is one of Dev/Canary/Unknown, and
+  // * channel is one of Beta/Dev/Canary/Unknown, and
   // * wallpaper Web UI flag is enabled.
   if (!strcmp(kWallpaperGooglePhotosIntegrationInternalName,
               entry.internal_name)) {
-    return (channel != version_info::Channel::DEV &&
+    return (channel != version_info::Channel::BETA &&
+            channel != version_info::Channel::DEV &&
             channel != version_info::Channel::CANARY &&
             channel != version_info::Channel::UNKNOWN) ||
            !ash::features::IsWallpaperWebUIEnabled();

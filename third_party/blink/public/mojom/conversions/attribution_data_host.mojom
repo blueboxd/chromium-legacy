@@ -26,9 +26,9 @@ struct AttributionAggregatableKey {
 };
 
 // Defines a list of named histogram contributions.
-struct AttributionAggregatableSources {
+struct AttributionAggregatableSource {
   // Map of key id to the key.
-  map<string, AttributionAggregatableKey> sources;
+  map<string, AttributionAggregatableKey> keys;
 };
 
 // Struct containing the trigger-side aggregatable data.
@@ -39,13 +39,9 @@ struct AttributionAggregatableTriggerData {
   AttributionFilterData not_filters;
 };
 
-// Struct containing all the aggregatable trigger data.
+// Struct containing all the aggregatable trigger data and values.
 struct AttributionAggregatableTrigger {
   array<AttributionAggregatableTriggerData> trigger_data;
-};
-
-// Struct containing the aggregatable values.
-struct AttributionAggregatableValues {
   map<string, uint32> values;
 };
 
@@ -76,7 +72,7 @@ struct AttributionSourceData {
   AttributionFilterData filter_data;
 
   // Contains source-side aggregatable key pieces.
-  AttributionAggregatableSources aggregatable_sources;
+  AttributionAggregatableSource aggregatable_source;
 };
 
 // Deduplication key set by a reporting origin which prevents duplicate triggers
@@ -129,11 +125,8 @@ struct AttributionTriggerData {
   AttributionFilterData filters;
 
   // Contains a list of trigger data that generates trigger-side aggregatable
-  // key pieces.
+  // key pieces and the values.
   AttributionAggregatableTrigger aggregatable_trigger;
-
-  // Lists an amount of an abstract "value" to contribute to each key.
-  AttributionAggregatableValues aggregatable_values;
 
   // A key that is propagated through the Attribution Reporting API for
   // debugging purposes.

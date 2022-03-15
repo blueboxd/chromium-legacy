@@ -75,6 +75,12 @@ struct ASH_EXPORT GridIndex {
   bool operator<(const GridIndex& other) const {
     return std::tie(page, slot) < std::tie(other.page, other.slot);
   }
+
+  // Whether the grid index is a valid index, i.e. whether page and slot are
+  // non-negative. This method does *not* check whether the index exists in an
+  // apps grid.
+  bool IsValid() const;
+
   std::string ToString() const;
 
   int page = -1;  // Which page an item view is on.
@@ -222,20 +228,24 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Called to initiate drag for reparenting a folder item in root level grid
   // view.
+  // `pointer` - The pointer that's used for dragging (mouse or touch).
   // `drag_point` is in the coordinates of root level grid view.
   // `cancellation_callback` - the callback that can be invoked from the root
   // level grid to cancel drag operation in the originating folder grid.
   void InitiateDragFromReparentItemInRootLevelGridView(
+      Pointer pointer,
       AppListItemView* original_drag_view,
       const gfx::Point& drag_point,
       base::OnceClosure cancellation_callback);
 
   // Updates drag in the root level grid view when receiving the drag event
   // dispatched from the hidden grid view for reparenting a folder item.
+  // `pointer` - The pointer that's used for dragging (mouse or touch).
   void UpdateDragFromReparentItem(Pointer pointer,
                                   const gfx::Point& drag_point);
 
   // Dispatches the drag event from hidden grid view to the top level grid view.
+  // `pointer` - The pointer that's used for dragging (mouse or touch).
   void DispatchDragEventForReparent(Pointer pointer,
                                     const gfx::Point& drag_point);
 
@@ -281,12 +291,19 @@ class ASH_EXPORT AppsGridView : public views::View,
   using ReorderAnimationCallback = base::RepeatingCallback<void(bool)>;
   void FadeOutVisibleItemsForReorder(ReorderAnimationCallback done_callback);
 
-  // Fades in items for reordering.
-  void FadeInVisibleItemsForReorder(ReorderAnimationCallback done_callback);
+  // Fades in items for reordering. Returns an animation builder and it can be
+  // used to tie other layer animations with scheduled item animaions.
+  views::AnimationBuilder FadeInVisibleItemsForReorder(
+      ReorderAnimationCallback done_callback);
 
   // Whether the provided view is hidden to facilitate drag operation (for
   // example, the drag view for which a drag icon proxy has been created).
   bool IsViewHiddenForDrag(const views::View* view) const;
+
+  // Whether `view` is the folder view that is animating out and in as part of
+  // folder reorder animation that runs after folder is closed if the folder
+  // position within the grid changed.
+  bool IsViewHiddenForFolderReorder(const views::View* view) const;
 
   // Returns true if the apps grid is under the reorder animation process. This
   // function is public for testing.
@@ -465,6 +482,12 @@ class ASH_EXPORT AppsGridView : public views::View,
   // For folder item grid, the grid size also depends on the number of items in
   // the grid, so number of actual columns may be smaller than `max_columns`.
   void SetMaxColumnsInternal(int max_columns);
+
+  // Sets the ideal bounds for view at index `view_inde_in_model` in
+  // `view_model_`. The bounds are set to match the expected tile bounds at
+  // `view_grid_index` in the apps grid.
+  void SetIdealBoundsForViewToGridIndex(int view_index_in_model,
+                                        const GridIndex& view_grid_index);
 
   // Calculates the item views' bounds for both folder and non-folder.
   void CalculateIdealBounds();
@@ -648,6 +671,7 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Called when the user is dragging an app. |point| is in grid view
   // coordinates.
+  // `pointer` - The pointer that's used for dragging (mouse or touch).
   void UpdateDrag(Pointer pointer, const gfx::Point& point);
 
   // Returns true if the current drag is occurring within a certain range of the
@@ -760,9 +784,10 @@ class ASH_EXPORT AppsGridView : public views::View,
   void OnReorderTimer();
 
   // Invoked when |folder_item_reparent_timer_| fires.
-  void OnFolderItemReparentTimer();
+  void OnFolderItemReparentTimer(Pointer pointer);
 
   // Updates drag state for dragging inside a folder's grid view.
+  // `pointer` - The pointer that's used for dragging (mouse or touch).
   void UpdateDragStateInsideFolder(Pointer pointer,
                                    const gfx::Point& drag_point);
 
@@ -863,6 +888,39 @@ class ASH_EXPORT AppsGridView : public views::View,
   void MaybeRunNextReorderAnimationCallbackForTest(
       bool aborted,
       AppListReorderAnimationStatus animation_source);
+
+  // Sets `open_folder_info_` for  a folder that is about to be shown.
+  // `folder_id` is the folder's item ID, `target_folder_position` is the grid
+  // index at which the folder is located (or being created).
+  // `position_to_skip`, if valid, is the grid index of an app list item that is
+  // expected to be removed (for example, the reorder placeholder gets removed
+  // after an app list item drag ends, and should thus be ignored when
+  // calculating the final folder position during drag end). The target folder
+  // position should be adjusted as if the item at this position is gone.
+  void SetOpenFolderInfo(const std::string& folder_id,
+                         const GridIndex& target_folder_position,
+                         const GridIndex& position_to_skip);
+
+  // Requsets a folder view for the provided app list folder item to be shown.
+  // `new_folder` indicates whether the folder is a newly created folder.
+  void ShowFolderForView(AppListItemView* folder_view, bool new_folder);
+
+  // Called when a folder view that was opened from this apps grid hides (and
+  // completes hide animation), either when user closes the folder, or when the
+  // folder gets hidden during reparent drag.
+  // `item_id` is the folder items app list model ID.
+  void FolderHidden(const std::string& item_id);
+
+  // When folder item view position in the grid changes while the folder view
+  // was shown for the item, the folder item view animates out in old location,
+  // and animate in in the new location upon folder view closure. This methods
+  // schedules folder item fade-in animation, and schedule bounds animations for
+  // other item views in the grid.
+  void AnimateFolderItemViewIn();
+
+  // Called when the folder view closes, and optional folder item view "position
+  // change" animation completes.
+  void OnFolderHideAnimationDone();
 
   class ScopedModelUpdate;
 
@@ -996,6 +1054,23 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // The location when |current_ghost_view_| was shown.
   GridIndex current_ghost_location_;
+
+  struct OpenFolderInfo {
+    std::string item_id;
+    GridIndex grid_index;
+  };
+  // Set when a folder view was opened from the apps grid - it contains the
+  // opened folder ID and original location in the grid. While the folder
+  // remains open, the folder item view position will be forced to the original
+  // grid slot, to prevent folder UI from jumping, or empty slots from appearing
+  // behind a folder when the gird item list changes (e.g. if another item gets
+  // added by sync, or the folder item moves as a result of folder rename).
+  absl::optional<OpenFolderInfo> open_folder_info_;
+
+  // Folder item view that is being animated into it's target position. The
+  // animation runs after a folder gets closed if the folder intended position
+  // in the grid changed while the folder was open.
+  absl::optional<views::View*> reordering_folder_view_;
 
   std::unique_ptr<AppsGridContextMenu> context_menu_;
 

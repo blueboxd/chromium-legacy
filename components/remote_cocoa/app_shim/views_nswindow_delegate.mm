@@ -207,15 +207,24 @@
 }
 
 - (void)windowWillEnterFullScreen:(NSNotification*)notification {
-  _parent->fullscreen_controller().OnWindowWillEnterFullscreen();
+  if (_parent->fullscreen_controller())
+    _parent->fullscreen_controller()->OnWindowWillEnterFullscreen();
+  else
+    _parent->OnFullscreenTransitionStart(true);
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification {
-  _parent->fullscreen_controller().OnWindowDidEnterFullscreen();
+  if (_parent->fullscreen_controller())
+    _parent->fullscreen_controller()->OnWindowDidEnterFullscreen();
+  else
+    _parent->OnFullscreenTransitionComplete(true);
 }
 
 - (void)windowWillExitFullScreen:(NSNotification*)notification {
-  _parent->fullscreen_controller().OnWindowWillExitFullscreen();
+  if (_parent->fullscreen_controller())
+    _parent->fullscreen_controller()->OnWindowWillExitFullscreen();
+  else
+    _parent->OnFullscreenTransitionStart(false);
 }
 
 - (void)windowDidExitFullScreen:(NSNotification*)notification {
@@ -230,7 +239,10 @@
                                     afterDelay:0];
   }
 
-  _parent->fullscreen_controller().OnWindowDidExitFullscreen();
+  if (_parent->fullscreen_controller())
+    _parent->fullscreen_controller()->OnWindowDidExitFullscreen();
+  else
+    _parent->OnFullscreenTransitionComplete(false);
 }
 
 // Allow non-resizable windows (without NSResizableWindowMask) to fill the

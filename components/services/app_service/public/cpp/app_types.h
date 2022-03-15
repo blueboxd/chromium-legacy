@@ -21,6 +21,9 @@
 
 namespace apps {
 
+// When adding a new item, update
+//   components/services/app_service/public/cpp/macros.h
+// macros if necessary.
 ENUM(AppType,
      kUnknown,
      kArc,                         // Android app.
@@ -35,7 +38,8 @@ ENUM(AppType,
      kBorealis,                    // Borealis app, see go/borealis-app.
      kSystemWeb,                   // System web app.
      kStandaloneBrowserChromeApp,  // Chrome app hosted in Lacros.
-     kExtension                    // Browser extension.
+     kExtension,                   // Browser extension.
+     kStandaloneBrowserExtension   // Extension hosted in Lacros.
 )
 
 // Whether an app is ready to launch, i.e. installed.
@@ -237,8 +241,8 @@ absl::optional<bool> GetOptionalBool(
     const apps::mojom::OptionalBool& mojom_optional_bool);
 
 COMPONENT_EXPORT(APP_TYPES)
-absl::optional<bool> GetMojomOptionalBool(
-    const apps::mojom::OptionalBool& mojom_optional_bool);
+apps::mojom::OptionalBool GetMojomOptionalBool(
+    const absl::optional<bool>& mojom_optional_bool);
 
 COMPONENT_EXPORT(APP_TYPES)
 AppPtr ConvertMojomAppToApp(const apps::mojom::AppPtr& mojom_app);

@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBasicSourceRegisteredBrowserTest,
   EXPECT_EQ(source_data.front()->expiry, absl::nullopt);
   EXPECT_FALSE(source_data.front()->debug_key);
   EXPECT_THAT(source_data.front()->filter_data->filter_values, IsEmpty());
-  EXPECT_THAT(source_data.front()->aggregatable_sources->sources, IsEmpty());
+  EXPECT_THAT(source_data.front()->aggregatable_source->keys, IsEmpty());
 }
 
 // Ensure that basic source registration works with both the img attributionsrc
@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(
     AttributionSrcBrowserTest,
-    AttributionSrcImg_SourceRegisteredWithAggregatableSources) {
+    AttributionSrcImg_SourceRegisteredWithAggregatableSource) {
   GURL page_url =
       https_server()->GetURL("b.test", "/page_with_impression_creator.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
@@ -238,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(source_data.front()->expiry, absl::nullopt);
   EXPECT_FALSE(source_data.front()->debug_key);
   EXPECT_THAT(
-      source_data.front()->aggregatable_sources->sources,
+      source_data.front()->aggregatable_source->keys,
       UnorderedElementsAre(
           Pair("key1",
                Pointee(AllOf(
@@ -426,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
       IsEmpty());
   EXPECT_THAT(trigger_data.front()->aggregatable_trigger->trigger_data,
               IsEmpty());
-  EXPECT_THAT(trigger_data.front()->aggregatable_values->values, IsEmpty());
+  EXPECT_THAT(trigger_data.front()->aggregatable_trigger->values, IsEmpty());
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -491,7 +491,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
                                                 AggregatableKeyLowBitsIs(1)))),
                 SourceKeysAre(ElementsAre("key"))))));
 
-  EXPECT_THAT(trigger_data.front()->aggregatable_values->values,
+  EXPECT_THAT(trigger_data.front()->aggregatable_trigger->values,
               ElementsAre(Pair("key", 123)));
 }
 
@@ -547,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(
                   FilterValuesAre(ElementsAre(Pair("d", ElementsAre("e", "f")),
                                               Pair("g", IsEmpty())))))))));
 
-  EXPECT_THAT(trigger_data.front()->aggregatable_values->values,
+  EXPECT_THAT(trigger_data.front()->aggregatable_trigger->values,
               ElementsAre(Pair("key1", 123), Pair("key2", 456)));
 }
 
@@ -641,7 +641,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_EQ(trigger_data.size(), 1u);
   EXPECT_THAT(trigger_data.front()->aggregatable_trigger->trigger_data,
               SizeIs(2));
-  EXPECT_THAT(trigger_data.front()->aggregatable_values->values, SizeIs(2));
+  EXPECT_THAT(trigger_data.front()->aggregatable_trigger->values, SizeIs(2));
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -683,7 +683,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
-                       AttributionSrcImg_InvalidAggregatableSourcesDropped) {
+                       AttributionSrcImg_InvalidAggregatableSourceDropped) {
   // Create a separate server as we cannot register a `ControllableHttpResponse`
   // after the server starts.
   auto https_server = std::make_unique<net::EmbeddedTestServer>(
@@ -741,7 +741,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_EQ(source_data.back()->source_event_id, 5UL);
   EXPECT_EQ(source_data.back()->destination,
             url::Origin::Create(GURL("https://d.test")));
-  EXPECT_THAT(source_data.back()->aggregatable_sources->sources, SizeIs(2));
+  EXPECT_THAT(source_data.back()->aggregatable_source->keys, SizeIs(2));
 }
 
 class AttributionSrcPrerenderBrowserTest : public AttributionSrcBrowserTest {

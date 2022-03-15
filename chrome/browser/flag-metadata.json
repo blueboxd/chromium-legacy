@@ -1878,7 +1878,7 @@
   },
   {
     "name": "enable-debug-for-store-billing",
-    "owners": [ "maxlg", "web-payments-team@google.com" ],
+    "owners": [ "web-payments-team@google.com" ],
     // This flag is to allow developers to develop their app-billing capable
     // TWA apps locally, without having to upload the apps to the Play Store.
     "expiry_milestone": -1
@@ -2586,7 +2586,7 @@
   },
   {
     "name": "enable-payment-request-basic-card",
-    "owners": [ "maxlg", "web-payments-team@google.com" ],
+    "owners": [ "web-payments-team@google.com" ],
     // This flag is used by developers to disable the "basic-card" method, to
     // make sure their web pages do not break after Chrome deprecates
     // "basic-card" in M100.
@@ -2760,7 +2760,7 @@
   },
   {
     "name": "enable-secure-payment-confirmation-android",
-    "owners": [ "maxlg", "web-payments-team@google.com" ],
+    "owners": [ "web-payments-team@google.com" ],
     "expiry_milestone": 102
   },
   {
@@ -2783,6 +2783,11 @@
     "owners": [ "kolos" ],
     // Used for debugging and QA by the autofill team for the indefinite future.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-show-scrollable-mvt-on-ntp",
+    "owners": ["clank-start","hanxi","spdonghao"],
+    "expiry_milestone": 110
   },
   {
     "name": "enable-site-isolation-for-password-sites",
@@ -3362,12 +3367,12 @@
   },
   {
     "name": "files-archivemount",
-    "owners": [ "fdegros", "nigeltao" ],
+    "owners": [ "fdegros", "nigeltao", "msalomao" ],
     "expiry_milestone": 112
   },
   {
     "name": "files-archivemount2",
-    "owners": [ "fdegros", "nigeltao" ],
+    "owners": [ "fdegros", "nigeltao", "msalomao" ],
     "expiry_milestone": 112
   },
   {
@@ -4419,6 +4424,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "omit-cors-client-cert",
+    "owners": [ "toyoshim", "loading-dev" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "omnibox-active-search-engines",
     "owners": [ "yoangela", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 105
@@ -5117,6 +5127,11 @@
     "expiry_milestone": 102
   },
   {
+    "name": "read-printer-capabilities-with-xps",
+    "owners": [ "awscreen", "//printing/OWNERS" ],
+    "expiry_milestone": 106
+  },
+  {
     "name": "reader-mode-heuristics",
     "owners": [ "mdjones", "wychen" ],
     // This flag is a utility for testing Reader Mode heuristics or force
@@ -5410,12 +5425,12 @@
   {
     "name": "sharing-desktop-screenshots",
     "owners": ["skare", "kmilka", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 102
   },
   {
     "name": "sharing-desktop-screenshots-edit",
     "owners": ["skare", "jeffreycohen", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 102
   },
   {
     "name": "sharing-hub-desktop-app-menu",

@@ -966,7 +966,9 @@
           'walleye',
         ],
         'additional_compile_targets': [
+          'monochrome_static_initializers',
           'validate_expectations',
+          'weblayer_shell',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_android_gtests',
@@ -2597,6 +2599,14 @@
         ],
         'browser_config': 'cros-chrome',
         'os_type': 'chromeos',
+      },
+      'Comparison Windows (8 cores) (reclient)': {
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'additional_compile_targets': [
+          'all'
+        ],
       },
       'Comparison Windows (reclient)': {
         'mixins': [

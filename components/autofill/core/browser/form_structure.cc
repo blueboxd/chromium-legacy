@@ -649,6 +649,7 @@ FormStructure::FormStructure(const FormData& form)
       all_fields_are_passwords_(!form.fields.empty()),
       form_parsed_timestamp_(AutofillTickClock::NowTicks()),
       host_frame_(form.host_frame),
+      version_(form.version),
       unique_renderer_id_(form.unique_renderer_id) {
   // Copy the form fields.
   for (const FormFieldData& field : form.fields) {
@@ -1505,12 +1506,8 @@ void FormStructure::LogQualityMetrics(
         frames_of_autofilled_credit_card_fields.size());
 
     if (card_form) {
-      AutofillMetrics::LogCreditCardNumberFills(
-          autofilled_field_types,
-          AutofillMetrics::MeasurementTime::kSubmissionTime);
-      AutofillMetrics::LogCreditCardSeamlessFills(
-          autofilled_field_types,
-          AutofillMetrics::MeasurementTime::kSubmissionTime);
+      AutofillMetrics::LogCreditCardSeamlessnessAtSubmissionTime(
+          autofilled_field_types);
     }
   }
 }
@@ -1677,6 +1674,7 @@ FormData FormStructure::ToFormData() const {
   data.is_form_tag = is_form_tag_;
   data.unique_renderer_id = unique_renderer_id_;
   data.host_frame = host_frame_;
+  data.version = version_;
 
   for (const auto& field : fields_) {
     data.fields.push_back(*field);

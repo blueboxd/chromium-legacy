@@ -1356,8 +1356,8 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kForceMajorVersionToMinorPositionInUserAgent,
       embedder_support::ForceMajorVersionToMinorPosition::kDefault);
-  registry->RegisterBooleanPref(policy::policy_prefs::kEnableDirectSockets,
-                                true);
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kIsolatedAppsDeveloperModeAllowed, true);
 }
 
 // static
@@ -2111,24 +2111,12 @@ bool ChromeContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
   return false;
 }
 
-bool ChromeContentBrowserClient::AreDirectSocketsAllowedByPolicy(
+bool ChromeContentBrowserClient::IsIsolatedAppsDeveloperModeAllowed(
     content::BrowserContext* context) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // For ChromeOS we check the policy value.
-  // TODO(crbug/1297224): check for device too.
   Profile* profile = Profile::FromBrowserContext(context);
-  return profile && profile->GetPrefs()->GetBoolean(
-                        policy::policy_prefs::kEnableDirectSockets);
-#elif BUILDFLAG(IS_LINUX)
-  // There are currently no reliable way to determine managed status on Linux.
-  return false;
-#elif BUILDFLAG(IS_MAC)
-  // TODO(crbug/1297224): merge with the block below.
-  return false;
-#else
-  // For other platforms we disable access to the API on managed devices.
-  return !policy::ManagementServiceFactory::GetForPlatform()->IsManaged();
-#endif
+  return profile &&
+         profile->GetPrefs()->GetBoolean(
+             policy::policy_prefs::kIsolatedAppsDeveloperModeAllowed);
 }
 
 bool ChromeContentBrowserClient::IsFileAccessAllowed(
@@ -6046,7 +6034,6 @@ bool ChromeContentBrowserClient::IsClipboardPasteAllowed(
     content::RenderFrameHost* render_frame_host) {
   DCHECK(render_frame_host);
 
-  const GURL& url = render_frame_host->GetLastCommittedOrigin().GetURL();
   content::BrowserContext* browser_context =
       render_frame_host->GetBrowserContext();
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -6055,9 +6042,8 @@ bool ChromeContentBrowserClient::IsClipboardPasteAllowed(
   content::PermissionController* permission_controller =
       browser_context->GetPermissionController();
   blink::mojom::PermissionStatus status =
-      permission_controller->GetPermissionStatusForFrame(
-          content::PermissionType::CLIPBOARD_READ_WRITE, render_frame_host,
-          url);
+      permission_controller->GetPermissionStatusForCurrentDocument(
+          content::PermissionType::CLIPBOARD_READ_WRITE, render_frame_host);
 
   // True if this paste is executed from an extension URL with read permission.
   bool is_extension_paste_allowed = false;
@@ -6070,6 +6056,8 @@ bool ChromeContentBrowserClient::IsClipboardPasteAllowed(
   // Until this is implemented, platforms supporting extensions (all  platforms
   // except Android) will essentially no-op here and return true.
   is_content_script_paste_allowed = true;
+  const GURL& url =
+      render_frame_host->GetMainFrame()->GetLastCommittedOrigin().GetURL();
   if (url.SchemeIs(extensions::kExtensionScheme)) {
     auto* process_map = extensions::ProcessMap::Get(profile);
     auto* registry = extensions::ExtensionRegistry::Get(profile);

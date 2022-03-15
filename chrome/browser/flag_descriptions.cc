@@ -414,16 +414,6 @@ const char kAutofillParseMerchantPromoCodeFieldsDescription[] =
     "When enabled, Autofill will attempt to find merchant promo/coupon/gift "
     "code fields when parsing forms.";
 
-const char kAutofillProfileClientValidationName[] =
-    "Autofill Validates Profiles By Client";
-const char kAutofillProfileClientValidationDescription[] =
-    "Allows autofill to validate profiles on the client side";
-
-const char kAutofillProfileServerValidationName[] =
-    "Autofill Uses Server Validation";
-const char kAutofillProfileServerValidationDescription[] =
-    "Allows autofill to use server side validation";
-
 const char kAutofillUseConsistentPopupSettingsIconsName[] =
     "Consistent Autofill settings icon";
 const char kAutofillUseConsistentPopupSettingsIconsDescription[] =
@@ -1718,6 +1708,13 @@ const char kNotificationsSystemFlagName[] = "Enable system notifications.";
 const char kNotificationsSystemFlagDescription[] =
     "Enable support for using the system notification toasts and notification "
     "center on platforms where these are available.";
+
+const char kOmitCorsClientCertName[] =
+    "Omit TLS client certificates if credential mode disallows";
+const char kOmitCorsClientCertDescription[] =
+    "Strictly conform the Fetch spec to omit TLS client certificates if "
+    "credential mode disallows. Without this flag enabled, Chrome will always "
+    "try sending client certificates regardless of the credential mode.";
 
 const char kOmniboxActiveSearchEnginesName[] =
     "Active Search Engines section on settings page";
@@ -3559,6 +3556,10 @@ const char kRequestDesktopSiteForTabletsDescription[] =
     " On tablets with small screens a mobile site will be requested by "
     "default.";
 
+const char kShowScrollableMVTOnNTPAndroidName[] = "Show scrollable MVT on NTP";
+const char kShowScrollableMVTOnNTPAndroidDescription[] =
+    "Enable showing the scrollable most visited tiles on NTP.";
+
 const char kSecurePaymentConfirmationAndroidName[] =
     "Secure Payment Confirmation on Android";
 const char kSecurePaymentConfirmationAndroidDescription[] =
@@ -4018,6 +4019,11 @@ const char kPrintWithReducedRasterizationName[] =
     "Print with reduced rasterization";
 const char kPrintWithReducedRasterizationDescription[] =
     "When using GDI printing, avoid rasterization if possible.";
+
+const char kReadPrinterCapabilitiesWithXpsName[] =
+    "Read printer capabilities with XPS";
+extern const char kReadPrinterCapabilitiesWithXpsDescription[] =
+    "When enabled, utilize XPS interface to read printer capabilities.";
 
 const char kUseXpsForPrintingName[] = "Use XPS for printing";
 const char kUseXpsForPrintingDescription[] =

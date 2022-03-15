@@ -254,7 +254,7 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
   private isSaveButtonDisabled_: boolean;
   private isPasswordNotesEnabled_: boolean;
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.initDialog_();
   }
@@ -317,7 +317,8 @@ export class PasswordEditDialogElement extends PasswordEditDialogElementBase {
 
   private shouldShowNote_(): boolean {
     return this.isPasswordNotesEnabled_ &&
-        this.dialogMode !== PasswordDialogMode.FEDERATED_VIEW;
+        (this.dialogMode === PasswordDialogMode.PASSWORD_VIEW ||
+         this.dialogMode === PasswordDialogMode.EDIT);
   }
 
   /**

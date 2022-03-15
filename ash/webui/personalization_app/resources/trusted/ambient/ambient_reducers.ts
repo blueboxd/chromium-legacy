@@ -15,6 +15,14 @@ export function albumsReducer(
   switch (action.name) {
     case AmbientActionName.SET_ALBUMS:
       return action.albums;
+    case AmbientActionName.SET_ALBUM_SELECTED:
+      if (!state) {
+        return state;
+      }
+      // An albums in AmbientState.albums is mutated by setting checked
+      // to True/False, have to return a copy of albums state so that
+      // Polymer knows there is an update.
+      return [...state];
     default:
       return state;
   }
@@ -26,6 +34,17 @@ export function ambientModeEnabledReducer(
   switch (action.name) {
     case AmbientActionName.SET_AMBIENT_MODE_ENABLED:
       return action.enabled;
+    default:
+      return state;
+  }
+}
+
+export function animationThemeReducer(
+    state: AmbientState['animationTheme'], action: Actions,
+    _: PersonalizationState): AmbientState['animationTheme'] {
+  switch (action.name) {
+    case AmbientActionName.SET_ANIMATION_THEME:
+      return action.animationTheme;
     default:
       return state;
   }
@@ -57,6 +76,7 @@ export const ambientReducers:
     {[K in keyof AmbientState]: ReducerFunction<AmbientState[K]>} = {
       albums: albumsReducer,
       ambientModeEnabled: ambientModeEnabledReducer,
+      animationTheme: animationThemeReducer,
       temperatureUnit: temperatureUnitReducer,
       topicSource: topicSourceReducer,
     };

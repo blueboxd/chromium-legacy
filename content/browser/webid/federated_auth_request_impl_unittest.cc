@@ -1187,7 +1187,7 @@ TEST_F(BasicFederatedAuthRequestImplTest, AutoSignInWithScreenReader) {
 }
 
 TEST_F(FederatedAuthRequestImplTest, Revoke) {
-  constexpr char kAccountId[] = "foo@bar.com";
+  constexpr char kHint[] = "foo@bar.com";
 
   auto& auth_request = CreateAuthRequest(GURL(kProviderUrl));
   auth_request.SetRequestPermissionDelegateForTests(
@@ -1213,11 +1213,11 @@ TEST_F(FederatedAuthRequestImplTest, Revoke) {
           }));
   EXPECT_CALL(*mock_request_manager_, SendRevokeRequest(_, _, _, _))
       .WillOnce(Invoke([&](const GURL& revoke_url, const std::string& client_id,
-                           const std::string& account_id,
+                           const std::string& hint,
                            IdpNetworkRequestManager::RevokeCallback callback) {
         EXPECT_EQ(kRevocationEndpoint, revoke_url.spec());
         EXPECT_EQ(kClientId, client_id);
-        EXPECT_EQ(kAccountId, account_id);
+        EXPECT_EQ(kHint, hint);
         std::move(callback).Run(RevokeResponse::kSuccess);
       }));
 
@@ -1225,20 +1225,19 @@ TEST_F(FederatedAuthRequestImplTest, Revoke) {
   ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                         ukm_loop.QuitClosure());
 
-  auto status = PerformRevokeRequest(kAccountId);
+  auto status = PerformRevokeRequest(kHint);
   EXPECT_EQ(RevokeStatus::kSuccess, status);
 
   ukm_loop.Run();
 
-  histogram_tester_.ExpectTotalCount("Blink.FedCm.Status.Revoke", 1);
-  histogram_tester_.ExpectBucketCount("Blink.FedCm.Status.Revoke",
-                                      RevokeStatusForMetrics::kSuccess, 1);
+  histogram_tester_.ExpectUniqueSample("Blink.FedCm.Status.Revoke",
+                                       RevokeStatusForMetrics::kSuccess, 1);
 
   ExpectRevokeStatusUKM(RevokeStatusForMetrics::kSuccess);
 }
 
 TEST_F(FederatedAuthRequestImplTest, RevokeNoPermission) {
-  constexpr char kAccountId[] = "foo@bar.com";
+  constexpr char kHint[] = "foo@bar.com";
 
   auto& auth_request = CreateAuthRequest(GURL(kProviderUrl));
   auth_request.SetRequestPermissionDelegateForTests(
@@ -1254,12 +1253,11 @@ TEST_F(FederatedAuthRequestImplTest, RevokeNoPermission) {
   ukm_recorder()->SetOnAddEntryCallback(Entry::kEntryName,
                                         ukm_loop.QuitClosure());
 
-  auto status = PerformRevokeRequest(kAccountId);
+  auto status = PerformRevokeRequest(kHint);
   EXPECT_EQ(RevokeStatus::kError, status);
 
   ukm_loop.Run();
-  histogram_tester_.ExpectTotalCount("Blink.FedCm.Status.Revoke", 1);
-  histogram_tester_.ExpectBucketCount(
+  histogram_tester_.ExpectUniqueSample(
       "Blink.FedCm.Status.Revoke", RevokeStatusForMetrics::kNoAccountToRevoke,
       1);
 
@@ -1291,9 +1289,8 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForSuccessfulSignUpCase) {
   histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.IdTokenResponse", 1);
   histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.TurnaroundTime", 1);
 
-  histogram_tester_.ExpectTotalCount("Blink.FedCm.Status.RequestIdToken", 1);
-  histogram_tester_.ExpectBucketCount("Blink.FedCm.Status.RequestIdToken",
-                                      IdTokenStatus::kSuccess, 1);
+  histogram_tester_.ExpectUniqueSample("Blink.FedCm.Status.RequestIdToken",
+                                       IdTokenStatus::kSuccess, 1);
 
   histogram_tester_.ExpectUniqueSample("Blink.FedCm.IsSignInUser", 0, 1);
 
@@ -1335,9 +1332,8 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForSuccessfulSignInCase) {
   histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.IdTokenResponse", 1);
   histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.TurnaroundTime", 1);
 
-  histogram_tester_.ExpectTotalCount("Blink.FedCm.Status.RequestIdToken", 1);
-  histogram_tester_.ExpectBucketCount("Blink.FedCm.Status.RequestIdToken",
-                                      IdTokenStatus::kSuccess, 1);
+  histogram_tester_.ExpectUniqueSample("Blink.FedCm.Status.RequestIdToken",
+                                       IdTokenStatus::kSuccess, 1);
 
   histogram_tester_.ExpectUniqueSample("Blink.FedCm.IsSignInUser", 1, 1);
 
@@ -1406,9 +1402,8 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForNotSelectingAccount) {
   histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.IdTokenResponse", 0);
   histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.TurnaroundTime", 0);
 
-  histogram_tester_.ExpectTotalCount("Blink.FedCm.Status.RequestIdToken", 1);
-  histogram_tester_.ExpectBucketCount("Blink.FedCm.Status.RequestIdToken",
-                                      IdTokenStatus::kNotSelectAccount, 1);
+  histogram_tester_.ExpectUniqueSample("Blink.FedCm.Status.RequestIdToken",
+                                       IdTokenStatus::kNotSelectAccount, 1);
 
   ExpectTimingUKM("Timing.ShowAccountsDialog");
   ExpectTimingUKM("Timing.CancelOnDialog");
@@ -1442,8 +1437,7 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForWebContentsVisible) {
                          test_case.inputs.prefer_auto_sign_in);
   EXPECT_EQ(LoginState::kSignIn, displayed_accounts()[0].login_state);
 
-  histogram_tester.ExpectBucketCount("Blink.FedCm.WebContentsVisible", 1, 1);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.WebContentsVisible", 1);
+  histogram_tester_.ExpectUniqueSample("Blink.FedCm.WebContentsVisible", 1, 1);
 }
 
 TEST_F(BasicFederatedAuthRequestImplTest, MetricsForWebContentsInvisible) {
@@ -1476,8 +1470,7 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForWebContentsInvisible) {
   PerformAuthRequest(test_case.inputs.client_id, test_case.inputs.nonce,
                      test_case.inputs.prefer_auto_sign_in);
 
-  histogram_tester.ExpectBucketCount("Blink.FedCm.WebContentsVisible", 0, 1);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.WebContentsVisible", 1);
+  histogram_tester_.ExpectUniqueSample("Blink.FedCm.WebContentsVisible", 0, 1);
 }
 
 TEST_F(BasicFederatedAuthRequestImplTest,
@@ -1495,6 +1488,11 @@ TEST_F(BasicFederatedAuthRequestImplTest,
       PerformAuthRequest(test_case.inputs.client_id, test_case.inputs.nonce,
                          test_case.inputs.prefer_auto_sign_in);
   EXPECT_EQ(auth_response.first, RequestIdTokenStatus::kError);
+
+  histogram_tester_.ExpectUniqueSample("Blink.FedCm.Status.RequestIdToken",
+                                       IdTokenStatus::kThirdPartyCookiesBlocked,
+                                       1);
+  ExpectRequestIdTokenStatusUKM(IdTokenStatus::kThirdPartyCookiesBlocked);
 }
 
 }  // namespace content

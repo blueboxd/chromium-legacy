@@ -5,6 +5,7 @@
 #include "components/services/app_service/public/cpp/intent_util.h"
 
 #include "base/values.h"
+#include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +16,18 @@ const char kFilterUrl[] = "https://www.google.com/";
 
 class IntentUtilTest : public testing::Test {
  protected:
-  apps::mojom::ConditionPtr CreateMultiConditionValuesCondition() {
+  apps::ConditionPtr CreateMultiConditionValuesCondition() {
+    std::vector<apps::ConditionValuePtr> condition_values;
+    condition_values.push_back(std::make_unique<apps::ConditionValue>(
+        "https", apps::PatternMatchType::kNone));
+    condition_values.push_back(std::make_unique<apps::ConditionValue>(
+        "http", apps::PatternMatchType::kNone));
+    auto condition = std::make_unique<apps::Condition>(
+        apps::ConditionType::kScheme, std::move(condition_values));
+    return condition;
+  }
+
+  apps::mojom::ConditionPtr CreateMultiMojomConditionValuesCondition() {
     std::vector<apps::mojom::ConditionValuePtr> condition_values;
     condition_values.push_back(apps_util::MakeConditionValue(
         "https", apps::mojom::PatternMatchType::kNone));
@@ -95,34 +107,69 @@ TEST_F(IntentUtilTest, IntentDoesnotHaveValueToMatch) {
 
 // Test ConditionMatch with more then one condition values.
 
-TEST_F(IntentUtilTest, OneConditionValueMatch) {
-  auto condition = CreateMultiConditionValuesCondition();
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilTest, OneMojomConditionValueMatch) {
+  auto condition = CreateMultiMojomConditionValuesCondition();
   GURL test_url = GURL("https://www.google.com/");
   auto intent = apps_util::CreateIntentFromUrl(test_url);
   EXPECT_TRUE(apps_util::IntentMatchesCondition(intent, condition));
 }
 
-TEST_F(IntentUtilTest, NoneConditionValueMathc) {
+TEST_F(IntentUtilTest, OneConditionValueMatch) {
   auto condition = CreateMultiConditionValuesCondition();
+  GURL test_url("https://www.google.com/");
+  auto intent = std::make_unique<apps::Intent>(test_url);
+  EXPECT_TRUE(intent->MatchCondition(condition));
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilTest, NoneMojomConditionValueMatch) {
+  auto condition = CreateMultiMojomConditionValuesCondition();
   GURL test_url = GURL("tel://www.google.com/");
   auto intent = apps_util::CreateIntentFromUrl(test_url);
   EXPECT_FALSE(apps_util::IntentMatchesCondition(intent, condition));
 }
 
+TEST_F(IntentUtilTest, NoneConditionValueMatch) {
+  auto condition = CreateMultiConditionValuesCondition();
+  GURL test_url("tel://www.google.com/");
+  auto intent = std::make_unique<apps::Intent>(test_url);
+  EXPECT_FALSE(intent->MatchCondition(condition));
+}
+
 // Test Condition Value match with different pattern match type.
-TEST_F(IntentUtilTest, NoneMatchType) {
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilTest, NoneMatchTypeMojom) {
   auto condition_value = apps_util::MakeConditionValue(
       "https", apps::mojom::PatternMatchType::kNone);
   EXPECT_TRUE(apps_util::ConditionValueMatches("https", condition_value));
   EXPECT_FALSE(apps_util::ConditionValueMatches("http", condition_value));
 }
-TEST_F(IntentUtilTest, LiteralMatchType) {
+
+TEST_F(IntentUtilTest, NoneMatchType) {
+  auto condition_value = std::make_unique<apps::ConditionValue>(
+      "https", apps::PatternMatchType::kNone);
+  EXPECT_TRUE(apps_util::ConditionValueMatches("https", condition_value));
+  EXPECT_FALSE(apps_util::ConditionValueMatches("http", condition_value));
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilTest, LiteralMatchTypeMojom) {
   auto condition_value = apps_util::MakeConditionValue(
       "https", apps::mojom::PatternMatchType::kLiteral);
   EXPECT_TRUE(apps_util::ConditionValueMatches("https", condition_value));
   EXPECT_FALSE(apps_util::ConditionValueMatches("http", condition_value));
 }
-TEST_F(IntentUtilTest, PrefixMatchType) {
+
+TEST_F(IntentUtilTest, LiteralMatchType) {
+  auto condition_value = std::make_unique<apps::ConditionValue>(
+      "https", apps::PatternMatchType::kLiteral);
+  EXPECT_TRUE(apps_util::ConditionValueMatches("https", condition_value));
+  EXPECT_FALSE(apps_util::ConditionValueMatches("http", condition_value));
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilTest, PrefixMatchTypeMojom) {
   auto condition_value = apps_util::MakeConditionValue(
       "/ab", apps::mojom::PatternMatchType::kPrefix);
   EXPECT_TRUE(apps_util::ConditionValueMatches("/abc", condition_value));
@@ -130,7 +177,16 @@ TEST_F(IntentUtilTest, PrefixMatchType) {
   EXPECT_FALSE(apps_util::ConditionValueMatches("/d", condition_value));
 }
 
-TEST_F(IntentUtilTest, SuffixMatchType) {
+TEST_F(IntentUtilTest, PrefixMatchType) {
+  auto condition_value = std::make_unique<apps::ConditionValue>(
+      "/ab", apps::PatternMatchType::kPrefix);
+  EXPECT_TRUE(apps_util::ConditionValueMatches("/abc", condition_value));
+  EXPECT_TRUE(apps_util::ConditionValueMatches("/ABC", condition_value));
+  EXPECT_FALSE(apps_util::ConditionValueMatches("/d", condition_value));
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilTest, SuffixMatchTypeMojom) {
   auto condition_value = apps_util::MakeConditionValue(
       ".google.com", apps::mojom::PatternMatchType::kSuffix);
   EXPECT_TRUE(
@@ -144,7 +200,22 @@ TEST_F(IntentUtilTest, SuffixMatchType) {
   EXPECT_FALSE(apps_util::ConditionValueMatches("other", condition_value));
 }
 
-TEST_F(IntentUtilTest, GlobMatchType) {
+TEST_F(IntentUtilTest, SuffixMatchType) {
+  auto condition_value = std::make_unique<apps::ConditionValue>(
+      ".google.com", apps::PatternMatchType::kSuffix);
+  EXPECT_TRUE(
+      apps_util::ConditionValueMatches("en.google.com", condition_value));
+  EXPECT_TRUE(
+      apps_util::ConditionValueMatches("es.google.com", condition_value));
+  EXPECT_TRUE(apps_util::ConditionValueMatches(".google.com", condition_value));
+  EXPECT_FALSE(
+      apps_util::ConditionValueMatches("es.google.org", condition_value));
+  EXPECT_FALSE(apps_util::ConditionValueMatches("google.com", condition_value));
+  EXPECT_FALSE(apps_util::ConditionValueMatches("other", condition_value));
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilTest, GlobMatchTypeMojom) {
   auto condition_value_star = apps_util::MakeConditionValue(
       "/a*b", apps::mojom::PatternMatchType::kGlob);
   EXPECT_TRUE(apps_util::ConditionValueMatches("/b", condition_value_star));
@@ -198,6 +269,66 @@ TEST_F(IntentUtilTest, GlobMatchType) {
 
   auto condition_value_escape_star = apps_util::MakeConditionValue(
       "/a\\*b", apps::mojom::PatternMatchType::kGlob);
+  EXPECT_TRUE(
+      apps_util::ConditionValueMatches("/a*b", condition_value_escape_star));
+  EXPECT_FALSE(
+      apps_util::ConditionValueMatches("/acb", condition_value_escape_star));
+}
+
+TEST_F(IntentUtilTest, GlobMatchType) {
+  auto condition_value_star = std::make_unique<apps::ConditionValue>(
+      "/a*b", apps::PatternMatchType::kGlob);
+  EXPECT_TRUE(apps_util::ConditionValueMatches("/b", condition_value_star));
+  EXPECT_TRUE(apps_util::ConditionValueMatches("/ab", condition_value_star));
+  EXPECT_TRUE(apps_util::ConditionValueMatches("/aab", condition_value_star));
+  EXPECT_TRUE(
+      apps_util::ConditionValueMatches("/aaaaaab", condition_value_star));
+  EXPECT_FALSE(apps_util::ConditionValueMatches("/aabb", condition_value_star));
+  EXPECT_FALSE(apps_util::ConditionValueMatches("/aabc", condition_value_star));
+  EXPECT_FALSE(apps_util::ConditionValueMatches("/bb", condition_value_star));
+
+  auto condition_value_dot = std::make_unique<apps::ConditionValue>(
+      "/a.b", apps::PatternMatchType::kGlob);
+  EXPECT_TRUE(apps_util::ConditionValueMatches("/aab", condition_value_dot));
+  EXPECT_TRUE(apps_util::ConditionValueMatches("/acb", condition_value_dot));
+  EXPECT_FALSE(apps_util::ConditionValueMatches("/ab", condition_value_dot));
+  EXPECT_FALSE(apps_util::ConditionValueMatches("/abd", condition_value_dot));
+  EXPECT_FALSE(apps_util::ConditionValueMatches("/abbd", condition_value_dot));
+
+  auto condition_value_dot_and_star = std::make_unique<apps::ConditionValue>(
+      "/a.*b", apps::PatternMatchType::kGlob);
+  EXPECT_TRUE(
+      apps_util::ConditionValueMatches("/aab", condition_value_dot_and_star));
+  EXPECT_TRUE(apps_util::ConditionValueMatches("/aadsfadslkjb",
+                                               condition_value_dot_and_star));
+  EXPECT_TRUE(
+      apps_util::ConditionValueMatches("/ab", condition_value_dot_and_star));
+
+  // This arguably should be true, however the algorithm is transcribed from the
+  // upstream Android codebase, which behaves like this.
+  EXPECT_FALSE(apps_util::ConditionValueMatches("/abasdfab",
+                                                condition_value_dot_and_star));
+  EXPECT_FALSE(apps_util::ConditionValueMatches("/abasdfad",
+                                                condition_value_dot_and_star));
+  EXPECT_FALSE(apps_util::ConditionValueMatches("/bbasdfab",
+                                                condition_value_dot_and_star));
+  EXPECT_FALSE(
+      apps_util::ConditionValueMatches("/a", condition_value_dot_and_star));
+  EXPECT_FALSE(
+      apps_util::ConditionValueMatches("/b", condition_value_dot_and_star));
+
+  auto condition_value_escape_dot = std::make_unique<apps::ConditionValue>(
+      "/a\\.b", apps::PatternMatchType::kGlob);
+  EXPECT_TRUE(
+      apps_util::ConditionValueMatches("/a.b", condition_value_escape_dot));
+
+  // This arguably should be false, however the transcribed is carried from the
+  // upstream Android codebase, which behaves like this.
+  EXPECT_TRUE(
+      apps_util::ConditionValueMatches("/acb", condition_value_escape_dot));
+
+  auto condition_value_escape_star = std::make_unique<apps::ConditionValue>(
+      "/a\\*b", apps::PatternMatchType::kGlob);
   EXPECT_TRUE(
       apps_util::ConditionValueMatches("/a*b", condition_value_escape_star));
   EXPECT_FALSE(
@@ -869,4 +1000,57 @@ TEST_F(IntentUtilTest, IsGenericFileHandler) {
   IntentFilterPtr filter12 =
       apps_util::CreateFileFilterForView("inode/directory", "", kLabel);
   EXPECT_FALSE(apps_util::IsGenericFileHandler(intent3, filter12));
+}
+
+// TODO(crbug.com/1253250): Remove after migrating to non-mojo AppService.
+TEST_F(IntentUtilTest, MojomConvert) {
+  const std::string action = apps_util::kIntentActionSend;
+  GURL test_url1 = GURL("https://www.google.com/");
+  GURL test_url2 = GURL("https://www.abc.com/");
+  GURL test_url3 = GURL("https://www.foo.com/");
+  const std::string mime_type = "image/jpeg";
+  const std::string activity_name = "test";
+  const std::string share_text = "share text";
+  const std::string share_title = "share title";
+  const std::string start_type = "start type";
+  const std::string category1 = "category1";
+  const std::string data = "data";
+  const apps::mojom::OptionalBool ui_bypassed =
+      apps::mojom::OptionalBool::kTrue;
+  base::flat_map<std::string, std::string> extras = {
+      {"key1", "value1"}, {"key2", "value2"}, {"key3", "value3"}};
+
+  auto file1 = apps::mojom::IntentFile::New();
+  file1->url = test_url1;
+  auto file2 = apps::mojom::IntentFile::New();
+  file2->url = test_url2;
+  auto files = std::vector<apps::mojom::IntentFilePtr>();
+  files.push_back(std::move(file1));
+  files.push_back(std::move(file2));
+
+  auto src_intent =
+      CreateIntent(action, test_url1, mime_type, std::move(files),
+                   activity_name, test_url3, share_text, share_title,
+                   start_type, {category1}, data, ui_bypassed, extras);
+  auto dst_intent = apps::ConvertIntentToMojomIntent(
+      apps::ConvertMojomIntentToIntent(src_intent));
+
+  EXPECT_EQ(action, dst_intent->action);
+  EXPECT_EQ(test_url1, dst_intent->url.value());
+  EXPECT_EQ(mime_type, dst_intent->mime_type.value());
+  EXPECT_EQ(2u, dst_intent->files->size());
+  EXPECT_EQ(test_url1, dst_intent->files.value()[0]->url);
+  EXPECT_EQ(test_url2, dst_intent->files.value()[1]->url);
+  EXPECT_EQ(activity_name, dst_intent->activity_name.value());
+  EXPECT_EQ(test_url3, dst_intent->drive_share_url.value());
+  EXPECT_EQ(share_text, dst_intent->share_text.value());
+  EXPECT_EQ(share_title, dst_intent->share_title.value());
+  EXPECT_EQ(start_type, dst_intent->start_type.value());
+  EXPECT_EQ(1u, dst_intent->categories->size());
+  EXPECT_EQ(category1, dst_intent->categories.value()[0]);
+  EXPECT_EQ(data, dst_intent->data.value());
+  EXPECT_EQ(ui_bypassed, dst_intent->ui_bypassed);
+  EXPECT_TRUE(dst_intent->extras.has_value());
+  EXPECT_EQ(3u, dst_intent->extras->size());
+  EXPECT_EQ(extras, dst_intent->extras.value());
 }

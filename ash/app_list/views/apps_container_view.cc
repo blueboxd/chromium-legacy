@@ -139,10 +139,6 @@ constexpr int kSeparatorWidth = 240;
 // `scrollable_container_`.
 constexpr int kDefaultFadeoutMaskHeight = 16;
 
-// The time duration of the children fade in animation triggered by reorder.
-constexpr base::TimeDelta kChildrenFadeInAnimationDuration =
-    base::Milliseconds(400);
-
 }  // namespace
 
 // A view that contains continue section, recent apps and a separator view,
@@ -418,7 +414,8 @@ void AppsContainerView::OnActiveAppListModelsChanged(
 }
 
 void AppsContainerView::ShowFolderForItemView(AppListItemView* folder_item_view,
-                                              bool focus_name_input) {
+                                              bool focus_name_input,
+                                              base::OnceClosure hide_callback) {
   // Prevent new animations from starting if there are currently animations
   // pending. This fixes crbug.com/357099.
   if (app_list_folder_view_->IsAnimationRunning())
@@ -429,7 +426,8 @@ void AppsContainerView::ShowFolderForItemView(AppListItemView* folder_item_view,
   UMA_HISTOGRAM_ENUMERATION("Apps.AppListFolderOpened",
                             kFullscreenAppListFolders, kMaxFolderOpened);
 
-  app_list_folder_view_->ConfigureForFolderItemView(folder_item_view);
+  app_list_folder_view_->ConfigureForFolderItemView(folder_item_view,
+                                                    std::move(hide_callback));
   SetShowState(SHOW_ACTIVE_FOLDER, false);
 
   // If there is no selected view in the root grid when a folder is opened,
@@ -1498,9 +1496,10 @@ void AppsContainerView::OnAppsGridViewFadeOutAnimationEneded(
     pagination_model->SelectPage(0, /*animate=*/false);
   }
 
-  apps_grid_view_->FadeInVisibleItemsForReorder(base::BindRepeating(
-      &AppsContainerView::OnAppsGridViewFadeInAnimationEnded,
-      weak_ptr_factory_.GetWeakPtr()));
+  views::AnimationBuilder animation_builder =
+      apps_grid_view_->FadeInVisibleItemsForReorder(base::BindRepeating(
+          &AppsContainerView::OnAppsGridViewFadeInAnimationEnded,
+          weak_ptr_factory_.GetWeakPtr()));
 
   // Fade in the undo toast when:
   // (1) The toast's visibility becomes true from false, or
@@ -1514,20 +1513,8 @@ void AppsContainerView::OnAppsGridViewFadeOutAnimationEneded(
   // Hide the toast to prepare for the fade in animation,
   toast_container_->layer()->SetOpacity(0.f);
 
-  views::AnimationBuilder animation_builder;
-  fade_in_abort_handle_ = animation_builder.GetAbortHandle();
-  animation_builder
-      .OnEnded(
-          base::BindOnce(&AppsContainerView::OnFadeInChildrenAnimationEnded,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         /*aborted=*/false))
-      .OnAborted(
-          base::BindOnce(&AppsContainerView::OnFadeInChildrenAnimationEnded,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         /*aborted=*/true))
-      .Once()
-      .SetDuration(kChildrenFadeInAnimationDuration)
-      .SetOpacity(toast_container_->layer(), 1.f);
+  animation_builder.GetCurrentSequence().SetOpacity(toast_container_->layer(),
+                                                    1.f);
 
   // Continue section should be faded in only when the page changes.
   if (page_change) {
@@ -1538,15 +1525,6 @@ void AppsContainerView::OnAppsGridViewFadeOutAnimationEneded(
 }
 
 void AppsContainerView::OnAppsGridViewFadeInAnimationEnded(bool aborted) {
-  if (!aborted)
-    return;
-
-  // Abort the children fade in animation if the apps grid fade in animation is
-  // aborted.
-  fade_in_abort_handle_.reset();
-}
-
-void AppsContainerView::OnFadeInChildrenAnimationEnded(bool aborted) {
   if (!aborted)
     return;
 

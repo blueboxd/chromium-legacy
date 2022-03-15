@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium builder group."""
 
+load("//lib/args.star", "args")
 load("//lib/builders.star", "goma", "os", "sheriff_rotations")
 load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
@@ -93,6 +94,7 @@ ci.builder(
     goma_backend = None,
     reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
+    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.builder(
@@ -116,6 +118,7 @@ ci.builder(
     # have populated their cached by getting through the compile step
     execution_timeout = 10 * time.hour,
     os = os.LINUX_BIONIC_REMOVE,
+    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.builder(
@@ -217,7 +220,11 @@ ci.builder(
         },
     },
     schedule = "triggered",
+    sheriff_rotations = args.ignore_default(None),
     triggered_by = [],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -231,6 +238,10 @@ ci.builder(
     cores = 32,
     execution_timeout = 7 * time.hour,
     os = os.LINUX_BIONIC_REMOVE,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
+    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.builder(
@@ -288,6 +299,7 @@ ci.builder(
         },
     },
     schedule = "triggered",
+    sheriff_rotations = args.ignore_default(None),
     triggered_by = [],
 )
 
@@ -345,6 +357,7 @@ ci.builder(
         },
     },
     schedule = "triggered",
+    sheriff_rotations = args.ignore_default(None),
     triggered_by = [],
 )
 
@@ -373,6 +386,7 @@ ci.builder(
     ),
     cores = 32,
     os = os.WINDOWS_DEFAULT,
+    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.builder(
@@ -418,6 +432,7 @@ ci.builder(
         },
     },
     schedule = "triggered",
+    sheriff_rotations = args.ignore_default(None),
     triggered_by = [],
 )
 
@@ -442,6 +457,7 @@ ci.builder(
     ),
     cores = 32,
     os = os.WINDOWS_DEFAULT,
+    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.builder(
@@ -487,6 +503,7 @@ ci.builder(
         },
     },
     schedule = "triggered",
+    sheriff_rotations = args.ignore_default(None),
     triggered_by = [],
 )
 

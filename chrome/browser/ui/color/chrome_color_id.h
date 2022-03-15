@@ -38,6 +38,9 @@
   /* Window caption colors. */ \
   E(kColorCaptionButtonBackground, \
     ThemeProperties::COLOR_CONTROL_BUTTON_BACKGROUND) \
+  /* Desktop media tab list colors. */ \
+  E_CPONLY(kColorDesktopMediaTabListBorder) \
+  E_CPONLY(kColorDesktopMediaTabListPreviewBackground) \
   /* Download shelf colors. */ \
   E(kColorDownloadShelfBackground, ThemeProperties::COLOR_DOWNLOAD_SHELF) \
   E(kColorDownloadShelfButtonBackground, \
@@ -102,6 +105,8 @@
   E_CPONLY(kColorNewTabPageTextUnthemed) \
   E(kColorNewTabPageTextLight, ThemeProperties::COLOR_NTP_TEXT_LIGHT) \
   /* Omnibox colors. */ \
+  E_CPONLY(kColorOmniboxAnswerIconBackground) \
+  E_CPONLY(kColorOmniboxAnswerIconForeground) \
   E(kColorOmniboxBackground, ThemeProperties::COLOR_OMNIBOX_BACKGROUND) \
   E(kColorOmniboxBackgroundHovered, \
     ThemeProperties::COLOR_OMNIBOX_BACKGROUND_HOVERED) \
@@ -159,9 +164,19 @@
     ThemeProperties::COLOR_OMNIBOX_SECURITY_CHIP_SECURE) \
   E(kColorOmniboxText, ThemeProperties::COLOR_OMNIBOX_TEXT) \
   E(kColorOmniboxTextDimmed, ThemeProperties::COLOR_OMNIBOX_TEXT_DIMMED) \
+  /* Overlay colors. */ \
+  E_CPONLY(kColorOverlayWindowBackgroundColor) \
+  /* Payments colors. */ \
+  E_CPONLY(kColorPaymentRequestRowBackgroundHighlighted) \
+  /* QR code colors. */ \
+  E_CPONLY(kColorQrCodeBackground) \
+  E_CPONLY(kColorQrCodeBorder) \
   /* Read Later button colors. */ \
   E(kColorReadLaterButtonHighlight, \
     ThemeProperties::COLOR_READ_LATER_BUTTON_HIGHLIGHT) \
+  /* Screenshot captured bubble colors. */ \
+  E_CPONLY(kColorScreenshotCapturedImageBackground) \
+  E_CPONLY(kColorScreenshotCapturedImageBorder) \
   /* Side panel colors. */ \
   E(kColorSidePanelContentAreaSeparator, \
     ThemeProperties::COLOR_SIDE_PANEL_CONTENT_AREA_SEPARATOR) \
@@ -320,7 +335,14 @@
 #define CHROME_NATIVE_COLOR_IDS \
     /* The colors of the 1px border around the window on Windows 10. */ \
     E(kColorAccentBorderActive, ThemeProperties::COLOR_ACCENT_BORDER_ACTIVE) \
-    E(kColorAccentBorderInactive, ThemeProperties::COLOR_ACCENT_BORDER_INACTIVE)
+    E(kColorAccentBorderInactive, \
+      ThemeProperties::COLOR_ACCENT_BORDER_INACTIVE) \
+    E_CPONLY(kColorCaptionButtonForegroundActive) \
+    E_CPONLY(kColorCaptionButtonForegroundInactive) \
+    E_CPONLY(kColorCaptionCloseButtonBackgroundHovered) \
+    E_CPONLY(kColorCaptionCloseButtonForegroundHovered) \
+    E_CPONLY(kColorCaptionForegroundActive) \
+    E_CPONLY(kColorCaptionForegroundInactive)
 #else
 #define CHROME_NATIVE_COLOR_IDS
 #endif  // BUILDFLAG(IS_WIN)

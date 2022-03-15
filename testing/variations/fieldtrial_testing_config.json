@@ -1689,6 +1689,21 @@
             ]
         }
     ],
+    "ChromeManagementPageAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ChromeManagementPageAndroid",
+                    "enable_features": [
+                        "ChromeManagementPageAndroid"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeOSRawPSIMetrics": [
         {
             "platforms": [
@@ -1994,14 +2009,18 @@
                     },
                     "enable_features": [
                         "AvoidUnnecessaryBeforeUnloadCheck",
+                        "DefaultStyleSheetsEarlyInit",
+                        "EarlyBodyLoad",
                         "EarlyCodeCache",
                         "EarlyEstablishGpuChannel",
                         "ElidePrioritizationOfPreNativeBootstrapTasks",
                         "ElideTabPreloadAtStartup",
+                        "FasterSetCookie",
                         "FontManagerEarlyInit",
                         "IncludeIpcOverheadInNavigationStart",
                         "NavigationRequestPreconnect",
                         "NavigationThreadingOptimizations",
+                        "OnlySendStoragePolicyUpdatesForModifiedOrigins",
                         "OptimizeEarlyNavigation",
                         "OptimizeLookalikeUrlNavigationThrottle",
                         "PrefetchAndroidFonts",
@@ -2029,17 +2048,21 @@
                     },
                     "enable_features": [
                         "AvoidUnnecessaryBeforeUnloadCheck",
+                        "DefaultStyleSheetsEarlyInit",
+                        "EarlyBodyLoad",
                         "EarlyCodeCache",
                         "EarlyEstablishGpuChannel",
                         "ElidePrioritizationOfPreNativeBootstrapTasks",
                         "ElideTabPreloadAtStartup",
+                        "FasterSetCookie",
                         "FontManagerEarlyInit",
                         "IncludeIpcOverheadInNavigationStart",
                         "NavigationRequestPreconnect",
                         "NavigationThreadingOptimizations",
+                        "OnlySendStoragePolicyUpdatesForModifiedOrigins",
                         "OptimizeEarlyNavigation",
-                        "OptimizeLookalikeUrlNavigationThrottle",
                         "PrefetchAndroidFonts",
+                        "PrewarmSearchResultsPageFonts",
                         "TreatBootstrapAsDefault",
                         "URLLoaderSyncClient"
                     ]
@@ -2061,14 +2084,18 @@
                     },
                     "enable_features": [
                         "AvoidUnnecessaryBeforeUnloadCheck",
+                        "DefaultStyleSheetsEarlyInit",
+                        "EarlyBodyLoad",
                         "EarlyCodeCache",
                         "EarlyEstablishGpuChannel",
                         "ElidePrioritizationOfPreNativeBootstrapTasks",
                         "ElideTabPreloadAtStartup",
+                        "FasterSetCookie",
                         "FontManagerEarlyInit",
                         "IncludeIpcOverheadInNavigationStart",
                         "NavigationRequestPreconnect",
                         "NavigationThreadingOptimizations",
+                        "OnlySendStoragePolicyUpdatesForModifiedOrigins",
                         "OptimizeEarlyNavigation",
                         "OptimizeLookalikeUrlNavigationThrottle",
                         "PrefetchAndroidFonts",
@@ -2391,28 +2418,6 @@
                     "disable_features": [
                         "DefaultPassthroughCommandDecoder",
                         "RawDraw"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DefaultStyleSheetsEarlyInit": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20220201",
-                    "enable_features": [
-                        "DefaultStyleSheetsEarlyInit"
                     ]
                 }
             ]
@@ -2880,28 +2885,6 @@
             ]
         }
     ],
-    "EarlyBodyLoad": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EarlyBodyLoad"
-                    ]
-                }
-            ]
-        }
-    ],
     "EarlyHintsPreloadForNavigation": [
         {
             "platforms": [
@@ -3000,27 +2983,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ExtensionDeferredIndividualSettings"
-                    ]
-                }
-            ]
-        }
-    ],
-    "FasterSetCookie": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "FasterSetCookie"
                     ]
                 }
             ]
@@ -3270,6 +3232,24 @@
                     },
                     "enable_features": [
                         "TabGroupsContinuationAndroid"
+                    ]
+                }
+            ]
+        }
+    ],
+    "GridTabSwitcherTablet": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "enable_launch_polish": "false"
+                    },
+                    "enable_features": [
+                        "GridTabSwitcherForTablets"
                     ]
                 }
             ]
@@ -4666,25 +4646,6 @@
             ]
         }
     ],
-    "OnlySendStoragePolicyUpdatesForModifiedOrigins": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20220222",
-                    "enable_features": [
-                        "OnlySendStoragePolicyUpdatesForModifiedOrigins"
-                    ]
-                }
-            ]
-        }
-    ],
     "OptimizeUpdateLoadInfo": [
         {
             "platforms": [
@@ -5424,21 +5385,6 @@
                     },
                     "enable_features": [
                         "PreconnectToSearch"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PrewarmSearchResultsPageFonts": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PrewarmSearchResultsPageFonts"
                     ]
                 }
             ]

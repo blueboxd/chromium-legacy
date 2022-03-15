@@ -40,10 +40,7 @@ class TabContainer : public views::View, public views::ViewTargeterDelegate {
 
   Tab* AddTab(std::unique_ptr<Tab> tab, int model_index, TabPinned pinned);
   void MoveTab(Tab* tab, int from_model_index, int to_model_index);
-
-  // Remove the tab from |tabs_view_model_|, but *not* from the View hierarchy,
-  // so it can be animated closed.
-  void RemoveTabFromViewModel(int index);
+  void RemoveTab(int index, bool was_active);
 
   void ScrollTabToVisible(int model_index);
 
@@ -83,10 +80,30 @@ class TabContainer : public views::View, public views::ViewTargeterDelegate {
   // Called whenever a tab or group header animation has progressed.
   void OnTabSlotAnimationProgressed(TabSlotView* view);
 
+  // Invoked prior to starting a new animation.
+  void PrepareForAnimation();
+
+  // Generates and sets the ideal bounds for each of the tabs as well as the new
+  // tab button. Note: Does not animate the tabs to those bounds so callers can
+  // use this information for other purposes - see AnimateToIdealBounds.
+  void UpdateIdealBounds();
+
   // Animates all the views to their ideal bounds.
   // NOTE: this does *not* invoke UpdateIdealBounds, it uses the bounds
   // currently set in ideal_bounds.
   void AnimateToIdealBounds();
+
+  // Force recalculation of ideal bounds at the next layout. Used to cause tabs
+  // to animate to their ideal bounds after somebody other than TabContainer
+  // (cough TabDragController cough) moves tabs directly.
+  void InvalidateIdealBounds();
+
+  // Stops any ongoing animations. If |layout| is true and an animation is
+  // ongoing this does a layout.
+  void StopAnimating(bool layout);
+
+  // Invoked from Layout if the size changes or layout is really needed.
+  void CompleteAnimationAndLayout();
 
   // Calculates the width that can be occupied by the tabs in the container.
   // This can differ from GetAvailableWidthForTabContainer() when in tab closing
@@ -116,8 +133,6 @@ class TabContainer : public views::View, public views::ViewTargeterDelegate {
     return override_available_width_for_tabs_;
   }
 
-  void OnTabWillBeRemovedAt(int model_index, bool was_active);
-
   // TODO (1295774): Move callers down into TabContainer so this
   // encapsulation-breaking getter can be removed.
   TabStripLayoutHelper* layout_helper() const { return layout_helper_.get(); }
@@ -130,8 +145,10 @@ class TabContainer : public views::View, public views::ViewTargeterDelegate {
   views::BoundsAnimator& bounds_animator() { return bounds_animator_; }
 
   // views::View
+  void Layout() override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
   gfx::Size GetMinimumSize() const override;
+  gfx::Size CalculatePreferredSize() const override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
 
   // views::ViewTargeterDelegate:
@@ -140,7 +157,18 @@ class TabContainer : public views::View, public views::ViewTargeterDelegate {
  private:
   class RemoveTabDelegate;
 
+  // Invoked from |AddTab| after the newly created tab has been inserted.
+  void StartInsertTabAnimation(int model_index);
+
+  // Remove the tab from |tabs_view_model_|, but *not* from the View hierarchy,
+  // so it can be animated closed.
+  void RemoveTabFromViewModel(int index);
+
   void OnTabCloseAnimationCompleted(Tab* tab);
+
+  // Updates |override_available_width_for_tabs_|, if necessary, to account for
+  // the removal of the tab at |model_index|.
+  void UpdateClosingModeOnRemovedTab(int model_index, bool was_active);
 
   // Returns the corresponding view index of a |tab| to be inserted at
   // |to_model_index|. Used to reorder the child views of the tab container
@@ -201,6 +229,12 @@ class TabContainer : public views::View, public views::ViewTargeterDelegate {
   std::unique_ptr<gfx::LinearAnimation> tab_scrolling_animation_;
 
   std::unique_ptr<TabStripLayoutHelper> layout_helper_;
+
+  // Size we last laid out at.
+  gfx::Size last_layout_size_;
+
+  // The width available for tabs at the time of last layout.
+  int last_available_width_ = 0;
 
   // If this value is defined, it is used as the width to lay out tabs
   // (instead of GetAvailableWidthForTabStrip()). It is defined when closing

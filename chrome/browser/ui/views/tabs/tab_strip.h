@@ -132,7 +132,7 @@ class TabStrip : public views::View,
   void UpdateLoadingAnimations(const base::TimeDelta& elapsed_time);
 
   // Adds a tab at the specified index.
-  void AddTabAt(int model_index, TabRendererData data, bool is_active);
+  void AddTabAt(int model_index, TabRendererData data);
 
   // Moves a tab.
   void MoveTab(int from_model_index, int to_model_index, TabRendererData data);
@@ -405,17 +405,6 @@ class TabStrip : public views::View,
 
   std::map<tab_groups::TabGroupId, TabGroupHeader*> GetGroupHeaders();
 
-  // Invoked from |AddTabAt| after the newly created tab has been inserted.
-  void StartInsertTabAnimation(int model_index);
-
-  // Animates the removal of the tab at |model_index|. Defers to the old
-  // animation style when appropriate.
-  void StartRemoveTabAnimation(int model_index, bool was_active);
-
-  // Animates the removal of the tab at |model_index| using the old animation
-  // style.
-  void StartFallbackRemoveTabAnimation(int model_index, bool was_active);
-
   // Invoked from |MoveTab| after |tab_data_| has been updated to animate the
   // move.
   void StartMoveTabAnimation();
@@ -425,9 +414,6 @@ class TabStrip : public views::View,
 
   // Returns whether the window background behind the tabstrip is transparent.
   bool TitlebarBackgroundIsTransparent() const;
-
-  // Invoked from Layout if the size changes or layout is really needed.
-  void CompleteAnimationAndLayout();
 
   // Returns the current width of the active tab.
   int GetActiveTabWidth() const;
@@ -442,13 +428,6 @@ class TabStrip : public views::View,
 
   // Closes the tab at |model_index|.
   void CloseTabInternal(int model_index, CloseTabSource source);
-
-  // Removes the tab at |index| from |tabs_|.
-  void RemoveTabFromViewModel(int index);
-
-  // Cleans up the Tab from the TabStrip. This is called from the tab animation
-  // code and is not a general-purpose method.
-  void OnTabCloseAnimationCompleted(Tab* tab);
 
   // Invoked from StoppedDraggingTabs to cleanup |view|. If |view| is known
   // |is_first_view| is set to true.
@@ -501,14 +480,6 @@ class TabStrip : public views::View,
   static gfx::ImageSkia* GetDropArrowImage(bool is_down);
 
   // -- Animations ------------------------------------------------------------
-
-  // Invoked prior to starting a new animation.
-  void PrepareForAnimation();
-
-  // Generates and sets the ideal bounds for each of the tabs as well as the new
-  // tab button. Note: Does not animate the tabs to those bounds so callers can
-  // use this information for other purposes - see AnimateToIdealBounds.
-  void UpdateIdealBounds();
 
   // Starts various types of TabStrip animations.
   void StartResizeLayoutAnimation();
@@ -576,12 +547,6 @@ class TabStrip : public views::View,
 
   // MouseWatcher is used when a tab is closed to reset the layout.
   std::unique_ptr<views::MouseWatcher> mouse_watcher_;
-
-  // Size we last layed out at.
-  gfx::Size last_layout_size_;
-
-  // The width available for tabs at the time of last layout.
-  int last_available_width_ = 0;
 
   // Location of the mouse at the time of the last move.
   gfx::Point last_mouse_move_location_;

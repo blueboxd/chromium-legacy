@@ -289,6 +289,7 @@ try_.builder(
 try_.orchestrator_builder(
     name = "android-pie-arm64-rel",
     compilator = "android-pie-arm64-rel-compilator",
+    check_for_flakiness = True,
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -297,6 +298,7 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "android-pie-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
     main_list_view = "try",
 )
 
@@ -482,6 +484,7 @@ try_.builder(
 try_.gpu.optional_tests_builder(
     name = "android_optional_gpu_tests_rel",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(

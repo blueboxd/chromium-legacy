@@ -7831,17 +7831,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_ACCNAME_SIDE_SEARCH_TOOL" desc="The accessible name for the side search tool.">
           Side Search
         </message>
-        <message name="IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON" desc="The accessible name for the side search toolbar button.">
-          Toggle side search
+        <message name="IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED" desc="The accessible name for the side search toolbar button when the button is active and the side panel is open.">
+          Close search in side panel. Search is open in the side panel.
         </message>
-        <message name="IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED" desc="The accessible name for the side search toolbar button when side search is activated.">
-          Toggle side search. Side search activated.
-        </message>
-        <message name="IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED" desc="The accessible name for the side search toolbar button when side search is not activated.">
-          Toggle side search. Side search not activated.
+        <message name="IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED" desc="The accessible name for the side search toolbar button when the button is not active and the side panel is not open.">
+          Open search in side panel. Search is not open in the side panel.
         </message>
         <message name="IDS_ACCNAME_SIDE_SEARCH_CLOSE_BUTTON" desc="The accessible name for the side search header close button.">
-          Close side search
+          Close search in side panel
         </message>
         <message name="IDS_ACCNAME_SIDE_SEARCH_FEEDBACK_BUTTON" desc="The accessible name for the side search header feedback button.">
           Submit Feedback
@@ -7849,11 +7846,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_SIDE_SEARCH_PROMO" desc="Promo UI shown next to the side search button to encourage its use.">
           See more search results in side panel
         </message>
-        <message name="IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON" desc="The tooltip for the side search toolbar button.">
-          Toggle side search
+        <message name="IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED" desc="The tooltip for the side search toolbar button when the button is active and the side panel is open.">
+          Close search in side panel
+        </message>
+        <message name="IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED" desc="The tooltip for the side search toolbar button when the button is not active and the side panel is not open.">
+          Open search in side panel
         </message>
         <message name="IDS_TOOLTIP_SIDE_SEARCH_CLOSE_BUTTON" desc="The tooltip for the side search header close button.">
-          Close side search
+          Close search in side panel
         </message>
         <message name="IDS_TOOLTIP_SIDE_SEARCH_FEEDBACK_BUTTON" desc="The tooltip for the side search header feedback button.">
           Submit Feedback
@@ -10981,11 +10981,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_TAB_CAPTURE_TERMINATED_BY_POLICY_TEXT" desc="Text to be shown in a confirmation dialog on the captured tab when capture of that tab is terminated due to enterprise policy.">
          Your organization doesn't allow you to share this content. If you need help, contact your administrator.
-      </message>
-
-      <!--Printer registration message for local discovery and Print Preview-->
-      <message name="IDS_CLOUD_PRINT_REGISTER_PRINTER_INFORMATION" desc="Information about registering printers with Google Cloud Print shown to the user before they confirm registration.">
-        Documents are <ph name="BEGIN_LINK_HELP">&lt;a is="action-link" href="https://support.google.com/cloudprint/answer/2541843" target="_blank"&gt;</ph>sent to Google<ph name="END_LINK_HELP">&lt;/a&gt;</ph> to prepare them for printing. View, edit and manage your printers and printer history on the <ph name="BEGIN_LINK_DASHBOARD">&lt;a is="action-link" href="https://www.google.com/cloudprint#jobs" target="_blank"&gt;</ph>Google Cloud Print dashboard<ph name="END_LINK_DASHBOARD">&lt;/a&gt;</ph>.
       </message>
 
       <!--Tab alert tooltip strings-->

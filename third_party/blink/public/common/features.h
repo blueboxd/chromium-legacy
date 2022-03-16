@@ -22,7 +22,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kBackForwardCacheDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingDownloadsInAdFrameWithoutUserActivation;
-BLINK_COMMON_EXPORT extern const base::Feature kCOLRV1Fonts;
 BLINK_COMMON_EXPORT extern const base::Feature kCSSContainerQueries;
 BLINK_COMMON_EXPORT extern const base::Feature kConversionMeasurement;
 BLINK_COMMON_EXPORT extern const base::Feature kExcludeLowEntropyImagesFromLCP;
@@ -54,6 +53,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNGBlockInInline;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigationPredictor;
+BLINK_COMMON_EXPORT extern const base::Feature kAnchorElementInteraction;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;
 BLINK_COMMON_EXPORT extern const base::Feature kPortalsCrossOrigin;
@@ -468,11 +468,15 @@ BLINK_COMMON_EXPORT bool IsAllowURNsInIframeEnabled();
 
 BLINK_COMMON_EXPORT extern const base::Feature kBrowsingTopics;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsNumberOfEpochsToExpose;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsNumberOfTopTopicsPerEpoch;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsUseRandomTopicProbabilityPercent;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsMaxNumberOfApiUsageContextEntriesToLoadPerEpoch;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsConfigVersion;
 
 // Control switch for minimizing processing in the WebRTC APM when all audio
 // tracks are disabled.

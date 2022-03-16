@@ -713,7 +713,6 @@ void DocumentLoader::RunURLAndHistoryUpdateSteps(
     mojom::blink::SameDocumentNavigationType same_document_navigation_type,
     scoped_refptr<SerializedScriptValue> data,
     WebFrameLoadType type,
-    mojom::blink::ScrollRestorationType scroll_restoration_type,
     bool is_browser_initiated,
     bool is_synchronously_committed) {
   // We use the security origin of this frame since callers of this method must
@@ -723,8 +722,8 @@ void DocumentLoader::RunURLAndHistoryUpdateSteps(
   // in this process.
   UpdateForSameDocumentNavigation(
       new_url, history_item, same_document_navigation_type, std::move(data),
-      scroll_restoration_type, type, frame_->DomWindow()->GetSecurityOrigin(),
-      is_browser_initiated, is_synchronously_committed);
+      type, frame_->DomWindow()->GetSecurityOrigin(), is_browser_initiated,
+      is_synchronously_committed);
 }
 
 void DocumentLoader::UpdateForSameDocumentNavigation(
@@ -732,7 +731,6 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     HistoryItem* history_item,
     mojom::blink::SameDocumentNavigationType same_document_navigation_type,
     scoped_refptr<SerializedScriptValue> data,
-    mojom::blink::ScrollRestorationType scroll_restoration_type,
     WebFrameLoadType type,
     const SecurityOrigin* initiator_origin,
     bool is_browser_initiated,
@@ -803,10 +801,8 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
                                    : HistoryNavigationType::kFragment,
                                CommitReason::kRegular);
   history_item_->SetDocumentState(frame_->GetDocument()->GetDocumentState());
-  if (is_history_api_or_app_history_navigation) {
+  if (is_history_api_or_app_history_navigation)
     history_item_->SetStateObject(std::move(data));
-    history_item_->SetScrollRestorationType(scroll_restoration_type);
-  }
 
   WebHistoryCommitType commit_type = LoadTypeToCommitType(type);
   frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
@@ -1453,20 +1449,15 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
 
   UpdateForSameDocumentNavigation(
       url, history_item, same_document_navigation_type, nullptr,
-      scroll_restoration_type, frame_load_type, initiator_origin,
-      is_browser_initiated, is_synchronously_committed);
+      frame_load_type, initiator_origin, is_browser_initiated,
+      is_synchronously_committed);
   if (!frame_)
     return;
 
-  if (frame_->GetDocument()->LoadEventStillNeeded()) {
-    frame_->GetDocument()->CheckCompleted();
-  } else if (frame_->Owner() && initiator_origin &&
-             !initiator_origin->CanAccess(
-                 frame_->DomWindow()->GetSecurityOrigin()) &&
-             frame_->Tree()
-                 .Parent()
-                 ->GetSecurityContext()
-                 ->GetSecurityOrigin()) {
+  if (!frame_->GetDocument()->LoadEventStillNeeded() && frame_->Owner() &&
+      initiator_origin &&
+      !initiator_origin->CanAccess(frame_->DomWindow()->GetSecurityOrigin()) &&
+      frame_->Tree().Parent()->GetSecurityContext()->GetSecurityOrigin()) {
     // If this same-document navigation was initiated by a cross-origin iframe
     // and is cross-origin to its parent, fire onload on the owner iframe.
     // Normally, the owner iframe's onload fires if and only if the window's
@@ -1474,7 +1465,7 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
     // However, a cross-origin initiator can use the presence or absence of a
     // load event to detect whether the navigation was same- or cross-document,
     // and can therefore try to guess the url of a cross-origin iframe. Fire the
-    // iframe's onload to prevent this technique. https://crbug.com/1251790
+    // iframe's onload to prevent this technique. https://crbug.com/1248444
     frame_->Owner()->DispatchLoad();
   }
 

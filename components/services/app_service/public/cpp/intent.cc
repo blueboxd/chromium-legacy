@@ -42,7 +42,7 @@ bool IntentFile::MatchConditionValue(const ConditionValuePtr& condition_value) {
 }
 
 bool IntentFile::MatchAnyConditionValue(
-    const std::vector<apps::ConditionValuePtr>& condition_values) {
+    const std::vector<ConditionValuePtr>& condition_values) {
   return std::any_of(condition_values.begin(), condition_values.end(),
                      [this](const ConditionValuePtr& condition_value) {
                        return MatchConditionValue(condition_value);
@@ -54,30 +54,69 @@ Intent::Intent(const std::string& action) : action(action) {}
 Intent::Intent(const GURL& url)
     : action(apps_util::kIntentActionView), url(url) {}
 
+Intent::Intent(const std::vector<GURL>& filesystem_urls,
+               const std::vector<std::string>& mime_types)
+    : action(filesystem_urls.size() == 1
+                 ? apps_util::kIntentActionSend
+                 : apps_util::kIntentActionSendMultiple),
+      mime_type(apps_util::CalculateCommonMimeType(mime_types)) {
+  DCHECK_EQ(filesystem_urls.size(), mime_types.size());
+  for (size_t i = 0; i < filesystem_urls.size(); i++) {
+    auto file = std::make_unique<IntentFile>(filesystem_urls[i]);
+    file->mime_type = mime_types.at(i);
+    files.push_back(std::move(file));
+  }
+}
+
+Intent::Intent(std::vector<IntentFilePtr> files)
+    : action(apps_util::kIntentActionView), files(std::move(files)) {}
+
+Intent::Intent(const std::vector<GURL>& filesystem_urls,
+               const std::vector<std::string>& mime_types,
+               const std::string& text,
+               const std::string& title)
+    : Intent(filesystem_urls, mime_types) {
+  if (!text.empty()) {
+    share_text = text;
+  }
+  if (!title.empty()) {
+    share_title = title;
+  }
+}
+
+Intent::Intent(const std::string& text, const std::string& title)
+    : Intent(apps_util::kIntentActionSend) {
+  mime_type = "text/plain";
+  share_text = text;
+  if (!title.empty()) {
+    share_title = title;
+  }
+}
+
 Intent::~Intent() = default;
 
 absl::optional<std::string> Intent::GetIntentConditionValueByType(
-    apps::ConditionType condition_type) {
+    ConditionType condition_type) {
   switch (condition_type) {
-    case apps::ConditionType::kAction: {
+    case ConditionType::kAction: {
       return action;
     }
-    case apps::ConditionType::kScheme: {
+    case ConditionType::kScheme: {
       return url.has_value() ? absl::optional<std::string>(url->scheme())
                              : absl::nullopt;
     }
-    case apps::ConditionType::kHost: {
+    case ConditionType::kHost: {
       return url.has_value() ? absl::optional<std::string>(url->host())
                              : absl::nullopt;
     }
-    case apps::ConditionType::kPattern: {
+    case ConditionType::kPattern: {
       return url.has_value() ? absl::optional<std::string>(url->path())
                              : absl::nullopt;
     }
-    case apps::ConditionType::kMimeType: {
+    case ConditionType::kMimeType: {
       return mime_type;
     }
-    case apps::ConditionType::kFile: {
+    case ConditionType::kFile: {
       // Handled in IntentMatchesFileCondition.
       NOTREACHED();
       return absl::nullopt;
@@ -115,6 +154,17 @@ bool Intent::MatchCondition(const ConditionPtr& condition) {
                        return apps_util::ConditionValueMatches(
                            value_to_match.value(), condition_value);
                      });
+}
+
+bool Intent::MatchFilter(const IntentFilterPtr& filter) {
+  // Intent matches with this intent filter when all of the existing conditions
+  // match.
+  for (const auto& condition : filter->conditions) {
+    if (!MatchCondition(condition)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 IntentFilePtr ConvertMojomIntentFileToIntentFile(

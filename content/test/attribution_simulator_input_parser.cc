@@ -21,11 +21,11 @@
 #include "base/values.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
+#include "content/browser/attribution_reporting/attribution_host_utils.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
-#include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
@@ -220,7 +220,7 @@ class AttributionSimulatorInputParser {
 
     base::Time trigger_time = ParseTime(trigger, "trigger_time");
     url::Origin reporting_origin = ParseOrigin(trigger, "reporting_origin");
-    net::SchemefulSite destination(ParseOrigin(trigger, "destination"));
+    url::Origin destination_origin = ParseOrigin(trigger, "destination");
 
     absl::optional<uint64_t> debug_key;
     AttributionFilterData filters;
@@ -245,7 +245,7 @@ class AttributionSimulatorInputParser {
     events_.emplace_back(
         AttributionTriggerAndTime{
             .trigger = AttributionTrigger(
-                std::move(destination), std::move(reporting_origin),
+                std::move(destination_origin), std::move(reporting_origin),
                 std::move(filters), debug_key, std::move(event_triggers)),
             .time = trigger_time,
         },
@@ -302,8 +302,8 @@ class AttributionSimulatorInputParser {
     if (const std::string* v = dict.FindStringKey(key))
       origin = url::Origin::Create(GURL(*v));
 
-    if (origin.opaque())
-      *Error() << "must be a valid origin";
+    if (!attribution_host_utils::IsOriginTrustworthyForAttributions(origin))
+      *Error() << "must be a valid, secure origin";
 
     return origin;
   }

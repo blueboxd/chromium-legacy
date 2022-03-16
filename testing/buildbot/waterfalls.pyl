@@ -1203,6 +1203,23 @@
           'gtest_tests': 'cronet_gtests',
         },
       },
+      'android-nougat-x86-rel': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'isolate_profile_data',
+          'nougat-x86-emulator',
+          'emulator-4-cores',
+          'linux-xenial-or-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_nougat_emulator_gtests',
+          'junit_tests': 'chromium_junit_tests',
+          'isolated_scripts': 'nougat_isolated_scripts',
+          'scripts': 'chromium_android_scripts',
+        },
+      },
       'android-pie-arm64-wpt-rel-non-cq': {
         'mixins': [
           'has_native_resultdb_integration',
@@ -2616,6 +2633,10 @@
           'all'
         ],
       },
+      'GPU FYI Win x64 Builder (dbg) (reclient shadow)' : {},
+      'GPU FYI Win x64 Builder (reclient shadow)' : {},
+      'GPU FYI Win x64 DX12 Vulkan Builder (dbg) (reclient shadow)': {},
+      'GPU FYI Win x64 DX12 Vulkan Builder (reclient shadow)': {},
       'Linux Builder (j-500) (reclient)': {
         # Copied from
         # https://source.chromium.org/chromium/chromium/src/+/main:testing/buildbot/waterfalls.pyl;l=4844-4854;drc=75f767e92e86611728189739fb26f4e2cdf212d9
@@ -3620,10 +3641,23 @@
           'scripts': 'test_traffic_annotation_auditor_script',
         },
       },
+      'win-archive-dbg (goma cache silo)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'win-archive-dbg (reclient shadow)': {
         'additional_compile_targets': [
           'all',
         ],
+      },
+      'win-archive-rel (goma cache silo)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'public_build_scripts',
+        },
       },
       'win-archive-rel (reclient shadow)': {
         'additional_compile_targets': [
@@ -5509,6 +5543,19 @@
     'name': 'chromium.rust',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
+      'android-rust-arm-dbg': {
+        'additional_compile_targets': [
+          'mojo_rust',
+          'rust_build_tests',
+        ],
+        'mixins': [ 'marshmallow' ],
+        'test_suites': {
+          'gtest_tests': 'rust_gtests',
+          # Currently `can_build_rust_unit_tests` is false on Android (because
+          # `rustc_can_link` is false).
+          # TODO(https://crbug.com/1260120): Cover `rust_native_tests` here.
+        },
+      },
       'android-rust-arm-rel': {
         'additional_compile_targets': [
           'mojo_rust',
@@ -5523,6 +5570,17 @@
         },
       },
       'linux-rust-intree-x64-rel' : {
+        'additional_compile_targets': [
+          'mojo_rust',
+          'mojo_rust_tests',
+          'rust_build_tests',
+        ],
+        'test_suites': {
+          'gtest_tests': 'rust_gtests',
+          'isolated_scripts': 'rust_native_tests',
+        },
+      },
+      'linux-rust-x64-dbg' : {
         'additional_compile_targets': [
           'mojo_rust',
           'mojo_rust_tests',

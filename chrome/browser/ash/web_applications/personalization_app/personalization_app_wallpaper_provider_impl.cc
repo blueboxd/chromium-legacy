@@ -208,6 +208,26 @@ void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosCount(
       std::move(callback));
 }
 
+void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosEnabled(
+    FetchGooglePhotosEnabledCallback callback) {
+  if (!ash::features::IsWallpaperGooglePhotosIntegrationEnabled()) {
+    mojo::ReportBadMessage(
+        "Cannot call `FetchGooglePhotosEnabled()` without Google Photos "
+        "Wallpaper integration enabled.");
+    std::move(callback).Run(
+        ash::personalization_app::mojom::GooglePhotosEnablementState::kError);
+    return;
+  }
+
+  if (!google_photos_enabled_fetcher_) {
+    google_photos_enabled_fetcher_ =
+        std::make_unique<wallpaper_handlers::GooglePhotosEnabledFetcher>(
+            profile_);
+  }
+  google_photos_enabled_fetcher_->AddRequestAndStartIfNecessary(
+      std::move(callback));
+}
+
 void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosPhotos(
     const absl::optional<std::string>& item_id,
     const absl::optional<std::string>& album_id,
@@ -442,9 +462,9 @@ void PersonalizationAppWallpaperProviderImpl::SelectGooglePhotosPhoto(
                      backend_weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PersonalizationAppWallpaperProviderImpl::SetCustomWallpaperLayout(
+void PersonalizationAppWallpaperProviderImpl::SetCurrentWallpaperLayout(
     ash::WallpaperLayout layout) {
-  WallpaperController::Get()->UpdateCustomWallpaperLayout(
+  WallpaperController::Get()->UpdateCurrentWallpaperLayout(
       GetAccountId(profile_), layout);
 }
 
@@ -503,6 +523,13 @@ PersonalizationAppWallpaperProviderImpl::SetGooglePhotosCountFetcherForTest(
     std::unique_ptr<wallpaper_handlers::GooglePhotosCountFetcher> fetcher) {
   google_photos_count_fetcher_ = std::move(fetcher);
   return google_photos_count_fetcher_.get();
+}
+
+wallpaper_handlers::GooglePhotosEnabledFetcher*
+PersonalizationAppWallpaperProviderImpl::SetGooglePhotosEnabledFetcherForTest(
+    std::unique_ptr<wallpaper_handlers::GooglePhotosEnabledFetcher> fetcher) {
+  google_photos_enabled_fetcher_ = std::move(fetcher);
+  return google_photos_enabled_fetcher_.get();
 }
 
 wallpaper_handlers::GooglePhotosPhotosFetcher*

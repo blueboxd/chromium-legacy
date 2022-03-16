@@ -596,7 +596,7 @@ struct SystemInfo {
   string? product_serial_number@3;
   // The product model name.
   string? product_model_name@4;
-  // Contents of CrosConfig in /arc/build-properties/marketing-name.
+  // Contents of CrosConfig in /branding/marketing-name.
   string marketing_name@5;
   // The BIOS version.
   string? bios_version@6;
@@ -630,19 +630,21 @@ struct SystemInfoV2 {
 
 // The OS information.
 //
-// NextMinVersion: 1, NextIndex: 4
+// NextMinVersion: 2, NextIndex: 5
 struct OsInfo {
   // Google code name for the given model. While it is OK to use this string for
   // human-display purposes (such as in a debug log or help dialog), or for a
   // searchable-key in metrics collection, it is not recommended to use this
   // property for creating model-specific behaviors.
   string code_name@0;
-  // Contents of CrosConfig in /arc/build-properties/marketing-name.
+  // Contents of CrosConfig in /branding/marketing-name.
   string? marketing_name@1;
   // The OS version of the system.
   OsVersion os_version@2;
   // The boot flow used by the current boot.
   BootMode boot_mode@3;
+  // Contents of CrosConfig in /branding/oem-name.
+  [MinVersion=1] string? oem_name@4;
 };
 
 // Structure containing information about the operating system version of the

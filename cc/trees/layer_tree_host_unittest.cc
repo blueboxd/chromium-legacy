@@ -3506,7 +3506,8 @@ class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
   int num_draws_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestSetVisible);
+// TODO(crbug.com/1298939): Test is flaky.
+// MULTI_THREAD_TEST_F(LayerTreeHostTestSetVisible);
 
 class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     : public LayerTreeHostTest {
@@ -9866,7 +9867,7 @@ class LayerTreeHostTestDocumentTransitionsPropagatedToMetadata
   void BeginTest() override {
     layer_tree_host()->AddDocumentTransitionRequest(
         DocumentTransitionRequest::CreateCapture(
-            /*document_tag=*/0, /*shared_element_count=*/0,
+            /*document_tag=*/0, /*shared_element_count=*/0, {},
             base::BindLambdaForTesting([this]() { CommitLambdaCalled(); })));
   }
 

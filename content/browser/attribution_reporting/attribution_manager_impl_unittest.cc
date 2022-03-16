@@ -46,7 +46,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
-#include "net/base/schemeful_site.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -61,12 +60,14 @@ namespace {
 
 using ::testing::_;
 using ::testing::AllOf;
+using ::testing::AnyOf;
 using ::testing::ElementsAre;
 using ::testing::Expectation;
 using ::testing::Field;
 using ::testing::Ge;
 using ::testing::InSequence;
 using ::testing::IsEmpty;
+using ::testing::IsNull;
 using ::testing::Le;
 using ::testing::Pointee;
 using ::testing::Return;
@@ -99,7 +100,9 @@ class MockAttributionObserver : public AttributionObserver {
 
   MOCK_METHOD(void,
               OnReportSent,
-              (const AttributionReport& report, const SendResult& info),
+              (const AttributionReport& report,
+               bool is_debug_report,
+               const SendResult& info),
               (override));
 
   MOCK_METHOD(void,
@@ -406,6 +409,8 @@ TEST_F(AttributionManagerImplTest, ImpressionConverted_ReportReturnedToWebUI) {
 }
 
 TEST_F(AttributionManagerImplTest, ImpressionConverted_ReportSent) {
+  base::HistogramTester histograms;
+
   attribution_manager_->HandleSource(
       SourceBuilder().SetExpiry(kImpressionExpiry).Build());
   attribution_manager_->HandleTrigger(DefaultTrigger());
@@ -417,6 +422,11 @@ TEST_F(AttributionManagerImplTest, ImpressionConverted_ReportSent) {
 
   task_environment_.FastForwardBy(base::Microseconds(1));
   EXPECT_THAT(report_sender_->calls(), SizeIs(1));
+
+  histograms.ExpectUniqueSample("Conversions.RegisterImpressionAllowed", true,
+                                1);
+  histograms.ExpectUniqueSample("Conversions.RegisterConversionAllowed", true,
+                                1);
 }
 
 TEST_F(AttributionManagerImplTest,
@@ -700,9 +710,12 @@ TEST_F(AttributionManagerImplTest, QueuedReportSent_ObserversNotified) {
       &observer);
   observation.Observe(attribution_manager_.get());
 
-  EXPECT_CALL(observer, OnReportSent(ReportSourceIs(SourceEventIdIs(1u)), _));
-  EXPECT_CALL(observer, OnReportSent(ReportSourceIs(SourceEventIdIs(2u)), _));
-  EXPECT_CALL(observer, OnReportSent(ReportSourceIs(SourceEventIdIs(3u)), _));
+  EXPECT_CALL(observer, OnReportSent(ReportSourceIs(SourceEventIdIs(1u)),
+                                     /*is_debug_report=*/false, _));
+  EXPECT_CALL(observer, OnReportSent(ReportSourceIs(SourceEventIdIs(2u)),
+                                     /*is_debug_report=*/false, _));
+  EXPECT_CALL(observer, OnReportSent(ReportSourceIs(SourceEventIdIs(3u)),
+                                     /*is_debug_report=*/false, _));
 
   attribution_manager_->HandleSource(
       SourceBuilder().SetSourceEventId(1).SetExpiry(kImpressionExpiry).Build());
@@ -1189,8 +1202,72 @@ TEST_F(AttributionManagerImplTest, ClearData_NotifiesObservers) {
   run_loop.Run();
 }
 
+TEST_F(AttributionManagerImplTest,
+       EmbedderDisallowsImpressions_SourceNotStored) {
+  base::HistogramTester histograms;
+
+  MockAttributionReportingContentBrowserClient browser_client;
+  EXPECT_CALL(
+      browser_client,
+      IsConversionMeasurementOperationAllowed(
+          _, ContentBrowserClient::ConversionMeasurementOperation::kImpression,
+          Pointee(url::Origin::Create(GURL("https://impression.test/"))),
+          IsNull(), Pointee(url::Origin::Create(GURL("https://report.test/")))))
+      .WillOnce(Return(false));
+  ScopedContentBrowserClientSetting setting(&browser_client);
+
+  attribution_manager_->HandleSource(
+      SourceBuilder().SetExpiry(kImpressionExpiry).Build());
+  EXPECT_THAT(StoredSources(), IsEmpty());
+
+  histograms.ExpectUniqueSample("Conversions.RegisterImpressionAllowed", false,
+                                1);
+}
+
+TEST_F(AttributionManagerImplTest,
+       EmbedderDisallowsConversions_ReportNotStored) {
+  base::HistogramTester histograms;
+
+  MockAttributionReportingContentBrowserClient browser_client;
+  EXPECT_CALL(
+      browser_client,
+      IsConversionMeasurementOperationAllowed(
+          _, ContentBrowserClient::ConversionMeasurementOperation::kImpression,
+          _, _, _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      browser_client,
+      IsConversionMeasurementOperationAllowed(
+          _, ContentBrowserClient::ConversionMeasurementOperation::kConversion,
+          IsNull(),
+          Pointee(url::Origin::Create(GURL("https://sub.conversion.test/"))),
+          Pointee(url::Origin::Create(GURL("https://report.test/")))))
+      .WillOnce(Return(false));
+  ScopedContentBrowserClientSetting setting(&browser_client);
+
+  attribution_manager_->HandleSource(
+      SourceBuilder().SetExpiry(kImpressionExpiry).Build());
+  EXPECT_THAT(StoredSources(), SizeIs(1));
+
+  attribution_manager_->HandleTrigger(DefaultTrigger());
+  EXPECT_THAT(StoredReports(), IsEmpty());
+
+  histograms.ExpectUniqueSample("Conversions.RegisterConversionAllowed", false,
+                                1);
+}
+
 TEST_F(AttributionManagerImplTest, EmbedderDisallowsReporting_ReportNotSent) {
   MockAttributionReportingContentBrowserClient browser_client;
+  EXPECT_CALL(
+      browser_client,
+      IsConversionMeasurementOperationAllowed(
+          _,
+          AnyOf(
+              ContentBrowserClient::ConversionMeasurementOperation::kImpression,
+              ContentBrowserClient::ConversionMeasurementOperation::
+                  kConversion),
+          _, _, _))
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(
       browser_client,
       IsConversionMeasurementOperationAllowed(
@@ -1213,8 +1290,9 @@ TEST_F(AttributionManagerImplTest, EmbedderDisallowsReporting_ReportNotSent) {
       &observer);
   observation.Observe(attribution_manager_.get());
 
-  EXPECT_CALL(observer, OnReportSent(_, Field(&SendResult::status,
-                                              SendResult::Status::kDropped)));
+  EXPECT_CALL(observer, OnReportSent(_, /*is_debug_report=*/false,
+                                     Field(&SendResult::status,
+                                           SendResult::Status::kDropped)));
 
   task_environment_.FastForwardBy(kFirstReportingWindow);
 
@@ -1237,6 +1315,16 @@ TEST_F(AttributionManagerImplTest,
   EXPECT_CALL(
       browser_client,
       IsConversionMeasurementOperationAllowed(
+          _,
+          AnyOf(
+              ContentBrowserClient::ConversionMeasurementOperation::kImpression,
+              ContentBrowserClient::ConversionMeasurementOperation::
+                  kConversion),
+          _, _, _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      browser_client,
+      IsConversionMeasurementOperationAllowed(
           _, ContentBrowserClient::ConversionMeasurementOperation::kReport,
           Pointee(source_origin), Pointee(destination_origin),
           Pointee(reporting_origin)))
@@ -1254,7 +1342,7 @@ TEST_F(AttributionManagerImplTest,
 
   attribution_manager_->HandleTrigger(
       TriggerBuilder()
-          .SetConversionDestination(net::SchemefulSite(destination_origin))
+          .SetDestinationOrigin(destination_origin)
           .SetReportingOrigin(reporting_origin)
           .SetDebugKey(456)
           .Build());
@@ -1563,6 +1651,13 @@ TEST_F(AttributionManagerImplTest, DebugReport_SentImmediately) {
   };
 
   for (const auto& test_case : kTestCases) {
+    MockAttributionObserver observer;
+    base::ScopedObservation<AttributionManager, AttributionObserver>
+        observation(&observer);
+    observation.Observe(attribution_manager_.get());
+    EXPECT_CALL(observer, OnReportSent(_, /*is_debug_report=*/true, _))
+        .Times(test_case.send_expected);
+
     attribution_manager_->HandleSource(
         SourceBuilder()
             .SetReportingOrigin(reporting_origin)
@@ -1588,12 +1683,17 @@ TEST_F(AttributionManagerImplTest, DebugReport_SentImmediately) {
               ReportSourceIs(SourceDebugKeyIs(test_case.source_debug_key)),
               TriggerDebugKeyIs(test_case.trigger_debug_key))))
           << test_case.name;
+
+      report_sender_->RunCallbacksAndReset(
+          {SendResult::Status::kTransientFailure});
     } else {
       EXPECT_THAT(report_sender_->debug_calls(), IsEmpty());
     }
 
     attribution_manager_->ClearData(base::Time::Min(), base::Time::Max(),
                                     base::NullCallback(), base::DoNothing());
+
+    ::testing::Mock::VerifyAndClear(&observer);
   }
 }
 

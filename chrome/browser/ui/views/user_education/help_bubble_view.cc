@@ -203,6 +203,8 @@ class ClosePromoButton : public views::ImageButton {
   void OnThemeChanged() override {
     views::ImageButton::OnThemeChanged();
 
+    constexpr float kCloseButtonFocusRingHaloThickness = 1.25f;
+
     const auto* theme_provider = GetThemeProvider();
     SetImage(views::ImageButton::STATE_NORMAL,
              gfx::CreateVectorIcon(
@@ -211,6 +213,10 @@ class ClosePromoButton : public views::ImageButton {
                      ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_FOREGROUND)));
     views::InkDrop::Get(this)->SetBaseColor(theme_provider->GetColor(
         ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_CLOSE_BUTTON_INK_DROP));
+    views::FocusRing::Get(this)->SetColor(theme_provider->GetColor(
+        ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_FOREGROUND));
+    views::FocusRing::Get(this)->SetHaloThickness(
+        kCloseButtonFocusRingHaloThickness);
   }
 };
 
@@ -546,14 +552,17 @@ HelpBubbleView::HelpBubbleView(views::View* anchor_view,
       views::FlexSpecification(button_layout.GetDefaultFlexRule()));
 
   // Want a consistent initial focused view if one is available.
-  if (close_button)
-    SetInitiallyFocusedView(close_button);
-  else if (!button_container->children().empty())
+  if (!button_container->children().empty()) {
     SetInitiallyFocusedView(button_container->children()[0]);
+  } else if (close_button) {
+    SetInitiallyFocusedView(close_button);
+  }
 
   set_margins(gfx::Insets());
   set_title_margins(gfx::Insets());
   SetButtons(ui::DIALOG_BUTTON_NONE);
+  set_close_on_deactivate(false);
+  set_focus_traversable_from_anchor_view(false);
 
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
 

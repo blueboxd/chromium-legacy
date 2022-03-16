@@ -116,6 +116,7 @@ class ASH_EXPORT AppsContainerView
   const char* GetClassName() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnBoundsChanged(const gfx::Rect& old_bounds) override;
+  void OnThemeChanged() override;
 
   // AppListPage overrides:
   void OnShown() override;
@@ -183,12 +184,18 @@ class ASH_EXPORT AppsContainerView
   void OnTemporarySortOrderChanged(
       const absl::optional<AppListSortOrder>& new_order);
 
+  // Called by app list controller when the app list visibility is about to
+  // change - when the app list is about to be shown, initiates zero state
+  // search in order to update set of apps shown in recent apps and continue
+  // section contents.
+  void OnAppListVisibilityWillChange(bool visible);
+
   // Updates the nudge in `toast_container_` when app list visibility changes.
   void OnAppListVisibilityChanged(bool shown);
 
   ContinueSectionView* GetContinueSection();
   RecentAppsView* GetRecentApps();
-  views::View* GetSeparatorView();
+  views::Separator* separator() { return separator_; }
   PagedAppsGridView* apps_grid_view() { return apps_grid_view_; }
   FolderBackgroundView* folder_background_view() {
     return folder_background_view_;
@@ -210,14 +217,19 @@ class ASH_EXPORT AppsContainerView
     return app_list_nudge_controller_.get();
   }
 
-  // Updates recent apps from app list model.
-  void UpdateRecentApps();
+  // Updates recent apps from app list model. `needs_layout` indicates whether
+  // the apps container relaid out when the recent apps results are updated.
+  void UpdateRecentApps(bool needs_layout);
+
   // Updates suggestion chips from app list model.
   void UpdateSuggestionChips();
 
   // Temporarily disables blur on suggestion chips view background. The blur
   // will remained disabled until the returned closure runner goes out of scope.
   base::ScopedClosureRunner DisableSuggestionChipsBlur();
+
+  // Gets the height of the `separator_` including its vertical margin.
+  int GetSeparatorHeight();
 
  private:
   enum ShowState {
@@ -328,6 +340,7 @@ class ASH_EXPORT AppsContainerView
   // The views below are owned by views hierarchy.
   SuggestionChipContainerView* suggestion_chip_container_view_ = nullptr;
   ContinueContainer* continue_container_ = nullptr;
+  views::Separator* separator_ = nullptr;
   AppListToastContainerView* toast_container_ = nullptr;
   PagedAppsGridView* apps_grid_view_ = nullptr;
   AppListFolderView* app_list_folder_view_ = nullptr;

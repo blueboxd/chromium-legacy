@@ -33,7 +33,6 @@ CONTENT_EXPORT extern const base::Feature
     kAvoidUnnecessaryBeforeUnloadCheckSync;
 CONTENT_EXPORT extern const base::Feature kBackgroundFetch;
 CONTENT_EXPORT extern const base::Feature kBackForwardCache;
-CONTENT_EXPORT extern const base::Feature kBackForwardCacheSameSiteForBots;
 CONTENT_EXPORT extern const base::Feature kBackForwardCacheMemoryControls;
 CONTENT_EXPORT extern const base::Feature kBackForwardCacheMediaSessionService;
 CONTENT_EXPORT extern const base::Feature kBlockInsecurePrivateNetworkRequests;
@@ -140,6 +139,7 @@ enum class MBIMode {
 CONTENT_EXPORT extern const base::FeatureParam<MBIMode> kMBIModeParam;
 CONTENT_EXPORT extern const base::Feature kMediaDevicesSystemMonitorCache;
 CONTENT_EXPORT extern const base::Feature kMediaLicenseBackend;
+CONTENT_EXPORT extern const base::Feature kMediaStreamTrackTransfer;
 CONTENT_EXPORT extern const base::Feature kMojoDedicatedThread;
 CONTENT_EXPORT extern const base::Feature kMojoVideoCapture;
 CONTENT_EXPORT extern const base::Feature kMojoVideoCaptureSecondary;

@@ -118,7 +118,6 @@ void AccessCodeCastDialog::Show(
     constrained_window::UpdateWidgetModalDialogPosition(dialog_widget,
       CreateChromeConstrainedWindowViewsClient()->GetModalDialogHost(
         web_contents->GetTopLevelNativeWindow()));
-    dialog_widget->AddObserver(dialog);
   }
 }
 
@@ -141,15 +140,8 @@ void AccessCodeCastDialog::GetWebUIMessageHandlers(
 
 void AccessCodeCastDialog::GetDialogSize(gfx::Size* size) const {
   const int kDefaultWidth = 448;
-
-#if BUILDFLAG(IS_WIN)
-  const int kWindowsHeight = 300;
-  size->SetSize(kDefaultWidth, kWindowsHeight);
-#else
   const int kDefaultHeight = 271;
   size->SetSize(kDefaultWidth, kDefaultHeight);
-#endif // IS_WIN
-
 }
 
 std::string AccessCodeCastDialog::GetDialogArgs() const {
@@ -169,12 +161,6 @@ void AccessCodeCastDialog::OnDialogShown(content::WebUI* webui) {
 }
 
 void AccessCodeCastDialog::OnDialogClosed(const std::string& json_retval) {
-  if (webui_) {
-    auto* dialog_web_contents = webui_->GetWebContents();
-    views::Widget* dialog_widget = views::Widget::GetWidgetForNativeWindow(
-        dialog_web_contents->GetTopLevelNativeWindow());
-    dialog_widget->RemoveObserver(this);
-  }
   delete this;
 }
 
@@ -210,13 +196,6 @@ bool AccessCodeCastDialog::CheckMediaAccessPermission(
     const GURL& security_origin,
     blink::mojom::MediaStreamType type) {
   return true;
-}
-
-void AccessCodeCastDialog::OnWidgetActivationChanged(views::Widget* widget,
-                                                     bool active) {
-  if (webui_ && !active) {
-    webui_->GetWebContents()->Close();
-  }
 }
 
 AccessCodeCastDialog::~AccessCodeCastDialog() = default;

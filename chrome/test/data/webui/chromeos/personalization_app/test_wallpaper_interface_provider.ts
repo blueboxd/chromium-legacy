@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CurrentWallpaper, FetchGooglePhotosAlbumsResponse, FetchGooglePhotosPhotosResponse, GooglePhotosAlbum, GooglePhotosPhoto, OnlineImageType, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperObserverInterface, WallpaperObserverRemote, WallpaperProviderInterface, WallpaperType} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
+import {CurrentWallpaper, FetchGooglePhotosAlbumsResponse, FetchGooglePhotosPhotosResponse, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, OnlineImageType, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperObserverInterface, WallpaperObserverRemote, WallpaperProviderInterface, WallpaperType} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -18,6 +18,7 @@ export class TestWallpaperProvider extends
       'fetchImagesForCollection',
       'fetchGooglePhotosAlbums',
       'fetchGooglePhotosCount',
+      'fetchGooglePhotosEnabled',
       'fetchGooglePhotosPhotos',
       'getLocalImages',
       'getLocalImageThumbnail',
@@ -25,7 +26,7 @@ export class TestWallpaperProvider extends
       'selectGooglePhotosPhoto',
       'selectWallpaper',
       'selectLocalImage',
-      'setCustomWallpaperLayout',
+      'setCurrentWallpaperLayout',
       'setDailyRefreshCollectionId',
       'getDailyRefreshCollectionId',
       'updateDailyRefreshWallpaper',
@@ -97,7 +98,10 @@ export class TestWallpaperProvider extends
   private images_: WallpaperImage[]|null;
   private googlePhotosAlbums_: GooglePhotosAlbum[]|undefined = [];
   private googlePhotosCount_: number = 0;
+  private googlePhotosEnabled_: GooglePhotosEnablementState =
+      GooglePhotosEnablementState.kError;
   private googlePhotosPhotos_: GooglePhotosPhoto[]|undefined = [];
+  private googlePhotosPhotosResumeToken_: string|undefined;
   private googlePhotosPhotosByAlbumId_:
       Record<string, GooglePhotosPhoto[]|undefined> = {};
   localImages: FilePath[]|null;
@@ -156,15 +160,25 @@ export class TestWallpaperProvider extends
     return Promise.resolve({count});
   }
 
-  fetchGooglePhotosPhotos(itemId: string, albumId: string) {
-    this.methodCalled('fetchGooglePhotosPhotos', itemId, albumId);
+  fetchGooglePhotosEnabled() {
+    this.methodCalled('fetchGooglePhotosEnabled');
+    const state = loadTimeData.getBoolean('isGooglePhotosIntegrationEnabled') ?
+        this.googlePhotosEnabled_ :
+        GooglePhotosEnablementState.kError;
+    return Promise.resolve({state});
+  }
+
+  fetchGooglePhotosPhotos(
+      itemId: string, albumId: string, resumeToken: string) {
+    this.methodCalled('fetchGooglePhotosPhotos', itemId, albumId, resumeToken);
     const response = new FetchGooglePhotosPhotosResponse();
     response.photos =
         loadTimeData.getBoolean('isGooglePhotosIntegrationEnabled') ?
         albumId ? this.googlePhotosPhotosByAlbumId_[albumId] :
                   this.googlePhotosPhotos_ :
         undefined;
-    response.resumeToken = undefined;
+    response.resumeToken =
+        albumId ? undefined : this.googlePhotosPhotosResumeToken_;
     return Promise.resolve({response});
   }
 
@@ -202,8 +216,8 @@ export class TestWallpaperProvider extends
     return Promise.resolve({success: this.selectLocalImageResponse});
   }
 
-  setCustomWallpaperLayout(layout: WallpaperLayout) {
-    this.methodCalled('setCustomWallpaperLayout', layout);
+  setCurrentWallpaperLayout(layout: WallpaperLayout) {
+    this.methodCalled('setCurrentWallpaperLayout', layout);
   }
 
   setDailyRefreshCollectionId(collectionId: string) {
@@ -249,8 +263,16 @@ export class TestWallpaperProvider extends
     this.googlePhotosCount_ = googlePhotosCount;
   }
 
+  setGooglePhotosEnabled(googlePhotosEnabled: number) {
+    this.googlePhotosEnabled_ = googlePhotosEnabled;
+  }
+
   setGooglePhotosPhotos(googlePhotosPhotos: GooglePhotosPhoto[]|undefined) {
     this.googlePhotosPhotos_ = googlePhotosPhotos;
+  }
+
+  setGooglePhotosPhotosResumeToken(resumeToken: string|undefined) {
+    this.googlePhotosPhotosResumeToken_ = resumeToken;
   }
 
   setGooglePhotosPhotosByAlbumId(

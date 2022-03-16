@@ -16,7 +16,6 @@
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
-#include "net/base/schemeful_site.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -253,8 +252,8 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
           Pair(
               AttributionTriggerAndTime{
                   .trigger = AttributionTrigger(
-                      /*conversion_destination=*/net::SchemefulSite(
-                          url::Origin::Create(GURL("https://a.d1.test"))),
+                      /*destination_origin=*/
+                      url::Origin::Create(GURL("https://a.d1.test")),
                       /*reporting_origin=*/
                       url::Origin::Create(GURL("https://a.r.test")),
                       *AttributionFilterData::FromTriggerFilterValues({
@@ -288,8 +287,8 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
           Pair(
               AttributionTriggerAndTime{
                   .trigger = AttributionTrigger(
-                      /*conversion_destination=*/net::SchemefulSite(
-                          url::Origin::Create(GURL("https://a.d2.test"))),
+                      /*destination_origin=*/
+                      url::Origin::Create(GURL("https://a.d2.test")),
                       /*reporting_origin=*/
                       url::Origin::Create(GURL("https://b.r.test")),
                       AttributionFilterData(),
@@ -379,7 +378,7 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         }]})json",
     },
     {
-        R"(["sources"][0]["reporting_origin"]: must be a valid origin)",
+        R"(["sources"][0]["reporting_origin"]: must be a valid, secure origin)",
         R"json({"sources": [{
           "source_type": "navigation",
           "source_time": 1643235574,
@@ -391,7 +390,20 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         }]})json",
     },
     {
-        R"(["sources"][0]["source_origin"]: must be a valid origin)",
+        R"(["sources"][0]["reporting_origin"]: must be a valid, secure origin)",
+        R"json({"sources": [{
+          "source_type": "navigation",
+          "source_time": 1643235574,
+          "source_origin": "https://a.s.test",
+          "reporting_origin": "http://r.test",
+          "registration_config": {
+            "source_event_id": "123",
+            "destination": "https://a.d.test"
+          }
+        }]})json",
+    },
+    {
+        R"(["sources"][0]["source_origin"]: must be a valid, secure origin)",
         R"json({"sources": [{
           "source_type": "navigation",
           "source_time": 1643235574,
@@ -434,7 +446,7 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         }]})json",
     },
     {
-        R"(["sources"][0]["registration_config"]["destination"]: must be a valid origin)",
+        R"(["sources"][0]["registration_config"]["destination"]: must be a valid, secure origin)",
         R"json({"sources": [{
           "source_type": "navigation",
           "source_time": 1643235574,
@@ -575,7 +587,7 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         }]})json",
     },
     {
-        R"(["triggers"][0]["destination"]: must be a valid origin)",
+        R"(["triggers"][0]["destination"]: must be a valid, secure origin)",
         R"json({"triggers": [{
           "trigger_time": 1643235576,
           "reporting_origin": "https://a.r.test",
@@ -583,7 +595,7 @@ const ParseErrorTestCase kParseErrorTestCases[] = {
         }]})json",
     },
     {
-        R"(["triggers"][0]["reporting_origin"]: must be a valid origin)",
+        R"(["triggers"][0]["reporting_origin"]: must be a valid, secure origin)",
         R"json({"triggers": [{
           "trigger_time": 1643235576,
           "destination": " https://a.d1.test",

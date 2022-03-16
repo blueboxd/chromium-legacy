@@ -3037,9 +3037,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionsOnChromeUrlsDescription, kOsAll,
      SINGLE_VALUE_TYPE(extensions::switches::kExtensionsOnChromeURLs)},
 #endif  // ENABLE_EXTENSIONS
-    {"colr-v1-fonts", flag_descriptions::kCOLRV1FontsName,
-     flag_descriptions::kCOLRV1FontsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kCOLRV1Fonts)},
     {"enable-container-queries", flag_descriptions::kCSSContainerQueriesName,
      flag_descriptions::kCSSContainerQueriesDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kCSSContainerQueries)},
@@ -3056,11 +3053,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchForceCaptionName,
      flag_descriptions::kContextualSearchForceCaptionDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchForceCaption)},
-    {"contextual-search-literal-search-tap",
-     flag_descriptions::kContextualSearchLiteralSearchTapName,
-     flag_descriptions::kContextualSearchLiteralSearchTapDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchLiteralSearchTap)},
     {"contextual-search-longpress-resolve",
      flag_descriptions::kContextualSearchLongpressResolveName,
      flag_descriptions::kContextualSearchLongpressResolveDescription,
@@ -7255,8 +7247,9 @@ const FeatureEntry kFeatureEntries[] = {
      // multiple related features.
      SINGLE_VALUE_TYPE_AND_VALUE(
          switches::kEnableFeatures,
-         "PrivacySandboxSettings3:disable-dialog-for-"
-         "testing/true,EnableFetchingAccountCapabilities,InterestGroupStorage,"
+         "PrivacySandboxSettings3:"
+         "disable-dialog-for-testing/true/show-sample-data/true,"
+         "EnableFetchingAccountCapabilities,InterestGroupStorage,"
          "AdInterestGroupAPI,Fledge,FencedFrames")},
 
     {"privacy-sandbox-v3-android", flag_descriptions::kPrivacySandboxV3Name,
@@ -7265,8 +7258,9 @@ const FeatureEntry kFeatureEntries[] = {
      // multiple related features when they are available.
      SINGLE_VALUE_TYPE_AND_VALUE(
          switches::kEnableFeatures,
-         "PrivacySandboxSettings3:disable-dialog-for-testing/"
-         "true,EnableFetchingAccountCapabilities")},
+         "PrivacySandboxSettings3:"
+         "disable-dialog-for-testing/true/show-sample-data/true,"
+         "EnableFetchingAccountCapabilities")},
 
     {"animated-image-resume", flag_descriptions::kAnimatedImageResumeName,
      flag_descriptions::kAnimatedImageResumeDescription, kOsAll,
@@ -7745,6 +7739,14 @@ const FeatureEntry kFeatureEntries[] = {
          "UnifiedPasswordManagerAndroid")},
 #endif
 
+#if !BUILDFLAG(IS_ANDROID)
+    {"unified-password-manager-desktop",
+     flag_descriptions::kUnifiedPasswordManagerDesktopName,
+     flag_descriptions::kUnifiedPasswordManagerDesktopDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kUnifiedPasswordManagerDesktop)},
+#endif
+
     {"extension-workflow-justification",
      flag_descriptions::kExtensionWorkflowJustificationName,
      flag_descriptions::kExtensionWorkflowJustificationDescription, kOsDesktop,
@@ -7983,6 +7985,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSideSearchClearCacheWhenClosedName,
      flag_descriptions::kSideSearchClearCacheWhenClosedDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSideSearchClearCacheWhenClosed)},
+
+    {"side-search-dse-support", flag_descriptions::kSideSearchDSESupportName,
+     flag_descriptions::kSideSearchDSESupportDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSideSearchDSESupport)},
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -8199,6 +8205,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLacrosResourcesFileSharingName,
      flag_descriptions::kLacrosResourcesFileSharingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kLacrosResourcesFileSharing)},
+
+    {"lacros-screen-coordinates-enabled",
+     flag_descriptions::kLacrosScreenCoordinatesEnabledName,
+     flag_descriptions::kLacrosScreenCoordinatesEnabledDescription,
+     kOsCrOS | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kWaylandScreenCoordinatesEnabled)},
 #endif
 
 #if BUILDFLAG(IS_ANDROID)

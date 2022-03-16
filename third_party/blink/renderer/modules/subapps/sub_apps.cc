@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -72,7 +73,9 @@ void OnListSubApp(ScriptPromiseResolver* resolver,
 // static
 const char SubApps::kSupplementName[] = "SubApps";
 
-SubApps::SubApps(Navigator& navigator) : Supplement<Navigator>(navigator) {}
+SubApps::SubApps(Navigator& navigator)
+    : Supplement<Navigator>(navigator),
+      service_(navigator.GetExecutionContext()) {}
 
 // static
 SubApps* SubApps::subApps(Navigator& navigator) {
@@ -87,19 +90,25 @@ SubApps* SubApps::subApps(Navigator& navigator) {
 void SubApps::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   Supplement<Navigator>::Trace(visitor);
+  visitor->Trace(service_);
 }
 
-mojo::Remote<mojom::blink::SubAppsService>& SubApps::GetService() {
+HeapMojoRemote<mojom::blink::SubAppsService>& SubApps::GetService() {
   if (!service_.is_bound()) {
-    GetSupplementable()
-        ->GetExecutionContext()
-        ->GetBrowserInterfaceBroker()
-        .GetInterface(service_.BindNewPipeAndPassReceiver());
+    auto* context = GetSupplementable()->GetExecutionContext();
+    context->GetBrowserInterfaceBroker().GetInterface(
+        service_.BindNewPipeAndPassReceiver(
+            context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
     // In case the other endpoint gets disconnected, we want to reset our end of
     // the pipe as well so that we don't remain connected to a half-open pipe.
-    service_.reset_on_disconnect();
+    service_.set_disconnect_handler(
+        WTF::Bind(&SubApps::OnConnectionError, WrapWeakPersistent(this)));
   }
   return service_;
+}
+
+void SubApps::OnConnectionError() {
+  service_.reset();
 }
 
 ScriptPromise SubApps::add(ScriptState* script_state,
@@ -159,6 +168,7 @@ bool SubApps::CheckPreconditionsMaybeThrow(ExceptionState& exception_state) {
   }
 
   if (!navigator->DomWindow()->GetFrame()->IsMainFrame() ||
+      navigator->DomWindow()->GetFrame()->GetPage()->IsPrerendering() ||
       navigator->DomWindow()->GetFrame()->IsInFencedFrameTree()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,

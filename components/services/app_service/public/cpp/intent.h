@@ -25,7 +25,7 @@ struct IntentFile {
   IntentFile& operator=(const IntentFile&) = delete;
   ~IntentFile();
 
-  // Returns true if match `condition_value`, otherwise, returns false.
+  // Returns true if matches `condition_value`, otherwise, returns false.
   bool MatchConditionValue(const ConditionValuePtr& condition_value);
 
   // Returns true if matches any condition in `condition_values`, otherwise,
@@ -60,6 +60,25 @@ using IntentFilePtr = std::unique_ptr<IntentFile>;
 struct Intent {
   explicit Intent(const std::string& action);
   explicit Intent(const GURL& url);
+
+  // Creates an intent for sharing `filesystem_urls`. `filesystem_urls` must be
+  // co-indexed with `mime_types`.
+  Intent(const std::vector<GURL>& filesystem_urls,
+         const std::vector<std::string>& mime_types);
+
+  // Creates an intent with the list of `files`.
+  explicit Intent(std::vector<IntentFilePtr> files);
+
+  // Creates an intent for sharing `filesystem_urls`, along with `text` content
+  // and `title`. `filesystem_urls` must be co-indexed with  mime_types.
+  Intent(const std::vector<GURL>& filesystem_urls,
+         const std::vector<std::string>& mime_types,
+         const std::string& text,
+         const std::string& title);
+
+  // Creates an intent for sharing `text`, with `title`.
+  Intent(const std::string& text, const std::string& title);
+
   Intent(const Intent&) = delete;
   Intent& operator=(const Intent&) = delete;
   ~Intent();
@@ -68,11 +87,14 @@ struct Intent {
   absl::optional<std::string> GetIntentConditionValueByType(
       ConditionType condition_type);
 
-  // Returns true if match the file `condition`, otherwise, returns false.
+  // Returns true if matches the file `condition`, otherwise, returns false.
   bool MatchFileCondition(const ConditionPtr& condition);
 
-  // Returns true if match `condition`, otherwise, returns false.
+  // Returns true if matches with any of the values in `condition`.
   bool MatchCondition(const ConditionPtr& condition);
+
+  // Returns true if matches all existing conditions in the filter.
+  bool MatchFilter(const IntentFilterPtr& filter);
 
   // Intent action. e.g. view, send.
   std::string action;

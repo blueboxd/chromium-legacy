@@ -24,12 +24,15 @@ if (is_android) {
   import("//build/config/mac/mac_sdk.gni")
 }
 
+# Android:
 # The way the cache uses mmap() is inefficient on some Android devices. If
 # this flag is set, we hackily avoid using mmap() in the disk cache. We are
 # pretty confident that mmap-ing the index would not hurt any existing x86
 # android devices, but we cannot be so sure about the variety of ARM devices.
 # So enable it for x86 only for now.
-posix_avoid_mmap = is_android && current_cpu != "x86"
+# Fuchsia:
+# Writable mmap isn't supported on Fuchsia, so it should be bypassed.
+posix_bypass_mmap = (is_android && current_cpu != "x86") || is_fuchsia
 
 enable_built_in_dns = !is_ios
 
@@ -72,7 +75,7 @@ config("net_test_config") {
 buildflag_header("buildflags") {
   header = "net_buildflags.h"
   flags = [
-    "POSIX_AVOID_MMAP=$posix_avoid_mmap",
+    "POSIX_BYPASS_MMAP=$posix_bypass_mmap",
     "DISABLE_FILE_SUPPORT=$disable_file_support",
     "ENABLE_MDNS=$enable_mdns",
     "ENABLE_REPORTING=$enable_reporting",
@@ -669,6 +672,7 @@ component("net") {
     "log/net_log_capture_mode.h",
     "log/net_log_entry.cc",
     "log/net_log_entry.h",
+    "log/net_log_event_type.cc",
     "log/net_log_event_type.h",
     "log/net_log_event_type_list.h",
     "log/net_log_source.cc",
@@ -780,7 +784,6 @@ component("net") {
     "quic/platform/impl/quic_file_utils_impl.h",
     "quic/platform/impl/quic_hostname_utils_impl.cc",
     "quic/platform/impl/quic_hostname_utils_impl.h",
-    "quic/platform/impl/quic_iovec_impl.h",
     "quic/platform/impl/quic_prefetch_impl.h",
     "quic/platform/impl/quic_server_stats_impl.h",
     "quic/platform/impl/quic_sleep_impl.h",
@@ -840,6 +843,7 @@ component("net") {
     "quiche/common/platform/impl/quiche_flag_utils_impl.h",
     "quiche/common/platform/impl/quiche_flags_impl.cc",
     "quiche/common/platform/impl/quiche_flags_impl.h",
+    "quiche/common/platform/impl/quiche_iovec_impl.h",
     "socket/client_socket_factory.cc",
     "socket/client_socket_factory.h",
     "socket/client_socket_handle.cc",
@@ -1344,8 +1348,8 @@ component("net") {
     if (!is_ios) {
       sources += [ "disk_cache/blockfile/file_posix.cc" ]
     }
-    if (posix_avoid_mmap) {
-      sources += [ "disk_cache/blockfile/mapped_file_avoid_mmap_posix.cc" ]
+    if (posix_bypass_mmap) {
+      sources += [ "disk_cache/blockfile/mapped_file_bypass_mmap_posix.cc" ]
     } else {
       sources += [ "disk_cache/blockfile/mapped_file_posix.cc" ]
     }

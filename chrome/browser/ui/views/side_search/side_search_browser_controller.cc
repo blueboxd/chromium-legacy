@@ -320,8 +320,8 @@ SideSearchBrowserController::CreateToolbarButton() {
   auto toolbar_button = std::make_unique<ToolbarButton>();
   toolbar_button->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
-  toolbar_button->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON));
+  toolbar_button->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
   toolbar_button->SetProperty(views::kElementIdentifierKey,
                               kSideSearchButtonElementId);
 
@@ -447,16 +447,23 @@ void SideSearchBrowserController::UpdateSidePanel() {
         will_show_side_panel
             ? IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED
             : IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
+    toolbar_button_->SetTooltipText(l10n_util::GetStringUTF16(
+        will_show_side_panel
+            ? IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED
+            : IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
 
     // The toolbar button should remain visible in the toolbar as a side panel
     // can be shown for the active tab.
-    if (toolbar_button_->GetVisible() != can_show_side_panel_for_page) {
+    if (toolbar_button_->GetVisible() != can_show_side_panel_for_page)
       toolbar_button_->SetVisible(can_show_side_panel_for_page);
-      RecordSideSearchAvailabilityChanged(
-          can_show_side_panel_for_page
-              ? SideSearchAvailabilityChangeType::kBecomeAvailable
-              : SideSearchAvailabilityChangeType::kBecomeUnavailable);
-    }
+  }
+
+  if (was_side_panel_available_for_page_ != can_show_side_panel_for_page) {
+    RecordSideSearchAvailabilityChanged(
+        can_show_side_panel_for_page
+            ? SideSearchAvailabilityChangeType::kBecomeAvailable
+            : SideSearchAvailabilityChangeType::kBecomeUnavailable);
+    was_side_panel_available_for_page_ = can_show_side_panel_for_page;
   }
 
   // Once the anchor element is visible, maybe show promo.

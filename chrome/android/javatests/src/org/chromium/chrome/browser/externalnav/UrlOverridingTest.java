@@ -48,10 +48,10 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Restriction;
+import org.chromium.blink_public.common.BlinkFeatures;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -73,6 +73,7 @@ import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.url.GURL;
 
@@ -230,7 +231,7 @@ public class UrlOverridingTest {
     public void setUp() throws Exception {
         IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
         filter.addCategory(Intent.CATEGORY_BROWSABLE);
-        filter.addDataScheme("market");
+        filter.addDataScheme("externalappscheme");
         mActivityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(
                 filter, new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
         mTestServer = mActivityTestRule.getTestServer();
@@ -749,6 +750,7 @@ public class UrlOverridingTest {
     @Features.DisableFeatures({"BackForwardCacheMemoryControls"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
             "force-fieldtrial-params=Study.Group:enable_same_site/true"})
+    @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void
     testNoRedirectWithBFCache() throws Exception {
         final CallbackHelper finishCallback = new CallbackHelper();
@@ -807,8 +809,8 @@ public class UrlOverridingTest {
 
     @Test
     @LargeTest
-    @Features.EnableFeatures({ChromeFeatureList.PRERENDER2})
-    @DisabledTest(message = "https://crbug.com/1304292")
+    @Features.EnableFeatures({BlinkFeatures.PRERENDER2})
+    @Features.DisableFeatures({BlinkFeatures.PRERENDER2_MEMORY_CONTROLS})
     public void testClearRedirectHandlerOnPageActivation() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
 
@@ -838,5 +840,27 @@ public class UrlOverridingTest {
         Mockito.verify(mRedirectHandler,
                        Mockito.timeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL).times(1))
                 .clear();
+    }
+
+    @Test
+    @LargeTest
+    public void testServerRedirectionFromIntent() throws Exception {
+        TestWebServer webServer = TestWebServer.start();
+        final String redirectTargetUrl = "intent://test/#Intent;scheme=externalappscheme;end";
+        final String redirectUrl = webServer.setRedirect("/302.html", redirectTargetUrl);
+
+        Context context = ContextUtils.getApplicationContext();
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(redirectUrl));
+        intent.setClassName(context, ChromeLauncherActivity.class.getName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        ChromeTabbedActivity activity = ApplicationTestUtils.waitForActivityWithClass(
+                ChromeTabbedActivity.class, Stage.CREATED, () -> context.startActivity(intent));
+        mActivityTestRule.setActivity(activity);
+
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mActivityMonitor.getHits(), Matchers.is(1));
+        }, 10000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        ApplicationTestUtils.waitForActivityState(activity, Stage.DESTROYED);
     }
 }

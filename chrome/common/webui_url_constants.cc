@@ -29,6 +29,8 @@ const char kChromeUIAppIconHost[] = "app-icon";
 const char kChromeUIAppIconURL[] = "chrome://app-icon/";
 const char kChromeUIAppLauncherPageHost[] = "apps";
 const char kChromeUIAppsURL[] = "chrome://apps/";
+const char kChromeUIAppsWithDeprecationDialogURL[] =
+    "chrome://apps?showDeletionDialog";
 const char kChromeUIAutofillInternalsHost[] = "autofill-internals";
 const char kChromeUIBluetoothInternalsHost[] = "bluetooth-internals";
 const char kChromeUIBookmarksHost[] = "bookmarks";
@@ -377,6 +379,7 @@ const char kOsUIScanningAppURL[] = "os://scanning";
 const char kOsUISettingsURL[] = "os://settings";
 const char kOsUISignInInternalsURL[] = "os://signin-internals";
 const char kOsUISyncInternalsURL[] = "os://sync-internals";
+const char kOsUISysInternalsUrl[] = "os://sys-internals";
 const char kOsUISystemURL[] = "os://system";
 const char kOsUITermsURL[] = "os://terms";
 

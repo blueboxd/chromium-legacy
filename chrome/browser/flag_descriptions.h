@@ -70,7 +70,6 @@ extern const char kAnimatedImageResumeDescription[];
 extern const char kAriaElementReflectionName[];
 extern const char kAriaElementReflectionDescription[];
 
-extern const char kCOLRV1FontsName[];
 extern const char kCOLRV1FontsDescription[];
 
 extern const char kCSSCascadeLayersName[];
@@ -1511,6 +1510,9 @@ extern const char kUnifiedSidePanelDescription[];
 extern const char kUnifiedPasswordManagerAndroidName[];
 extern const char kUnifiedPasswordManagerAndroidDescription[];
 
+extern const char kUnifiedPasswordManagerDesktopName[];
+extern const char kUnifiedPasswordManagerDesktopDescription[];
+
 extern const char kUnsafeWebGPUName[];
 extern const char kUnsafeWebGPUDescription[];
 
@@ -1761,9 +1763,6 @@ extern const char kContextualSearchDelayedIntelligenceDescription[];
 
 extern const char kContextualSearchForceCaptionName[];
 extern const char kContextualSearchForceCaptionDescription[];
-
-extern const char kContextualSearchLiteralSearchTapName[];
-extern const char kContextualSearchLiteralSearchTapDescription[];
 
 extern const char kContextualSearchLongpressResolveName[];
 extern const char kContextualSearchLongpressResolveDescription[];
@@ -3194,6 +3193,9 @@ extern const char kLacrosNonSyncingProfilesDescription[];
 
 extern const char kLacrosResourcesFileSharingName[];
 extern const char kLacrosResourcesFileSharingDescription[];
+
+extern const char kLacrosScreenCoordinatesEnabledName[];
+extern const char kLacrosScreenCoordinatesEnabledDescription[];
 #endif  // #if BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -3343,6 +3345,9 @@ extern const char kSideSearchDescription[];
 
 extern const char kSideSearchClearCacheWhenClosedName[];
 extern const char kSideSearchClearCacheWhenClosedDescription[];
+
+extern const char kSideSearchDSESupportName[];
+extern const char kSideSearchDSESupportDescription[];
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)

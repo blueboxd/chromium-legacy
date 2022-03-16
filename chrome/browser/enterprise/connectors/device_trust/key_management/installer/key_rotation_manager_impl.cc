@@ -31,6 +31,8 @@ enum class UploadKeyStatus {
   FAILED_MAX_RETRIES,
 };
 
+constexpr int kMaxDMTokenLength = 4096;
+
 BPKUR::KeyType AlgorithmToType(
     crypto::SignatureVerifier::SignatureAlgorithm algorithm) {
   switch (algorithm) {
@@ -61,6 +63,17 @@ KeyRotationManagerImpl::~KeyRotationManagerImpl() = default;
 bool KeyRotationManagerImpl::RotateWithAdminRights(const GURL& dm_server_url,
                                                    const std::string& dm_token,
                                                    const std::string& nonce) {
+  if (dm_token.size() > kMaxDMTokenLength) {
+    SYSLOG(ERROR) << "DMToken length out of bounds";
+    return false;
+  }
+
+  if (!persistence_delegate_->CheckRotationPermissions()) {
+    RecordRotationStatus(nonce,
+                         RotationStatus::FAILURE_INCORRECT_FILE_PERMISSIONS);
+    return false;
+  }
+
   // Create a new key pair.  First try creating a TPM-backed key.  If that does
   // not work, try a less secure type.
   KeyTrustLevel new_trust_level = BPKUR::KEY_TRUST_LEVEL_UNSPECIFIED;

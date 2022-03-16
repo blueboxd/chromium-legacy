@@ -24,6 +24,7 @@
 #include "content/browser/attribution_reporting/attribution_cookie_checker_impl.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
+#include "content/browser/attribution_reporting/attribution_metrics.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
@@ -187,6 +188,18 @@ std::unique_ptr<AttributionStorageDelegate> MakeStorageDelegate() {
       AttributionNoiseMode::kDefault, AttributionDelayMode::kDefault);
 }
 
+bool IsOperationAllowed(
+    StoragePartitionImpl* storage_partition,
+    ContentBrowserClient::ConversionMeasurementOperation operation,
+    const url::Origin* source_origin,
+    const url::Origin* destination_origin,
+    const url::Origin* reporting_origin) {
+  DCHECK(storage_partition);
+  return GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
+      storage_partition->browser_context(), operation, source_origin,
+      destination_origin, reporting_origin);
+}
+
 }  // namespace
 
 absl::optional<base::TimeDelta> GetFailedReportDelay(int failed_send_attempts) {
@@ -207,11 +220,12 @@ void AttributionManagerImpl::RunInMemoryForTesting() {
   AttributionStorageSql::RunInMemoryForTesting();
 }
 
-bool AttributionManagerImpl::IsReportAllowed(const AttributionReport& report) {
+bool AttributionManagerImpl::IsReportAllowed(
+    const AttributionReport& report) const {
   const CommonSourceInfo& common_info =
       report.attribution_info().source.common_info();
-  return GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
-      storage_partition_->browser_context(),
+  return IsOperationAllowed(
+      storage_partition_.get(),
       ContentBrowserClient::ConversionMeasurementOperation::kReport,
       &common_info.impression_origin(), &common_info.conversion_origin(),
       &common_info.reporting_origin());
@@ -244,9 +258,7 @@ AttributionManagerImpl::AttributionManagerImpl(
           MakeStorageDelegate(),
           std::make_unique<AttributionCookieCheckerImpl>(storage_partition),
           std::make_unique<AttributionReportNetworkSender>(storage_partition),
-          std::make_unique<AttributionDataHostManagerImpl>(
-              storage_partition->browser_context(),
-              this)) {}
+          std::make_unique<AttributionDataHostManagerImpl>(this)) {}
 
 AttributionManagerImpl::AttributionManagerImpl(
     StoragePartitionImpl* storage_partition,
@@ -425,13 +437,33 @@ void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
     bool is_debug_cookie_set;
 
     void operator()(StorableSource source) {
+      CommonSourceInfo& common_info = source.common_info();
+
+      bool allowed = IsOperationAllowed(
+          manager->storage_partition_.get(),
+          ContentBrowserClient::ConversionMeasurementOperation::kImpression,
+          &common_info.impression_origin(),
+          /*destination_origin=*/nullptr, &common_info.reporting_origin());
+      RecordRegisterImpressionAllowed(allowed);
+      if (!allowed)
+        return;
+
       if (!is_debug_cookie_set)
-        source.common_info().ClearDebugKey();
+        common_info.ClearDebugKey();
 
       manager->StoreSource(std::move(source));
     }
 
     void operator()(AttributionTrigger trigger) {
+      bool allowed = IsOperationAllowed(
+          manager->storage_partition_.get(),
+          ContentBrowserClient::ConversionMeasurementOperation::kConversion,
+          /*source_origin=*/nullptr, &trigger.destination_origin(),
+          &trigger.reporting_origin());
+      RecordRegisterConversionAllowed(allowed);
+      if (!allowed)
+        return;
+
       if (!is_debug_cookie_set)
         trigger.ClearDebugKey();
 
@@ -481,9 +513,11 @@ void AttributionManagerImpl::MaybeSendDebugReport(AttributionReport&& report) {
   DCHECK(absl::holds_alternative<AttributionReport::EventLevelData>(
       report.data()));
 
-  // We don't fire observer callbacks or delete from storage for debug reports.
+  // We don't delete from storage for debug reports.
   PrepareToSendReport(std::move(report), /*is_debug_report=*/true,
-                      base::DoNothing());
+                      base::BindOnce(&AttributionManagerImpl::NotifyReportSent,
+                                     weak_factory_.GetWeakPtr(),
+                                     /*is_debug_report=*/true));
 }
 
 void AttributionManagerImpl::GetActiveSourcesForWebUI(
@@ -710,8 +744,14 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
     return;
   }
 
+  NotifyReportSent(/*is_debug_report=*/false, std::move(report), info);
+}
+
+void AttributionManagerImpl::NotifyReportSent(bool is_debug_report,
+                                              AttributionReport report,
+                                              SendResult info) {
   for (auto& observer : observers_)
-    observer.OnReportSent(report, info);
+    observer.OnReportSent(report, /*is_debug_report=*/is_debug_report, info);
 }
 
 void AttributionManagerImpl::AssembleAggregatableReport(

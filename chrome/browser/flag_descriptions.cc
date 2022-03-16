@@ -83,10 +83,6 @@ const char kAriaElementReflectionDescription[] =
     "Enable setting ARIA relationship attributes that reference other elements "
     "directly without an IDREF";
 
-const char kCOLRV1FontsName[] = "COLR v1 Fonts";
-const char kCOLRV1FontsDescription[] =
-    "Display COLR v1 color gradient vector fonts.";
-
 const char kCSSCascadeLayersName[] = "Enable CSS Cascade Layers";
 const char kCSSCascadeLayersDescription[] =
     "Enables support for CSS @layer rules and layered @import syntax.";
@@ -2648,6 +2644,11 @@ const char kUnifiedPasswordManagerAndroidDescription[] =
     "Warning: Highly experimental. May lead to loss of passwords and "
     "impact performance.";
 
+const char kUnifiedPasswordManagerDesktopName[] =
+    "Unified Password Manager for Desktop";
+const char kUnifiedPasswordManagerDesktopDescription[] =
+    "Branding, string, and visual updates to the Password Manager on Desktop.";
+
 const char kUnsafeWebGPUName[] = "Unsafe WebGPU";
 const char kUnsafeWebGPUDescription[] =
     "Enables access to the experimental WebGPU API. Warning: As GPU sandboxing "
@@ -3102,14 +3103,6 @@ const char kContextualSearchForceCaptionName[] =
     "Contextual Search force a caption";
 const char kContextualSearchForceCaptionDescription[] =
     "Forces a caption to always be shown in the Touch to Search Bar.";
-
-const char kContextualSearchLiteralSearchTapName[] =
-    "Contextual Search literal search with tap";
-const char kContextualSearchLiteralSearchTapDescription[] =
-    "Enables Contextual Search to be activated with a single tap and produce "
-    "a literal search. This is intended to be used in conjunction with the "
-    "long-press resolve feature to allow both gestures to trigger a form of "
-    "Touch to Search.";
 
 const char kContextualSearchLongpressResolveName[] =
     "Contextual Search long-press Resolves";
@@ -5550,6 +5543,17 @@ const char kLacrosResourcesFileSharingDescription[] =
     "generate two additional paks for resources.pak, chrome_100_percent.pak "
     "and chrome_200_percent.pak. Additional paks are mapping table and "
     "fallback resources.";
+
+const char kLacrosScreenCoordinatesEnabledName[] =
+    "Enable screen coordinates system in lacros-chrome";
+const char kLacrosScreenCoordinatesEnabledDescription[] =
+    "Enabling this will allow lacros to control the window position in screen "
+    "coordinates. This is required for features such as the Javascript APIs "
+    "moveBy, moveTo or session restore.";
+
+extern const char kLacrosScreenCoordinatesName[];
+extern const char kLacrosScreenCoordinatesDescription[];
+
 #endif  // #if BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -5770,6 +5774,10 @@ const char kSideSearchClearCacheWhenClosedName[] =
     "Side search clear cache when closed";
 const char kSideSearchClearCacheWhenClosedDescription[] =
     "Clears the side search cache when the side panel is closed.";
+
+const char kSideSearchDSESupportName[] = "Side search DSE support";
+const char kSideSearchDSESupportDescription[] =
+    "Side search with support for participating chrome search engines.";
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)

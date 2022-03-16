@@ -659,9 +659,10 @@ FUCHSIA_PERF_SHERLOCK_FYI = PerfPlatform(
 FUCHSIA_PERF_ATLAS_FYI = PerfPlatform('fuchsia-perf-atlas-fyi',
                                       '',
                                       _FUCHSIA_ATLAS_PERF_FYI_BENCHMARK_CONFIGS,
-                                      1,
+                                      4,
                                       'fuchsia',
-                                      is_fyi=True)
+                                      is_fyi=True,
+                                      executables=FUCHSIA_EXEC_CONFIGS['atlas'])
 
 # Calibration bots
 LINUX_PERF_CALIBRATION = PerfPlatform(

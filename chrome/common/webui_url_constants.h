@@ -36,6 +36,7 @@ extern const char kChromeUIAppIconHost[];
 extern const char kChromeUIAppIconURL[];
 extern const char kChromeUIAppLauncherPageHost[];
 extern const char kChromeUIAppsURL[];
+extern const char kChromeUIAppsWithDeprecationDialogURL[];
 extern const char kChromeUIAutofillInternalsHost[];
 extern const char kChromeUIBluetoothInternalsHost[];
 extern const char kChromeUIBookmarksHost[];
@@ -354,6 +355,7 @@ extern const char kOsUIScanningAppURL[];
 extern const char kOsUISettingsURL[];
 extern const char kOsUISignInInternalsURL[];
 extern const char kOsUISyncInternalsURL[];
+extern const char kOsUISysInternalsUrl[];
 extern const char kOsUISystemURL[];
 extern const char kOsUITermsURL[];
 

@@ -213,6 +213,11 @@ std::string GetAPFromAppArgs(const std::string& app_id) {
   return app_args ? app_args->ap : std::string();
 }
 
+std::string GetInstallDataIndexFromAppArgs(const std::string& app_id) {
+  const absl::optional<tagging::AppArgs> app_args = GetAppArgs(app_id);
+  return app_args ? app_args->install_data_index : std::string();
+}
+
 base::CommandLine MakeElevated(base::CommandLine command_line) {
 #if BUILDFLAG(IS_MAC)
   command_line.PrependWrapper("/usr/bin/sudo");
@@ -221,8 +226,7 @@ base::CommandLine MakeElevated(base::CommandLine command_line) {
 }
 
 // The log file is created in DIR_LOCAL_APP_DATA or DIR_ROAMING_APP_DATA.
-void InitLogging(UpdaterScope updater_scope,
-                 const base::FilePath::StringType& filename) {
+void InitLogging(UpdaterScope updater_scope) {
   logging::LoggingSettings settings;
   const absl::optional<base::FilePath> log_dir =
       GetBaseDirectory(updater_scope);
@@ -230,7 +234,8 @@ void InitLogging(UpdaterScope updater_scope,
     LOG(ERROR) << "Error getting base dir.";
     return;
   }
-  const base::FilePath log_file = log_dir->Append(filename);
+  const base::FilePath log_file =
+      log_dir->Append(FILE_PATH_LITERAL("updater.log"));
   settings.log_file_path = log_file.value().c_str();
   settings.logging_dest = logging::LOG_TO_ALL;
   logging::InitLogging(settings);

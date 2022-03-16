@@ -845,7 +845,7 @@
   {
     "name": "colr-v1-fonts",
     "owners": [ "drott", "layout-dev@chromium.org" ],
-    "expiry_milestone": 102
+    "expiry_milestone": 100
   },
   {
     "name": "compositor-threaded-scrollbar-scrolling",
@@ -933,11 +933,6 @@
     "name": "contextual-search-force-caption",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS", "contextual-search-eng@google.com" ],
     "expiry_milestone": 104
-  },
-  {
-    "name": "contextual-search-literal-search-tap",
-    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS", "contextual-search-eng@google.com" ],
-    "expiry_milestone": 95
   },
   {
     "name": "contextual-search-longpress-resolve",
@@ -2098,8 +2093,8 @@
   },
   {
     "name": "enable-experimental-kernel-vm-support",
-    "owners": [ "zwisler" ],
-    "expiry_milestone": 98
+    "owners": [ "davidmunro@google.com", "zwisler", "clumptini@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "enable-experimental-web-platform-features",
@@ -3919,6 +3914,13 @@
     "expiry_milestone": 130
   },
   {
+    "name": "lacros-screen-coordinates-enabled",
+    "owners": ["oshima", "skau", "lacros-team@google.com" ],
+    // Once screen coordinates is enabled by default on lacros, this flag can be removed.
+    // TODO(https://1261321).
+    "expiry_milestone": 115
+  },
+  {
     "name": "lacros-selection",
     "owners": [ "kimjae", "erikchen", "lacros-team@google.com" ],
     "expiry_milestone": 130
@@ -5544,7 +5546,7 @@
     "expiry_milestone" : 104
   },
   {
-    "name" : "side-search-state-per-tab",
+    "name" : "side-search-dse-support",
     "owners": [ "chrome-cros@google.com", "tluk" ],
     "expiry_milestone" : 104
   },
@@ -5884,6 +5886,11 @@
     // This flag is used for in-the-field debugging of animation issues on
     // Chrome OS.
     "expiry_milestone": -1
+  },
+  {
+    "name": "unified-password-manager-desktop",
+    "owners": [ "johntlee", "mamir" ],
+    "expiry_milestone": 107
   },
   {
     "name" : "unified-side-panel",

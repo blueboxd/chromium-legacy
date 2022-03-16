@@ -22,6 +22,7 @@
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -34,7 +35,6 @@ using ::testing::Property;
 
 const char kDefaultImpressionOrigin[] = "https://impression.test/";
 const char kDefaultTriggerOrigin[] = "https://sub.conversion.test/";
-const char kDefaultTriggerDestination[] = "https://conversion.test/";
 const char kDefaultReportOrigin[] = "https://report.test/";
 
 // Default expiry time for impressions for testing.
@@ -359,9 +359,10 @@ void MockAttributionManager::NotifySourceHandled(
 }
 
 void MockAttributionManager::NotifyReportSent(const AttributionReport& report,
+                                              bool is_debug_report,
                                               const SendResult& info) {
   for (auto& observer : observers_)
-    observer.OnReportSent(report, info);
+    observer.OnReportSent(report, is_debug_report, info);
 }
 
 void MockAttributionManager::NotifyTriggerHandled(
@@ -497,8 +498,7 @@ AttributionTrigger DefaultTrigger() {
 }
 
 TriggerBuilder::TriggerBuilder()
-    : conversion_destination_(
-          net::SchemefulSite(GURL(kDefaultTriggerDestination))),
+    : destination_origin_(url::Origin::Create(GURL(kDefaultTriggerOrigin))),
       reporting_origin_(url::Origin::Create(GURL(kDefaultReportOrigin))) {}
 
 TriggerBuilder::~TriggerBuilder() = default;
@@ -514,9 +514,9 @@ TriggerBuilder& TriggerBuilder::SetEventSourceTriggerData(
   return *this;
 }
 
-TriggerBuilder& TriggerBuilder::SetConversionDestination(
-    net::SchemefulSite conversion_destination) {
-  conversion_destination_ = std::move(conversion_destination);
+TriggerBuilder& TriggerBuilder::SetDestinationOrigin(
+    url::Origin destination_origin) {
+  destination_origin_ = std::move(destination_origin);
   return *this;
 }
 
@@ -544,7 +544,7 @@ TriggerBuilder& TriggerBuilder::SetDebugKey(
 }
 
 AttributionTrigger TriggerBuilder::Build() const {
-  return AttributionTrigger(trigger_data_, conversion_destination_,
+  return AttributionTrigger(trigger_data_, destination_origin_,
                             reporting_origin_, event_source_trigger_data_,
                             priority_, dedup_key_, debug_key_);
 }
@@ -697,7 +697,7 @@ bool operator==(const AttributionTrigger::EventTriggerData& a,
 
 bool operator==(const AttributionTrigger& a, const AttributionTrigger& b) {
   const auto tie = [](const AttributionTrigger& t) {
-    return std::make_tuple(t.conversion_destination(), t.reporting_origin(),
+    return std::make_tuple(t.destination_origin(), t.reporting_origin(),
                            t.debug_key(), t.event_triggers());
   };
   return tie(a) == tie(b);
@@ -930,8 +930,7 @@ std::ostream& operator<<(std::ostream& out,
 
 std::ostream& operator<<(std::ostream& out,
                          const AttributionTrigger& conversion) {
-  out << "{conversion_destination="
-      << conversion.conversion_destination().Serialize()
+  out << "{destination_origin=" << conversion.destination_origin()
       << ",reporting_origin=" << conversion.reporting_origin() << ",debug_key="
       << (conversion.debug_key() ? base::NumberToString(*conversion.debug_key())
                                  : "null")
@@ -1209,9 +1208,8 @@ AttributionTriggerMatcherConfig::~AttributionTriggerMatcherConfig() = default;
 ::testing::Matcher<AttributionTrigger> AttributionTriggerMatches(
     const AttributionTriggerMatcherConfig& cfg) {
   return AllOf(
-      Property("conversion_destination",
-               &AttributionTrigger::conversion_destination,
-               cfg.conversion_destination),
+      Property("destination_origin", &AttributionTrigger::destination_origin,
+               cfg.destination_origin),
       Property("reporting_origin", &AttributionTrigger::reporting_origin,
                cfg.reporting_origin),
       Property("filters", &AttributionTrigger::filters, cfg.filters),
@@ -1235,6 +1233,11 @@ std::vector<AttributionReport> GetAttributionReportsForTesting(
           })));
   run_loop.Run();
   return attribution_reports;
+}
+
+std::unique_ptr<MockDataHost> GetRegisteredDataHost(
+    mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host) {
+  return std::make_unique<MockDataHost>(std::move(data_host));
 }
 
 }  // namespace content

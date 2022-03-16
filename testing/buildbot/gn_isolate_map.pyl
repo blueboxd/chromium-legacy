@@ -1771,6 +1771,16 @@
     "script": "//testing/scripts/run_telemetry_as_googletest.py",
     "type": "script",
   },
+  "telemetry_perf_unittests_android_monochrome": {
+    "args": [
+      "../../tools/perf/run_tests",
+      "-v",
+    ],
+    "label": "//chrome/test:telemetry_perf_unittests_android_monochrome",
+    "script": "//testing/scripts/run_telemetry_as_googletest.py",
+    "type": "script",
+    "python3": True,
+  },
   "telemetry_unittests": {
     "args": [
       "--xvfb",
@@ -1798,8 +1808,8 @@
     "label": "//build/rust/tests/test_cpp_including_rust:test_cpp_including_rust_unittests",
     "type": "console_test_launcher",
   },
-  "test_serde_jsonrc": {
-    "label": "//build/rust/tests/test_serde_jsonrc:test_serde_jsonrc",
+  "test_serde_json_lenient": {
+    "label": "//build/rust/tests/test_serde_json_lenient:test_serde_json_lenient",
     "type": "console_test_launcher",
   },
   "third_party/openscreen/src/cast/cast_core/api": {

@@ -777,14 +777,14 @@ TEST_F(StyleEngineTest, TextToSheetCache) {
   String sheet_text("div {}");
   TextPosition min_pos = TextPosition::MinimumPosition();
 
-  CSSStyleSheet* sheet1 =
-      GetStyleEngine().CreateSheet(*element, sheet_text, min_pos);
+  CSSStyleSheet* sheet1 = GetStyleEngine().CreateSheet(
+      *element, sheet_text, min_pos, PendingSheetType::kNonBlocking);
 
   // Check that the first sheet is not using a cached StyleSheetContents.
   EXPECT_FALSE(sheet1->Contents()->IsUsedFromTextCache());
 
-  CSSStyleSheet* sheet2 =
-      GetStyleEngine().CreateSheet(*element, sheet_text, min_pos);
+  CSSStyleSheet* sheet2 = GetStyleEngine().CreateSheet(
+      *element, sheet_text, min_pos, PendingSheetType::kNonBlocking);
 
   // Check that the second sheet uses the cached StyleSheetContents for the
   // first.
@@ -801,7 +801,8 @@ TEST_F(StyleEngineTest, TextToSheetCache) {
 
   element = MakeGarbageCollected<HTMLStyleElement>(GetDocument(),
                                                    CreateElementFlags());
-  sheet1 = GetStyleEngine().CreateSheet(*element, sheet_text, min_pos);
+  sheet1 = GetStyleEngine().CreateSheet(*element, sheet_text, min_pos,
+                                        PendingSheetType::kNonBlocking);
 
   // Check that we did not use a cached StyleSheetContents after the garbage
   // collection.
@@ -5755,6 +5756,32 @@ TEST_F(StyleEngineTest, MathDepthOverflow) {
             child2->GetComputedStyle()->MathDepth());
   EXPECT_EQ(std::numeric_limits<int16_t>::max(),
             child3->GetComputedStyle()->MathDepth());
+}
+
+TEST_F(StyleEngineTest, RemovedBodyToHTMLPropagation) {
+  GetDocument().body()->SetInlineStyleProperty(CSSPropertyID::kWritingMode,
+                                               "vertical-lr");
+
+  UpdateAllLifecyclePhases();
+
+  Element* root = GetDocument().documentElement();
+  ASSERT_TRUE(root);
+  EXPECT_TRUE(root->ComputedStyleRef().IsHorizontalWritingMode())
+      << "body to html propagation does not affect computed value";
+  EXPECT_FALSE(root->GetLayoutObject()->StyleRef().IsHorizontalWritingMode())
+      << "body to html propagation affects used value";
+
+  // Make sure that recalculating style for the root element does not trigger a
+  // visual diff that requires layout. That is, we take the body -> root
+  // propagation of writing-mode into account before setting ComputedStyle on
+  // the root LayoutObject.
+  GetDocument().body()->remove();
+
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(root->ComputedStyleRef().IsHorizontalWritingMode())
+      << "body to html propagation does not affect computed value";
+  EXPECT_TRUE(root->GetLayoutObject()->StyleRef().IsHorizontalWritingMode())
+      << "No propagation from removed body";
 }
 
 }  // namespace blink

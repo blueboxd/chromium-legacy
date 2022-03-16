@@ -2098,6 +2098,9 @@ void RenderWidgetHostViewAndroid::DidOverscroll(
   if (!view_.parent() || !is_showing_)
     return;
 
+  if (gesture_listener_manager_)
+    gesture_listener_manager_->DidOverscroll(params);
+
   if (overscroll_controller_)
     overscroll_controller_->OnOverscrolled(params);
 }
@@ -2319,6 +2322,7 @@ void RenderWidgetHostViewAndroid::OnAttachedToWindow() {
   if (!view_.parent())
     return;
 
+  UpdateScreenInfo();
   if (is_showing_)
     StartObservingRootWindow();
   DCHECK(view_.GetWindowAndroid());

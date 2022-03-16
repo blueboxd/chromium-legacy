@@ -161,8 +161,9 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void NotifySourcesChanged();
   void NotifyReportsChanged();
   void NotifySourceDeactivated(const DeactivatedSource& source);
+  void NotifyReportSent(bool is_debug_report, AttributionReport, SendResult);
 
-  bool IsReportAllowed(const AttributionReport&);
+  bool IsReportAllowed(const AttributionReport&) const;
 
   // Friend to expose the AttributionStorage for certain tests.
   friend std::vector<AttributionReport> GetAttributionReportsForTesting(

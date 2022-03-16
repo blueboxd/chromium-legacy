@@ -27,7 +27,6 @@
 #include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/trace_event/trace_event.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/language_preferences.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -255,12 +254,7 @@ void SigninScreenHandler::Initialize() {}
 void SigninScreenHandler::RegisterMessages() {
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
   AddCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
-  AddCallback("loginVisible", &SigninScreenHandler::HandleLoginVisible);
 
-  // TODO(crbug.com/1168114): This is also called by GAIA screen,
-  // but might not be needed anymore
-  AddCallback("loginUIStateChanged",
-              &SigninScreenHandler::HandleLoginUIStateChanged);
   AddCallback("showLoadingTimeoutError",
               &SigninScreenHandler::HandleShowLoadingTimeoutError);
 }
@@ -510,43 +504,6 @@ void SigninScreenHandler::HandleOfflineLogin() {
   HideOfflineMessage(NetworkStateInformer::OFFLINE,
                      NetworkError::ERROR_REASON_NONE);
   LoginDisplayHost::default_host()->StartWizard(OfflineLoginView::kScreenId);
-}
-
-void SigninScreenHandler::HandleToggleKioskAutolaunchScreen() {
-  if (delegate_ && !webui::IsEnterpriseManaged())
-    delegate_->ShowKioskAutolaunchScreen();
-}
-
-void SigninScreenHandler::HandleLoginVisible(const std::string& source) {
-  VLOG(1) << "Login WebUI >> loginVisible, src: " << source << ", "
-          << "webui_visible_: " << webui_visible_;
-  if (!webui_visible_) {
-    // There might be multiple messages from OOBE UI so send notifications after
-    // the first one only.
-    session_manager::SessionManager::Get()->NotifyLoginOrLockScreenVisible();
-    TRACE_EVENT_NESTABLE_ASYNC_END0(
-        "ui", "ShowLoginWebUI",
-        TRACE_ID_WITH_SCOPE(LoginDisplayHostWebUI::kShowLoginWebUIid,
-                            TRACE_ID_GLOBAL(1)));
-  }
-  webui_visible_ = true;
-}
-
-void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
-                                                    bool active) {
-  VLOG(0) << "Login WebUI >> active: " << active << ", "
-            << "source: " << source;
-
-  if (!KioskAppManager::Get()->GetAutoLaunchApp().empty() &&
-      KioskAppManager::Get()->IsAutoLaunchRequested()) {
-    VLOG(0) << "Showing auto-launch warning";
-    // On slow devices, the wallpaper animation is not shown initially, so we
-    // must explicitly load the wallpaper. This is also the case for the
-    // account-picker and gaia-signin UI states.
-    LoginDisplayHost::default_host()->LoadSigninWallpaper();
-    HandleToggleKioskAutolaunchScreen();
-    return;
-  }
 }
 
 void SigninScreenHandler::HandleShowLoadingTimeoutError() {

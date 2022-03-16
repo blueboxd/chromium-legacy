@@ -1801,6 +1801,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_SEARCH_AND_ASSISTANT" desc="Category title for the list of suggestions from the search provider and Google Assistant shown in launcher search that are relevant to but not the best match for the query in the search box.">
         Search and Assistant
       </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_GAMES" desc="Category title for the list of video game search results shown in launcher search that are relevant to but not the best match for the query in the search box.">
+        Games
+      </message>
       <message name="IDS_ASH_SEARCH_RESULT_SEPARATOR" desc="Separator between the title and details text in ash search result view.">
         ''' - '''
       </message>
@@ -4884,6 +4887,24 @@ New install
       </message>
       <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_MESSAGE_3_PLUS" desc="Notification message explaining that a popup from three or more applications have been blocked.">
         <ph name="APP_1_TITLE">$1<ex>Google Chat</ex></ph>, <ph name="APP_2_TITLE">$2<ex>Chrome</ex></ph> and other notifications are hidden because viewing protection is on
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_SYSTEM_TITLE" desc="Title used for the OS when listing blocked notification sources.">
+        System
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_APP_TITLE" desc="Title used for a generic application when listing blocked notification sources.">
+        App
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_ARC_TITLE" desc="Title used for an Android application when listing blocked notification sources.">
+        Android
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_CROSTINI_TITLE" desc="Title used for a Linux application when listing blocked notification sources.">
+        Linux
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_WEB_TITLE" desc="Title used for the web browser when listing blocked notification sources.">
+        Web
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_PHONE_HUB_TITLE" desc="Title used for the Phone Hub feature when listing blocked notification sources.">
+        Phone Hub
       </message>
       <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_SHOW_BUTTON_TEXT" desc="Text in notification button to show previously-blocked notifications.">
         Show

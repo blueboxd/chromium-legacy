@@ -424,10 +424,6 @@
       status: "experimental",
     },
     {
-      name: "COLRV1Fonts",
-      status: "stable",
-    },
-    {
       name: "CompositeBGColorAnimation",
       status: "experimental",
     },
@@ -1156,7 +1152,7 @@
     },
     {
       name: "FontPalette",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FontSrcLocalMatching",
@@ -1252,6 +1248,9 @@
       name: "HighlightInheritance",
     },
     {
+      name: "HighlightOverlayPainting",
+    },
+    {
       name: "HrefTranslate",
       depends_on: ["TranslateService"],
       origin_trial_feature_name: "HrefTranslate",
@@ -1325,7 +1324,7 @@
     {
       name: "LayoutNGBlockFragmentation",
       implied_by: ["LayoutNGFlexFragmentation", "LayoutNGGridFragmentation", "LayoutNGPrinting", "LayoutNGTableFragmentation"],
-      status: "stable",
+      status: "test",
     },
     {
       name: "LayoutNGBlockInInline",

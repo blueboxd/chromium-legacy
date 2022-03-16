@@ -278,8 +278,17 @@ bool PrivacySandboxService::IsUrlSuitableForDialog(const GURL& url) {
 }
 
 void PrivacySandboxService::DialogOpenedForBrowser(Browser* browser) {
-  // TODO(crbug.com/1286276): Implement logic to record this and make available
-  // to the Privacy Sandbox helper.
+  DCHECK(!browsers_with_open_dialogs_.count(browser));
+  browsers_with_open_dialogs_.insert(browser);
+}
+
+void PrivacySandboxService::DialogClosedForBrowser(Browser* browser) {
+  DCHECK(browsers_with_open_dialogs_.count(browser));
+  browsers_with_open_dialogs_.erase(browser);
+}
+
+bool PrivacySandboxService::IsDialogOpenForBrowser(Browser* browser) {
+  return browsers_with_open_dialogs_.count(browser);
 }
 
 void PrivacySandboxService::SetDialogDisabledForTests(bool disabled) {
@@ -725,27 +734,31 @@ void PrivacySandboxService::ConvertFledgeJoiningTopFramesForDisplay(
 std::vector<privacy_sandbox::CanonicalTopic>
 PrivacySandboxService::GetCurrentTopTopics() const {
   // TODO(crbug.com/1286276): Add proper Topics implementation.
-  return std::vector<privacy_sandbox::CanonicalTopic>(
-      fake_current_topics_.begin(), fake_current_topics_.end());
+  if (privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.Get())
+    return {fake_current_topics_.begin(), fake_current_topics_.end()};
+  return {};
 }
 
 std::vector<privacy_sandbox::CanonicalTopic>
 PrivacySandboxService::GetBlockedTopics() const {
   // TODO(crbug.com/1286276): Add proper Topics implementation.
-  return std::vector<privacy_sandbox::CanonicalTopic>(
-      fake_blocked_topics_.begin(), fake_blocked_topics_.end());
+  if (privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.Get())
+    return {fake_blocked_topics_.begin(), fake_blocked_topics_.end()};
+  return {};
 }
 
 void PrivacySandboxService::SetTopicAllowed(
     privacy_sandbox::CanonicalTopic topic,
     bool allowed) {
   // TODO(crbug.com/1286276): Update preferences.
-  if (allowed) {
-    fake_current_topics_.insert(topic);
-    fake_blocked_topics_.erase(topic);
-  } else {
-    fake_current_topics_.erase(topic);
-    fake_blocked_topics_.insert(topic);
+  if (privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.Get()) {
+    if (allowed) {
+      fake_current_topics_.insert(topic);
+      fake_blocked_topics_.erase(topic);
+    } else {
+      fake_current_topics_.erase(topic);
+      fake_blocked_topics_.insert(topic);
+    }
   }
 }
 

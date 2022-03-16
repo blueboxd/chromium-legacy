@@ -2738,10 +2738,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="TOUCH_MOVED" label=""/>
   <suffix name="TOUCH_PRESSED" label=""/>
   <suffix name="TOUCH_RELEASED" label=""/>
-  <affected-histogram name="Event.Latency.OS"/>
   <affected-histogram name="Event.Latency.OS2"/>
-  <affected-histogram name="Event.Latency.OS_NO_VALIDATION.NEGATIVE"/>
-  <affected-histogram name="Event.Latency.OS_NO_VALIDATION.POSITIVE"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExtensionsDatabaseRestore" separator=".">
@@ -7381,21 +7378,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="PerformanceHints.Observer.HintForURLResult"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="PerformanceMonitor" separator=".">
-  <suffix name="BrowserProcess" label=""/>
-  <suffix name="GPUProcess" label=""/>
-  <suffix name="NetworkProcess" label=""/>
-  <suffix name="PluginProcess" label=""/>
-  <suffix name="PPAPIProcess" label=""/>
-  <suffix name="RendererExtensionEventProcess" label=""/>
-  <suffix name="RendererExtensionPersistentProcess" label=""/>
-  <suffix name="RendererProcess" label=""/>
-  <suffix name="Total" label=""/>
-  <suffix name="UtilityProcess" label=""/>
-  <suffix name="WorkerProcess" label=""/>
-  <affected-histogram name="PerformanceMonitor.AverageCPU"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="PermissionRequestGesture" separator=".">
   <suffix name="Gesture" label="With user gesture"/>
   <suffix name="NoGesture" label="Without user gesture"/>
@@ -7434,6 +7416,7 @@ chromium-metrics-reviews@google.com.
 <histogram_suffixes name="PermissionTypes" separator=".">
   <suffix name="AR" label="AR permission actions"/>
   <suffix name="AudioCapture" label="Microphone permission actions"/>
+  <suffix name="CameraPanTiltZoom" label="Camera movements permission actions"/>
   <suffix name="ClipboardReadWrite" label="Clipboard permission actions"/>
   <suffix name="DisplayCapture" label="Display capture permission actions"/>
   <suffix name="Geolocation" label="Geolocation permission actions"/>
@@ -7879,6 +7862,14 @@ chromium-metrics-reviews@google.com.
   <suffix name="BlinkGC" label="Only counting Blink GC memory."/>
   <suffix name="BlinkGC.AllocatedObjects"
       label="Only counting objects allocated using Blink GC."/>
+  <suffix name="BlinkGC.Fragmentation"
+      label="Fragmentation of Blink GC."/>
+  <suffix name="BlinkGC.Main.Heap"
+      label="Only counting memory on Blink GC's main thread heap."/>
+  <suffix name="BlinkGC.Main.Heap.AllocatedObjects"
+      label="Only counting objects allocated in Blink GC's main thread heap."/>
+  <suffix name="BlinkGC.Main.Heap.Fragmentation"
+      label="Fragmentation of Blink GC's main thread heap."/>
   <suffix name="CommandBuffer"
       label="Only counting memory used by GL command buffers."/>
   <suffix name="Discardable"

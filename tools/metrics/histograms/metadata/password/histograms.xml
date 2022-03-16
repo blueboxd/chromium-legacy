@@ -993,6 +993,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PasswordManager.BulkCheck.LeaksFoundOnErrorOrCanceled"
     units="credentials" expires_after="2022-04-24">
+  <obsolete>
+    Removed in M101.
+  </obsolete>
   <owner>vasilii@chromium.org</owner>
   <owner>vsemeniuk@google.com</owner>
   <summary>
@@ -2491,6 +2494,32 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="PasswordManager.SyncControllerDelegateNotifiesCredentialManager.ErrorCode"
+    enum="PasswordStoreAndroidBackendError" expires_after="2022-08-10">
+  <owner>kazinova@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Error code registered when PasswordSyncControllerDelegateAndroid fails in
+    notifying CredentialManager of the currect account. This happens either when
+    the request made to the credential manager API returns with a failure or
+    before, if the PasswordSyncControllerDelegateAndroid makes a call with
+    incomplete data (e.g. no account is found when one is required).
+  </summary>
+</histogram>
+
+<histogram
+    name="PasswordManager.SyncControllerDelegateNotifiesCredentialManager.Success"
+    enum="Boolean" expires_after="2022-08-10">
+  <owner>kazinova@google.com</owner>
+  <owner>ioanap@chromium.org</owner>
+  <summary>
+    Whether PasswordSyncControllerDelegateAndroid succeeded in notifying
+    CredentialManager of the currect account. Recorded when the async request to
+    notify the credential manager about the account returns.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.SyncingAccountState"
     enum="PasswordManagerSyncingAccountState" expires_after="2022-06-30">
   <obsolete>
@@ -2857,7 +2886,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.{Store}{Metric2}.{PasswordType}{CustomPassphraseStatus}"
-    units="units" expires_after="2022-04-24">
+    units="units" expires_after="2022-10-24">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <owner>mamir@chromium.org</owner>

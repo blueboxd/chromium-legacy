@@ -95,12 +95,6 @@ const base::Feature kBackForwardCache{"BackForwardCache",
 const base::Feature kBackForwardCacheMediaSessionService{
     "BackForwardCacheMediaSessionService", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable same-site back-forward cache for trybots. This is here because of
-// https://crbug.com/1211818 and should only used for trybots. For normal use
-// cases, please set BackForwardCache's enable_same_site param to true.
-const base::Feature kBackForwardCacheSameSiteForBots{
-    "BackForwardCacheSameSiteForBots", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable back/forward cache for screen reader users. This flag should be
 // removed once the https://crbug.com/1271450 is resolved.
 const base::Feature kEnableBackForwardCacheForScreenReader{
@@ -542,6 +536,10 @@ const base::Feature kMediaDevicesSystemMonitorCache {
 // Plugin Private File System.
 const base::Feature kMediaLicenseBackend{"MediaLicenseBackend",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Allow cross-context transfer of MediaStreamTracks.
+const base::Feature kMediaStreamTrackTransfer{
+    "MediaStreamTrackTransfer", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled Mojo uses a dedicated background thread to listen for incoming
 // IPCs. Otherwise it's configured to use Content's IO thread for that purpose.

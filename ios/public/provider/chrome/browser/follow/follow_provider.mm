@@ -12,12 +12,10 @@ bool FollowProvider::GetFollowStatus(FollowSiteInfo* followSiteInfo) {
   return false;
 }
 
-NSArray<FollowSiteInfo*>* FollowProvider::GetFollowedChannels() {
-  return nil;
-}
-
 NSArray<FollowedWebChannel*>* FollowProvider::GetFollowedWebChannels() {
   return nil;
 }
 
 void FollowProvider::UpdateFollowStatus(FollowSiteInfo* site, bool state) {}
+
+void FollowProvider::SetFollowEventDelegate(Browser* browser) {}

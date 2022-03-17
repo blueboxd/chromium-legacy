@@ -65,6 +65,10 @@ extern const base::FeatureParam<int> kLargeFaviconFromGoogleSizeInDip;
 
 extern const base::Feature kObserverBasedPostProfileInit;
 
+extern const base::Feature kRestartNetworkServiceUnsandboxedForFailedLaunch;
+
+extern const base::Feature kKeyPinningComponentUpdater;
+
 }  // namespace features
 
 #endif  // CHROME_BROWSER_BROWSER_FEATURES_H_

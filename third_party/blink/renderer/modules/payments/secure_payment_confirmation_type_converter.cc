@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_credential_instrument.h"
-#include "third_party/blink/renderer/modules/credentialmanager/credential_manager_type_converters.h"
+#include "third_party/blink/renderer/modules/credentialmanagement/credential_manager_type_converters.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -45,12 +45,23 @@ TypeConverter<payments::mojom::blink::SecurePaymentConfirmationRequestPtr,
   if (input->hasTimeout())
     output->timeout = base::Milliseconds(input->timeout());
 
+  // Before SecurePaymentConfirmationAPIV3, the iconMustBeShown behavior is
+  // true.
   output->instrument = blink::mojom::blink::PaymentCredentialInstrument::New(
       input->instrument()->displayName(),
-      blink::KURL(input->instrument()->icon()));
+      blink::KURL(input->instrument()->icon()),
+      blink::RuntimeEnabledFeatures::SecurePaymentConfirmationAPIV3Enabled()
+          ? input->instrument()->iconMustBeShown()
+          : true);
 
   output->payee_origin =
       blink::SecurityOrigin::CreateFromString(input->payeeOrigin());
+
+  if (blink::RuntimeEnabledFeatures::SecurePaymentConfirmationAPIV3Enabled()) {
+    output->rp_id = input->rpId();
+  } else {
+    output->rp_id = "";
+  }
 
   return output;
 }

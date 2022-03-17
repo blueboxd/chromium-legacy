@@ -34,6 +34,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
+#include "base/observer_list.h"
 #include "base/process/process.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -4598,11 +4599,16 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
       FrameTree* frame_tree = frame_tree_node->frame_tree();
       CHECK_EQ(frame_tree->page_delegate(), this);
 
-      // Prerendering is generally hidden from embedders. If the navigation is
-      // targeting a frame in a prerendering frame tree, we shouldn't run that
-      // navigation through the embedder delegate. Instead, we just navigate
-      // directly on the prerendering frame tree.
-      if (frame_tree->type() == FrameTree::Type::kPrerender) {
+      // Prerendering and fenced frame navigations are hidden from embedders.
+      // If the navigation is targeting a frame in a prerendering or fenced
+      // frame tree, we shouldn't run that navigation through the embedder
+      // delegate. Embedder implementations of
+      // `WebContentsDelegate::OpenURLFromTab` assume that the primary
+      // frame tree Navigation controller should be used for navigating.
+      // Instead, we just navigate directly on the relevant frame
+      // tree.
+      if (frame_tree->type() == FrameTree::Type::kPrerender ||
+          frame_tree->type() == FrameTree::Type::kFencedFrame) {
         DCHECK_EQ(params.disposition, WindowOpenDisposition::CURRENT_TAB);
         frame_tree->controller().LoadURLWithParams(
             NavigationController::LoadURLParams(params));

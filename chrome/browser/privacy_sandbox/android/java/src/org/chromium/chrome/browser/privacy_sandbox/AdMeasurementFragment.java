@@ -18,7 +18,8 @@ import org.chromium.ui.text.SpanApplier;
  * Settings fragment for privacy sandbox settings.
  */
 public class AdMeasurementFragment extends PreferenceFragmentCompat {
-    public static final String AD_MEASUREMENT_DESCRIPTION = "ad_measurement_description";
+    private static final String AD_MEASUREMENT_DESCRIPTION = "ad_measurement_description";
+    private Runnable mOpenHistoryRunnable;
 
     /**
      * Initializes all the objects related to the preferences page.
@@ -29,13 +30,23 @@ public class AdMeasurementFragment extends PreferenceFragmentCompat {
         SettingsUtils.addPreferencesFromResource(this, R.xml.ad_measurement_preference);
 
         ChromeBasePreference descriptionPreference = findPreference(AD_MEASUREMENT_DESCRIPTION);
-        descriptionPreference.setSummary(SpanApplier.applySpans(
-                getResources().getString(R.string.privacy_sandbox_ad_measurement_description),
-                new SpanApplier.SpanInfo("<link>", "</link>",
-                        new NoUnderlineClickableSpan(getContext(), this::showHistory))));
+        int description = PrivacySandboxBridge.isPrivacySandboxEnabled()
+                ? R.string.privacy_sandbox_ad_measurement_description_trials_on
+                : R.string.privacy_sandbox_ad_measurement_description_trials_off;
+        descriptionPreference.setSummary(
+                SpanApplier.applySpans(getResources().getString(description),
+                        new SpanApplier.SpanInfo("<link>", "</link>",
+                                new NoUnderlineClickableSpan(getContext(), this::showHistory))));
+    }
+
+    /**
+     * Set the a helper to open history from settings.
+     */
+    public void setSetHistoryHelper(Runnable openHistoryRunnable) {
+        mOpenHistoryRunnable = openHistoryRunnable;
     }
 
     private void showHistory(View view) {
-        // TODO(crbug.com/1286276): Show history page
+        mOpenHistoryRunnable.run();
     }
 }

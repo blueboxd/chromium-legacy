@@ -35,6 +35,7 @@
 #include <utility>
 
 #include "base/i18n/rtl.h"
+#include "base/notreached.h"
 #include "base/unguessable_token.h"
 #include "media/base/audio_processing.h"
 #include "media/base/speech_recognition_client.h"
@@ -537,7 +538,6 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // A user interaction is observed.
   virtual void DidObserveUserInteraction(base::TimeDelta max_event_duration,
-                                         base::TimeDelta total_event_duration,
                                          UserInteractionType interaction_type) {
   }
 
@@ -733,7 +733,7 @@ class BLINK_EXPORT WebLocalFrameClient {
       uint32_t shared_memory_count,
       CrossVariantMojoReceiver<
           media::mojom::AudioProcessorControlsInterfaceBase> controls_receiver,
-      const media::AudioProcessingSettings& settings) {}
+      const media::AudioProcessingSettings* settings) {}
   virtual void AssociateInputAndOutputForAec(
       const base::UnguessableToken& input_stream_id,
       const std::string& output_device_id) {}

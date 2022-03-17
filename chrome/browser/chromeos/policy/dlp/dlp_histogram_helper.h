@@ -24,8 +24,16 @@ constexpr char kDlpPolicyPresentUMA[] = "DlpPolicyPresent";
 constexpr char kDragDropBlockedUMA[] = "DragDropBlocked";
 constexpr char kFilesDaemonStartedUMA[] = "FilesDaemonStarted";
 constexpr char kPrintingBlockedUMA[] = "PrintingBlocked";
+constexpr char kPrintingWarnedUMA[] = "PrintingWarned";
+constexpr char kPrintingWarnProceededUMA[] = "PrintingWarnProceeded";
+constexpr char kPrintingWarnSilentProceededUMA[] =
+    "PrintingWarnSilentProceeded";
 constexpr char kPrivacyScreenEnforcedUMA[] = "PrivacyScreenEnforced";
 constexpr char kScreenShareBlockedUMA[] = "ScreenShareBlocked";
+constexpr char kScreenShareWarnedUMA[] = "ScreenShareWarned";
+constexpr char kScreenShareWarnProceededUMA[] = "ScreenShareWarnProceeded";
+constexpr char kScreenShareWarnSilentProceededUMA[] =
+    "ScreenShareWarnSilentProceeded";
 constexpr char kScreenSharePausedOrResumedUMA[] = "ScreenSharePausedOrResumed";
 constexpr char kScreenshotBlockedUMA[] = "ScreenshotBlocked";
 constexpr char kVideoCaptureInterruptedUMA[] = "VideoCaptureInterrupted";

@@ -2670,16 +2670,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-quick-action-search-widget-android",
-    "owners": [ "maxtauro@google.com", "ender@google.com" ],
-    "expiry_milestone": 105
-  },
-  {
-    "name": "enable-quick-action-search-widget-android-dino-variant",
-    "owners": [ "maxtauro@google.com", "ender@google.com" ],
-    "expiry_milestone": 105
-  },
-  {
     "name": "enable-raw-draw",
     "owners": [ "penghuang" ],
     "expiry_milestone": 110
@@ -3986,7 +3976,7 @@
   {
     "name": "lens-camera-assisted-search",
     "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "fgorski", "wylieb", "lens-chrome@google.com" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 104
   },
   {
     "name": "lightweight-reactions-android",
@@ -4820,6 +4810,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "password-notes",
+    "owners": ["mamir", "derinel@google.com"],
+    "expiry_milestone": 105
+  },
+  {
     "name": "password-scripts-fetching",
     "owners": [ "kolos", "selakovic@google.com", "treib", "brunobraga" ],
     "expiry_milestone": 105
@@ -4950,7 +4945,7 @@
       "andzaytsev",
       "msramek",
       "chrome-friendly-settings@google.com"],
-    "expiry_milestone": 100
+    "expiry_milestone": 104
   },
   {
     "name": "privacy-sandbox-v3-android",
@@ -5640,7 +5635,7 @@
     "expiry_milestone": 104
   },
   {
-    "name": "sync-android-promos-revamp",
+    "name": "sync-android-promos-with-single-button",
     "owners": ["mmrashad@google.com", "chrome-sync-dev@google.com"],
     "expiry_milestone": 103
   },

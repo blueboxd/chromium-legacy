@@ -87,6 +87,11 @@ def _fyi_gpu_windows_builder(*, name, **kwargs):
     kwargs.setdefault("builderless", True)
     kwargs.setdefault("cores", 8)
     kwargs.setdefault("os", os.WINDOWS_ANY)
+    kwargs.setdefault("service_account", ci.gpu.SERVICE_ACCOUNT)
+    kwargs.setdefault("pool", ci.gpu.POOL)
+    kwargs.setdefault("goma_backend", None)
+    kwargs.setdefault("reclient_jobs", rbe_jobs.LOW_JOBS_FOR_CI)
+    kwargs.setdefault("reclient_instance", rbe_instance.DEFAULT)
     return ci.builder(name = name, **kwargs)
 
 ci.builder(

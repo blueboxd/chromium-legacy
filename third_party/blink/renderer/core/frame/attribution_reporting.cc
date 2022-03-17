@@ -69,7 +69,7 @@ void AttributionReporting::Trace(Visitor* visitor) const {
   Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
-ScriptPromise AttributionReporting::registerAttributionSource(
+ScriptPromise AttributionReporting::registerSource(
     ScriptState* script_state,
     const String& url,
     ExceptionState& exception_state) {
@@ -83,8 +83,8 @@ ScriptPromise AttributionReporting::registerAttributionSource(
   Document* document = GetSupplementable()->document();
 
   AttributionSrcLoader::RegisterResult result =
-      frame->GetAttributionSrcLoader()->Register(document->CompleteURL(url),
-                                                 /*element=*/nullptr);
+      frame->GetAttributionSrcLoader()->RegisterSources(
+          document->CompleteURL(url));
 
   return HandleRegisterResult(script_state, exception_state, result);
 }

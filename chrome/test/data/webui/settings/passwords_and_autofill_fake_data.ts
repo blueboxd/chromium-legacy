@@ -20,6 +20,7 @@ export type PasswordEntryParams = {
   id?: number,
   frontendId?: number,
   fromAccountStore?: boolean,
+  note?: string,
 };
 
 /**
@@ -38,6 +39,7 @@ export function createPasswordEntry(params?: PasswordEntryParams):
   const id = params.id !== undefined ? params.id : 42;
   const frontendId = params.frontendId !== undefined ? params.frontendId : id;
   const fromAccountStore = params.fromAccountStore || false;
+  const note = params.note || '';
 
   return {
     urls: {
@@ -50,6 +52,7 @@ export function createPasswordEntry(params?: PasswordEntryParams):
     id: id,
     frontendId: frontendId,
     fromAccountStore: fromAccountStore,
+    passwordNote: note,
   };
 }
 
@@ -59,6 +62,7 @@ export type MultyStorePasswordEntryParams = {
   federationText?: string,
   accountId?: number,
   deviceId?: number,
+  note?: string,
 };
 
 /**
@@ -77,7 +81,8 @@ export function createMultiStorePasswordEntry(
       federationText: params.federationText,
       id: params.deviceId,
       frontendId: dummyFrontendId,
-      fromAccountStore: false
+      fromAccountStore: false,
+      note: params.note,
     });
   }
   if (params.accountId !== undefined) {
@@ -87,7 +92,8 @@ export function createMultiStorePasswordEntry(
       federationText: params.federationText,
       id: params.accountId,
       frontendId: dummyFrontendId,
-      fromAccountStore: true
+      fromAccountStore: true,
+      note: params.note,
     });
   }
 

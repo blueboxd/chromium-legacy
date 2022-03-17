@@ -26,6 +26,7 @@
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
+#include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -276,35 +277,46 @@ Database::Database(DatabaseOptions options)
   DCHECK(!options_.mmap_alt_status_discouraged ||
          options_.enable_views_discouraged)
       << "mmap_alt_status requires views";
+
+  // It's valid to construct a database on a sequence and then pass it to a
+  // different sequence before usage.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 Database::~Database() {
   Close();
 }
 
+// static
 void Database::DisableMmapByDefault() {
   enable_mmap_by_default_ = false;
 }
 
 bool Database::Open(const base::FilePath& path) {
-  DCHECK(!path.empty());
-
   std::string path_string = AsUTF8ForSQL(path);
+  TRACE_EVENT1("sql", "Database::Open", "path", path_string);
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!path.empty());
   DCHECK_NE(path_string, kSqliteOpenInMemoryPath)
       << "Path conflicts with SQLite magic identifier";
 
-  TRACE_EVENT1("sql", "Database::Open", "path", path_string);
   return OpenInternal(path_string, OpenMode::kRetryOnPoision);
 }
 
 bool Database::OpenInMemory() {
   TRACE_EVENT0("sql", "Database::OpenInMemory");
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   in_memory_ = true;
   return OpenInternal(kSqliteOpenInMemoryPath, OpenMode::kInMemory);
 }
 
 bool Database::OpenTemporary(base::PassKey<Recovery>) {
   TRACE_EVENT0("sql", "Database::OpenTemporary");
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return OpenInternal(std::string(), OpenMode::kTemporary);
 }
 
@@ -381,6 +393,7 @@ void Database::Close() {
 void Database::Preload() {
   TRACE_EVENT0("sql", "Database::Preload");
 
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!db_) {
     DCHECK(poisoned_) << "Cannot preload null db";
     return;
@@ -1175,6 +1188,7 @@ bool Database::AttachDatabase(const base::FilePath& other_db_path,
                               InternalApiToken) {
   TRACE_EVENT0("sql", "Database::AttachDatabase");
 
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(ValidAttachmentPoint(attachment_point));
 
   Statement statement(GetUniqueStatement("ATTACH ? AS ?"));
@@ -1191,6 +1205,7 @@ bool Database::DetachDatabase(base::StringPiece attachment_point,
                               InternalApiToken) {
   TRACE_EVENT0("sql", "Database::DetachDatabase");
 
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(ValidAttachmentPoint(attachment_point));
 
   Statement statement(GetUniqueStatement("DETACH ?"));
@@ -1311,6 +1326,7 @@ bool Database::Execute(const char* sql) {
 bool Database::ExecuteWithTimeout(const char* sql, base::TimeDelta timeout) {
   TRACE_EVENT0("sql", "Database::ExecuteWithTimeout");
 
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!db_) {
     DCHECK(poisoned_) << "Illegal use of Database without a db";
     return false;
@@ -1474,6 +1490,8 @@ std::string Database::GetSchema() {
 }
 
 bool Database::IsSQLValid(const char* sql) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
   if (!db_) {
@@ -1507,19 +1525,24 @@ bool Database::IsSQLValid(const char* sql) {
 }
 
 bool Database::DoesIndexExist(base::StringPiece index_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return DoesSchemaItemExist(index_name, "index");
 }
 
 bool Database::DoesTableExist(base::StringPiece table_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return DoesSchemaItemExist(table_name, "table");
 }
 
 bool Database::DoesViewExist(base::StringPiece view_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return DoesSchemaItemExist(view_name, "view");
 }
 
 bool Database::DoesSchemaItemExist(base::StringPiece name,
                                    base::StringPiece type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   static const char kSql[] =
       "SELECT 1 FROM sqlite_schema WHERE type=? AND name=?";
   Statement statement(GetUniqueStatement(kSql));
@@ -1537,6 +1560,8 @@ bool Database::DoesSchemaItemExist(base::StringPiece name,
 
 bool Database::DoesColumnExist(const char* table_name,
                                const char* column_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // sqlite3_table_column_metadata uses out-params to return column definition
   // details, such as the column type and whether it allows NULL values. These
   // aren't needed to compute the current method's result, so we pass in nullptr
@@ -1618,6 +1643,7 @@ const char* Database::GetErrorMessage() const {
 
 bool Database::OpenInternal(const std::string& db_file_path,
                             Database::OpenMode mode) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT1("sql", "Database::OpenInternal", "path", db_file_path);
 
   DCHECK(mode != OpenMode::kTemporary || db_file_path.empty())
@@ -1912,20 +1938,35 @@ void Database::OnSqliteError(int sqlite_error_code,
   DCHECK_NE(statement != nullptr, sql_statement != nullptr)
       << __func__ << " should either get a Statement or a raw SQL string";
 
-  bool is_expected_error = IsExpectedSqliteError(sqlite_error_code);
-  if (!is_expected_error) {
-    // Log unexpected errors.
-    if (statement)
-      sql_statement = statement->GetSQLStatement();
-    DCHECK(sql_statement);
+  // Log errors for developers.
+  //
+  // This block is wrapped around a DCHECK_IS_ON() check so we don't waste CPU
+  // cycles computing the strings that make up the log message in production.
+#if DCHECK_IS_ON()
+  if (statement)
+    sql_statement = statement->GetSQLStatement();
+  DCHECK(sql_statement);
 
-    std::string id = histogram_tag_;
-    if (id.empty())
-      id = DbPath().BaseName().AsUTF8Unsafe();
-    LOG(ERROR) << id << " SQLite error: code " << sqlite_error_code << " errno "
-               << GetLastErrno() << ": " << GetErrorMessage()
-               << " sql: " << sql_statement;
-  }
+  std::string database_id = histogram_tag_;
+  if (database_id.empty())
+    database_id = DbPath().BaseName().AsUTF8Unsafe();
+
+  // This logging block cannot be a DCHECK, because valid usage of sql::Database
+  // can still encounter SQLite errors in production. For example, valid SQL
+  // statements can fail when a database is corrupted.
+  //
+  // This logging block should not use LOG(ERROR) because many features built on
+  // top of sql::Database can recover from most errors.
+  DVLOG(1) << "SQLite error! This may indicate a programming error!\n"
+           << "Database: " << database_id
+           << " sqlite_error_code: " << sqlite_error_code
+           << " errno: " << GetLastErrno()
+           << "\nSQLite error description: " << GetErrorMessage()
+           << "\nSQL statement: " << sql_statement;
+#endif  // DCHECK_IS_ON()
+
+  // Inform the error expecter that we've encountered the error.
+  std::ignore = IsExpectedSqliteError(sqlite_error_code);
 
   if (!error_callback_.is_null()) {
     // Create an additional reference to the state in `error_callback_`, so the
@@ -1936,10 +1977,6 @@ void Database::OnSqliteError(int sqlite_error_code,
     error_callback_copy.Run(sqlite_error_code, statement);
     return;
   }
-
-  // The default handling is to assert on debug and to ignore on release.
-  if (!is_expected_error)
-    DLOG(DCHECK) << GetErrorMessage();
 }
 
 std::string Database::GetDiagnosticInfo(int sqlite_error_code,
@@ -1983,6 +2020,7 @@ std::string Database::GetDiagnosticInfo(int sqlite_error_code,
 }
 
 bool Database::FullIntegrityCheck(std::vector<std::string>* messages) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   messages->clear();
 
   // The PRAGMA below has the side effect of setting SQLITE_RecoveryMode, which
@@ -2068,6 +2106,7 @@ bool Database::UseWALMode() const {
 }
 
 bool Database::CheckpointDatabase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
 

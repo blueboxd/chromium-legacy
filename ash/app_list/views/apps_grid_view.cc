@@ -2081,10 +2081,11 @@ bool AppsGridView::IsTabletMode() const {
   return app_list_view_delegate_->IsInTabletMode();
 }
 
-void AppsGridView::FadeOutVisibleItemsForReorder(
+views::AnimationBuilder AppsGridView::FadeOutVisibleItemsForReorder(
     ReorderAnimationCallback done_callback) {
-  // Abort the running reorder animation if any.
-  MaybeAbortReorderAnimation();
+  // The caller of this function is responsible for aborting the old reorder
+  // process before starting a new one.
+  DCHECK(!IsUnderReorderAnimation());
 
   // Cancel the active bounds animations on item views if any.
   bounds_animator_->Cancel();
@@ -2095,23 +2096,23 @@ void AppsGridView::FadeOutVisibleItemsForReorder(
   reorder_animation_tracker_->Start(metrics_util::ForSmoothness(
       base::BindRepeating(&ReportReorderAnimationSmoothness, IsTabletMode())));
 
-  {
-    views::AnimationBuilder animation_builder;
-    reorder_animation_abort_handle_ = animation_builder.GetAbortHandle();
-    animation_builder
-        .OnEnded(base::BindOnce(&AppsGridView::OnFadeOutAnimationEnded,
-                                weak_factory_.GetWeakPtr(), done_callback,
-                                /*abort=*/false))
-        .OnAborted(base::BindOnce(&AppsGridView::OnFadeOutAnimationEnded,
-                                  weak_factory_.GetWeakPtr(), done_callback,
-                                  /*abort=*/true))
-        .Once()
-        .SetDuration(kFadeOutAnimationDuration)
-        .SetOpacity(layer(), 0.f, gfx::Tween::LINEAR);
-  }
+  views::AnimationBuilder animation_builder;
+  reorder_animation_abort_handle_ = animation_builder.GetAbortHandle();
 
   if (fade_out_start_closure_for_test_)
-    std::move(fade_out_start_closure_for_test_).Run();
+    animation_builder.OnStarted(std::move(fade_out_start_closure_for_test_));
+
+  animation_builder
+      .OnEnded(base::BindOnce(&AppsGridView::OnFadeOutAnimationEnded,
+                              weak_factory_.GetWeakPtr(), done_callback,
+                              /*abort=*/false))
+      .OnAborted(base::BindOnce(&AppsGridView::OnFadeOutAnimationEnded,
+                                weak_factory_.GetWeakPtr(), done_callback,
+                                /*abort=*/true))
+      .Once()
+      .SetDuration(kFadeOutAnimationDuration)
+      .SetOpacity(layer(), 0.f, gfx::Tween::LINEAR);
+  return animation_builder;
 }
 
 views::AnimationBuilder AppsGridView::FadeInVisibleItemsForReorder(
@@ -2451,20 +2452,6 @@ void AppsGridView::CancelContextMenusOnCurrentPage() {
     GetItemViewAt(i)->CancelContextMenu();
 }
 
-void AppsGridView::MaybeAbortReorderAnimation() {
-  switch (reorder_animation_status_) {
-    case AppListReorderAnimationStatus::kEmpty:
-    case AppListReorderAnimationStatus::kIntermediaryState:
-      // No active reorder animation so nothing to do.
-      break;
-    case AppListReorderAnimationStatus::kFadeOutAnimation:
-    case AppListReorderAnimationStatus::kFadeInAnimation:
-      DCHECK(reorder_animation_abort_handle_);
-      reorder_animation_abort_handle_.reset();
-      break;
-  }
-}
-
 void AppsGridView::DeleteItemViewAtIndex(int index) {
   AppListItemView* item_view = GetItemViewAt(index);
   view_model_.Remove(index);
@@ -2693,6 +2680,20 @@ bool AppsGridView::IsViewHiddenForFolderReorder(const views::View* view) const {
 
 bool AppsGridView::IsUnderReorderAnimation() const {
   return reorder_animation_status_ != AppListReorderAnimationStatus::kEmpty;
+}
+
+void AppsGridView::MaybeAbortReorderAnimation() {
+  switch (reorder_animation_status_) {
+    case AppListReorderAnimationStatus::kEmpty:
+    case AppListReorderAnimationStatus::kIntermediaryState:
+      // No active reorder animation so nothing to do.
+      break;
+    case AppListReorderAnimationStatus::kFadeOutAnimation:
+    case AppListReorderAnimationStatus::kFadeInAnimation:
+      DCHECK(reorder_animation_abort_handle_);
+      reorder_animation_abort_handle_.reset();
+      break;
+  }
 }
 
 AppListItemView* AppsGridView::GetViewDisplayedAtSlotOnCurrentPage(

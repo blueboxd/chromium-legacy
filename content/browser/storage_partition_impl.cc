@@ -24,6 +24,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
+#include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
@@ -1193,7 +1194,8 @@ void StoragePartitionImpl::Initialize(
   // Each consumer is responsible for registering its QuotaClient during
   // its construction.
   filesystem_context_ = CreateFileSystemContext(
-      browser_context_, partition_path_, is_in_memory(), quota_manager_proxy);
+      browser_context_, partition_path_, GetBucketBasePath(), is_in_memory(),
+      quota_manager_proxy);
 
   database_tracker_ = storage::DatabaseTracker::Create(
       partition_path_, is_in_memory(),

@@ -15,6 +15,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notreached.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_contents.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_manager_observer.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_restriction_set.h"
@@ -31,6 +32,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -72,6 +74,27 @@ bool IsReported(RestrictionLevelAndUrl restriction_info) {
          IsBlocked(restriction_info);
 }
 
+// Maps restriction to the correct suffix used for logging WarnProceeded
+// metrics. Returns the suffix for supported restrictions and null otherwise.
+const absl::optional<std::string> RestrictionToWarnProceededUMASuffix(
+    DlpRulesManager::Restriction restriction) {
+  switch (restriction) {
+    case DlpRulesManager::Restriction::kScreenShare:
+      return absl::make_optional(dlp::kScreenShareWarnProceededUMA);
+    case DlpRulesManager::Restriction::kPrinting:
+      return absl::make_optional(dlp::kPrintingWarnProceededUMA);
+    case DlpRulesManager::Restriction::kScreenshot:
+      // TODO(crbug.com/1304750): Add UMA stats for warning for screenshots.
+      return absl::nullopt;
+    case DlpRulesManager::Restriction::kUnknownRestriction:
+    case DlpRulesManager::Restriction::kClipboard:
+    case DlpRulesManager::Restriction::kPrivacyScreen:
+    case DlpRulesManager::Restriction::kFiles:
+      NOTREACHED();
+      return absl::nullopt;
+  }
+}
+
 }  // namespace
 
 // static
@@ -100,6 +123,7 @@ void DlpContentManager::CheckPrintingRestriction(
       GetPrintingRestrictionInfo(web_contents);
   MaybeReportEvent(restriction_info, DlpRulesManager::Restriction::kPrinting);
   DlpBooleanHistogram(dlp::kPrintingBlockedUMA, IsBlocked(restriction_info));
+  DlpBooleanHistogram(dlp::kPrintingWarnedUMA, IsWarn(restriction_info));
   if (IsBlocked(restriction_info)) {
     ShowDlpPrintDisabledNotification();
     std::move(callback).Run(false);
@@ -113,6 +137,7 @@ void DlpContentManager::CheckPrintingRestriction(
       ReportWarningProceededEvent(restriction_info.url,
                                   DlpRulesManager::Restriction::kPrinting,
                                   reporting_manager_);
+      DlpBooleanHistogram(dlp::kPrintingWarnSilentProceededUMA, true);
       std::move(callback).Run(true);
       return;
     }
@@ -486,6 +511,8 @@ void DlpContentManager::ProcessScreenShareRestriction(
                    DlpRulesManager::Restriction::kScreenShare);
   DlpBooleanHistogram(dlp::kScreenShareBlockedUMA,
                       IsBlocked(info.restriction_info));
+  DlpBooleanHistogram(dlp::kScreenShareWarnedUMA,
+                      IsWarn(info.restriction_info));
   if (IsBlocked(info.restriction_info)) {
     ShowDlpScreenShareDisabledNotification(application_title);
     std::move(callback).Run(false);
@@ -498,6 +525,7 @@ void DlpContentManager::ProcessScreenShareRestriction(
                           DlpRulesManager::Restriction::kScreenShare);
     if (info.confidential_contents.IsEmpty()) {
       // The user already allowed all the visible content.
+      DlpBooleanHistogram(dlp::kScreenShareWarnSilentProceededUMA, true);
       std::move(callback).Run(true);
       return;
     }
@@ -570,6 +598,10 @@ void DlpContentManager::CheckRunningScreenShares() {
     }
     screen_share->SetConfidentialContentsInfo(info);
 
+    DlpBooleanHistogram(dlp::kScreenShareBlockedUMA,
+                        IsBlocked(info.restriction_info));
+    DlpBooleanHistogram(dlp::kScreenShareWarnedUMA,
+                        IsWarn(info.restriction_info));
     if (IsBlocked(info.restriction_info)) {
       if (screen_share->IsRunning()) {
         screen_share->Pause();
@@ -592,6 +624,7 @@ void DlpContentManager::CheckRunningScreenShares() {
           screen_share->Resume();
           screen_share->MaybeUpdateNotifications();
         }
+        DlpBooleanHistogram(dlp::kScreenShareWarnSilentProceededUMA, true);
         continue;
       }
       if (screen_share->IsRunning()) {
@@ -633,6 +666,7 @@ void DlpContentManager::OnDlpScreenShareWarnDialogReply(
     // to do anything.
     return;
 
+  DlpBooleanHistogram(dlp::kScreenShareWarnProceededUMA, should_proceed);
   if (should_proceed) {
     ReportWarningProceededEvent(info.restriction_info.url,
                                 DlpRulesManager::Restriction::kScreenShare,
@@ -657,6 +691,9 @@ void DlpContentManager::OnDlpWarnDialogReply(
     DlpRulesManager::Restriction restriction,
     OnDlpRestrictionCheckedCallback callback,
     bool should_proceed) {
+  auto suffix = RestrictionToWarnProceededUMASuffix(restriction);
+  if (suffix.has_value())
+    DlpBooleanHistogram(suffix.value(), should_proceed);
   if (should_proceed) {
     for (const auto& content : confidential_contents.GetContents()) {
       user_allowed_contents_cache_.Cache(content, restriction);

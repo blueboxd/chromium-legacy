@@ -192,7 +192,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableForFirstParties,
     &kCCTResizableForThirdParties,
     &kCCTResourcePrefetch,
-    &kQuickActionSearchWidgetAndroidDinoVariant,
     &kDontAutoHideBrowserControls,
     &kChromeNewDownloadTab,
     &kChromeShareLongScreenshot,
@@ -372,7 +371,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
     &syncer::kSyncTrustedVaultPassphraseRecovery,
-    &syncer::kSyncAndroidPromosRevamp,
+    &syncer::kSyncAndroidPromosWithSingleButton,
     &switches::kSyncUseSessionsUnregisterDelay,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &video_tutorials::features::kVideoTutorials,
@@ -596,10 +595,6 @@ const base::Feature kContextualTriggersSelectionMenu{
 
 const base::Feature kContextualTriggersSelectionSize{
     "ContextualTriggersSelectionSize", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kQuickActionSearchWidgetAndroidDinoVariant{
-    "QuickActionSearchWidgetAndroidDinoVariant",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDirectActions{"DirectActions",
                                    base::FEATURE_ENABLED_BY_DEFAULT};

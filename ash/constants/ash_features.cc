@@ -83,11 +83,22 @@ constexpr base::FeatureParam<bool> kAmbientModeRssPhotosEnabled{
 constexpr base::FeatureParam<bool> kAmbientModeStreetArtAlbumEnabled{
     &kAmbientModeFeature, "StreetArtAlbumEnabled", false};
 
+// The "slideshow" theme is intentionally omitted here. For that, the developer
+// can just disable |kAmbientModeAnimationFeature| entirely.
+const base::FeatureParam<AmbientAnimationTheme>::Option
+    kAmbientModeAnimationThemeOptions[] = {
+        {AmbientAnimationTheme::kFeelTheBreeze, "feel_the_breeze"},
+        {AmbientAnimationTheme::kFloatOnBy, "float_on_by"}};
+
+// When |kAmbientModeAnimationFeature| is enabled, specifies which animation
+// theme to load. If |kAmbientModeAnimationFeature| is disabled, this is
+// unused.
+const base::FeatureParam<AmbientAnimationTheme> kAmbientModeAnimationThemeParam{
+    &kAmbientModeAnimationFeature, "animation_theme",
+    AmbientAnimationTheme::kFeelTheBreeze, &kAmbientModeAnimationThemeOptions};
+
 // Controls whether to launch the animated screensaver (as opposed to the
-// existing photo slideshow) when entering ambient mode. Currently, there is
-// only one animation theme available ("feel the breeze"), but a FeatureParam
-// will be introduced that allows the user to select a specific theme when more
-// become available.
+// existing photo slideshow) when entering ambient mode.
 const base::Feature kAmbientModeAnimationFeature{
     "ChromeOSAmbientModeAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -302,7 +313,7 @@ const base::Feature kCroshSWA{"CroshSWA", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables upgrading the crostini container to debian bullseye.
 const base::Feature kCrostiniBullseyeUpgrade{"CrostiniBullseyeUpgrade",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Crostini Disk Resizing.
 const base::Feature kCrostiniDiskResizing{"CrostiniDiskResizing",
@@ -493,7 +504,7 @@ const base::Feature kEnableDnsProxy{"EnableDnsProxy",
 // Enables displaying additional OpenVPN configuration values on the network
 // details page.
 const base::Feature kExtendedOpenVpnSettings{"ExtendedOpenVpnSettings",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables setting the device hostname.
 const base::Feature kEnableHostnameSetting{"EnableHostnameSetting",
@@ -635,7 +646,7 @@ const base::Feature kFilesExtractArchive{"FilesExtractArchive",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the System Web App (SWA) version of file manager.
-const base::Feature kFilesSWA{"FilesSWA", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kFilesSWA{"FilesSWA", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables partitioning of removable disks in file manager.
 const base::Feature kFilesSinglePartitionFormat{

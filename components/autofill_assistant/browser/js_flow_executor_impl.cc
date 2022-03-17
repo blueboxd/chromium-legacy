@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "components/autofill_assistant/browser/features.h"
+#include "components/autofill_assistant/browser/js_flow_util.h"
 #include "components/autofill_assistant/browser/parse_jspb.h"
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
 
@@ -52,9 +53,9 @@ absl::optional<std::string> ConvertActionToBytes(const base::Value* action,
     std::string bytes;
     // A base64-encoded string containing a serialized proto.
     if (base::Base64Decode(action->GetString(), &bytes)) {
-      *error_message = "Invalid Base64-encoded string";
       return bytes;
     }
+    *error_message = "Invalid Base64-encoded string";
     return absl::nullopt;
   }
   if (action->is_list()) {
@@ -64,6 +65,7 @@ absl::optional<std::string> ConvertActionToBytes(const base::Value* action,
   *error_message = "Unexpected value type";
   return absl::nullopt;
 }
+
 }  // namespace
 
 JsFlowExecutorImpl::JsFlowExecutorImpl(content::WebContents* web_contents,
@@ -333,19 +335,22 @@ void JsFlowExecutorImpl::OnFlowResumed(
 void JsFlowExecutorImpl::OnFlowFinished(
     const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::EvaluateResult> result) {
-  // Note that the result is always serialized if available, not just if the
-  // flow was successful. In particular, this serializes exceptions.
-  RunCallback(
-      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__),
-      (result != nullptr ? result->Serialize() : nullptr));
+  // Check and extract the return value. In case of exceptions, the sanitized
+  // stack trace will be part of the returned ClientStatus. Only primitive
+  // values are allowed (see js_flow_util::ExtractFlowReturnValue for details).
+  std::unique_ptr<base::Value> out_result_value;
+  ClientStatus status = js_flow_util::ExtractFlowReturnValue(
+      reply_status, result.get(), out_result_value);
+
+  RunCallback(status, std::move(out_result_value));
 }
 
 void JsFlowExecutorImpl::RunCallback(
     const ClientStatus& status,
     std::unique_ptr<base::Value> result_value) {
   if (!status.ok() && result_value) {
-    DVLOG(1) << "Flow failed with " << status
-             << " and result: " << *result_value;
+    VLOG(1) << "Flow failed with " << status
+            << " and result: " << *result_value;
   }
   std::move(callback_).Run(status, std::move(result_value));
 }

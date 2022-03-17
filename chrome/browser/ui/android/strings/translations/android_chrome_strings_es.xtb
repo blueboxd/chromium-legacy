@@ -30,7 +30,6 @@
 <translation id="114825011539563458">Los controles de privacidad y seguridad más importantes en un mismo lugar</translation>
 <translation id="1149401351239820326">Mes de caducidad</translation>
 <translation id="1154704303112745282">Página no disponible sin conexión: <ph name="VIOLATED_URL" /></translation>
-<translation id="1166688006062225587">Lista de cuentas que se van a seleccionar.</translation>
 <translation id="1171770572613082465">Toca el botón Populares para ver los sitios web más populares</translation>
 <translation id="1173894706177603556">Cambiar nombre</translation>
 <translation id="1177863135347784049">Personalizado</translation>
@@ -571,6 +570,7 @@ Mantén pulsada cualquier palabra para buscarla. Para acotar la búsqueda, selec
 <translation id="4415276339145661267">Gestionar tu cuenta de Google</translation>
 <translation id="4425140285732600465">Siguiendo precio. Recibe alertas si el precio baja en algún sitio.</translation>
 <translation id="442518031075347249">Ya no podrás usar tu tarjeta virtual con Google Play. <ph name="BEGIN_LINK1" />Más información sobre tarjetas virtuales<ph name="END_LINK1" /></translation>
+<translation id="4428065317363009941">Personalización de anuncios</translation>
 <translation id="4450672886426705087">Resultados de la Búsqueda de Google.</translation>
 <translation id="4452411734226507615">Cerrar la pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Marcador añadido a <ph name="FOLDER_NAME" /></translation>
@@ -685,6 +685,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="5001388021414335527">Seguir a este sitio aquí</translation>
 <translation id="5004416275253351869">Controles de actividad de Google</translation>
+<translation id="5005141133360250920">Reacción eliminada</translation>
 <translation id="5005498671520578047">Copiar contraseña</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> quiere conectarse</translation>
 <translation id="5016205925109358554">Serif</translation>
@@ -740,6 +741,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5368227114232678694">Para navegar de forma privada en este dispositivo, prueba incógnito</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> pestaña abierta, toca para cambiar de una a otra}other{<ph name="OPEN_TABS_MANY" /> pestañas abiertas, toca para cambiar de una a otra}}</translation>
 <translation id="5375577065097716013">Buscar imagen con Lens <ph name="BEGIN_NEW" />Nuevo<ph name="END_NEW" /></translation>
+<translation id="5376898820269806588">Reacción cambiada</translation>
 <translation id="5403644198645076998">Permitir solo determinados sitios</translation>
 <translation id="5409881200985013443">¿Enviar el código <ph name="ONE_TIME_CODE" /> a <ph name="CLIENT_NAME" />?</translation>
 <translation id="5414836363063783498">Verificando…</translation>
@@ -897,7 +899,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6277522088822131679">Se ha producido un problema al imprimir la página. Vuelve a intentarlo.</translation>
 <translation id="6277722725779679269">No se ha podido actualizar Seguir precio</translation>
 <translation id="6278428485366576908">Tema</translation>
-<translation id="6293443105724342169">Lista de cuentas que se van a seleccionar abierta a media altura.</translation>
 <translation id="6294610283659775533">Puedes enviar pestañas entre dispositivos en los que se haya iniciado sesión con la misma cuenta de Google</translation>
 <translation id="6297765934698848803">La organización que administra tu dispositivo ha desactivado la cámara.</translation>
 <translation id="6301525844455696527">Ponte al día con tu lista de lectura</translation>
@@ -1073,6 +1074,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="718926126787620637">Lista con carpetas de marcadores abierta a altura completa</translation>
 <translation id="7191430249889272776">Pestaña abierta en segundo plano.</translation>
 <translation id="7196215469483532480">Explicación de la guía de privacidad abierta a altura completa</translation>
+<translation id="7208109991155904980">Reacción movida</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 descarga pendiente}other{# descargas pendientes}}</translation>
 <translation id="7237045078887540010">Al utilizar Chrome, aceptas los <ph name="BEGIN_TOS_LINK" />Términos del Servicio de Google<ph name="END_TOS_LINK" /> y los <ph name="BEGIN_ATOS_LINK" />Términos del Servicio Adicionales de Google Chrome y Chrome OS<ph name="END_ATOS_LINK" />. También se aplica la <ph name="BEGIN_PRIVACY_LINK" />Política de Privacidad<ph name="END_PRIVACY_LINK" />.</translation>
 <translation id="7242755609445462077">Estilizado resaltado el <ph name="CURRENT_DATE" /></translation>
@@ -1307,7 +1309,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8461694314515752532">Cifrar datos sincronizados con tu propia frase de contraseña de sincronización</translation>
 <translation id="8466613982764129868">Comprueba que tu <ph name="TARGET_DEVICE_NAME" /> esté conectado a Internet</translation>
 <translation id="8473863474539038330">Direcciones y más</translation>
-<translation id="847656914027543776">La lista de cuentas que se van a seleccionar está cerrada.</translation>
 <translation id="8481921391193215807">Si está habilitado, los sitios podrán utilizar las técnicas de protección de la privacidad que se muestran aquí para ofrecer su contenido y sus servicios. Entre estas técnicas, se incluyen alternativas al seguimiento entre sitios. Es posible que se añadan más pruebas a lo largo del tiempo.
 
 <ph name="BEGIN_LIST_ITEM1" />Los anunciantes y editores pueden usar el aprendizaje federado de cohortes (FLoC).<ph name="END_LIST_ITEM1" />
@@ -1362,9 +1363,10 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8683526617475118045">Lo que obtienes</translation>
 <translation id="869891660844655955">Fecha de caducidad</translation>
 <translation id="8699120352855309748">No ofrecer que se traduzcan estos idiomas</translation>
+<translation id="8712637175834984815">Entendido</translation>
 <translation id="8725066075913043281">Reintentar</translation>
 <translation id="8730621377337864115">Hecho</translation>
-<translation id="8746155870861185046">Compartir destacado</translation>
+<translation id="8746155870861185046">Compartir resaltado</translation>
 <translation id="8748850008226585750">Contenidos ocultos</translation>
 <translation id="8766529642647037772">¿Crear un enlace destacado como este?</translation>
 <translation id="8773160212632396039">Procesando solicitud</translation>
@@ -1434,7 +1436,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="9108312223223904744">Teléfono como llave de seguridad compatible</translation>
 <translation id="9108808586816295166">Es posible que no haya un DNS seguro disponible de forma ininterrumpida</translation>
 <translation id="9133397713400217035">Explorar sin conexión</translation>
-<translation id="9133523398139146080">Lista de cuentas que se van a seleccionar abierta a altura completa.</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9148126808321036104">Volver a iniciar sesión</translation>
 <translation id="9155898266292537608">También puedes tocar rápidamente una palabra para hacer búsquedas</translation>

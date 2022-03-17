@@ -1447,7 +1447,7 @@ const FeatureEntry::FeatureParam kAlsoShowMediaTabsinOpenTabsSection[] = {
      "true"}};
 
 const FeatureEntry::FeatureVariation kTabSearchMediaTabsVariations[] = {
-    {" - media tabs also shown in open tabs",
+    {" - media tabs also shown in open tabs section",
      kAlsoShowMediaTabsinOpenTabsSection,
      std::size(kAlsoShowMediaTabsinOpenTabsSection), nullptr}};
 
@@ -2494,6 +2494,20 @@ const FeatureEntry::FeatureVariation kPasswordChangeFeatureVariations[] = {
      std::size(
          kPasswordChangeVariationWithForcedDialogAfterEverySuccessfulSubmission),
      nullptr}};
+
+// The variations of --touch-to-fill-password-submission.
+const FeatureEntry::FeatureParam
+    kTouchToFillPasswordSubmissionWithConservativeHeuristics[] = {
+        {password_manager::features::
+             kTouchToFillPasswordSubmissionWithConservativeHeuristics,
+         "true"}};
+
+const FeatureEntry::FeatureVariation
+    kTouchToFillPasswordSubmissionVariations[] = {
+        {"Use conservative heuristics",
+         kTouchToFillPasswordSubmissionWithConservativeHeuristics,
+         std::size(kTouchToFillPasswordSubmissionWithConservativeHeuristics),
+         nullptr}};
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -2616,9 +2630,6 @@ constexpr FeatureEntry::FeatureVariation
          std::size(kPlatformProvidedTrustTokenIssuance), nullptr}};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#if BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
-constexpr char kAmbientModeAnimationInternalName[] = "ambient-mode-animation";
-#endif  // BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
 constexpr char kPersonalizationHubInternalName[] = "personalization-hub";
 constexpr char kWallpaperFullScreenPreviewInternalName[] =
     "wallpaper-fullscreen-preview";
@@ -5673,18 +5684,6 @@ const FeatureEntry kFeatureEntries[] = {
          kConditionalTabStripAndroidVariations,
          "ConditioanlTabStrip")},
 
-    {"enable-quick-action-search-widget-android",
-     flag_descriptions::kQuickActionSearchWidgetAndroidName,
-     flag_descriptions::kQuickActionSearchWidgetAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kQuickActionSearchWidgetAndroid)},
-
-    {"enable-quick-action-search-widget-android-dino-variant",
-     flag_descriptions::kQuickActionSearchWidgetAndroidDinoVariantName,
-     flag_descriptions::kQuickActionSearchWidgetAndroidDinoVariantDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         chrome::android::kQuickActionSearchWidgetAndroidDinoVariant)},
-
     {"shopping-list", flag_descriptions::kShoppingListName,
      flag_descriptions::kShoppingListDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(commerce::kShoppingList)},
@@ -6490,7 +6489,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLensCameraAssistedSearchDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kLensCameraAssistedSearch,
                                     kLensCameraAssistedSearchVariations,
-                                    "OmniboxAssistantVoiceSearch")},
+                                    "LensCameraAssistedSearch")},
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -7041,6 +7040,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMuteCompromisedPasswordsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(password_manager::features::kMuteCompromisedPasswords)},
 
+    {"password-notes", flag_descriptions::kPasswordNotesName,
+     flag_descriptions::kPasswordNotesDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(password_manager::features::kPasswordNotes)},
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"frame-throttle-fps", flag_descriptions::kFrameThrottleFpsName,
      flag_descriptions::kFrameThrottleFpsDescription, kOsCrOS,
@@ -7219,10 +7222,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kPwaUpdateDialogForName)},
 
 #if BUILDFLAG(IS_ANDROID)
-    {"sync-android-promos-revamp",
-     flag_descriptions::kSyncAndroidPromosRevampName,
-     flag_descriptions::kSyncAndroidPromosRevampDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(syncer::kSyncAndroidPromosRevamp)},
+    {"sync-android-promos-with-single-button",
+     flag_descriptions::kSyncAndroidPromosWithSingleButtonName,
+     flag_descriptions::kSyncAndroidPromosWithSingleButtonDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(syncer::kSyncAndroidPromosWithSingleButton)},
 #endif
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
@@ -7656,9 +7660,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"touch-to-fill-password-submission",
      flag_descriptions::kTouchToFillPasswordSubmissionName,
      flag_descriptions::kTouchToFillPasswordSubmissionDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kTouchToFillPasswordSubmission)},
-
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         password_manager::features::kTouchToFillPasswordSubmission,
+         kTouchToFillPasswordSubmissionVariations,
+         "TouchToFillPasswordSubmission")},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -8174,15 +8179,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableUpdateVirtualCardEnrollment)},
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#if BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
-    {kAmbientModeAnimationInternalName,
-     flag_descriptions::kAmbientModeAnimationName,
-     flag_descriptions::kAmbientModeAnimationDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kAmbientModeAnimationFeature)},
-#endif  // BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     // TODO(b/180051795): Remove kOsLinux when lacros-chrome switches to
     // kOsCrOS.
@@ -8500,13 +8496,7 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   }
 
   // Features that are only available for Unknown/Canary/Dev channels.
-  bool is_ambient_mode_animation_feature = false;
-#if BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
-  is_ambient_mode_animation_feature =
-      !strcmp(kAmbientModeAnimationInternalName, entry.internal_name);
-#endif  // BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
-  if ((!strcmp(kPersonalizationHubInternalName, entry.internal_name) ||
-       is_ambient_mode_animation_feature) &&
+  if (!strcmp(kPersonalizationHubInternalName, entry.internal_name) &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::UNKNOWN) {

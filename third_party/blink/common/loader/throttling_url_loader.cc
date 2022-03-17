@@ -208,14 +208,6 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
     loader_->RestartWithURLResetAndFlags(additional_load_flags);
   }
 
-  void RestartWithURLResetAndFlagsNow(int additional_load_flags) override {
-    if (!loader_)
-      return;
-
-    ScopedDelegateCall scoped_delegate_call(this);
-    loader_->RestartWithURLResetAndFlagsNow(additional_load_flags);
-  }
-
   void Detach() { loader_ = nullptr; }
 
  private:
@@ -644,13 +636,6 @@ void ThrottlingURLLoader::RestartWithURLResetAndFlags(
   has_pending_restart_ = true;
 }
 
-void ThrottlingURLLoader::RestartWithURLResetAndFlagsNow(
-    int additional_load_flags) {
-  RestartWithURLResetAndFlags(additional_load_flags);
-  if (!did_receive_response_)
-    RestartWithFlagsNow();
-}
-
 void ThrottlingURLLoader::OnReceiveEarlyHints(
     network::mojom::EarlyHintsPtr early_hints) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
@@ -735,6 +720,28 @@ void ThrottlingURLLoader::OnReceiveRedirect(
 
   if (!throttles_.empty()) {
     bool deferred = false;
+    has_pending_restart_ = false;
+    for (auto& entry : throttles_) {
+      auto* throttle = entry.throttle.get();
+      bool throttle_deferred = false;
+      auto weak_ptr = weak_factory_.GetWeakPtr();
+      std::vector<std::string> removed_headers;
+      net::HttpRequestHeaders modified_headers;
+      net::HttpRequestHeaders modified_cors_exempt_headers;
+      net::RedirectInfo redirect_info_copy = redirect_info;
+      throttle->BeforeWillRedirectRequest(
+          &redirect_info_copy, *response_head, &throttle_deferred,
+          &removed_headers, &modified_headers, &modified_cors_exempt_headers);
+
+      if (!weak_ptr)
+        return;
+    }
+
+    if (has_pending_restart_) {
+      RestartWithFlagsNow();
+      return;
+    }
+
     for (auto& entry : throttles_) {
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;

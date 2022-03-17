@@ -31,6 +31,7 @@
 <translation id="1150989369772528668">تقویم</translation>
 <translation id="1153356358378277386">دستگاه‌های مرتبط‌شده</translation>
 <translation id="1165712434476988950">دستگاه باید برای اعمال به‌روزرسانی بازراه‌اندازی شود.</translation>
+<translation id="1171742223880403396">‏کابل USB-C شما ممکن است نتواند درست به نمایشگرها وصل شود</translation>
 <translation id="1175572348579024023">پیمایش</translation>
 <translation id="1178581264944972037">مکث</translation>
 <translation id="1181037720776840403">حذف</translation>
@@ -124,8 +125,10 @@
 <translation id="1668469839109562275">‏VPN داخلی</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> باقی‌مانده</translation>
 <translation id="1677507110654891115"><ph name="FEATURE_NAME" /> متصل نیست.</translation>
+<translation id="1677582821739292812">فردی درحال نگاه کردن به صفحه‌نمایش شما است</translation>
 <translation id="1698080062160024910">زمان‌سنج <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">‏نشانی IPv6: <ph name="ADDRESS" /></translation>
+<translation id="1703117532528082099">پنجره فعال به چپ متصل شد.</translation>
 <translation id="1708345662127501511">میزکار: <ph name="DESK_NAME" /></translation>
 <translation id="1709762881904163296">«تنظیمات شبکه»</translation>
 <translation id="1715293566947629045">درحال غیرفعال کردن نمایه. چند دقیقه صبر کنید.</translation>
@@ -256,6 +259,7 @@
 <translation id="2595239820337756193">‏5K in miles (‏۵ کیلومتر به مایل)</translation>
 <translation id="2596078834055697711">گرفتن عکس از پنجره صفحه‌نمایش</translation>
 <translation id="2607678425161541573">ورود به سیستم آنلاین لازم است</translation>
+<translation id="2620436844016719705">سیستم</translation>
 <translation id="2621713457727696555">ایمن شد</translation>
 <translation id="263399434338050016">«انتخاب همه»</translation>
 <translation id="2653019840645008922">ضبط پنجره</translation>
@@ -275,6 +279,7 @@
 <translation id="2727977024730340865">باتری به شارژر برق ضعیف متصل است. شارژ باتری ممکن است قابل اطمینان نباشد.</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />، <ph name="PRICE" /></translation>
 <translation id="2750932254614666392">«حذف»</translation>
+<translation id="2750941250130734256">پنجره فعال جدا شد.</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> تحت مدیریت <ph name="MANAGER" /></translation>
 <translation id="2782591952652094792">خروج از حالت ضبط</translation>
 <translation id="2791421900609674576">توصیه‌هایی خواهید دید تا بتوانید کارتان را از جایی که رها کرده‌اید ادامه دهید. برای حذف توصیه‌ها می‌توانید لمس کنید و نگه دارید.</translation>
@@ -351,6 +356,7 @@
 <translation id="320207200541803018">تنظیم زمان‌سنج</translation>
 <translation id="3203405173652969239">«دسترسی کلیدی» فعال شده است</translation>
 <translation id="3207953481422525583">«تنظیمات کاربر»</translation>
+<translation id="3208321278970793882">برنامه</translation>
 <translation id="3217205077783620295">دکمه میزان صدا فعال است، با تغییر وضعیت صامت می‌شود.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> مورد دیگر</translation>
 <translation id="3227137524299004712">میکروفن</translation>
@@ -787,6 +793,7 @@
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">روشن</translation>
 <translation id="5920710855273935292">میکروفون صامت است.</translation>
+<translation id="5924838240953214369">«حالت ضبط»، پیش‌فرض <ph name="SOURCE" /> <ph name="TYPE" /> است. ورودی دوربین روی <ph name="CAMERA_NAME" /> تنظیم شد، پیش‌نمایش روشن است برای پیمایش با صفحه‌کلید، کلید جهش را فشار دهید.</translation>
 <translation id="5946788582095584774"><ph name="FEATURE_NAME" /> روشن است.</translation>
 <translation id="5947494881799873997">برگرداندن</translation>
 <translation id="595202126637698455">ردیابی عملکرد فعال شد</translation>
@@ -1034,6 +1041,7 @@
 <translation id="7513622367902644023">حالت نماگرفت انتخاب شد</translation>
 <translation id="7513922695575567867">تقویم، هفته <ph name="DATE" />، درحال‌حاضر <ph name="SELECTED_DATE" /> انتخاب شده است.</translation>
 <translation id="7514365320538308">بارگیری</translation>
+<translation id="7515998400212163428">Android</translation>
 <translation id="7526573455193969409">ممکن است شبکه پایش شود</translation>
 <translation id="7536035074519304529">‏نشانی IP: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">‏درحال‌حاضر از برنامه‌های Linux و پنجره‌های «ناشناس» پشتیبانی نمی‌شود. برنامه‌های دیگر ذخیره خواهد شد.</translation>
@@ -1044,6 +1052,7 @@
 <translation id="7564874036684306347">انتقال پنجره‌ها به میز کار دیگر می‌تواند به رفتار غیرمنتظره منجر شود. اعلان‌ها، پنجره‌ها و کادرهای گفتگوی بعدی ممکن است بین میز کارها تقسیم شوند.</translation>
 <translation id="7569509451529460200">‏بریل و ChromeVox فعال هستند</translation>
 <translation id="7569983096843329377">سیاه</translation>
+<translation id="7573585051776738856">پنجره فعال به راست متصل شد.</translation>
 <translation id="7579778809502851308">ضبط صفحه‌نمایش</translation>
 <translation id="7590883480672980941">تنظیمات ورودی</translation>
 <translation id="7593891976182323525">‏جستجو یا Shift</translation>
@@ -1102,6 +1111,7 @@
 <translation id="7901405293566323524">مرکز تلفن</translation>
 <translation id="7902625623987030061">حسگر اثر انگشت را لمس کنید</translation>
 <translation id="7904094684485781019">سرپرست این حساب اجازه ورود چندگانه به سیستم را نمی‌دهد.</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">اکنون گفتار در دستگاه پردازش می‌شود و «تایپ صوتی» به‌صورت آفلاین کار می‌کند</translation>
 <translation id="7933084174919150729">‏«دستیار Google» فقط برای نمایه اصلی دردسترس است.</translation>
 <translation id="79341161159229895">حساب تحت مدیریت <ph name="FIRST_PARENT_EMAIL" /> و <ph name="SECOND_PARENT_EMAIL" /> است</translation>

@@ -415,10 +415,32 @@ void AppListBubbleAppsPage::UpdateForNewSortingOrder(
     return;
   }
 
+  // Abort the old reorder animation if any before closure update to avoid data
+  // races on the the closure.
+  scrollable_apps_grid_view_->MaybeAbortReorderAnimation();
+  DCHECK(!update_position_closure_);
   update_position_closure_ = std::move(update_position_closure);
-  scrollable_apps_grid_view_->FadeOutVisibleItemsForReorder(base::BindRepeating(
-      &AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEneded,
-      weak_factory_.GetWeakPtr(), new_order));
+
+  views::AnimationBuilder animation_builder =
+      scrollable_apps_grid_view_->FadeOutVisibleItemsForReorder(
+          base::BindRepeating(
+              &AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEneded,
+              weak_factory_.GetWeakPtr(), new_order));
+
+  // Configure the toast fade out animation if the toast is going to be hidden.
+  const bool current_toast_visible = toast_container_->is_toast_visible();
+  const bool target_toast_visible =
+      toast_container_->GetVisibilityForSortOrder(new_order);
+  if (current_toast_visible && !target_toast_visible) {
+    // Because `toast_container_` does not have a layer before the fade in
+    // animation, create one.
+    DCHECK(!toast_container_->layer());
+    toast_container_->SetPaintToLayer();
+    toast_container_->layer()->SetFillsBoundsOpaquely(false);
+
+    animation_builder.GetCurrentSequence().SetOpacity(toast_container_->layer(),
+                                                      0.f);
+  }
 }
 
 bool AppListBubbleAppsPage::MaybeScrollToShowToast() {
@@ -595,12 +617,23 @@ void AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEneded(
   const bool old_toast_visible = toast_container_->is_toast_visible();
 
   toast_container_->OnTemporarySortOrderChanged(new_order);
+  const bool target_toast_visible = toast_container_->is_toast_visible();
+
+  // If there is a layer created for fading out `toast_container_`, destroy
+  // the layer when the fade out animation ends. NOTE: when the reorder toast
+  // is faded out, it should not be faded in along with the apps grid fade in
+  // animation. Therefore destroy the layer when the fade out animation ends.
+  if (toast_container_->layer()) {
+    DCHECK(!target_toast_visible);
+    toast_container_->DestroyLayer();
+  }
 
   // Skip the fade in animation if the fade out animation is aborted.
-  if (aborted)
+  if (aborted) {
+    OnReorderAnimationEnded();
     return;
+  }
 
-  const bool target_toast_visible = toast_container_->is_toast_visible();
   const bool toast_visibility_change =
       (old_toast_visible != target_toast_visible);
 
@@ -646,6 +679,12 @@ void AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEneded(
 void AppListBubbleAppsPage::OnAppsGridViewFadeInAnimationEnded(bool aborted) {
   // Destroy the layer created for the layer animation.
   toast_container_->DestroyLayer();
+
+  OnReorderAnimationEnded();
+}
+
+void AppListBubbleAppsPage::OnReorderAnimationEnded() {
+  update_position_closure_.Reset();
 }
 
 void AppListBubbleAppsPage::SlideViewIntoPosition(views::View* view,

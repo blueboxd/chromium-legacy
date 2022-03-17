@@ -40,6 +40,10 @@ enum class BrokenNTPHierarchyRelationship {
 // header menu.
 - (void)recordHeaderMenuLearnMoreTapped;
 
+// Record metrics for when the user selects the 'Manage' item in the feed header
+// menu.
+- (void)recordHeaderMenuManageTapped;
+
 // Record metrics for when the user selects the 'Manage Activity' item in the
 // feed header menu.
 - (void)recordHeaderMenuManageActivityTapped;
@@ -47,6 +51,26 @@ enum class BrokenNTPHierarchyRelationship {
 // Record metrics for when the user selects the 'Manage Interests' item in the
 // feed header menu.
 - (void)recordHeaderMenuManageInterestsTapped;
+
+// Record metrics for when the user selects the 'Hidden' item in the feed
+// management UI.
+- (void)recordHeaderMenuManageHiddenTapped;
+
+// Record metrics for when the user selects the 'Following' item in the feed
+// management UI.
+- (void)recordHeaderMenuManageFollowingTapped;
+
+// Record metrics for when the user swipes or taps to unfollow a web channel in
+// the management UI.
+- (void)recordManagementTappedUnfollow;
+
+// Record metrics for when the user taps "UNDO" on the successful unfollow
+// confirmation snackbar in the management UI.
+- (void)recordManagementTappedRefollowAfterUnfollowOnSnackbar;
+
+// Record metrics for when the user taps "Try Again" on the unfollow error
+// confirmation snackbar in the management UI.
+- (void)recordManagementTappedUnfollowTryAgainOnSnackbar;
 
 // Record metrics for when the user toggles the feed visibility from the feed
 // header menu.

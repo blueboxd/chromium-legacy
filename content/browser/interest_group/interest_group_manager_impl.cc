@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/observer_list.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
@@ -65,6 +67,13 @@ void InterestGroupManagerImpl::UpdateInterestGroupsOfOwner(
     network::mojom::ClientSecurityStatePtr client_security_state) {
   update_manager_.UpdateInterestGroupsOfOwner(owner,
                                               std::move(client_security_state));
+}
+
+void InterestGroupManagerImpl::UpdateInterestGroupsOfOwners(
+    base::span<url::Origin> owners,
+    network::mojom::ClientSecurityStatePtr client_security_state) {
+  update_manager_.UpdateInterestGroupsOfOwners(
+      owners, std::move(client_security_state));
 }
 
 void InterestGroupManagerImpl::set_max_update_round_duration_for_testing(

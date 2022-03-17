@@ -6,64 +6,6 @@
       "all"
     ]
   },
-  "Android WebView P FYI (rel)": {
-    "gtest_tests": [
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--annotation",
-          "DisabledTest,FlakyTest"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "webview_instrumentation_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 12
-        },
-        "test": "webview_instrumentation_test_apk",
-        "test_id_prefix": "ninja://android_webview/test:webview_instrumentation_test_apk/"
-      }
-    ]
-  },
   "android-10-x86-fyi-rel-tests": {
     "gtest_tests": [
       {
@@ -2285,7 +2227,8 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "android_browsertests",
         "test_id_prefix": "ninja://chrome/test:android_browsertests/"
@@ -3779,7 +3722,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 9
+          "shards": 20
         },
         "test": "content_browsertests",
         "test_id_prefix": "ninja://content/test:content_browsertests/"
@@ -7477,9 +7420,6 @@
     ],
     "junit_tests": [
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "android_webview_junit_tests",
         "resultdb": {
@@ -7491,9 +7431,6 @@
         "test_id_prefix": "ninja://android_webview/test:android_webview_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "base_junit_tests",
         "resultdb": {
@@ -7505,9 +7442,6 @@
         "test_id_prefix": "ninja://base:base_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "chrome_java_test_pagecontroller_junit_tests",
         "resultdb": {
@@ -7519,9 +7453,6 @@
         "test_id_prefix": "ninja://chrome/test/android:chrome_java_test_pagecontroller_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "chrome_junit_tests",
         "resultdb": {
@@ -7533,9 +7464,6 @@
         "test_id_prefix": "ninja://chrome/android:chrome_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "components_junit_tests",
         "resultdb": {
@@ -7547,9 +7475,6 @@
         "test_id_prefix": "ninja://components:components_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "content_junit_tests",
         "resultdb": {
@@ -7561,9 +7486,6 @@
         "test_id_prefix": "ninja://content/public/android:content_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "device_junit_tests",
         "resultdb": {
@@ -7575,9 +7497,6 @@
         "test_id_prefix": "ninja://device:device_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "incremental_javac_junit_tests",
         "resultdb": {
@@ -7589,9 +7508,6 @@
         "test_id_prefix": "ninja://build/android/test:incremental_javac_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "junit_unit_tests",
         "resultdb": {
@@ -7603,9 +7519,6 @@
         "test_id_prefix": "ninja://testing/android/junit:junit_unit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "keyboard_accessory_junit_tests",
         "resultdb": {
@@ -7617,9 +7530,6 @@
         "test_id_prefix": "ninja://chrome/android/features/keyboard_accessory:keyboard_accessory_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "media_base_junit_tests",
         "resultdb": {
@@ -7631,9 +7541,6 @@
         "test_id_prefix": "ninja://media/base/android:media_base_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "module_installer_junit_tests",
         "resultdb": {
@@ -7645,9 +7552,6 @@
         "test_id_prefix": "ninja://components/module_installer/android:module_installer_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "net_junit_tests",
         "resultdb": {
@@ -7659,9 +7563,6 @@
         "test_id_prefix": "ninja://net/android:net_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "paint_preview_junit_tests",
         "resultdb": {
@@ -7673,9 +7574,6 @@
         "test_id_prefix": "ninja://components/paint_preview/player/android:paint_preview_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "password_check_junit_tests",
         "resultdb": {
@@ -7687,9 +7585,6 @@
         "test_id_prefix": "ninja://chrome/browser/password_check/android:password_check_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "password_manager_junit_tests",
         "resultdb": {
@@ -7701,9 +7596,6 @@
         "test_id_prefix": "ninja://chrome/browser/password_manager/android:password_manager_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "services_junit_tests",
         "resultdb": {
@@ -7715,9 +7607,6 @@
         "test_id_prefix": "ninja://services:services_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "touch_to_fill_junit_tests",
         "resultdb": {
@@ -7729,9 +7618,6 @@
         "test_id_prefix": "ninja://chrome/browser/touch_to_fill/android:touch_to_fill_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "ui_junit_tests",
         "resultdb": {
@@ -7743,9 +7629,6 @@
         "test_id_prefix": "ninja://ui/android:ui_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "webapk_client_junit_tests",
         "resultdb": {
@@ -7757,9 +7640,6 @@
         "test_id_prefix": "ninja://chrome/android/webapk/libs/client:webapk_client_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "webapk_shell_apk_h2o_junit_tests",
         "resultdb": {
@@ -7771,9 +7651,6 @@
         "test_id_prefix": "ninja://chrome/android/webapk/shell_apk:webapk_shell_apk_h2o_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "isolate_profile_data": true,
         "name": "webapk_shell_apk_junit_tests",
         "resultdb": {
@@ -7785,9 +7662,6 @@
         "test_id_prefix": "ninja://chrome/android/webapk/shell_apk:webapk_shell_apk_junit_tests/"
       },
       {
-        "args": [
-          "--avd-config=../../tools/android/avd/proto/generic_android25.textpb"
-        ],
         "experiment_percentage": 100,
         "isolate_profile_data": true,
         "name": "weblayer_junit_tests",

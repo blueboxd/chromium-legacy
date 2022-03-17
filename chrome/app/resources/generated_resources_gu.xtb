@@ -1060,7 +1060,6 @@
 <translation id="2019718679933488176">નવા ટૅબમાં ઑડિયો &amp;ખોલો</translation>
 <translation id="2020183425253392403">નેટવર્ક સરનામાંનું સેટિંગ બતાવો</translation>
 <translation id="2020225359413970060">ફાઇલને સ્કૅન કરો</translation>
-<translation id="2022395138980869975">બાજુની શોધ ટૉગલ કરો</translation>
 <translation id="2023167225947895179">PIN અનુમાન કરવામાં સરળ હોઈ શકે છે</translation>
 <translation id="202352106777823113">ડાઉનલોડ ઘણો સમય લઈ રહ્યું હતું અને નેટવર્ક દ્વારા રોકવામાં આવ્યું હતું.</translation>
 <translation id="2024195579772565064">શોધ એન્જિન ડિલીટ કરો</translation>
@@ -1327,6 +1326,7 @@
 <translation id="2278562042389100163">બ્રાઉઝર વિંડો ખોલો</translation>
 <translation id="2278668501808246459">કન્ટેનર મેનેજર શરૂ કરી રહ્યાં છીએ</translation>
 <translation id="2280486287150724112">જમણો હાસિયો</translation>
+<translation id="2281863813036651454">માઉસનું ડાબું ક્લિક</translation>
 <translation id="2282146716419988068">GPU પ્રક્રિયા</translation>
 <translation id="2285109769884538519">{COUNT,plural, =0{બધું &amp;નવા ટૅબ ગ્રૂપમાં ખોલો}=1{&amp;નવા ટૅબ ગ્રૂપમાં ખોલો}one{({COUNT})ને &amp;નવા ટૅબ ગ્રૂપમાં ખોલો}other{બધા ({COUNT})ને &amp;નવા ટૅબ ગ્રૂપમાં ખોલો}}</translation>
 <translation id="2285942871162473373">તમારી ફિંગરપ્રિન્ટ ઓળખી શક્યાં નહીં. ફરી પ્રયાસ કરો.</translation>
@@ -2958,7 +2958,6 @@
 <translation id="3888053818972567950"><ph name="WEB_DRIVE" /> કનેક્શન</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> વડે નોંધ લેવી</translation>
 <translation id="3888586133700543064">તમારા Assistant સંબંધિત સમસ્યાને વધુ સારી રીતે સમજવામાં આ માહિતી અમને સહાય કરે છે. તેને વધુમાં વધુ 90 દિવસ સુધી સ્ટોર કરવામાં આવે છે અને તેનો ઍક્સેસ એન્જિનિયરિંગ તેમજ પ્રતિસાદ ટીમ સુધી મર્યાદિત હોય છે.</translation>
-<translation id="3888900458694486810">બાજુની શોધ બંધ કરો</translation>
 <translation id="3890064827463908288">વાઇ-ફાઇ સિંકનો ઉપયોગ કરવા માટે 'Chrome સિંક' ચાલુ કરો</translation>
 <translation id="389313931326656921">“આગળ” માટે સ્વિચની સોંપણી કરો</translation>
 <translation id="3893295674388762059">ડેટા સાફ કરવા માટે, બધી છુપી વિન્ડો બંધ કરો</translation>
@@ -3272,7 +3271,6 @@
 <translation id="4208390505124702064"><ph name="SITE_NAME" /> શોધો</translation>
 <translation id="4209092469652827314">મોટું</translation>
 <translation id="4209251085232852247">બંધ છે</translation>
-<translation id="4209464433672152343">દસ્તાવેજોને પ્રિન્ટિંગ માટે તૈયાર કરવા માટે તે <ph name="BEGIN_LINK_HELP" />Googleને મોકલવામાં આવે છે<ph name="END_LINK_HELP" />. <ph name="BEGIN_LINK_DASHBOARD" />Google ક્લાઉડ પ્રિન્ટ ડૅશબોર્ડ<ph name="END_LINK_DASHBOARD" /> પર તમારા પ્રિન્ટર અને પ્રિન્ટરનો ઇતિહાસ જુઓ, તેમાં ફેરફાર કરો અને મેનેજ કરો.</translation>
 <translation id="4210048056321123003">વર્ચ્યુઅલ મશીન ડાઉનલોડ કરી રહ્યાં છીએ</translation>
 <translation id="421182450098841253">બુકમાર્ક બાર &amp;બતાવો</translation>
 <translation id="4211851069413100178">વપરાશ અને નિદાનનો ડેટા મોકલો. Googleને નિદાન, ડિવાઇસ અને ઍપ વપરાશનો ડેટા ઑટોમૅટિક રીતે મોકલીને તમારા Android અનુભવને બહેતર બનાવવામાં સહાય કરો. આ સિસ્ટમ અને ઍપની સ્થિરતા અને અન્ય સુધારણાઓમાં સહાય કરશે. એકત્રીકરણ કરેલો કેટલોક ડેટા Google ઍપ અને ભાગીદારોને પણ મદદ કરશે, જેમ કે Android ડેવલપર. આ <ph name="BEGIN_LINK1" />સેટિંગ<ph name="END_LINK1" /> માલિક દ્વારા લાગુ કરવામાં આવેલ છે. માલિક, Googleને આ ડિવાઇસ માટે નિદાન અને વપરાશ ડેટા મોકલવાનું પસંદ કરી શકે છે. જો તમારી વધારાની વેબ અને ઍપ પ્રવૃત્તિ સેટિંગ ચાલુ હોય, તો આ ડેટા તમારા Google એકાઉન્ટમાં સાચવવામાં આવી શકે છે. <ph name="BEGIN_LINK2" />વધુ જાણો<ph name="END_LINK2" /></translation>
@@ -5145,6 +5143,7 @@ USB ડિવાઇસ</translation>
 <translation id="6129938384427316298">નેટસ્કેપ પ્રમાણપત્ર ટિપ્પણી</translation>
 <translation id="6129953537138746214">જગ્યા</translation>
 <translation id="6130692320435119637">વાઇ-ફાઇ ઉમેરો</translation>
+<translation id="6130887916931372608">કીબોર્ડની કી</translation>
 <translation id="6136114942382973861">ડાઉનલોડ બાર બંધ કરો</translation>
 <translation id="6136287496450963112">તમારી 'સિક્યુરિટી કી' પિન વડે સુરક્ષિત નથી. ફિંગરપ્રિન્ટ મેનેજ કરવા માટે, પહેલાં પિન બનાવો.</translation>
 <translation id="6138680304137685902">SHA-384 સાથે X9.62 ECDSA સહી</translation>
@@ -6167,7 +6166,6 @@ USB ડિવાઇસ</translation>
 <translation id="7180611975245234373">રિફ્રેશ કરો</translation>
 <translation id="7180865173735832675">કસ્ટમાઇઝ કરો</translation>
 <translation id="7182791023900310535">તમારો પાસવર્ડ ખસેડો</translation>
-<translation id="7183420126213758623">બાજુની શોધ ટૉગલ કરો. બાજુની શોધ સક્રિય નથી.</translation>
 <translation id="7186088072322679094">ટુલબારમાં રાખો</translation>
 <translation id="7186303001964993981"><ph name="ORIGIN" /> આ ફોલ્ડર ખોલી શકતું નથી, કારણ કે તેમાં સિસ્ટમ ફાઇલો શામેલ છે</translation>
 <translation id="7187428571767585875">કાઢી નાખવા અથવા બદલવા માટેની રજિસ્ટ્રી એન્ટ્રી:</translation>
@@ -6689,7 +6687,6 @@ USB ડિવાઇસ</translation>
 <translation id="7701040980221191251">કોઈ નથી</translation>
 <translation id="7701869757853594372">વપરાશકર્તા હેન્ડલ્સ</translation>
 <translation id="7702574632857388784">સૂચિમાંથી <ph name="FILE_NAME" />ને કાઢી નાખો</translation>
-<translation id="7702599324215660661">Lock on Leave</translation>
 <translation id="7702907602086592255">ડોમેન</translation>
 <translation id="7704305437604973648">કાર્ય</translation>
 <translation id="7704317875155739195">શોધ અને URLsને ઑટોમૅટિક રીતે પૂર્ણ કરો</translation>
@@ -6759,6 +6756,7 @@ USB ડિવાઇસ</translation>
 <translation id="7768770796815395237">બદલો</translation>
 <translation id="7768784765476638775">સાંભળવા માટે પસંદ કરો</translation>
 <translation id="7770406201819593386">ChromeOS Flex ડાયગ્નોસ્ટિક પરીક્ષણો ચલાવો.</translation>
+<translation id="7770450735129978837">માઉસનું જમણું ક્લિક</translation>
 <translation id="7770612696274572992">અન્ય ડિવાઇસમાંથી કૉપિ કરવામાં આવેલી છબી</translation>
 <translation id="7771452384635174008">લેઆઉટ</translation>
 <translation id="7772032839648071052">પાસફ્રેઝની પુષ્ટિ કરો</translation>
@@ -6794,7 +6792,6 @@ USB ડિવાઇસ</translation>
 <translation id="7798844538707273832"><ph name="PERMISSION" /> ઑટોમૅટિક રીતે બ્લૉક થઈ</translation>
 <translation id="7799299114731150374">વૉલપેપર સફળતાપૂર્વક સેટ કર્યું</translation>
 <translation id="7799817062559422778">લાઇટ મોડ</translation>
-<translation id="7800159967992492578">બાજુની શોધ ટૉગલ કરો. બાજુની શોધ સક્રિય છે.</translation>
 <translation id="7800518121066352902">ઘ&amp;ડિયાળની વિપરિત દિશામાં ફેરવો</translation>
 <translation id="7801679634091975683">તમે અહીં કરો છો તે ફેરફારો માત્ર Lacros Chrome બ્રાઉઝરમાં લાગુ કરવામાં આવે છે. તમારા Chrome બ્રાઉઝરના સેટિંગમાં ફેરફારો કરવા માટે, Chrome બ્રાઉઝર ખોલો અને સેટિંગમાં જાઓ.</translation>
 <translation id="780301667611848630">નહીં, આભાર</translation>

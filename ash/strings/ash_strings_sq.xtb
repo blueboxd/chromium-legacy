@@ -31,6 +31,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1150989369772528668">Kalendari</translation>
 <translation id="1153356358378277386">Pajisjet e çiftuara</translation>
 <translation id="1165712434476988950">Kërkohet rinisja e pajisjes për të zbatuar përditësimin.</translation>
+<translation id="1171742223880403396">Kablloja jote USB-C mund të mos lidhet siç duhet me ekranet</translation>
 <translation id="1175572348579024023">Lëviz</translation>
 <translation id="1178581264944972037">Pauzë</translation>
 <translation id="1181037720776840403">Hiq</translation>
@@ -126,6 +127,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1677507110654891115"><ph name="FEATURE_NAME" /> nuk është lidhur.</translation>
 <translation id="1698080062160024910">Kohëmatësi: <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Adresa IPv6: <ph name="ADDRESS" /></translation>
+<translation id="1703117532528082099">Dritarja aktive u pozicionua në të majtë.</translation>
 <translation id="1708345662127501511">Tavolina e punës: <ph name="DESK_NAME" /></translation>
 <translation id="1709762881904163296">Cilësimet e rrjetit</translation>
 <translation id="1715293566947629045">Profili po çaktivizohet. Prit disa minuta.</translation>
@@ -256,6 +258,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2595239820337756193">Sa milje janë 5 km</translation>
 <translation id="2596078834055697711">Nxirr një pamje ekrani për dritaren</translation>
 <translation id="2607678425161541573">Kërkohet identifikim në linjë</translation>
+<translation id="2620436844016719705">Sistemi</translation>
 <translation id="2621713457727696555">I siguruar</translation>
 <translation id="263399434338050016">"Zgjidh të gjitha"</translation>
 <translation id="2653019840645008922">Regjistrimi i dritares</translation>
@@ -275,6 +278,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2727977024730340865">E lidhur me një karikues me fuqi të ulët. Ngarkimi i baterisë mund të mos jetë i sigurt.</translation>
 <translation id="2749082172777216925"><ph name="APP_NAME_INFO" />, <ph name="PRICE" /></translation>
 <translation id="2750932254614666392">"Fshi"</translation>
+<translation id="2750941250130734256">Dritarja aktive u hoq nga pozicioni.</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> menaxhohet nga <ph name="MANAGER" /></translation>
 <translation id="2782591952652094792">Dil nga modaliteti i regjistrimit</translation>
 <translation id="2791421900609674576">Do të shohësh rekomandime, në mënyrë që të vazhdosh aty ku e ke lënë. Mund të prekësh dhe të mbash shtypur për të hequr rekomandimet.</translation>
@@ -351,6 +355,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="320207200541803018">Cakto kohëmatësin</translation>
 <translation id="3203405173652969239">"Qasja me çelës" është aktivizuar</translation>
 <translation id="3207953481422525583">Cilësimet e përdoruesit</translation>
+<translation id="3208321278970793882">Aplikacioni</translation>
 <translation id="3217205077783620295">Volumi është aktiv. Ndërrimi do ta heqë audion.</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> më shumë</translation>
 <translation id="3227137524299004712">Mikrofoni</translation>
@@ -787,6 +792,7 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Aktiv</translation>
 <translation id="5920710855273935292">Mikrofoni është i çaktivizuar.</translation>
+<translation id="5924838240953214369">Modaliteti i regjistrimit, parazgjedhja është <ph name="TYPE" /> (<ph name="SOURCE" />). Hyrja e kamerës u caktua te <ph name="CAMERA_NAME" />; pamja paraprake aktive. Shtyp tastin Tab për navigimin e tastierës.</translation>
 <translation id="5946788582095584774"><ph name="FEATURE_NAME" /> është aktive.</translation>
 <translation id="5947494881799873997">Riktheje</translation>
 <translation id="595202126637698455">Gjurmimi i rendimentit u aktivizua</translation>
@@ -1034,6 +1040,7 @@ Instalim i ri</translation>
 <translation id="7513622367902644023">U zgjodh modaliteti i pamjes së ekranit</translation>
 <translation id="7513922695575567867">Kalendari, java e datës <ph name="DATE" />, aktualisht është zgjedhur <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">Shkarko</translation>
+<translation id="7515998400212163428">Android</translation>
 <translation id="7526573455193969409">Rrjeti mund të jetë i monitoruar</translation>
 <translation id="7536035074519304529">Adresa IP: <ph name="ADDRESS" /></translation>
 <translation id="7543399541175347147">Aplikacionet për Linux dhe dritaret "E fshehta" nuk mbështeten aktualisht. Aplikacionet e tjera do të ruhen.</translation>
@@ -1044,6 +1051,7 @@ Instalim i ri</translation>
 <translation id="7564874036684306347">Zhvendosja e dritareve te një desktop tjetër mund të shkaktojë një sjellje të papritur. Njoftimet pasuese, dritarja dhe dialogët mund të ndahen mes desktopëve.</translation>
 <translation id="7569509451529460200">Braille dhe ChromeVox janë aktivizuar</translation>
 <translation id="7569983096843329377">E zezë</translation>
+<translation id="7573585051776738856">Dritarja aktive u pozicionua në të djathtë.</translation>
 <translation id="7579778809502851308">Regjistrimi i ekranit</translation>
 <translation id="7590883480672980941">Cilësimet e hyrjes</translation>
 <translation id="7593891976182323525">Kërko ose Shift</translation>
@@ -1102,6 +1110,7 @@ Instalim i ri</translation>
 <translation id="7901405293566323524">Phone Hub</translation>
 <translation id="7902625623987030061">Prek sensorin e gjurmës së gishtit</translation>
 <translation id="7904094684485781019">Administratori për këtë faqe ka ndaluar identifikimin e shumëfishtë.</translation>
+<translation id="7911118814695487383">Linux</translation>
 <translation id="7930731167419639574">Ligjërimi përpunohet tani lokalisht dhe "Diktimi" punon jashtë linje</translation>
 <translation id="7933084174919150729">"Asistenti i Google" ofrohet vetëm për profilin kryesor.</translation>
 <translation id="79341161159229895">Llogaria menaxhohet nga <ph name="FIRST_PARENT_EMAIL" /> dhe <ph name="SECOND_PARENT_EMAIL" /></translation>

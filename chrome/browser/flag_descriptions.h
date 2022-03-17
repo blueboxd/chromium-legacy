@@ -111,6 +111,9 @@ extern const char kEditPasswordsInSettingsDescription[];
 extern const char kMuteCompromisedPasswordsName[];
 extern const char kMuteCompromisedPasswordsDescription[];
 
+extern const char kPasswordNotesName[];
+extern const char kPasswordNotesDescription[];
+
 extern const char kEnableBluetoothSerialPortProfileInSerialApiName[];
 extern const char kEnableBluetoothSerialPortProfileInSerialApiDescription[];
 
@@ -625,9 +628,6 @@ extern const char kMemlogStackModeName[];
 extern const char kMemlogStackModeDescription[];
 extern const char kMemlogStackModeNative[];
 extern const char kMemlogStackModeNativeWithThreadNames[];
-
-extern const char kQuickActionSearchWidgetAndroidDinoVariantName[];
-extern const char kQuickActionSearchWidgetAndroidDinoVariantDescription[];
 
 extern const char kDownloadAutoResumptionNativeName[];
 extern const char kDownloadAutoResumptionNativeDescription[];
@@ -1237,9 +1237,6 @@ extern const char kPwaUpdateDialogForAppTitleDescription[];
 
 extern const char kQuicName[];
 extern const char kQuicDescription[];
-
-extern const char kQuickActionSearchWidgetAndroidName[];
-extern const char kQuickActionSearchWidgetAndroidDescription[];
 
 extern const char kQuickDimName[];
 extern const char kQuickDimDescription[];
@@ -2053,8 +2050,8 @@ extern const char kStartSurfaceAndroidDescription[];
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
 
-extern const char kSyncAndroidPromosRevampName[];
-extern const char kSyncAndroidPromosRevampDescription[];
+extern const char kSyncAndroidPromosWithSingleButtonName[];
+extern const char kSyncAndroidPromosWithSingleButtonDescription[];
 
 extern const char kTabGroupsForTabletsName[];
 extern const char kTabGroupsForTabletsDescription[];

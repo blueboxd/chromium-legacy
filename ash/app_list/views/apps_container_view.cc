@@ -735,10 +735,25 @@ void AppsContainerView::UpdateForNewSortingOrder(
   if (pagination_model->has_transition())
     pagination_model->FinishAnimation();
 
+  // Abort the old reorder animation if any before closure update to avoid data
+  // races on the the closure.
+  apps_grid_view_->MaybeAbortReorderAnimation();
+  DCHECK(!update_position_closure_);
   update_position_closure_ = std::move(update_position_closure);
-  apps_grid_view_->FadeOutVisibleItemsForReorder(base::BindRepeating(
-      &AppsContainerView::OnAppsGridViewFadeOutAnimationEneded,
-      weak_ptr_factory_.GetWeakPtr(), new_order));
+
+  views::AnimationBuilder animation_builder =
+      apps_grid_view_->FadeOutVisibleItemsForReorder(base::BindRepeating(
+          &AppsContainerView::OnAppsGridViewFadeOutAnimationEneded,
+          weak_ptr_factory_.GetWeakPtr(), new_order));
+
+  // Configure the toast fade out animation if the toast is going to be hidden.
+  const bool current_toast_visible = toast_container_->is_toast_visible();
+  const bool target_toast_visible =
+      toast_container_->GetVisibilityForSortOrder(new_order);
+  if (current_toast_visible && !target_toast_visible) {
+    animation_builder.GetCurrentSequence().SetOpacity(toast_container_->layer(),
+                                                      0.f);
+  }
 }
 
 ContinueSectionView* AppsContainerView::GetContinueSection() {
@@ -1537,8 +1552,10 @@ void AppsContainerView::OnAppsGridViewFadeOutAnimationEneded(
   toast_container_->OnTemporarySortOrderChanged(new_order);
 
   // Skip the fade in animation if the fade out animation is aborted.
-  if (abort)
+  if (abort) {
+    OnReorderAnimationEnded();
     return;
+  }
 
   const bool target_toast_visible = toast_container_->is_toast_visible();
   const bool toast_visibility_change =
@@ -1587,12 +1604,17 @@ void AppsContainerView::OnAppsGridViewFadeOutAnimationEneded(
 }
 
 void AppsContainerView::OnAppsGridViewFadeInAnimationEnded(bool aborted) {
-  if (!aborted)
-    return;
+  if (aborted) {
+    // Ensure that children are visible when the fade in animation is aborted.
+    toast_container_->layer()->SetOpacity(1.f);
+    continue_container_->layer()->SetOpacity(1.f);
+  }
 
-  // Ensure that children are visible when the fade in animation is aborted.
-  toast_container_->layer()->SetOpacity(1.f);
-  continue_container_->layer()->SetOpacity(1.f);
+  OnReorderAnimationEnded();
+}
+
+void AppsContainerView::OnReorderAnimationEnded() {
+  update_position_closure_.Reset();
 }
 
 int AppsContainerView::GetSeparatorHeight() {

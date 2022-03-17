@@ -8,6 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/types/pass_key.h"
@@ -33,6 +34,7 @@ namespace {
 
 using ShowVirtualKeyboard =
     password_manager::PasswordManagerDriver::ShowVirtualKeyboard;
+using autofill::mojom::SubmissionReadinessState;
 using device_reauth::BiometricsAvailability;
 using password_manager::PasswordManagerDriver;
 using password_manager::UiCredential;
@@ -50,6 +52,45 @@ std::vector<UiCredential> SortCredentials(
   });
 
   return result;
+}
+
+// Infers whether a form should be submitted based on the feature's state and
+// the form's structure (submission_readiness).
+bool ShouldTriggerSubmission(SubmissionReadinessState submission_readiness) {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kTouchToFillPasswordSubmission)) {
+    return false;
+  }
+
+  bool use_conservative_heuristics = base::GetFieldTrialParamByFeatureAsBool(
+      password_manager::features::kTouchToFillPasswordSubmission,
+      password_manager::features::
+          kTouchToFillPasswordSubmissionWithConservativeHeuristics,
+      false);
+  switch (submission_readiness) {
+    case SubmissionReadinessState::kNoInformation:
+    case SubmissionReadinessState::kError:
+    case SubmissionReadinessState::kNoUsernameField:
+    case SubmissionReadinessState::kFieldBetweenUsernameAndPassword:
+    case SubmissionReadinessState::kFieldAfterPasswordField:
+      return false;
+
+    case SubmissionReadinessState::kEmptyFields:
+    case SubmissionReadinessState::kMoreThanTwoFields:
+      return !use_conservative_heuristics;
+
+    case SubmissionReadinessState::kTwoFields:
+      return true;
+  }
+}
+
+// Returns whether there is at least one credential with a non-empty username.
+bool ContainsNonEmptyUsername(
+    const base::span<const UiCredential>& credentials) {
+  return std::any_of(credentials.begin(), credentials.end(),
+                     [](const UiCredential& credential) {
+                       return !credential.username().empty();
+                     });
 }
 
 }  // namespace
@@ -74,19 +115,23 @@ TouchToFillController::~TouchToFillController() {
   }
 }
 
-void TouchToFillController::Show(base::span<const UiCredential> credentials,
-                                 base::WeakPtr<PasswordManagerDriver> driver,
-                                 bool ready_for_submission) {
+void TouchToFillController::Show(
+    base::span<const UiCredential> credentials,
+    base::WeakPtr<PasswordManagerDriver> driver,
+    SubmissionReadinessState submission_readiness) {
   DCHECK(!driver_ || driver_.get() == driver.get());
   driver_ = std::move(driver);
-  trigger_submission_ =
-      ready_for_submission &&
-      base::FeatureList::IsEnabled(
-          password_manager::features::kTouchToFillPasswordSubmission);
+
+  trigger_submission_ = ShouldTriggerSubmission(submission_readiness) &&
+                        ContainsNonEmptyUsername(credentials);
+  base::UmaHistogramEnumeration(
+      "PasswordManager.TouchToFill.SubmissionReadiness", submission_readiness);
+  ukm::builders::TouchToFill_SubmissionReadiness(source_id_)
+      .SetSubmissionReadiness(static_cast<int64_t>(submission_readiness))
+      .Record(ukm::UkmRecorder::Get());
 
   base::UmaHistogramCounts100("PasswordManager.TouchToFill.NumCredentialsShown",
                               credentials.size());
-
   if (credentials.empty()) {
     // Ideally this should never happen. However, in case we do end up invoking
     // Show() without credentials, we should not show Touch To Fill to the user
@@ -190,7 +235,7 @@ void TouchToFillController::FillCredential(const UiCredential& credential) {
 
   driver_->FillSuggestion(credential.username(), credential.password());
 
-  if (trigger_submission_) {
+  if (trigger_submission_ && !credential.username().empty()) {
     driver_->TriggerFormSubmission();
   }
   driver_ = nullptr;

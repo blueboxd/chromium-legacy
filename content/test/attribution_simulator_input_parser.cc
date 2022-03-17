@@ -20,12 +20,13 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_trigger.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
-#include "content/browser/attribution_reporting/attribution_host_utils.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
@@ -242,11 +243,14 @@ class AttributionSimulatorInputParser {
     if (has_error_)
       return;
 
+    // TODO(linnan): Support aggregatable reports in the simulator.
+
     events_.emplace_back(
         AttributionTriggerAndTime{
             .trigger = AttributionTrigger(
                 std::move(destination_origin), std::move(reporting_origin),
-                std::move(filters), debug_key, std::move(event_triggers)),
+                std::move(filters), debug_key, std::move(event_triggers),
+                AttributionAggregatableTrigger()),
             .time = trigger_time,
         },
         std::move(trigger));
@@ -302,7 +306,7 @@ class AttributionSimulatorInputParser {
     if (const std::string* v = dict.FindStringKey(key))
       origin = url::Origin::Create(GURL(*v));
 
-    if (!attribution_host_utils::IsOriginTrustworthyForAttributions(origin))
+    if (!network::IsOriginPotentiallyTrustworthy(origin))
       *Error() << "must be a valid, secure origin";
 
     return origin;

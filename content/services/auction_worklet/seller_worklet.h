@@ -95,6 +95,8 @@ class SellerWorklet : public mojom::SellerWorklet {
       const GURL& browser_signal_render_url,
       double browser_signal_bid,
       double browser_signal_desirability,
+      auction_worklet::mojom::ComponentAuctionReportResultParamsPtr
+          browser_signals_component_auction_report_result_params,
       uint32_t scoring_signals_data_version,
       bool browser_signal_has_data_version,
       ReportResultCallback callback) override;
@@ -155,6 +157,8 @@ class SellerWorklet : public mojom::SellerWorklet {
     GURL browser_signal_render_url;
     double browser_signal_bid;
     double browser_signal_desirability;
+    auction_worklet::mojom::ComponentAuctionReportResultParamsPtr
+        browser_signals_component_auction_report_result_params;
     absl::optional<uint32_t> scoring_signals_data_version;
 
     ReportResultCallback callback;
@@ -172,6 +176,8 @@ class SellerWorklet : public mojom::SellerWorklet {
     // V8State, and avoids having to make a copy of the errors vector.
     using ScoreAdCallbackInternal = base::OnceCallback<void(
         double score,
+        mojom::ComponentAuctionModifiedBidParamsPtr
+            component_auction_modified_bid_params,
         absl::optional<uint32_t> scoring_signals_data_version,
         absl::optional<GURL> debug_loss_report_url,
         absl::optional<GURL> debug_win_report_url,
@@ -211,6 +217,8 @@ class SellerWorklet : public mojom::SellerWorklet {
         const GURL& browser_signal_render_url,
         double browser_signal_bid,
         double browser_signal_desirability,
+        auction_worklet::mojom::ComponentAuctionReportResultParamsPtr
+            browser_signals_component_auction_report_result_params,
         absl::optional<uint32_t> scoring_signals_data_version,
         ReportResultCallbackInternal callback);
 
@@ -226,6 +234,8 @@ class SellerWorklet : public mojom::SellerWorklet {
     void PostScoreAdCallbackToUserThread(
         ScoreAdCallbackInternal callback,
         double score,
+        mojom::ComponentAuctionModifiedBidParamsPtr
+            component_auction_modified_bid_params,
         absl::optional<uint32_t> scoring_signals_data_version,
         absl::optional<GURL> debug_loss_report_url,
         absl::optional<GURL> debug_win_report_url,
@@ -278,6 +288,8 @@ class SellerWorklet : public mojom::SellerWorklet {
   void DeliverScoreAdCallbackOnUserThread(
       ScoreAdTaskList::iterator task,
       double score,
+      mojom::ComponentAuctionModifiedBidParamsPtr
+          component_auction_modified_bid_params,
       absl::optional<uint32_t> scoring_signals_data_version,
       absl::optional<GURL> debug_loss_report_url,
       absl::optional<GURL> debug_win_report_url,

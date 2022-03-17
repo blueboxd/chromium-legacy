@@ -148,6 +148,10 @@ const char kMuteCompromisedPasswordsName[] =
 const char kMuteCompromisedPasswordsDescription[] =
     "Enables muting/unmuting compromised passwords in bulk leak check.";
 
+const char kPasswordNotesName[] = "Password notes in settings";
+const char kPasswordNotesDescription[] =
+    "Enables a note section for each password in the settings page.";
+
 const char kEnableBluetoothSerialPortProfileInSerialApiName[] =
     "Enable Bluetooth Serial Port Profile in Serial API";
 const char kEnableBluetoothSerialPortProfileInSerialApiDescription[] =
@@ -2190,16 +2194,6 @@ const char kPwaUpdateDialogForAppTitleDescription[] =
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
 
-const char kQuickActionSearchWidgetAndroidName[] = "Quick Action Search Widget";
-const char kQuickActionSearchWidgetAndroidDescription[] =
-    "When enabled, the quick action search widget will be available to add to "
-    "the homescreen.";
-
-const char kQuickActionSearchWidgetAndroidDinoVariantName[] =
-    "Quick Action Search Widget - Dino Variant";
-const char kQuickActionSearchWidgetAndroidDinoVariantDescription[] =
-    "When enabled, the Dino widget will be available to add to the homescreen";
-
 const char kQuickDimName[] = "Enable lock on leave";
 const char kQuickDimDescription[] =
     "Enables lock on leave feature to better dim or lock the device. Can be "
@@ -3597,10 +3591,10 @@ const char kStrictSiteIsolationDescription[] =
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
 
-const char kSyncAndroidPromosRevampName[] =
-    "Enable the revamped sync promos on Android";
-const char kSyncAndroidPromosRevampDescription[] =
-    "Improves the visual design of sync promos.";
+const char kSyncAndroidPromosWithSingleButtonName[] =
+    "Enable the single button sync promos on Android";
+const char kSyncAndroidPromosWithSingleButtonDescription[] =
+    "Hides the \"Choose another account\" button on sync promos.";
 
 const char kTabGroupsForTabletsName[] = "Tab groups on tablets";
 const char kTabGroupsForTabletsDescription[] = "Enable tab groups on tablets.";

@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -807,7 +807,7 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
   bool has_transient_user_activation =
       LocalFrame::HasTransientUserActivation(local_frame);
   bool payment_request_token_active =
-      local_frame->IsPaymentRequestTokenActive();
+      DomWindow()->IsPaymentRequestTokenActive();
 
   if (!has_transient_user_activation) {
     Deprecation::CountDeprecation(
@@ -824,7 +824,7 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
   if (RuntimeEnabledFeatures::CapabilityDelegationPaymentRequestEnabled(
           GetExecutionContext())) {
     payment_request_allowed |= payment_request_token_active;
-    local_frame->ConsumePaymentRequestToken();
+    DomWindow()->ConsumePaymentRequestToken();
   }
   if (RuntimeEnabledFeatures::PaymentRequestRequiresUserActivationEnabled(
           GetExecutionContext())) {

@@ -31,6 +31,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -989,16 +990,16 @@ blink::WebNavigationTimings BuildNavigationTimings(
   return renderer_navigation_timings;
 }
 
-WebHistoryItem AppHistoryEntryPtrToWebHistoryItem(
-    const blink::mojom::AppHistoryEntry& entry) {
+WebHistoryItem NavigationApiHistoryEntryPtrToWebHistoryItem(
+    const blink::mojom::NavigationApiHistoryEntry& entry) {
   WebHistoryItem item;
   item.Initialize();
-  item.SetAppHistoryKey(WebString::FromUTF16(entry.key));
-  item.SetAppHistoryId(WebString::FromUTF16(entry.id));
+  item.SetNavigationApiKey(WebString::FromUTF16(entry.key));
+  item.SetNavigationApiId(WebString::FromUTF16(entry.id));
   item.SetURLString(WebString::FromUTF16(entry.url));
   item.SetItemSequenceNumber(entry.item_sequence_number);
   item.SetDocumentSequenceNumber(entry.document_sequence_number);
-  item.SetAppHistoryState(
+  item.SetNavigationApiState(
       WebSerializedScriptValue::FromString(WebString::FromUTF16(entry.state)));
   return item;
 }
@@ -1068,19 +1069,19 @@ void FillMiscNavigationParams(
   if (commit_params.http_response_code != -1)
     navigation_params->http_status_code = commit_params.http_response_code;
 
-  // Populate the arrays of non-current entries for the appHistory API.
-  auto& entry_arrays = commit_params.app_history_entry_arrays;
-  navigation_params->app_history_back_entries.reserve(
+  // Populate the arrays of non-current entries for the window.navigation API.
+  auto& entry_arrays = commit_params.navigation_api_history_entry_arrays;
+  navigation_params->navigation_api_back_entries.reserve(
       entry_arrays->back_entries.size());
   for (const auto& entry : entry_arrays->back_entries) {
-    navigation_params->app_history_back_entries.emplace_back(
-        AppHistoryEntryPtrToWebHistoryItem(*entry));
+    navigation_params->navigation_api_back_entries.emplace_back(
+        NavigationApiHistoryEntryPtrToWebHistoryItem(*entry));
   }
-  navigation_params->app_history_forward_entries.reserve(
+  navigation_params->navigation_api_forward_entries.reserve(
       entry_arrays->forward_entries.size());
   for (const auto& entry : entry_arrays->forward_entries) {
-    navigation_params->app_history_forward_entries.emplace_back(
-        AppHistoryEntryPtrToWebHistoryItem(*entry));
+    navigation_params->navigation_api_forward_entries.emplace_back(
+        NavigationApiHistoryEntryPtrToWebHistoryItem(*entry));
   }
 
   if (commit_params.ad_auction_components) {
@@ -4386,11 +4387,9 @@ void RenderFrameImpl::DidObserveInputDelay(base::TimeDelta input_delay) {
 
 void RenderFrameImpl::DidObserveUserInteraction(
     base::TimeDelta max_event_duration,
-    base::TimeDelta total_event_duration,
     blink::UserInteractionType interaction_type) {
   for (auto& observer : observers_)
-    observer.DidObserveUserInteraction(max_event_duration, total_event_duration,
-                                       interaction_type);
+    observer.DidObserveUserInteraction(max_event_duration, interaction_type);
 }
 
 void RenderFrameImpl::DidChangeCpuTiming(base::TimeDelta time) {
@@ -4706,7 +4705,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
 
   params->item_sequence_number = item.ItemSequenceNumber();
   params->document_sequence_number = item.DocumentSequenceNumber();
-  params->app_history_key = item.GetAppHistoryKey().Utf8();
+  params->navigation_api_key = item.GetNavigationApiKey().Utf8();
 
   // Note that the value of `referrer` will be overwritten in the browser with a
   // browser-calculated value in most cases. The exceptions are
@@ -5650,11 +5649,13 @@ void RenderFrameImpl::CreateAudioInputStream(
     uint32_t shared_memory_count,
     blink::CrossVariantMojoReceiver<
         media::mojom::AudioProcessorControlsInterfaceBase> controls_receiver,
-    const media::AudioProcessingSettings& settings) {
+    const media::AudioProcessingSettings* settings) {
+  DCHECK_EQ(!!settings, !!controls_receiver);
   media::mojom::AudioProcessingConfigPtr processing_config;
   if (controls_receiver) {
+    DCHECK(settings);
     processing_config = media::mojom::AudioProcessingConfig::New(
-        std::move(controls_receiver), settings);
+        std::move(controls_receiver), *settings);
   }
 
   GetAudioInputStreamFactory()->CreateStream(

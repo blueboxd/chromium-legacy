@@ -51,6 +51,15 @@ chromium-metrics-reviews@google.com.
   <variant name="TabletMode" summary="Tablet mode"/>
 </variants>
 
+<variants name="GooglePhotosApi">
+  <variant name="GetAlbum" summary="returns a single album"/>
+  <variant name="GetAlbums" summary="returns all albums"/>
+  <variant name="GetEnabled" summary="returns enablement state"/>
+  <variant name="GetPhoto" summary="returns a single photo"/>
+  <variant name="GetPhotos" summary="returns all photos"/>
+  <variant name="GetPhotosCount" summary="returns the count of all photos"/>
+</variants>
+
 <variants name="HotseatTransitionType">
   <variant name=".TransitionToExtendedHotseat"
       summary="Transition to the extended hotseat"/>
@@ -283,7 +292,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.AshDataSizeMB" units="MB"
-    expires_after="M101">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -294,7 +303,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.CommonDataSizeMB" units="MB"
-    expires_after="M101">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -304,7 +313,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.CommonDataTimeTakenMS" units="ms"
-    expires_after="M101">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -313,7 +322,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.CopiedDataSizeMB" units="MB"
-    expires_after="M101">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -323,7 +332,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.CreateDirectoryFailure"
-    enum="PlatformFileError" expires_after="M101">
+    enum="PlatformFileError" expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -333,7 +342,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunAshDataSizeMB" units="MB"
-    expires_after="M101">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -347,7 +356,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunCommonDataSizeMB" units="MB"
-    expires_after="M101">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -360,7 +369,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunExtraSizeRequiredMB.Move"
-    units="MB" expires_after="M104">
+    units="MB" expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -369,14 +378,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunExtraSizeReservedMB.Move"
-    units="MB" expires_after="M104">
+    units="MB" expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>Free disk space after move migration.</summary>
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunHasEnoughDiskSpace.{Mode}"
-    enum="Boolean" expires_after="M101">
+    enum="Boolean" expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -394,7 +403,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunLacrosDataSizeMB" units="MB"
-    expires_after="M101">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -408,7 +417,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunNoCopyDataSizeMB" units="MB"
-    expires_after="M101">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -420,7 +429,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunTotalCopySizeMB.Copy" units="MB"
-    expires_after="M104">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -429,7 +438,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.DryRunTotalCopySizeMB.Move" units="MB"
-    expires_after="M104">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -438,7 +447,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.FinalStatus"
-    enum="BrowserDataMigratorFinalStatus" expires_after="M101">
+    enum="BrowserDataMigratorFinalStatus" expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -448,7 +457,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.LacrosDataSizeMB" units="MB"
-    expires_after="M101">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -459,14 +468,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.LacrosDataTimeTakenMS" units="ms"
-    expires_after="M101">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>The time taken for copying lacros data.</summary>
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.NoCopyDataSizeMB" units="MB"
-    expires_after="M101">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -475,7 +484,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.TotalCopySizeWhenNotEnoughSpace"
-    units="MB" expires_after="M104">
+    units="MB" expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -485,7 +494,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.BrowserDataMigrator.TotalTimeTakenMS" units="ms"
-    expires_after="M101">
+    expires_after="M110">
   <owner>ythjkt@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -1325,7 +1334,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.NumberOfDeskTraversals" units="units"
-    expires_after="2022-04-24">
+    expires_after="2022-10-24">
   <owner>afakhry@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
@@ -1652,6 +1661,38 @@ chromium-metrics-reviews@google.com.
     Recorded every time the DeviceActivityClient enters a new state in its FSM.
     States are defined in //ash/components/device_activity_client.h. ChromeOS
     only.
+  </summary>
+</histogram>
+
+<histogram
+    name="Ash.DeviceActiveClient.{DeviceActivityClientTransitionMethod}Minute"
+    units="minutes" expires_after="2022-11-01">
+  <owner>hirthanan@google.com</owner>
+  <owner>chromeos-data-team@google.com</owner>
+  <summary>
+    Emitted in the minute during the hour that DeviceActivityClient
+    {DeviceActivityClientTransitionMethod} is called. ChromeOS only.
+  </summary>
+  <token key="DeviceActivityClientTransitionMethod">
+    <variant name="TransitionOutOfIdle" summary="transition-out-of-idle"/>
+    <variant name="TransitionToCheckIn" summary="transition-to-check-in"/>
+  </token>
+</histogram>
+
+<histogram name="Ash.DeviceActiveController.PsmDeviceActiveSecretIsSet"
+    enum="BooleanSuccess" expires_after="2022-11-01">
+  <owner>hirthanan@google.com</owner>
+  <owner>chromeos-data-team@google.com</owner>
+  <summary>Whether the PSM derived active secret is set (non empty).</summary>
+</histogram>
+
+<histogram name="Ash.DeviceActivity.MethodCalled" enum="DeviceActivityMethod"
+    expires_after="2023-02-01">
+  <owner>hirthanan@google.com</owner>
+  <owner>chromeos-data-team@google.com</owner>
+  <summary>
+    Record the number of times various methods are called in
+    //ash/components/device_activity/. ChromeOS only.
   </summary>
 </histogram>
 
@@ -2508,7 +2549,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.ArrowKeyPresses" units="units"
-    expires_after="2022-04-08">
+    expires_after="2022-10-08">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -2528,7 +2569,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Ash.Overview.Items" units="units" expires_after="2022-04-08">
+<histogram name="Ash.Overview.Items" units="units" expires_after="2022-10-08">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -2538,7 +2579,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.KeyPressesOverItemsRatio" units="%"
-    expires_after="2022-04-08">
+    expires_after="2022-10-08">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -2549,7 +2590,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.OverviewClosedItems" units="units"
-    expires_after="2022-04-08">
+    expires_after="2022-10-08">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -2580,7 +2621,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.SelectionDepth" units="items"
-    expires_after="2022-04-08">
+    expires_after="2022-10-08">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
@@ -2602,7 +2643,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.TimeBetweenActiveWindowChanges" units="seconds"
-    expires_after="2022-04-08">
+    expires_after="2022-10-08">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -2614,7 +2655,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.TimeBetweenUse" units="ms"
-    expires_after="2022-04-08">
+    expires_after="2022-10-08">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -2625,7 +2666,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.TimeInOverview" units="ms"
-    expires_after="2022-04-08">
+    expires_after="2022-10-08">
   <owner>nupurjain@chromium.org</owner>
   <owner>sammiequon@chromium.org</owner>
   <summary>
@@ -2663,7 +2704,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.WindowDrag.Workflow" enum="OverviewDragAction"
-    expires_after="2022-04-24">
+    expires_after="M110">
   <owner>amusbach@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -3635,7 +3676,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.TouchView.LidAngle" units="degrees"
-    expires_after="2022-04-03">
+    expires_after="2022-10-03">
   <owner>oshima@chromium.org</owner>
   <summary>
     Chrome OS only. The computed angle between the lid and the keyboard panel.
@@ -3857,6 +3898,46 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.Wallpaper.GooglePhotos.Api.{Api}.ResponseTime.{Result}"
+    units="ms" expires_after="2022-11-15">
+  <owner>xiaohuic@google.com</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Records the response time for the {Result} request to the Google Photos API
+    which {Api}. Emitted only on {Result} parsing of the API response at the
+    moment parsing is completed.
+  </summary>
+  <token key="Api" variants="GooglePhotosApi"/>
+  <token key="Result">
+    <variant name="Failure" summary="failed"/>
+    <variant name="Success" summary="successful"/>
+  </token>
+</histogram>
+
+<histogram name="Ash.Wallpaper.GooglePhotos.Api.{Api}.Result"
+    enum="BooleanSuccess" expires_after="2022-11-15">
+  <owner>xiaohuic@google.com</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Records the result for the request to the Google Photos API which {Api}.
+    Emitted for both failed and successful parsing of the API request at the
+    moment parsing is completed.
+  </summary>
+  <token key="Api" variants="GooglePhotosApi"/>
+</histogram>
+
+<histogram name="Ash.Wallpaper.GooglePhotos.Api.{Api}.Result.Count"
+    units="results" expires_after="2022-11-15">
+  <owner>xiaohuic@google.com</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Records the result count for the response of the Google Photos API which
+    {Api}. Emitted only on successful parsing of the API response at the moment
+    parsing is completed.
+  </summary>
+  <token key="Api" variants="GooglePhotosApi"/>
+</histogram>
+
 <histogram name="Ash.Wallpaper.Image" enum="WallpaperImage"
     expires_after="2022-05-25">
   <owner>jasontt@chromium.org</owner>
@@ -4001,7 +4082,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.WindowCycleController.Items" units="items"
-    expires_after="2022-04-10">
+    expires_after="2022-10-10">
   <owner>sammiequon@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <owner>xdai@chromium.org</owner>

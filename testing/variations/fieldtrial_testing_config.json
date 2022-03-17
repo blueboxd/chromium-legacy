@@ -3498,6 +3498,27 @@
             ]
         }
     ],
+    "HatsAudio": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "prob": "0.01",
+                        "survey_cycle_length": "90",
+                        "survey_start_date_ms": "1642608000000",
+                        "trigger_id": "cVHSWE7RR0jBnuKU19R0ThFKQTU5"
+                    },
+                    "enable_features": [
+                        "HappinessTrackingAudio"
+                    ]
+                }
+            ]
+        }
+    ],
     "HatsOnboardingExperience": [
         {
             "platforms": [
@@ -4776,27 +4797,6 @@
             ]
         }
     ],
-    "OptimizeUpdateLoadInfo": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OptimizeUpdateLoadInfo"
-                    ]
-                }
-            ]
-        }
-    ],
     "OptionalToolbarButton": [
         {
             "platforms": [
@@ -5586,6 +5586,21 @@
             ]
         }
     ],
+    "ProductivityLauncherStudy": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithContinueSection",
+                    "enable_features": [
+                        "ProductivityLauncher"
+                    ]
+                }
+            ]
+        }
+    ],
     "PushMessagingDisallowSenderIDs": [
         {
             "platforms": [
@@ -6262,6 +6277,48 @@
             ]
         }
     ],
+    "SideSearchDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "SideSearchDesktop",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:side_search_iph_tgr;comparator:==0;window:90;storage:360",
+                        "event_used": "name:side_search_opened;comparator:==0;window:90;storage:360",
+                        "session_rate": "<3"
+                    },
+                    "enable_features": [
+                        "IPH_SideSearch",
+                        "SideSearch",
+                        "SideSearchDSESupport"
+                    ]
+                },
+                {
+                    "name": "SideSearchDesktopFeedback",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:side_search_iph_tgr;comparator:==0;window:90;storage:360",
+                        "event_used": "name:side_search_opened;comparator:==0;window:90;storage:360",
+                        "session_rate": "<3"
+                    },
+                    "enable_features": [
+                        "IPH_SideSearch",
+                        "SideSearch",
+                        "SideSearchDSESupport",
+                        "SideSearchFeedback"
+                    ]
+                }
+            ]
+        }
+    ],
     "SideSearchGoogle": [
         {
             "platforms": [
@@ -6657,6 +6714,25 @@
             ]
         }
     ],
+    "TabSearchMediaTabs": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabSearchMediaTabs"
+                    ]
+                }
+            ]
+        }
+    ],
     "TabSwitchMetrics2": [
         {
             "platforms": [
@@ -6678,7 +6754,6 @@
     "TailoredSecurityIntegration": [
         {
             "platforms": [
-                "android",
                 "chromeos",
                 "chromeos_lacros",
                 "linux",
@@ -6688,6 +6763,21 @@
             "experiments": [
                 {
                     "name": "TailoredSecurityIntegration",
+                    "enable_features": [
+                        "TailoredSecurityIntegration"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TailoredSecurityIntegrationAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220302",
                     "enable_features": [
                         "TailoredSecurityIntegration"
                     ]

@@ -40,7 +40,7 @@ std::unique_ptr<message_center::Notification> CreateNotificationWithId(
     const std::string& id) {
   return std::make_unique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_SIMPLE, id, u"title", u"message",
-      /*icon=*/gfx::Image(),
+      /*icon=*/ui::ImageModel(),
       /*display_source=*/std::u16string(), GURL(), message_center::NotifierId(),
       message_center::RichNotificationData(), /*delegate=*/nullptr);
 }
@@ -160,7 +160,8 @@ TEST_F(MessageCenterAshTest, SerializationSimple) {
 
   EXPECT_TRUE(
       AreBitmapsEqual(test_badge, ui_notification->small_image().AsBitmap()));
-  EXPECT_TRUE(AreBitmapsEqual(test_icon, ui_notification->icon().AsBitmap()));
+  EXPECT_TRUE(AreBitmapsEqual(
+      test_icon, *ui_notification->icon().Rasterize(nullptr).bitmap()));
 
   ASSERT_EQ(2u, ui_notification->buttons().size());
   EXPECT_EQ(u"button1", ui_notification->buttons()[0].title);

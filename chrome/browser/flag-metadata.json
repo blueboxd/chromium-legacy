@@ -109,12 +109,6 @@
     "expiry_milestone": 101
   },
   {
-    "name": "allow-previews",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    // This flag is used for frequent manual testing and should not be removed.
-    "expiry_milestone": -1
-  },
-  {
     "name": "allow-repeated-updates",
     "owners": [ "vyshu", "chromeos-core-services@google.com" ],
     "expiry_milestone": 92
@@ -937,7 +931,7 @@
   {
     "name": "contextual-search-longpress-resolve",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS", "contextual-search-eng@google.com" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 102
   },
   {
     "name": "contextual-search-ml-tap-suppression",
@@ -978,11 +972,6 @@
     "name": "contextual-triggers-selection-size",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 104
-  },
-  {
-    "name": "continuous-search",
-    "owners": [ "//chrome/browser/continuous_search/OWNERS" ],
-    "expiry_milestone": 98
   },
   {
     "name": "conversion-measurement-debug-mode",
@@ -1488,7 +1477,7 @@
   {
     "name": "enable-accessibility-live-caption",
     "owners": [ "abigailbklein@google.com", "evliu@google.com", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 104
   },
   {
     "name": "enable-accessibility-os-settings-visibility",
@@ -1558,7 +1547,7 @@
   {
     "name": "enable-auto-disable-accessibility",
     "owners": [ "abigailbklein@google.com", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 104
   },
   {
     "name": "enable-autofill-credit-card-authentication",
@@ -1854,12 +1843,6 @@
     "name": "enable-dangerous-download-dialog",
     "owners": [ "qinmin", "chrome-downloads@google.com" ],
     "expiry_milestone": 99
-  },
-  {
-    "name": "enable-data-reduction-proxy-server-experiment",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    // This flag is used for frequent manual testing and should not be removed.
-    "expiry_milestone": -1
   },
   {
     "name": "enable-de-jelly",
@@ -2339,16 +2322,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "enable-lazy-frame-loading",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
-    "name": "enable-lazy-image-loading",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "enable-lens-standalone",
     "owners": [ "stanfield@google.com", "benwgold@google.com", "juanmojica@google.com" ],
     "expiry_milestone": 103
@@ -2358,12 +2331,6 @@
     "owners": [ "mmaslanka", "nicholasbishop", "chromeos-tango@google.com" ],
     // Used for testing libinput to check if it works better than the gestures
     // library to handle touchpad.
-    "expiry_milestone": -1
-  },
-  {
-    "name": "enable-lite-video",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    // This flag is used for frequent manual testing and should not be removed.
     "expiry_milestone": -1
   },
   {
@@ -2496,12 +2463,6 @@
     "expiry_milestone": 98
   },
   {
-    "name": "enable-noscript-previews",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    // This flag is used for frequent manual testing and should not be removed.
-    "expiry_milestone": -1
-  },
-  {
     "name": "enable-notifications-revamp",
     "owners": [ "amehfooz", "newcomer" ],
     "expiry_milestone": 100
@@ -2510,12 +2471,6 @@
     "name": "enable-oauth-ipp",
     "owners": [ "batrapranav", "pawliczek" ],
     "expiry_milestone": 110
-  },
-  {
-    "name": "enable-offline-previews",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    // This flag is used for frequent manual testing and should not be removed.
-    "expiry_milestone": -1
   },
   {
     "name": "enable-oop-print-drivers",
@@ -2705,12 +2660,6 @@
     "name": "enable-resampling-scroll-events-experimental-prediction",
     "owners": [ "input-dev" ],
     "expiry_milestone": 95
-  },
-  {
-    "name": "enable-resource-loading-hints",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    // This flag is used for frequent manual testing and should not be removed.
-    "expiry_milestone": -1
   },
   {
     "name": "enable-restricted-web-apis",
@@ -3426,13 +3375,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "force-effective-connection-type",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    // ECT is a baked-in feature of Chrome. This flag is used for frequent
-    // testing and should not be removed.
-    "expiry_milestone": -1
-  },
-  {
     "name": "force-enable-cast-remoting-query",
     "owners": [ "rwkeane@google.com", "openscreen-eng@google.com" ],
     "expiry_milestone": 115
@@ -3657,13 +3599,6 @@
     "owners": [ "kbr", "zmo" ],
     // A debugging flag intended for end-users where there may not be any other
     // way to turn off graphics features.
-    "expiry_milestone": -1
-  },
-  {
-    "name": "ignore-previews-blocklist",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    // Previews is a baked-in feature of Chrome. This flag is used for frequent
-    // testing and should not be removed.
     "expiry_milestone": -1
   },
   {
@@ -4008,18 +3943,6 @@
     "owners": [ "//ui/display/OWNERS" ],
     // This flag is used for debugging and development purposes to list all
     // external displays' modes without any exclusions.'
-    "expiry_milestone": -1
-  },
-  {
-    "name": "lite-video-default-downlink-bandwidth-kbps",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 92
-  },
-  {
-    "name": "lite-video-force-override-decision",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    // This flag is used for debugging and development purposes, allowing users
-    // and developers to test LiteVideos reliably on any origin.'
     "expiry_milestone": -1
   },
   {
@@ -4746,7 +4669,7 @@
   {
     "name": "ozone-platform-hint",
     "owners": [ "rjkroege", "thomasanderson", "msisov@igalia.com", "nickdiego@igalia.com", "adunaev@igalia.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 105
   },
   {
     "name": "page-content-annotations",
@@ -4973,6 +4896,14 @@
     "expiry_milestone": 104
   },
   {
+    "name": "privacy-guide-2",
+    "owners": [
+      "rainhard",
+      "msramek",
+      "chrome-friendly-settings@google.com"],
+    "expiry_milestone": 104
+  },
+  {
     "name": "privacy-sandbox-v3-android",
     "owners": [
       "dullweber",
@@ -5121,7 +5052,7 @@
   {
     "name": "quick-settings-network-revamp",
     "owners": [ "chadduffin", "khorimoto", "cros-connectivity@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 104
   },
   {
     "name": "quick-settings-pwa-notifications",

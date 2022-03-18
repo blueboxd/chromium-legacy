@@ -16,8 +16,9 @@
   if (_password == password)
     return;
   _password = password;
-  self.text = password.website;
+  self.title = password.website;
   self.detailText = password.username;
+  self.URL = password.URL;
 }
 
 @end

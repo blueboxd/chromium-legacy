@@ -69,6 +69,10 @@ public class NotificationPermissionControllerTest {
                         .FIELD_TRIAL_ALWAYS_SHOW_RATIONALE_BEFORE_REQUESTING_PERMISSION,
                 "false");
         FeatureList.setTestValues(testValues);
+
+        // These tests only apply on builds targeting T running on a T device.
+        ShadowBuildInfo.setTargetsAtLeastT(true);
+        ShadowBuildInfo.setIsAtLeastT(true);
     }
 
     @After
@@ -160,8 +164,53 @@ public class NotificationPermissionControllerTest {
     }
 
     @Test
+    public void testNotificationPrompt_nothingHappensWhenNotTargetingT() {
+        // Build targeting a <T SDK.
+        ShadowBuildInfo.setTargetsAtLeastT(false);
+
+        mActivityScenarios.getScenario().onActivity(activity -> {
+            TestRationaleDelegate rationaleDelegate = new TestRationaleDelegate();
+            TestAndroidPermissionDelegate permissionDelegate =
+                    new TestAndroidPermissionDelegate(new WeakReference<>(activity));
+            NotificationPermissionController notificationPermissionController =
+                    createNotificationPermissionController(rationaleDelegate, permissionDelegate);
+
+            notificationPermissionController.requestPermissionIfNeeded();
+
+            long permissionRequestTimestamp =
+                    PermissionPrefs.getAndroidNotificationPermissionRequestTimestamp();
+
+            // We shouldn't have requested for permission or shown the rationale.
+            assertEquals(0, rationaleDelegate.getCallCount());
+            assertEquals(0, permissionRequestTimestamp);
+        });
+    }
+
+    @Test
+    public void testNotificationPrompt_nothingHappensWhenNotRunningOnT() {
+        // Running on a <T device.
+        ShadowBuildInfo.setIsAtLeastT(false);
+
+        mActivityScenarios.getScenario().onActivity(activity -> {
+            TestRationaleDelegate rationaleDelegate = new TestRationaleDelegate();
+            TestAndroidPermissionDelegate permissionDelegate =
+                    new TestAndroidPermissionDelegate(new WeakReference<>(activity));
+            NotificationPermissionController notificationPermissionController =
+                    createNotificationPermissionController(rationaleDelegate, permissionDelegate);
+
+            notificationPermissionController.requestPermissionIfNeeded();
+
+            long permissionRequestTimestamp =
+                    PermissionPrefs.getAndroidNotificationPermissionRequestTimestamp();
+
+            // We shouldn't have requested for permission or shown the rationale.
+            assertEquals(0, rationaleDelegate.getCallCount());
+            assertEquals(0, permissionRequestTimestamp);
+        });
+    }
+
+    @Test
     public void testNotificationPrompt_alreadyHasPermission() {
-        ShadowBuildInfo.setIsAtLeastT(true);
         mActivityScenarios.getScenario().onActivity(activity -> {
             TestRationaleDelegate rationaleDelegate = new TestRationaleDelegate();
             TestAndroidPermissionDelegate permissionDelegate =
@@ -226,7 +275,6 @@ public class NotificationPermissionControllerTest {
 
     @Test
     public void testNotificationPromptShownOnStartup_noPermissionsYet_shouldShowOSPrompt() {
-        ShadowBuildInfo.setIsAtLeastT(true);
         mActivityScenarios.getScenario().onActivity(activity -> {
             NotificationPermissionController notificationPermissionController =
                     createNotificationPermissionController(activity);
@@ -248,7 +296,6 @@ public class NotificationPermissionControllerTest {
 
     @Test
     public void testNotificationPromptShownOnStartup_alwaysShowRationale() {
-        ShadowBuildInfo.setIsAtLeastT(true);
         FeatureList.TestValues testValues = new FeatureList.TestValues();
         testValues.addFieldTrialParamOverride(ChromeFeatureList.NOTIFICATION_PERMISSION_VARIANT,
                 NotificationPermissionController
@@ -318,7 +365,6 @@ public class NotificationPermissionControllerTest {
 
     @Test
     public void testNotificationPrompt_showOSPromptAndAccept() {
-        ShadowBuildInfo.setIsAtLeastT(true);
         mActivityScenarios.getScenario().onActivity(activity -> {
             TestRationaleDelegate rationaleDelegate = new TestRationaleDelegate();
             TestAndroidPermissionDelegate permissionDelegate =
@@ -363,7 +409,6 @@ public class NotificationPermissionControllerTest {
 
     @Test
     public void testNotificationPrompt_showOSPromptAndDismiss_tooSoonForSecondTime() {
-        ShadowBuildInfo.setIsAtLeastT(true);
         mActivityScenarios.getScenario().onActivity(activity -> {
             TestRationaleDelegate rationaleDelegate = new TestRationaleDelegate();
             TestAndroidPermissionDelegate permissionDelegate =
@@ -404,7 +449,6 @@ public class NotificationPermissionControllerTest {
 
     @Test
     public void testNotificationPrompt_showOSPromptAndReject_tooSoonForSecondTime() {
-        ShadowBuildInfo.setIsAtLeastT(true);
         mActivityScenarios.getScenario().onActivity(activity -> {
             TestRationaleDelegate rationaleDelegate = new TestRationaleDelegate();
             TestAndroidPermissionDelegate permissionDelegate =
@@ -445,7 +489,6 @@ public class NotificationPermissionControllerTest {
 
     @Test
     public void testNotificationPrompt_showOSPromptAndDismiss_showAgainAfterTimePasses() {
-        ShadowBuildInfo.setIsAtLeastT(true);
         mActivityScenarios.getScenario().onActivity(activity -> {
             TestAndroidPermissionDelegate permissionDelegate =
                     new TestAndroidPermissionDelegate(new WeakReference<>(activity));
@@ -489,7 +532,6 @@ public class NotificationPermissionControllerTest {
 
     @Test
     public void testNotificationPrompt_showOSPromptAndReject_showRationaleAfterTimePasses() {
-        ShadowBuildInfo.setIsAtLeastT(true);
         mActivityScenarios.getScenario().onActivity(activity -> {
             TestRationaleDelegate rationaleDelegate = new TestRationaleDelegate();
             TestAndroidPermissionDelegate permissionDelegate =
@@ -541,7 +583,6 @@ public class NotificationPermissionControllerTest {
     @Test
     public void
     testNotificationPrompt_showOSPromptAndReject_showRationaleAndAccept_approveSecondOSPrompt() {
-        ShadowBuildInfo.setIsAtLeastT(true);
         mActivityScenarios.getScenario().onActivity(activity -> {
             TestRationaleDelegate rationaleDelegate = new TestRationaleDelegate();
             TestAndroidPermissionDelegate permissionDelegate =
@@ -599,7 +640,6 @@ public class NotificationPermissionControllerTest {
     @Test
     public void
     testNotificationPrompt_showOSPromptAndReject_showRationaleAndAccept_rejectSecondOSPrompt() {
-        ShadowBuildInfo.setIsAtLeastT(true);
         mActivityScenarios.getScenario().onActivity(activity -> {
             TestRationaleDelegate rationaleDelegate = new TestRationaleDelegate();
             TestAndroidPermissionDelegate permissionDelegate =
@@ -674,7 +714,6 @@ public class NotificationPermissionControllerTest {
 
     @Test
     public void testNotificationPrompt_showOSPromptAndReject_showRationaleAndReject() {
-        ShadowBuildInfo.setIsAtLeastT(true);
         mActivityScenarios.getScenario().onActivity(activity -> {
             TestRationaleDelegate rationaleDelegate = new TestRationaleDelegate();
             NotificationPermissionController notificationPermissionController =
@@ -709,6 +748,51 @@ public class NotificationPermissionControllerTest {
             // denied"
             verifyStateHistogramWasRecorded(NotificationPermissionState.DENIED_ASKED_TWICE,
                     /* expectedTimes= */ 1);
+        });
+    }
+
+    @Test
+    public void testNotificationPrompt_usesWaitIntervalFromFieldTrialParams() {
+        ShadowBuildInfo.setIsAtLeastT(true);
+        mActivityScenarios.getScenario().onActivity(activity -> {
+            TestRationaleDelegate rationaleDelegate = new TestRationaleDelegate();
+            NotificationPermissionController notificationPermissionController =
+                    createNotificationPermissionController(rationaleDelegate, activity);
+
+            // Set field trial params to wait 14 days.
+            FeatureList.TestValues testValues = new FeatureList.TestValues();
+            testValues.addFieldTrialParamOverride(ChromeFeatureList.NOTIFICATION_PERMISSION_VARIANT,
+                    NotificationPermissionController.FIELD_TRIAL_PERMISSION_REQUEST_INTERVAL_DAYS,
+                    "14");
+            FeatureList.setTestValues(testValues);
+
+            // Show and reject OS prompt for the first time.
+            setShouldShowRequestPermissionRationale(activity, false);
+            notificationPermissionController.requestPermissionIfNeeded();
+            setShouldShowRequestPermissionRationale(activity, true);
+            long requestTimestampAfterFirstStartup =
+                    PermissionPrefs.getAndroidNotificationPermissionRequestTimestamp();
+
+            // Wait 10 days, nothing should happen yet.
+            ShadowSystemClock.advanceBy(Duration.ofDays(10));
+            notificationPermissionController.requestPermissionIfNeeded();
+
+            long requestTimestampAfterSecondStartup =
+                    PermissionPrefs.getAndroidNotificationPermissionRequestTimestamp();
+            int rationaleCallCountAfterSecondStartup = rationaleDelegate.getCallCount();
+
+            // Wait 5 more days, now we should show the rationale.
+            ShadowSystemClock.advanceBy(Duration.ofDays(5));
+            rationaleDelegate.setDialogAction(DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+            notificationPermissionController.requestPermissionIfNeeded();
+            int rationaleCallCountAfterThirdStartup = rationaleDelegate.getCallCount();
+
+            // The second call to requestPermissionIfNeeded shouldn't show a rationale or OS prompt.
+            assertEquals(requestTimestampAfterFirstStartup, requestTimestampAfterSecondStartup);
+            assertEquals(0, rationaleCallCountAfterSecondStartup);
+
+            // The third call should have shown the rationale.
+            assertEquals(1, rationaleCallCountAfterThirdStartup);
         });
     }
 }

@@ -20,9 +20,8 @@ apps::IntentFilterPtr MakeIntentFilter(const std::string& action,
   DCHECK(!mime_type.empty() || !file_extension.empty() || !url_pattern.empty());
   auto intent_filter = std::make_unique<apps::IntentFilter>();
 
-  apps_util::AddSingleValueCondition(apps::ConditionType::kAction, action,
-                                     apps::PatternMatchType::kNone,
-                                     intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kAction, action,
+                                         apps::PatternMatchType::kNone);
 
   apps::ConditionValues condition_values;
   if (!mime_type.empty()) {
@@ -85,9 +84,9 @@ apps::IntentFilterPtr MakeIntentFilterForMimeType(
     const std::string& mime_type) {
   auto intent_filter = std::make_unique<apps::IntentFilter>();
 
-  apps_util::AddSingleValueCondition(
-      apps::ConditionType::kAction, kIntentActionSend,
-      apps::PatternMatchType::kNone, intent_filter);
+  intent_filter->AddSingleValueCondition(apps::ConditionType::kAction,
+                                         kIntentActionSend,
+                                         apps::PatternMatchType::kNone);
 
   std::vector<apps::ConditionValuePtr> condition_values;
   condition_values.push_back(std::make_unique<apps::ConditionValue>(
@@ -122,6 +121,55 @@ apps::IntentFilterPtr MakeURLFilterForView(const std::string& url_pattern,
                                            const std::string& activity_label) {
   return MakeIntentFilter(kIntentActionView, "", "", url_pattern,
                           activity_label);
+}
+
+apps::IntentFilterPtr MakeSchemeOnlyFilter(const std::string& scheme) {
+  apps::ConditionValues condition_values;
+  condition_values.push_back(std::make_unique<apps::ConditionValue>(
+      scheme, apps::PatternMatchType::kNone));
+  auto condition = std::make_unique<apps::Condition>(
+      apps::ConditionType::kScheme, std::move(condition_values));
+
+  auto intent_filter = std::make_unique<apps::IntentFilter>();
+  intent_filter->conditions.push_back(std::move(condition));
+
+  return intent_filter;
+}
+
+apps::IntentFilterPtr MakeSchemeAndHostOnlyFilter(const std::string& scheme,
+                                                  const std::string& host) {
+  apps::ConditionValues scheme_condition_values;
+  scheme_condition_values.push_back(std::make_unique<apps::ConditionValue>(
+      scheme, apps::PatternMatchType::kNone));
+  auto scheme_condition = std::make_unique<apps::Condition>(
+      apps::ConditionType::kScheme, std::move(scheme_condition_values));
+
+  apps::ConditionValues host_condition_values;
+  host_condition_values.push_back(std::make_unique<apps::ConditionValue>(
+      host, apps::PatternMatchType::kNone));
+  auto host_condition = std::make_unique<apps::Condition>(
+      apps::ConditionType::kHost, std::move(host_condition_values));
+
+  auto intent_filter = std::make_unique<apps::IntentFilter>();
+  intent_filter->conditions.push_back(std::move(scheme_condition));
+  intent_filter->conditions.push_back(std::move(host_condition));
+
+  return intent_filter;
+}
+
+void AddConditionValue(apps::ConditionType condition_type,
+                       const std::string& value,
+                       apps::PatternMatchType pattern_match_type,
+                       apps::IntentFilterPtr& intent_filter) {
+  for (auto& condition : intent_filter->conditions) {
+    if (condition->condition_type == condition_type) {
+      condition->condition_values.push_back(
+          std::make_unique<apps::ConditionValue>(value, pattern_match_type));
+      return;
+    }
+  }
+  intent_filter->AddSingleValueCondition(condition_type, value,
+                                         pattern_match_type);
 }
 
 apps::mojom::IntentFilterPtr CreateSchemeOnlyFilter(const std::string& scheme) {

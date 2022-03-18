@@ -23,6 +23,7 @@
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
+#include "ui/gfx/geometry/outsets_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -151,6 +152,10 @@ bool TransformTree::OnTransformAnimated(ElementId element_id,
                                         const gfx::Transform& transform) {
   TransformNode* node = FindNodeFromElementId(element_id);
   DCHECK(node);
+  // TODO(crbug.com/1307498): Remove this when we no longer animate
+  // non-existent nodes.
+  if (!node)
+    return false;
   if (node->local == transform)
     return false;
   node->local = transform;
@@ -455,6 +460,40 @@ bool TransformTree::ShouldUndoOverscroll(const TransformNode* node) const {
   return fixed_elements_dont_overscroll_ && node && node->is_fixed_position;
 }
 
+void TransformTree::UpdateFixedNodeTransformAndClip(
+    const TransformNode* node,
+    gfx::Vector2dF& fixed_position_adjustment) {
+  if (!ShouldUndoOverscroll(node) ||
+      overscroll_node_id_ == kInvalidPropertyNodeId)
+    return;
+
+  const TransformNode* overscroll_node = Node(overscroll_node_id_);
+  const gfx::Vector2dF overscroll_offset =
+      overscroll_node->scroll_offset.OffsetFromOrigin();
+  if (overscroll_offset.IsZero())
+    return;
+
+  fixed_position_adjustment +=
+      gfx::ScaleVector2d(overscroll_offset, 1.f / page_scale_factor());
+
+  ClipTree& clip_tree = property_trees()->clip_tree_mutable();
+  ClipNode* clip_node = clip_tree.Node(clip_tree.overscroll_node_id());
+
+  if (clip_node) {
+    // Inflate the clip rect based on the overscroll direction.
+    gfx::OutsetsF outsets;
+    fixed_position_adjustment.x() < 0
+        ? outsets.set_left(-fixed_position_adjustment.x())
+        : outsets.set_right(fixed_position_adjustment.x());
+    fixed_position_adjustment.y() < 0
+        ? outsets.set_top(-fixed_position_adjustment.y())
+        : outsets.set_bottom(fixed_position_adjustment.y());
+
+    clip_node->clip.Outset(outsets);
+    clip_tree.set_needs_update(true);
+  }
+}
+
 void TransformTree::UpdateLocalTransform(TransformNode* node) {
   gfx::Transform transform;
   transform.Translate3d(node->post_translation.x() + node->origin.x(),
@@ -467,15 +506,7 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
         property_trees()->outer_viewport_container_bounds_delta().y());
   }
 
-  if (ShouldUndoOverscroll(node)) {
-    const TransformNode* overscroll_node = Node(overscroll_node_id_);
-    if (overscroll_node) {
-      fixed_position_adjustment +=
-          gfx::ScaleVector2d(overscroll_node->scroll_offset.OffsetFromOrigin(),
-                             1.f / page_scale_factor());
-    }
-  }
-
+  UpdateFixedNodeTransformAndClip(node, fixed_position_adjustment);
   transform.Translate(fixed_position_adjustment -
                       node->scroll_offset.OffsetFromOrigin());
   transform.Translate(StickyPositionOffset(node));
@@ -860,6 +891,10 @@ void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
 bool EffectTree::OnOpacityAnimated(ElementId id, float opacity) {
   EffectNode* node = FindNodeFromElementId(id);
   DCHECK(node);
+  // TODO(crbug.com/1307498): Remove this when we no longer animate
+  // non-existent nodes.
+  if (!node)
+    return false;
   if (node->opacity == opacity)
     return false;
   node->opacity = opacity;
@@ -873,6 +908,10 @@ bool EffectTree::OnFilterAnimated(ElementId id,
                                   const FilterOperations& filters) {
   EffectNode* node = FindNodeFromElementId(id);
   DCHECK(node);
+  // TODO(crbug.com/1307498): Remove this when we no longer animate
+  // non-existent nodes.
+  if (!node)
+    return false;
   if (node->filters == filters)
     return false;
   node->filters = filters;
@@ -887,6 +926,10 @@ bool EffectTree::OnBackdropFilterAnimated(
     const FilterOperations& backdrop_filters) {
   EffectNode* node = FindNodeFromElementId(id);
   DCHECK(node);
+  // TODO(crbug.com/1307498): Remove this when we no longer animate
+  // non-existent nodes.
+  if (!node)
+    return false;
   if (node->backdrop_filters == backdrop_filters)
     return false;
   node->backdrop_filters = backdrop_filters;
@@ -1212,7 +1255,8 @@ EffectTree::CopyRequestMap EffectTree::TakeCopyRequests() {
 }
 
 ClipTree::ClipTree(PropertyTrees* property_trees)
-    : PropertyTree<ClipNode>(property_trees) {}
+    : PropertyTree<ClipNode>(property_trees),
+      overscroll_node_id_(kInvalidPropertyNodeId) {}
 
 void ClipTree::SetViewportClip(gfx::RectF viewport_rect) {
   if (size() < 2)
@@ -1232,7 +1276,8 @@ gfx::RectF ClipTree::ViewportClip() const {
 
 #if DCHECK_IS_ON()
 bool ClipTree::operator==(const ClipTree& other) const {
-  return PropertyTree::operator==(other);
+  return PropertyTree::operator==(other) &&
+         overscroll_node_id_ == other.overscroll_node_id();
 }
 #endif
 

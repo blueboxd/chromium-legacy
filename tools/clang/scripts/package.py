@@ -435,9 +435,6 @@ def main():
       'lld': [
       ],
   }
-  if sys.platform.startswith('linux'):
-    reclient_inputs['clang'].append('lib/libstdc++.so.6')
-    reclient_inputs['lld'].append('lib/libstdc++.so.6')
 
   # Check that all non-glob wanted files exist on disk.
   want = [w.replace('$V', RELEASE_VERSION) for w in want]
@@ -568,6 +565,15 @@ def main():
               os.path.join(clang_tidy_dir, 'bin'))
   PackageInArchive(clang_tidy_dir, clang_tidy_dir + '.tgz')
   MaybeUpload(args.upload, clang_tidy_dir + '.tgz', gcs_platform)
+
+  # Zip up clang-format so we can update it (separately from the clang roll).
+  clang_format_dir = 'clang-format-' + stamp
+  shutil.rmtree(clang_format_dir, ignore_errors=True)
+  os.makedirs(os.path.join(clang_format_dir, 'bin'))
+  shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'clang-format' + exe_ext),
+              os.path.join(clang_format_dir, 'bin'))
+  PackageInArchive(clang_format_dir, clang_format_dir + '.tgz')
+  MaybeUpload(args.upload, clang_format_dir + '.tgz', gcs_platform)
 
   # Zip up clang-libs for users who opt into it. We want Clang and LLVM headers
   # and libs, as well as a couple binaries. The LLVM parts are needed by the

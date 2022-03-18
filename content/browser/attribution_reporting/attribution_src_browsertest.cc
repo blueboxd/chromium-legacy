@@ -79,11 +79,6 @@ class AttributionSrcBrowserTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    embedded_test_server()->ServeFilesFromSourceDirectory(
-        "content/test/data/attribution_reporting");
-    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
-    content::SetupCrossSiteRedirector(embedded_test_server());
-    ASSERT_TRUE(embedded_test_server()->Start());
 
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
@@ -91,7 +86,6 @@ class AttributionSrcBrowserTest : public ContentBrowserTest {
     net::test_server::RegisterDefaultHandlers(https_server_.get());
     https_server_->ServeFilesFromSourceDirectory(
         "content/test/data/attribution_reporting");
-    https_server_->ServeFilesFromSourceDirectory("content/test/data");
     SetupCrossSiteRedirector(https_server_.get());
     ASSERT_TRUE(https_server_->Start());
   }
@@ -160,8 +154,17 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values("createAttributionSrcImg($1);",
                       "window.attributionReporting.registerSource($1);"));
 
+// TODO(crbug.com/1307363): Consistently failing on Linux MSAN and Linux
+//                          ChromiumOS MSAN.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_AttributionSrcAnchor_SourceRegistered \
+  DISABLED_AttributionSrcAnchor_SourceRegistered
+#else
+#define MAYBE_AttributionSrcAnchor_SourceRegistered \
+  AttributionSrcAnchor_SourceRegistered
+#endif
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
-                       AttributionSrcAnchor_SourceRegistered) {
+                       MAYBE_AttributionSrcAnchor_SourceRegistered) {
   SourceObserver source_observer(web_contents());
   GURL page_url =
       https_server()->GetURL("b.test", "/page_with_impression_creator.html");

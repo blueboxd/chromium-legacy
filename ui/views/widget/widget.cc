@@ -35,7 +35,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/widget_focus_manager.h"
-#include "ui/views/image_model_utils.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/any_widget_observer_singleton.h"
 #include "ui/views/widget/native_widget_private.h"
@@ -870,7 +869,8 @@ const ui::ThemeProvider* Widget::GetThemeProvider() const {
                                               : nullptr;
 }
 
-ui::ColorProviderManager::InitializerSupplier* Widget::GetCustomTheme() const {
+ui::ColorProviderManager::ThemeInitializerSupplier* Widget::GetCustomTheme()
+    const {
   return nullptr;
 }
 
@@ -978,8 +978,8 @@ void Widget::UpdateWindowIcon() {
   if (non_client_view_)
     non_client_view_->UpdateWindowIcon();
 
-  gfx::ImageSkia window_icon = GetImageSkiaFromImageModel(
-      widget_delegate_->GetWindowIcon(), GetColorProvider());
+  gfx::ImageSkia window_icon =
+      widget_delegate_->GetWindowIcon().Rasterize(GetColorProvider());
 
   // In general, icon information is read from a |widget_delegate_| and then
   // passed to |native_widget_|. On ChromeOS, for lacros-chrome to support the
@@ -994,8 +994,8 @@ void Widget::UpdateWindowIcon() {
       window_icon = *icon;
   }
 
-  gfx::ImageSkia app_icon = GetImageSkiaFromImageModel(
-      widget_delegate_->GetWindowAppIcon(), GetColorProvider());
+  gfx::ImageSkia app_icon =
+      widget_delegate_->GetWindowAppIcon().Rasterize(GetColorProvider());
   if (app_icon.isNull()) {
     const gfx::ImageSkia* icon = native_widget_->GetWindowAppIcon();
     if (icon && !icon->isNull())
@@ -1776,13 +1776,18 @@ void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, ui::ColorProviderSource:
 
-const ui::ColorProvider* Widget::GetColorProvider() const {
+ui::ColorProviderManager::Key Widget::GetColorProviderKey() const {
   ui::ColorProviderManager::Key key =
       GetNativeTheme()->GetColorProviderKey(GetCustomTheme());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   key.elevation_mode = background_elevation_;
 #endif
-  return ui::ColorProviderManager::Get().GetColorProviderFor(key);
+  return key;
+}
+
+const ui::ColorProvider* Widget::GetColorProvider() const {
+  return ui::ColorProviderManager::Get().GetColorProviderFor(
+      GetColorProviderKey());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

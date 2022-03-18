@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_INTENT_FILTER_H_
 #define COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_INTENT_FILTER_H_
 
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -15,6 +16,19 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace apps {
+
+// The concept of match level is taken from Android. The values are not
+// necessary the same.
+// See
+// https://developer.android.com/reference/android/content/IntentFilter.html#constants_2
+// for more details.
+enum class IntentFilterMatchLevel {
+  kNone = 0,
+  kScheme = 1,
+  kHost = 2,
+  kPattern = 4,
+  kMimeType = 8,
+};
 
 // The intent filter matching condition types.
 enum class ConditionType {
@@ -91,6 +105,29 @@ struct COMPONENT_EXPORT(APP_TYPES) IntentFilter {
   bool operator!=(const IntentFilter& other) const;
 
   std::unique_ptr<IntentFilter> Clone() const;
+
+  // Creates condition that only contain one value and adds the condition to
+  // the intent filter.
+  void AddSingleValueCondition(apps::ConditionType condition_type,
+                               const std::string& value,
+                               apps::PatternMatchType pattern_match_type);
+
+  // Gets the intent_filter match level. The higher the return value, the better
+  // the match is. For example, a filter with scheme, host and path is better
+  // match compare with filter with only scheme. Each condition type has a
+  // matching level value, and this function will return the sum of the matching
+  // level values of all existing condition types.
+  int GetFilterMatchLevel();
+
+  void GetMimeTypesAndExtensions(std::set<std::string>& mime_types,
+                                 std::set<std::string>& file_extensions);
+
+  // Returns true if the filter is a browser filter, i.e. can handle all https
+  // or http scheme.
+  bool IsBrowserFilter();
+
+  // Returns true if the filter only contains file extension pattern matches.
+  bool IsFileExtensionsFilter();
 
   Conditions conditions;
 

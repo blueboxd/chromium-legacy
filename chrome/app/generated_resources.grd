@@ -292,11 +292,6 @@ are declared in tools/grit/grit_rule.gni.
       <!-- Profiles specific strings -->
       <part file="profiles_strings.grdp" />
 
-      <!-- Web app intent picker strings -->
-      <if expr="is_win or is_macosx or is_linux">
-        <part file="url_handler_intent_picker_strings.grdp" />
-      </if>
-
       <!-- Chrome-OS-specific strings -->
       <if expr="chromeos_ash or chromeos_lacros">
         <part file="chromeos_shared_strings.grdp" />
@@ -1177,8 +1172,8 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_MOVE_TAB_TO_NEW_WINDOW" desc="The text label of the Move Tab to Window menu item.">
             Move tab to new window
           </message>
-          <message name="IDS_TOGGLE_COMMANDER" desc="The text label of the Toggle Quick Commands menu item">
-          Toggle Quick Commands
+          <message name="IDS_TOGGLE_QUICK_COMMANDS" desc="The text label of the Toggle Quick Commands menu item">
+          Quick commands
           </message>
         </if>
         <if expr="use_titlecase">
@@ -1260,8 +1255,8 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_MOVE_TAB_TO_NEW_WINDOW" desc="In Title Case: The text label of the Move Tab to New Window menu item.">
             Move Tab to New Window
           </message>
-          <message name="IDS_TOGGLE_COMMANDER" desc="In Title Case:The text label of the Toggle Quick Commands menu item">
-          Toggle Quick Commands
+          <message name="IDS_TOGGLE_QUICK_COMMANDS" desc="In Title Case:The text label of the Toggle Quick Commands menu item">
+          Quick Commands
           </message>
         </if>
       </if>
@@ -6543,7 +6538,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Reader Mode
       </message>
 
-      <!--Tooltip strings-->
+      <!--Tooltip strings -->
       <message name="IDS_TOOLTIP_BACK" desc="The tooltip for back button">
         Click to go back, hold to see history
       </message>
@@ -12454,9 +12449,17 @@ Please help our engineers fix this problem. Tell us what happened right before y
              desc="Title of the prompt to choose a new name for a window.">
       Name this window
     </message>
-    <message name="IDS_COMMANDER_LABEL"
-             desc="Label to identify the Commander feature in Task Manager">
-      Commander
+    <message name="IDS_QUICK_COMMANDS_LABEL"
+             desc="Label to identify the Quick Commands feature in Task Manager">
+      Quick Commands
+    </message>
+    <message name="IDS_QUICK_COMMANDS_PLACEHOLDER"
+             desc="Placeholder text for the Quick Commands text input">
+      Enter a keyword like "tabs" or "windows" to find an action
+    </message>
+    <message name="IDS_QUICK_COMMANDS_NO_RESULTS"
+             desc="Shown when there are no results in Quick Commands">
+      No commands found
     </message>
 
     <!-- ChromeLabs bubble -->
@@ -12511,7 +12514,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_SIDE_PANEL_EXPERIMENT_DESCRIPTION" desc="Description for Side Panel experiment">
       Enables a browser-level side panel for a useful and persistent way to access your Reading List and Bookmarks.
     </message>
-    <!-- ChromeLabs Tab Scrolling-->
+    <!-- ChromeLabs Tab Scrolling -->
     <message name="IDS_TAB_SCROLLING_EXPERIMENT_NAME" desc="Name for Tab Scrolling experiment">
       Tab Scrolling
     </message>
@@ -12537,7 +12540,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_TAB_SEARCH_EXPERIMENT_DESCRIPTION" desc="Description for Tab Search experiment">
       Enable a popup bubble in Top Chrome UI to search over currently open tabs.
     </message>
-    <!-- ChromeLabs Lens Region Search-->
+    <!-- ChromeLabs Lens Region Search -->
     <message name="IDS_LENS_REGION_SEARCH_EXPERIMENT_NAME" desc="Name for Lens Region Search experiment">
       Search your screen with Google Lens
     </message>

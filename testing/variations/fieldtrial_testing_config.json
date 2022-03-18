@@ -330,6 +330,37 @@
             ]
         }
     ],
+    "AndroidTNotifications": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "RationaleShownAtFirstRequest",
+                    "params": {
+                        "always_show_rationale_before_requesting_permission": "true",
+                        "notification_permission_dialog_text_variant_2": "false",
+                        "permission_request_interval_days": "7"
+                    },
+                    "enable_features": [
+                        "NotificationPermissionVariant"
+                    ]
+                },
+                {
+                    "name": "TextVariant2",
+                    "params": {
+                        "always_show_rationale_before_requesting_permission": "false",
+                        "notification_permission_dialog_text_variant_2": "true",
+                        "permission_request_interval_days": "7"
+                    },
+                    "enable_features": [
+                        "NotificationPermissionVariant"
+                    ]
+                }
+            ]
+        }
+    ],
     "AppListLaunchRecorder": [
         {
             "platforms": [
@@ -520,6 +551,32 @@
                     },
                     "enable_features": [
                         "AssistMultiWord"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AssistantVoiceSearch": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ModalV2_20220310",
+                    "params": {
+                        "colorful_mic": "false",
+                        "count": "2",
+                        "enable_multi_account_check": "false",
+                        "experiment_id": "48113782",
+                        "min_agsa_version": "12.37"
+                    },
+                    "enable_features": [
+                        "AssistantConsentModal",
+                        "AssistantConsentV2",
+                        "AssistantIntentExperimentId",
+                        "OmniboxAssistantVoiceSearch",
+                        "VoiceSearchAudioCapturePolicy"
                     ]
                 }
             ]
@@ -1343,31 +1400,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "BackForwardDedicatedWorker"
-                    ]
-                }
-            ]
-        }
-    ],
-    "BaseAssistantIntegration": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "colorful_mic": "false",
-                        "count": "2",
-                        "enable_multi_account_check": "false",
-                        "experiment_id": "48101548",
-                        "min_agsa_version": "12.37"
-                    },
-                    "enable_features": [
-                        "AssistantConsentV2",
-                        "AssistantIntentExperimentId",
-                        "OmniboxAssistantVoiceSearch",
-                        "VoiceSearchAudioCapturePolicy"
                     ]
                 }
             ]
@@ -3498,6 +3530,21 @@
             ]
         }
     ],
+    "HardwareToolbar": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ToolbarUseHardwareBitmapDraw"
+                    ]
+                }
+            ]
+        }
+    ],
     "HatsAudio": [
         {
             "platforms": [
@@ -4487,23 +4534,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "NearbySharingBackgroundScanning"
-                    ]
-                }
-            ]
-        }
-    ],
-    "NetworkServiceDedicatedThread": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "NetworkServiceDedicatedThread"
                     ]
                 }
             ]
@@ -6509,7 +6539,6 @@
             "platforms": [
                 "chromeos",
                 "chromeos_lacros",
-                "linux",
                 "mac",
                 "windows"
             ],
@@ -6518,42 +6547,6 @@
                     "name": "EnabledConstant",
                     "params": {
                         "type": "constant"
-                    },
-                    "enable_features": [
-                        "SubframeShutdownDelay"
-                    ]
-                },
-                {
-                    "name": "EnabledConstantLong",
-                    "params": {
-                        "type": "constant-long"
-                    },
-                    "enable_features": [
-                        "SubframeShutdownDelay"
-                    ]
-                },
-                {
-                    "name": "EnabledHistoryBased",
-                    "params": {
-                        "type": "history-based"
-                    },
-                    "enable_features": [
-                        "SubframeShutdownDelay"
-                    ]
-                },
-                {
-                    "name": "EnabledHistoryBasedLong",
-                    "params": {
-                        "type": "history-based-long"
-                    },
-                    "enable_features": [
-                        "SubframeShutdownDelay"
-                    ]
-                },
-                {
-                    "name": "EnabledMemoryBased",
-                    "params": {
-                        "type": "memory-based"
                     },
                     "enable_features": [
                         "SubframeShutdownDelay"

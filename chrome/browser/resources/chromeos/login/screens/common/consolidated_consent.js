@@ -86,6 +86,11 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
         value: false,
       },
 
+      usageOptinHidden_: {
+        type: Boolean,
+        value: false,
+      },
+
       backupManaged_: {
         type: Boolean,
         value: false,
@@ -160,6 +165,7 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
             'setBackupMode',
             'setLocationMode',
             'setIsDeviceOwner',
+            'setUsageOptinHidden',
     ];
   }
   // clang-format on
@@ -337,7 +343,8 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
 
     var tosLoader = new WebViewLoader(
         webview, CONSOLIDATED_CONSENT_ONLINE_LOAD_TIMEOUT_IN_MS,
-        loadFailureCallback, false /* clear_anchors */, false /* inject_css */);
+        loadFailureCallback, this.isDemo_ /* clear_anchors */,
+        false /* inject_css */);
     tosLoader.setUrl(online_tos_url);
   }
 
@@ -384,7 +391,8 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
 
     var tosLoader = new WebViewLoader(
         webview, CONSOLIDATED_CONSENT_ONLINE_LOAD_TIMEOUT_IN_MS,
-        loadFailureCallback, false /* clear_anchors */, false /* inject_css */);
+        loadFailureCallback, this.isDemo_ /* clear_anchors */,
+        false /* inject_css */);
     tosLoader.setUrl(online_tos_url);
   }
 
@@ -601,6 +609,13 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
   }
 
   /**
+   * Hides the entire usage opt-in.
+   */
+  setUsageOptinHidden() {
+    this.usageOptinHidden_ = true;
+  }
+
+  /**
    * Sets current backup and restore mode.
    * @param {boolean} enabled Defines the state of backup opt in.
    * @param {boolean} managed Defines whether this setting is set by policy.
@@ -622,7 +637,7 @@ class ConsolidatedConsent extends ConsolidatedConsentScreenElementBase {
 
   /**
    * Sets isOwner_ property.
-   * @param {boolean} isOwner Defines whether the current user is the  device
+   * @param {boolean} isOwner Defines whether the current user is the device
    *     owner.
    */
   setIsDeviceOwner(isOwner) {

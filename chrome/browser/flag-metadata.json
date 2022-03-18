@@ -56,7 +56,7 @@
   {
     "name": "add-passwords-in-settings",
     "owners": [ "vidhanj", "mamir", "lizapopova" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 103
   },
   {
     "name": "add-to-homescreen-iph",
@@ -212,7 +212,7 @@
   {
     "name": "arc-file-picker-experiment",
     "owners": [ "youkichihosoi", "risan", "niwa" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "arc-ghost-window",
@@ -1139,7 +1139,7 @@
   {
     "name": "default-wkwebview-context-menu",
     "owners": [ "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 105
   },
   {
     "name": "deferred-font-shaping",
@@ -1202,11 +1202,6 @@
     "name": "device-posture",
     "owners": [ "alexis.menard@intel.com" ],
     "expiry_milestone": 100
-  },
-  {
-    "name": "diagnostics-app",
-    "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
-    "expiry_milestone": 92
   },
   {
     "name": "diagnostics-app-navigation",
@@ -1518,7 +1513,7 @@
   {
     "name": "enable-app-discovery-for-oobe",
     "owners": [ "melzhang", "tsergeant", "chromeos-apps-foundation-team" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "enable-app-provisioning-static-server",
@@ -1626,6 +1621,11 @@
     "name": "enable-cascade-layers",
     "owners": [ "xiaochengh" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "enable-cast-remoting-query-blocklist",
+    "owners": [ "rwkeane@google.com", "openscreen-eng@google.com" ],
+    "expiry_milestone": 115
   },
   {
     "name": "enable-cast-streaming-av1",
@@ -2143,12 +2143,12 @@
   {
     "name": "enable-fre-default-browser-screen-testing",
     "owners": [ "alionadangla", "gambard" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 105
   },
   {
     "name": "enable-fre-ui-module-ios-with-options",
     "owners": [ "gambard", "veronguyen", "vincb" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 102
   },
   {
     "name": "enable-fullscreen-api",
@@ -2349,7 +2349,7 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-lens-region-search",
+    "name": "enable-lens-standalone",
     "owners": [ "stanfield@google.com", "benwgold@google.com", "juanmojica@google.com" ],
     "expiry_milestone": 103
   },
@@ -3238,7 +3238,7 @@
   {
     "name": "expanded-tab-strip",
     "owners": [ "rkgibson@google.com", "gambard", "bling-flags@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 105
   },
   {
     "name": "explore-sites",
@@ -3418,7 +3418,7 @@
   {
     "name": "force-control-face-ae",
     "owners": [ "chromeos-camera-eng@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "force-disable-extended-sync-promos",
@@ -3431,6 +3431,11 @@
     // ECT is a baked-in feature of Chrome. This flag is used for frequent
     // testing and should not be removed.
     "expiry_milestone": -1
+  },
+  {
+    "name": "force-enable-cast-remoting-query",
+    "owners": [ "rwkeane@google.com", "openscreen-eng@google.com" ],
+    "expiry_milestone": 115
   },
   {
     "name": "force-major-version-to-minor",
@@ -3764,6 +3769,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "intent-chip-skips-intent-picker",
+    "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
+    "expiry_milestone": 105
+  },
+  {
     "name": "interest-feed-notice-card-auto-dismiss",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org", "edchin@chromium.org" ],
     "expiry_milestone": 95
@@ -3984,6 +3994,11 @@
     "expiry_milestone": 104
   },
   {
+    "name": "link-capturing-infobar",
+    "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
+    "expiry_milestone": 105
+  },
+  {
     "name": "link-capturing-ui-update",
     "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
     "expiry_milestone": 105
@@ -4006,6 +4021,11 @@
     // This flag is used for debugging and development purposes, allowing users
     // and developers to test LiteVideos reliably on any origin.'
     "expiry_milestone": -1
+  },
+  {
+    "name": "location-bar-model-optimizations",
+    "owners": [ "pnoland@google.com"],
+    "expiry_milestone": 105
   },
   {
     "name": "mac-syscall-sandbox",
@@ -4785,7 +4805,12 @@
   {
     "name": "partitioned-cookies",
     "owners": [ "dylancutler" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
+  },
+  {
+    "name": "partitioned-cookies-bypass-origin-trial",
+    "owners": [ "dylancutler" ],
+    "expiry_milestone": 110
   },
   {
     "name": "password-change-in-settings",
@@ -4822,7 +4847,7 @@
   {
     "name": "passwords-account-storage-revised-opt-in-flow",
     "owners": [ "mamir", "treib" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 103
   },
   {
     "name": "pcie-billboard-notification",
@@ -4856,28 +4881,28 @@
   },
   {
     "name": "permission-chip",
-    "owners": [ "bsep", "engedy", "olesiamarukhno@google.com" ],
-    "expiry_milestone": 100
+    "owners": [ "elklm", "bsep", "engedy", "olesiamarukhno@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "permission-chip-gesture",
-    "owners": [ "bsep", "engedy", "olesiamarukhno@google.com" ],
-    "expiry_milestone": 100
+    "owners": [ "elklm", "bsep", "engedy", "olesiamarukhno@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "permission-chip-request-type",
-    "owners": [ "bsep", "engedy", "olesiamarukhno@google.com" ],
-    "expiry_milestone": 100
+    "owners": [ "elklm", "bsep", "engedy", "olesiamarukhno@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "permission-predictions",
     "owners": [ "andypaicu", "engedy", "ravjit", "mkwst", "hkamila", "elklm" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "permission-quiet-chip",
     "owners": [ "elklm", "engedy"],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "persist-share-hub-on-app-switch",
@@ -5570,7 +5595,7 @@
   {
     "name": "smart-lock-ui-revamp",
     "owners": [ "cclem", "better-together-dev@google.com" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 103
   },
   {
     "name": "smart-suggestion-for-large-downloads",
@@ -6167,7 +6192,7 @@
   {
     "name": "web-otp-backend",
     "owners": [ "yigu" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 105
   },
   {
     "name": "web-share",

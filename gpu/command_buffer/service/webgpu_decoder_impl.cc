@@ -1504,7 +1504,8 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
     force_fallback_adapter = true;
   }
 
-  if (gr_context_type_ != GrContextType::kVulkan) {
+  if (gr_context_type_ != GrContextType::kVulkan &&
+      use_webgpu_adapter_ != WebGPUAdapterName::kCompat) {
 #if BUILDFLAG(IS_LINUX)
     SendAdapterProperties(request_adapter_serial, -1, nullptr,
                           "WebGPU on Linux requires command-line flag "
@@ -1812,8 +1813,15 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailboxForPresent(
     render_pass_descriptor.colorAttachmentCount = 1;
     render_pass_descriptor.colorAttachments = &color_attachment;
 
+    WGPUDawnEncoderInternalUsageDescriptor internal_usage_desc = {
+        .chain = {.sType = WGPUSType_DawnEncoderInternalUsageDescriptor},
+        .useInternalUsages = true,
+    };
+    WGPUCommandEncoderDescriptor command_encoder_desc = {
+        .nextInChain = &internal_usage_desc.chain,
+    };
     WGPUCommandEncoder encoder =
-        procs.deviceCreateCommandEncoder(device, nullptr);
+        procs.deviceCreateCommandEncoder(device, &command_encoder_desc);
     WGPURenderPassEncoder pass =
         procs.commandEncoderBeginRenderPass(encoder, &render_pass_descriptor);
     procs.renderPassEncoderEndPass(pass);

@@ -1633,6 +1633,18 @@ virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/flex-container-fr
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/flex-container-fragmentation-007.tentative.html [ Pass ]
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-015.html [ Pass ]
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-016.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-017.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-018.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-019.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-020.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-021.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-022.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-023.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-024.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-025.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-026.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-031.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-032.html [ Pass ]
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-007.html [ Pass ]
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-008.html [ Pass ]
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-010.html [ Pass ]
@@ -2602,10 +2614,6 @@ crbug.com/1227485 accessibility/spelling-markers.html [ Failure ]
 crbug.com/1229463 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-largedraws.html [ Crash ]
 crbug.com/1229486 virtual/oopr-canvas2d/fast/canvas/canvas-incremental-repaint.html [ Failure ]
 
-# Bugs caused by enabling overlay support on OOPR-Canvas on macOS
-crbug.com/1305679 [ Mac ] virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-2d-gradients-in-worker.html [ Failure ]
-crbug.com/1305679 [ Mac ] virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-paths-in-worker.html [ Failure ]
-
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] virtual/text-antialias/atsui-negative-spacing-features.html [ Failure ]
 crbug.com/492511 [ Mac ] virtual/text-antialias/international/arabic-justify.html [ Failure ]
@@ -3448,6 +3456,13 @@ crbug.com/626703 [ Win ] external/wpt/wasm/serialization/arraybuffer/transfer.wi
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-grid/subgrid/subgrid-stretch.html [ Failure ]
+crbug.com/626703 [ Mac11 ] external/wpt/css/css-animations/parsing/animation-computed.html [ Failure Timeout ]
+crbug.com/626703 [ Mac11 ] virtual/threaded/external/wpt/css/css-animations/parsing/animation-computed.html [ Failure Timeout ]
+crbug.com/626703 virtual/prerender/wpt_internal/prerender/unload-on-prerender-cross-origin-subframe-navigation.html [ Timeout ]
+crbug.com/626703 virtual/prerender/wpt_internal/prerender/unload-on-prerender-main-frame-navigation.html [ Timeout ]
+crbug.com/626703 virtual/prerender/wpt_internal/prerender/unload-on-prerender-remove-subframe.html [ Timeout ]
+crbug.com/626703 virtual/prerender/wpt_internal/prerender/unload-on-prerender-same-origin-subframe-navigation.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-backgrounds/background-clip/clip-text-flex.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-backgrounds/background-clip/clip-text-flex.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-backgrounds/background-clip/clip-text-flex.html [ Failure ]
@@ -4294,6 +4309,10 @@ crbug.com/626703 external/wpt/web-animations/timing-model/timelines/update-and-s
 crbug.com/626703 external/wpt/screen-orientation/orientation-reading.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/browsing-the-web/unloading-documents/prompt-and-unload-script-closeable.html [ Failure ]
 
+# Tests that rely on a non-exposed test-only API. Tested in virtual/task-tracking
+wpt_internal/task-tracking/* [ Skip Failure ]
+virtual/task-tracking/* [ Pass ]
+
 # navigation.sub.html fails or times out when run with run_web_tests.py but passes with run_wpt_tests.py
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=windows-1252 [ Failure Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=x-cp1251 [ Failure Timeout ]
@@ -4406,6 +4425,18 @@ crbug.com/660611 external/wpt/css/css-break/flexbox/flex-container-fragmentation
 crbug.com/660611 external/wpt/css/css-break/flexbox/flex-container-fragmentation-007.tentative.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-015.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-016.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-017.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-018.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-019.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-020.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-021.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-022.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-023.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-024.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-025.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-026.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-031.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-032.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-007.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-008.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-010.html [ Failure ]
@@ -6537,10 +6568,6 @@ crbug.com/1205659 [ Mac ] external/wpt/IndexedDB/key-generators/reading-autoincr
 crbug.com/1205659 [ Mac ] storage/indexeddb/empty-blob-file.html [ Pass Timeout ]
 crbug.com/1205673 [ Linux ] virtual/threaded-prefer-compositing/fast/scroll-snap/snaps-after-wheel-scrolling-single-tick.html [ Failure Pass ]
 
-# Browser Infra 2021-05-04
-# Re-enable once all Linux CI/CQ builders migrated to Bionic
-crbug.com/1200134 [ Linux ] fast/gradients/unprefixed-repeating-gradient-color-hint.html [ Failure Pass ]
-
 # Sheriff 2021-05-05
 crbug.com/1205796 [ Mac10.12 ] external/wpt/html/dom/idlharness.https.html?include=HTML.* [ Failure ]
 crbug.com/1205796 [ Mac10.14 ] external/wpt/html/dom/idlharness.https.html?include=HTML.* [ Failure ]
@@ -7687,9 +7714,6 @@ crbug.com/1296179 [ Linux Release ] external/wpt/fetch/private-network-access/se
 crbug.com/1296179 [ Mac Release ] virtual/plz-dedicated-worker/external/wpt/fetch/private-network-access/service-worker-background-fetch.https.window.html [ Failure Pass ]
 crbug.com/1296179 [ Linux Release ] virtual/plz-dedicated-worker/external/wpt/fetch/private-network-access/service-worker-background-fetch.https.window.html [ Failure Pass ]
 
-# Flaky due to https://crrev.com/c/3453430
-crbug.com/1298944 virtual/partitioned-cookies/external/wpt/cookies/partitioned-cookies/partitioned-cookies.tentative.https.html [ Failure Pass ]
-
 # Fails flakily on Win
 crbug.com/1173382 [ Win ] virtual/stable/http/tests/navigation/replacestate-base-legal.html [ Failure Pass ]
 
@@ -7702,6 +7726,10 @@ crbug.com/1299903 [ Win7 ] virtual/prerender/external/wpt/speculation-rules/prer
 crbug.com/1299946 [ Mac ] external/wpt/css/css-sizing/min-content-negative-margin-crash.html [ Pass Timeout ]
 crbug.com/1299948 [ Mac ] external/wpt/css/css-tables/crashtests/textarea-intrinsic-size-crash.html [ Pass Timeout ]
 crbug.com/1299972 [ Linux ] screen_orientation/screenorientation-unsupported-no-crash.html [ Failure Pass Timeout ]
+
+# Until Plan B is removed on Fuchsia, allow these tests to fail to allow contradictory expectations.
+crbug.com/1302249 [ Fuchsia ] external/wpt/webrtc/RTCPeerConnection-plan-b-is-not-supported.html [ Failure Pass ]
+crbug.com/1302249 [ Fuchsia ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-plan-b-is-not-supported.html [ Failure Pass ]
 
 # Disable flaky test for further investigation
 crbug.com/1229801 http/tests/devtools/elements/css-rule-hover-highlights-selectors.js [ Failure Pass ]
@@ -7734,5 +7762,7 @@ crbug.com/1277877 virtual/partitioned-cookies-first-party-sets/http/tests/inspec
 crbug.com/1298633 http/tests/inspector-protocol/network/cross-origin-isolation/coep-load-error-reporting-worker.js [ Pass Timeout ]
 
 # Sheriff 2022-03-16
-crbug.com/1306848 http/tests/inspector-protocol/conversion/attribution-invalid-data.js [ Failure Timeout Pass ]
 crbug.com/1306770 http/tests/inspector-protocol/network/interception-download.js [ Failure Pass ]
+
+# Sheriff 2022-03-18
+crbug.com/1290040 [ Linux ] external/wpt/service-workers/service-worker/same-site-cookies.https.html [ Skip ]

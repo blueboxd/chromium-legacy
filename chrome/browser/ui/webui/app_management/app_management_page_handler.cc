@@ -24,8 +24,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/app_constants/constants.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
-#include "components/services/app_service/public/cpp/intent_constants.h"
+#include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list_handle.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -113,7 +114,9 @@ std::vector<apps::mojom::IntentFilterPtr> GetSupportedLinkIntentFilters(
                    if (update.Readiness() == apps::Readiness::kReady) {
                      for (auto& filter : update.IntentFilters()) {
                        if (apps_util::IsSupportedLinkForApp(app_id, filter)) {
-                         intent_filters.emplace_back(std::move(filter));
+                         intent_filters.emplace_back(
+                             apps::ConvertIntentFilterToMojomIntentFilter(
+                                 filter));
                        }
                      }
                    }
@@ -296,7 +299,7 @@ void AppManagementPageHandler::GetOverlappingPreferredApps(
   // Remove the use_browser app ID as it's mainly used inside the intent system and is not an app
   // in app management. This prevents an overlap dialog from being shown when there are no "real"
   // apps that overlap.
-  app_ids.erase(apps::kUseBrowserForLink);
+  app_ids.erase(apps_util::kUseBrowserForLink);
   std::move(callback).Run(std::move(app_ids).extract());
 }
 

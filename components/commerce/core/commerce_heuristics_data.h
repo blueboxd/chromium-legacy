@@ -28,8 +28,32 @@ class CommerceHeuristicsData {
   // Try to get merchant name for `domain`.
   absl::optional<std::string> GetMerchantName(const std::string& domain);
 
+  // Try to get merchant cart URL for `domain`.
+  absl::optional<std::string> GetMerchantCartURL(const std::string& domain);
+
   // Try to get the product skip pattern.
   const re2::RE2* GetProductSkipPattern();
+
+  // Try to get the pattern regex to decide if a merchant is a partner merchant
+  // for rule discount.
+  const re2::RE2* GetRuleDiscountPartnerMerchantPattern();
+
+  // Try to get the pattern regex to decide if a merchant is a partner merchant
+  // for coupon discount.
+  const re2::RE2* GetCouponDiscountPartnerMerchantPattern();
+
+  // Try to get the pattern regex to decide if a URL is cart page URL.
+  const re2::RE2* GetCartPageURLPattern();
+
+  // Try to get the pattern regex to decide if a URL is checkout page URL.
+  const re2::RE2* GetCheckoutPageURLPattern();
+
+  // Try to get the pattern regex to decide if a button is a purchase button.
+  const re2::RE2* GetPurchaseButtonTextPattern();
+
+  // Try to get the pattern regex to decide if a request is a add-to-cart
+  // request.
+  const re2::RE2* GetAddToCartRequestPattern();
 
  private:
   friend class CommerceHeuristicsDataTest;
@@ -46,6 +70,12 @@ class CommerceHeuristicsData {
   base::Value::Dict hint_heuristics_;
   base::Value::Dict global_heuristics_;
   std::unique_ptr<re2::RE2> product_skip_pattern_;
+  std::unique_ptr<re2::RE2> rule_discount_partner_merchant_pattern_;
+  std::unique_ptr<re2::RE2> coupon_discount_partner_merchant_pattern_;
+  std::unique_ptr<re2::RE2> cart_url_pattern_;
+  std::unique_ptr<re2::RE2> checkout_url_pattern_;
+  std::unique_ptr<re2::RE2> purchase_button_pattern_;
+  std::unique_ptr<re2::RE2> add_to_cart_request_pattern_;
 };
 
 }  // namespace commerce_heuristics

@@ -4,9 +4,9 @@
 
 #include "ash/components/phonehub/multidevice_feature_access_manager.h"
 
+#include "ash/components/multidevice/logging/logging.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace ash {
 namespace phonehub {
@@ -55,6 +55,11 @@ void MultideviceFeatureAccessManager::NotifyCameraRollAccessChanged() {
     observer.OnCameraRollAccessChanged();
 }
 
+void MultideviceFeatureAccessManager::NotifyAppsAccessChanged() {
+  for (auto& observer : observer_list_)
+    observer.OnAppsAccessChanged();
+}
+
 void MultideviceFeatureAccessManager::SetNotificationSetupOperationStatus(
     NotificationAccessSetupOperation::Status new_status) {
   DCHECK(IsSetupOperationInProgress());
@@ -89,6 +94,10 @@ void MultideviceFeatureAccessManager::Observer::OnNotificationAccessChanged() {
 }
 
 void MultideviceFeatureAccessManager::Observer::OnCameraRollAccessChanged() {
+  // Optional method, inherit class doesn't have to implement this
+}
+
+void MultideviceFeatureAccessManager::Observer::OnAppsAccessChanged() {
   // Optional method, inherit class doesn't have to implement this
 }
 

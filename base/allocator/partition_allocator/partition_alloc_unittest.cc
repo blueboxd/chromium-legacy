@@ -298,15 +298,16 @@ class PartitionAllocTest : public testing::TestWithParam<bool> {
     allocator.root()->UncapEmptySlotSpanMemoryForTesting();
     aligned_allocator.root()->UncapEmptySlotSpanMemoryForTesting();
 
-    if (!GetParam())
+    if (GetParam())
       allocator.root()->SwitchToDenserBucketDistribution();
     else
       allocator.root()->ResetBucketDistributionForTesting();
   }
 
   size_t SizeToIndex(size_t size) {
+    const bool with_denser_bucket_distribution = GetParam();
     return PartitionRoot<base::internal::ThreadSafe>::SizeToBucketIndex(
-        size, GetParam());
+        size, with_denser_bucket_distribution);
   }
 
   void TearDown() override {
@@ -1272,27 +1273,36 @@ TEST_P(PartitionAllocTest, IsValidPtrDelta) {
   }
 }
 
-// TODO(crbug.com/1217582): Disabled since the `real_size` is never set or set incorrectly.
-TEST_P(PartitionAllocTest, DISABLED_GetSlotStartMultiplePages) {
-  // Find the smallest bucket with multiple PartitionPages.
-  size_t real_size;
-  bool init_real_size = false;
-  for (PartitionBucket<ThreadSafe>& bucket : allocator.root()->buckets) {
+TEST_P(PartitionAllocTest, GetSlotStartMultiplePages) {
+  auto* root = allocator.root();
+  // Find the smallest bucket with multiple PartitionPages. When searching for
+  // a bucket here, we need to check two conditions:
+  // (1) The bucket is used in our current bucket distribution.
+  // (2) The bucket is large enough that our requested size (see below) will be
+  // non-zero.
+  size_t real_size = 0;
+  for (const auto& bucket : root->buckets) {
+    if ((root->buckets + SizeToIndex(bucket.slot_size))->slot_size !=
+        bucket.slot_size)
+      continue;
+    if (bucket.slot_size <= kExtraAllocSize)
+      continue;
     if (bucket.num_system_pages_per_slot_span >
         NumSystemPagesPerPartitionPage()) {
       real_size = bucket.slot_size;
-      init_real_size = true;
       break;
     }
   }
-  ASSERT_TRUE(init_real_size);
+
+  // Make sure that we've managed to find an appropriate bucket.
+  ASSERT_GT(real_size, 0u);
 
   const size_t requested_size = real_size - kExtraAllocSize;
   // Double check we don't end up with 0 or negative size.
   EXPECT_GT(requested_size, 0u);
   EXPECT_LE(requested_size, real_size);
-  PartitionBucket<ThreadSafe>* bucket =
-      allocator.root()->buckets + SizeToIndex(real_size);
+  const auto* bucket = allocator.root()->buckets + SizeToIndex(real_size);
+  EXPECT_EQ(bucket->slot_size, real_size);
   // Make sure the test is testing multiple partition pages case.
   EXPECT_GT(bucket->num_system_pages_per_slot_span,
             PartitionPageSize() / SystemPageSize());
@@ -2944,6 +2954,60 @@ TEST_P(PartitionAllocTest, PurgeDiscardableDoubleTruncateFreeList) {
 
   allocator.root()->Free(ptr1);
   allocator.root()->Free(ptr2);
+}
+
+TEST_P(PartitionAllocTest, ActiveListMaintenance) {
+  size_t size = base::SystemPageSize() - kExtraAllocSize;
+  size_t real_size = size + kExtraAllocSize;
+  size_t bucket_index =
+      allocator.root()->SizeToBucketIndex(real_size, GetParam());
+  PartitionRoot<ThreadSafe>::Bucket* bucket =
+      &allocator.root()->buckets[bucket_index];
+  ASSERT_EQ(bucket->slot_size, real_size);
+  size_t slots_per_span = bucket->num_system_pages_per_slot_span;
+
+  // Make 10 full slot spans.
+  constexpr int kSpans = 10;
+  std::vector<std::vector<void*>> allocated_memory_spans(kSpans);
+  for (int span_index = 0; span_index < kSpans; span_index++) {
+    for (size_t i = 0; i < slots_per_span; i++) {
+      allocated_memory_spans[span_index].push_back(
+          allocator.root()->Alloc(size, ""));
+    }
+  }
+
+  // Free one entry in the middle span, creating a partial slot span.
+  constexpr size_t kSpanIndex = 5;
+  allocator.root()->Free(allocated_memory_spans[kSpanIndex].back());
+  allocated_memory_spans[kSpanIndex].pop_back();
+
+  // Empty the last slot span.
+  for (void* ptr : allocated_memory_spans[kSpans - 1])
+    allocator.root()->Free(ptr);
+  allocated_memory_spans.pop_back();
+
+  // The active list now is:
+  // Partial -> Empty -> Full -> Full -> ... -> Full
+  bucket->MaintainActiveList();
+
+  // Only one entry in the active list.
+  ASSERT_NE(bucket->active_slot_spans_head,
+            SlotSpanMetadata<ThreadSafe>::get_sentinel_slot_span());
+  EXPECT_FALSE(bucket->active_slot_spans_head->next_slot_span);
+
+  // The empty list has 1 entry.
+  ASSERT_NE(bucket->empty_slot_spans_head,
+            SlotSpanMetadata<ThreadSafe>::get_sentinel_slot_span());
+  EXPECT_FALSE(bucket->empty_slot_spans_head->next_slot_span);
+
+  // The rest are full slot spans.
+  EXPECT_EQ(8u, bucket->num_full_slot_spans);
+
+  // Free all memory.
+  for (const auto& span : allocated_memory_spans) {
+    for (void* ptr : span)
+      allocator.root()->Free(ptr);
+  }
 }
 
 TEST_P(PartitionAllocTest, ReallocMovesCookie) {

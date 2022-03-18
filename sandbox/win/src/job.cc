@@ -39,9 +39,6 @@ DWORD Job::Init(JobLevel security_level,
     case JOB_LOCKDOWN: {
       jeli.BasicLimitInformation.LimitFlags |=
           JOB_OBJECT_LIMIT_DIE_ON_UNHANDLED_EXCEPTION;
-      [[fallthrough]];
-    }
-    case JOB_RESTRICTED: {
       jbur.UIRestrictionsClass |= JOB_OBJECT_UILIMIT_WRITECLIPBOARD;
       jbur.UIRestrictionsClass |= JOB_OBJECT_UILIMIT_READCLIPBOARD;
       jbur.UIRestrictionsClass |= JOB_OBJECT_UILIMIT_HANDLES;
@@ -90,6 +87,14 @@ DWORD Job::Init(JobLevel security_level,
   return ERROR_SUCCESS;
 }
 
+bool Job::IsValid() {
+  return job_handle_.IsValid();
+}
+
+HANDLE Job::GetHandle() {
+  return job_handle_.Get();
+}
+
 DWORD Job::UserHandleGrantAccess(HANDLE handle) {
   if (!job_handle_.IsValid())
     return ERROR_NO_DATA;
@@ -102,10 +107,6 @@ DWORD Job::UserHandleGrantAccess(HANDLE handle) {
   return ERROR_SUCCESS;
 }
 
-base::win::ScopedHandle Job::Take() {
-  return std::move(job_handle_);
-}
-
 DWORD Job::AssignProcessToJob(HANDLE process_handle) {
   if (!job_handle_.IsValid())
     return ERROR_NO_DATA;
@@ -116,23 +117,25 @@ DWORD Job::AssignProcessToJob(HANDLE process_handle) {
   return ERROR_SUCCESS;
 }
 
-// static
-DWORD Job::SetActiveProcessLimit(base::win::ScopedHandle* job_handle,
-                                 DWORD processes) {
+DWORD Job::SetActiveProcessLimit(DWORD processes) {
   JOBOBJECT_EXTENDED_LIMIT_INFORMATION jeli = {};
 
-  if (!::QueryInformationJobObject(job_handle->Get(),
-                                   JobObjectExtendedLimitInformation, &jeli,
-                                   sizeof(jeli), nullptr))
-    return ::GetLastError();
+  if (!job_handle_.IsValid())
+    return ERROR_NO_DATA;
 
+  if (!::QueryInformationJobObject(job_handle_.Get(),
+                                   JobObjectExtendedLimitInformation, &jeli,
+                                   sizeof(jeli), nullptr)) {
+    return ::GetLastError();
+  }
   jeli.BasicLimitInformation.LimitFlags |= JOB_OBJECT_LIMIT_ACTIVE_PROCESS;
   jeli.BasicLimitInformation.ActiveProcessLimit = processes;
 
-  if (!::SetInformationJobObject(job_handle->Get(),
+  if (!::SetInformationJobObject(job_handle_.Get(),
                                  JobObjectExtendedLimitInformation, &jeli,
-                                 sizeof(jeli)))
+                                 sizeof(jeli))) {
     return ::GetLastError();
+  }
 
   return ERROR_SUCCESS;
 }

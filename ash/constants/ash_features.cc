@@ -24,6 +24,11 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 
 }  // namespace
 
+// Enables the UI and logic that minimizes the amount of time the device spends
+// at full battery. This preserves battery lifetime.
+const base::Feature kAdaptiveCharging{"AdaptiveCharging",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Adjusts portrait mode split view to avoid the input field in the bottom
 // window being occluded by the virtual keyboard.
 const base::Feature kAdjustSplitViewForVK{"AdjustSplitViewForVK",
@@ -406,10 +411,6 @@ const base::Feature kDesksTemplates{"DesksTemplates",
 const base::Feature kDiacriticsOnPhysicalKeyboardLongpress{
     "DiacriticsOnPhysicalKeyboardLongpress", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables the Diagnostics app.
-const base::Feature kDiagnosticsApp{"DiagnosticsApp",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled, the navigation panel will be shown in the diagnostics app.
 const base::Feature kDiagnosticsAppNavigation{"DiagnosticsAppNavigation",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
@@ -558,7 +559,7 @@ const base::Feature kEnableOobePolymer3{"EnableOobePolymer3",
 
 // Enables skipping of network screen.
 const base::Feature kEnableOobeNetworkScreenSkip{
-    "EnableOobeNetworkScreenSkip", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableOobeNetworkScreenSkip", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables showing notification after the password change for SAML users.
 const base::Feature kEnableSamlNotificationOnPasswordChangeSuccess{
@@ -646,7 +647,7 @@ const base::Feature kFilesExtractArchive{"FilesExtractArchive",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the System Web App (SWA) version of file manager.
-const base::Feature kFilesSWA{"FilesSWA", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kFilesSWA{"FilesSWA", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables partitioning of removable disks in file manager.
 const base::Feature kFilesSinglePartitionFormat{
@@ -1013,7 +1014,7 @@ const base::Feature kOnDeviceSpeechRecognition{
 // If enabled, EULA and ARC Terms of Service screens are skipped and merged
 // into Consolidated Consent Screen.
 const base::Feature kOobeConsolidatedConsent{"OobeConsolidatedConsent",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the Chrome OS OOBE HID Detection Revamp, which updates
 // the OOBE HID detection screen UI and related infrastructure. See
@@ -1461,7 +1462,7 @@ const base::FeatureParam<int> kDeviceForceScheduledRebootMaxDelay{
 // Enables or disables whether to store UMA logs per-user and whether metrics
 // consent is per-user.
 const base::Feature kPerUserMetrics{"PerUserMetricsConsent",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 ////////////////////////////////////////////////////////////////////////////////
 
 bool AreContextualNudgesEnabled() {
@@ -1480,6 +1481,10 @@ bool AreDesksTrackpadSwipeImprovementsEnabled() {
 
 bool DoWindowsFollowCursor() {
   return base::FeatureList::IsEnabled(kWindowsFollowCursor);
+}
+
+bool IsAdaptiveChargingEnabled() {
+  return base::FeatureList::IsEnabled(kAdaptiveCharging);
 }
 
 bool IsAdjustSplitViewForVKEnabled() {
@@ -1596,10 +1601,6 @@ bool IsDemoModeSWAEnabled() {
 
 bool IsDeskTemplateSyncEnabled() {
   return base::FeatureList::IsEnabled(kDeskTemplateSync);
-}
-
-bool IsDiagnosticsAppEnabled() {
-  return base::FeatureList::IsEnabled(kDiagnosticsApp);
 }
 
 bool IsDisplayAlignmentAssistanceEnabled() {

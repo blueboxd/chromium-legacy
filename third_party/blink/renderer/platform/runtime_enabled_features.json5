@@ -1330,7 +1330,7 @@
     {
       name: "LayoutNGBlockInInline",
       depends_on: ["LayoutNG"],
-      status: "test",
+      status: "stable",
     },
     {
       // Block fragmentation support in the flex layout algorithm.
@@ -1985,13 +1985,6 @@
       origin_trial_feature_name: "RtcAudioJitterBufferRtxHandling",
       status: "experimental",
     },
-    // Reverse Origin Trial for Plan B. When enabled through the Origin Trial,
-    // Plan B is available beyond the initial removal date of Plan B (M93).
-    {
-      name: "RTCExtendDeadlineForPlanBRemoval",
-      origin_trial_feature_name: "RTCExtendDeadlineForPlanBRemoval",
-      status: "test",
-    },
     // Enables the use of the RTCIceTransport with extensions.
     {
       name: "RTCIceTransportExtension",
@@ -2295,6 +2288,9 @@
       name: "TimeZoneChangeEvent",
       status: "experimental",
     },
+    {
+      name: "TopicsAPI",
+    },
     // This feature allows touch dragging and a context menu to occur
     // simultaneously, with the assumption that the menu is non-modal.  Without
     // this feature, a long-press touch gesture can start either a drag or a
@@ -2366,6 +2362,9 @@
     {
       name: "UnderlineOffsetThickness",
       status: "stable",
+    },
+    {
+      name: "UnexposedTaskIds",
     },
     // This is a reverse OT used for a phased deprecation, on desktop
     // https://crbug.com/1071424

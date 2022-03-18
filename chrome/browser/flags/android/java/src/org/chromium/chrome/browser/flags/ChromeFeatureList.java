@@ -381,6 +381,7 @@ public abstract class ChromeFeatureList {
     public static final String KITKAT_SUPPORTED = "KitKatSupported";
     public static final String LEAK_DETECTION_UNAUTHENTICATED = "LeakDetectionUnauthenticated";
     public static final String LIGHTWEIGHT_REACTIONS = "LightweightReactions";
+    public static final String LOCATION_BAR_MODEL_OPTIMIZATIONS = "LocationBarModelOptimizations";
     public static final String LOOKALIKE_NAVIGATION_URL_SUGGESTIONS_UI =
             "LookalikeUrlNavigationSuggestionsUI";
     public static final String MARK_HTTP_AS = "MarkHttpAs";
@@ -533,12 +534,6 @@ public abstract class ChromeFeatureList {
     public static final String UNIFIED_CREDENTIAL_MANAGER_DRY_RUN =
             "UnifiedCredentialManagerDryRun";
     public static final String UNIFIED_PASSWORD_MANAGER_ANDROID = "UnifiedPasswordManagerAndroid";
-    public static final String UNIFIED_PASSWORD_MANAGER_MIGRATION =
-            "UnifiedPasswordManagerMigration";
-    public static final String UNIFIED_PASSWORD_MANAGER_SHADOW_ANDROID =
-            "UnifiedPasswordManagerShadowAndroid";
-    public static final String UNIFIED_PASSWORD_MANAGER_SHADOW_WRITE_OPERATIONS_ANDROID =
-            "UnifiedPasswordManagerShadowWriteOperationsAndroid";
     public static final String UPCOMING_SHARING_FEATURES = "UpcomingSharingFeatures";
     public static final String UPDATE_NOTIFICATION_IMMEDIATE_SHOW_OPTION =
             "UpdateNotificationScheduleServiceImmediateShowOption";

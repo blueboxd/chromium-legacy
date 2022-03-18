@@ -50,6 +50,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kForceSynchronousHTMLParsing;
 BLINK_COMMON_EXPORT extern const base::Feature kDeferredFontShaping;
 BLINK_COMMON_EXPORT extern const base::Feature kEditingNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
+BLINK_COMMON_EXPORT extern const base::Feature kLayoutNGBlockInInline;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigationPredictor;
 BLINK_COMMON_EXPORT extern const base::Feature kAnchorElementInteraction;
@@ -152,8 +153,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kPurgeRendererMemoryWhenBackgrounded;
 BLINK_COMMON_EXPORT extern const base::Feature kWindowOpenNewPopupBehavior;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCUnifiedPlanByDefault;
-BLINK_COMMON_EXPORT extern const base::Feature
-    kRTCDisallowPlanBOutsideDeprecationTrial;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCOfferExtmapAllowMixed;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCGpuCodecSupportWaiter;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
@@ -466,6 +465,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kAllowURNsInIframes;
 BLINK_COMMON_EXPORT bool IsAllowURNsInIframeEnabled();
 
 BLINK_COMMON_EXPORT extern const base::Feature kBrowsingTopics;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kBrowsingTopicsTimePeriodPerEpoch;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsNumberOfEpochsToExpose;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
@@ -473,14 +474,15 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsUseRandomTopicProbabilityPercent;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsNumberOfEpochsOfObservationDataToUseForFiltering;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsMaxNumberOfApiUsageContextDomainsToKeepPerTopic;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsMaxNumberOfApiUsageContextEntriesToLoadPerEpoch;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsConfigVersion;
-
-// Control switch for minimizing processing in the WebRTC APM when all audio
-// tracks are disabled.
-BLINK_COMMON_EXPORT extern const base::Feature
-    kMinimizeAudioProcessingForUnusedOutput;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsTaxonomyVersion;
 
 // When <dialog>s are closed, this focuses the "previously focused" element
 // which had focus when the <dialog> was first opened.

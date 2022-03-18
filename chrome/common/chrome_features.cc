@@ -534,6 +534,10 @@ const base::Feature kHappinessTrackingSurveysForDesktopNtpModules{
     "HappinessTrackingSurveysForDesktopNtpModules",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kHappinessTrackingSurveysForNtpPhotosOptOut{
+    "HappinessTrackingSurveysForrNtpPhotosOptOut",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the Happiness Tracking System for Chrome What's New.
 const base::Feature kHappinessTrackingSurveysForDesktopWhatsNew{
     "HappinessTrackingSurveysForDesktopWhatsNew",
@@ -633,11 +637,6 @@ const base::Feature kIPHInWebUIDemo{"IPHInWebUIDemo",
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kKernelnextVMs{"KernelnextVMs",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
-#if !BUILDFLAG(IS_ANDROID)
-const base::Feature kLinkCapturingUiUpdate{"LinkCapturingUiUpdate",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)

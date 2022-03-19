@@ -27,30 +27,22 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
   auto CreateCellConstraintSpace = [this, &row, &table_data](
                                        NGBlockNode cell,
                                        const NGTableConstraintSpaceData::Cell&
-                                           cell_data,
-                                       absl::optional<LayoutUnit> row_baseline,
-                                       bool use_block_fragmentation = false) {
+                                           cell_data) {
     const LayoutUnit cell_block_size =
         cell_data.rowspan_block_size != kIndefiniteSize
             ? cell_data.rowspan_block_size
             : row.block_size;
 
-    // Our initial block-size is definite if this cell has a fixed block-size,
-    // or we have grown and the table has a specified block-size.
-    const bool is_initial_block_size_definite =
-        cell_data.is_constrained ||
-        (cell_data.has_grown && table_data.is_table_block_size_specified);
-
     NGConstraintSpaceBuilder builder =
         NGTableAlgorithmUtils::CreateTableCellConstraintSpaceBuilder(
             table_data.table_writing_direction, cell, cell_data.borders,
             table_data.column_locations, cell_block_size,
-            container_builder_.InlineSize(), row_baseline,
-            cell_data.start_column, !is_initial_block_size_definite,
+            container_builder_.InlineSize(), row.baseline,
+            cell_data.start_column, cell_data.is_initial_block_size_indefinite,
             table_data.is_table_block_size_specified,
             table_data.has_collapsed_borders, NGCacheSlot::kLayout);
 
-    if (use_block_fragmentation) {
+    if (ConstraintSpace().HasBlockFragmentation()) {
       SetupSpaceBuilderForFragmentation(
           ConstraintSpace(), cell,
           /* fragmentainer_offset_delta */ LayoutUnit(), &builder,
@@ -60,33 +52,6 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
 
     return builder.ToConstraintSpace();
   };
-
-  // A cell with perecentage block-size descendants can layout with size that
-  // differs from its intrinsic size. This might cause row baseline to move, if
-  // cell was baseline-aligned.
-  // To compute correct baseline, we need to do an initial layout pass.
-  LayoutUnit row_baseline = row.baseline;
-  if (row.has_baseline_aligned_percentage_block_size_descendants) {
-    wtf_size_t cell_index = row.start_cell_index;
-    NGRowBaselineTabulator row_baseline_tabulator;
-    for (NGBlockNode cell = To<NGBlockNode>(Node().FirstChild()); cell;
-         cell = To<NGBlockNode>(cell.NextSibling()), ++cell_index) {
-      const NGTableConstraintSpaceData::Cell& cell_data =
-          table_data.cells[cell_index];
-      NGConstraintSpace cell_constraint_space =
-          CreateCellConstraintSpace(cell, cell_data, absl::nullopt);
-      const NGLayoutResult* layout_result = cell.Layout(cell_constraint_space);
-      NGBoxFragment fragment(
-          table_data.table_writing_direction,
-          To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
-      row_baseline_tabulator.ProcessCell(
-          fragment,
-          NGTableAlgorithmUtils::IsBaseline(cell.Style().VerticalAlign()),
-          cell.TableCellRowspan() > 1,
-          layout_result->HasDescendantThatDependsOnPercentageBlockSize());
-    }
-    row_baseline = row_baseline_tabulator.ComputeBaseline(row.block_size);
-  }
 
   bool should_propagate_child_break_values =
       ConstraintSpace().ShouldPropagateChildBreakValues();
@@ -106,8 +71,7 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
     const NGTableConstraintSpaceData::Cell& cell_data =
         table_data.cells[cell_index];
     NGConstraintSpace cell_constraint_space =
-        CreateCellConstraintSpace(cell, cell_data, row_baseline,
-                                  ConstraintSpace().HasBlockFragmentation());
+        CreateCellConstraintSpace(cell, cell_data);
     const NGLayoutResult* cell_result =
         cell.Layout(cell_constraint_space, cell_break_token);
 

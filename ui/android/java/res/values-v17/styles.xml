@@ -8,7 +8,7 @@
 
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="DropdownPopupWindow" parent="@android:style/Widget.ListPopupWindow">
-        <item name="android:popupBackground">@drawable/dialog_bg_tinted</item>
+        <item name="android:popupBackground">@drawable/dialog_bg_baseline</item>
     </style>
 
     <!-- Buttons -->
@@ -57,7 +57,7 @@
     </style>
     <style name="OutlinedButton" parent="TextButton" tools:ignore="UnusedResources">
         <item name="borderWidth">@dimen/button_outlined_border_width</item>
-        <item name="borderColor">?attr/divider_line_bg_color_dynamic</item>
+        <item name="borderColor">?attr/globalOutlinedButtonBorderColor</item>
     </style>
 
     <!-- Used by Chrome and Content -->

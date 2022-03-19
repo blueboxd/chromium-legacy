@@ -196,11 +196,6 @@
       status: "experimental",
     },
     {
-      name: "AppHistory",
-      origin_trial_feature_name: "AppHistory",
-      status: "experimental",
-    },
-    {
       name: "AriaTouchPassthrough",
       status: "experimental",
     },
@@ -711,6 +706,10 @@
     {
       name: "CSSModules",
       status: "stable",
+    },
+    {
+      name: "CSSObjectViewBoxAndOverflow",
+      status: "experimental",
     },
     {
       name: "CSSOffsetPathRay",
@@ -1325,7 +1324,7 @@
     {
       name: "LayoutNGBlockFragmentation",
       implied_by: ["LayoutNGFlexFragmentation", "LayoutNGGridFragmentation", "LayoutNGPrinting", "LayoutNGTableFragmentation"],
-      status: "test",
+      status: "stable",
     },
     {
       name: "LayoutNGBlockInInline",
@@ -1577,6 +1576,10 @@
       // Named pages for pagination (the "page" CSS property).
       name: "NamedPages",
       status: "stable",
+    },
+    {
+      name: "NavigationApi",
+      status: "experimental",
     },
     {
       name: "NavigationId",

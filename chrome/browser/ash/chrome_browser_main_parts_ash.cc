@@ -25,6 +25,8 @@
 #include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/components/power/dark_resume_controller.h"
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/tpm/install_attributes.h"
+#include "ash/components/tpm/tpm_token_loader.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
@@ -213,8 +215,6 @@
 #include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/system/statistics_provider.h"
-#include "chromeos/tpm/install_attributes.h"
-#include "chromeos/tpm/tpm_token_loader.h"
 #include "components/account_id/account_id.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/language/core/browser/pref_names.h"
@@ -257,7 +257,7 @@
 #include "ui/events/event_utils.h"
 
 #if BUILDFLAG(PLATFORM_CFM)
-#include "chrome/browser/chromeos/chromebox_for_meetings/cfm_chrome_services.h"
+#include "chrome/browser/ash/chromebox_for_meetings/cfm_chrome_services.h"
 #endif
 
 #if BUILDFLAG(ENABLE_RLZ)
@@ -763,7 +763,7 @@ int ChromeBrowserMainPartsAsh::PreMainMessageLoopRun() {
   }
 
 #if BUILDFLAG(PLATFORM_CFM)
-  chromeos::cfm::InitializeCfmServices();
+  cfm::InitializeCfmServices();
 #endif  // BUILDFLAG(PLATFORM_CFM)
 
   SystemProxyManager::Initialize(g_browser_process->local_state());
@@ -1512,7 +1512,7 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
 #if BUILDFLAG(PLATFORM_CFM)
   // Cleanly shutdown all Chromebox For Meetings services before DBus and other
   // critical services are destroyed
-  chromeos::cfm::ShutdownCfmServices();
+  cfm::ShutdownCfmServices();
 #endif  // BUILDFLAG(PLATFORM_CFM)
 
   // Cleans up dbus services depending on ash.

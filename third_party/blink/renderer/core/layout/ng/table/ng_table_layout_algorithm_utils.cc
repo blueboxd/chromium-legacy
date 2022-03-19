@@ -440,6 +440,38 @@ void ComputeSectionInlineConstraints(
 }  // namespace
 
 // static
+NGTableAlgorithmUtils::CellBlockSizeData
+NGTableAlgorithmUtils::ComputeCellBlockSize(
+    const NGTableTypes::CellBlockConstraint& cell_block_constraint,
+    const NGTableTypes::Rows& rows,
+    wtf_size_t row_index,
+    const LogicalSize& border_spacing,
+    bool is_table_block_size_specified) {
+  // NOTE: Confusingly rowspanned cells originating from a collapsed-row also
+  // have no block-size.
+  LayoutUnit cell_block_size;
+  if (!rows[row_index].is_collapsed) {
+    for (wtf_size_t i = 0; i < cell_block_constraint.effective_rowspan; ++i) {
+      if (rows[row_index + i].is_collapsed)
+        continue;
+      cell_block_size += rows[row_index + i].block_size;
+      if (i != 0)
+        cell_block_size += border_spacing.block_size;
+    }
+  }
+
+  bool has_grown = cell_block_size > cell_block_constraint.min_block_size;
+
+  // Our initial block-size is definite if this cell has a fixed block-size,
+  // or we have grown and the table has a specified block-size.
+  bool is_initial_block_size_definite =
+      cell_block_constraint.is_constrained ||
+      (has_grown && is_table_block_size_specified);
+
+  return {cell_block_size, !is_initial_block_size_definite};
+}
+
+// static
 NGConstraintSpaceBuilder
 NGTableAlgorithmUtils::CreateTableCellConstraintSpaceBuilder(
     const WritingDirectionMode table_writing_direction,
@@ -657,6 +689,67 @@ void NGTableAlgorithmUtils::ComputeSectionMinimumRowBlockSizes(
   sections->push_back(
       NGTableTypes::CreateSection(section, start_row, current_row - start_row,
                                   section_block_size, treat_section_as_tbody));
+}
+
+// static
+void NGTableAlgorithmUtils::RecomputeRowBaselines(
+    const NGTableGroupedChildren& grouped_children,
+    const Vector<NGTableColumnLocation>& column_locations,
+    const NGTableTypes::CellBlockConstraints& cell_block_constraints,
+    const LogicalSize& border_spacing,
+    WritingDirectionMode table_writing_direction,
+    LayoutUnit cell_percentage_inline_size,
+    bool is_table_block_size_specified,
+    bool has_collapsed_borders,
+    NGTableTypes::Rows* rows) {
+  DCHECK(rows);
+
+  wtf_size_t row_index = 0;
+  for (auto section : grouped_children) {
+    for (NGBlockNode row = To<NGBlockNode>(section.FirstChild()); row;
+         row = To<NGBlockNode>(row.NextSibling()), ++row_index) {
+      // Only recompute the baseline if we have a %-block-size descendant.
+      auto& row_data = rows->at(row_index);
+      if (!row_data.has_baseline_aligned_percentage_block_size_descendants)
+        continue;
+
+      wtf_size_t cell_index = row_data.start_cell_index;
+      NGRowBaselineTabulator row_baseline_tabulator;
+      for (NGBlockNode cell = To<NGBlockNode>(row.FirstChild()); cell;
+           cell = To<NGBlockNode>(cell.NextSibling()), ++cell_index) {
+        const auto& cell_block_constraint = cell_block_constraints[cell_index];
+        const auto [cell_block_size, is_initial_block_size_indefinite] =
+            ComputeCellBlockSize(cell_block_constraint, *rows, row_index,
+                                 border_spacing, is_table_block_size_specified);
+
+        // This constraint space is almost identical to the final space which
+        // we use in the row layout algorithm. Due to this we use the layout
+        // cache-slot instead of the measure cache-slot.
+        const auto cell_space =
+            NGTableAlgorithmUtils::CreateTableCellConstraintSpaceBuilder(
+                table_writing_direction, cell, cell_block_constraint.borders,
+                column_locations, cell_block_size, cell_percentage_inline_size,
+                /* row_baseline */ absl::nullopt,
+                cell_block_constraint.column_index,
+                is_initial_block_size_indefinite, is_table_block_size_specified,
+                has_collapsed_borders, NGCacheSlot::kLayout)
+                .ToConstraintSpace();
+        const NGLayoutResult* layout_result = cell.Layout(cell_space);
+
+        const NGBoxFragment fragment(
+            table_writing_direction,
+            To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
+        row_baseline_tabulator.ProcessCell(
+            fragment,
+            NGTableAlgorithmUtils::IsBaseline(cell.Style().VerticalAlign()),
+            cell_block_constraint.effective_rowspan != 1,
+            layout_result->HasDescendantThatDependsOnPercentageBlockSize());
+      }
+
+      row_data.baseline =
+          row_baseline_tabulator.ComputeBaseline(row_data.block_size);
+    }
+  }
 }
 
 void NGColspanCellTabulator::StartRow() {

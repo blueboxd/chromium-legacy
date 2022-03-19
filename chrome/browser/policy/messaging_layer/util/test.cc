@@ -36,6 +36,36 @@ static const base::Value::List* GetRecordList(const base::Value::Dict& arg,
   return record_list;
 }
 
+bool AttachEncryptionSettingsMatcher::MatchAndExplain(
+    const base::Value::Dict& arg,
+    MatchResultListener* listener) const {
+  const auto attach_encryption_settings =
+      arg.FindBool("attachEncryptionSettings");
+  if (!attach_encryption_settings) {
+    *listener << "No key named \"attachEncryptionSettings\" in the argument or "
+                 "the value is not of bool type.";
+    return false;
+  }
+  if (!attach_encryption_settings.value()) {
+    *listener << "The value of \"attachEncryptionSettings\" is false.";
+    return false;
+  }
+  return true;
+}
+
+void AttachEncryptionSettingsMatcher::DescribeTo(std::ostream* os) const {
+  *os << "has a valid attachEncryptionSettings field.";
+}
+
+void AttachEncryptionSettingsMatcher::DescribeNegationTo(
+    std::ostream* os) const {
+  *os << "has an invalid attachEncryptionSettings field.";
+}
+
+std::string AttachEncryptionSettingsMatcher::Name() const {
+  return "attach-encryption-settings-matcher";
+}
+
 bool EncryptedRecordMatcher::MatchAndExplain(
     const base::Value::Dict& arg,
     MatchResultListener* listener) const {
@@ -126,11 +156,35 @@ void EncryptedWrappedRecordRecordMatcher::DescribeTo(std::ostream* os) const {
 
 void EncryptedWrappedRecordRecordMatcher::DescribeNegationTo(
     std::ostream* os) const {
-  *os << "has at least one invalid encrypted wrapped records.";
+  *os << "has at least one invalid encrypted wrapped records or has missing "
+         "encrypted wrapped records.";
 }
 
 std::string EncryptedWrappedRecordRecordMatcher::Name() const {
   return "encrypted-wrapped-record-record-matcher";
+}
+
+bool NoEncryptedWrappedRecordRecordMatcher::MatchAndExplainRecord(
+    const base::Value::Dict& record,
+    MatchResultListener* listener) const {
+  if (record.Find("encryptedWrappedRecord") != nullptr) {
+    *listener << "Found \"encryptedWrappedRecord\" in record " << record << '.';
+    return false;
+  }
+  return true;
+}
+
+void NoEncryptedWrappedRecordRecordMatcher::DescribeTo(std::ostream* os) const {
+  *os << "expectedly has no encrypted wrapped record.";
+}
+
+void NoEncryptedWrappedRecordRecordMatcher::DescribeNegationTo(
+    std::ostream* os) const {
+  *os << "has at least one encrypted wrapped record that it should not have.";
+}
+
+std::string NoEncryptedWrappedRecordRecordMatcher::Name() const {
+  return "no-encrypted-wrapped-record-record-matcher";
 }
 
 bool SequenceInformationRecordMatcher::MatchAndExplainRecord(

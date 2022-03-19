@@ -77,6 +77,7 @@
 #include "ash/marker/marker_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/projector/projector_controller_impl.h"
@@ -90,6 +91,7 @@
 #include "ash/public/cpp/tab_cluster/tab_cluster_ui_controller.h"
 #include "ash/public/cpp/views_text_services_context_menu_impl.h"
 #include "ash/quick_pair/keyed_service/quick_pair_mediator.h"
+#include "ash/rgb_keyboard/rgb_keyboard_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
@@ -919,6 +921,8 @@ Shell::~Shell() {
 
   usb_peripheral_notification_controller_.reset();
 
+  rgb_keyboard_manager_.reset();
+
   message_center_ash_impl_.reset();
 
   // Destroys the MessageCenter singleton, so must happen late.
@@ -995,6 +999,10 @@ void Shell::Init(
           shell_delegate_->GetMediaSessionService());
 
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
+
+  if (::features::IsRgbKeyboardEnabled()) {
+    rgb_keyboard_manager_ = std::make_unique<RgbKeyboardManager>();
+  }
 
   // Observes the tablet mode controller and adds a notification to the message
   // center, so must be constructed after both.

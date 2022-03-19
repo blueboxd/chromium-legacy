@@ -78,7 +78,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/confirm_quit.h"
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
-#include "chrome/browser/ui/cocoa/handoff_active_url_observer_bridge.h"
+#include "chrome/browser/ui/cocoa/handoff_observer.h"
 #import "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
 #import "chrome/browser/ui/cocoa/profiles/profile_menu_controller.h"
@@ -373,7 +373,7 @@ Profile* GetLastProfileMac() {
   return profile_manager->GetProfile(profile_path);
 }
 
-@interface AppController () <HandoffActiveURLObserverBridgeDelegate>
+@interface AppController () <HandoffObserverDelegate>
 - (void)initMenuState;
 - (void)initProfileMenu;
 - (void)updateConfirmToQuitPrefMenuItem:(NSMenuItem*)item;
@@ -398,8 +398,14 @@ Profile* GetLastProfileMac() {
 // NTP after all the |urls| have been opened.
 - (void)openUrlsReplacingNTP:(const std::vector<GURL>&)urls;
 
-// This method passes |handoffURL| to |handoffManager_|.
-- (void)passURLToHandoffManager:(const GURL&)handoffURL;
+// Returns |YES| if |webContents| can be sent to another device via Handoff.
+- (BOOL)isHandoffEligible:(content::WebContents*)webContents;
+
+// This method passes |handoffURL| and |handoffTitle| to |handoffManager_|.
+// This is a separate method (vs. being inlined into `updateHandoffManager`
+// below) so that it can be swizzled in tests.
+- (void)updateHandoffManagerWithURL:(const GURL&)handoffURL
+                              title:(const std::u16string&)handoffTitle;
 
 // Lazily creates the Handoff Manager. Updates the state of the Handoff
 // Manager. This method is idempotent. This should be called:
@@ -409,10 +415,6 @@ Profile* GetLastProfileMac() {
 // - When the active browser's active tab switches.
 // |webContents| should be the new, active WebContents.
 - (void)updateHandoffManager:(content::WebContents*)webContents;
-
-// Given |webContents|, extracts a GURL to be used for Handoff. This may return
-// the empty GURL.
-- (GURL)handoffURLFromWebContents:(content::WebContents*)webContents;
 
 // Return false if Chrome startup is paused by dialog and AppController is
 // called without any initialized Profile.
@@ -987,8 +989,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
             _menuState.get()));
   }
 
-  _handoff_active_url_observer_bridge =
-      std::make_unique<HandoffActiveURLObserverBridge>(self);
+  _handoff_observer = std::make_unique<HandoffObserver>(self);
 
   if (@available(macOS 10.15, *)) {
     ASWebAuthenticationSessionWebBrowserSessionManager.sharedManager
@@ -1930,36 +1931,36 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 #pragma mark - Handoff Manager
 
-- (void)passURLToHandoffManager:(const GURL&)handoffURL {
+- (void)updateHandoffManagerWithURL:(const GURL&)handoffURL
+                              title:(const std::u16string&)handoffTitle {
   [_handoffManager updateActiveURL:handoffURL];
+  [_handoffManager updateActiveTitle:handoffTitle];
 }
 
 - (void)updateHandoffManager:(content::WebContents*)webContents {
   if (!_handoffManager)
     _handoffManager.reset([[HandoffManager alloc] init]);
 
-  GURL handoffURL = [self handoffURLFromWebContents:webContents];
-  [self passURLToHandoffManager:handoffURL];
+  if ([self isHandoffEligible:webContents]) {
+    [self updateHandoffManagerWithURL:webContents->GetVisibleURL()
+                                title:webContents->GetTitle()];
+  } else {
+    [self updateHandoffManagerWithURL:GURL() title:std::u16string()];
+  }
 }
 
-- (GURL)handoffURLFromWebContents:(content::WebContents*)webContents {
+- (BOOL)isHandoffEligible:(content::WebContents*)webContents {
   if (!webContents)
-    return GURL();
+    return NO;
 
   Profile* profile =
       Profile::FromBrowserContext(webContents->GetBrowserContext());
   if (!profile)
-    return GURL();
+    return NO;
 
   // Handoff is not allowed from an incognito profile. To err on the safe side,
   // also disallow Handoff from a guest profile.
-  if (!profile->IsRegularProfile())
-    return GURL();
-
-  if (!webContents)
-    return GURL();
-
-  return webContents->GetVisibleURL();
+  return profile->IsRegularProfile();
 }
 
 - (BOOL)isProfileReady {
@@ -1968,9 +1969,9 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
               ->IsEnterpriseStartupDialogShowing();
 }
 
-#pragma mark - HandoffActiveURLObserverBridgeDelegate
+#pragma mark - HandoffObserverDelegate
 
-- (void)handoffActiveURLChanged:(content::WebContents*)webContents {
+- (void)handoffContentsChanged:(content::WebContents*)webContents {
   [self updateHandoffManager:webContents];
 }
 

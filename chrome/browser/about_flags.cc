@@ -4474,15 +4474,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilitySwitchAccessText)},
-    {"enable-experimental-accessibility-switch-access-multistep-automation",
-     flag_descriptions::
-         kExperimentalAccessibilitySwitchAccessMultistepAutomationName,
-     flag_descriptions::
-         kExperimentalAccessibilitySwitchAccessMultistepAutomationDescription,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         ::switches::
-             kEnableExperimentalAccessibilitySwitchAccessMultistepAutomation)},
     {"enable-experimental-kernel-vm-support",
      flag_descriptions::kKernelnextVMsName,
      flag_descriptions::kKernelnextVMsDescription, kOsCrOS,
@@ -4759,17 +4750,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxPedalsBatch3NonEnglishDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsBatch3NonEnglish)},
 #endif  // BUILDFLAG(IS_ANDROID)
-
-    {"omnibox-clobber-triggers-contextual-web-zero-suggest",
-     flag_descriptions::kOmniboxClobberTriggersContextualWebZeroSuggestName,
-     flag_descriptions::
-         kOmniboxClobberTriggersContextualWebZeroSuggestDescription,
-     kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         omnibox::kClobberTriggersContextualWebZeroSuggest,
-         // On-clobber has the same variations and forcing IDs as on-focus.
-         kOmniboxOnFocusSuggestionsContextualWebVariations,
-         "OmniboxGoogleOnContent")},
 
     {"omnibox-on-focus-suggestions-contextual-web",
      flag_descriptions::kOmniboxOnFocusSuggestionsContextualWebName,

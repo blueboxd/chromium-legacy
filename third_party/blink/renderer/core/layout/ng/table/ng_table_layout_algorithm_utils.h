@@ -29,6 +29,19 @@ class NGTableAlgorithmUtils {
            align == EVerticalAlign::kLength;
   }
 
+  // Computes a cell's block-size, and if its initial block-size should be
+  // considered indefinite.
+  struct CellBlockSizeData {
+    LayoutUnit block_size;
+    bool is_initial_block_size_indefinite;
+  };
+  static CellBlockSizeData ComputeCellBlockSize(
+      const NGTableTypes::CellBlockConstraint& cell_block_constraint,
+      const NGTableTypes::Rows& rows,
+      wtf_size_t row_index,
+      const LogicalSize& border_spacing,
+      bool is_table_block_size_specified);
+
   // Creates a constraint space builder for a table-cell.
   //
   // In order to make the cache as effective as possible, we try and keep
@@ -69,6 +82,19 @@ class NGTableAlgorithmUtils {
       NGTableTypes::Sections* sections,
       NGTableTypes::Rows* rows,
       NGTableTypes::CellBlockConstraints* cell_block_constraints);
+
+  // Recalculates any row baselines if needed. Rows which contain %-block-size
+  // descendants may shift their baseline once we have the final row geometry.
+  static void RecomputeRowBaselines(
+      const NGTableGroupedChildren&,
+      const Vector<NGTableColumnLocation>&,
+      const NGTableTypes::CellBlockConstraints&,
+      const LogicalSize& border_spacing,
+      WritingDirectionMode table_writing_direction,
+      LayoutUnit cell_percentage_inline_size,
+      bool is_table_block_size_specified,
+      bool has_collapsed_borders,
+      NGTableTypes::Rows*);
 };
 
 // NGColspanCellTabulator keeps track of columns occupied by colspanned cells

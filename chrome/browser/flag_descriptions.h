@@ -990,9 +990,6 @@ extern const char kOmniboxBlurWithEscapeDescription[];
 extern const char kOmniboxBookmarkPathsName[];
 extern const char kOmniboxBookmarkPathsDescription[];
 
-extern const char kOmniboxClobberTriggersContextualWebZeroSuggestName[];
-extern const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[];
-
 extern const char kOmniboxClosePopupWithEscapeName[];
 extern const char kOmniboxClosePopupWithEscapeDescription[];
 
@@ -2763,11 +2760,6 @@ extern const char kExperimentalAccessibilityDictationWithPumpkinDescription[];
 
 extern const char kExperimentalAccessibilitySwitchAccessTextName[];
 extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
-
-extern const char
-    kExperimentalAccessibilitySwitchAccessMultistepAutomationName[];
-extern const char
-    kExperimentalAccessibilitySwitchAccessMultistepAutomationDescription[];
 
 extern const char kExtendedOpenVpnSettingsName[];
 extern const char kExtendedOpenVpnSettingsDescription[];

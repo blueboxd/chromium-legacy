@@ -759,12 +759,12 @@
   {
     "name": "chrome-share-long-screenshot",
     "owners": [ "skare", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 104
   },
   {
     "name": "chrome-sharing-hub-launch-adjacent",
     "owners": [ "skare", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 104
   },
   {
     "name": "chrome-tips-in-main-menu",
@@ -1687,7 +1687,7 @@
   {
     "name": "enable-critical-persisted-tab-data",
     "owners": [ "chrome-shopping@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 108
   },
   {
     "name": "enable-cros-action-recorder",
@@ -2055,11 +2055,6 @@
     "name": "enable-experimental-accessibility-language-detection-dynamic",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 106
-  },
-  {
-    "name": "enable-experimental-accessibility-switch-access-multistep-automation",
-    "owners": [ "akihiroota@google.com", "mschillaci@google.com" ],
-    "expiry_milestone": 102
   },
   {
     "name": "enable-experimental-accessibility-switch-access-text",
@@ -2465,7 +2460,7 @@
   {
     "name": "enable-notifications-revamp",
     "owners": [ "amehfooz", "newcomer" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 106
   },
   {
     "name": "enable-oauth-ipp",
@@ -2475,7 +2470,7 @@
   {
     "name": "enable-oop-print-drivers",
     "owners": [ "awscreen", "thestig" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 112
   },
   {
     "name": "enable-openscreen-cast-streaming-session",
@@ -3212,7 +3207,7 @@
   {
     "name": "extensions-menu-access-control",
     "owners": [ "emiliapaz" ],
-    "expiry_milestone":  100
+    "expiry_milestone":  104
   },
   {
     "name": "extensions-on-chrome-urls",
@@ -3352,7 +3347,7 @@
   {
     "name": "focus-follows-cursor",
     "owners": [ "dandersson", "tclaiborne" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "font-access",
@@ -4370,8 +4365,8 @@
   },
   {
     "name": "omnibox-adaptive-suggestions-count",
-    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 97
+    "owners": [ "ender", "stkhapugin", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "omnibox-aggregate-shortcuts",
@@ -4403,11 +4398,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "omnibox-clobber-triggers-contextual-web-zero-suggest",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 100
-  },
-  {
     "name": "omnibox-close-popup-with-escape",
     "owners": ["manukh", "chrome-omnibox-team@google.com"],
     "expiry_milestone": 110
@@ -4429,8 +4419,8 @@
   },
   {
     "name": "omnibox-dynamic-max-autocomplete",
-    "owners": [ "manukh", "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 100
+    "owners": [ "ender", "stkhapugin", "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "omnibox-experimental-keyword-mode",
@@ -4459,8 +4449,8 @@
   },
   {
     "name": "omnibox-most-visited-tiles",
-    "owners": [ "fgorski", "ender", "chrome-omnibox-team@google.com"],
-    "expiry_milestone": 97
+    "owners": [ "fgorski", "ender", "stkhapugin", "chrome-omnibox-team@google.com"],
+    "expiry_milestone": 110
   },
   {
     "name": "omnibox-new-popup-ui",
@@ -4484,13 +4474,13 @@
   },
   {
     "name": "omnibox-on-focus-suggestions-contextual-web",
-    "owners": [ "tommycli", "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 100
+    "owners": [ "ender", "stkhapugin", "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "omnibox-on-focus-suggestions-contextual-web-allow-srp",
-    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 100
+    "owners": [ "ender", "stkhapugin", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "omnibox-pedals-android-batch1",
@@ -4574,8 +4564,8 @@
   },
   {
     "name": "omnibox-trending-zero-prefix-suggestions-on-ntp",
-    "owners": [ "mahmadi", "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 104
+    "owners": [ "ender", "stkhapugin", "mahmadi", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "omnibox-trigger-for-prerender2",
@@ -4800,7 +4790,7 @@
   {
     "name": "performant-split-view-resizing",
     "owners": [ "dandersson", "riomat" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "permission-chip",
@@ -4870,12 +4860,12 @@
   {
     "name": "print-with-postscript-type42-fonts",
     "owners": [ "thestig" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 112
   },
   {
     "name": "print-with-reduced-rasterization",
     "owners": [ "thestig" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 112
   },
   {
     "name": "privacy-advisor",
@@ -5271,7 +5261,7 @@
   {
     "name": "screentime",
     "owners": [ "lgrey", "chrome-mac-dev@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "scroll-unification",
@@ -5335,7 +5325,7 @@
   },
   {
     "name": "send-tab-to-self-v2",
-    "owners": ["kmilka", "chrome-sharing-eng@google.com"],
+    "owners": ["ellyjones", "chrome-sharing-eng@google.com"],
     "expiry_milestone": 100
   },
   {
@@ -5372,18 +5362,18 @@
   },
   {
     "name": "shared-highlighting-v2",
-    "owners": ["kmilka", "cheickcisse@google.com"],
+    "owners": ["jeffreycohen", "kristipark", "cheickcisse@google.com"],
     "expiry_milestone": 99
   },
   {
     "name": "sharing-desktop-screenshots",
-    "owners": ["skare", "kmilka", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 102
+    "owners": ["skare", "jeffreycohen", "chrome-sharing-eng@google.com" ],
+    "expiry_milestone": 104
   },
   {
     "name": "sharing-desktop-screenshots-edit",
     "owners": ["skare", "jeffreycohen", "chrome-sharing-eng@google.com" ],
-    "expiry_milestone": 102
+    "expiry_milestone": 104
   },
   {
     "name": "sharing-hub-desktop-app-menu",
@@ -6001,12 +5991,12 @@
   {
     "name": "use-xps-for-printing",
     "owners": [ "awscreen", "thestig" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 112
   },
   {
     "name": "use-xps-for-printing-from-pdf",
     "owners": [ "awscreen", "thestig" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 112
   },
   {
     "name": "username-first-flow",

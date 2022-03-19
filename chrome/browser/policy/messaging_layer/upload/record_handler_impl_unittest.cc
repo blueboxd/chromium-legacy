@@ -404,8 +404,8 @@ TEST_P(RecordHandlerImplTest, UploadsGapRecordOnServerFailure) {
               FailedResponseFromRequest(request, response);
               std::move(callback).Run(std::move(response));
             })));
-    // TODO(b/214040998: Add a matcher for the gap upload)
-    EXPECT_CALL(*client_, UploadEncryptedReport(_, _, _))
+    EXPECT_CALL(*client_,
+                UploadEncryptedReport(IsGapUploadRequestValid(), _, _))
         .WillOnce(WithArgs<0, 2>(
             Invoke([&force_confirm_by_server](
                        base::Value::Dict request,
@@ -487,12 +487,6 @@ TEST_P(RecordHandlerImplTest, AssignsRequestIdForRecordUploads) {
           Invoke([&force_confirm_by_server](
                      base::Value::Dict request,
                      policy::CloudPolicyClient::ResponseCallback response_cb) {
-            // Validate request id is set
-            auto* request_id = request.FindString(
-                UploadEncryptedReportingRequestBuilder::kRequestId);
-            ASSERT_NE(request_id, nullptr);
-            EXPECT_THAT(*request_id, Not(IsEmpty()));
-
             // Trigger response callback to complete flow
             base::Value::Dict response;
             SucceedResponseFromRequest(request, force_confirm_by_server,

@@ -6534,8 +6534,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SIDE_PANEL_TITLE" desc="Title of the Side Panel">
         Side Panel
       </message>
-      <message name="IDS_READER_MODE_TITLE" desc="Title of the Reader Mode feature, which gives users an accessible reading experience.">
-        Reader Mode
+
+      <!-- Read Anything strings -->
+      <!-- TODO(crbug.com/1266555): Add final strings and make them translateable. -->
+      <message name="IDS_READ_ANYTHING_TITLE" desc="Title of the Read Anything feature, which gives users an accessible reading experience." translateable="false">
+        Read anything
       </message>
 
       <!--Tooltip strings -->
@@ -12613,6 +12616,15 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_INPUT_OVERLAY_EDIT_MENU_RESET" desc="Entry point to reset the action binding to original binding.">
         Reset
+      </message>
+      <message name="IDS_INPUT_OVERLAY_EDIT_MODE_RESET" desc="Restore key-bindings to a preset status.">
+        Reset to defaults
+      </message>
+      <message name="IDS_INPUT_OVERLAY_EDIT_MODE_SAVE" desc="Apply and store the newly set key-bindings.">
+        Save
+      </message>
+      <message name="IDS_INPUT_OVERLAY_EDIT_MODE_CANCEL" desc="Discard all the newly assigned key-bindings in this session.">
+        Cancel
       </message>
     </if>
 

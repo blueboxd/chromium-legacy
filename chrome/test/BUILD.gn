@@ -513,6 +513,8 @@ static_library("test_support") {
       "//ash:test_support",
       "//ash/components/account_manager",
       "//ash/components/settings",
+      "//ash/components/tpm",
+      "//ash/components/tpm:test_support",
       "//ash/constants",
       "//ash/public/cpp:test_support",
       "//chrome/browser/chromeos",
@@ -520,8 +522,6 @@ static_library("test_support") {
       "//chromeos/dbus/tpm_manager",
       "//chromeos/dbus/userdataauth",
       "//chromeos/login/login_state",
-      "//chromeos/tpm",
-      "//chromeos/tpm:test_support",
       "//components/exo",
       "//components/ownership",
       "//components/user_manager:test_support",
@@ -4663,7 +4663,12 @@ template("performance_test_suite_template_base") {
     }
 
     if (!is_android) {
-      data_deps += [ "//chrome/test:performance_browser_tests" ]
+      if (is_chromeos_lacros) {
+        # Work around crbug/1299041
+        data_deps += [ "//testing:run_perf_test" ]
+      } else {
+        data_deps += [ "//chrome/test:performance_browser_tests" ]
+      }
     }
 
     if (!is_ios && !is_fuchsia && !is_android) {
@@ -9964,6 +9969,7 @@ if (!is_android && !is_fuchsia) {
 
     data_deps = [
       "//content/test:telemetry_gpu_unittest_data",
+      "//content/test:webgpu_cts_scripts",
       "//testing:test_scripts_shared",
     ]
   }

@@ -2979,22 +2979,6 @@
             ]
         }
     ],
-    "DragAndDropAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_M100",
-                    "enable_features": [
-                        "ContextMenuPopupStyle",
-                        "TouchDragAndContextMenu"
-                    ]
-                }
-            ]
-        }
-    ],
     "DriveFsBidirectionalNativeMessaging": [
         {
             "platforms": [
@@ -4819,21 +4803,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OnDemandAccessibilityEvents"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OnDeviceGrammarCheck": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OnDeviceGrammarCheck"
                     ]
                 }
             ]
@@ -7768,6 +7737,26 @@
             ]
         }
     ],
+    "WebRTC-FrameBuffer3": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "ios",
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "arm:SyncDecoding,_Beta"
+                }
+            ]
+        }
+    ],
     "WebRTC-VP8ConferenceTemporalLayers": [
         {
             "platforms": [
@@ -7980,21 +7969,6 @@
                     "name": "Disabled",
                     "disable_features": [
                         "WebViewLegacyTlsSupport"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WebViewLogFirstPartyPageTimeSpent": [
-        {
-            "platforms": [
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WebViewLogFirstPartyPageTimeSpent"
                     ]
                 }
             ]

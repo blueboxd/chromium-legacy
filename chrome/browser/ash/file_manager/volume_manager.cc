@@ -354,6 +354,31 @@ std::unique_ptr<Volume> Volume::CreateForMTP(const base::FilePath& mount_path,
   return volume;
 }
 
+// static: |mount_path| is the fusebox daemon AttachStorage API 'subdir'.
+std::unique_ptr<Volume> Volume::CreateForFuseBoxMTP(
+    const base::FilePath& mount_path,
+    const std::string& label,
+    bool read_only) {
+  const base::FilePath mount_point(util::kFuseBoxMediaPath);
+
+  std::unique_ptr<Volume> volume(new Volume());
+  volume->type_ = VOLUME_TYPE_MTP;
+  volume->file_system_type_ = "fusebox";
+  volume->device_type_ = chromeos::DEVICE_TYPE_MOBILE;
+  volume->source_path_ = mount_point.Append(mount_path);
+  volume->source_ = SOURCE_DEVICE;
+  volume->mount_path_ = mount_point.Append(mount_path);
+  volume->mount_condition_ = ash::disks::MOUNT_CONDITION_NONE;
+  volume->is_parent_ = true;
+  volume->is_read_only_ = read_only;
+  // "fusebox" prefix the original MTP volume id.
+  volume->volume_id_ = "fusebox";
+  volume->volume_id_.append(kMtpVolumeIdPrefix + label);
+  volume->volume_label_ = label;
+  volume->volume_label_.insert(0, "fusebox ");
+  return volume;
+}
+
 // static
 std::unique_ptr<Volume> Volume::CreateForMediaView(
     const std::string& root_document_id) {
@@ -1331,20 +1356,62 @@ void VolumeManager::DoAttachMtpStorage(
   for (int i = 2; mounted_volumes_.count(kMtpVolumeIdPrefix + label); ++i)
     label = base_name + base::StringPrintf(" (%d)", i);
 
-  bool result =
-      storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-          fsid, storage::kFileSystemTypeDeviceMediaAsFileStorage,
-          storage::FileSystemMountOption(), path);
+  // Register the MTP storage device with chrome::storage.
+  auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
+  bool result = mount_points->RegisterFileSystem(
+      fsid, storage::kFileSystemTypeDeviceMediaAsFileStorage,
+      storage::FileSystemMountOption(), path);
   DCHECK(result);
 
+  // Register the MTP storage device with the MTPDeviceMapService.
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&MTPDeviceMapService::RegisterMTPFileSystem,
                      base::Unretained(MTPDeviceMapService::GetInstance()),
                      info.location(), fsid, read_only));
 
-  // TODO(1289493): mount a fusebox here instead.
+  // Mount the MTP storage device in files app.
   std::unique_ptr<Volume> volume = Volume::CreateForMTP(path, label, read_only);
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE, std::move(volume));
+
+  // The fusebox_mounter_ is enabled by a chrome flag.
+  if (!fusebox_mounter_.get())
+    return;
+
+  // Get the FileSystemURL of the MTP storage device.
+  auto mtp_file_system_url = mount_points->CreateExternalFileSystemURL(
+      blink::StorageKey(util::GetFilesAppOrigin()), fsid, {});
+  const std::string url = mtp_file_system_url.ToGURL().spec();
+  DCHECK(mtp_file_system_url.is_valid());
+
+  // Attach the MTP storage device to the fusebox daemon.
+  fusebox_mounter_->AttachStorage(
+      "mtp", url, read_only,
+      base::BindOnce(&VolumeManager::OnFuseboxAttachStorageMTP,
+                     weak_ptr_factory_.GetWeakPtr(), fsid, label, read_only));
+}
+
+void VolumeManager::OnFuseboxAttachStorageMTP(const std::string& fsid,
+                                              const std::string& label,
+                                              bool read_only,
+                                              int error) {
+  LOG_IF(ERROR, error) << "failed attaching mtp " << fsid;
+  if (error)
+    return;
+
+  // Create a Volume for the fusebox MTP storage device.
+  const base::FilePath mount_path = base::FilePath::FromUTF8Unsafe("mtp");
+  std::unique_ptr<Volume> volume =
+      Volume::CreateForFuseBoxMTP(mount_path, label, read_only);
+
+  // Register the fusebox MTP storage device with chrome::storage.
+  auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
+  bool result = mount_points->RegisterFileSystem(
+      /*prefixed*/ "fusebox" + fsid, storage::kFileSystemTypeFuseBox,
+      storage::FileSystemMountOption(), volume->mount_path());
+  DCHECK(result);
+
+  // Mount the fusebox MTP storage device in files app.
   DoMountEvent(chromeos::MOUNT_ERROR_NONE, std::move(volume));
 }
 

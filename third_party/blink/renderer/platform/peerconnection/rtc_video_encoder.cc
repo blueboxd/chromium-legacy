@@ -28,7 +28,6 @@
 #include "media/base/bitrate.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/media_switches.h"
-#include "media/base/media_util.h"
 #include "media/base/video_bitrate_allocation.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -725,8 +724,7 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
           ? media::VideoEncodeAccelerator::Config::ContentType::kDisplay
           : media::VideoEncodeAccelerator::Config::ContentType::kCamera,
       spatial_layers, inter_layer_pred);
-  if (!video_encoder_->Initialize(config, this,
-                                  std::make_unique<media::NullMediaLog>())) {
+  if (!video_encoder_->Initialize(config, this)) {
     LogAndNotifyError(FROM_HERE, "Error initializing video_encoder",
                       media::VideoEncodeAccelerator::kInvalidArgumentError);
     return;
@@ -1224,9 +1222,9 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
     bool native_buffer_scaling =
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
         buffer->type() == webrtc::VideoFrameBuffer::Type::kNative &&
-        input_frame_coded_size_.width() == input_visible_size_.width();
+        input_frame_coded_size_ == input_visible_size_;
 #else
-        // TODO(https://crbug.com/1194500): Android (e.g. android-pie-arm64-rel)
+        // TODO(https://crbug.com/1307206): Android (e.g. android-pie-arm64-rel)
         // and CrOS does not support the native buffer scaling path. Investigate
         // why and find a way to enable it, if possible.
         false;

@@ -4335,11 +4335,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAccessibilityPageZoomName,
      flag_descriptions::kAccessibilityPageZoomDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kAccessibilityPageZoom)},
-    {"enable-android-layout-change-tab-reparenting",
-     flag_descriptions::kAndroidLayoutChangeTabReparentingName,
-     flag_descriptions::kAndroidLayoutChangeTabReparentingDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAndroidLayoutChangeTabReparenting)},
 #endif  // BUILDFLAG(IS_ANDROID)
     {"enable-experimental-accessibility-language-detection",
      flag_descriptions::kExperimentalAccessibilityLanguageDetectionName,
@@ -6959,13 +6954,6 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kFrameThrottleFpsChoices)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_WIN)
-    {"enable-incognito-shortcut-on-desktop",
-     flag_descriptions::kEnableIncognitoShortcutOnDesktopName,
-     flag_descriptions::kEnableIncognitoShortcutOnDesktopDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kEnableIncognitoShortcutOnDesktop)},
-#endif  // BUILDFLAG(IS_WIN)
-
 #if BUILDFLAG(IS_ANDROID)
     {"incognito-brand-consistency-for-android",
      flag_descriptions::kIncognitoBrandConsistencyForAndroidName,
@@ -8072,8 +8060,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
+    // TODO(crbug.com/1308294): Replace kOsLinux with Lacros in Link
+    // Capturing/Intent Chip flags.
     {"link-capturing-ui-update", flag_descriptions::kLinkCapturingUiUpdateName,
-     flag_descriptions::kLinkCapturingUiUpdateDescription, kOsCrOS,
+     flag_descriptions::kLinkCapturingUiUpdateDescription, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(apps::features::kLinkCapturingUiUpdate)},
 #endif
 
@@ -8282,14 +8272,20 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(network::features::kOmitCorsClientCert)},
 
 #if BUILDFLAG(IS_CHROMEOS)
+    // TODO(crbug.com/1308294): Replace kOsLinux with Lacros in Link
+    // Capturing/Intent Chip flags.
     {"link-capturing-infobar", flag_descriptions::kLinkCapturingInfoBarName,
-     flag_descriptions::kLinkCapturingInfoBarDescription, kOsCrOS,
+     flag_descriptions::kLinkCapturingInfoBarDescription, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(apps::features::kLinkCapturingInfoBar)},
 
     {"intent-chip-skips-intent-picker",
      flag_descriptions::kIntentChipSkipsPickerName,
-     flag_descriptions::kIntentChipSkipsPickerDescription, kOsCrOS,
+     flag_descriptions::kIntentChipSkipsPickerDescription, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(apps::features::kIntentChipSkipsPicker)},
+
+    {"intent-chip-app-icon", flag_descriptions::kIntentChipAppIconName,
+     flag_descriptions::kIntentChipAppIconDescription, kOsCrOS | kOsLinux,
+     FEATURE_VALUE_TYPE(apps::features::kIntentChipAppIcon)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

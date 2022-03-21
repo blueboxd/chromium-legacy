@@ -561,7 +561,7 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, InvalidPreloadLink) {
   EXPECT_TRUE(preloads.empty());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, DuplicatePreloads) {
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, MultipleEarlyHints) {
   RegisterHintedScriptResource();
   RegisterHintedStylesheetResource();
 
@@ -569,6 +569,7 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, DuplicatePreloads) {
   entry.body = kPageWithHintedScriptBody;
 
   // Set two Early Hints responses which contain duplicate preload link headers.
+  // The second response should be ignored.
   HeaderField script_link_header = CreatePreloadLinkForScript();
   HeaderField stylesheet_link_header = CreatePreloadLinkForStylesheet();
   entry.AddEarlyHints({script_link_header});
@@ -579,13 +580,13 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, DuplicatePreloads) {
       net::QuicSimpleTestServer::GetFileURL(kPageWithHintedScriptPath),
       "Done"));
   PreloadedResources preloads = WaitForPreloadedResources();
-  EXPECT_EQ(preloads.size(), 2UL);
+  EXPECT_EQ(preloads.size(), 1UL);
 
   GURL script_url = net::QuicSimpleTestServer::GetFileURL(kHintedScriptPath);
   GURL stylesheet_url =
       net::QuicSimpleTestServer::GetFileURL(kHintedStylesheetPath);
   EXPECT_TRUE(preloads.contains(script_url));
-  EXPECT_TRUE(preloads.contains(stylesheet_url));
+  EXPECT_FALSE(preloads.contains(stylesheet_url));
 }
 
 const char kPageWithCrossOriginScriptPage[] =
@@ -757,6 +758,15 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, SimplePreconnect) {
   EXPECT_TRUE(GetEarlyHintsManager(static_cast<RenderFrameHostImpl*>(
                                        shell()->web_contents()->GetMainFrame()))
                   ->WasResourceHintsReceived());
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, InvalidHeader_NewLine) {
+  const std::string kPath = "/header-contains-newline.html";
+  ResponseEntry entry(kPath, net::HTTP_OK);
+  entry.AddEarlyHints({HeaderField("invalid-header", "foo\r\nbar")});
+  RegisterResponse(entry);
+  EXPECT_FALSE(
+      NavigateToURL(shell(), net::QuicSimpleTestServer::GetFileURL(kPath)));
 }
 
 class NavigationEarlyHintsAddressSpaceTest : public NavigationEarlyHintsTest {

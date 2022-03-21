@@ -2944,13 +2944,6 @@ const char kAndroidForceAppLanguagePromptDescription[] =
     "When enabled the app language prompt to change the UI language will"
     "always be shown.";
 
-const char kAndroidLayoutChangeTabReparentingName[] =
-    "Android Chrome UI phone/tablet layout change tab reparenting";
-const char kAndroidLayoutChangeTabReparentingDescription[] =
-    "If enabled, when the screen size switches between phone and tablet size, "
-    "the UI layout updates to the proper one and the current tabs are "
-    "reparented instead of reloaded.";
-
 const char kAndroidSurfaceControlName[] = "Android SurfaceControl";
 const char kAndroidSurfaceControlDescription[] =
     " Enables SurfaceControl to manage the buffer queue for the "
@@ -3913,11 +3906,6 @@ const char kCalculateNativeWinOcclusionName[] =
 const char kCalculateNativeWinOcclusionDescription[] =
     "Calculate window occlusion on Windows will be used in the future "
     "to throttle and potentially unload foreground tabs in occluded windows";
-
-const char kEnableIncognitoShortcutOnDesktopName[] =
-    "Enable Incognito Desktop Shortcut";
-const char kEnableIncognitoShortcutOnDesktopDescription[] =
-    "Enables users to create a desktop shortcut for incognito mode.";
 
 const char kEnableMediaFoundationVideoCaptureName[] =
     "MediaFoundation Video Capture";
@@ -5574,6 +5562,12 @@ const char kIntentChipSkipsPickerDescription[] =
     "intent picker bubble and launch directly into the app. If multiple apps "
     "are installed for a URL, the intent picker will still be shown for "
     "disambigation.";
+
+const char kIntentChipAppIconName[] =
+    "Show app icons in the link capturing intent chip";
+const char kIntentChipAppIconDescription[] =
+    "When enabled, the intent chip in the Omnibox will show the app icon for "
+    "the app which can handle the current URL.";
 
 const char kLinkCapturingInfoBarName[] = "Enable link capturing info bar";
 const char kLinkCapturingInfoBarDescription[] =

@@ -1562,6 +1562,7 @@ if (!is_android) {
       copy_data_to_bundle = true
     } else {
       output_dir = root_out_dir
+      mark_as_data = true
     }
 
     if (enable_resource_allowlist_generation) {
@@ -1629,6 +1630,7 @@ if (is_android) {
 
   java_cpp_enum("download_enum_javagen") {
     sources = [
+      "browser/download/android/download_open_source.h",
       "browser/download/download_dialog_types.h",
       "browser/download/download_prompt_status.h",
     ]

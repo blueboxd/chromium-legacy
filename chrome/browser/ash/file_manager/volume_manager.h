@@ -111,6 +111,10 @@ class Volume : public base::SupportsWeakPtr<Volume> {
   static std::unique_ptr<Volume> CreateForMTP(const base::FilePath& mount_path,
                                               const std::string& label,
                                               bool read_only);
+  static std::unique_ptr<Volume> CreateForFuseBoxMTP(
+      const base::FilePath& mount_path,
+      const std::string& label,
+      bool read_only);
   static std::unique_ptr<Volume> CreateForMediaView(
       const std::string& root_document_id);
   static std::unique_ptr<Volume> CreateMediaViewForTesting(
@@ -489,6 +493,11 @@ class VolumeManager : public KeyedService,
   void AddSmbFsVolume(const base::FilePath& mount_point,
                       const std::string& display_name);
   void RemoveSmbFsVolume(const base::FilePath& mount_point);
+
+  void OnFuseboxAttachStorageMTP(const std::string& fsid,
+                                 const std::string& label,
+                                 bool read_only,
+                                 int error);
 
   SnapshotManager* snapshot_manager() { return snapshot_manager_.get(); }
 

@@ -1091,24 +1091,9 @@
     "expiry_milestone": 100
   },
   {
-    "name": "default-browser-fullscreen-promo-cta-experiment",
-    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 93
-  },
-  {
     "name": "default-browser-fullscreen-promo-experiment",
     "owners": [ "thegreenfrog", "bling-flags@google.com" ],
     "expiry_milestone": 93
-  },
-  {
-    "name": "default-browser-promo-non-modal",
-    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 97
-  },
-  {
-    "name": "default-browser-promo-tailored",
-    "owners": [ "rkgibson@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 97
   },
   {
     "name": "default-chrome-apps-migration",
@@ -1492,11 +1477,6 @@
   {
     "name": "enable-android-dark-search",
     "owners": [ "wylieb", "twellington", "fgorski" ],
-    "expiry_milestone": 95
-  },
-  {
-    "name": "enable-android-layout-change-tab-reparenting",
-    "owners": [ "lazzzis@google.com", "twellington" ],
     "expiry_milestone": 95
   },
   {
@@ -2022,11 +2002,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "enable-ephemeral-guest-profiles-on-desktop",
-    "owners": [ "rhalavati", "chrome-privacy-core@google.com" ],
-    "expiry_milestone": 92
-  },
-  {
     "name": "enable-experimental-accessibility-dictation-commands",
     "owners": [ "akihiroota", "katie" ],
     "expiry_milestone": 101
@@ -2265,11 +2240,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "enable-incognito-shortcut-on-desktop",
-    "owners": [ "rhalavati", "chrome-privacy-core@google.com" ],
-    "expiry_milestone": 92
-  },
-  {
     "name": "enable-input-event-logging",
     "owners": [ "hcutts", "chromeos-tango@google.com" ],
     // Used to attach input device debugging information to feedback reports.
@@ -2308,8 +2278,8 @@
   },
   {
     "name": "enable-lacros-in-web-kiosk",
-    "owners": ["anqing", "apotapchuk"],
-    "expiry_milestone": 100
+    "owners": ["bfranz", "chromeos-kiosk-eng@google.com"],
+    "expiry_milestone": 110
   },
   {
     "name": "enable-launcher-app-paging",
@@ -3697,6 +3667,11 @@
     "name": "intensive-wake-up-throttling",
     "owners": [ "fdoray" ],
     "expiry_milestone": 95
+  },
+  {
+    "name": "intent-chip-app-icon",
+    "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
+    "expiry_milestone": 105
   },
   {
     "name": "intent-chip-skips-intent-picker",

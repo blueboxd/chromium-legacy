@@ -1679,9 +1679,6 @@ extern const char kAndroidDetailedLanguageSettingsDescription[];
 extern const char kAndroidForceAppLanguagePromptName[];
 extern const char kAndroidForceAppLanguagePromptDescription[];
 
-extern const char kAndroidLayoutChangeTabReparentingName[];
-extern const char kAndroidLayoutChangeTabReparentingDescription[];
-
 extern const char kAndroidSurfaceControlName[];
 extern const char kAndroidSurfaceControlDescription[];
 
@@ -2242,9 +2239,6 @@ extern const char kSCTAuditingDescription[];
 
 extern const char kCalculateNativeWinOcclusionName[];
 extern const char kCalculateNativeWinOcclusionDescription[];
-
-extern const char kEnableIncognitoShortcutOnDesktopName[];
-extern const char kEnableIncognitoShortcutOnDesktopDescription[];
 
 extern const char kEnableMediaFoundationVideoCaptureName[];
 extern const char kEnableMediaFoundationVideoCaptureDescription[];
@@ -3207,6 +3201,9 @@ extern const char kEnableTtsLacrosSupportDescription[];
 
 extern const char kIntentChipSkipsPickerName[];
 extern const char kIntentChipSkipsPickerDescription[];
+
+extern const char kIntentChipAppIconName[];
+extern const char kIntentChipAppIconDescription[];
 
 extern const char kLinkCapturingInfoBarName[];
 extern const char kLinkCapturingInfoBarDescription[];

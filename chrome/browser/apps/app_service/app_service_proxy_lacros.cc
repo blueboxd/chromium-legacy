@@ -37,99 +37,6 @@
 
 namespace apps {
 
-AppServiceProxyLacros::InnerIconLoader::InnerIconLoader(
-    AppServiceProxyLacros* host)
-    : host_(host), overriding_icon_loader_for_testing_(nullptr) {}
-
-absl::optional<IconKey> AppServiceProxyLacros::InnerIconLoader::GetIconKey(
-    const std::string& app_id) {
-  if (overriding_icon_loader_for_testing_) {
-    return overriding_icon_loader_for_testing_->GetIconKey(app_id);
-  }
-
-  if (!host_->crosapi_receiver_.is_bound()) {
-    return absl::nullopt;
-  }
-
-  absl::optional<IconKey> icon_key;
-  host_->app_registry_cache_.ForApp(
-      app_id,
-      [&icon_key](const AppUpdate& update) { icon_key = update.IconKey(); });
-  return icon_key;
-}
-
-std::unique_ptr<IconLoader::Releaser>
-AppServiceProxyLacros::InnerIconLoader::LoadIconFromIconKey(
-    AppType app_type,
-    const std::string& app_id,
-    const IconKey& icon_key,
-    IconType icon_type,
-    int32_t size_hint_in_dip,
-    bool allow_placeholder_icon,
-    apps::LoadIconCallback callback) {
-  if (overriding_icon_loader_for_testing_) {
-    return overriding_icon_loader_for_testing_->LoadIconFromIconKey(
-        app_type, app_id, icon_key, icon_type, size_hint_in_dip,
-        allow_placeholder_icon, std::move(callback));
-  }
-
-  auto* service = chromeos::LacrosService::Get();
-
-  if (!service || !service->IsAvailable<crosapi::mojom::AppServiceProxy>()) {
-    std::move(callback).Run(std::make_unique<IconValue>());
-  } else if (host_->crosapi_app_service_proxy_version_ <
-             int{crosapi::mojom::AppServiceProxy::MethodMinVersions::
-                     kLoadIconMinVersion}) {
-    LOG(WARNING) << "Ash AppServiceProxy version "
-                 << host_->crosapi_app_service_proxy_version_
-                 << " does not support LoadIcon().";
-    std::move(callback).Run(std::make_unique<IconValue>());
-  } else {
-    service->GetRemote<crosapi::mojom::AppServiceProxy>()->LoadIcon(
-        app_id, icon_key.Clone(), icon_type, size_hint_in_dip,
-        std::move(callback));
-  }
-  return nullptr;
-}
-
-std::unique_ptr<IconLoader::Releaser>
-AppServiceProxyLacros::InnerIconLoader::LoadIconFromIconKey(
-    apps::mojom::AppType app_type,
-    const std::string& app_id,
-    apps::mojom::IconKeyPtr icon_key,
-    apps::mojom::IconType icon_type,
-    int32_t size_hint_in_dip,
-    bool allow_placeholder_icon,
-    apps::mojom::Publisher::LoadIconCallback callback) {
-  if (overriding_icon_loader_for_testing_) {
-    return overriding_icon_loader_for_testing_->LoadIconFromIconKey(
-        app_type, app_id, std::move(icon_key), icon_type, size_hint_in_dip,
-        allow_placeholder_icon, std::move(callback));
-  }
-
-  auto* service = chromeos::LacrosService::Get();
-
-  if (!service || !service->IsAvailable<crosapi::mojom::AppServiceProxy>() ||
-      !icon_key) {
-    std::move(callback).Run(apps::mojom::IconValue::New());
-  } else if (host_->crosapi_app_service_proxy_version_ <
-             int{crosapi::mojom::AppServiceProxy::MethodMinVersions::
-                     kLoadIconMinVersion}) {
-    LOG(WARNING) << "Ash AppServiceProxy version "
-                 << host_->crosapi_app_service_proxy_version_
-                 << " does not support LoadIcon().";
-    std::move(callback).Run(apps::mojom::IconValue::New());
-  } else {
-    service->GetRemote<crosapi::mojom::AppServiceProxy>()->LoadIcon(
-        app_id,
-        std::make_unique<IconKey>(icon_key->timeline, icon_key->resource_id,
-                                  icon_key->icon_effects),
-        ConvertMojomIconTypeToIconType(icon_type), size_hint_in_dip,
-        IconValueToMojomIconValueCallback(std::move(callback)));
-  }
-  return nullptr;
-}
-
 AppServiceProxyLacros::AppServiceProxyLacros(Profile* profile)
     : inner_icon_loader_(this),
       icon_coalescer_(&inner_icon_loader_),
@@ -144,8 +51,7 @@ AppServiceProxyLacros::AppServiceProxyLacros(Profile* profile)
           std::make_unique<apps::BrowserAppInstanceTracker>(
               profile_, app_registry_cache_);
       auto& registry =
-          chromeos::LacrosService::Get()
-              ->GetRemote<crosapi::mojom::BrowserAppInstanceRegistry>();
+          service->GetRemote<crosapi::mojom::BrowserAppInstanceRegistry>();
       DCHECK(registry);
       browser_app_instance_forwarder_ =
           std::make_unique<apps::BrowserAppInstanceForwarder>(
@@ -156,46 +62,6 @@ AppServiceProxyLacros::AppServiceProxyLacros(Profile* profile)
 
 AppServiceProxyLacros::~AppServiceProxyLacros() = default;
 
-void AppServiceProxyLacros::Initialize() {
-  if (!IsValidProfile()) {
-    return;
-  }
-
-  browser_app_launcher_ = std::make_unique<apps::BrowserAppLauncher>(profile_);
-
-  if (profile_->IsMainProfile()) {
-    lacros_web_apps_controller_ =
-        std::make_unique<web_app::LacrosWebAppsController>(profile_);
-    lacros_web_apps_controller_->Init();
-  }
-
-  // Make the chrome://app-icon/ resource available.
-  content::URLDataSource::Add(profile_,
-                              std::make_unique<apps::AppIconSource>(profile_));
-
-  auto* service = chromeos::LacrosService::Get();
-
-  if (!service || !service->IsAvailable<crosapi::mojom::AppServiceProxy>()) {
-    return;
-  }
-
-  crosapi_app_service_proxy_version_ =
-      service->GetInterfaceVersion(crosapi::mojom::AppServiceProxy::Uuid_);
-
-  if (crosapi_app_service_proxy_version_ <
-      int{crosapi::mojom::AppServiceProxy::MethodMinVersions::
-              kRegisterAppServiceSubscriberMinVersion}) {
-    LOG(WARNING) << "Ash AppServiceProxy version "
-                 << crosapi_app_service_proxy_version_
-                 << " does not support RegisterAppServiceSubscriber().";
-    return;
-  }
-
-  service->GetRemote<crosapi::mojom::AppServiceProxy>()
-      ->RegisterAppServiceSubscriber(
-          crosapi_receiver_.BindNewPipeAndPassRemote());
-}
-
 void AppServiceProxyLacros::ReInitializeForTesting(Profile* profile) {
   // Some test code creates a profile and profile-linked services, like the App
   // Service, before the profile is fully initialized. Such tests can call this
@@ -205,20 +71,6 @@ void AppServiceProxyLacros::ReInitializeForTesting(Profile* profile) {
   profile_ = profile;
   is_using_testing_profile_ = true;
   Initialize();
-}
-
-bool AppServiceProxyLacros::IsValidProfile() {
-  if (!profile_) {
-    return false;
-  }
-
-  // We only initialize the App Service for regular or guest profiles. Non-guest
-  // off-the-record profiles do not get an instance.
-  if (profile_->IsOffTheRecord() && !profile_->IsGuestSession()) {
-    return false;
-  }
-
-  return true;
 }
 
 apps::AppRegistryCache& AppServiceProxyLacros::AppRegistryCache() {
@@ -279,9 +131,7 @@ void AppServiceProxyLacros::Launch(const std::string& app_id,
                                    int32_t event_flags,
                                    apps::mojom::LaunchSource launch_source,
                                    apps::mojom::WindowInfoPtr window_info) {
-  auto* service = chromeos::LacrosService::Get();
-
-  if (!service || !service->IsAvailable<crosapi::mojom::AppServiceProxy>()) {
+  if (!remote_crosapi_app_service_proxy_) {
     return;
   }
 
@@ -294,7 +144,7 @@ void AppServiceProxyLacros::Launch(const std::string& app_id,
     return;
   }
 
-  service->GetRemote<crosapi::mojom::AppServiceProxy>()->Launch(
+  remote_crosapi_app_service_proxy_->Launch(
       CreateCrosapiLaunchParamsWithEventFlags(this, app_id, event_flags,
                                               launch_source,
                                               display::kInvalidDisplayId));
@@ -305,9 +155,7 @@ void AppServiceProxyLacros::LaunchAppWithFiles(
     int32_t event_flags,
     apps::mojom::LaunchSource launch_source,
     apps::mojom::FilePathsPtr file_paths) {
-  auto* service = chromeos::LacrosService::Get();
-
-  if (!service || !service->IsAvailable<crosapi::mojom::AppServiceProxy>()) {
+  if (!remote_crosapi_app_service_proxy_) {
     return;
   }
 
@@ -322,8 +170,7 @@ void AppServiceProxyLacros::LaunchAppWithFiles(
   auto params = CreateCrosapiLaunchParamsWithEventFlags(
       this, app_id, event_flags, launch_source, display::kInvalidDisplayId);
   params->intent = apps_util::CreateCrosapiIntentForViewFiles(file_paths);
-  service->GetRemote<crosapi::mojom::AppServiceProxy>()->Launch(
-      std::move(params));
+  remote_crosapi_app_service_proxy_->Launch(std::move(params));
 }
 
 void AppServiceProxyLacros::LaunchAppWithIntent(
@@ -333,9 +180,8 @@ void AppServiceProxyLacros::LaunchAppWithIntent(
     apps::mojom::LaunchSource launch_source,
     apps::mojom::WindowInfoPtr window_info) {
   CHECK(intent);
-  auto* service = chromeos::LacrosService::Get();
 
-  if (!service || !service->IsAvailable<crosapi::mojom::AppServiceProxy>()) {
+  if (!remote_crosapi_app_service_proxy_) {
     return;
   }
 
@@ -353,8 +199,7 @@ void AppServiceProxyLacros::LaunchAppWithIntent(
       window_info ? window_info->display_id : display::kInvalidDisplayId);
   params->intent =
       apps_util::ConvertAppServiceToCrosapiIntent(intent, profile_);
-  service->GetRemote<crosapi::mojom::AppServiceProxy>()->Launch(
-      std::move(params));
+  remote_crosapi_app_service_proxy_->Launch(std::move(params));
 }
 
 void AppServiceProxyLacros::LaunchAppWithUrl(
@@ -369,9 +214,7 @@ void AppServiceProxyLacros::LaunchAppWithUrl(
 
 void AppServiceProxyLacros::LaunchAppWithParams(AppLaunchParams&& params,
                                                 LaunchCallback callback) {
-  auto* service = chromeos::LacrosService::Get();
-
-  if (!service || !service->IsAvailable<crosapi::mojom::AppServiceProxy>()) {
+  if (!remote_crosapi_app_service_proxy_) {
     return;
   }
 
@@ -384,7 +227,7 @@ void AppServiceProxyLacros::LaunchAppWithParams(AppLaunchParams&& params,
     return;
   }
 
-  service->GetRemote<crosapi::mojom::AppServiceProxy>()->Launch(
+  remote_crosapi_app_service_proxy_->Launch(
       ConvertLaunchParamsToCrosapi(params, profile_));
 
   // TODO(crbug.com/1244506): Add params on crosapi and implement this.
@@ -437,6 +280,10 @@ void AppServiceProxyLacros::ExecuteContextMenuCommand(
 
 void AppServiceProxyLacros::OpenNativeSettings(const std::string& app_id) {
   NOTIMPLEMENTED();
+}
+
+void AppServiceProxyLacros::FlushMojoCallsForTesting() {
+  crosapi_receiver_.FlushForTesting();
 }
 
 apps::IconLoader* AppServiceProxyLacros::OverrideInnerIconLoaderForTesting(
@@ -533,13 +380,7 @@ void AppServiceProxyLacros::AddPreferredApp(const std::string& app_id,
 void AppServiceProxyLacros::AddPreferredApp(
     const std::string& app_id,
     const apps::mojom::IntentPtr& intent) {
-  auto* service = chromeos::LacrosService::Get();
-
-  if (!service) {
-    return;
-  }
-
-  if (!service->IsAvailable<crosapi::mojom::AppServiceProxy>()) {
+  if (!remote_crosapi_app_service_proxy_) {
     return;
   }
 
@@ -550,7 +391,7 @@ void AppServiceProxyLacros::AddPreferredApp(
     return;
   }
 
-  service->GetRemote<crosapi::mojom::AppServiceProxy>()->AddPreferredApp(
+  remote_crosapi_app_service_proxy_->AddPreferredApp(
       app_id, apps_util::ConvertAppServiceToCrosapiIntent(intent, profile_));
 }
 
@@ -567,6 +408,173 @@ void AppServiceProxyLacros::RemoveSupportedLinksPreference(
 void AppServiceProxyLacros::SetWindowMode(const std::string& app_id,
                                           apps::mojom::WindowMode window_mode) {
   NOTIMPLEMENTED();
+}
+
+web_app::LacrosWebAppsController*
+AppServiceProxyLacros::LacrosWebAppsControllerForTesting() {
+  return lacros_web_apps_controller_.get();
+}
+
+void AppServiceProxyLacros::SetCrosapiAppServiceProxyForTesting(
+    crosapi::mojom::AppServiceProxy* proxy) {
+  remote_crosapi_app_service_proxy_ = proxy;
+  // Set the proxy version to the newest version for testing.
+  crosapi_app_service_proxy_version_ =
+      crosapi::mojom::AppServiceProxy::Version_;
+}
+
+AppServiceProxyLacros::InnerIconLoader::InnerIconLoader(
+    AppServiceProxyLacros* host)
+    : host_(host), overriding_icon_loader_for_testing_(nullptr) {}
+
+absl::optional<IconKey> AppServiceProxyLacros::InnerIconLoader::GetIconKey(
+    const std::string& app_id) {
+  if (overriding_icon_loader_for_testing_) {
+    return overriding_icon_loader_for_testing_->GetIconKey(app_id);
+  }
+
+  if (!host_->crosapi_receiver_.is_bound()) {
+    return absl::nullopt;
+  }
+
+  absl::optional<IconKey> icon_key;
+  host_->app_registry_cache_.ForApp(
+      app_id,
+      [&icon_key](const AppUpdate& update) { icon_key = update.IconKey(); });
+  return icon_key;
+}
+
+std::unique_ptr<IconLoader::Releaser>
+AppServiceProxyLacros::InnerIconLoader::LoadIconFromIconKey(
+    AppType app_type,
+    const std::string& app_id,
+    const IconKey& icon_key,
+    IconType icon_type,
+    int32_t size_hint_in_dip,
+    bool allow_placeholder_icon,
+    apps::LoadIconCallback callback) {
+  if (overriding_icon_loader_for_testing_) {
+    return overriding_icon_loader_for_testing_->LoadIconFromIconKey(
+        app_type, app_id, icon_key, icon_type, size_hint_in_dip,
+        allow_placeholder_icon, std::move(callback));
+  }
+
+  if (!host_->remote_crosapi_app_service_proxy_) {
+    std::move(callback).Run(std::make_unique<IconValue>());
+  } else if (host_->crosapi_app_service_proxy_version_ <
+             int{crosapi::mojom::AppServiceProxy::MethodMinVersions::
+                     kLoadIconMinVersion}) {
+    LOG(WARNING) << "Ash AppServiceProxy version "
+                 << host_->crosapi_app_service_proxy_version_
+                 << " does not support LoadIcon().";
+    std::move(callback).Run(std::make_unique<IconValue>());
+  } else {
+    host_->remote_crosapi_app_service_proxy_->LoadIcon(
+        app_id, icon_key.Clone(), icon_type, size_hint_in_dip,
+        std::move(callback));
+  }
+  return nullptr;
+}
+
+std::unique_ptr<IconLoader::Releaser>
+AppServiceProxyLacros::InnerIconLoader::LoadIconFromIconKey(
+    apps::mojom::AppType app_type,
+    const std::string& app_id,
+    apps::mojom::IconKeyPtr icon_key,
+    apps::mojom::IconType icon_type,
+    int32_t size_hint_in_dip,
+    bool allow_placeholder_icon,
+    apps::mojom::Publisher::LoadIconCallback callback) {
+  if (overriding_icon_loader_for_testing_) {
+    return overriding_icon_loader_for_testing_->LoadIconFromIconKey(
+        app_type, app_id, std::move(icon_key), icon_type, size_hint_in_dip,
+        allow_placeholder_icon, std::move(callback));
+  }
+
+  if (!host_->remote_crosapi_app_service_proxy_ || !icon_key) {
+    std::move(callback).Run(apps::mojom::IconValue::New());
+  } else if (host_->crosapi_app_service_proxy_version_ <
+             int{crosapi::mojom::AppServiceProxy::MethodMinVersions::
+                     kLoadIconMinVersion}) {
+    LOG(WARNING) << "Ash AppServiceProxy version "
+                 << host_->crosapi_app_service_proxy_version_
+                 << " does not support LoadIcon().";
+    std::move(callback).Run(apps::mojom::IconValue::New());
+  } else {
+    host_->remote_crosapi_app_service_proxy_->LoadIcon(
+        app_id,
+        std::make_unique<IconKey>(icon_key->timeline, icon_key->resource_id,
+                                  icon_key->icon_effects),
+        ConvertMojomIconTypeToIconType(icon_type), size_hint_in_dip,
+        IconValueToMojomIconValueCallback(std::move(callback)));
+  }
+  return nullptr;
+}
+
+bool AppServiceProxyLacros::IsValidProfile() {
+  if (!profile_) {
+    return false;
+  }
+
+  // We only initialize the App Service for regular or guest profiles. Non-guest
+  // off-the-record profiles do not get an instance.
+  if (profile_->IsOffTheRecord() && !profile_->IsGuestSession()) {
+    return false;
+  }
+
+  return true;
+}
+
+void AppServiceProxyLacros::Initialize() {
+  if (remote_crosapi_app_service_proxy_) {
+    return;
+  }
+
+  if (!IsValidProfile()) {
+    return;
+  }
+
+  browser_app_launcher_ = std::make_unique<apps::BrowserAppLauncher>(profile_);
+
+  if (profile_->IsMainProfile()) {
+    lacros_web_apps_controller_ =
+        std::make_unique<web_app::LacrosWebAppsController>(profile_);
+    lacros_web_apps_controller_->Init();
+  }
+
+  // Make the chrome://app-icon/ resource available.
+  content::URLDataSource::Add(profile_,
+                              std::make_unique<apps::AppIconSource>(profile_));
+
+  auto* service = chromeos::LacrosService::Get();
+
+  if (!service || !service->IsAvailable<crosapi::mojom::AppServiceProxy>()) {
+    return;
+  }
+
+  crosapi_app_service_proxy_version_ =
+      service->GetInterfaceVersion(crosapi::mojom::AppServiceProxy::Uuid_);
+
+  if (crosapi_app_service_proxy_version_ <
+      int{crosapi::mojom::AppServiceProxy::MethodMinVersions::
+              kRegisterAppServiceSubscriberMinVersion}) {
+    LOG(WARNING) << "Ash AppServiceProxy version "
+                 << crosapi_app_service_proxy_version_
+                 << " does not support RegisterAppServiceSubscriber().";
+    return;
+  }
+
+  service->GetRemote<crosapi::mojom::AppServiceProxy>()
+      ->RegisterAppServiceSubscriber(
+          crosapi_receiver_.BindNewPipeAndPassRemote());
+  remote_crosapi_app_service_proxy_ =
+      service->GetRemote<crosapi::mojom::AppServiceProxy>().get();
+}
+
+void AppServiceProxyLacros::Shutdown() {
+  if (lacros_web_apps_controller_) {
+    lacros_web_apps_controller_->Shutdown();
+  }
 }
 
 void AppServiceProxyLacros::OnApps(std::vector<AppPtr> deltas,
@@ -593,21 +601,6 @@ void AppServiceProxyLacros::OnPreferredAppsChanged(
 void AppServiceProxyLacros::InitializePreferredApps(
     PreferredAppsList::PreferredApps preferred_apps) {
   preferred_apps_.Init(preferred_apps);
-}
-
-void AppServiceProxyLacros::FlushMojoCallsForTesting() {
-  crosapi_receiver_.FlushForTesting();
-}
-
-web_app::LacrosWebAppsController*
-AppServiceProxyLacros::LacrosWebAppsControllerForTesting() {
-  return lacros_web_apps_controller_.get();
-}
-
-void AppServiceProxyLacros::Shutdown() {
-  if (lacros_web_apps_controller_) {
-    lacros_web_apps_controller_->Shutdown();
-  }
 }
 
 }  // namespace apps

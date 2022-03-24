@@ -4474,6 +4474,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVirtualKeyboardBorderedKeyName,
      flag_descriptions::kVirtualKeyboardBorderedKeyDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardBorderedKey)},
+    {"enable-cros-virtual-keyboard-multitouch",
+     flag_descriptions::kVirtualKeyboardMultitouchName,
+     flag_descriptions::kVirtualKeyboardMultitouchDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardMultitouch)},
     {"enable-experimental-accessibility-dictation-extension",
      flag_descriptions::kExperimentalAccessibilityDictationExtensionName,
      flag_descriptions::kExperimentalAccessibilityDictationExtensionDescription,
@@ -8312,6 +8316,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"intent-chip-app-icon", flag_descriptions::kIntentChipAppIconName,
      flag_descriptions::kIntentChipAppIconDescription, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(apps::features::kIntentChipAppIcon)},
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"launcher-lacros-integration",
+     flag_descriptions::kLauncherLacrosIntegrationName,
+     flag_descriptions::kLauncherLacrosIntegrationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kLauncherLacrosIntegration)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

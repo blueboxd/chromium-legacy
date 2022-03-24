@@ -5042,6 +5042,11 @@ const char kLacrosProfileMigrationForceOffDescription[] =
     "migration is rolled out to the user, the migration will not run and the "
     "user can continue to use lacros without profile migration.";
 
+const char kLauncherLacrosIntegrationName[] = "Launcher lacros integration";
+const char kLauncherLacrosIntegrationDescription[] =
+    "Forces launcher Omnibox search queries to be sent to the lacros browser. "
+    "If disabled, queries are sent to the ash browser.";
+
 const char kLimitShelfItemsToActiveDeskName[] =
     "Limit Shelf items to active desk";
 const char kLimitShelfItemsToActiveDeskDescription[] =
@@ -5387,6 +5392,10 @@ const char kVirtualKeyboardDisabledName[] = "Disable Virtual Keyboard";
 const char kVirtualKeyboardDisabledDescription[] =
     "Always disable virtual keyboard regardless of device mode. Workaround for "
     "virtual keyboard showing with some external keyboards.";
+
+const char kVirtualKeyboardMultitouchName[] = "Virtual Keyboard Multitouch";
+const char kVirtualKeyboardMultitouchDescription[] =
+    "Enables multitouch on the virtual keyboard.";
 
 const char kWakeOnWifiAllowedName[] = "Allow enabling wake on WiFi features";
 const char kWakeOnWifiAllowedDescription[] =

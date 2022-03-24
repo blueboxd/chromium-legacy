@@ -34,17 +34,14 @@ class ListPurchasesConverter {
 
     static final String KEY_ITEM_ID = "purchaseDetails.itemId";
     static final String KEY_PURCHASE_TOKEN = "purchaseDetails.purchaseToken";
-    static final String KEY_ACKNOWLEDGED = "purchaseDetails.acknowledged";
-    static final String KEY_PURCHASE_STATE = "purchaseDetails.purchaseState";
-    static final String KEY_PURCHASE_TIME_MICROSECONDS_PAST_UNIX_EPOCH =
-            "purchaseDetails.purchaseTimeMicrosecondsPastUnixEpoch";
-    static final String KEY_WILL_AUTO_RENEW = "purchaseDetails.willAutoRenew";
 
     // These values are copied from the Play Billing library since Chrome cannot depend on it.
     // https://developer.android.com/reference/com/android/billingclient/api/Purchase.PurchaseState
     static final int PLAY_BILLING_PURCHASE_STATE_PENDING = 2;
     static final int PLAY_BILLING_PURCHASE_STATE_PURCHASED = 1;
     static final int PLAY_BILLING_PURCHASE_STATE_UNSPECIFIED = 0;
+
+    private ListPurchasesConverter() {}
 
     /**
      * Produces a {@link TrustedWebActivityCallback} that calls the given
@@ -76,15 +73,15 @@ class ListPurchasesConverter {
                 Parcelable[] array = args.getParcelableArray(KEY_PURCHASES_LIST);
 
                 PurchaseReference[] reference = convertParcelableArray(
-                        array, ListPurchasesConverter::convertPurchaseDetails)
+                        array, ListPurchasesConverter::convertPurchaseReference)
                                                         .toArray(new PurchaseReference[0]);
                 callback.call(convertResponseCode(code, args), reference);
             }
         };
     }
 
-    /** Convert a PurchaseDetails bundle into a PurchaseReference object. */
-    static PurchaseReference convertPurchaseDetails(Bundle purchase) {
+    /** Convert a Bundle into a PurchaseReference object. */
+    static PurchaseReference convertPurchaseReference(Bundle purchase) {
         if (!checkField(purchase, KEY_ITEM_ID, String.class)) return null;
         if (!checkField(purchase, KEY_PURCHASE_TOKEN, String.class)) return null;
 
@@ -116,18 +113,11 @@ class ListPurchasesConverter {
     }
 
     @VisibleForTesting
-    static Bundle createPurchaseDetailsBundle(String itemId, String purchaseToken,
-            boolean acknowledged, int purchaseState, long purchaseTimeMicrosecondsPastUnixEpoch,
-            boolean willAutoRenew) {
+    static Bundle createPurchaseReferenceBundle(String itemId, String purchaseToken) {
         Bundle bundle = new Bundle();
 
         bundle.putString(KEY_ITEM_ID, itemId);
         bundle.putString(KEY_PURCHASE_TOKEN, purchaseToken);
-        bundle.putBoolean(KEY_ACKNOWLEDGED, acknowledged);
-        bundle.putInt(KEY_PURCHASE_STATE, purchaseState);
-        bundle.putLong(KEY_PURCHASE_TIME_MICROSECONDS_PAST_UNIX_EPOCH,
-                purchaseTimeMicrosecondsPastUnixEpoch);
-        bundle.putBoolean(KEY_WILL_AUTO_RENEW, willAutoRenew);
 
         return bundle;
     }

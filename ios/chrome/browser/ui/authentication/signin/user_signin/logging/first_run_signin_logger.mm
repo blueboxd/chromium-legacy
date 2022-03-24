@@ -8,11 +8,6 @@
 #error "This file requires ARC support."
 #endif
 
-using signin_metrics::AccessPoint;
-using signin_metrics::LogSigninAccessPointStarted;
-using signin_metrics::PromoAction;
-using signin_metrics::RecordSigninUserActionForAccessPoint;
-
 @interface FirstRunSigninLogger ()
 
 // Presenter for showing sync-related UI.
@@ -24,16 +19,22 @@ using signin_metrics::RecordSigninUserActionForAccessPoint;
 
 #pragma mark - Public
 
+- (instancetype)initWithPromoAction:(signin_metrics::PromoAction)promoAction
+              accountManagerService:
+                  (ChromeAccountManagerService*)accountManagerService {
+  return [super
+        initWithAccessPoint:signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE
+                promoAction:promoAction
+      accountManagerService:accountManagerService];
+}
+
 - (void)logSigninStarted {
   if (!self.hasRecordedSigninStarted) {
     self.hasRecordedSigninStarted = YES;
-    LogSigninAccessPointStarted(self.accessPoint, self.promoAction);
-    if (self.accessPoint != AccessPoint::ACCESS_POINT_FORCED_SIGNIN) {
-      // Don't record a sign-in user action when the access point forces the
-      // user to sign-in. Signing in in that case isn't really an action but
-      // rather something required by the policy.
-      RecordSigninUserActionForAccessPoint(self.accessPoint, self.promoAction);
-    }
+    signin_metrics::LogSigninAccessPointStarted(self.accessPoint,
+                                                self.promoAction);
+    signin_metrics::RecordSigninUserActionForAccessPoint(self.accessPoint,
+                                                         self.promoAction);
   }
 }
 

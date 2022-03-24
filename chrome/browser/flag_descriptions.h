@@ -2896,6 +2896,9 @@ extern const char kLacrosSelectionStatefulDescription[];
 extern const char kLacrosSupportName[];
 extern const char kLacrosSupportDescription[];
 
+extern const char kLauncherLacrosIntegrationName[];
+extern const char kLauncherLacrosIntegrationDescription[];
+
 extern const char kLimitShelfItemsToActiveDeskName[];
 extern const char kLimitShelfItemsToActiveDeskDescription[];
 
@@ -3101,6 +3104,9 @@ extern const char kVirtualKeyboardBorderedKeyDescription[];
 
 extern const char kVirtualKeyboardDisabledName[];
 extern const char kVirtualKeyboardDisabledDescription[];
+
+extern const char kVirtualKeyboardMultitouchName[];
+extern const char kVirtualKeyboardMultitouchDescription[];
 
 extern const char kWakeOnWifiAllowedName[];
 extern const char kWakeOnWifiAllowedDescription[];

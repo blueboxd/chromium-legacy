@@ -249,11 +249,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '071d2ba4197530af42298e9a5634ad7edfeee2fd',
+  'v8_revision': '83773ccb4d11d762624981b30dfd3d54d7351778',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'abdccddb7534a11e62c062ff1320f4bbcc6ce45b',
+  'angle_revision': '29b222a3c07c541cafa459ae6886134da3493a4b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -292,7 +292,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '0b635b1eb2a5a648627284de946cd9364929e4d4',
+  'freetype_revision': '034e5dbf92ea3a7ea7c9322e47a3a50ff23f7b55',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -1674,7 +1674,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'fc207904abbb29864991c71c7156336455a3d892',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '81f4af57823c28c903b61b273e6fc2b87787b11b',
+    Var('webrtc_git') + '/src.git' + '@' + '4d7f57adca5e9c9657e0adfdc3c95b6534b85cc2',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1744,7 +1744,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8882289bafe4ec7ad8706a5f4f518bfc028a1260',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@95e50ecd3d9acab17aa63d331240c69c4d4f7d3f',
     'condition': 'checkout_src_internal',
   },
 

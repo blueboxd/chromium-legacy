@@ -4797,6 +4797,54 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="ChromeOSApp.UsageTimeReusedSourceId">
+  <owner>nancylingwang@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records the amount of time that the app were used in the last five minutes
+    on Chrome OS, only when the user allows app syncing or allows sync of
+    everything, and the user does not set up a sync passphrase. Only ARC apps,
+    Chrome apps and web apps(PWA), system web apps, buildin apps are recorded.
+    This is logged every two hours.
+  </summary>
+  <metric name="AppType" enum="AppType">
+    <summary>
+      An enum that records the app type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Duration">
+    <summary>
+      The milliseconds that the app was used.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="UserDeviceMatrix" enum="UserDeviceMatrix">
+    <summary>
+      An enum that records the user type and the device type.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="ClickInput" singular="True">
   <owner>dougarnett@chromium.org</owner>
   <summary>
@@ -8939,7 +8987,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="InputEvent">
-  <owner>hbsong@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <owner>sullivan@chromium.org</owner>
+  <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Metrics associated with user input events. This event is recorded in Blink
     and may not be recorded for the same page visits as events like PageLoad.
@@ -16757,7 +16807,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Responsiveness.UserInteraction">
-  <owner>hbsong@chromium.org</owner>
+  <owner>mmocny@chromium.org</owner>
+  <owner>sullivan@chromium.org</owner>
+  <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Metrics that are associated with user interactions and recorded when users
     interact with web pages. Currently we are interested in keyboard, tap, click

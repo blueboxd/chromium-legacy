@@ -926,10 +926,6 @@ const base::Feature kSpareRendererForSitePerProcess{
 const base::Feature kStopVideoCaptureOnScreenLock{
     "StopVideoCaptureOnScreenLock", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the out-of-process Storage Service.
-const base::Feature kStorageServiceOutOfProcess{
-    "StorageServiceOutOfProcess", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether site isolation should use origins instead of scheme and
 // eTLD+1.
 const base::Feature kStrictOriginIsolation{"StrictOriginIsolation",
@@ -1174,7 +1170,7 @@ const base::Feature kBackgroundMediaRendererHasModerateBinding{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Takes advantage of specifying which big.LITTLE cores to schedule different
-// threads on. Note this conflicts with PowerScheduler feature.
+// threads on.
 const base::Feature kBigLittleScheduling{"BigLittleScheduling",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1198,9 +1194,9 @@ const base::Feature kRequestDesktopSiteExceptions{
     "RequestDesktopSiteExceptions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Request Desktop Site global setting for Android.
-// Refer to the launch bug (https://crbug.com/1107601) for more information.
-const base::Feature kRequestDesktopSiteGlobal{
-    "RequestDesktopSiteGlobal", base::FEATURE_DISABLED_BY_DEFAULT};
+// Refer to the launch bug (https://crbug.com/1244979) for more information.
+const base::Feature kRequestDesktopSiteGlobal{"RequestDesktopSiteGlobal",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Screen Capture API support for Android
 const base::Feature kUserMediaScreenCapturing{

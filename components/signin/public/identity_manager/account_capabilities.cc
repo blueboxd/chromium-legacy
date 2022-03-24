@@ -32,10 +32,11 @@ AccountCapabilities& AccountCapabilities::operator=(
 // static
 const std::vector<std::string>&
 AccountCapabilities::GetSupportedAccountCapabilityNames() {
-  static base::NoDestructor<std::vector<std::string>> kCapabilityNames{
-      {kCanOfferExtendedChromeSyncPromosCapabilityName,
-       kCanRunChromePrivacySandboxTrialsCapabilityName,
-       kIsSubjectToParentalControlsCapabilityName}};
+  static base::NoDestructor<std::vector<std::string>> kCapabilityNames({
+#define ACCOUNT_CAPABILITY(cpp_label, java_label, value) cpp_label,
+#include "components/signin/internal/identity_manager/account_capabilities_list.h"
+#undef ACCOUNT_CAPABILITY
+  });
   return *kCapabilityNames;
 }
 
@@ -66,6 +67,10 @@ signin::Tribool AccountCapabilities::can_offer_extended_chrome_sync_promos()
 signin::Tribool AccountCapabilities::can_run_chrome_privacy_sandbox_trials()
     const {
   return GetCapabilityByName(kCanRunChromePrivacySandboxTrialsCapabilityName);
+}
+
+signin::Tribool AccountCapabilities::can_stop_parental_supervision() const {
+  return GetCapabilityByName(kCanStopParentalSupervisionCapabilityName);
 }
 
 signin::Tribool AccountCapabilities::is_subject_to_parental_controls() const {

@@ -222,6 +222,7 @@ void AddGooglePhotosPhotoIfValid(
   if (!id || !filename || !timestamp_string ||
       !base::Time::FromUTCString(timestamp_string->c_str(), &timestamp) ||
       !url) {
+    LOG(ERROR) << "Failed to parse item in Google Photos photos response.";
     return;
   }
 
@@ -597,6 +598,8 @@ void GooglePhotosFetcher<T>::OnTokenReceived(
     GoogleServiceAuthError error,
     signin::AccessTokenInfo token_info) {
   if (error.state() != GoogleServiceAuthError::NONE) {
+    LOG(ERROR) << "Failed to authenticate Google Photos API request to "
+               << service_url.spec() << ". Error message: " << error.ToString();
     OnResponseReady(service_url, start_time, absl::nullopt);
     return;
   }
@@ -629,15 +632,31 @@ void GooglePhotosFetcher<T>::OnJsonReceived(
     std::unique_ptr<std::string> response_body) {
   const int net_error = url_loaders_[service_url]->NetError();
   if (net_error != net::OK || !response_body) {
+    LOG(ERROR) << "Google Photos API request to " << service_url.spec()
+               << " failed.";
+    auto* response_info = url_loaders_[service_url]->ResponseInfo();
+    if (response_info && response_info->headers) {
+      LOG(ERROR) << "HTTP response code: "
+                 << response_info->headers->response_code();
+    }
     OnResponseReady(service_url, start_time, absl::nullopt);
     return;
   }
 
   data_decoder::DataDecoder::ParseJsonIsolated(
       *response_body,
-      base::BindOnce([](data_decoder::DataDecoder::ValueOrError result) {
-        return std::move(result.value);
-      })
+      base::BindOnce(
+          [](const GURL& service_url,
+             data_decoder::DataDecoder::ValueOrError result) {
+            if (result.error.has_value()) {
+              LOG(ERROR) << "Failed to parse JSON response from Google Photos "
+                            "API request to "
+                         << service_url.spec()
+                         << ". Error message: " << result.error.value();
+            }
+            return std::move(result.value);
+          },
+          service_url)
           .Then(base::BindOnce(&GooglePhotosFetcher::OnResponseReady,
                                weak_factory_.GetWeakPtr(), service_url,
                                start_time)));
@@ -656,7 +675,9 @@ void GooglePhotosFetcher<T>::OnResponseReady(
         api.value(), /*response_time=*/base::TimeTicks::Now() - start_time,
         GetResultCount(result));
   } else {
-    NOTREACHED();
+    NOTREACHED()
+        << "Google Photos API request made to an unrecognized endpoint: "
+        << service_url.spec();
   }
 
   for (auto& callback : pending_client_callbacks_[service_url])
@@ -696,24 +717,6 @@ GooglePhotosAlbumsCbkArgs GooglePhotosAlbumsFetcher::ParseResponse(
   if (resume_token && !resume_token->empty())
     parsed_response->resume_token = *resume_token;
 
-  // TODO(b/214577469): Remove code path to determine photo URL via item ID once
-  // API change hits prod. The photos listed under "item", if present, are the
-  // albums' cover photos.
-  std::map<std::string, std::string> cover_photo_urls_by_id;
-  const auto* response_photos = response->FindList("item");
-  if (response_photos) {
-    // Populate the ID -> URL mapping for the each album's cover photo.
-    for (const auto& untyped_response_photo : *response_photos) {
-      DCHECK(untyped_response_photo.is_dict());
-      const auto& response_photo = untyped_response_photo.GetDict();
-      const auto* id = response_photo.FindStringByDottedPath("itemId.mediaKey");
-      const auto* url =
-          response_photo.FindStringByDottedPath("photo.servingUrl");
-      if (id && url)
-        cover_photo_urls_by_id.emplace(*id, *url);
-    }
-  }
-
   const auto* response_albums = response->FindList("collection");
   if (!response_albums)
     return parsed_response;
@@ -727,33 +730,21 @@ GooglePhotosAlbumsCbkArgs GooglePhotosAlbumsFetcher::ParseResponse(
         response_album.FindStringByDottedPath("collectionId.mediaKey");
     const auto* title = response_album.FindString("name");
     const auto* num_photos_string = response_album.FindString("numPhotos");
-
-    // TODO(b/214577469): Remove code path to determine photo URL via item ID
-    // once API change hits prod.
-    const auto* cover_photo_id =
-        response_album.FindStringByDottedPath("coverItemId.mediaKey");
-    auto cover_photo_url_iter =
-        cover_photo_id ? cover_photo_urls_by_id.find(*cover_photo_id)
-                       : cover_photo_urls_by_id.end();
-    const auto* cover_photo_url_ptr =
+    const auto* cover_photo_url =
         response_album.FindString("coverItemServingUrl");
 
     int64_t num_photos;
     if (!album_id || !title || !num_photos_string ||
         !base::StringToInt64(*num_photos_string, &num_photos) ||
-        num_photos < 1 ||
-        (cover_photo_url_iter == cover_photo_urls_by_id.end() &&
-         !cover_photo_url_ptr)) {
+        num_photos < 1 || !cover_photo_url) {
+      LOG(ERROR) << "Failed to parse item in Google Photos albums response.";
       continue;
     }
 
-    auto cover_photo_url_string = cover_photo_url_ptr
-                                      ? *cover_photo_url_ptr
-                                      : cover_photo_url_iter->second;
     parsed_response->albums->push_back(
         ash::personalization_app::mojom::GooglePhotosAlbum::New(
             *album_id, *title, base::saturated_cast<int>(num_photos),
-            GURL(cover_photo_url_string)));
+            GURL(*cover_photo_url)));
   }
   return parsed_response;
 }
@@ -784,8 +775,11 @@ int GooglePhotosCountFetcher::ParseResponse(const base::Value::Dict* response) {
   const auto* count_string = response->FindStringByDottedPath("user.numPhotos");
 
   int64_t count;
-  if (!count_string || !base::StringToInt64(*count_string, &count) || count < 0)
+  if (!count_string || !base::StringToInt64(*count_string, &count) ||
+      count < 0) {
+    LOG(ERROR) << "Failed to parse Google Photos count response.";
     return -1;
+  }
 
   return base::saturated_cast<int>(count);
 }
@@ -815,8 +809,10 @@ GooglePhotosEnablementState GooglePhotosEnabledFetcher::ParseResponse(
 
   const auto* state = response->FindStringByDottedPath("status.userState");
 
-  if (!state)
+  if (!state) {
+    LOG(ERROR) << "Failed to parse Google Photos enabled response.";
     return GooglePhotosEnablementState::kError;
+  }
 
   return *state == "USER_PERMITTED"
              ? GooglePhotosEnablementState::kEnabled

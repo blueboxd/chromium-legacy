@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_H_
 
 #include "base/dcheck_is_on.h"
+#include "base/notreached.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -101,10 +102,23 @@ const int kNodeCustomElementShift = 17;
 enum StyleChangeType : uint32_t {
   // This node does not need style recalculation.
   kNoStyleChange = 0,
-  // This node needs style recalculation.
-  kLocalStyleChange = 1 << kNodeStyleChangeShift,
+  // This node needs style recalculation, but the changes are of
+  // a very limited set:
+  //
+  //  1. They only touch the node's inline style (style="" attribute).
+  //  2. They don't add or remove any properties.
+  //  3. They only touch independent properties.
+  //
+  // If all changes are of this type, we can do incremental style
+  // recalculation by reusing the previous style and just applying
+  // any modified inline style, which is cheaper than a full recalc.
+  // See CanApplyInlineStyleIncrementally() and comments on
+  // StyleResolver::ApplyBaseStyle() for more details.
+  kInlineIndependentStyleChange = 1 << kNodeStyleChangeShift,
+  // This node needs (full) style recalculation.
+  kLocalStyleChange = 2 << kNodeStyleChangeShift,
   // This node and all of its flat-tree descendeants need style recalculation.
-  kSubtreeStyleChange = 2 << kNodeStyleChangeShift,
+  kSubtreeStyleChange = 3 << kNodeStyleChangeShift,
 };
 
 enum class CustomElementState : uint32_t {

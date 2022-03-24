@@ -10,11 +10,13 @@ namespace policy {
 namespace policy_prefs {
 
 #if BUILDFLAG(IS_WIN)
-// Boolean pref that stores if the OS is actively managed by
-// Azure Active Directory. This will be used to cache the management status so
-// that it is loaded faster at sartup.
+// Integer pref that stores Azure Active Directory management authority.
 const char kAzureActiveDirectoryManagement[] =
     "management.platform.azure_active_directory";
+
+// Integer pref that stores the Windows enterprise MDM management authority.
+const char kEnterpriseMDMManagementWindows[] =
+    "management.platform.enterprise_mdm_win";
 #elif BUILDFLAG(IS_MAC)
 // Integer pref that stores the Mac enterprise MDM management authority.
 const char kEnterpriseMDMManagementMac[] =
@@ -78,6 +80,11 @@ const char kIntensiveWakeUpThrottlingEnabled[] =
 // _blank receives an opener. TODO(crbug.com/898942): Remove this in Chrome 95.
 const char kTargetBlankImpliesNoOpener[] =
     "policy.target_blank_implies_noopener";
+
+// Boolean policy preference for force enabling or disabling the
+// SetTimeoutWithoutClamp web feature.
+const char kSetTimeoutWithout1MsClampEnabled[] =
+    "policy.set_timeout_without_1ms_clamp";
 
 #if BUILDFLAG(IS_ANDROID)
 // Boolean policy preference to disable the BackForwardCache feature.

@@ -183,7 +183,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Clients.Ads.AllPages.PercentTotalBytesAds" units="%"
-    expires_after="2022-03-28">
+    expires_after="2023-03-28">
   <owner>alexmt@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <summary>
@@ -415,8 +415,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.AMP.InteractiveTiming.{NormalizedResponsivenessMetric}.{UserInteractionLatency}.SubFrame{FullNavigation}"
-    units="ms" expires_after="2022-05-01">
-  <owner>hbsong@chromium.org</owner>
+    units="ms" expires_after="2023-03-23">
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     The {NormalizedResponsivenessMetric} of a page load, in AMP subframes, in
@@ -515,7 +515,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="PageLoad.Clients.AMP.LayoutInstability.MaxCumulativeShiftScore.Subframe.{Navigation}{Window}.Gap{Gap}.Max{MaxWindowSize}"
     units="scorex10" expires_after="2022-09-29">
-  <owner>hbsong@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that has
@@ -1784,7 +1784,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PageLoad.InteractiveTiming.ProcessingTime" units="ms"
     expires_after="2022-11-01">
-  <owner>hbsong@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     The duration between the start of event processing and the end of event
@@ -1797,7 +1797,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PageLoad.InteractiveTiming.TimeToNextPaint" units="ms"
     expires_after="2022-11-01">
-  <owner>hbsong@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     The duration between the end of event processing and the time when the first
@@ -1811,8 +1811,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.InteractiveTiming.{NormalizedResponsivenessMetric}{Bfcache}.{UserInteractionLatency}"
-    units="ms" expires_after="2022-05-01">
-  <owner>hbsong@chromium.org</owner>
+    units="ms" expires_after="2023-03-23">
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     The {NormalizedResponsivenessMetric} of a page load {Bfcache}, in ms. For
@@ -1878,6 +1878,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     The status of PageLoadTiming structs received from the render process over
     IPC.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Internal.PageType" enum="PageLoadTrackerPageType"
+    expires_after="2022-09-01">
+  <owner>toyoshim@chromium.org</owner>
+  <owner>mparch-dev@chromium.org</owner>
+  <summary>
+    This records the Page type that each PageLoadTracker tracks. This metric is
+    recorded when a PageLoadTracker is created for a Page.
   </summary>
 </histogram>
 
@@ -2093,7 +2103,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="PageLoad.LayoutInstability.MaxCumulativeShiftScore.{Bfcache}{Window}.Gap{Gap}.Max{MaxWindowSize}"
     units="scorex10" expires_after="2022-09-29">
-  <owner>hbsong@chromium.org</owner>
+  <owner>iclelland@chromium.org</owner>
   <owner>speed-metrics-dev@chromium.org</owner>
   <summary>
     Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that has

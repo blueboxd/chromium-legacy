@@ -386,6 +386,7 @@
 #include "chromeos/network/cellular_esim_profile_handler_impl.h"
 #include "chromeos/network/cellular_metrics_logger.h"
 #include "chromeos/network/fast_transition_observer.h"
+#include "chromeos/network/managed_cellular_pref_handler.h"
 #include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
@@ -1053,6 +1054,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ash::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
   ash::cert_provisioning::RegisterLocalStatePrefs(registry);
   chromeos::CellularESimProfileHandlerImpl::RegisterLocalStatePrefs(registry);
+  chromeos::ManagedCellularPrefHandler::RegisterLocalStatePrefs(registry);
   ash::ChromeUserManagerImpl::RegisterPrefs(registry);
   crosapi::browser_util::RegisterLocalStatePrefs(registry);
   ash::CupsPrintersManager::RegisterLocalStatePrefs(registry);
@@ -1172,6 +1174,9 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   downgrade::RegisterPrefs(registry);
   DeviceOAuth2TokenStoreDesktop::RegisterPrefs(registry);
 #endif
+
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kSetTimeoutWithout1MsClampEnabled, false);
 
   // This is intentionally last.
   RegisterLocalStatePrefsForMigration(registry);
@@ -1390,7 +1395,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
       RegisterProfilePrefs(registry);
   ash::ClientAppMetadataProviderService::RegisterProfilePrefs(registry);
   ash::CupsPrintersManager::RegisterProfilePrefs(registry);
-  chromeos::device_sync::RegisterProfilePrefs(registry);
+  ash::device_sync::RegisterProfilePrefs(registry);
   ash::FamilyUserChromeActivityMetrics::RegisterProfilePrefs(registry);
   ash::FamilyUserMetricsService::RegisterProfilePrefs(registry);
   ash::FamilyUserSessionMetrics::RegisterProfilePrefs(registry);

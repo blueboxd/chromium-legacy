@@ -13,8 +13,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_document_transition_set_element_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -171,6 +171,7 @@ ScriptPromise DocumentTransition::start(ScriptState* script_state,
   // callbacks from previous requests.
   last_prepare_sequence_id_ = next_sequence_id_++;
 
+  style_tracker_->AddSharedElementsFromCSS();
   bool capture_succeeded = style_tracker_->Capture();
   if (!capture_succeeded) {
     exception_state.ThrowDOMException(
@@ -311,6 +312,7 @@ void DocumentTransition::NotifyPostCaptureCallbackResolved(bool success) {
     return;
   }
 
+  style_tracker_->AddSharedElementsFromCSS();
   bool start_succeeded = style_tracker_->Start();
   if (!start_succeeded) {
     CancelPendingTransition(kAbortedFromInvalidConfigAtStart);
@@ -521,7 +523,8 @@ void DocumentTransition::ResetScriptState(const char* abort_message) {
 
   if (start_promise_resolver_) {
     if (abort_message) {
-      start_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
+      start_promise_resolver_->Reject(V8ThrowDOMException::CreateOrDie(
+          start_promise_resolver_->GetScriptState()->GetIsolate(),
           DOMExceptionCode::kAbortError, abort_message));
     } else {
       start_promise_resolver_->Detach();

@@ -339,10 +339,6 @@
       status: "experimental",
     },
     {
-      name: "Canvas2dStaysGPUOnReadback",
-      status: "experimental",
-    },
-    {
       name: "CanvasColorManagement",
       status: "stable",
     },
@@ -897,6 +893,12 @@
       },
     },
     {
+      name: "DigitalGoodsV2_1",
+      // crbug.com/1143079: Web tests cannot differentiate ChromeOS and Linux,
+      // so enable the API on all platforms for testing.
+      status: "test",
+    },
+    {
       name: "DirectSockets",
       status: "test",
     },
@@ -1217,6 +1219,16 @@
       // Enables the getDisplayMediaSet API for multi surface capture.
       name: "GetDisplayMediaSet",
       depends_on: ["GetDisplayMedia"],
+      status: "test",
+    },
+    {
+      name: "GetDisplayMediaSetAutoSelectAllScreens",
+      depends_on: ["GetDisplayMediaSet"],
+      status: {
+        "ChromeOS_Ash": "test",
+        "ChromeOS_Lacros": "test",
+        "default": "",
+      }
     },
     {
       name: "GravitySensor",
@@ -1335,6 +1347,7 @@
       // https://drafts.csswg.org/css-flexbox-1/#pagination
       name: "LayoutNGFlexFragmentation",
       depends_on: ["LayoutNG"],
+      status: "test",
     },
     {
       // Traverse the fragment tree when painting and hit-testing, instead of
@@ -1410,6 +1423,10 @@
     {
       name: "LegacyWindowsDWriteFontFallback",
       // Enabled by features::kLegacyWindowsDWriteFontFallback;
+    },
+    {
+      name: "MachineLearningModelLoader",
+      status: "experimental",
     },
     {
       name: "ManagedConfiguration",
@@ -1559,6 +1576,10 @@
     },
     {
       name: "MojoJS",
+      status: "test",
+    },
+    {
+      name: "MojoJSFileSystemAccess",
       status: "test",
     },
     // MojoJSTest is used exclusively in testing environments, whereas MojoJS

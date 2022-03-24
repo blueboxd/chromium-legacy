@@ -82,17 +82,19 @@ constexpr const char* const kDeletablePaths[] = {
     "blob_storage",
     "Cache",
     "Code Cache",
+    "coupon_db",
     "crash",
-    "data_reduction_proxy_leveldb",
     "Download Service",
     "GCache",
+    "GPUCache",
     "heavy_ad_intervention_opt_out.db",
+    "merchant_signal_db",
     "Network Action Predictor",
     "Network Persistent State",
-    "optimization_guide_hint_cache_store",
     "previews_opt_out.db",
     "Reporting and NEL",
     "Site Characteristics Database",
+    "Translate Ranker Model",
     "TransportSecurity"};
 
 // The base names of files/dirs that should remain in ash data
@@ -105,25 +107,30 @@ constexpr const char* const kRemainInAshDataPaths[] = {
     "autobrightness",
     "BudgetDatabase",
     "crostini.icons",
+    "data_reduction_proxy_leveldb",
     "Downloads",
     "extension_install_log",
+    "Feature Engagement Tracker",
     "FullRestoreData",
     "GCM Store",
     "google-assistant-library",
-    "GPUCache",
+    "input_methods",
+    "launcher_ranking",
+    "LOCK",
+    "LOG",
+    "LOG.old",
     "login-times",
     "logout-times",
     "MyFiles",
     "NearbySharePublicCertificateDatabase",
     "PPDCache",
     "PreferredApps",
-    "PreferredApps",
     "PrintJobDatabase",
     "README",
     "RLZ Data",
     "smartcharging",
     "structured_metrics",
-    "Translate Ranker Model",
+    "Sync Data",
     "Trusted Vault",
     "WebRTC Logs",
     "webrtc_event_logs",
@@ -132,54 +139,77 @@ constexpr const char* const kRemainInAshDataPaths[] = {
 
 // The base names of files/dirs that are required for browsing and should be
 // moved to lacros data dir.
-constexpr const char* const kLacrosDataPaths[]{"AutofillStrikeDatabase",
-                                               "Bookmarks",
-                                               "Cookies",
-                                               "databases",
-                                               "DNR Extension Rules",
-                                               "Extension Cookies",
-                                               "Extension Rules",
-                                               "Extension Scripts",
-                                               "Extension State",
-                                               "Extensions",
-                                               "Favicons",
-                                               "File System",
-                                               "History",
-                                               "IndexedDB",
-                                               "Local App Settings",
-                                               "Local Extension Settings",
-                                               "Local Storage",
-                                               "Managed Extension Settings",
-                                               "QuotaManager",
-                                               "Service Worker",
-                                               "Session Storage",
-                                               "Sessions",
-                                               "Shortcuts",
-                                               "Sync App Settings",
-                                               "Top Sites",
-                                               "Visited Links",
-                                               "Web Applications",
-                                               "Web Data"};
+constexpr const char* const kLacrosDataPaths[]{
+    "Affiliation Database",
+    "AutofillStrikeDatabase",
+    "Bookmarks",
+    "chrome_cart_db",
+    "commerce_subscription_db",
+    "Cookies",
+    "databases",
+    "Extension Rules",
+    "Extension Scripts",
+    "Extension State",
+    "Extensions",
+    "Favicons",
+    "File System",
+    "History",
+    "IndexedDB",
+    "Local App Settings",
+    "Local Extension Settings",
+    "Local Storage",
+    "Login Data",
+    "Login Data For Account",
+    "optimization_guide_hint_cache_store",
+    "optimization_guide_model_and_features_store",
+    "Managed Extension Settings",
+    "persisted_state_db",
+    "Platform Notifications",
+    "QuotaManager",
+    "Safe Browsing Cookies",
+    "Safe Browsing Network",
+    "Service Worker",
+    "Session Storage",
+    "Sessions",
+    "Shortcuts",
+    "Sync App Settings",
+    "Sync Extension Settings",
+    "Top Sites",
+    "Visited Links",
+    "Web Applications",
+    "Web Data"};
 
 // The base names of files/dirs that are required by both ash and lacros and
 // thus should be copied to lacros while keeping the original files/dirs in ash
 // data dir.
-constexpr const char* const kNeedCopyDataPaths[]{"Affiliation Database",
-                                                 "Login Data",
-                                                 "Platform Notifications",
-                                                 "Policy",
-                                                 "Preferences",
-                                                 "shared_proto_db"};
+constexpr const char* const kNeedCopyDataPaths[]{
+    "DNR Extension Rules", "Extension Cookies", "Policy", "Preferences",
+    "shared_proto_db"};
 
 // List of extension ids to be kept in Ash.
-// TODO(crbug.com/1302613): fill this in with the complete list.
-constexpr const char* const kExtensionKeepList[] = {
+// TODO(crbug.com/1302613): make sure this is the complete list.
+constexpr const char* const kExtensionsAshOnly[] = {
+    "gjjabgpgjpampikjhjpfhneeoapjbjaf",  // Google Speech Synthesis Ext. (patts)
+    "dakbfdmgjiabojdgbiljlhgjbokobjpg",  // ESpeak Speech Synthesis Extension
+    "jacnkoglebceckolkoapelihnglgaicd",  // Enhanced Network Tts Extension
+    "klbcgckkldhdhonijdbnhhaiedfkllef",  // Select to Speak Extension
+    "egfdjlfmgnehecnclamagfafdccgfndp",  // Accessibility Common Extension
+    "mndnfokpggljbaajbnioimlmbfngpief",  // Chrome Vox Extension
+    "pmehocpgjmkenlokgjfkaichfjdhpeol",  // Switch Access Extension
+    "jddehjeebkoimngcbdkaahpobgicbffp",  // Braille IME (in IME allowlist)
+    "mppnpdlheglhdfmldimlhpnegondlapf",  // Keyboard App Extension
+    "mecfefiddjlmabpeilblgegnbioikfmp",  // sign in profile testing extension
+    "behllobkkfkfnphdnhnkndlbkcpglgmj",  // guest mode test extension
     "honijodknafkokifofgiaalefdiedpko",  // Help App
-    "lfboplenmmjcmpbkeemecobbadnmpfhi",  // gnubbyd-v3
+    "pmfjbimdmchhbnneeidfognadeopoehp",  // Image Loader Extension
+    "cnbgggchhmkkdmeppjobngjoejnihlei",  // Arc Support (Play Store)
 };
 
 // Extensions path.
 constexpr char kExtensionsFilePath[] = "Extensions";
+
+// IndexedDB path.
+constexpr char kIndexedDBFilePath[] = "IndexedDB";
 
 // `Local Storage` paths.
 constexpr char kLocalStorageFilePath[] = "Local Storage";
@@ -200,6 +230,12 @@ enum class LevelDBType {
 
 // Map from ExtensionID -> { leveldb keys..}.
 using ExtensionKeys = std::map<std::string, std::vector<std::string>>;
+
+// Structure containing both IndexedDB paths for an extension.
+struct IndexedDBPaths {
+  base::FilePath blob_path;
+  base::FilePath leveldb_path;
+};
 
 constexpr char kTotalSize[] = "Ash.UserDataStatsRecorder.DataSize.TotalSize";
 
@@ -259,7 +295,7 @@ struct TargetItems {
 
   std::vector<TargetItem> items;
   // The sum of the sizes of `TargetItem`s in `items`.
-  int64_t total_size;
+  int64_t total_size = 0;
 };
 
 // Specifies the type of `TargetItem`
@@ -274,18 +310,18 @@ enum class ItemType {
 // `type`. E.g. `GetTargetItems(path, ItemType::kLacros)` will get all items
 // that should be moved to lacros.
 TargetItems GetTargetItems(const base::FilePath& original_profile_dir,
-                           const ItemType type);
+                           ItemType type);
 
 // Checks if there is enough disk space to migration to be carried out safely.
 // that needs to be copied.
-bool HasEnoughDiskSpace(const int64_t total_copy_size,
+bool HasEnoughDiskSpace(int64_t total_copy_size,
                         const base::FilePath& original_profile_dir);
 
 // Returns extra bytes that has to be freed for the migration to be carried out
 // if there are `total_copy_size` bytes of copying to be done. Returns 0 if no
 // extra space needs to be freed.
 uint64_t ExtraBytesRequiredToBeFreed(
-    const int64_t total_copy_size,
+    int64_t total_copy_size,
     const base::FilePath& original_profile_dir);
 
 // Injects the bytes to be returned by ExtraBytesRequiredToBeFreed above
@@ -363,8 +399,13 @@ int64_t ComputeDirectorySizeWithoutLinks(const base::FilePath& dir_path);
 // Record the total size of the user's profile data directory in MB.
 void RecordTotalSize(int64_t size);
 
+// Given an extension id, return the paths of the associated blob
+// and leveldb directories inside IndexedDB.
+IndexedDBPaths GetIndexedDBPaths(const base::FilePath& profile_path,
+                                 const char* extension_id);
+
 // Migrate the LevelDB instance at `original_path` to `target_path`,
-// Filter out all the extensions that are not in `kExtensionKeepList`.
+// Filter out all the extensions that are not in `kExtensionsAshOnly`.
 // `leveldb_type` determines the schema type.
 bool MigrateLevelDB(const base::FilePath& original_path,
                     const base::FilePath& target_path,

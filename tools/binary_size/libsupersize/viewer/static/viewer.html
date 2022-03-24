@@ -22,8 +22,7 @@
   <script defer src="state.js"></script>
   <script defer src="infocard-ui.js"></script>
   <script defer src="tree-ui.js"></script>
-  <!-- Async so that it does not slow down loads that do not require it. -->
-  <script defer async src="https://apis.google.com/js/api.js"
+  <script defer src="https://apis.google.com/js/api.js"
       onload="this.onload=function(){};onAuthScriptLoaded()"
       onreadystatechange="if (this.readyState === 'complete') this.onload()">
   </script>
@@ -279,6 +278,10 @@
       <div class="radio-wrapper">
         <input type="radio" id="uncompressedflag" name="flag_filter" value="uncompressed">
         <label class="radio-label" for="uncompressedflag">Uncompressed .pak files</label>
+      </div>
+      <div class="radio-wrapper">
+        <input type="radio" id="disassemblyflag" name="flag_filter" value="disassembly">
+        <label class="radio-label" for="disassemblyflag">Disassembly</label>
       </div>
     </fieldset>
   </form>

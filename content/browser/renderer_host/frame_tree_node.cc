@@ -410,13 +410,17 @@ void FrameTreeNode::SetFrameTree(FrameTree& frame_tree) {
 }
 
 void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
-  // The |is_fenced| bit should never be able to transition from what its
-  // initial value was. Since we never expect to be in a position where it can
-  // even be updated to new value, if we catch this happening we have to kill
-  // the renderer and refuse to accept any other frame policy changes here.
-  if (pending_frame_policy_.is_fenced != frame_policy.is_fenced) {
+  // The `is_fenced` and `fenced_frame_mode` bits should never be able to
+  // transition from their initial values. Since we never expect to be in a
+  // position where it can even be updated to new value, if we catch this
+  // happening we have to kill the renderer and refuse to accept any other frame
+  // policy changes here.
+  if (pending_frame_policy_.is_fenced != frame_policy.is_fenced ||
+      pending_frame_policy_.fenced_frame_mode !=
+          frame_policy.fenced_frame_mode) {
     mojo::ReportBadMessage(
-        "The `is_fenced` FramePolicy bit is const and should never be changed");
+        "FramePolicy properties dealing with fenced frames are considered "
+        "immutable, and therefore should never be changed by the renderer.");
     return;
   }
 
@@ -788,24 +792,13 @@ void FrameTreeNode::SetPopupCreatorOrigin(
   popup_creator_origin_ = popup_creator_origin;
 }
 
-void FrameTreeNode::WriteIntoTrace(perfetto::TracedValue context) const {
-  auto dict = std::move(context).WriteDictionary();
-  dict.Add("id", frame_tree_node_id());
-  dict.Add("is_main_frame", IsMainFrame());
-  dict.Add("current_frame_host", current_frame_host());
-}
-
 void FrameTreeNode::WriteIntoTrace(
-    perfetto::TracedProto<perfetto::protos::pbzero::FrameTreeNodeInfo> proto)
-    const {
-  proto->set_is_main_frame(IsMainFrame());
+    perfetto::TracedProto<TraceProto> proto) const {
   proto->set_frame_tree_node_id(frame_tree_node_id());
-  proto->set_has_speculative_render_frame_host(
-      !!render_manager()->speculative_frame_host());
-  if (current_frame_host()) {
-    current_frame_host()->WriteIntoTrace(proto.WriteNestedMessage(
-        perfetto::protos::pbzero::FrameTreeNodeInfo::kCurrentFrameHost));
-  }
+  proto->set_is_main_frame(IsMainFrame());
+  proto.Set(TraceProto::kCurrentFrameHost, current_frame_host());
+  proto.Set(TraceProto::kSpeculativeFrameHost,
+            render_manager()->speculative_frame_host());
 }
 
 bool FrameTreeNode::HasNavigation() {

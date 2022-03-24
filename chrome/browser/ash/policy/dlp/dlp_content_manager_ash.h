@@ -101,14 +101,6 @@ class DlpContentManagerAsh : public DlpContentManager,
   void OnWindowRestrictionChanged(aura::Window* window,
                                   const DlpContentRestrictionSet& restrictions);
 
-  // The caller (test) should manage |dlp_content_manager| lifetime.
-  // Reset doesn't delete the object.
-  // Please use ScopedDlpContentManagerAshForTesting instead of these methods,
-  // if possible.
-  static void SetDlpContentManagerAshForTesting(
-      DlpContentManagerAsh* dlp_content_manager);
-  static void ResetDlpContentManagerAshForTesting();
-
  private:
   friend class DlpContentManagerAshTestHelper;
   friend class DlpContentManagerTestHelper;
@@ -195,23 +187,16 @@ class DlpContentManagerAsh : public DlpContentManager,
   // Map of observers for currently known Lacros Windows.
   base::flat_map<aura::Window*, std::unique_ptr<DlpWindowObserver>>
       window_observers_;
+  // Map of observers for Lacros surfaces that are being notified for visibility
+  // changes.
+  base::flat_map<aura::Window*, std::unique_ptr<DlpWindowObserver>>
+      surface_observers_;
 
   // Set of restriction applied to the currently visible content.
   DlpContentRestrictionSet on_screen_restrictions_;
 
   // Information about the currently running video capture area if any.
   absl::optional<VideoCaptureInfo> running_video_capture_info_;
-};
-
-// Helper class to call SetDlpContentManagerAshForTesting and
-// ResetDlpContentManagerAshForTesting automically.
-// The caller (test) should manage `test_dlp_content_manager` lifetime.
-// This class does not own it.
-class ScopedDlpContentManagerAshForTesting {
- public:
-  explicit ScopedDlpContentManagerAshForTesting(
-      DlpContentManagerAsh* test_dlp_content_manager);
-  ~ScopedDlpContentManagerAshForTesting();
 };
 
 }  // namespace policy

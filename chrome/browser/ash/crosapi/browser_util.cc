@@ -438,6 +438,25 @@ bool IsLacrosEnabledForMigration(const User* user,
   return base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport);
 }
 
+bool IsProfileMigrationAvailable() {
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  const user_manager::User* user = user_manager->GetPrimaryUser();
+  // |user| may be nullptr on unittests.
+  if (!user || !IsProfileMigrationEnabled(user->GetAccountId()))
+    return false;
+
+  if (!IsLacrosEnabledForMigration(user, PolicyInitState::kAfterInit))
+    return false;
+
+  // If migration is already completed, it is not necessary to run again.
+  if (IsProfileMigrationCompletedForUser(user_manager->GetLocalState(),
+                                         user->username_hash())) {
+    return false;
+  }
+
+  return true;
+}
+
 bool IsLacrosSupportFlagAllowed() {
   return IsLacrosAllowedToBeEnabled() &&
          (GetCachedLacrosAvailability() == LacrosAvailability::kUserChoice);
@@ -636,7 +655,7 @@ void RecordDataVer(PrefService* local_state,
 bool IsDataWipeRequired(const std::string& user_id_hash) {
   base::Version data_version =
       GetDataVer(g_browser_process->local_state(), user_id_hash);
-  base::Version current_version = version_info::GetVersion();
+  const base::Version& current_version = version_info::GetVersion();
   base::Version required_version =
       base::Version(base::StringPiece(kRequiredDataVersion));
 
@@ -700,7 +719,7 @@ void CacheLacrosAvailability(const policy::PolicyMap& map) {
       value ? value->GetString() : base::StringPiece());
 }
 
-ComponentInfo GetLacrosComponentInfo() {
+ComponentInfo GetLacrosComponentInfoForChannel(version_info::Channel channel) {
   // We default to the Dev component for UNKNOWN channels.
   static const auto kChannelToComponentInfoMap =
       base::MakeFixedFlatMap<Channel, const ComponentInfo*>({
@@ -710,7 +729,11 @@ ComponentInfo GetLacrosComponentInfo() {
           {Channel::BETA, &kLacrosDogfoodBetaInfo},
           {Channel::STABLE, &kLacrosDogfoodStableInfo},
       });
-  return *kChannelToComponentInfoMap.at(GetStatefulLacrosChannel());
+  return *kChannelToComponentInfoMap.at(channel);
+}
+
+ComponentInfo GetLacrosComponentInfo() {
+  return GetLacrosComponentInfoForChannel(GetStatefulLacrosChannel());
 }
 
 Channel GetLacrosSelectionUpdateChannel(LacrosSelection selection) {

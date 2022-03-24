@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
@@ -98,8 +99,6 @@ absl::optional<FirstPartySetParser::ParseError> ParseSet(
   if (elements.contains(*canonical_owner))
     return FirstPartySetParser::ParseError::kNonDisjointSets;
 
-  elements.insert(*canonical_owner);
-
   // Confirm that the members field is present, and is an array of strings.
   const base::Value* maybe_members_list =
       value.FindListKey(kFirstPartySetMembersField);
@@ -121,15 +120,21 @@ absl::optional<FirstPartySetParser::ParseError> ParseSet(
     if (!member.has_value())
       return FirstPartySetParser::ParseError::kInvalidOrigin;
 
+    if (*member == *canonical_owner || base::Contains(members, member))
+      return FirstPartySetParser::ParseError::kRepeatedDomain;
+
     if (elements.contains(*member))
       return FirstPartySetParser::ParseError::kNonDisjointSets;
 
     members.push_back(*member);
-    elements.insert(std::move(*member));
   }
 
-  out_set = std::make_pair(*canonical_owner,
-                           base::flat_set<net::SchemefulSite>(members));
+  elements.insert(*canonical_owner);
+  for (const auto& member : members) {
+    elements.insert(member);
+  }
+
+  out_set = std::make_pair(*canonical_owner, members);
   return absl::nullopt;
 }
 
@@ -275,8 +280,17 @@ FirstPartySetParser::ParseSetsFromStream(std::istream& input) {
     if (!maybe_value.has_value())
       return {};
     FirstPartySetParser::SingleSet output;
-    if (ParseSet(*maybe_value, elements, output).has_value())
+    if (absl::optional<FirstPartySetParser::ParseError> error =
+            ParseSet(*maybe_value, elements, output);
+        error.has_value()) {
+      if (*error == FirstPartySetParser::ParseError::kInvalidOrigin) {
+        // Ignore sets that include an invalid domain (which might have been
+        // caused by a PSL update), but don't let that break other sets.
+        continue;
+      }
+      // Abort, something is wrong with the component.
       return {};
+    }
     auto [owner, members] = output;
     map.emplace_back(owner, owner);
     for (net::SchemefulSite& member : members) {

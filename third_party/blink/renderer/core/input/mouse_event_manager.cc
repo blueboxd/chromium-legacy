@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_label_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/event_handling_util.h"
@@ -69,30 +70,14 @@ void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
       !mouse_event.is_raw_movement_event &&
       mouse_event.GetType() == WebInputEvent::Type::kMouseMove &&
       last_position) {
-    // Current movementX/Y is in physical pixel when zoom-for-dsf is enabled
-    // which matches layout coordinates. If we don't have zoom-for-dsf, we
-    // apply the device-scale-factor to align with the current behavior.
-    float device_scale_factor = 1;
-    if (!Platform::Current()->IsUseZoomForDSFEnabled()) {
-      if (dom_window && dom_window->GetFrame()) {
-        LocalFrame* frame = dom_window->GetFrame();
-        if (frame->GetPage()->DeviceScaleFactorDeprecated() == 1) {
-          ChromeClient& chrome_client = frame->GetChromeClient();
-          device_scale_factor =
-              chrome_client.GetScreenInfo(*frame).device_scale_factor;
-        }
-      }
-    }
     // movementX/Y is type int for now, so we need to truncated the coordinates
     // before calculate movement.
     initializer->setMovementX(
-        base::saturated_cast<int>(mouse_event.PositionInScreen().x() *
-                                  device_scale_factor) -
-        base::saturated_cast<int>(last_position->x() * device_scale_factor));
+        base::saturated_cast<int>(mouse_event.PositionInScreen().x()) -
+        base::saturated_cast<int>(last_position->x()));
     initializer->setMovementY(
-        base::saturated_cast<int>(mouse_event.PositionInScreen().y() *
-                                  device_scale_factor) -
-        base::saturated_cast<int>(last_position->y() * device_scale_factor));
+        base::saturated_cast<int>(mouse_event.PositionInScreen().y()) -
+        base::saturated_cast<int>(last_position->y()));
   }
 }
 
@@ -557,6 +542,16 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
   frame_->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kFocus);
 
   Element* element = element_under_mouse_;
+
+  // When clicking on a <label> for a form associated custom element with
+  // delegatesFocus, we should focus the custom element's focus delegate.
+  if (auto* label = DynamicTo<HTMLLabelElement>(element)) {
+    auto* control = label->control();
+    if (control && control->DelegatesFocus()) {
+      element = control;
+    }
+  }
+
   for (; element; element = element->ParentOrShadowHostElement()) {
     if (element->IsFocusable() && element->IsFocusedElementInDocument())
       return WebInputEventResult::kNotHandled;

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_FLEX_NG_FLEX_LAYOUT_ALGORITHM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_FLEX_NG_FLEX_LAYOUT_ALGORITHM_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 
 #include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
@@ -124,7 +125,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   // https://www.w3.org/TR/css-break-3/#box-splitting
   void ConsumeRemainingFragmentainerSpace(
       LayoutUnit previously_consumed_block_size,
-      NGFlexLine* flex_line);
+      NGFlexLine* flex_line,
+      const NGFlexColumnBreakInfo* column_break_info = nullptr);
 
   // Insert a fragmentainer break before a row if necessary. Rows do not produce
   // a layout result, so when breaking before a row, we will insert a

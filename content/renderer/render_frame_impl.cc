@@ -1152,10 +1152,7 @@ perfetto::protos::pbzero::FrameDeleteIntention FrameDeleteIntentionToProto(
 
 void PropagatePageZoomToNewlyAttachedFrame(blink::WebView* web_view,
                                            float device_scale_factor) {
-  if (RenderThread::Get()->IsUseZoomForDSF())
-    web_view->SetZoomFactorForDeviceScaleFactor(device_scale_factor);
-  else
-    web_view->SetZoomLevel(web_view->ZoomLevel());
+  web_view->SetZoomFactorForDeviceScaleFactor(device_scale_factor);
 }
 
 void CallClientDeferMediaLoad(base::WeakPtr<RenderFrameImpl> frame,
@@ -3571,7 +3568,8 @@ blink::WebRemoteFrame* RenderFrameImpl::AdoptPortal(
 blink::WebRemoteFrame* RenderFrameImpl::CreateFencedFrame(
     const blink::WebElement& fenced_frame,
     blink::CrossVariantMojoAssociatedReceiver<
-        blink::mojom::FencedFrameOwnerHostInterfaceBase> receiver) {
+        blink::mojom::FencedFrameOwnerHostInterfaceBase> receiver,
+    blink::mojom::FencedFrameMode) {
   int proxy_routing_id = MSG_ROUTING_NONE;
   blink::mojom::FrameReplicationStatePtr initial_replicated_state =
       blink::mojom::FrameReplicationState::New();

@@ -108,6 +108,7 @@ struct PreresolveJob {
   raw_ptr<PreresolveInfo> info;
   std::unique_ptr<ResolveHostClientImpl> resolve_host_client;
   std::unique_ptr<ProxyLookupClientImpl> proxy_lookup_client;
+  base::TimeTicks creation_time;
 };
 
 // PreconnectManager is responsible for preresolving and preconnecting to
@@ -223,6 +224,8 @@ class PreconnectManager {
   void OnProxyLookupFinished(PreresolveJobId job_id, bool success);
   void FinishPreresolveJob(PreresolveJobId job_id, bool success);
   void AllPreresolvesForUrlFinished(PreresolveInfo* info);
+
+  // NOTE: Returns a non-null pointer outside of unittesting contexts.
   network::mojom::NetworkContext* GetNetworkContext() const;
 
   base::WeakPtr<Delegate> delegate_;

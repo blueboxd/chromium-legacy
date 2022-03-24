@@ -63,20 +63,22 @@ class VkTestXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
         entry_type_(EntryType::NONE),
         printable_entry_(nullptr) {
     // For testing, use the same modifier values as ui::EventFlags.
-    static const int kTestFlags[] = {EF_SHIFT_DOWN, EF_ALTGR_DOWN,
-                                     EF_MOD3_DOWN};
-    xkb_flag_map_.clear();
-    xkb_flag_map_.resize(std::size(kTestFlags));
-    for (size_t i = 0; i < std::size(kTestFlags); ++i) {
-      XkbFlagMapEntry e = {kTestFlags[i],
-                           static_cast<xkb_mod_mask_t>(kTestFlags[i])};
-      xkb_flag_map_.push_back(e);
-    }
-
-    shift_mod_mask_ = EF_SHIFT_DOWN;
-    altgr_mod_mask_ = EF_ALTGR_DOWN;
+    xkb_modifier_converter_ = XkbModifierConverter({
+        "",
+        XKB_MOD_NAME_SHIFT,
+        XKB_MOD_NAME_CTRL,
+        XKB_MOD_NAME_ALT,
+        XKB_MOD_NAME_LOGO,
+        "",
+        "Mod5",
+        "Mod3",
+        XKB_MOD_NAME_CAPS,
+        XKB_MOD_NAME_NUM,
+    });
+    shift_mod_mask_ = xkb_modifier_converter_.MaskFromUiFlags(EF_SHIFT_DOWN);
+    altgr_mod_mask_ = xkb_modifier_converter_.MaskFromUiFlags(EF_ALTGR_DOWN);
   }
-  ~VkTestXkbKeyboardLayoutEngine() override {}
+  ~VkTestXkbKeyboardLayoutEngine() override = default;
 
   void SetEntry(const PrintableEntry* entry) {
     entry_type_ = EntryType::PRINTABLE;
@@ -827,6 +829,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForNonPrintable) {
       {{DomCode::MICROPHONE_MUTE_TOGGLE, EF_NONE}, VKEY_MICROPHONE_MUTE_TOGGLE},
       {{DomCode::EMOJI_PICKER, EF_NONE}, VKEY_EMOJI_PICKER},
       {{DomCode::DICTATE, EF_NONE}, VKEY_DICTATE},
+      {{DomCode::ALL_APPLICATIONS, EF_NONE}, VKEY_ALL_APPLICATIONS},
       // Verify the AC Application keys.
       {{DomCode::NEW, EF_NONE}, VKEY_NEW},
       {{DomCode::CLOSE, EF_NONE}, VKEY_CLOSE},

@@ -13,6 +13,9 @@
 #define CROSS_PLATFORM_COLOR_IDS \
   /* Core color concepts */ \
   /* Use the 3 param macro so kColorAccent is set to the correct value. */ \
+  /* The kColorAccent color id is used in color_provider_css_colors_test.ts. \
+  If changing the variable name, the variable name in the test needs to be \
+  changed as well. */ \
   E_CPONLY(kColorAccent, kUiColorsStart, kUiColorsStart) \
   E_CPONLY(kColorAlertHighSeverity) \
   E_CPONLY(kColorAlertLowSeverity) \
@@ -55,6 +58,9 @@
   E_CPONLY(kColorButtonForegroundDisabled) \
   E_CPONLY(kColorButtonForegroundProminent) \
   E_CPONLY(kColorButtonForegroundUnchecked) \
+  E_CPONLY(kColorCustomFrameCaptionForeground) \
+  E_CPONLY(kColorDebugBoundsOutline) \
+  E_CPONLY(kColorDebugContentOutline) \
   E_CPONLY(kColorDialogBackground) \
   E_CPONLY(kColorDialogForeground) \
   E_CPONLY(kColorDropdownBackground) \
@@ -198,7 +204,13 @@
   E_CPONLY(kColorNativeComboboxBackgroundHovered) \
   E_CPONLY(kColorNativeComboboxForeground) \
   E_CPONLY(kColorNativeComboboxForegroundHovered) \
+  E_CPONLY(kColorNativeFrameActive) \
+  E_CPONLY(kColorNativeFrameInactive) \
   E_CPONLY(kColorNativeFrameBorder) \
+  E_CPONLY(kColorNativeHeaderButtonBorderActive) \
+  E_CPONLY(kColorNativeHeaderButtonBorderInactive) \
+  E_CPONLY(kColorNativeHeaderSeparatorBorderActive) \
+  E_CPONLY(kColorNativeHeaderSeparatorBorderInactive) \
   E_CPONLY(kColorNativeImageButtonForeground) \
   E_CPONLY(kColorNativeImageButtonForegroundHovered) \
   E_CPONLY(kColorNativeLabelBackgroundSelected) \
@@ -231,6 +243,8 @@
   E_CPONLY(kColorNativeStatusbarBackground) \
   E_CPONLY(kColorNativeTabBackgroundChecked) \
   E_CPONLY(kColorNativeTabBackgroundCheckedFocused) \
+  E_CPONLY(kColorNativeTabForegroundInactiveFrameActive) \
+  E_CPONLY(kColorNativeTabForegroundInactiveFrameInactive) \
   E_CPONLY(kColorNativeTextareaBackground) \
   E_CPONLY(kColorNativeTextareaBackgroundDisabled) \
   E_CPONLY(kColorNativeTextareaBackgroundSelected) \
@@ -242,6 +256,7 @@
   E_CPONLY(kColorNativeTextfieldForegroundPlaceholder) \
   E_CPONLY(kColorNativeToggleButtonBackgroundChecked) \
   E_CPONLY(kColorNativeToggleButtonBackgroundUnchecked) \
+  E_CPONLY(kColorNativeToolbarBackground) \
   E_CPONLY(kColorNativeTooltipBackground) \
   E_CPONLY(kColorNativeTooltipForeground) \
   E_CPONLY(kColorNativeTreeHeaderBackground) \

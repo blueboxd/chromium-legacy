@@ -145,7 +145,6 @@
 <translation id="1771761307086386028">เลื่อนไปทางขวา</translation>
 <translation id="1774796056689732716">ปฏิทิน, <ph name="CURRENT_MONTH_YEAR" />, เลือกวันที่ <ph name="DATE" /> อยู่</translation>
 <translation id="1787955149152357925">ปิด</translation>
-<translation id="1804572139604454141">การบันทึกสิ้นสุดแล้วเนื่องจากพื้นที่ในดิสก์เกือบเต็มแล้ว</translation>
 <translation id="181103072419391116">ความแรงสัญญาณ <ph name="SIGNAL_STRENGTH" />, จัดการโดยผู้ดูแลระบบ</translation>
 <translation id="1812997170047690955">รายการที่อยู่ในหน้าจอของฉัน</translation>
 <translation id="1823873187264960516">อีเทอร์เน็ต: <ph name="ADDRESS" /></translation>
@@ -263,6 +262,7 @@
 <translation id="2653659639078652383">ส่ง</translation>
 <translation id="2658778018866295321">คลิกแล้วลาก</translation>
 <translation id="2665788051462227163"><ph name="UNAVAILABLE_APPS_ONE" /> และ <ph name="UNAVAILABLE_APPS_TWO" /> ไม่ได้อยู่ในอุปกรณ์</translation>
+<translation id="2673968385134502798">เกม</translation>
 <translation id="2678852583403169292">เมนูเลือกเพื่อให้อ่าน</translation>
 <translation id="2689613560355655046">เดสก์ 8</translation>
 <translation id="2700493154570097719">ตั้งค่าแป้นพิมพ์</translation>
@@ -462,6 +462,7 @@
 <translation id="3798670284305777884">ลำโพง (ภายใน)</translation>
 <translation id="3799080171973636491">คุณกดแป้นพิมพ์ลัดสำหรับแว่นขยายทั้งหน้าจอ จะเปิดแว่นขยายไหม</translation>
 <translation id="380165613292957338">สวัสดี มีอะไรให้ฉันช่วยไหม</translation>
+<translation id="3804737937830804242">ย่อขนาดกล้อง</translation>
 <translation id="3826099427150913765">เปลี่ยนไปใช้รหัสผ่าน</translation>
 <translation id="383058930331066723">โหมดประหยัดแบตเตอรี่เปิดอยู่</translation>
 <translation id="3835880383832568924">เปิดแอปทางลัดเพื่อดูการอัปเดต</translation>
@@ -669,6 +670,7 @@
 <translation id="5078796286268621944">PIN ไม่ถูกต้อง</translation>
 <translation id="5083553833479578423">ใช้ฟีเจอร์จาก Assistant ได้มากขึ้น</translation>
 <translation id="5106223312672646208">ปรับเปลี่ยนในแบบของคุณ</translation>
+<translation id="5107522548814527560">เว็บ</translation>
 <translation id="5117590920725113268">แสดงเดือนถัดไป</translation>
 <translation id="5136175204352732067">เชื่อมต่อกับแป้นพิมพ์อื่นแล้ว</translation>
 <translation id="5147567197700016471">ปลดล็อกแล้ว</translation>
@@ -1001,6 +1003,7 @@
 <translation id="7302889331339392448">คำบรรยายสดปิดอยู่</translation>
 <translation id="7303365578352795231">กำลังรับสายในอุปกรณ์อื่น</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7313193732017069507">ขยายขนาดกล้อง</translation>
 <translation id="731589979057211264">Shelf Party เปิดอยู่</translation>
 <translation id="7319740667687257810">Launcher มุมมองบางส่วน</translation>
 <translation id="7346909386216857016">รับทราบ</translation>

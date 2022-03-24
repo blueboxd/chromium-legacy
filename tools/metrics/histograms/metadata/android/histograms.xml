@@ -75,6 +75,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <variants name="MessageIdentifiers">
+  <variant name=".AboutThisSite"/>
   <variant name=".AddToHomescreenIPH"/>
   <variant name=".AdsBlocked"/>
   <variant name=".ArCoreUpgrade"/>
@@ -98,6 +99,7 @@ chromium-metrics-reviews@google.com.
   <variant name=".SharedHighlighting"/>
   <variant name=".SyncError"/>
   <variant name=".TailoredSecurityEnabled"/>
+  <variant name=".Translate"/>
   <variant name=".UpdatePassword"/>
   <variant name=".VrServicesUpgrade"/>
 </variants>
@@ -151,7 +153,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AdaptiveToolbarButton.SettingsToggle.Changed"
-    enum="BooleanEnabled" expires_after="2022-06-26">
+    enum="BooleanEnabled" expires_after="2022-09-18">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -295,7 +297,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.AutofillAssistant.FeatureModuleInstallation"
     enum="AutofillAssistantFeatureModuleInstallation"
-    expires_after="2022-06-08">
+    expires_after="2022-09-18">
   <owner>mcarlen@chromium.org</owner>
   <owner>autofill_assistant+watch@google.com</owner>
   <summary>
@@ -1072,10 +1074,24 @@ chromium-metrics-reviews@google.com.
     timing when the image data associated with the URI is needed. Another metric
     Android.DragDrop.Image.OpenFileTime.FirstExpired only records at most once
     per URI, to avoid counting in retries from drop target app when Chrome
-    rejects the expired URI. This metric is recoreded when Chrome receives an
+    rejects the expired URI. This metric is recorded when Chrome receives an
     expired URI to retrieve data. If the URI is not the latest expired one, the
-    metric will not be recoreded because we could not calcuate the elapsed time
-    for older URIs. Android only.
+    metric will not be recorded because we do not calculate the elapsed time for
+    older URIs. Android only.
+  </summary>
+</histogram>
+
+<histogram name="Android.DragDrop.Image.OpenFileTime.FirstAttempt" units="ms"
+    expires_after="2022-07-01">
+  <owner>shuyng@google.com</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Records the duration between receiving Android Drag End event and the first
+    ContentProvider#openFile attempted by the drop target app. The duration is
+    calculated during the first ContentProvider#openFile for each URI. Another
+    metric Android.DragDrop.Image.OpenFileTime.LastAttempt is recorded for the
+    last ContentProvider#openFile. Record 0 if the duration is negative (e.g.
+    ContentProvider#openFile is accessed before drag ends). Android only.
   </summary>
 </histogram>
 
@@ -1092,26 +1108,30 @@ chromium-metrics-reviews@google.com.
     per URI. Another metric Android.DragDrop.Image.OpenFileTime.AllExpired
     records multiple times per URI, to gives us the holistic view about the
     timing when the image data associated with the URI is needed. This metric is
-    recoreded when Chrome receives an expired URI to retrieve data. If the URI
-    is not the latest expired one, the metric will not be recoreded because we
-    could not calcuate the elapsed time for older URIs. Android only.
+    recorded when Chrome receives an expired URI to retrieve data. If the URI is
+    not the latest expired one, the metric will not be recorded because we do
+    not calculate the elapsed time for older URIs. Android only.
   </summary>
 </histogram>
 
 <histogram name="Android.DragDrop.Image.OpenFileTime.LastAttempt" units="ms"
-    expires_after="2022-07-01">
+    expires_after="2022-09-18">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
     Records the duration between receiving Android Drag End event and the last
     ContentProvider#openFile attempted by the drop target app. The duration is
-    calculated when the image data expired at the designated time limit. Android
-    only.
+    calculated when the image data expired at the designated time limit. It is
+    not recorded if the image data is replaced before the time limit due to the
+    start of the next image drag. Another metric
+    Android.DragDrop.Image.OpenFileTime.FirstAttempt is recorded for the first
+    ContentProvider#openFile. Record 0 if the duration is negative (e.g.
+    ContentProvider#openFile is accessed before drag ends). Android only.
   </summary>
 </histogram>
 
 <histogram name="Android.DragDrop.Image.Size" units="KB"
-    expires_after="2022-07-01">
+    expires_after="2022-09-18">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1207,7 +1227,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FeatureModules.StartupTime" units="ms"
-    expires_after="2022-06-13">
+    expires_after="2022-09-18">
   <owner>agrieve@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>tiborg@chromium.org</owner>
@@ -1527,7 +1547,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Intent.IntentUriWithSelector" enum="Boolean"
-    expires_after="2022-07-17">
+    expires_after="2022-09-18">
   <owner>mthiesse@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2983,6 +3003,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.Survey.ShowSurvey" enum="BooleanSuccess"
     expires_after="2022-08-07">
+  <obsolete>
+    Deprecated in March 2022. Data available in Android.Survey.ShowSurveyStatus.
+  </obsolete>
   <owner>twellington@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>

@@ -4,12 +4,14 @@
 
 #include "chrome/browser/safe_browsing/tailored_security/chrome_tailored_security_service.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/safe_browsing_policy_handler.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/storage_partition.h"
@@ -59,6 +61,17 @@ void ChromeTailoredSecurityService::MaybeNotifySyncUser(
 
   if (!identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSync))
     return;
+
+  if (SafeBrowsingPolicyHandler::IsSafeBrowsingProtectionLevelSetByPolicy(
+          profile_->GetPrefs())) {
+    return;
+  }
+
+  if (is_enabled) {
+    base::UmaHistogramBoolean(
+        "SafeBrowsing.TailoredSecurity.SyncPromptSkippedAlreadyEnabled",
+        IsEnhancedProtectionEnabled(*prefs()));
+  }
 
   if (is_enabled && !IsEnhancedProtectionEnabled(*prefs())) {
     ShowSyncNotification(true);

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {Action} from 'chrome://resources/js/cr/ui/store.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 
-import {CurrentWallpaper, GooglePhotosAlbum, GooglePhotosPhoto, WallpaperCollection, WallpaperImage} from '../personalization_app.mojom-webui.js';
+import {CurrentWallpaper, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, WallpaperCollection, WallpaperImage} from '../personalization_app.mojom-webui.js';
 import {DisplayableImage} from '../personalization_reducers.js';
 
 /**
@@ -14,11 +14,13 @@ import {DisplayableImage} from '../personalization_reducers.js';
  */
 
 export enum WallpaperActionName {
+  APPEND_GOOGLE_PHOTOS_ALBUM = 'append_google_photos_album',
   APPEND_GOOGLE_PHOTOS_ALBUMS = 'append_google_photos_albums',
   APPEND_GOOGLE_PHOTOS_PHOTOS = 'append_google_photos_photos',
   BEGIN_LOAD_GOOGLE_PHOTOS_ALBUM = 'begin_load_google_photos_album',
   BEGIN_LOAD_GOOGLE_PHOTOS_ALBUMS = 'begin_load_google_photos_albums',
   BEGIN_LOAD_GOOGLE_PHOTOS_COUNT = 'begin_load_google_photos_count',
+  BEGIN_LOAD_GOOGLE_PHOTOS_ENABLED = 'begin_load_google_photos_enabled',
   BEGIN_LOAD_GOOGLE_PHOTOS_PHOTOS = 'begin_load_google_photos_photos',
   BEGIN_LOAD_IMAGES_FOR_COLLECTIONS = 'begin_load_images_for_collections',
   BEGIN_LOAD_LOCAL_IMAGES = 'begin_load_local_images',
@@ -29,8 +31,8 @@ export enum WallpaperActionName {
   END_SELECT_IMAGE = 'end_select_image',
   SET_COLLECTIONS = 'set_collections',
   SET_DAILY_REFRESH_COLLECTION_ID = 'set_daily_refresh_collection_id',
-  SET_GOOGLE_PHOTOS_ALBUM = 'set_google_photos_album',
   SET_GOOGLE_PHOTOS_COUNT = 'set_google_photos_count',
+  SET_GOOGLE_PHOTOS_ENABLED = 'set_google_photos_enabled',
   SET_IMAGES_FOR_COLLECTION = 'set_images_for_collection',
   SET_LOCAL_IMAGES = 'set_local_images',
   SET_LOCAL_IMAGE_DATA = 'set_local_image_data',
@@ -40,17 +42,40 @@ export enum WallpaperActionName {
 }
 
 export type WallpaperActions =
-    AppendGooglePhotosAlbumsAction|AppendGooglePhotosPhotosAction|
-    BeginLoadGooglePhotosAlbumAction|BeginLoadGooglePhotosAlbumsAction|
-    BeginLoadGooglePhotosCountAction|BeginLoadGooglePhotosPhotosAction|
+    AppendGooglePhotosAlbumAction|AppendGooglePhotosAlbumsAction|
+    AppendGooglePhotosPhotosAction|BeginLoadGooglePhotosAlbumAction|
+    BeginLoadGooglePhotosAlbumsAction|BeginLoadGooglePhotosCountAction|
+    BeginLoadGooglePhotosEnabledAction|BeginLoadGooglePhotosPhotosAction|
     BeginLoadImagesForCollectionsAction|BeginLoadLocalImagesAction|
     BeginLoadLocalImageDataAction|BeginUpdateDailyRefreshImageAction|
     BeginLoadSelectedImageAction|BeginSelectImageAction|EndSelectImageAction|
     SetCollectionsAction|SetDailyRefreshCollectionIdAction|
-    SetGooglePhotosAlbumAction|SetGooglePhotosCountAction|
+    SetGooglePhotosCountAction|SetGooglePhotosEnabledAction|
     SetImagesForCollectionAction|SetLocalImageDataAction|SetLocalImagesAction|
     SetUpdatedDailyRefreshImageAction|SetSelectedImageAction|
     SetFullscreenEnabledAction;
+
+export type AppendGooglePhotosAlbumAction = Action&{
+  name: WallpaperActionName.APPEND_GOOGLE_PHOTOS_ALBUM;
+  albumId: string;
+  photos: GooglePhotosPhoto[]|null;
+  resumeToken: string|null;
+};
+
+/**
+ * Appends to the list of Google Photos photos for the album associated with the
+ * specified id. May be called with null on error.
+ */
+export function appendGooglePhotosAlbumAction(
+    albumId: string, photos: GooglePhotosPhoto[]|null,
+    resumeToken: string|null): AppendGooglePhotosAlbumAction {
+  return {
+    albumId,
+    photos,
+    resumeToken,
+    name: WallpaperActionName.APPEND_GOOGLE_PHOTOS_ALBUM
+  };
+}
 
 export type AppendGooglePhotosAlbumsAction = Action&{
   name: WallpaperActionName.APPEND_GOOGLE_PHOTOS_ALBUMS;
@@ -130,9 +155,23 @@ export function beginLoadGooglePhotosCountAction():
   return {name: WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_COUNT};
 }
 
+export type BeginLoadGooglePhotosEnabledAction = Action&{
+  name: WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_ENABLED;
+};
+
+/**
+ * Notify that the app is loading whether the user is allowed to access Google
+ * Photos.
+ */
+export function beginLoadGooglePhotosEnabledAction():
+    BeginLoadGooglePhotosEnabledAction {
+  return {name: WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_ENABLED};
+}
+
 export type BeginLoadGooglePhotosPhotosAction = Action&{
   name: WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_PHOTOS;
 };
+
 /**
  * Notify that the app is loading the list of Google Photos photos.
  */
@@ -160,6 +199,7 @@ export function beginLoadImagesForCollectionsAction(
 export type BeginLoadLocalImagesAction = Action&{
   name: WallpaperActionName.BEGIN_LOAD_LOCAL_IMAGES;
 };
+
 /**
  * Notify that app is loading local image list.
  */
@@ -267,22 +307,6 @@ export function setDailyRefreshCollectionIdAction(collectionId: string|null):
   };
 }
 
-export type SetGooglePhotosAlbumAction = Action&{
-  name: WallpaperActionName.SET_GOOGLE_PHOTOS_ALBUM;
-  albumId: string;
-  photos: GooglePhotosPhoto[]|null;
-};
-
-/**
- * Sets the list of Google Photos photos for the album associated with the
- * specified id. May be called with null on error.
- */
-export function setGooglePhotosAlbumAction(
-    albumId: string,
-    photos: GooglePhotosPhoto[]|null): SetGooglePhotosAlbumAction {
-  return {albumId, photos, name: WallpaperActionName.SET_GOOGLE_PHOTOS_ALBUM};
-}
-
 export type SetGooglePhotosCountAction = Action&{
   name: WallpaperActionName.SET_GOOGLE_PHOTOS_COUNT;
   count: number|null;
@@ -292,6 +316,17 @@ export type SetGooglePhotosCountAction = Action&{
 export function setGooglePhotosCountAction(count: number|
                                            null): SetGooglePhotosCountAction {
   return {count, name: WallpaperActionName.SET_GOOGLE_PHOTOS_COUNT};
+}
+
+export type SetGooglePhotosEnabledAction = Action&{
+  name: WallpaperActionName.SET_GOOGLE_PHOTOS_ENABLED;
+  enabled: GooglePhotosEnablementState;
+};
+
+/** Sets whether the user is allowed to access Google Photos. */
+export function setGooglePhotosEnabledAction(
+    enabled: GooglePhotosEnablementState): SetGooglePhotosEnabledAction {
+  return {enabled, name: WallpaperActionName.SET_GOOGLE_PHOTOS_ENABLED};
 }
 
 export type SetImagesForCollectionAction = Action&{

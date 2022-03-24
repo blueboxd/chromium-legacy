@@ -86,7 +86,6 @@ class AttributionSrcBrowserTest : public ContentBrowserTest {
     net::test_server::RegisterDefaultHandlers(https_server_.get());
     https_server_->ServeFilesFromSourceDirectory(
         "content/test/data/attribution_reporting");
-    SetupCrossSiteRedirector(https_server_.get());
     ASSERT_TRUE(https_server_->Start());
   }
 
@@ -193,6 +192,77 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   // Direct use of MockDataHost flakes rarely. See
   // AttributionSrcNavigationSourceAndTrigger_ReportSent in
   // AttributionsBrowserTest.
+}
+
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       AttributionSrcWindowOpen_SourceRegistered) {
+  SourceObserver source_observer(web_contents());
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  std::unique_ptr<MockDataHost> data_host;
+  blink::AttributionSrcToken expected_token;
+  MockAttributionHost host(web_contents());
+  EXPECT_CALL(host, RegisterNavigationDataHost)
+      .WillOnce(
+          [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
+              const blink::AttributionSrcToken& attribution_src_token) {
+            data_host = GetRegisteredDataHost(std::move(host));
+            expected_token = attribution_src_token;
+          });
+
+  GURL register_url =
+      https_server()->GetURL("c.test", "/register_source_headers.html");
+  EXPECT_TRUE(ExecJs(web_contents(), JsReplace(R"(
+  window.open("page_with_conversion_redirect.html", "_top",
+  "attributionsrc="+$1);)",
+                                               register_url)));
+
+  blink::Impression last_impression = source_observer.Wait();
+
+  // Verify we received the correct token for this source.
+  EXPECT_TRUE(last_impression.attribution_src_token);
+  EXPECT_EQ(*last_impression.attribution_src_token, expected_token);
+
+  // Verify the attributionsrc data was registered with the browser process.
+  EXPECT_TRUE(data_host);
+
+  // TODO(johnidel): Verify that the data host receives the correct callback.
+  // Direct use of MockDataHost flakes rarely. See
+  // AttributionSrcNavigationSourceAndTrigger_ReportSent in
+  // AttributionsBrowserTest.
+}
+
+IN_PROC_BROWSER_TEST_F(
+    AttributionSrcBrowserTest,
+    AttributionSrcWindowOpenNoUserGesture_SourceNotRegistered) {
+  SourceObserver source_observer(web_contents());
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  std::unique_ptr<MockDataHost> data_host;
+  blink::AttributionSrcToken expected_token;
+  MockAttributionHost host(web_contents());
+  EXPECT_CALL(host, RegisterNavigationDataHost)
+      .WillOnce(
+          [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
+              const blink::AttributionSrcToken& attribution_src_token) {
+            data_host = GetRegisteredDataHost(std::move(host));
+            expected_token = attribution_src_token;
+          });
+
+  GURL register_url =
+      https_server()->GetURL("c.test", "/register_source_headers.html");
+  EXPECT_TRUE(ExecJs(web_contents(),
+                     JsReplace(R"(
+  window.open("page_with_conversion_redirect.html", "_top",
+  "attributionsrc="+$1);)",
+                               register_url),
+                     EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+  EXPECT_TRUE(source_observer.WaitForNavigationWithNoImpression());
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -364,7 +434,6 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   https_server->ServeFilesFromSourceDirectory(
       "content/test/data/attribution_reporting");
   https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
 
   auto register_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -626,7 +695,6 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   https_server->ServeFilesFromSourceDirectory(
       "content/test/data/attribution_reporting");
   https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
 
   auto register_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -724,7 +792,6 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   https_server->ServeFilesFromSourceDirectory(
       "content/test/data/attribution_reporting");
   https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
 
   auto register_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -912,7 +979,6 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcInvalidFiltersBrowserTest,
   https_server->ServeFilesFromSourceDirectory(
       "content/test/data/attribution_reporting");
   https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
 
   auto register_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -972,7 +1038,6 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcInvalidFiltersBrowserTest,
   https_server->ServeFilesFromSourceDirectory(
       "content/test/data/attribution_reporting");
   https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
 
   auto register_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -1043,7 +1108,6 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcFilterSizeBrowserTest,
   https_server->ServeFilesFromSourceDirectory(
       "content/test/data/attribution_reporting");
   https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
 
   auto register_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -1121,7 +1185,6 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcFilterSizeBrowserTest,
   https_server->ServeFilesFromSourceDirectory(
       "content/test/data/attribution_reporting");
   https_server->ServeFilesFromSourceDirectory("content/test/data");
-  SetupCrossSiteRedirector(https_server.get());
 
   auto register_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(

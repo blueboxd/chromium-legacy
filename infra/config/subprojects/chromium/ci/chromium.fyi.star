@@ -469,6 +469,28 @@ ci.builder(
 )
 
 ci.builder(
+    name = "ios-fieldtrial-rel",
+    builderless = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+    ),
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+    ),
+    cores = None,
+    os = os.MAC_DEFAULT,
+    xcode = xcode.x13main,
+)
+
+ci.builder(
     name = "linux-lacros-builder-fyi-rel",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
@@ -567,6 +589,25 @@ ci.builder(
 # OS shouldn't matter.
 ci.builder(
     name = "mac-osxbeta-rel",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+                "goma_use_local",  # to mitigate compile step timeout (crbug.com/1056935)
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        test_results_config = builder_config.test_results_config(
+            config = "staging_server",
+        ),
+        build_gs_bucket = "chromium-fyi-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "mac",
         short_name = "beta",
@@ -1284,7 +1325,41 @@ fyi_ios_builder(
         category = "iOS",
         short_name = "asan",
     ),
+    properties = {
+        "$build/archive": {
+            "archive_datas": [
+                {
+                    "archive_type": "ARCHIVE_TYPE_ZIP",
+                    "files": [
+                        "libclang_rt.asan_iossim_dynamic.dylib",
+                    ],
+                    "dirs": [
+                        "ios_cwt_chromedriver_tests_module.xctest",
+                        "ios_cwt_chromedriver_tests_module-Runner.app",
+                        "ios_cwt_chromedriver_tests.app",
+                        "ios",
+                        "testing",
+                    ],
+                    "gcs_bucket": "chromium-browser-asan",
+                    "gcs_path": "ios-release/asan-ios-release-{%timestamp%}.zip",
+                },
+            ],
+        },
+    },
 )
+
+fyi_ios_builder(
+    name = "ios-m1-simulator",
+    console_view_entry = consoles.console_view_entry(
+        category = "iOS|iOSM1",
+        short_name = "iosM1",
+    ),
+    os = os.MAC_11,
+    cpu = cpu.ARM64,
+    schedule = "0 1,5,9,13,17,21 * * *",
+    triggered_by = [],
+)
+
 fyi_ios_builder(
     name = "ios-reclient",
     console_view_entry = consoles.console_view_entry(
@@ -1347,7 +1422,6 @@ fyi_ios_builder(
         short_name = "sdk14",
     ),
     os = os.MAC_11,
-    cpu = cpu.ARM64,
     schedule = "0 2,6,10,14,18,22 * * *",
     triggered_by = [],
 )

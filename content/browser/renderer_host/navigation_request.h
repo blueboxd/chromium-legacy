@@ -188,11 +188,19 @@ class CONTENT_EXPORT NavigationRequest
   // This enum is used in UMA histograms, so existing values should neither be
   // reordered or removed.
   enum class OriginAgentClusterEndResult {
+    // The first four enums are for use when OAC-by-default is disabled.
     kNotRequestedAndNotOriginKeyed,
     kNotRequestedButOriginKeyed,
     kRequestedButNotOriginKeyed,
     kRequestedAndOriginKeyed,
-    kMaxValue = kRequestedAndOriginKeyed
+    // The remaining enums are for use when OAC-by-default is enabled.
+    kExplicitlyNotRequestedAndNotOriginKeyed,
+    kExplicitlyNotRequestedButOriginKeyed,
+    kExplicitlyRequestedButNotOriginKeyed,
+    kExplicitlyRequestedAndOriginKeyed,
+    kNotExplicitlyRequestedButNotOriginKeyed,
+    kNotExplicitlyRequestedAndOriginKeyed,
+    kMaxValue = kNotExplicitlyRequestedAndOriginKeyed
   };
 
   // Creates a request for a browser-initiated navigation.
@@ -312,10 +320,10 @@ class CONTENT_EXPORT NavigationRequest
   NavigationUIData* GetNavigationUIData() override;
   bool IsExternalProtocol() override;
   net::Error GetNetErrorCode() override;
-  RenderFrameHostImpl* GetRenderFrameHost() override;
+  RenderFrameHostImpl* GetRenderFrameHost() const override;
   bool IsSameDocument() override;
-  bool HasCommitted() override;
-  bool IsErrorPage() override;
+  bool HasCommitted() const override;
+  bool IsErrorPage() const override;
   bool HasSubframeNavigationEntryCommitted() override;
   bool DidReplaceEntry() override;
   bool ShouldUpdateHistory() override;
@@ -373,7 +381,7 @@ class CONTENT_EXPORT NavigationRequest
   bool IsWaitingToCommit() override;
   bool WasResourceHintsReceived() override;
   bool IsPdf() override;
-  void WriteIntoTrace(perfetto::TracedValue context) override;
+  void WriteIntoTrace(perfetto::TracedProto<TraceProto> context) const override;
   bool SetNavigationTimeout(base::TimeDelta timeout) override;
   PrerenderTriggerType GetPrerenderTriggerType() override;
   std::string GetPrerenderEmbedderHistogramSuffix() override;
@@ -1006,6 +1014,10 @@ class CONTENT_EXPORT NavigationRequest
   // Returns whether this navigation request is requesting opt-in
   // origin-isolation.
   bool IsOptInIsolationRequested();
+
+  // Returns whether defaulting to origin-keyed agent cluster (without
+  // necessarily an origin-keyed process) is enabled.
+  bool AreOriginAgentClustersEnabledByDefault() const;
 
   // Returns whether this navigation request should use an origin-keyed
   // agent cluster (but not an origin-keyed process).

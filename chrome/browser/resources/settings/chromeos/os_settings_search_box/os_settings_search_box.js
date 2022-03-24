@@ -44,12 +44,12 @@ import {IronA11yAnnouncer} from '//resources/polymer/v3_0/iron-a11y-announcer/ir
 import '//resources/polymer/v3_0/iron-dropdown/iron-dropdown.js';
 import '//resources/polymer/v3_0/iron-list/iron-list.js';
 import './os_search_result_row.js';
-import {recordSettingChange, recordSearch, setUserActionRecorderForTesting, recordPageFocus, recordPageBlur, recordClick, recordNavigation} from '../metrics_recorder.m.js';
+import {recordSearch} from '../metrics_recorder.js';
 import {getSearchHandler, setSearchHandlerForTesting} from '../search_handler.js';
 import '../../settings_shared_css.js';
 import {Router, Route} from '../../router.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
-import {routes} from '../os_route.m.js';
+import {routes} from '../os_route.js';
 
 Polymer({
   _template: html`{__html_template__}`,

@@ -63,6 +63,9 @@ class FastPairRepositoryImpl : public FastPairRepository {
   void AssociateAccountKey(scoped_refptr<Device> device,
                            const std::vector<uint8_t>& account_key) override;
   bool DeleteAssociatedDevice(const device::BluetoothDevice* device) override;
+  void DeleteAssociatedDeviceByAccountKey(
+      const std::vector<uint8_t>& account_key,
+      DeleteAssociatedDeviceByAccountKeyCallback callback) override;
   void FetchDeviceImages(scoped_refptr<Device> device) override;
   bool PersistDeviceImages(scoped_refptr<Device> device) override;
   bool EvictDeviceImages(const device::BluetoothDevice* device) override;
@@ -71,6 +74,7 @@ class FastPairRepositoryImpl : public FastPairRepository {
   void CheckOptInStatus(CheckOptInStatusCallback callback) override;
   void UpdateOptInStatus(nearby::fastpair::OptInStatus opt_in_status,
                          UpdateOptInStatusCallback callback) override;
+  void GetSavedDevices(GetSavedDevicesCallback callback) override;
 
  private:
   void CheckAccountKeysImpl(const AccountKeyFilter& account_key_filter,
@@ -113,6 +117,12 @@ class FastPairRepositoryImpl : public FastPairRepository {
   void CompleteFetchDeviceImages(const std::string& hex_model_id,
                                  DeviceMetadata* device_metadata,
                                  bool has_retryable_error);
+  void OnDeleteAssociatedDeviceByAccountKey(
+      DeleteAssociatedDeviceByAccountKeyCallback callback,
+      bool success);
+  void OnGetSavedDevices(
+      GetSavedDevicesCallback callback,
+      absl::optional<nearby::fastpair::UserReadDevicesResponse> user_devices);
 
   std::unique_ptr<DeviceMetadataFetcher> device_metadata_fetcher_;
   std::unique_ptr<FootprintsFetcher> footprints_fetcher_;

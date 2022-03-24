@@ -1065,10 +1065,9 @@ void LocalFrameView::RunIntersectionObserverSteps() {
 
     // Report the main frame's document intersection with itself.
     LayoutObject* layout_object = GetLayoutView();
-    gfx::Rect main_frame_dimensions =
-        To<LayoutBox>(layout_object)->PixelSnappedLayoutOverflowRect();
-    GetFrame().Client()->OnMainFrameIntersectionChanged(
-        gfx::Rect(main_frame_dimensions.size()));
+    gfx::Rect main_frame_dimensions(ToRoundedSize(
+        To<LayoutBox>(layout_object)->PhysicalLayoutOverflowRect().size));
+    GetFrame().Client()->OnMainFrameIntersectionChanged(main_frame_dimensions);
   }
 
   TRACE_EVENT0("blink,benchmark",
@@ -2432,16 +2431,17 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
       DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT_WITH_CATEGORIES(
           TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "SetLayerTreeId",
           inspector_set_layer_tree_id::Data, frame_.Get());
-      DEVTOOLS_TIMELINE_TRACE_EVENT("UpdateLayerTree",
-                                    inspector_update_layer_tree_event::Data,
+      // The Compositing Inputs lifecycle phase should be integrated into the
+      // PrePaint lifecycle phase in the future. The difference between these
+      // two stages is not relevant to web developers, so include them both
+      // under PrePaint.
+      DEVTOOLS_TIMELINE_TRACE_EVENT("PrePaint", inspector_pre_paint_event::Data,
                                     frame_.Get());
-
       run_more_lifecycle_phases =
           RunCompositingInputsLifecyclePhase(target_state);
       if (!run_more_lifecycle_phases)
         return;
 
-      // TODO(pdr): PrePaint should be under the "Paint" devtools timeline step.
       run_more_lifecycle_phases = RunPrePaintLifecyclePhase(target_state);
       DCHECK(ShouldThrottleRendering() ||
              Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);

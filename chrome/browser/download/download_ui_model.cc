@@ -685,6 +685,42 @@ void DownloadUIModel::ExecuteCommand(DownloadCommands* download_commands,
       break;
   }
 }
+
+DownloadUIModel::BubbleSubpageInfo::BubbleSubpageInfo() = default;
+DownloadUIModel::BubbleSubpageInfo::~BubbleSubpageInfo() = default;
+DownloadUIModel::BubbleSubpageInfo::BubbleSubpageInfo(
+    const BubbleSubpageInfo& rhs)
+    : warning_summary(rhs.warning_summary),
+      has_checkbox(rhs.has_checkbox),
+      checkbox_label(rhs.checkbox_label),
+      has_first_button(rhs.has_first_button),
+      first_button_command(rhs.first_button_command),
+      first_button_label(rhs.first_button_label),
+      has_second_button(rhs.has_second_button),
+      second_button_command(rhs.second_button_command),
+      second_button_label(rhs.second_button_label) {}
+
+DownloadUIModel::BubbleSubpageInfo DownloadUIModel::GetBubbleSubpageInfo()
+    const {
+  DownloadUIModel::BubbleSubpageInfo info;
+  DCHECK(IsDangerous());
+
+  info.warning_summary =
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_MALICIOUS_URL_BLOCKED);
+  info.has_checkbox = true;
+  info.checkbox_label =
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CHECKBOX_BYPASS);
+  info.has_first_button = true;
+  info.first_button_command = DownloadCommands::Command::KEEP;
+  info.first_button_label =
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE);
+  info.has_second_button = true;
+  info.second_button_command = DownloadCommands::Command::DISCARD;
+  info.second_button_label =
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE);
+
+  return info;
+}
 #endif
 
 std::string DownloadUIModel::GetMimeType() const {
@@ -762,10 +798,26 @@ std::u16string DownloadUIModel::StatusTextBuilder::GetInProgressStatusText()
 }
 
 std::u16string
+DownloadUIModel::BubbleStatusTextBuilder::GetBubbleWarningStatusText() const {
+  if (!model_->IsDangerous()) {
+    return std::u16string();
+  }
+  // "Blocked • Malware"
+  return base::StrCat(
+      {l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_STATUS_BLOCKED),
+       l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DOWNLOAD_SEPERATOR),
+       l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_STATUS_MALWARE)});
+}
+
+std::u16string
 DownloadUIModel::BubbleStatusTextBuilder::GetInProgressStatusText() const {
   DCHECK_EQ(DownloadItem::IN_PROGRESS, model_->GetState());
-  const auto web_drive = model_->GetWebDriveName();
 
+  std::u16string warning_status_text = GetBubbleWarningStatusText();
+  if (!warning_status_text.empty())
+    return warning_status_text;
+
+  const auto web_drive = model_->GetWebDriveName();
   base::TimeDelta time_remaining;
   // time_remaining is only known if the download isn't paused, and it isn't
   // going to be rerouted to a web drive.
@@ -835,8 +887,9 @@ DownloadUIModel::BubbleStatusTextBuilder::GetInProgressStatusText() const {
   } else if (completed_bytes < total_bytes || total_bytes == 0) {
     // In progress download with no known time left and non-zero completed
     // bytes: "100/120 MB • Resuming..." or "100 MB • Resuming..."
-    return base::StrCat({size_ratio_prefix, l10n_util::GetStringUTF16(
-                                                IDS_DOWNLOAD_STATUS_RESUMING)});
+    return base::StrCat(
+        {size_ratio_prefix,
+         l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_STATUS_RESUMING)});
   } else if (web_drive.size()) {
     // If all bytes of the file has been downloaded and it is being rerouted:
     // "120 MB • Sending to <WEB_DRIVE>..."
@@ -845,8 +898,8 @@ DownloadUIModel::BubbleStatusTextBuilder::GetInProgressStatusText() const {
          l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_UPLOADING, web_drive)});
   } else {
     // "120 MB • Done"
-    return base::StrCat(
-        {total_prefix, l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_DONE)});
+    return base::StrCat({total_prefix, l10n_util::GetStringUTF16(
+                                           IDS_DOWNLOAD_BUBBLE_STATUS_DONE)});
   }
 }
 
@@ -871,13 +924,17 @@ std::u16string DownloadUIModel::StatusTextBuilder::GetCompletedStatusText()
 
 std::u16string
 DownloadUIModel::BubbleStatusTextBuilder::GetCompletedStatusText() const {
+  std::u16string warning_status_text = GetBubbleWarningStatusText();
+  if (!warning_status_text.empty())
+    return warning_status_text;
+
   std::u16string status_text = GetCompletedRemovedOrSavedStatusText();
   if (!status_text.empty())
     return status_text;
 
   if (model_->GetEndTime().is_null()) {
     // Offline items have these null.
-    return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_DONE);
+    return l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_STATUS_DONE);
   } else {
     std::u16string total_text = ui::FormatBytes(model_->GetTotalBytes());
     std::u16string delta_str = ui::TimeFormat::Simple(
@@ -966,6 +1023,26 @@ std::u16string DownloadUIModel::StatusTextBuilderBase::GetInterruptedStatusText(
   // "Fail to save to <WEB_DRIVE> - <STATE_MESSAGE>"
   return l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_UPLOAD_INTERRUPTED,
                                     web_drive, state_msg);
+}
+
+std::u16string
+DownloadUIModel::BubbleStatusTextBuilder::GetInterruptedStatusText(
+    FailState fail_state) const {
+  auto state_msg = GetFailStateMessage(fail_state);
+  const auto web_drive = model_->GetWebDriveName();
+  if (web_drive.empty()) {
+    // "Failed • <STATE_MESSAGE>"
+    return base::StrCat(
+        {l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_STATUS_FAILED),
+         l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DOWNLOAD_SEPERATOR),
+         state_msg});
+  }
+  // "Fail to save to <WEB_DRIVE> • <STATE_MESSAGE>"
+  return base::StrCat(
+      {l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_STATUS_FAILED_WEBDRIVE),
+       web_drive,
+       l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DOWNLOAD_SEPERATOR),
+       state_msg});
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)

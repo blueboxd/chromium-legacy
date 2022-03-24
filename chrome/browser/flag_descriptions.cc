@@ -782,11 +782,6 @@ const char kEnableNavigationPredictorDescription[] =
     "Enables navigation predictor feature that predicts the next likely "
     "navigation using a set of heuristics.";
 
-const char kEnablePreconnectToSearchName[] =
-    "Enables preconnections to default search engine";
-const char kEnablePreconnectToSearchDescription[] =
-    "Enables the feature that preconnects to the user's default search engine.";
-
 const char kEnableRawDrawName[] = "Enable raw draw";
 const char kEnableRawDrawDescription[] =
     "When enabled, web content will be rastered on output surface directly.";
@@ -1766,12 +1761,6 @@ const char kOmniboxMostVisitedTilesDescription[] =
     "Display a list of frequently visited pages from history as a single row "
     "with a carousel instead of one URL per line.";
 
-const char kOmniboxPreserveLongerShortcutsTextName[] =
-    "Omnibox Preserve Longer Shortcuts Text";
-const char kOmniboxPreserveLongerShortcutsTextDescription[] =
-    "When disabled, updating shortcuts truncates its text to the user input. "
-    "When enabled, 3 additional characters are preserved.";
-
 const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPName[] =
     "Omnibox Trending Zero Prefix Suggestions";
 const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPDescription[] =
@@ -1884,11 +1873,6 @@ const char kOmniboxDynamicMaxAutocompleteName[] =
 const char kOmniboxDynamicMaxAutocompleteDescription[] =
     "Configures the maximum number of autocomplete matches displayed in the "
     "Omnibox UI dynamically based on the number of URL matches.";
-
-const char kEnableSearchPrefetchName[] = "Search Prefetch";
-const char kEnableSearchPrefetchDescription[] =
-    "Allow the default search engine to specify prefetch behavior for "
-    "suggestions to search results pages.";
 
 const char kOptimizationGuideDebugLogsName[] =
     "Enable optimization guide debug logs";
@@ -3343,9 +3327,11 @@ const char kNewWindowAppMenuDescription[] =
     "Show a new menu item 'New Window' on tablet-sized screen when Chrome "
     "can open a new window and create a new instance in it.";
 
-const char kOfflineIndicatorV2Name[] = "Offline indicator V2";
-const char kOfflineIndicatorV2Description[] =
-    "Show a persistent offline indicator when offline.";
+const char kNotificationPermissionRationaleName[] =
+    "Notification Permission Rationale UI";
+const char kNotificationPermissionRationaleDescription[] =
+    "Configure the dialog shown before requesting notification permission. "
+    "Only works with builds targeting Android T.";
 
 const char kOfflinePagesLivePageSharingName[] =
     "Enables live page sharing of offline pages";
@@ -3366,13 +3352,6 @@ const char kPageInfoHistoryDescription[] =
 const char kPageInfoStoreInfoName[] = "Page info store info";
 const char kPageInfoStoreInfoDescription[] =
     "Enable a store info row to the page info menu on eligible pages.";
-
-const char kPasswordProtectionForSignedInUsersName[] =
-    "Password Protection for Signed-In Users";
-const char kPasswordProtectionForSignedInUsersDescription[] =
-    "Enable signed-in (Google account) password protection for signed-in "
-    "users and allows users to change their signed-in password through "
-    "password reuse warnings on phishing or low reputation sites.";
 
 const char kPersistShareHubOnAppSwitchName[] = "Persist sharing hub";
 const char kPersistShareHubOnAppSwitchDescription[] =
@@ -3599,6 +3578,11 @@ const char kTouchDragAndContextMenuName[] =
 const char kTouchDragAndContextMenuDescription[] =
     "Enables touch dragging and a context menu to start simultaneously, with"
     "the assumption that the menu is non-modal.";
+
+const char kTranslateMessageUIName[] = "Translate Message UI";
+const char kTranslateMessageUIDescription[] =
+    "Controls whether the Translate Message UI will be shown instead of the "
+    "Translate InfoBar.";
 
 const char kUpdateMenuBadgeName[] = "Force show update menu badge";
 const char kUpdateMenuBadgeDescription[] =
@@ -4294,12 +4278,6 @@ const char kHdrNetOverrideName[] = "HDRnet control override";
 const char kHdrNetOverrideDescription[] =
     "Overrides the default to forcibly enable or disable the HDRnet feature";
 
-const char kCameraAppDocumentManualCropName[] =
-    "Enables document manual crop in camera app.";
-const char kCameraAppDocumentManualCropDescription[] =
-    "Enables document manual crop in camera app for allowing to tweak the "
-    "crop area and orientation in the document photo preview page.";
-
 const char kCategoricalSearchName[] = "Launcher Categorical Search";
 const char kCategoricalSearchDescription[] =
     "Launcher search results grouped by categories";
@@ -4617,6 +4595,13 @@ const char kEnableLauncherSearchNormalizationDescription[] =
     "Enable normalization of scores from different providers to the "
     "launcher.";
 
+const char kEnableLogControllerForDiagnosticsAppName[] =
+    "Enable DiagnosticsLogController for Diagnostics App";
+const char kEnableLogControllerForDiagnosticsAppDescription[] =
+    "Uses DiagnosticsLogController to manage the lifetime of Diagnostics App "
+    "logs.  Enables creation of combined diagnostics log after Diagnostics "
+    "App is closed.";
+
 const char kEnableNeuralPalmAdaptiveHoldName[] = "Palm Rejection Adaptive Hold";
 const char kEnableNeuralPalmAdaptiveHoldDescription[] =
     "Enable adaptive hold in palm rejection.  Not compatible with all devices.";
@@ -4790,6 +4775,11 @@ const char kExperimentalAccessibilityDictationWithPumpkinName[] =
 const char kExperimentalAccessibilityDictationWithPumpkinDescription[] =
     "Enables the pumpkin semantic parser for the accessibility dictation "
     "feature.";
+
+const char kExperimentalAccessibilityGoogleTtsLanguagePacksName[] =
+    "Experimental accessibility Google TTS Langauge Packs.";
+const char kExperimentalAccessibilityGoogleTtsLanguagePacksDescription[] =
+    "Enables downloading Google TTS voices using Langauge Packs.";
 
 const char kExperimentalAccessibilitySwitchAccessTextName[] =
     "Enable enhanced Switch Access text input.";

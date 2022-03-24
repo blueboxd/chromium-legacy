@@ -78,7 +78,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
@@ -3924,15 +3923,14 @@ void SynchronizeVisualPropertiesInterceptor::SynchronizeVisualProperties(
   last_pinch_gesture_active_ = visual_properties.is_pinch_gesture_active;
 
   gfx::Rect screen_space_rect_in_dip = visual_properties.screen_space_rect;
-  if (IsUseZoomForDSFEnabled()) {
-    const float dsf =
-        visual_properties.screen_infos.current().device_scale_factor;
-    screen_space_rect_in_dip =
-        gfx::Rect(gfx::ScaleToFlooredPoint(
-                      visual_properties.screen_space_rect.origin(), 1.f / dsf),
-                  gfx::ScaleToCeiledSize(
-                      visual_properties.screen_space_rect.size(), 1.f / dsf));
-  }
+  const float dsf =
+      visual_properties.screen_infos.current().device_scale_factor;
+  screen_space_rect_in_dip =
+      gfx::Rect(gfx::ScaleToFlooredPoint(
+                    visual_properties.screen_space_rect.origin(), 1.f / dsf),
+                gfx::ScaleToCeiledSize(
+                    visual_properties.screen_space_rect.size(), 1.f / dsf));
+
   // Track each rect updates.
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
@@ -4161,6 +4159,66 @@ bool HistoryGoBack(WebContents* wc) {
 bool HistoryGoForward(WebContents* wc) {
   wc->GetController().GoForward();
   return WaitForLoadStop(wc);
+}
+
+CreateAndLoadWebContentsObserver::CreateAndLoadWebContentsObserver()
+    : web_contents_created_callback_(base::BindRepeating(
+          &CreateAndLoadWebContentsObserver::OnWebContentsCreated,
+          base::Unretained(this))) {
+  WebContentsImpl::FriendWrapper::AddCreatedCallbackForTesting(
+      web_contents_created_callback_);
+}
+
+CreateAndLoadWebContentsObserver::~CreateAndLoadWebContentsObserver() {
+  UnregisterIfNeeded();
+}
+
+void CreateAndLoadWebContentsObserver::OnWebContentsCreated(
+    WebContents* web_contents) {
+  // If there is already a WebContents, then this will fail the test later.
+  if (web_contents_) {
+    failed_ = true;
+    // If we're called before Wait(), then `quit_closure_` has not been set.  If
+    // we're called after, then we'll clear this the first time through and it
+    // won't be set again.
+    DCHECK(!quit_closure_);
+    return;
+  }
+
+  web_contents_ = web_contents;
+  load_stop_observer_.emplace(web_contents_);
+
+  if (quit_closure_)
+    std::move(quit_closure_).Run();
+}
+
+void CreateAndLoadWebContentsObserver::UnregisterIfNeeded() {
+  if (!web_contents_created_callback_)
+    return;
+
+  WebContentsImpl::FriendWrapper::RemoveCreatedCallbackForTesting(
+      web_contents_created_callback_);
+  web_contents_created_callback_.Reset();
+}
+
+WebContents* CreateAndLoadWebContentsObserver::Wait() {
+  // Wait for a new WebContents if we haven't gotten one yet.
+  if (!load_stop_observer_) {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  load_stop_observer_->Wait();
+
+  // Do this after waiting for load to complete, since exactly one WebContents
+  // should be created before Wait() returns.  If a second one is created while
+  // the first is loading, then it's still broken.
+  UnregisterIfNeeded();
+
+  EXPECT_FALSE(failed_);
+
+  return web_contents_;
 }
 
 }  // namespace content

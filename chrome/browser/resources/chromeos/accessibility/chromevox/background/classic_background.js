@@ -6,8 +6,11 @@
  * @fileoverview Script that runs on the background page.
  */
 
+import {CompositeTts} from '../common/composite_tts.js';
+import {ChromeVoxEditableTextBase, TypingEcho} from '../common/editable_text_base.js';
 import {TtsBackground} from '../common/tts_background.js';
 
+import {BrailleBackground} from './braille_background.js';
 import {InjectedScriptLoader} from './injected_script_loader.js';
 
 /**

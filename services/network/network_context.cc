@@ -428,7 +428,7 @@ bool GetFullDataFilePath(
   // Path to a data file should always be a plain filename.
   DCHECK_EQ(relative_file_path->BaseName(), *relative_file_path);
 
-  full_path = file_paths->data_path.Append(relative_file_path->value());
+  full_path = file_paths->data_directory.Append(relative_file_path->value());
   return true;
 }
 
@@ -1806,9 +1806,11 @@ void NetworkContext::GetHSTSState(const std::string& domain,
     if (transport_security_state) {
       net::TransportSecurityState::STSState static_sts_state;
       net::TransportSecurityState::PKPState static_pkp_state;
-      bool found_static = transport_security_state->GetStaticDomainState(
-          domain, &static_sts_state, &static_pkp_state);
-      if (found_static) {
+      bool found_sts_static = transport_security_state->GetStaticSTSState(
+          domain, &static_sts_state);
+      bool found_pkp_static = transport_security_state->GetStaticPKPState(
+          domain, &static_pkp_state);
+      if (found_sts_static || found_pkp_static) {
         result.SetIntKey("static_upgrade_mode",
                          static_cast<int>(static_sts_state.upgrade_mode));
         result.SetBoolKey("static_sts_include_subdomains",
@@ -1861,8 +1863,8 @@ void NetworkContext::GetHSTSState(const std::string& domain,
         result.SetStringKey("dynamic_pkp_domain", dynamic_pkp_state.domain);
       }
 
-      result.SetBoolKey("result",
-                        found_static || found_sts_dynamic || found_pkp_dynamic);
+      result.SetBoolKey("result", found_sts_static || found_pkp_static ||
+                                      found_sts_dynamic || found_pkp_dynamic);
     } else {
       result.SetStringKey("error", "no TransportSecurityState active");
     }
@@ -2366,11 +2368,11 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   } else {
     net::URLRequestContextBuilder::HttpCacheParams cache_params;
     cache_params.max_size = params_->http_cache_max_size;
-    if (!params_->http_cache_path) {
+    if (!params_->http_cache_directory) {
       cache_params.type =
           net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;
     } else {
-      cache_params.path = *params_->http_cache_path;
+      cache_params.path = *params_->http_cache_directory;
       cache_params.type = network_session_configurator::ChooseCacheType();
     }
     cache_params.reset_cache = params_->reset_http_cache_backend;

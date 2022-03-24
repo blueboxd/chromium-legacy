@@ -27,6 +27,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/view.h"
 
 namespace ash {
 
@@ -142,8 +143,9 @@ class CalendarViewTest : public AshTestBase {
   views::Button* settings_button() { return calendar_view_->settings_button_; }
   IconButton* up_button() { return calendar_view_->up_button_; }
   IconButton* down_button() { return calendar_view_->down_button_; }
-  views::ImageButton* close_button() {
-    return calendar_view_->event_list_view_->close_button_;
+  views::View* close_button() {
+    return calendar_view_->event_list_view_->close_button_container_
+        ->children()[0];
   }
   views::View* event_list_view() { return calendar_view_->event_list_view_; }
 
@@ -454,13 +456,13 @@ TEST_F(CalendarViewTest, HeaderFocusing) {
   PressTab();
   EXPECT_EQ(settings_button(), focus_manager->GetFocusedView());
 
-  // Moves to down button.
-  PressTab();
-  EXPECT_EQ(down_button(), focus_manager->GetFocusedView());
-
   // Moves to up button.
   PressTab();
   EXPECT_EQ(up_button(), focus_manager->GetFocusedView());
+
+  // Moves to down button.
+  PressTab();
+  EXPECT_EQ(down_button(), focus_manager->GetFocusedView());
 }
 
 // Tests the focus loop between the back button, today's button, settings
@@ -971,7 +973,8 @@ class CalendarViewAnimationTest : public AshTestBase {
 };
 
 // The header should show the new header with animation when there's an update.
-TEST_F(CalendarViewAnimationTest, HeaderAnimation) {
+// TODO(https://crbug.com/1270161): test is flaky.
+TEST_F(CalendarViewAnimationTest, DISABLED_HeaderAnimation) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 

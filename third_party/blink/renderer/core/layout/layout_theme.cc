@@ -613,8 +613,8 @@ Color LayoutTheme::DefaultSystemColor(
       return color_scheme == mojom::blink::ColorScheme::kDark ? 0xFF6B6B6B
                                                               : 0xFF767676;
     case CSSValueID::kButtonface:
-      return color_scheme == mojom::blink::ColorScheme::kDark ? 0xFF444444
-                                                              : 0xFFDDDDDD;
+      return color_scheme == mojom::blink::ColorScheme::kDark ? 0xFF6B6B6B
+                                                              : 0xFFEFEFEF;
     case CSSValueID::kButtonhighlight:
       return 0xFFDDDDDD;
     case CSSValueID::kButtonshadow:
@@ -626,7 +626,7 @@ Color LayoutTheme::DefaultSystemColor(
       return color_scheme == mojom::blink::ColorScheme::kDark ? 0xFFFFFFFF
                                                               : 0xFF000000;
     case CSSValueID::kField:
-      return color_scheme == mojom::blink::ColorScheme::kDark ? 0xFF000000
+      return color_scheme == mojom::blink::ColorScheme::kDark ? 0xFF3B3B3B
                                                               : 0xFFFFFFFF;
     case CSSValueID::kFieldtext:
       return color_scheme == mojom::blink::ColorScheme::kDark ? 0xFFFFFFFF
@@ -652,6 +652,10 @@ Color LayoutTheme::DefaultSystemColor(
                                                               : 0xFF000000;
     case CSSValueID::kLinktext:
       return 0xFF0000EE;
+    case CSSValueID::kMark:
+      return 0xFFFFFF00;
+    case CSSValueID::kMarktext:
+      return 0xFF000000;
     case CSSValueID::kMenu:
       return color_scheme == mojom::blink::ColorScheme::kDark ? 0xFF404040
                                                               : 0xFFF7F7F7;

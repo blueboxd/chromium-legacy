@@ -23,6 +23,7 @@ import {Bookmark} from './bookmark_type.js';
 import {BrowserApi} from './browser_api.js';
 import {Attachment, DocumentMetadata, ExtendedKeyEvent, FittingType, Point, SaveRequestType} from './constants.js';
 import {MessageData, PluginController} from './controller.js';
+import {ChangePageAndXyDetail, ChangePageDetail, NavigateDetail} from './elements/viewer-bookmark.js';
 import {ViewerErrorDialogElement} from './elements/viewer-error-dialog.js';
 import {ViewerPasswordDialogElement} from './elements/viewer-password-dialog.js';
 import {ViewerPdfSidenavElement} from './elements/viewer-pdf-sidenav.js';
@@ -51,12 +52,6 @@ type NavigateMessageData = {
   type: string,
   url: string,
   disposition: WindowOpenDisposition,
-};
-
-type GetThumbnailMessageData = {
-  type: string,
-  messageId: string,
-  page: number,
 };
 
 type ZoomBounds = {
@@ -89,6 +84,13 @@ function eventToPromise(event: string, target: HTMLElement): Promise<void> {
 }
 
 const LOCAL_STORAGE_SIDENAV_COLLAPSED_KEY: string = 'sidenavCollapsed';
+
+/**
+ * The background color used for the regular viewer. Its decimal value in string
+ * format should match `kPdfViewerBackgroundColor` in
+ * components/pdf/browser/plugin_response_writer.cc.
+ */
+const BACKGROUND_COLOR: number = 0xff525659;
 
 export interface PDFViewerElement {
   $: {
@@ -656,12 +658,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
         this.pluginController_!.getSelectedText().then(
             this.handleSelectedTextReply.bind(this));
         break;
-      case 'getThumbnail':
-        const getThumbnailData = message.data as GetThumbnailMessageData;
-        const page = getThumbnailData.page;
-        this.pluginController_!.requestThumbnail(page).then(
-            this.sendScriptingMessage.bind(this));
-        break;
       case 'print':
         this.pluginController_!.print();
         break;
@@ -907,7 +903,7 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     this.save_(e.detail);
   }
 
-  private onChangePage_(e: CustomEvent<{page: number, origin: string}>) {
+  private onChangePage_(e: CustomEvent<ChangePageDetail>) {
     this.viewport.goToPage(e.detail.page);
     if (e.detail.origin === 'bookmark') {
       record(UserAction.FOLLOW_BOOKMARK);
@@ -918,13 +914,12 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     }
   }
 
-  private onChangePageAndXy_(
-      e: CustomEvent<{page: number, origin: string, x: number, y: number}>) {
+  private onChangePageAndXy_(e: CustomEvent<ChangePageAndXyDetail>) {
     const point = this.viewport.convertPageToScreen(e.detail.page, e.detail);
     this.goToPageAndXY_(e.detail.origin, e.detail.page, point);
   }
 
-  private onNavigate_(e: CustomEvent<{newtab: boolean, uri: string}>) {
+  private onNavigate_(e: CustomEvent<NavigateDetail>) {
     const disposition = e.detail.newtab ?
         WindowOpenDisposition.NEW_BACKGROUND_TAB :
         WindowOpenDisposition.CURRENT_TAB;
@@ -1062,11 +1057,10 @@ export class PDFViewerElement extends PDFViewerBaseElement {
   }
 }
 
-/**
- * The background color used for the regular viewer. Its decimal value in string
- * format should match `kPdfViewerBackgroundColor` in
- * components/pdf/browser/plugin_response_writer.cc.
- */
-const BACKGROUND_COLOR: number = 0xff525659;
+declare global {
+  interface HTMLElementTagNameMap {
+    'pdf-viewer': PDFViewerElement;
+  }
+}
 
 customElements.define(PDFViewerElement.is, PDFViewerElement);

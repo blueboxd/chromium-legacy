@@ -86,6 +86,7 @@ group("gn_all") {
     "//codelabs",
     "//components:components_unittests",
     "//components/gwp_asan:gwp_asan_unittests",
+    "//infra/orchestrator:orchestrator_all",
     "//net:net_unittests",
     "//services:services_unittests",
     "//services/service_manager/public/cpp",
@@ -565,7 +566,9 @@ group("gn_all") {
       deps += [ "//extensions/shell:app_shell" ]
     }
 
-    if (enable_nacl) {
+    # TODO(https://crbug.com/1299021): Implement building these NaCl targets
+    # as ARM32 when Chrome is built for ARM64 (for Linux/Chrome OS).
+    if (enable_nacl && target_cpu != "arm64") {
       deps += [ "//components/nacl/loader:nacl_loader_unittests" ]
 
       if (is_linux || is_chromeos) {
@@ -786,7 +789,8 @@ group("gn_all") {
     }
   }
 
-  if (enable_nacl) {
+  # TODO(https://crbug.com/1299021): Remove the special case for arm64.
+  if (enable_nacl && target_cpu != "arm64") {
     deps += [ "//native_client_sdk/src:nacl_core_sdk" ]
   }
 
@@ -1188,7 +1192,10 @@ if (!is_ios) {
     }
 
     if (is_mac) {
-      data += [ "//third_party/apache-mac/" ]
+      data += [
+        "//third_party/apache-mac/",
+        "//third_party/apache-mac-arm64/",
+      ]
     }
 
     if (is_android) {
@@ -1455,7 +1462,6 @@ if (!is_ios) {
   }
 
   script_test("blink_python_tests") {
-    run_under_python2 = true
     script = "//testing/scripts/run_isolated_script_test.py"
     args = [ "@WrappedPath(" +
              rebase_path("//third_party/blink/tools/run_blinkpy_tests.py",

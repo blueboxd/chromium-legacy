@@ -41,6 +41,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/exo/shell_surface.h"
+#include "components/exo/test/shell_surface_builder.h"
+#include "components/exo/wm_helper_chromeos.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/desktop_streams_registry.h"
 #include "content/public/browser/media_stream_request.h"
@@ -86,6 +89,7 @@ constexpr char kScreenShareResumedNotificationId[] =
 
 constexpr char kExampleUrl[] = "https://example.com";
 constexpr char kGoogleUrl[] = "https://google.com";
+constexpr char kChromeUrl[] = "https://chromium.org";
 constexpr char kSrcPattern[] = "example.com";
 constexpr char kLabel[] = "label";
 const std::u16string kApplicationTitle = u"example.com";
@@ -822,6 +826,50 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
       GetDlpHistogramPrefix() + dlp::kVideoCaptureInterruptedUMA, true, 0);
 }
 
+// Tests that screenshare is correctly paused for visibility changes of
+// Lacros-like windows (Exo surfaces).
+IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, ScreenShareExoSurface) {
+  SetupReporting();
+
+  // Create a Lacros-like Exo surface.
+  exo::WMHelperChromeOS wm_helper;
+  std::unique_ptr<exo::ShellSurface> shell_surface =
+      exo::test::ShellSurfaceBuilder({640, 480}).BuildShellSurface();
+  shell_surface->root_surface()->window()->TrackOcclusionState();
+
+  DlpContentManagerAsh* manager =
+      static_cast<DlpContentManagerAsh*>(helper_->GetContentManager());
+  manager->OnWindowRestrictionChanged(
+      shell_surface->GetWidget()->GetNativeWindow(), kScreenShareRestricted);
+  base::MockCallback<content::MediaStreamUI::StateChangeCallback>
+      state_change_cb;
+  base::MockCallback<base::RepeatingClosure> stop_cb;
+
+  // Run for fullscreen and window share.
+  const auto root_media_id = content::DesktopMediaID::RegisterNativeWindow(
+      content::DesktopMediaID::TYPE_SCREEN,
+      browser()->window()->GetNativeWindow()->GetRootWindow());
+  const auto window_media_id = content::DesktopMediaID::RegisterNativeWindow(
+      content::DesktopMediaID::TYPE_WINDOW,
+      shell_surface->GetWidget()->GetNativeWindow());
+  for (const auto media_id : {root_media_id, window_media_id}) {
+    // Hide the confidential data.
+    shell_surface->GetWidget()->Hide();
+
+    // Setup callbacks to expect a single PAUSE call.
+    EXPECT_CALL(stop_cb, Run()).Times(0);
+    EXPECT_CALL(state_change_cb,
+                Run(testing::_, blink::mojom::MediaStreamStateChange::PAUSE))
+        .Times(1);
+    manager->OnScreenShareStarted(kLabel, {media_id}, kApplicationTitle,
+                                  stop_cb.Get(), state_change_cb.Get(),
+                                  base::DoNothing());
+    // Show the confidential data.
+    shell_surface->GetWidget()->Show();
+    manager->OnScreenShareStopped(kLabel, media_id);
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
                        ScreenShareNotification) {
   SetupReporting();
@@ -1263,12 +1311,15 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
   EXPECT_EQ(helper_->ActiveWarningDialogsCount(), 0);
 }
 
+// TODO(crbug.com/1306311): Create browser tests for share-this-tab-instead
+// button.
 class DlpContentManagerAshScreenShareBrowserTest
     : public DlpContentManagerAshBrowserTest {
  public:
   void StartDesktopScreenShare(
       content::WebContents* web_contents,
-      blink::mojom::MediaStreamRequestResult expected_result) {
+      blink::mojom::MediaStreamRequestResult expected_result,
+      int state_change_times = 0) {
     const content::DesktopMediaID media_id(content::DesktopMediaID::TYPE_SCREEN,
                                            content::DesktopMediaID::kFakeId);
     const std::string requested_video_device_id =
@@ -1286,12 +1337,13 @@ class DlpContentManagerAshScreenShareBrowserTest
         CreateMediaStreamRequest(
             web_contents, requested_video_device_id,
             blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE),
-        expected_result, media_id);
+        expected_result, media_id, state_change_times);
   }
 
   void StartTabScreenShare(
       content::WebContents* web_contents,
-      blink::mojom::MediaStreamRequestResult expected_result) {
+      blink::mojom::MediaStreamRequestResult expected_result,
+      int state_change_times = 0) {
     const content::DesktopMediaID media_id(
         content::DesktopMediaID::TYPE_WEB_CONTENTS,
         content::DesktopMediaID::kNullId,
@@ -1308,7 +1360,7 @@ class DlpContentManagerAshScreenShareBrowserTest
         CreateMediaStreamRequest(
             web_contents, /*requested_video_device_id=*/std::string(),
             blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE),
-        expected_result, media_id);
+        expected_result, media_id, state_change_times);
   }
 
  private:
@@ -1316,7 +1368,8 @@ class DlpContentManagerAshScreenShareBrowserTest
                         content::WebContents* web_contents,
                         content::MediaStreamRequest request,
                         blink::mojom::MediaStreamRequestResult expected_result,
-                        const content::DesktopMediaID& media_id) {
+                        const content::DesktopMediaID& media_id,
+                        int state_change_times) {
     // First check for the permission to start screen sharing.
     // It should call DlpContentManager::CheckScreenShareRestriction().
     base::test::TestFuture<
@@ -1338,14 +1391,20 @@ class DlpContentManagerAshScreenShareBrowserTest
     if (expected_result == blink::mojom::MediaStreamRequestResult::OK) {
       DlpContentManagerAsh* manager =
           static_cast<DlpContentManagerAsh*>(helper_->GetContentManager());
+
+      EXPECT_CALL(state_change_cb_, Run)
+          .Times(state_change_times)
+          // TODO(1306301): Test the type of state change: pause/resume/stop.
+          .WillRepeatedly(testing::Return());
       EXPECT_CALL(stop_cb_, Run).Times(0);
       manager->OnScreenShareStarted(kLabel, {media_id}, kApplicationTitle,
-                                    stop_cb_.Get(),
-                                    /*state_change_callback*/ base::DoNothing(),
+                                    stop_cb_.Get(), state_change_cb_.Get(),
                                     /*source_callback=*/base::DoNothing());
     }
   }
 
+  base::MockCallback<content::MediaStreamUI::StateChangeCallback>
+      state_change_cb_;
   base::MockCallback<base::RepeatingClosure> stop_cb_;
 };
 
@@ -1488,6 +1547,76 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
               DlpRulesManager::Level::kReport, 1u);
   EXPECT_FALSE(display_service_tester.GetNotification(
       kScreenShareBlockedNotificationId));
+}
+
+IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
+                       NavigateWebContents) {
+  SetupReporting();
+  const GURL restricted_url(kGoogleUrl);
+  const GURL reported_url(kExampleUrl);
+  const GURL unrestricted_url(kChromeUrl);
+
+  NotificationDisplayServiceTester display_service_tester(browser()->profile());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Start sharing unrestricted content.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), unrestricted_url));
+  StartTabScreenShare(web_contents, blink::mojom::MediaStreamRequestResult::OK,
+                      /*state_change_times=*/2);
+
+  // Navigate to reported content. Should emit a report event.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), reported_url));
+  helper_->ChangeConfidentiality(web_contents, kScreenShareReported);
+  CheckEvents(DlpRulesManager::Restriction::kScreenShare,
+              DlpRulesManager::Level::kReport, 1u);
+
+  // Navigate to unrestricted content.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), unrestricted_url));
+  helper_->ChangeConfidentiality(web_contents, kEmptyRestrictionSet);
+  CheckEvents(DlpRulesManager::Restriction::kScreenShare,
+              DlpRulesManager::Level::kReport, 1u);
+
+  // Navigate to the previous reported content. Should not emit any report
+  // event.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), reported_url));
+  helper_->ChangeConfidentiality(web_contents, kScreenShareReported);
+  CheckEvents(DlpRulesManager::Restriction::kScreenShare,
+              DlpRulesManager::Level::kReport, 1u);
+
+  EXPECT_FALSE(
+      display_service_tester.GetNotification(kScreenSharePausedNotificationId));
+  histogram_tester_.ExpectBucketCount(
+      GetDlpHistogramPrefix() + dlp::kScreenShareBlockedUMA, true, 0);
+  EXPECT_GT(histogram_tester_.GetBucketCount(
+                GetDlpHistogramPrefix() + dlp::kScreenShareBlockedUMA, false),
+            0);
+
+  // Navigate to restricted content. Should emit a block event.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), restricted_url));
+  helper_->ChangeConfidentiality(web_contents, kScreenShareRestricted);
+  ASSERT_EQ(events_.size(), 2u);
+  EXPECT_THAT(events_[1],
+              IsDlpPolicyEvent(CreateDlpPolicyEvent(
+                  kSrcPattern, DlpRulesManager::Restriction::kScreenShare,
+                  DlpRulesManager::Level::kBlock)));
+  EXPECT_TRUE(
+      display_service_tester.GetNotification(kScreenSharePausedNotificationId));
+  histogram_tester_.ExpectBucketCount(
+      GetDlpHistogramPrefix() + dlp::kScreenShareBlockedUMA, true, 1);
+
+  // Navigate to the previous reported content. Should not emit any report
+  // event.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), reported_url));
+  helper_->ChangeConfidentiality(web_contents, kScreenShareReported);
+  EXPECT_EQ(events_.size(), 2u);
+
+  // Expect resume notification. Screen share should be paused, not blocked,
+  // when navigating to restricted content.
+  EXPECT_TRUE(display_service_tester.GetNotification(
+      kScreenShareResumedNotificationId));
+  histogram_tester_.ExpectBucketCount(
+      GetDlpHistogramPrefix() + dlp::kScreenShareBlockedUMA, true, 1);
 }
 
 }  // namespace policy

@@ -36,6 +36,11 @@ using ValidModelIdCallback = base::OnceCallback<void(bool)>;
 using CheckOptInStatusCallback =
     base::OnceCallback<void(nearby::fastpair::OptInStatus)>;
 using UpdateOptInStatusCallback = base::OnceCallback<void(bool)>;
+using DeleteAssociatedDeviceByAccountKeyCallback =
+    base::OnceCallback<void(bool)>;
+using GetSavedDevicesCallback =
+    base::OnceCallback<void(nearby::fastpair::OptInStatus,
+                            std::vector<nearby::fastpair::FastPairDevice>)>;
 
 // The entry point for the Repository component in the Quick Pair system,
 // responsible for connecting to back-end services.
@@ -67,6 +72,13 @@ class FastPairRepository {
   virtual bool DeleteAssociatedDevice(
       const device::BluetoothDevice* device) = 0;
 
+  // Deletes the associated data for a given |account_key|.
+  // Runs true if a delete is successful for this account key, false
+  // otherwise on |callback|.
+  virtual void DeleteAssociatedDeviceByAccountKey(
+      const std::vector<uint8_t>& account_key,
+      DeleteAssociatedDeviceByAccountKeyCallback callback) = 0;
+
   // Fetches the |device| images and a record of the device ID -> model ID
   // mapping to memory.
   virtual void FetchDeviceImages(scoped_refptr<Device> device) = 0;
@@ -95,6 +107,10 @@ class FastPairRepository {
   // the opt in status is reflected in running |callback|.
   virtual void UpdateOptInStatus(nearby::fastpair::OptInStatus opt_in_status,
                                  UpdateOptInStatusCallback callback) = 0;
+
+  // Gets a list of devices saved to the user's account and the user's opt in
+  // status for saving future devices to their account.
+  virtual void GetSavedDevices(GetSavedDevicesCallback callback) = 0;
 
  protected:
   static void SetInstance(FastPairRepository* instance);

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -372,6 +373,9 @@ void WindowEventDispatcher::OnWindowHidden(Window* invisible,
   if (invisible->Contains(old_dispatch_target_))
     old_dispatch_target_ = nullptr;
 
+  // Cleaning up gesture state may end up destroying the hidden window. We use a
+  // tracker to detect this.
+  WindowTracker invisible_tracker({invisible});
   invisible->CleanupGestureState();
 
   // Do not clear the capture, and the |event_dispatch_target_| if the
@@ -387,14 +391,18 @@ void WindowEventDispatcher::OnWindowHidden(Window* invisible,
     Window* capture_window =
         capture_client ? capture_client->GetCaptureWindow() : nullptr;
 
-    if (invisible->Contains(event_dispatch_target_))
+    if (!invisible_tracker.Contains(invisible) ||
+        invisible->Contains(event_dispatch_target_)) {
       event_dispatch_target_ = nullptr;
+    }
 
     // If the ancestor of the capture window is hidden, release the capture.
     // Note that this may delete the window so do not use capture_window
     // after this.
-    if (invisible->Contains(capture_window) && invisible != window())
+    if (invisible_tracker.Contains(invisible) &&
+        invisible->Contains(capture_window) && invisible != window()) {
       capture_window->ReleaseCapture();
+    }
   }
 }
 

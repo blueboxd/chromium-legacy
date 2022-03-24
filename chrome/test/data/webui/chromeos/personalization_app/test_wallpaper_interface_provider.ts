@@ -100,11 +100,13 @@ export class TestWallpaperProvider extends
   private googlePhotosAlbumsResumeToken_: string|undefined;
   private googlePhotosCount_: number = 0;
   private googlePhotosEnabled_: GooglePhotosEnablementState =
-      GooglePhotosEnablementState.kError;
+      GooglePhotosEnablementState.kEnabled;
   private googlePhotosPhotos_: GooglePhotosPhoto[]|undefined = [];
   private googlePhotosPhotosResumeToken_: string|undefined;
   private googlePhotosPhotosByAlbumId_:
       Record<string, GooglePhotosPhoto[]|undefined> = {};
+  private googlePhotosPhotosByAlbumIdResumeTokens_:
+      Record<string, string|undefined> = {};
   localImages: FilePath[]|null;
   localImageData: Record<string, string>;
   currentWallpaper: CurrentWallpaper;
@@ -178,8 +180,9 @@ export class TestWallpaperProvider extends
         albumId ? this.googlePhotosPhotosByAlbumId_[albumId] :
                   this.googlePhotosPhotos_ :
         undefined;
-    response.resumeToken =
-        albumId ? undefined : this.googlePhotosPhotosResumeToken_;
+    response.resumeToken = albumId ?
+        this.googlePhotosPhotosByAlbumIdResumeTokens_[albumId] :
+        this.googlePhotosPhotosResumeToken_;
     return Promise.resolve({response});
   }
 
@@ -269,7 +272,7 @@ export class TestWallpaperProvider extends
     this.googlePhotosCount_ = googlePhotosCount;
   }
 
-  setGooglePhotosEnabled(googlePhotosEnabled: number) {
+  setGooglePhotosEnabled(googlePhotosEnabled: GooglePhotosEnablementState) {
     this.googlePhotosEnabled_ = googlePhotosEnabled;
   }
 
@@ -285,6 +288,12 @@ export class TestWallpaperProvider extends
   setGooglePhotosPhotosByAlbumId(
       albumId: string, googlePhotosPhotos: GooglePhotosPhoto[]|undefined) {
     this.googlePhotosPhotosByAlbumId_[albumId] = googlePhotosPhotos;
+  }
+
+  setGooglePhotosPhotosByAlbumIdResumeToken(
+      albumId: string, googlePhotosPhotosResumeToken: string|undefined) {
+    this.googlePhotosPhotosByAlbumIdResumeTokens_[albumId] =
+        googlePhotosPhotosResumeToken;
   }
 
   setImages(images: WallpaperImage[]) {

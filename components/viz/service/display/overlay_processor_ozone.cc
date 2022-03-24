@@ -211,6 +211,19 @@ void OverlayProcessorOzone::CheckOverlaySupportImpl(
         bool result = SetNativePixmapForCandidate(&(*ozone_surface_iterator),
                                                   surface_iterator->mailbox,
                                                   /*is_primary=*/false);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+        if (!result && surface_iterator->requires_overlay) {
+          // For ChromeOS HW protected content, there's a race condition that
+          // can occur here where the mailbox for the native pixmap isn't
+          // registered yet so we will fail to promote to overlay due to this
+          // check. Allow us to proceed even w/out the native pixmap in that
+          // case as it will still succeed and would otherwise cause black
+          // flashing between frames while the race condition is completing.
+          result = true;
+          DLOG(WARNING) << "Allowing required overlay with missing pixmap";
+        }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
         // Skip the candidate if the corresponding NativePixmap is not found.
         if (!result) {
           *ozone_surface_iterator = ui::OverlaySurfaceCandidate();
@@ -260,6 +273,10 @@ void OverlayProcessorOzone::ReceiveHardwareCapabilities(
       hardware_capabilities.num_overlay_capable_planes - 1;
   max_overlays_considered_ =
       std::min(max_overlays_supported, max_overlays_config_);
+
+  // Different hardware capabilities may mean a different result for a specific
+  // combination of overlays, so clear this cache.
+  ClearOverlayCombinationCache();
 }
 
 gfx::Rect OverlayProcessorOzone::GetOverlayDamageRectForOutputSurface(

@@ -287,6 +287,8 @@ struct UnloadEventTiming {
 // Used to gather the unload event timing of an unloading document, to be used
 // in a new document (if it's same-origin).
 struct UnloadEventTimingInfo {
+  explicit UnloadEventTimingInfo(
+      scoped_refptr<SecurityOrigin> new_document_origin);
   // The origin of the new document that replaces the older document.
   const scoped_refptr<SecurityOrigin> new_document_origin;
   // The unload timing of the old document. This is only set from
@@ -433,10 +435,9 @@ class CORE_EXPORT Document : public ContainerNode,
   Element* CreateRawElement(const QualifiedName&,
                             const CreateElementFlags = CreateElementFlags());
 
-  Element* ElementFromPoint(double x, double y) const;
-  HeapVector<Member<Element>> ElementsFromPoint(double x, double y) const;
   Range* caretRangeFromPoint(int x, int y);
   Element* scrollingElement();
+
   // When calling from C++ code, use this method. scrollingElement() is
   // just for the web IDL implementation.
   //

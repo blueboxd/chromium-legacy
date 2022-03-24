@@ -29,11 +29,11 @@ import '//resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import '//resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import {loadTimeData} from '../../i18n_setup.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
-import {routes} from '../os_route.m.js';
+import {routes} from '../os_route.js';
 import {Router, Route} from '../../router.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 import '../../settings_shared_css.js';
-import {recordSettingChange} from '../metrics_recorder.m.js';
+import {recordSettingChange} from '../metrics_recorder.js';
 import './bluetooth_device_list_item.js';
 
 Polymer({

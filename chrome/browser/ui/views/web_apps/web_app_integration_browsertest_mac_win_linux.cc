@@ -13,6 +13,15 @@ using WebAppIntegrationBrowserTestMacWinLinux = WebAppIntegrationBrowserTest;
 
 // Manual tests:
 
+IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTest,
+                       LaunchFromPlatformShortcut) {
+  helper_.InstallCreateShortcutWindowed("SiteA");
+  helper_.CheckWindowCreated();
+  helper_.ClosePwa();
+  helper_.LaunchFromPlatformShortcut("SiteA");
+  helper_.CheckWindowCreated();
+}
+
 IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
                        CheckPlatformShortcutAndIcon) {
   helper_.CheckPlatformShortcutNotExists("SiteA");
@@ -100,15 +109,6 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
   helper_.CheckRunOnOSLoginEnabled("SiteA");
   helper_.UninstallFromList("SiteA");
   helper_.CheckPlatformShortcutNotExists("SiteA");
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
-                       CheckLaunchFromPlatformShortcut) {
-  helper_.InstallCreateShortcutWindowed("SiteA");
-  helper_.CheckWindowCreated();
-  helper_.ClosePwa();
-  helper_.LaunchFromPlatformShortcut("SiteA");
-  helper_.CheckWindowCreated();
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,

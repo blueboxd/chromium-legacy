@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/time/time.h"
 
 namespace history_clusters {
@@ -50,8 +51,10 @@ struct Config {
   double min_score_to_always_show_above_the_fold = 0.5;
 
   // If enabled, this is the number of non-zero scored visits to always show
-  // above the fold regardless of score.
-  int num_visits_to_always_show_above_the_fold = 3;
+  // above the fold regardless of score. Note, this value includes the
+  // "top visit". In the unlabeled "top visit" UI configuration, that means the
+  // one "top visit" and three subordinate looking visits will be always shown.
+  size_t num_visits_to_always_show_above_the_fold = 4;
 
   // If enabled, when there is a Journeys search query, the backend re-scores
   // visits within a cluster to account for whether or not that visit matches.
@@ -93,6 +96,14 @@ struct Config {
   // Returns the maximum duration between navigations that
   // a visit can be considered for the same cluster.
   base::TimeDelta cluster_navigation_time_cutoff = base::Minutes(60);
+
+  // The minimum threshold for whether an entity is considered relevant to the
+  // visit.
+  int entity_relevance_threshold = 60;
+
+  // The minimum threshold for whether a category is considered relevant to the
+  // visit.
+  int category_relevance_threshold = 36;  // 60 * 0.6 = 36.
 
   // Returns whether content clustering is enabled and
   // should be performed by the clustering backend.
@@ -182,6 +193,10 @@ struct Config {
   // Whether to assign labels to clusters. If the label exists, it will be shown
   // in the UI. If the label doesn't exist, the UI will emphasize the top visit.
   bool should_label_clusters = false;
+
+  // The set of hosts for which all visits belonging to that host will not be in
+  // any cluster.
+  base::flat_set<std::string> hosts_to_skip_clustering_for;
 
   Config();
   Config(const Config& other);

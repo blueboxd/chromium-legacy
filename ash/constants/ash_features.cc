@@ -199,6 +199,11 @@ const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
 const base::Feature kAutocorrectParamsTuning{"AutocorrectParamsTuning",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables features specific to integration with Azure AD as a third party
+// identity provider.
+const base::Feature kAzureADIntegration{"AzureADIntegration",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the persistent desks bar at the top of the screen in clamshell mode
 // when there are more than one desk.
 const base::Feature kBentoBar{"BentoBar", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -251,11 +256,6 @@ const base::Feature kManagedTermsOfService{"ManagedTermsOfService",
 const base::Feature kCalendarView{"CalendarView",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable or disable manual crop document page to ChromeOS camera app. The flag
-// will be deprecated after feature is fully launched: crbug.com/1259731.
-const base::Feature kCameraAppDocumentManualCrop{
-    "CameraAppDocumentManualCrop", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether the camera privacy switch toasts and notification should be
 // displayed.
 const base::Feature kCameraPrivacySwitchNotifications{
@@ -307,6 +307,12 @@ const base::Feature kClipboardHistoryNudgeSessionReset{
 // notifications.
 const base::Feature kClipboardHistoryScreenshotNudge{
     "ClipboardHistoryScreenshotNudge", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, replaces the `DeskMiniView` legacy desk close button and behavior
+// with a button to close desk and windows and a button to combine desks (the
+// legacy behavior).
+const base::Feature kDesksCloseAll{"DesksCloseAll",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables contextual nudges for gesture education.
 const base::Feature kContextualNudges{"ContextualNudges",
@@ -495,7 +501,7 @@ const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
 // trackpad to switch desks.
 // TODO(https://crbug.com/1191545): Remove this after the feature is launched.
 const base::Feature kEnableDesksTrackpadSwipeImprovements{
-    "EnableDesksTrackpadSwipeImprovements", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableDesksTrackpadSwipeImprovements", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the DNS proxy service providing support split and secure DNS
 // for Chrome OS.
@@ -540,6 +546,12 @@ const base::Feature kEnableLazyLoginWebUILoading{
 // Enables LocalSearchService to be initialized.
 const base::Feature kEnableLocalSearchService{"EnableLocalSearchService",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables using DiagnosticsLogController to manage lifetime of logs for the
+// diagnostics app routines, network events, and system snapshot.
+// TODO(ashleydp): Remove this after the feature is launched.
+const base::Feature kEnableLogControllerForDiagnosticsApp{
+    "EnableLogControllerForDiagnosticsApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, the networking cards will be shown in the diagnostics app.
 const base::Feature kEnableNetworkingInDiagnosticsApp{
@@ -1057,7 +1069,7 @@ const base::Feature kPerDeskShelf{"PerDeskShelf",
 // Allows tablet mode split screen to resize by moving windows instead of
 // resizing. This reduces jank on low end devices.
 const base::Feature kPerformantSplitViewResizing{
-    "PerformantSplitViewResizing", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PerformantSplitViewResizing", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Provides a UI for users to customize their wallpapers, screensaver and
 // avatars.
@@ -1535,6 +1547,10 @@ bool IsAutoNightLightEnabled() {
   return base::FeatureList::IsEnabled(kAutoNightLight);
 }
 
+bool IsAzureADIntegrationEnabled() {
+  return base::FeatureList::IsEnabled(kAzureADIntegration);
+}
+
 bool IsBackgroundBlurEnabled() {
   bool enabled_by_feature_flag =
       base::FeatureList::IsEnabled(kEnableBackgroundBlur);
@@ -1575,6 +1591,10 @@ bool IsClipboardHistoryEnabled() {
 
 bool IsClipboardHistoryNudgeSessionResetEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryNudgeSessionReset);
+}
+
+bool IsDesksCloseAllEnabled() {
+  return base::FeatureList::IsEnabled(kDesksCloseAll);
 }
 
 bool IsLauncherItemColorSyncEnabled() {
@@ -1801,6 +1821,10 @@ bool IsLicensePackagedOobeFlowEnabled() {
 bool IsLockScreenHideSensitiveNotificationsSupported() {
   return base::FeatureList::IsEnabled(
       kLockScreenHideSensitiveNotificationsSupport);
+}
+
+bool IsLogControllerForDiagnosticsAppEnabled() {
+  return base::FeatureList::IsEnabled(kEnableLogControllerForDiagnosticsApp);
 }
 
 bool IsLockScreenInlineReplyEnabled() {

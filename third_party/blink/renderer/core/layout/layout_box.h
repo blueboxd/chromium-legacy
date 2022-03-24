@@ -26,6 +26,7 @@
 #include <memory>
 
 #include "base/dcheck_is_on.h"
+#include "base/notreached.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
@@ -400,11 +401,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     NOT_DESTROYED();
     return frame_rect_.Size();
   }
-  // TODO(crbug.com/962299): This is incorrect in some cases.
-  gfx::Size PixelSnappedSize() const {
-    NOT_DESTROYED();
-    return frame_rect_.PixelSnappedSize();
-  }
 
   void SetLocation(const LayoutPoint& location) {
     NOT_DESTROYED();
@@ -602,11 +598,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   PhysicalRect PhysicalLayoutOverflowRect() const {
     NOT_DESTROYED();
     return FlipForWritingMode(LayoutOverflowRect());
-  }
-  // TODO(crbug.com/962299): This is incorrect in some cases.
-  gfx::Rect PixelSnappedLayoutOverflowRect() const {
-    NOT_DESTROYED();
-    return ToPixelSnappedRect(LayoutOverflowRect());
   }
   LayoutSize MaxLayoutOverflow() const {
     NOT_DESTROYED();

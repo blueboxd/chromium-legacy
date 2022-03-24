@@ -9,7 +9,7 @@ import {initializeGooglePhotosData} from 'chrome://personalization/trusted/wallp
 import {WallpaperGridItem} from 'chrome://personalization/trusted/wallpaper/wallpaper_grid_item_element.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
-import {assertDeepEquals, assertEquals, assertNotEquals, assertNotReached} from 'chrome://webui-test/chai_assert.js';
+import {assertDeepEquals, assertEquals, assertNotEquals} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
 import {baseSetup, initElement, teardownElement} from './personalization_app_test_utils.js';
@@ -39,17 +39,10 @@ export function GooglePhotosPhotosTest() {
     return matches ? [...matches] : null;
   }
 
-  /** Scrolls the specified |element| until |predicate| returns true. */
-  async function scrollElementUntil(
-      element: HTMLElement, predicate: () => boolean) {
-    const timeout = +new Date() + 1000;
-    while (!predicate()) {
-      element.scrollBy(0, 500);
-      await waitAfterNextRender(googlePhotosPhotosElement!);
-      if (+new Date() > timeout) {
-        assertNotReached('Timed out while scrolling.');
-      }
-    }
+  /** Scrolls the specified |element| to the bottom. */
+  async function scrollToBottom(element: HTMLElement) {
+    element.scrollTop = element.scrollHeight;
+    await waitAfterNextRender(googlePhotosPhotosElement!);
   }
 
   /**
@@ -313,8 +306,7 @@ export function GooglePhotosPhotosTest() {
     assertEquals(photoEls[1]!.selected, false);
   });
 
-  // TODO(dmblack): Re-enable after branch.
-  test.skip('incrementally loads photos', async () => {
+  test('incrementally loads photos', async () => {
     // Set photos count returned by |wallpaperProvider|.
     const photosCount = 200;
     wallpaperProvider.setGooglePhotosCount(photosCount);
@@ -377,18 +369,9 @@ export function GooglePhotosPhotosTest() {
         initElement(GooglePhotosPhotos, {hidden: false});
     await waitAfterNextRender(googlePhotosPhotosElement);
 
-    // Register an event listener to cache whether the |gridScrollThreshold| has
-    // been reached.
-    let gridScrollThresholdReached = false;
+    // Scroll to the bottom of the grid.
     const gridScrollThreshold = googlePhotosPhotosElement.$.gridScrollThreshold;
-    gridScrollThreshold.addEventListener('lower-threshold', () => {
-      gridScrollThresholdReached = true;
-    });
-
-    // Scroll until the |gridScrollThreshold| is reached.
-    await scrollElementUntil(gridScrollThreshold, () => {
-      return gridScrollThresholdReached;
-    });
+    scrollToBottom(gridScrollThreshold);
 
     // Wait for and verify that the next batch of photos have been requested.
     assertDeepEquals(
@@ -399,13 +382,8 @@ export function GooglePhotosPhotosTest() {
     // Reset |wallpaperProvider| expectations.
     wallpaperProvider.resetResolver('fetchGooglePhotosPhotos');
 
-    // Scroll until the bottom of the grid is reached.
-    let scrollTop = -1;
-    await scrollElementUntil(gridScrollThreshold, () => {
-      const oldScrollTop = scrollTop;
-      scrollTop = gridScrollThreshold.scrollTop;
-      return scrollTop === oldScrollTop;
-    });
+    // Scroll to the bottom of the grid.
+    scrollToBottom(gridScrollThreshold);
 
     // Verify that no next batch of photos has been requested.
     assertEquals(wallpaperProvider.getCallCount('fetchGooglePhotosPhotos'), 0);

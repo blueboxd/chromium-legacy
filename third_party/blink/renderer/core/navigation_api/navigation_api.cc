@@ -50,40 +50,37 @@ class NavigateReaction final : public ScriptFunction::Callable {
   static void React(ScriptState* script_state,
                     ScriptPromise promise,
                     NavigationApiNavigation* navigation,
-                    AbortSignal* signal,
-                    bool should_reset_focus,
+                    NavigateEvent* navigate_event,
                     ReactType react_type) {
     promise.Then(MakeGarbageCollected<ScriptFunction>(
                      script_state, MakeGarbageCollected<NavigateReaction>(
-                                       navigation, signal, should_reset_focus,
+                                       navigation, navigate_event,
                                        ResolveType::kFulfill, react_type)),
                  MakeGarbageCollected<ScriptFunction>(
                      script_state, MakeGarbageCollected<NavigateReaction>(
-                                       navigation, signal, should_reset_focus,
+                                       navigation, navigate_event,
                                        ResolveType::kReject, react_type)));
   }
 
   NavigateReaction(NavigationApiNavigation* navigation,
-                   AbortSignal* signal,
-                   bool should_reset_focus,
+                   NavigateEvent* navigate_event,
                    ResolveType resolve_type,
                    ReactType react_type)
       : navigation_(navigation),
-        signal_(signal),
-        should_reset_focus_(should_reset_focus),
+        navigate_event_(navigate_event),
         resolve_type_(resolve_type),
         react_type_(react_type) {}
 
   void Trace(Visitor* visitor) const final {
     ScriptFunction::Callable::Trace(visitor);
     visitor->Trace(navigation_);
-    visitor->Trace(signal_);
+    visitor->Trace(navigate_event_);
   }
 
   ScriptValue Call(ScriptState* script_state, ScriptValue value) final {
     auto* window = LocalDOMWindow::From(script_state);
     DCHECK(window);
-    if (signal_->aborted()) {
+    if (navigate_event_->signal()->aborted()) {
       return ScriptValue();
     }
 
@@ -91,13 +88,15 @@ class NavigateReaction final : public ScriptFunction::Callable {
     navigation_api->ongoing_navigation_signal_ = nullptr;
 
     if (resolve_type_ == ResolveType::kFulfill) {
+      if (react_type_ == ReactType::kTransitionWhile)
+        navigate_event_->RestoreScrollAfterTransitionIfNeeded();
       navigation_api->ResolvePromisesAndFireNavigateSuccessEvent(navigation_);
     } else {
       navigation_api->RejectPromisesAndFireNavigateErrorEvent(navigation_,
                                                               value);
     }
 
-    if (should_reset_focus_) {
+    if (navigate_event_->ShouldResetFocus()) {
       auto* document = navigation_api->GetSupplementable()->document();
       if (Element* focus_delegate = document->GetAutofocusDelegate()) {
         focus_delegate->focus();
@@ -118,8 +117,7 @@ class NavigateReaction final : public ScriptFunction::Callable {
 
  private:
   Member<NavigationApiNavigation> navigation_;
-  Member<AbortSignal> signal_;
-  bool should_reset_focus_;
+  Member<NavigateEvent> navigate_event_;
   ResolveType resolve_type_;
   ReactType react_type_;
 };
@@ -192,7 +190,8 @@ NavigationApi* NavigationApi::From(LocalDOMWindow& window) {
 }
 
 NavigationApi::NavigationApi(LocalDOMWindow& window)
-    : Supplement<LocalDOMWindow>(window) {}
+    : Supplement<LocalDOMWindow>(window),
+      ExecutionContextLifecycleObserver(&window) {}
 
 void NavigationApi::setOnnavigate(EventListener* listener) {
   UseCounter::Count(GetSupplementable(), WebFeature::kAppHistory);
@@ -462,9 +461,6 @@ NavigationResult* NavigationApi::navigate(ScriptState* script_state,
                             "Invalid URL '" + completed_url.GetString() + "'.");
   }
 
-  if (DOMException* maybe_ex = PerformSharedNavigationChecks("navigate()"))
-    return EarlyErrorResult(script_state, maybe_ex);
-
   scoped_refptr<SerializedScriptValue> serialized_state = nullptr;
   {
     if (options->hasState()) {
@@ -493,9 +489,6 @@ NavigationResult* NavigationApi::navigate(ScriptState* script_state,
 
 NavigationResult* NavigationApi::reload(ScriptState* script_state,
                                         NavigationReloadOptions* options) {
-  if (DOMException* maybe_ex = PerformSharedNavigationChecks("reload()"))
-    return EarlyErrorResult(script_state, maybe_ex);
-
   scoped_refptr<SerializedScriptValue> serialized_state = nullptr;
   {
     if (options->hasState()) {
@@ -528,6 +521,12 @@ NavigationResult* NavigationApi::PerformNonTraverseNavigation(
   DCHECK(frame_load_type == WebFrameLoadType::kReplaceCurrentItem ||
          frame_load_type == WebFrameLoadType::kReload ||
          frame_load_type == WebFrameLoadType::kStandard);
+
+  String method_name_for_error_message(
+      frame_load_type == WebFrameLoadType::kReload ? "reload()" : "navigate()");
+  if (DOMException* maybe_ex =
+          PerformSharedNavigationChecks(method_name_for_error_message))
+    return EarlyErrorResult(script_state, maybe_ex);
 
   NavigationApiNavigation* navigation =
       MakeGarbageCollected<NavigationApiNavigation>(
@@ -694,7 +693,7 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
       // The spec only does the equivalent of CleanupApiNavigation() + resetting
       // the state, but we need to detach promise resolvers for this case since
       // we will never resolve the finished/committed promises.
-      ongoing_navigation_->CleanupForCrossDocument();
+      ongoing_navigation_->CleanupForWillNeverSettle();
     }
     return DispatchResult::kContinue;
   }
@@ -754,11 +753,13 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
   auto* navigate_event = NavigateEvent::Create(
       GetSupplementable(), event_type_names::kNavigate, init);
   navigate_event->SetUrl(url);
+  navigate_event->SaveStateFromDestinationItem(destination_item);
 
   DCHECK(!ongoing_navigate_event_);
   DCHECK(!ongoing_navigation_signal_);
   ongoing_navigate_event_ = navigate_event;
   ongoing_navigation_signal_ = navigate_event->signal();
+  has_dropped_navigation_ = false;
   DispatchEvent(*navigate_event);
   ongoing_navigate_event_ = nullptr;
 
@@ -804,19 +805,24 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
 
     NavigateReaction::React(
         script_state, ScriptPromise::All(script_state, tweaked_promise_list),
-        ongoing_navigation_, navigate_event->signal(),
-        navigate_event->ShouldResetFocus(), react_type);
-  } else if (ongoing_navigation_) {
-    // The spec assumes it's ok to leave a promise permanently unresolved, but
-    // ScriptPromiseResolver requires either resolution or explicit detach.
-    ongoing_navigation_->CleanupForCrossDocument();
+        ongoing_navigation_, navigate_event, react_type);
   }
+
+  // Note: we cannot clean up ongoing_navigation_ for cross-document
+  // navigations, because they might later get interrupted by another
+  // navigation, in which case we need to reject the promises and so on.
 
   return promise_list.IsEmpty() ? DispatchResult::kContinue
                                 : DispatchResult::kTransitionWhile;
 }
 
-void NavigationApi::InformAboutCanceledNavigation() {
+void NavigationApi::InformAboutCanceledNavigation(
+    CancelNavigationReason reason) {
+  if (reason == CancelNavigationReason::kDropped) {
+    has_dropped_navigation_ = true;
+    return;
+  }
+
   if (ongoing_navigation_signal_) {
     auto* script_state =
         ToScriptStateForMainWorld(GetSupplementable()->GetFrame());
@@ -842,6 +848,15 @@ void NavigationApi::InformAboutCanceledNavigation() {
       FinalizeWithAbortedNavigationError(script_state, traversal);
     DCHECK(upcoming_traversals_.IsEmpty());
   }
+}
+
+void NavigationApi::ContextDestroyed() {
+  if (ongoing_navigation_)
+    ongoing_navigation_->CleanupForWillNeverSettle();
+}
+
+bool NavigationApi::HasNonDroppedOngoingNavigation() const {
+  return ongoing_navigation_signal_ && !has_dropped_navigation_;
 }
 
 void NavigationApi::RejectPromisesAndFireNavigateErrorEvent(
@@ -925,6 +940,7 @@ const AtomicString& NavigationApi::InterfaceName() const {
 void NavigationApi::Trace(Visitor* visitor) const {
   EventTargetWithInlineData::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(entries_);
   visitor->Trace(transition_);
   visitor->Trace(ongoing_navigation_);

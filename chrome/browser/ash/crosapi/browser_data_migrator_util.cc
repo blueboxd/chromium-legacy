@@ -138,20 +138,26 @@ absl::optional<uint64_t> g_extra_bytes_required_to_be_freed_for_testing;
 constexpr char kMetaPrefix[] = "META:chrome-extension://";
 constexpr char kKeyPrefix[] = "_chrome-extension://";
 
+// IndexedDB extension suffixes.
+constexpr char kIndexedDBBlobExtension[] = ".indexeddb.blob";
+constexpr char kIndexedDBLevelDBExtension[] = ".indexeddb.leveldb";
+
 }  // namespace
 
 CancelFlag::CancelFlag() : cancelled_(false) {}
 CancelFlag::~CancelFlag() = default;
 
 TargetItem::TargetItem(base::FilePath path, int64_t size, ItemType item_type)
-    : path(path), size(size), is_directory(item_type == ItemType::kDirectory) {}
+    : path(std::move(path)),
+      size(size),
+      is_directory(item_type == ItemType::kDirectory) {}
 
 bool TargetItem::operator==(const TargetItem& rhs) const {
   return this->path == rhs.path && this->size == rhs.size &&
          this->is_directory == rhs.is_directory;
 }
 
-TargetItems::TargetItems() : total_size(0) {}
+TargetItems::TargetItems() = default;
 TargetItems::TargetItems(TargetItems&&) = default;
 TargetItems::~TargetItems() = default;
 
@@ -571,6 +577,18 @@ leveldb::Status GetExtensionKeys(leveldb::DB* db,
   return it->status();
 }
 
+IndexedDBPaths GetIndexedDBPaths(const base::FilePath& profile_path,
+                                 const char* extension_id) {
+  const base::FilePath indexed_db_dir = profile_path.Append(kIndexedDBFilePath);
+  const base::FilePath base_path = indexed_db_dir.Append(
+      "chrome_extension_" + std::string(extension_id) + "_0");
+
+  return {
+      base_path.AddExtension(kIndexedDBBlobExtension),
+      base_path.AddExtension(kIndexedDBLevelDBExtension),
+  };
+}
+
 bool MigrateLevelDB(const base::FilePath& original_path,
                     const base::FilePath& target_path,
                     const LevelDBType leveldb_type) {
@@ -617,7 +635,7 @@ bool MigrateLevelDB(const base::FilePath& original_path,
 
   // Copy all the key-value pairs that need to be kept in Ash.
   for (const auto& [extension_id, keys] : original_keys) {
-    if (base::Contains(kExtensionKeepList, extension_id)) {
+    if (base::Contains(kExtensionsAshOnly, extension_id)) {
       for (const std::string& key : keys) {
         std::string value;
         status = original_db->Get(leveldb::ReadOptions(), key, &value);

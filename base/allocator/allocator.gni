@@ -86,7 +86,12 @@ declare_args() {
   # Set use_backup_ref_ptr true to use BackupRefPtr (BRP) as the implementation
   # of raw_ptr<T>, and enable PartitionAlloc support for it.
   use_backup_ref_ptr = _is_brp_supported
+
+  use_mte_checked_ptr = false
 }
+
+assert(!(use_backup_ref_ptr && use_mte_checked_ptr),
+       "MTECheckedPtr conflicts with BRP.")
 
 declare_args() {
   # If BRP is enabled, additional options are available:
@@ -97,7 +102,7 @@ declare_args() {
   #   are too expensive to have on by default.
   # - enable_dangling_raw_ptr_checks: enable checking raw_ptr do not become
   #   dangling during their lifetime.
-  put_ref_count_in_previous_slot = false
+  put_ref_count_in_previous_slot = use_backup_ref_ptr
   enable_backup_ref_ptr_slow_checks = false
   enable_dangling_raw_ptr_checks = false
 

@@ -31,7 +31,6 @@ class SequencedTaskRunner;
 }
 
 namespace gfx {
-class ColorSpace;
 class Rect;
 class Size;
 struct PresentationFeedback;
@@ -114,11 +113,13 @@ class SkiaOutputDevice {
       bool allocate_frame_buffer);
 
   // Changes the size of draw surface and invalidates it's contents.
-  virtual bool Reshape(const gfx::Size& size,
-                       float device_scale_factor,
+  virtual bool Reshape(const SkSurfaceCharacterization& characterization,
                        const gfx::ColorSpace& color_space,
-                       gfx::BufferFormat format,
+                       float device_scale_factor,
                        gfx::OverlayTransform transform) = 0;
+
+  // For devices that supports viewporter.
+  virtual void SetViewportSize(const gfx::Size& viewport_size);
 
   // Submit the GrContext and run |callback| after. Note most but not all
   // implementations will run |callback| in this call stack.

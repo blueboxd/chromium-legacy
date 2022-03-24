@@ -171,6 +171,7 @@ export {AllSitesElement} from './site_settings/all_sites.js';
 // <if expr="chromeos">
 export {AndroidInfoBrowserProxy, AndroidInfoBrowserProxyImpl, AndroidSmsInfo} from './site_settings/android_info_browser_proxy.js';
 // </if>
+export {CategoryDefaultSettingElement} from './site_settings/category_default_setting.js';
 export {CategorySettingExceptionsElement} from './site_settings/category_setting_exceptions.js';
 export {ChooserExceptionListElement} from './site_settings/chooser_exception_list.js';
 export {ChooserExceptionListEntryElement} from './site_settings/chooser_exception_list_entry.js';
@@ -180,6 +181,8 @@ export {SettingsEditExceptionDialogElement} from './site_settings/edit_exception
 export {LocalDataBrowserProxy, LocalDataBrowserProxyImpl, LocalDataItem} from './site_settings/local_data_browser_proxy.js';
 export {AppHandlerEntry, AppProtocolEntry, HandlerEntry, ProtocolEntry, ProtocolHandlersElement} from './site_settings/protocol_handlers.js';
 export {SettingsCategoryDefaultRadioGroupElement} from './site_settings/settings_category_default_radio_group.js';
+export {SiteDataElement} from './site_settings/site_data.js';
+export {SiteDataDetailsSubpageElement} from './site_settings/site_data_details_subpage.js';
 export {SiteDetailsElement} from './site_settings/site_details.js';
 export {SiteDetailsPermissionElement} from './site_settings/site_details_permission.js';
 export {SiteEntryElement} from './site_settings/site_entry.js';

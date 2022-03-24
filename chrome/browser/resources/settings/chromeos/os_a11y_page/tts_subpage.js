@@ -15,7 +15,6 @@ import '//resources/cr_elements/md_select_css.m.js';
 import '../../controls/settings_slider.js';
 import '../../settings_shared_css.js';
 
-import {SliderTick} from '//resources/cr_elements/cr_slider/cr_slider.js';
 import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
 import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.js';
 import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -23,7 +22,7 @@ import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer
 import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
 import {LanguagesBrowserProxy, LanguagesBrowserProxyImpl} from '../os_languages_page/languages_browser_proxy.js';
-import {routes} from '../os_route.m.js';
+import {routes} from '../os_route.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
 import {TtsSubpageBrowserProxy, TtsSubpageBrowserProxyImpl} from './tts_subpage_browser_proxy.js';

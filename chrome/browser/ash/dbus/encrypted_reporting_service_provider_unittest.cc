@@ -214,21 +214,16 @@ class EncryptedReportingServiceProviderTest : public ::testing::Test {
   ServiceProviderTestHelper test_helper_;
 };
 
-TEST_F(EncryptedReportingServiceProviderTest, SuccessfullyUploadsRecord) {
+// Disabled due to flakiness. See crbug.com/1308890.
+TEST_F(EncryptedReportingServiceProviderTest,
+       DISABLED_SuccessfullyUploadsRecord) {
   SetupForRequestUploadEncryptedRecord();
   EXPECT_CALL(*this, ReportSuccessfulUpload(
                          EqualsProto(record_.sequence_information()), _))
       .Times(1);
   EXPECT_CALL(
       cloud_policy_client_,
-      // TODO(b/225412986): IsDataUploadRequestValid() reports "requestId" is
-      // missing. Change the first matcher to IsDataUploadRequestValid() once
-      // fixed.
-      UploadEncryptedReport(
-          ::reporting::RequestValidityMatcherBuilder<>::CreateDataUpload()
-              .RemoveMatcher("request-id-matcher")
-              .Build(),
-          _, _))
+      UploadEncryptedReport(::reporting::IsDataUploadRequestValid(), _, _))
       .WillOnce(WithArgs<0, 2>(
           Invoke([](base::Value::Dict request,
                     policy::CloudPolicyClient::ResponseCallback response_cb) {

@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
@@ -84,10 +85,13 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/ui/ash/browser_data_migration_error_dialog.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/browser_commands_chromeos.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -654,6 +658,8 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       FocusToolbar(browser_);
       break;
     case IDC_FOCUS_LOCATION:
+      if (!window()->IsLocationBarVisible())
+        break;
       base::RecordAction(base::UserMetricsAction("Accel_Focus_Location"));
       FocusLocationBar(browser_);
       break;
@@ -688,12 +694,14 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_CREATE_SHORTCUT:
       base::RecordAction(base::UserMetricsAction("CreateShortcut"));
       web_app::CreateWebAppFromCurrentWebContents(
-          browser_, true /* force_shortcut_app */);
+          browser_,
+          web_app::WebAppInstallManager::WebAppInstallFlow::kCreateShortcut);
       break;
     case IDC_INSTALL_PWA:
       base::RecordAction(base::UserMetricsAction("InstallWebAppFromMenu"));
       web_app::CreateWebAppFromCurrentWebContents(
-          browser_, false /* force_shortcut_app */);
+          browser_,
+          web_app::WebAppInstallManager::WebAppInstallFlow::kInstallSite);
       break;
     case IDC_DEV_TOOLS:
       ToggleDevToolsWindow(browser_, DevToolsToggleAction::Show(),
@@ -788,6 +796,30 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_UPGRADE_DIALOG:
       OpenUpdateChromeDialog(browser_);
       break;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    case IDC_LACROS_DATA_MIGRATION: {
+      auto* user_manager = user_manager::UserManager::Get();
+      const auto* user = user_manager->GetPrimaryUser();
+      DCHECK(user);
+      // Unset local state holding the internal state of the previous migration
+      // attempts used to avoid the infinite loop of the migration.
+      // Because user explicitly triggered the migration so we should try to
+      // run it always.
+      ash::BrowserDataMigratorImpl::ClearMigrationStep(
+          user_manager->GetLocalState());
+      ash::BrowserDataMigratorImpl::ClearMigrationAttemptCountForUser(
+          user_manager->GetLocalState(), user->username_hash());
+      ash::BrowserDataMigratorImpl::MaybeRestartToMigrateWithDiskCheck(
+          user->GetAccountId(), user->username_hash(),
+          base::BindOnce(
+              [](bool result, const absl::optional<uint64_t>& required_size) {
+                if (!result && required_size.has_value())
+                  ash::OpenBrowserDataMigrationErrorDialog(*required_size);
+              }));
+      break;
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
     case IDC_HELP_PAGE_VIA_KEYBOARD:
       ShowHelp(browser_, HELP_SOURCE_KEYBOARD);
       break;
@@ -1159,6 +1191,9 @@ void BrowserCommandController::InitCommandState() {
 
   // These are always enabled; the menu determines their menu item visibility.
   command_updater_.UpdateCommandEnabled(IDC_UPGRADE_DIALOG, true);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  command_updater_.UpdateCommandEnabled(IDC_LACROS_DATA_MIGRATION, true);
+#endif
 
   // Distill current page.
   command_updater_.UpdateCommandEnabled(IDC_DISTILL_PAGE,
@@ -1268,11 +1303,13 @@ void BrowserCommandController::UpdateCommandsForTabState() {
 
   // Window management commands
   bool is_app = browser_->is_type_app() || browser_->is_type_app_popup();
+  bool is_normal = browser_->is_type_normal();
+
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB,
                                         !is_app && CanDuplicateTab(browser_));
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_MUTE_SITE, !is_app);
-  command_updater_.UpdateCommandEnabled(IDC_WINDOW_PIN_TAB, !is_app);
-  command_updater_.UpdateCommandEnabled(IDC_WINDOW_GROUP_TAB, !is_app);
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_PIN_TAB, is_normal);
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_GROUP_TAB, is_normal);
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_TABS_TO_RIGHT,
                                         CanCloseTabsToRight(browser_));
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_OTHER_TABS,

@@ -22,6 +22,9 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
     this.forceContextualLastOutput();
 
     await importModule(
+        'BaseAutomationHandler',
+        '/chromevox/background/base_automation_handler.js');
+    await importModule(
         'BrailleCommandHandler',
         '/chromevox/background/braille_command_handler.js');
     await importModule(
@@ -1058,8 +1061,8 @@ TEST_F('ChromeVoxBackgroundTest', 'Selection', function() {
   `;
   this.runWithLoadedTree(site, function(root) {
     // Fakes a toggleSelection command.
-    root.addEventListener('textSelectionChanged', function() {
-      if (root.focusOffset === 3) {
+    root.addEventListener(EventType.DOCUMENT_SELECTION_CHANGED, function() {
+      if (root.focusObject.name === 'simple' && root.focusOffset === 3) {
         CommandHandlerInterface.instance.onCommand('toggleSelection');
       }
     }, true);

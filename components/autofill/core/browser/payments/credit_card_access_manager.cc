@@ -11,8 +11,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/functional/not_fn.h"
 #include "base/guid.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -47,6 +49,10 @@ constexpr int64_t kDelayForGetUnmaskDetails = 3 * 60 * 1000;  // 3 min
 
 // Suffix for server IDs in the cache indicating that a card is a virtual card.
 const char kVirtualCardIdentifier[] = "_vcn";
+
+bool IsLocalCard(const CreditCard* card) {
+  return card && card->record_type() == CreditCard::LOCAL_CARD;
+}
 }  // namespace
 
 CreditCardAccessManager::CreditCardAccessManager(
@@ -91,11 +97,8 @@ std::vector<CreditCard*> CreditCardAccessManager::GetCreditCardsToSuggest() {
 }
 
 bool CreditCardAccessManager::ShouldDisplayGPayLogo() {
-  for (const CreditCard* credit_card : GetCreditCardsToSuggest()) {
-    if (IsLocalCard(credit_card))
-      return false;
-  }
-  return true;
+  return base::ranges::all_of(GetCreditCardsToSuggest(),
+                              base::not_fn(&IsLocalCard));
 }
 
 bool CreditCardAccessManager::UnmaskedCardCacheIsEmpty() {
@@ -105,9 +108,8 @@ bool CreditCardAccessManager::UnmaskedCardCacheIsEmpty() {
 std::vector<const CachedServerCardInfo*>
 CreditCardAccessManager::GetCachedUnmaskedCards() const {
   std::vector<const CachedServerCardInfo*> unmasked_cards;
-  for (auto const& iter : unmasked_card_cache_) {
-    unmasked_cards.push_back(&iter.second);
-  }
+  for (const auto& [key, card_info] : unmasked_card_cache_)
+    unmasked_cards.push_back(&card_info);
   return unmasked_cards;
 }
 
@@ -118,11 +120,8 @@ bool CreditCardAccessManager::IsCardPresentInUnmaskedCache(
 }
 
 bool CreditCardAccessManager::ServerCardsAvailable() {
-  for (const CreditCard* credit_card : GetCreditCardsToSuggest()) {
-    if (!IsLocalCard(credit_card))
-      return true;
-  }
-  return false;
+  return base::ranges::any_of(GetCreditCardsToSuggest(),
+                              base::not_fn(&IsLocalCard));
 }
 
 bool CreditCardAccessManager::DeleteCard(const CreditCard* card) {
@@ -617,19 +616,6 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
         unmask_auth_flow_type_);
   }
 
-  // Store request options temporarily if given. They will be used for
-  // AdditionallyPerformFidoAuth.
-  absl::optional<base::Value> request_options = absl::nullopt;
-  if (unmask_details_.fido_request_options.has_value()) {
-    // For opted-in user (CVC then FIDO case), request options are returned in
-    // unmask detail response.
-    request_options = unmask_details_.fido_request_options->Clone();
-  } else if (response.request_options.has_value()) {
-    // For Android users, request_options are provided from GetRealPan if the
-    // user has chosen to opt-in.
-    request_options = response.request_options->Clone();
-  }
-
   // Local boolean denotes whether to fill the form immediately. If CVC
   // authentication failed, report error immediately. If GetRealPan did not
   // return card authorization token (we can't call any FIDO-related flows,
@@ -698,6 +684,16 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
                                    response.card, response.cvc);
     unmask_auth_flow_type_ = UnmaskAuthFlowType::kNone;
   } else if (should_authorize_with_fido) {
+    absl::optional<base::Value> request_options = absl::nullopt;
+    if (unmask_details_.fido_request_options.has_value()) {
+      // For opted-in user (CVC then FIDO case), request options are returned in
+      // unmask detail response.
+      request_options = unmask_details_.fido_request_options->Clone();
+    } else if (response.request_options.has_value()) {
+      // For Android users, request_options are provided from GetRealPan if the
+      // user has chosen to opt-in.
+      request_options = response.request_options->Clone();
+    }
     AdditionallyPerformFidoAuth(response, request_options->Clone());
   }
   if (should_offer_fido_auth) {
@@ -856,10 +852,6 @@ void CreditCardAccessManager::OnOtpAuthenticationComplete(
 
   HandleFidoOptInStatusChange();
   Reset();
-}
-
-bool CreditCardAccessManager::IsLocalCard(const CreditCard* card) {
-  return card && card->record_type() == CreditCard::LOCAL_CARD;
 }
 
 bool CreditCardAccessManager::IsUserOptedInToFidoAuth() {

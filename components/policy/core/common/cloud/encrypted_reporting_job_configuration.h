@@ -30,10 +30,13 @@ namespace policy {
 //         "encryptionKey": "LocalPublicValue",
 //         "publicKeyId": 1
 //       },
-//       "sequencingInformation": {
+//       "sequenceInformation": {
 //         "sequencingId": 1,
 //         "generationId": 123456789,
 //         "priority": 1
+//       },
+//       "compressionInformation": {
+//         "compressionAlgorithm": 1
 //       }
 //     },
 //     {
@@ -42,13 +45,18 @@ namespace policy {
 //         "encryptionKey": "LocalPublicValue",
 //         "publicKeyId": 2
 //       },
-//       "sequencingInformation": {
+//       "sequenceInformation": {
 //         "sequencingId": 2,
 //         "generationId": 123456789,
 //         "priority": 1
+//       },
+//       "compressionInformation": {
+//         "compressionAlgorithm": 1
 //       }
 //     }
 //   ],
+//   "attachEncryptionSettings": true,  // optional field
+//   "requestId": "SomeString",
 //   "device": {
 //     "client_id": "abcdef1234",
 //     "dmToken": "abcdef1234",
@@ -66,7 +74,8 @@ namespace policy {
 // "device" and "browser" are populated by the base class,
 // the rest needs to be provided as |merging_payload|.
 //
-// Details of "encryptedRecord" are documented at note "ERP Encrypted Record".
+// Details other than the "device" and "browser" fields are documented at note
+// "ERP Encrypted Record".
 
 class POLICY_EXPORT EncryptedReportingJobConfiguration
     : public ReportingJobConfigurationBase {

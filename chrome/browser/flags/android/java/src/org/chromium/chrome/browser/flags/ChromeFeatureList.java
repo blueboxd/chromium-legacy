@@ -193,6 +193,7 @@ public abstract class ChromeFeatureList {
     }
 
     /* Alphabetical: */
+    public static final String ABOUT_THIS_SITE_BANNER = "AboutThisSiteBanner";
     public static final String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR = "AdaptiveButtonInTopToolbar";
     public static final String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2 =
             "AdaptiveButtonInTopToolbarCustomizationV2";
@@ -378,6 +379,7 @@ public abstract class ChromeFeatureList {
     public static final String HISTORY_JOURNEYS = "Journeys";
     public static final String KITKAT_SUPPORTED = "KitKatSupported";
     public static final String LEAK_DETECTION_UNAUTHENTICATED = "LeakDetectionUnauthenticated";
+    public static final String LENS_ON_QUICK_ACTION_SEARCH_WIDGET = "LensOnQuickActionSearchWidget";
     public static final String LIGHTWEIGHT_REACTIONS = "LightweightReactions";
     public static final String LOCATION_BAR_MODEL_OPTIMIZATIONS = "LocationBarModelOptimizations";
     public static final String LOOKALIKE_NAVIGATION_URL_SUGGESTIONS_UI =
@@ -396,14 +398,11 @@ public abstract class ChromeFeatureList {
             "MessagesForAndroidReduceLayoutChanges";
     public static final String MESSAGES_FOR_ANDROID_SAVE_CARD = "MessagesForAndroidSaveCard";
     public static final String MESSAGES_FOR_ANDROID_SYNC_ERROR = "MessagesForAndroidSyncError";
-    public static final String MOBILE_IDENTITY_CONSISTENCY_PROMOS =
-            "MobileIdentityConsistencyPromos";
     public static final String MODAL_PERMISSION_DIALOG_VIEW = "ModalPermissionDialogView";
     public static final String METRICS_SETTINGS_ANDROID = "MetricsSettingsAndroid";
     public static final String NEW_WINDOW_APP_MENU = "NewWindowAppMenu";
     public static final String NOTIFICATION_PERMISSION_VARIANT = "NotificationPermissionVariant";
     public static final String OFFLINE_INDICATOR = "OfflineIndicator";
-    public static final String OFFLINE_INDICATOR_V2 = "OfflineIndicatorV2";
     public static final String OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS =
             "OfflinePagesDescriptiveFailStatus";
     public static final String OFFLINE_PAGES_DESCRIPTIVE_PENDING_STATUS =
@@ -494,8 +493,6 @@ public abstract class ChromeFeatureList {
             "SwapPixelFormatToFixConvertFromTranslucent";
     public static final String SYNC_TRUSTED_VAULT_PASSPHRASE_RECOVERY =
             "SyncTrustedVaultPassphraseRecovery";
-    public static final String SYNC_USE_SESSIONS_UNREGISTER_DELAY =
-            "SyncUseSessionsUnregisterDelay";
     public static final String TAB_ENGAGEMENT_REPORTING_ANDROID = "TabEngagementReportingAndroid";
     public static final String TAB_GROUPS_ANDROID = "TabGroupsAndroid";
     public static final String TAB_GROUPS_UI_IMPROVEMENTS_ANDROID =

@@ -148,7 +148,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="1771761307086386028">Posunout doprava</translation>
 <translation id="1774796056689732716">Kalendář, <ph name="CURRENT_MONTH_YEAR" />, je vybráno datum <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">Vyp</translation>
-<translation id="1804572139604454141">Nahrávání bylo ukončeno z důvodu kriticky nízkého místa na disku</translation>
 <translation id="181103072419391116">Síla signálu: <ph name="SIGNAL_STRENGTH" />, spravováno vaším administrátorem</translation>
 <translation id="1812997170047690955">Co je na obrazovce?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -266,6 +265,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="2653659639078652383">Odeslat</translation>
 <translation id="2658778018866295321">Kliknout a přetáhnout</translation>
 <translation id="2665788051462227163"><ph name="UNAVAILABLE_APPS_ONE" /> a <ph name="UNAVAILABLE_APPS_TWO" /> na tomto zařízení nejsou.</translation>
+<translation id="2673968385134502798">Hry</translation>
 <translation id="2678852583403169292">Nabídka Poslech vybraného textu</translation>
 <translation id="2689613560355655046">Plocha 8</translation>
 <translation id="2700493154570097719">Nastavit klávesnici</translation>
@@ -672,6 +672,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="5078796286268621944">Nesprávný kód PIN</translation>
 <translation id="5083553833479578423">Odemkněte další funkce Asistenta.</translation>
 <translation id="5106223312672646208">Personalizace</translation>
+<translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Zobrazit další měsíc</translation>
 <translation id="5136175204352732067">Je připojena jiná klávesnice</translation>
 <translation id="5147567197700016471">Odemknuto</translation>

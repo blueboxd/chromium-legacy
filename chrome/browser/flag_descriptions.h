@@ -453,9 +453,6 @@ extern const char kEnableExperimentalCookieFeaturesDescription[];
 extern const char kEnableNavigationPredictorName[];
 extern const char kEnableNavigationPredictorDescription[];
 
-extern const char kEnablePreconnectToSearchName[];
-extern const char kEnablePreconnectToSearchDescription[];
-
 extern const char kEnableRawDrawName[];
 extern const char kEnableRawDrawDescription[];
 
@@ -1005,9 +1002,6 @@ extern const char kOmniboxExperimentalSuggestScoringDescription[];
 extern const char kOmniboxMostVisitedTilesName[];
 extern const char kOmniboxMostVisitedTilesDescription[];
 
-extern const char kOmniboxPreserveLongerShortcutsTextName[];
-extern const char kOmniboxPreserveLongerShortcutsTextDescription[];
-
 extern const char kOmniboxRichAutocompletionName[];
 extern const char kOmniboxRichAutocompletionDescription[];
 extern const char kOmniboxRichAutocompletionMinCharName[];
@@ -1062,9 +1056,6 @@ extern const char kOmniboxMaxURLMatchesDescription[];
 
 extern const char kOmniboxDynamicMaxAutocompleteName[];
 extern const char kOmniboxDynamicMaxAutocompleteDescription[];
-
-extern const char kEnableSearchPrefetchName[];
-extern const char kEnableSearchPrefetchDescription[];
 
 extern const char kOptimizationGuideDebugLogsName[];
 extern const char kOptimizationGuideDebugLogsDescription[];
@@ -1913,8 +1904,8 @@ extern const char kMessagesForAndroidUpdatePasswordDescription[];
 extern const char kNewWindowAppMenuName[];
 extern const char kNewWindowAppMenuDescription[];
 
-extern const char kOfflineIndicatorV2Name[];
-extern const char kOfflineIndicatorV2Description[];
+extern const char kNotificationPermissionRationaleName[];
+extern const char kNotificationPermissionRationaleDescription[];
 
 extern const char kOfflinePagesLivePageSharingName[];
 extern const char kOfflinePagesLivePageSharingDescription[];
@@ -1927,9 +1918,6 @@ extern const char kPageInfoHistoryDescription[];
 
 extern const char kPageInfoStoreInfoName[];
 extern const char kPageInfoStoreInfoDescription[];
-
-extern const char kPasswordProtectionForSignedInUsersName[];
-extern const char kPasswordProtectionForSignedInUsersDescription[];
 
 extern const char kPersistShareHubOnAppSwitchName[];
 extern const char kPersistShareHubOnAppSwitchDescription[];
@@ -2054,6 +2042,9 @@ extern const char kToolbarIphAndroidDescription[];
 
 extern const char kTouchDragAndContextMenuName[];
 extern const char kTouchDragAndContextMenuDescription[];
+
+extern const char kTranslateMessageUIName[];
+extern const char kTranslateMessageUIDescription[];
 
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
@@ -2467,9 +2458,6 @@ extern const char kForceControlFaceAeDescription[];
 extern const char kHdrNetOverrideName[];
 extern const char kHdrNetOverrideDescription[];
 
-extern const char kCameraAppDocumentManualCropName[];
-extern const char kCameraAppDocumentManualCropDescription[];
-
 extern const char kCategoricalSearchName[];
 extern const char kCategoricalSearchDescription[];
 
@@ -2644,6 +2632,9 @@ extern const char kEnableLauncherSearchNormalizationDescription[];
 extern const char kEnableLibinputToHandleTouchpadName[];
 extern const char kEnableLibinputToHandleTouchpadDescription[];
 
+extern const char kEnableLogControllerForDiagnosticsAppName[];
+extern const char kEnableLogControllerForDiagnosticsAppDescription[];
+
 extern const char kEnableNeuralPalmAdaptiveHoldName[];
 extern const char kEnableNeuralPalmAdaptiveHoldDescription[];
 
@@ -2751,6 +2742,9 @@ extern const char kExperimentalAccessibilityDictationHintsDescription[];
 
 extern const char kExperimentalAccessibilityDictationWithPumpkinName[];
 extern const char kExperimentalAccessibilityDictationWithPumpkinDescription[];
+
+extern const char kExperimentalAccessibilityGoogleTtsLanguagePacksName[];
+extern const char kExperimentalAccessibilityGoogleTtsLanguagePacksDescription[];
 
 extern const char kExperimentalAccessibilitySwitchAccessTextName[];
 extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];

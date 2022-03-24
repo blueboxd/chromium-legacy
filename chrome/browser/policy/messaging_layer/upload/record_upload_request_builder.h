@@ -29,6 +29,9 @@ namespace reporting {
 //         "sequencingId": 1,
 //         "generationId": 123456789,
 //         "priority": 1
+//       },
+//       "compressionInformation": {
+//         "compressionAlgorithm": 1
 //       }
 //     },
 //     {
@@ -41,10 +44,16 @@ namespace reporting {
 //         "sequencingId": 2,
 //         "generationId": 123456789,
 //         "priority": 1
+//       },
+//       "compressionInformation": {
+//         "compressionAlgorithm": 1
 //       }
 //     }
-//   ]
-//   "attachEncryptionSettings": true  // optional field
+//   ],
+//   // optional field, corresponding to |need_encryption_keys| in
+//   // components/reporting/proto/interface.proto
+//   "attachEncryptionSettings": true,
+//   "requestId": "SomeString"
 // }
 // TODO(b/159361496): Periodically add memory and disk space usage.
 //
@@ -76,9 +85,12 @@ class UploadEncryptedReportingRequestBuilder {
 
   UploadEncryptedReportingRequestBuilder& AddRecord(EncryptedRecord record);
 
+  // Set the requestId field.
   UploadEncryptedReportingRequestBuilder& SetRequestId(
       base::StringPiece request_id);
 
+  // Return the built dictionary. Also set requestId to a random string if it
+  // hasn't been set yet.
   absl::optional<base::Value::Dict> Build();
 
   static base::StringPiece GetEncryptedRecordListPath();

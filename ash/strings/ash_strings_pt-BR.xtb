@@ -148,7 +148,6 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="1771761307086386028">Rolar para a direita</translation>
 <translation id="1774796056689732716">Agenda, <ph name="CURRENT_MONTH_YEAR" />, a data <ph name="DATE" /> está selecionada.</translation>
 <translation id="1787955149152357925">Desativado</translation>
-<translation id="1804572139604454141">A gravação foi encerrada porque há pouco espaço em disco</translation>
 <translation id="181103072419391116"><ph name="SIGNAL_STRENGTH" /> de intensidade de sinal , gerenciada pelo seu administrador</translation>
 <translation id="1812997170047690955">O que está na minha tela?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -266,6 +265,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2658778018866295321">Clicar e arrastar</translation>
 <translation id="2665788051462227163">Os apps <ph name="UNAVAILABLE_APPS_ONE" /> e <ph name="UNAVAILABLE_APPS_TWO" /> não estão no dispositivo.</translation>
+<translation id="2673968385134502798">Jogos</translation>
 <translation id="2678852583403169292">Menu do Selecionar para ouvir</translation>
 <translation id="2689613560355655046">Espaço de trabalho 8</translation>
 <translation id="2700493154570097719">Configurar teclado</translation>
@@ -465,6 +465,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="3798670284305777884">Alto-falante (interno)</translation>
 <translation id="3799080171973636491">Você pressionou o atalho de teclado para a lupa de tela cheia. Gostaria de ativá-la?</translation>
 <translation id="380165613292957338">Oi! Como posso ajudar?</translation>
+<translation id="3804737937830804242">Fechar câmera</translation>
 <translation id="3826099427150913765">Usar senha</translation>
 <translation id="383058930331066723">Modo de Economia de bateria ativado</translation>
 <translation id="3835880383832568924">Para ver as atualizações, abra os Atalhos</translation>
@@ -672,6 +673,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="5078796286268621944">PIN incorreto</translation>
 <translation id="5083553833479578423">Desbloqueie mais recursos do Assistente.</translation>
 <translation id="5106223312672646208">Personalizar</translation>
+<translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Mostrar próximo mês</translation>
 <translation id="5136175204352732067">Teclado diferente conectado</translation>
 <translation id="5147567197700016471">Desbloqueado</translation>
@@ -1004,6 +1006,7 @@ Nova instalação</translation>
 <translation id="7302889331339392448">O recurso Legenda instantânea está desativado.</translation>
 <translation id="7303365578352795231">Respondendo em outro dispositivo.</translation>
 <translation id="7305884605064981971">EDGE</translation>
+<translation id="7313193732017069507">Abrir câmera</translation>
 <translation id="731589979057211264">O modo Grupo de estantes está ativado.</translation>
 <translation id="7319740667687257810">Iniciador, visualização parcial</translation>
 <translation id="7346909386216857016">Ok, entendi.</translation>

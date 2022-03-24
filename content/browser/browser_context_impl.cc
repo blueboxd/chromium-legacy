@@ -19,6 +19,8 @@
 #include "content/browser/storage_partition_impl_map.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/shared_worker_service.h"
 #include "media/capabilities/webrtc_video_stats_db_impl.h"
 #include "media/learning/common/media_learning_tasks.h"
 #include "media/learning/impl/learning_session_impl.h"
@@ -298,6 +300,11 @@ PrefetchService* BrowserContextImpl::GetPrefetchService() {
     prefetch_service_ = PrefetchService::CreateIfPossible();
 
   return prefetch_service_.get();
+}
+
+void BrowserContextImpl::WriteIntoTrace(
+    perfetto::TracedProto<TraceProto> proto) const {
+  proto->set_id(UniqueId());
 }
 
 }  // namespace content

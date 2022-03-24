@@ -441,13 +441,21 @@ void AuthenticationService::SignInInternal(ChromeIdentity* identity) {
     // Initial sign-in to Chrome does not automatically turn on Sync features.
     // The Sync service will be enabled in a separate request to
     // |GrantSyncConsent|.
-    identity_manager_->GetPrimaryAccountMutator()->SetPrimaryAccount(
-        account_id, signin::ConsentLevel::kSignin);
+    signin::PrimaryAccountMutator::PrimaryAccountError error =
+        identity_manager_->GetPrimaryAccountMutator()->SetPrimaryAccount(
+            account_id, signin::ConsentLevel::kSignin);
+    CHECK_EQ(signin::PrimaryAccountMutator::PrimaryAccountError::kNoError,
+             error);
   }
 
   // The primary account should now be set to the expected account_id.
-  CHECK_EQ(account_id, identity_manager_->GetPrimaryAccountId(
-                           signin::ConsentLevel::kSignin));
+  // If CHECK_EQ() fails, having the CHECK() before would help to understand if
+  // the primary account is empty or different that |account_id|.
+  // Related to crbug.com/1308448.
+  CoreAccountId primary_account =
+      identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
+  CHECK(!primary_account.empty());
+  CHECK_EQ(account_id, primary_account);
   crash_keys::SetCurrentlySignedIn(true);
 }
 

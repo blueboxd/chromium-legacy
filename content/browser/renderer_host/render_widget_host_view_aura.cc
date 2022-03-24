@@ -52,7 +52,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/page_visibility_state.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom.h"
@@ -689,6 +688,42 @@ void RenderWidgetHostViewAura::
 
   host()->CancelPresentationTimeRequest();
   delegated_frame_host_->CancelPresentationTimeRequest();
+}
+
+bool RenderWidgetHostViewAura::ShouldSkipCursorUpdate() const {
+  aura::Window* root_window = window_->GetRootWindow();
+  DCHECK(root_window);
+  display::Screen* screen = display::Screen::GetScreen();
+  DCHECK(screen);
+
+  // Ignore cursor update messages if the window under the cursor is not us.
+#if BUILDFLAG(IS_WIN)
+  gfx::Point cursor_screen_point = screen->GetCursorScreenPoint();
+  aura::Window* window_at_screen_point =
+      screen->GetWindowAtScreenPoint(cursor_screen_point);
+  // On Windows we may fail to retrieve the aura Window at the current cursor
+  // position. This is because the WindowFromPoint API may return the legacy
+  // window which is not associated with an aura Window. In this case we need
+  // to get the aura window for the parent of the legacy window.
+  if (!window_at_screen_point && legacy_render_widget_host_HWND_) {
+    HWND hwnd_at_point = ::WindowFromPoint(cursor_screen_point.ToPOINT());
+
+    if (hwnd_at_point == legacy_render_widget_host_HWND_->hwnd())
+      hwnd_at_point = legacy_render_widget_host_HWND_->GetParent();
+
+    display::win::ScreenWin* screen_win =
+        static_cast<display::win::ScreenWin*>(screen);
+    window_at_screen_point = screen_win->GetNativeWindowFromHWND(hwnd_at_point);
+  }
+  if (!window_at_screen_point ||
+      (window_at_screen_point->GetRootWindow() != root_window)) {
+    return true;
+  }
+#elif !BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!screen->IsWindowUnderCursor(root_window))
+    return true;
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+  return false;
 }
 
 bool RenderWidgetHostViewAura::ShouldShowStaleContentOnEviction() {
@@ -2235,39 +2270,12 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   if (!root_window)
     return;
 
+  if (ShouldSkipCursorUpdate())
+    return;
+
   display::Screen* screen = display::Screen::GetScreen();
   DCHECK(screen);
-
-  gfx::Point cursor_screen_point = screen->GetCursorScreenPoint();
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  // Ignore cursor update messages if the window under the cursor is not us.
-  aura::Window* window_at_screen_point = screen->GetWindowAtScreenPoint(
-      cursor_screen_point);
-#if BUILDFLAG(IS_WIN)
-  // On Windows we may fail to retrieve the aura Window at the current cursor
-  // position. This is because the WindowFromPoint API may return the legacy
-  // window which is not associated with an aura Window. In this case we need
-  // to get the aura window for the parent of the legacy window.
-  if (!window_at_screen_point && legacy_render_widget_host_HWND_) {
-    HWND hwnd_at_point = ::WindowFromPoint(cursor_screen_point.ToPOINT());
-
-    if (hwnd_at_point == legacy_render_widget_host_HWND_->hwnd())
-      hwnd_at_point = legacy_render_widget_host_HWND_->GetParent();
-
-    display::win::ScreenWin* screen_win =
-        static_cast<display::win::ScreenWin*>(screen);
-    window_at_screen_point = screen_win->GetNativeWindowFromHWND(
-        hwnd_at_point);
-  }
-#endif  // BUILDFLAG(IS_WIN)
-  if (!window_at_screen_point ||
-      (window_at_screen_point->GetRootWindow() != root_window)) {
-    return;
-  }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-
-  gfx::Point root_window_point = cursor_screen_point;
+  gfx::Point root_window_point = screen->GetCursorScreenPoint();
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root_window);
   if (screen_position_client) {

@@ -161,25 +161,6 @@ TEST(FloatRoundedRectTest, ellipticalCorners) {
   EXPECT_FALSE(r.XInterceptsAtY(101, min_x_intercept, max_x_intercept));
 }
 
-TEST(FloatRoundedRectTest, radiusCenterRect) {
-  gfx::SizeF corner_rect(10, 10);
-  FloatRoundedRect r0(gfx::RectF(0, 0, 100, 50),
-                      FloatRoundedRect::Radii(corner_rect, corner_rect,
-                                              corner_rect, corner_rect));
-  EXPECT_EQ(gfx::RectF(10, 10, 80, 30), r0.RadiusCenterRect());
-
-  // "Degenerate" cases all return an empty rectangle.
-  gfx::RectF collapsed_rect(0, 0, 100, 50);
-  collapsed_rect.Inset(200);
-  FloatRoundedRect r1(collapsed_rect);
-  EXPECT_TRUE(r1.RadiusCenterRect().IsEmpty());
-
-  FloatRoundedRect::Radii radii_with_too_large_corner(
-      gfx::SizeF(55, 55), gfx::SizeF(), gfx::SizeF(), gfx::SizeF());
-  FloatRoundedRect r2(gfx::RectF(0, 0, 100, 50), radii_with_too_large_corner);
-  EXPECT_TRUE(r2.RadiusCenterRect().IsEmpty());
-}
-
 TEST(FloatRoundedRectTest, IntersectsQuadIsInclusive) {
   FloatRoundedRect::Radii corner_radii(5);
 
@@ -350,6 +331,21 @@ TEST(FloatRoundedRectTest, InsetToBeNonRenderable) {
   EXPECT_FALSE(small_pie.IsRenderable());
   small_pie.Outset(20);
   EXPECT_EQ(pie, small_pie);
+}
+
+TEST(FloatRoundedRectTest, OutsetForShapeMargin) {
+  FloatRoundedRect r(gfx::RectF(0, 0, 100, 100), gfx::SizeF(5, 10),
+                     gfx::SizeF(15, 0), gfx::SizeF(0, 30), gfx::SizeF(0, 0));
+  r.OutsetForShapeMargin(0);
+  EXPECT_EQ(
+      FloatRoundedRect(gfx::RectF(0, 0, 100, 100), gfx::SizeF(5, 10),
+                       gfx::SizeF(15, 0), gfx::SizeF(0, 30), gfx::SizeF(0, 0)),
+      r);
+  r.OutsetForShapeMargin(5);
+  EXPECT_EQ(
+      FloatRoundedRect(gfx::RectF(-5, -5, 110, 110), gfx::SizeF(10, 15),
+                       gfx::SizeF(20, 5), gfx::SizeF(5, 35), gfx::SizeF(5, 5)),
+      r);
 }
 
 TEST(FloatRoundedRectTest, ToString) {

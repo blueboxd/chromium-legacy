@@ -158,7 +158,7 @@
 #include "chrome/browser/ui/webui/read_later/read_later.mojom.h"
 #include "chrome/browser/ui/webui/read_later/read_later_ui.h"
 #include "chrome/browser/ui/webui/read_later/side_panel/bookmarks_side_panel_ui.h"
-#include "chrome/browser/ui/webui/read_later/side_panel/read_anything/read_anything_side_panel_ui.h"
+#include "chrome/browser/ui/webui/read_later/side_panel/read_anything/read_anything_ui.h"
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
@@ -340,7 +340,6 @@ void BindUnhandledTapWebContentsObserver(
     return;
 
   contextual_search::CreateUnhandledTapNotifierImpl(
-      unhandled_tap_notifier_observer->device_scale_factor(),
       unhandled_tap_notifier_observer->unhandled_tap_callback(),
       std::move(receiver));
 }
@@ -879,8 +878,7 @@ void PopulateChromeWebUIFrameBinders(
   if (features::IsReadAnythingEnabled()) {
     if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
       RegisterWebUIControllerInterfaceBinder<
-          read_anything::mojom::PageHandlerFactory, ReadAnythingSidePanelUI>(
-          map);
+          read_anything::mojom::PageHandlerFactory, ReadAnythingUI>(map);
     } else {
       RegisterWebUIControllerInterfaceBinder<
           read_anything::mojom::PageHandlerFactory, ReadLaterUI>(map);

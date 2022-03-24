@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom.h"
@@ -798,7 +799,7 @@ bool WaylandWindow::CommitOverlays(
       ozone::mojom::WaylandOverlayConfig::New();
   auto split = std::lower_bound(overlays.begin(), overlays.end(), value,
                                 OverlayStackOrderCompare);
-  CHECK(split == overlays.end() || (*split)->z_order >= 0);
+  DCHECK(split == overlays.end() || (*split)->z_order >= 0);
   size_t num_primary_planes =
       (split != overlays.end() && (*split)->z_order == 0) ? 1 : 0;
   size_t num_background_planes =
@@ -812,18 +813,14 @@ bool WaylandWindow::CommitOverlays(
   if (!ArrangeSubsurfaceStack(above, below))
     return false;
 
-  auto main_overlay = split;
-  if (split == overlays.end() && overlays.front()->z_order == INT32_MIN)
-    main_overlay = overlays.begin();
-
-  gfx::SizeF visual_size = (*main_overlay)->bounds_rect.size();
-  float buffer_scale = (*main_overlay)->surface_scale_factor;
-  auto& rounded_clip_bounds = (*main_overlay)->rounded_clip_bounds;
+  gfx::SizeF visual_size = (*overlays.begin())->bounds_rect.size();
+  float buffer_scale = (*overlays.begin())->surface_scale_factor;
+  auto& rounded_clip_bounds = (*overlays.begin())->rounded_clip_bounds;
 
   if (!wayland_overlay_delegation_enabled_) {
     DCHECK_EQ(overlays.size(), 1u);
     frame_manager_->RecordFrame(std::make_unique<WaylandFrame>(
-        frame_id, root_surface(), std::move(*main_overlay)));
+        frame_id, root_surface(), std::move(*overlays.begin())));
     return true;
   }
 
@@ -834,10 +831,8 @@ bool WaylandWindow::CommitOverlays(
       std::max(overlays.size() - num_background_planes,
                wayland_subsurfaces_.size() + 1));
 
-  if (num_primary_planes) {
-    subsurfaces_to_overlays.emplace_back(primary_subsurface(),
-                                         std::move(*split));
-  }
+  subsurfaces_to_overlays.emplace_back(
+      primary_subsurface(), num_primary_planes ? std::move(*split) : nullptr);
 
   {
     // Iterate through |subsurface_stack_below_|, setup subsurfaces and place
@@ -876,17 +871,13 @@ bool WaylandWindow::CommitOverlays(
   if (num_background_planes) {
     root_config = std::move(overlays.front());
   } else {
-    root_config = ui::ozone::mojom::WaylandOverlayConfig::New();
-    root_config->z_order = INT32_MIN;
-    root_config->transform = gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE;
-    root_config->buffer_id = root_surface()->buffer_id();
-    root_config->enable_blend = root_surface()->use_blending();
-    root_config->opacity = root_surface()->opacity();
-    root_config->priority_hint = gfx::OverlayPriorityHint::kNone;
+    root_config = ui::ozone::mojom::WaylandOverlayConfig::New(
+        INT32_MIN, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE,
+        root_surface()->buffer_id(), buffer_scale, gfx::RectF(visual_size),
+        gfx::RectF(), gfx::Rect(), root_surface()->use_blending(),
+        root_surface()->opacity(), gfx::GpuFenceHandle(),
+        gfx::OverlayPriorityHint::kNone, rounded_clip_bounds);
   }
-  root_config->bounds_rect.set_size(visual_size);
-  root_config->surface_scale_factor = buffer_scale;
-  root_config->rounded_clip_bounds = rounded_clip_bounds;
 
   frame_manager_->RecordFrame(std::make_unique<WaylandFrame>(
       frame_id, root_surface(), std::move(root_config),
@@ -1006,10 +997,17 @@ gfx::Rect WaylandWindow::AdjustBoundsToConstraintsPx(
 
 bool WaylandWindow::ProcessVisualSizeUpdate(const gfx::Size& size_px,
                                             float scale_factor) {
+  // TODO(crbug.com/1307501): Optimize this to be less expensive. Maybe
+  // precompute in pixels for configure events. pending_configures_ can have 10s
+  // of elements in it for several frames under some conditions.
   auto result = std::find_if(
       pending_configures_.begin(), pending_configures_.end(),
-      [&size_px, &scale_factor](auto& configure) {
-        return gfx::ScaleToRoundedRect(configure.bounds_dip, scale_factor)
+      [this, &size_px, &scale_factor](auto& configure) {
+        // Since size_px comes from SetBounds via UpdateVisualSize in
+        // WaylandTopLevelWindow, we also need to adjust it for bounds to see if
+        // we match.
+        return AdjustBoundsToConstraintsPx(
+                   gfx::ScaleToRoundedRect(configure.bounds_dip, scale_factor))
                        .size() == size_px &&
                configure.set;
       });

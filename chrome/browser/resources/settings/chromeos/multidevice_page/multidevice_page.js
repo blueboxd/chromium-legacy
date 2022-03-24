@@ -26,8 +26,8 @@ import {loadTimeData} from '../../i18n_setup.js';
 import {Route, Router} from '../../router.js';
 import {NearbyShareSettingsBehavior} from '../../shared/nearby_share_settings_behavior.m.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
-import {recordSettingChange} from '../metrics_recorder.m.js';
-import {routes} from '../os_route.m.js';
+import {recordSettingChange} from '../metrics_recorder.js';
+import {routes} from '../os_route.js';
 import {PrefsBehavior} from '../prefs_behavior.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
@@ -691,5 +691,15 @@ Polymer({
       is_hardware_supported) {
     return loadTimeData.getBoolean('isNearbyShareBackgroundScanningEnabled') &&
         is_hardware_supported;
+  },
+
+  /**
+   * Whether the combined setup for Notifications and Camera Roll is supported
+   * on the connected phone.
+   * @return {boolean}
+   * @private
+   */
+  isCombinedSetupSupported_() {
+    return this.pageContentData.isPhoneHubFeatureCombinedSetupSupported;
   },
 });

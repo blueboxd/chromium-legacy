@@ -12,6 +12,9 @@
 // clang-format off
 #define COMMON_CHROME_COLOR_IDS \
   /* App menu colors. */ \
+  /* The kColorAppMenuHighlightSeverityLow color id is used in \
+  color_provider_css_colors_test.ts. If changing the variable name, the \
+  variable name in the test needs to be changed as well. */ \
   E(kColorAppMenuHighlightSeverityLow, \
     ThemeProperties::COLOR_APP_MENU_HIGHLIGHT_SEVERITY_LOW, \
     kChromeColorsStart) \
@@ -33,6 +36,11 @@
   E(kColorBookmarkBarForeground, ThemeProperties::COLOR_BOOKMARK_TEXT) \
   E(kColorBookmarkBarSeparator, ThemeProperties::COLOR_BOOKMARK_SEPARATOR) \
   E(kColorBookmarkButtonIcon, ThemeProperties::COLOR_BOOKMARK_BUTTON_ICON) \
+  E_CPONLY(kColorBookmarkDragImageBackground) \
+  E_CPONLY(kColorBookmarkDragImageCountBackground) \
+  E_CPONLY(kColorBookmarkDragImageCountForeground) \
+  E_CPONLY(kColorBookmarkDragImageForeground) \
+  E_CPONLY(kColorBookmarkDragImageIconBackground) \
   E(kColorBookmarkFavicon, ThemeProperties::COLOR_BOOKMARK_FAVICON) \
   E_CPONLY(kColorBookmarkFolderIcon) \
   /* Window caption colors. */ \
@@ -173,6 +181,12 @@
   E_CPONLY(kColorPipWindowHangUpButtonForeground) \
   E_CPONLY(kColorPipWindowSkipAdButtonBackground) \
   E_CPONLY(kColorPipWindowSkipAdButtonBorder) \
+  /* Payments promo code colors. */ \
+  E_CPONLY(kColorPromoCodeBackground) \
+  E_CPONLY(kColorPromoCodeForeground) \
+  E_CPONLY(kColorPromoCodeForegroundHovered) \
+  E_CPONLY(kColorPromoCodeForegroundPressed) \
+  E_CPONLY(kColorPromoCodeInkDrop) \
   /* PWA colors. */ \
   E_CPONLY(kColorPwaBackground) \
   E_CPONLY(kColorPwaMenuButtonIcon) \
@@ -180,6 +194,8 @@
   E_CPONLY(kColorPwaSecurityChipForegroundDangerous) \
   E_CPONLY(kColorPwaSecurityChipForegroundPolicyCert) \
   E_CPONLY(kColorPwaSecurityChipForegroundSecure) \
+  E_CPONLY(kColorPwaTabBarBottomSeparator) \
+  E_CPONLY(kColorPwaTabBarTopSeparator) \
   E_CPONLY(kColorPwaTheme) \
   E_CPONLY(kColorPwaToolbarBackground) \
   E_CPONLY(kColorPwaToolbarForeground) \
@@ -203,6 +219,19 @@
   E_CPONLY(kColorStatusBubbleForegroundFrameActive) \
   E_CPONLY(kColorStatusBubbleForegroundFrameInactive) \
   E(kColorStatusBubbleShadow, ThemeProperties::COLOR_STATUS_BUBBLE_SHADOW) \
+  /* Tab alert colors. */ \
+  E_CPONLY(kColorTabAlertAudioPlayingActiveFrameActive) \
+  E_CPONLY(kColorTabAlertAudioPlayingActiveFrameInactive) \
+  E_CPONLY(kColorTabAlertAudioPlayingInactiveFrameActive) \
+  E_CPONLY(kColorTabAlertAudioPlayingInactiveFrameInactive) \
+  E_CPONLY(kColorTabAlertMediaRecordingActiveFrameActive) \
+  E_CPONLY(kColorTabAlertMediaRecordingActiveFrameInactive) \
+  E_CPONLY(kColorTabAlertMediaRecordingInactiveFrameActive) \
+  E_CPONLY(kColorTabAlertMediaRecordingInactiveFrameInactive) \
+  E_CPONLY(kColorTabAlertPipPlayingActiveFrameActive) \
+  E_CPONLY(kColorTabAlertPipPlayingActiveFrameInactive) \
+  E_CPONLY(kColorTabAlertPipPlayingInactiveFrameActive) \
+  E_CPONLY(kColorTabAlertPipPlayingInactiveFrameInactive) \
   /* Tab colors. */ \
   E(kColorTabBackgroundActiveFrameActive, \
     ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE) \
@@ -340,7 +369,10 @@
     ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_ACTIVE) \
   E(kColorToolbarTopSeparatorFrameInactive, \
     ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_INACTIVE) \
-  /* Window control button background colors */ \
+  /* Web contents colors. */ \
+  E_CPONLY(kColorWebContentsBackground) \
+  E_CPONLY(kColorWebContentsBackgroundLetterboxing) \
+  /* Window control button background colors. */ \
   E(kColorWindowControlButtonBackgroundActive, \
     ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE) \
   E(kColorWindowControlButtonBackgroundInactive, \

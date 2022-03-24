@@ -13,6 +13,7 @@ namespace policy_prefs {
 
 #if BUILDFLAG(IS_WIN)
 POLICY_EXPORT extern const char kAzureActiveDirectoryManagement[];
+POLICY_EXPORT extern const char kEnterpriseMDMManagementWindows[];
 #endif
 POLICY_EXPORT extern const char kCloudManagementEnrollmentMandatory[];
 POLICY_EXPORT extern const char kDlpClipboardCheckSizeLimit[];
@@ -32,6 +33,7 @@ POLICY_EXPORT extern const char kUserPolicyRefreshRate[];
 POLICY_EXPORT extern const char kIntensiveWakeUpThrottlingEnabled[];
 POLICY_EXPORT extern const char kTargetBlankImpliesNoOpener[];
 POLICY_EXPORT extern const char kUserAgentClientHintsGREASEUpdateEnabled[];
+POLICY_EXPORT extern const char kSetTimeoutWithout1MsClampEnabled[];
 #if BUILDFLAG(IS_ANDROID)
 POLICY_EXPORT extern const char kBackForwardCacheEnabled[];
 #endif  // BUILDFLAG(IS_ANDROID)

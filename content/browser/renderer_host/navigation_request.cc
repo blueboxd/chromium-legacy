@@ -105,7 +105,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "net/base/features.h"
 #include "net/base/filename_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
@@ -961,14 +960,10 @@ void RemoveOriginTrialHintsFromAcceptCH(
     PersistAcceptCH(url::Origin::Create(url), delegate, client_hints);
   }
 
-  if (base::FeatureList::IsEnabled(net::features::kPartitionedCookies) &&
-      !base::FeatureList::IsEnabled(
-          net::features::kPartitionedCookiesBypassOriginTrial)) {
-    if (auto* cookie_manager = frame_tree_node->current_frame_host()
-                                   ->GetStoragePartition()
-                                   ->GetCookieManagerForBrowserProcess()) {
-      cookie_manager->ConvertPartitionedCookiesToUnpartitioned(url);
-    }
+  if (auto* cookie_manager = frame_tree_node->current_frame_host()
+                                 ->GetStoragePartition()
+                                 ->GetCookieManagerForBrowserProcess()) {
+    cookie_manager->ConvertPartitionedCookiesToUnpartitioned(url);
   }
 }
 
@@ -1414,9 +1409,11 @@ NavigationRequest::NavigationRequest(
   // Navigations can't be a replacement and a reload at the same time.
   DCHECK(!common_params_->should_replace_current_entry ||
          !NavigationTypeUtils::IsReload(common_params_->navigation_type));
-  DCHECK(IsInMainFrame() || common_params_->base_url_for_data_url.is_empty());
+  DCHECK(!GetParentFrameOrOuterDocument() ||
+         common_params_->base_url_for_data_url.is_empty());
 #if BUILDFLAG(IS_ANDROID)
-  DCHECK(IsInMainFrame() || commit_params_->data_url_as_string.empty());
+  DCHECK(!GetParentFrameOrOuterDocument() ||
+         commit_params_->data_url_as_string.empty());
 #endif
   // If `rfh_restored_from_back_forward_cache` was set, it should not be
   // invalidated yet at this point.
@@ -1953,13 +1950,20 @@ void NavigationRequest::OnFencedFrameURLMappingComplete(
     // TODO(crbug/1281643): move into commit_params_->ad_auction_components
     // directly.
     pending_ad_components_map_ = std::move(pending_ad_components_map);
+  } else {
+    if (frame_tree_node_->IsFencedFrameRoot() &&
+        blink::features::IsFencedFramesMPArchBased()) {
+      StartNavigation();
+      OnRequestFailedInternal(
+          network::URLLoaderCompletionStatus(net::ERR_INVALID_URL),
+          false /* skip_throttles */, absl::nullopt /* error_page_content*/,
+          false /* collapse_frame */);
+      return;
+    }
+    // else (for iframes and shadow-dom fenced frames) try the urn as-is to
+    // maintain existing behavior which will abort the navigation as the url is
+    // unresolvable.
   }
-  // else try the urn as-is to maintain existing behavior which will abort the
-  // navigation as the url is unresolvable.
-  //
-  // TODO(crbug.com/1123606): Consider switching to proper error page behavior
-  // after fenced frames switched to MPArch for which error page isolation is
-  // enabled.
 
   BeginNavigationImpl();
   // DO NOT ADD CODE after this. The previous call to BeginNavigationImpl may
@@ -2803,25 +2807,23 @@ bool NavigationRequest::IsOptInIsolationRequested() {
          network::mojom::OriginAgentClusterValue::kTrue;
 }
 
+bool NavigationRequest::AreOriginAgentClustersEnabledByDefault() const {
+  // OriginAgentClusters are enabled by default if OriginAgentCluster and
+  // kOriginAgentClusterDefaultEnabled are enabled, and if there is no
+  // enterprise policy forbidding it.
+  return SiteIsolationPolicy::IsOriginAgentClusterEnabled() &&
+         base::FeatureList::IsEnabled(
+             blink::features::kOriginAgentClusterDefaultEnabled) &&
+         !GetContentClient()->browser()->ShouldDisableOriginAgentClusterDefault(
+             frame_tree_node_->navigator().controller().GetBrowserContext());
+}
+
 bool NavigationRequest::IsIsolationImplied() {
   if (!response())
     return false;
 
-  // Do not attempt isolation if the feature is not enabled.
-  if (!SiteIsolationPolicy::IsOriginAgentClusterEnabled())
+  if (!AreOriginAgentClustersEnabledByDefault())
     return false;
-
-  // Do not default-isolate if the feature is not enabled.
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kOriginAgentClusterDefaultEnabled)) {
-    return false;
-  }
-
-  // Do not default-isolate if the enterprise policy forbids it.
-  if (GetContentClient()->browser()->ShouldDisableOriginAgentClusterDefault(
-          frame_tree_node_->navigator().controller().GetBrowserContext())) {
-    return false;
-  }
 
   return response_head_->parsed_headers->origin_agent_cluster ==
          network::mojom::OriginAgentClusterValue::kAbsent;
@@ -2859,16 +2861,54 @@ void NavigationRequest::DetermineOriginAgentClusterEndResult() {
                                                  requested_isolation_state)
           .is_origin_agent_cluster();
 
-  if (is_requested) {
-    origin_agent_cluster_end_result_ =
-        got_origin_agent_cluster
-            ? OriginAgentClusterEndResult::kRequestedAndOriginKeyed
-            : OriginAgentClusterEndResult::kRequestedButNotOriginKeyed;
+  if (AreOriginAgentClustersEnabledByDefault()) {
+    // When OAC is enabled by default, report enum values that distinguish
+    // between explicitly requesting OAC (on or off) and having no related
+    // header.
+    bool was_explicitly_requested =
+        response_head_->parsed_headers->origin_agent_cluster ==
+        network::mojom::OriginAgentClusterValue::kTrue;
+    bool was_explicitly_not_requested =
+        response_head_->parsed_headers->origin_agent_cluster ==
+        network::mojom::OriginAgentClusterValue::kFalse;
+
+    if (got_origin_agent_cluster) {
+      if (was_explicitly_requested) {
+        origin_agent_cluster_end_result_ =
+            OriginAgentClusterEndResult::kExplicitlyRequestedAndOriginKeyed;
+      } else if (was_explicitly_not_requested) {
+        origin_agent_cluster_end_result_ =
+            OriginAgentClusterEndResult::kExplicitlyNotRequestedButOriginKeyed;
+      } else {
+        origin_agent_cluster_end_result_ =
+            OriginAgentClusterEndResult::kNotExplicitlyRequestedAndOriginKeyed;
+      }
+    } else {
+      if (was_explicitly_requested) {
+        origin_agent_cluster_end_result_ =
+            OriginAgentClusterEndResult::kExplicitlyRequestedButNotOriginKeyed;
+      } else if (was_explicitly_not_requested) {
+        origin_agent_cluster_end_result_ = OriginAgentClusterEndResult::
+            kExplicitlyNotRequestedAndNotOriginKeyed;
+      } else {
+        origin_agent_cluster_end_result_ = OriginAgentClusterEndResult::
+            kNotExplicitlyRequestedButNotOriginKeyed;
+      }
+    }
   } else {
-    origin_agent_cluster_end_result_ =
-        got_origin_agent_cluster
-            ? OriginAgentClusterEndResult::kNotRequestedButOriginKeyed
-            : OriginAgentClusterEndResult::kNotRequestedAndNotOriginKeyed;
+    // When OAC is not enabled by default, report enum values that only indicate
+    // if OAC was requested or not vs whether it took effect.
+    if (is_requested) {
+      origin_agent_cluster_end_result_ =
+          got_origin_agent_cluster
+              ? OriginAgentClusterEndResult::kRequestedAndOriginKeyed
+              : OriginAgentClusterEndResult::kRequestedButNotOriginKeyed;
+    } else {
+      origin_agent_cluster_end_result_ =
+          got_origin_agent_cluster
+              ? OriginAgentClusterEndResult::kNotRequestedButOriginKeyed
+              : OriginAgentClusterEndResult::kNotRequestedAndNotOriginKeyed;
+    }
   }
 
   // This needs to be computed separately from origin.opaque() because, per
@@ -2883,12 +2923,9 @@ void NavigationRequest::DetermineOriginAgentClusterEndResult() {
   // cases (e.g., for data: URLs). origin_agent_cluster_end_result_ shouldn't be
   // modified since it's used for warnings and use counters, i.e. things that
   // don't apply to this sort of "automatic" origin-keying.
-  commit_params_->origin_agent_cluster =
-      is_opaque_origin_because_sandbox || origin.opaque() ||
-      origin_agent_cluster_end_result_ ==
-          OriginAgentClusterEndResult::kRequestedAndOriginKeyed ||
-      origin_agent_cluster_end_result_ ==
-          OriginAgentClusterEndResult::kNotRequestedButOriginKeyed;
+  commit_params_->origin_agent_cluster = is_opaque_origin_because_sandbox ||
+                                         origin.opaque() ||
+                                         got_origin_agent_cluster;
 
   // The origin_agent_cluster_left_as_default navigation commit parameter
   // communicates to the renderer whether the origin_agent_cluster decision
@@ -2906,15 +2943,22 @@ void NavigationRequest::ProcessOriginAgentClusterEndResult() {
   if (origin_agent_cluster_end_result_ ==
           OriginAgentClusterEndResult::kRequestedAndOriginKeyed ||
       origin_agent_cluster_end_result_ ==
-          OriginAgentClusterEndResult::kRequestedButNotOriginKeyed)
+          OriginAgentClusterEndResult::kRequestedButNotOriginKeyed ||
+      origin_agent_cluster_end_result_ ==
+          OriginAgentClusterEndResult::kExplicitlyRequestedAndOriginKeyed ||
+      origin_agent_cluster_end_result_ ==
+          OriginAgentClusterEndResult::kExplicitlyRequestedButNotOriginKeyed) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         render_frame_host_,
         blink::mojom::WebFeature::kOriginAgentClusterHeader);
+  }
 
   const url::Origin origin = url::Origin::Create(GetURL());
 
   if (origin_agent_cluster_end_result_ ==
-      OriginAgentClusterEndResult::kRequestedButNotOriginKeyed)
+          OriginAgentClusterEndResult::kRequestedButNotOriginKeyed ||
+      origin_agent_cluster_end_result_ ==
+          OriginAgentClusterEndResult::kExplicitlyRequestedButNotOriginKeyed) {
     render_frame_host_->AddMessageToConsole(
         blink::mojom::ConsoleMessageLevel::kWarning,
         base::StringPrintf(
@@ -2924,9 +2968,12 @@ void NavigationRequest::ProcessOriginAgentClusterEndResult() {
             "cluster. Update your headers to uniformly request origin-keying "
             "for all pages on the origin.",
             origin.Serialize().c_str()));
+  }
 
   if (origin_agent_cluster_end_result_ ==
-      OriginAgentClusterEndResult::kNotRequestedButOriginKeyed)
+          OriginAgentClusterEndResult::kNotRequestedButOriginKeyed ||
+      origin_agent_cluster_end_result_ ==
+          OriginAgentClusterEndResult::kExplicitlyNotRequestedButOriginKeyed) {
     render_frame_host_->AddMessageToConsole(
         blink::mojom::ConsoleMessageLevel::kWarning,
         base::StringPrintf(
@@ -2935,6 +2982,7 @@ void NavigationRequest::ProcessOriginAgentClusterEndResult() {
             "placed in an origin-keyed agent cluster. Update your headers to "
             "uniformly request origin-keying for all pages on the origin.",
             origin.Serialize().c_str()));
+  }
 }
 
 bool NavigationRequest::HasCommittingOrigin(const url::Origin& origin) {
@@ -6135,14 +6183,18 @@ NavigationRequest::GetOriginForURLLoaderFactoryWithFinalFrameHost() {
   return origin;
 }
 
-void NavigationRequest::WriteIntoTrace(perfetto::TracedValue context) {
-  auto dict = std::move(context).WriteDictionary();
-  dict.Add("navigation_id", navigation_id_);
-  dict.Add("has_committed", HasCommitted());
-  dict.Add("is_error_page", IsErrorPage());
-  dict.Add("net_error", net_error_);
+void NavigationRequest::WriteIntoTrace(
+    perfetto::TracedProto<TraceProto> ctx) const {
+  ctx->set_navigation_id(navigation_id_);
+  ctx->set_has_committed(HasCommitted());
+  ctx->set_is_error_page(IsErrorPage());
+  ctx.Set(TraceProto::kFrameTreeNode, frame_tree_node_);
+  if (state_ >= WILL_PROCESS_RESPONSE)
+    ctx.Set(TraceProto::kRenderFrameHost, GetRenderFrameHost());
+
+  perfetto::TracedDictionary dict = std::move(ctx).AddDebugAnnotations();
   dict.Add("url", common_params_->url);
-  dict.Add("frame_tree_node", frame_tree_node_);
+  dict.Add("net_error", net_error_);
   dict.Add("browser_initiated", commit_params_->is_browser_initiated);
   dict.Add("from_begin_navigation", from_begin_navigation_);
   dict.Add("is_synchronous_renderer_commit", is_synchronous_renderer_commit_);
@@ -6155,9 +6207,6 @@ void NavigationRequest::WriteIntoTrace(perfetto::TracedValue context) {
     dict.Add("rfh_restored_from_bfcache",
              rfh_restored_from_back_forward_cache_);
   }
-
-  if (state_ >= WILL_PROCESS_RESPONSE)
-    dict.Add("render_frame_host", GetRenderFrameHost());
 }
 
 bool NavigationRequest::SetNavigationTimeout(base::TimeDelta timeout) {
@@ -6380,11 +6429,11 @@ net::IPEndPoint NavigationRequest::GetSocketAddress() {
   return response() ? response()->remote_endpoint : net::IPEndPoint();
 }
 
-bool NavigationRequest::HasCommitted() {
+bool NavigationRequest::HasCommitted() const {
   return state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE;
 }
 
-bool NavigationRequest::IsErrorPage() {
+bool NavigationRequest::IsErrorPage() const {
   return state_ == DID_COMMIT_ERROR_PAGE;
 }
 
@@ -6539,7 +6588,7 @@ net::Error NavigationRequest::GetNetErrorCode() {
 // The RenderFrameHost that will commit the navigation or an error page.
 // This is computed when the response is received, or when the navigation
 // fails and error page should be displayed.
-RenderFrameHostImpl* NavigationRequest::GetRenderFrameHost() {
+RenderFrameHostImpl* NavigationRequest::GetRenderFrameHost() const {
   // Only allow the RenderFrameHost to be retrieved once it has been set for
   // this navigation. This will happens either at WillProcessResponse time for
   // regular navigations or at WillFailRequest time for error pages.

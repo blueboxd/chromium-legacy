@@ -20,8 +20,8 @@
 #include "components/services/storage/public/cpp/buckets/constants.h"
 #include "components/services/storage/public/cpp/quota_error_or.h"
 #include "sql/database.h"
-#include "sql/error_metrics.h"
 #include "sql/meta_table.h"
+#include "sql/sqlite_result_code.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "storage/browser/quota/quota_database_migrations.h"
@@ -723,7 +723,12 @@ QuotaError QuotaDatabase::SetIsBootstrapped(bool bootstrap_flag) {
 
 QuotaError QuotaDatabase::RazeAndReopen() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(db_);
+  // Try creating a database one last time if there isn't one.
+  if (!db_) {
+    if (!db_file_path_.empty())
+      sql::Database::Delete(db_file_path_);
+    return EnsureOpened(EnsureOpenedMode::kCreateIfNotFound);
+  }
 
   // Abort the long-running transaction.
   db_->RollbackTransaction();
@@ -970,27 +975,6 @@ bool QuotaDatabase::ResetSchema() {
   return EnsureOpened(EnsureOpenedMode::kCreateIfNotFound) == QuotaError::kNone;
 }
 
-QuotaError QuotaDatabase::DumpQuotaTable(const QuotaTableCallback& callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  QuotaError open_error = EnsureOpened(EnsureOpenedMode::kCreateIfNotFound);
-  if (open_error != QuotaError::kNone)
-    return open_error;
-
-  static constexpr char kSql[] = "SELECT * FROM quota";
-  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
-
-  while (statement.Step()) {
-    QuotaTableEntry entry = {
-        .host = statement.ColumnString(0),
-        .type = static_cast<StorageType>(statement.ColumnInt(1)),
-        .quota = statement.ColumnInt64(2)};
-
-    if (!callback.Run(entry))
-      return QuotaError::kNone;
-  }
-  return statement.Succeeded() ? QuotaError::kNone : QuotaError::kDatabaseError;
-}
-
 QuotaError QuotaDatabase::DumpBucketTable(const BucketTableCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   QuotaError open_error = EnsureOpened(EnsureOpenedMode::kCreateIfNotFound);
@@ -1076,18 +1060,6 @@ QuotaErrorOr<BucketInfo> QuotaDatabase::CreateBucketInternal(
 
   return BucketInfo(BucketId(bucket_id), storage_key, type, bucket_name,
                     base::Time::Max(), 0);
-}
-
-bool operator==(const QuotaDatabase::QuotaTableEntry& lhs,
-                const QuotaDatabase::QuotaTableEntry& rhs) {
-  return std::tie(lhs.host, lhs.type, lhs.quota) ==
-         std::tie(rhs.host, rhs.type, rhs.quota);
-}
-
-bool operator<(const QuotaDatabase::QuotaTableEntry& lhs,
-               const QuotaDatabase::QuotaTableEntry& rhs) {
-  return std::tie(lhs.host, lhs.type, lhs.quota) <
-         std::tie(rhs.host, rhs.type, rhs.quota);
 }
 
 bool operator<(const QuotaDatabase::BucketTableEntry& lhs,

@@ -238,6 +238,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDownloadRestrictions,
     prefs::kDownloadRestrictions,
     base::Value::Type::INTEGER },
+  { key::kDownloadBubbleEnabled,
+    prefs::kDownloadBubbleEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kAutoOpenAllowedForURLs,
     prefs::kDownloadAllowedURLsForOpenByPolicy,
     base::Value::Type::LIST },
@@ -249,6 +252,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::INTEGER },
   { key::kPasswordManagerEnabled,
     password_manager::prefs::kCredentialsEnableService,
+    base::Value::Type::BOOLEAN },
+  { key::kSetTimeoutWithout1MsClampEnabled,
+    policy_prefs::kSetTimeoutWithout1MsClampEnabled,
     base::Value::Type::BOOLEAN },
 #if BUILDFLAG(ENABLE_PRINTING)
   { key::kPrintingEnabled,
@@ -1628,6 +1634,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     webauthn::pref_names::kRemoteProxiedRequestsAllowed,
     base::Value::Type::BOOLEAN },
 #endif
+  { key::kFirstPartySetsOverrides,
+    first_party_sets::kFirstPartySetsOverrides,
+    base::Value::Type::DICTIONARY},
 };
 // clang-format on
 

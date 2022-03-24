@@ -25,7 +25,7 @@
 #include "chrome/browser/sync/desk_sync_service_factory.h"
 #include "chrome/browser/ui/ash/desks_templates/desks_templates_app_launch_handler.h"
 #include "components/app_constants/constants.h"
-#include "components/app_restore/full_restore_info.h"
+#include "components/app_restore/app_restore_info.h"
 #include "components/app_restore/window_properties.h"
 #include "components/desks_storage/core/desk_sync_service.h"
 #include "components/desks_storage/core/local_desk_data_manager.h"
@@ -35,6 +35,9 @@
 namespace {
 
 DesksTemplatesClient* g_desks_templates_client_instance = nullptr;
+
+// Used to generate unique IDs for desk template launches.
+int32_t g_launch_id = 0;
 
 // TODO(https://crbug.com/1284774): Remove metrics from this file.
 // Histogram names.
@@ -101,7 +104,7 @@ void RecordTimeToLoadTemplateHistogram(const base::Time time_started) {
 // launch performance metric when the set of window_ids have all been
 // launched
 class DesksTemplatesClient::LaunchPerformanceTracker
-    : public full_restore::FullRestoreInfo::Observer {
+    : public app_restore::AppRestoreInfo::Observer {
  public:
   LaunchPerformanceTracker(base::Time time_launch_started,
                            const std::set<int>& window_ids,
@@ -111,7 +114,7 @@ class DesksTemplatesClient::LaunchPerformanceTracker
         time_launch_started_(time_launch_started),
         template_id_(template_id),
         templates_client_(templates_client) {
-    scoped_observation_.Observe(full_restore::FullRestoreInfo::GetInstance());
+    scoped_observation_.Observe(app_restore::AppRestoreInfo::GetInstance());
     timeout_timer_ = std::make_unique<base::OneShotTimer>();
     timeout_timer_->Start(
         FROM_HERE, kLaunchPerformanceTimeout,
@@ -125,7 +128,7 @@ class DesksTemplatesClient::LaunchPerformanceTracker
   ~LaunchPerformanceTracker() override {}
 
   // Removes window ID from tracked set because the window has been launched.
-  // full_restore::FullRestoreInfo::Observer
+  // app_restore::AppRestoreInfo::Observer:
   void OnWidgetInitialized(views::Widget* widget) override {
     tracked_window_ids_.erase(widget->GetNativeWindow()->GetProperty(
         app_restore::kRestoreWindowIdKey));
@@ -164,8 +167,8 @@ class DesksTemplatesClient::LaunchPerformanceTracker
   // this object has recorded its metric.
   DesksTemplatesClient* templates_client_;
 
-  base::ScopedObservation<full_restore::FullRestoreInfo,
-                          full_restore::FullRestoreInfo::Observer>
+  base::ScopedObservation<app_restore::AppRestoreInfo,
+                          app_restore::AppRestoreInfo::Observer>
       scoped_observation_{this};
   base::WeakPtrFactory<LaunchPerformanceTracker> weak_ptr_factory_{this};
 };
@@ -312,7 +315,11 @@ void DesksTemplatesClient::LaunchAppsFromTemplate(
     base::Time time_launch_started,
     base::TimeDelta delay) {
   DCHECK(desk_template);
-  DCHECK_GT(desk_template->launch_id(), 0);
+  DCHECK_EQ(desk_template->launch_id(), 0);
+
+  // Generate a unique ID for this launch. It is used to tell different template
+  // launches apart.
+  desk_template->set_launch_id(++g_launch_id);
 
   app_restore::RestoreData* restore_data =
       desk_template->mutable_desk_restore_data();

@@ -1063,16 +1063,6 @@ void ArcAppListPrefs::SetDefaultAppsFilterLevel() {
 void ArcAppListPrefs::OnDefaultAppsReady() {
   VLOG(1) << "Default apps ready";
 
-  // Deprecated. Convert uninstalled packages info to hidden default apps and
-  // erase pending perf entry afterward.
-  // TODO (khmel): Remove in M73
-  const std::vector<std::string> uninstalled_package_names =
-      GetPackagesFromPrefs(false /* check_arc_alive */, false /* installed */);
-  for (const auto& uninstalled_package_name : uninstalled_package_names) {
-    default_apps_->SetAppsHiddenForPackage(uninstalled_package_name);
-    RemovePackageFromPrefs(uninstalled_package_name);
-  }
-
   SetDefaultAppsFilterLevel();
   default_apps_ready_ = true;
   if (!default_apps_ready_callback_.is_null())
@@ -1534,20 +1524,6 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
   } else {
     // Remove kPermissionStates from dict if there are no permissions.
     package_dict->RemoveKey(kPermissionStates);
-  }
-
-  // TODO (crbug.com/xxxxx): Remove in M78. This is required to force updating
-  // icons for all packages in case framework version is changed. Prior to this
-  // change |InvalidatePackageIcons| for framework did not refresh all packages.
-  if (package_name == kFrameworkPackageName) {
-    const int last_framework_version =
-        profile_->GetPrefs()->GetInteger(arc::prefs::kArcFrameworkVersion);
-    if (last_framework_version != package.package_version) {
-      InvalidatePackageIcons(package_name);
-      profile_->GetPrefs()->SetInteger(arc::prefs::kArcFrameworkVersion,
-                                       package.package_version);
-    }
-    return;
   }
 
   if (old_package_version == -1 ||

@@ -1283,6 +1283,7 @@ source_set("browser") {
     "net/reporting_service_proxy.h",
     "network_context_client_base_impl.cc",
     "network_context_client_base_impl.h",
+    "network_sandbox_grant_result.h",
     "network_service_client.cc",
     "network_service_client.h",
     "network_service_instance_impl.cc",
@@ -1466,6 +1467,7 @@ source_set("browser") {
     "renderer_host/frame_tree_node.h",
     "renderer_host/frame_tree_node_blame_context.cc",
     "renderer_host/frame_tree_node_blame_context.h",
+    "renderer_host/global_routing_id.cc",
     "renderer_host/http_error_navigation_throttle.cc",
     "renderer_host/http_error_navigation_throttle.h",
     "renderer_host/input/fling_controller.cc",
@@ -2503,6 +2505,11 @@ source_set("browser") {
       # this produces for other feature/platform pairs.
       "media/capture/crop_id_web_contents_helper.cc",
       "media/capture/crop_id_web_contents_helper.h",
+
+      # Support for restricting NetworkService disk access to a certain path.
+      # Not available on Android.
+      "network_sandbox.cc",
+      "network_sandbox.h",
     ]
   }
 

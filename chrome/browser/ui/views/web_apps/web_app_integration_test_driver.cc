@@ -56,8 +56,10 @@
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
+#include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -161,15 +163,13 @@ const base::flat_map<std::string, std::string> g_site_mode_to_app_name = {
     {"SiteAFoo", "Site A Foo"},
     {"SiteABar", "Site A Bar"}};
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 const base::flat_map<std::string, SkColor> g_app_name_icon_color = {
-    {"Site A", SkColorSetARGB(0xFF, 0x00, 0x00, 0x00)},
+    {"Site A", SkColorSetARGB(0xFF, 0x00, 0xFF, 0x00)},
     {"Site B", SkColorSetARGB(0xFF, 0x00, 0x00, 0x00)},
     {"Site C", SkColorSetARGB(0x00, 0x00, 0x00, 0x00)},
-    {"Site A Foo", SkColorSetARGB(0xFF, 0x00, 0x00, 0x00)},
-    {"Site A Bar", SkColorSetARGB(0xFF, 0x00, 0x00, 0x00)},
-    {"Site A - Updated name", SkColorSetARGB(0xFF, 0x00, 0x00, 0x00)}};
-#endif
+    {"Site A Foo", SkColorSetARGB(0xFF, 0x00, 0xFF, 0x00)},
+    {"Site A Bar", SkColorSetARGB(0xFF, 0x00, 0xFF, 0x00)},
+    {"Site A - Updated name", SkColorSetARGB(0xFF, 0x00, 0xFF, 0x00)}};
 
 #if !BUILDFLAG(IS_CHROMEOS)
 class TestAppLauncherHandler : public AppLauncherHandler {
@@ -230,10 +230,10 @@ base::FilePath GetShortcutProfile(base::FilePath shortcut_path) {
   return shortcut_profile;
 }
 
-SkColor IsShortcutAndIconFoundForProfile(Profile* profile,
-                                         const std::string& name,
-                                         base::FilePath shortcut_dir,
-                                         SkColor expected_icon_pixel_color) {
+bool IsShortcutAndIconCorrectOnWin(Profile* profile,
+                                   const std::string& name,
+                                   base::FilePath shortcut_dir,
+                                   SkColor expected_icon_pixel_color) {
   std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
   base::FileEnumerator enumerator(shortcut_dir, false,
                                   base::FileEnumerator::FILES);
@@ -247,6 +247,25 @@ SkColor IsShortcutAndIconFoundForProfile(Profile* profile,
         return (icon_pixel_color == expected_icon_pixel_color);
       }
     }
+  }
+  return false;
+}
+#endif
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+bool IconManagerCheckIconTopLeftColor(const WebAppIconManager& icon_manager,
+                                      const AppId& app_id,
+                                      std::vector<int> sizes_px,
+                                      SkColor expected_icon_pixel_color) {
+  bool icons_exist = icon_manager.HasIcons(app_id, IconPurpose::ANY, sizes_px);
+  if (icons_exist) {
+    for (int size_px : sizes_px) {
+      SkColor icon_pixel_color =
+          IconManagerReadAppIconPixel(icon_manager, app_id, size_px, 0, 0);
+      if (icon_pixel_color != expected_icon_pixel_color)
+        return false;
+    }
+    return true;
   }
   return false;
 }
@@ -345,6 +364,7 @@ AppState::AppState(web_app::AppId app_id,
                    apps::RunOnOsLoginMode run_on_os_login_mode,
                    blink::mojom::DisplayMode effective_display_mode,
                    blink::mojom::DisplayMode user_display_mode,
+                   std::string manifest_launcher_icon_filename,
                    bool installed_locally,
                    bool shortcut_created)
     : id(std::move(app_id)),
@@ -354,6 +374,8 @@ AppState::AppState(web_app::AppId app_id,
       run_on_os_login_mode(run_on_os_login_mode),
       effective_display_mode(effective_display_mode),
       user_display_mode(user_display_mode),
+      manifest_launcher_icon_filename(
+          std::move(manifest_launcher_icon_filename)),
       is_installed_locally(installed_locally),
       is_shortcut_created(shortcut_created) {}
 AppState::~AppState() = default;
@@ -364,6 +386,8 @@ bool AppState::operator==(const AppState& other) const {
          run_on_os_login_mode == other.run_on_os_login_mode &&
          effective_display_mode == other.effective_display_mode &&
          user_display_mode == other.user_display_mode &&
+         manifest_launcher_icon_filename ==
+             other.manifest_launcher_icon_filename &&
          is_installed_locally == other.is_installed_locally &&
          is_shortcut_created == other.is_shortcut_created;
 }
@@ -433,6 +457,8 @@ std::ostream& operator<<(std::ostream& os, const StateSnapshot& snapshot) {
                           static_cast<int>(app.effective_display_mode));
       app_value.SetIntKey("user_display_mode",
                           static_cast<int>(app.effective_display_mode));
+      app_value.SetStringKey("manifest_launcher_icon_filename",
+                             app.manifest_launcher_icon_filename);
       app_value.SetBoolKey("is_installed_locally", app.is_installed_locally);
       app_value.SetBoolKey("is_shortcut_created", app.is_shortcut_created);
 
@@ -806,6 +832,7 @@ void WebAppIntegrationTestDriver::LaunchFromMenuOption(
 
 void WebAppIntegrationTestDriver::LaunchFromPlatformShortcut(
     const std::string& site_mode) {
+#if !BUILDFLAG(IS_CHROMEOS)
   BeforeStateChangeAction(__FUNCTION__);
   absl::optional<AppState> app_state = GetAppBySiteMode(
       before_state_change_action_state_.get(), profile(), site_mode);
@@ -832,6 +859,9 @@ void WebAppIntegrationTestDriver::LaunchFromPlatformShortcut(
     app_banner_manager->WaitForInstallableCheck();
   }
   AfterStateChangeAction();
+#else
+  NOTREACHED() << "Not implemented on Chrome OS.";
+#endif
 }
 
 void WebAppIntegrationTestDriver::OpenAppSettingsFromAppMenu(
@@ -961,6 +991,32 @@ void WebAppIntegrationTestDriver::NavigateTabbedBrowserToSite(const GURL& url) {
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   app_banner_manager->WaitForInstallableCheck();
+  AfterStateChangeAction();
+}
+
+void WebAppIntegrationTestDriver::ManifestUpdateIcon(
+    const std::string& site_mode) {
+  BeforeStateChangeAction(__FUNCTION__);
+  ASSERT_EQ("SiteA", site_mode) << "Only site mode of 'SiteA' is supported";
+  ASSERT_TRUE(base::Contains(g_site_mode_to_relative_scope_url, site_mode));
+
+  app_id_update_dialog_waiter_ =
+      std::make_unique<views::NamedWidgetShownWaiter>(
+          views::test::AnyWidgetTestPasskey{},
+          "WebAppIdentityUpdateConfirmationView");
+
+  auto scope_url_path =
+      g_site_mode_to_relative_scope_url.find(site_mode)->second;
+  std::string str_template =
+      "/web_apps/%s/basic.html?manifest=manifest_icon_%u.json";
+  // The kLauncherIcon size is used here, as it is guaranteed to be written to
+  // the shortcut on all platforms, as opposed to kInstallIconSize, for example,
+  // which, on ChromeOS, is not written to the shortcut because it is not within
+  // the intersection between `kDesiredIconSizesForShortcut` (which is platform-
+  // dependent) and `SizesToGenerate()` (which is fixed on all platforms).
+  GURL url = embedded_test_server()->GetURL(base::StringPrintf(
+      str_template.c_str(), scope_url_path.c_str(), kLauncherIconSize));
+  ForceUpdateManifestContents(site_mode, url);
   AfterStateChangeAction();
 }
 
@@ -1419,6 +1475,53 @@ void WebAppIntegrationTestDriver::CheckPlatformShortcutNotExists(
   AfterStateCheckAction();
 }
 
+void WebAppIntegrationTestDriver::CheckAppIconSiteA(const std::string& color) {
+  BeforeStateCheckAction(__FUNCTION__);
+  absl::optional<AppState> app_state = GetAppBySiteMode(
+      after_state_change_action_state_.get(), profile(), "SiteA");
+  ASSERT_TRUE(app_state);
+  EXPECT_EQ(app_state->manifest_launcher_icon_filename,
+            base::StringPrintf("%ux%u-%s.png", kLauncherIconSize,
+                               kLauncherIconSize, color.c_str()));
+
+  // A mapping of image sizes to shortcut colors. Note that the top left
+  // pixel color for each size is used as the representation color for that
+  // size, even if the image is multi-colored.
+  std::map<int, SkColor> shortcut_colors;
+
+  base::RunLoop shortcut_run_loop;
+  provider()->os_integration_manager().GetShortcutInfoForApp(
+      active_app_id_,
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<ShortcutInfo> shortcut_info) {
+            if (shortcut_info) {
+              gfx::ImageFamily::const_iterator it;
+              for (it = shortcut_info->favicon.begin();
+                   it != shortcut_info->favicon.end(); ++it) {
+                shortcut_colors[it->Size().width()] =
+                    it->AsBitmap().getColor(0, 0);
+              }
+            }
+
+            shortcut_run_loop.Quit();
+          }));
+  shortcut_run_loop.Run();
+
+  SkColor launcher_icon_color = shortcut_colors[kLauncherIconSize];
+  SkColor expected_color = SK_ColorTRANSPARENT;
+  if (color == "green")
+    expected_color = SK_ColorGREEN;
+  else if (color == "red")
+    expected_color = SK_ColorRED;
+  else
+    NOTREACHED();  // Add more color mappings if needed.
+  EXPECT_EQ(expected_color, launcher_icon_color)
+      << "Size " << kLauncherIconSize << ": Expecting ARGB " << std::hex
+      << expected_color << " but found " << std::hex << launcher_icon_color;
+
+  AfterStateCheckAction();
+}
+
 void WebAppIntegrationTestDriver::CheckAppTitleSiteA(const std::string& title) {
   BeforeStateCheckAction(__FUNCTION__);
   absl::optional<AppState> app_state = GetAppBySiteMode(
@@ -1550,7 +1653,7 @@ void WebAppIntegrationTestDriver::CheckRunOnOSLoginEnabled(
 #elif BUILDFLAG(IS_WIN)
   DCHECK(base::Contains(g_app_name_icon_color, app_state->name));
   SkColor color = g_app_name_icon_color.find(app_state->name)->second;
-  ASSERT_TRUE(IsShortcutAndIconFoundForProfile(
+  ASSERT_TRUE(IsShortcutAndIconCorrectOnWin(
       profile(), app_state->name, shortcut_override_->startup.GetPath(),
       color));
 #endif
@@ -1574,7 +1677,7 @@ void WebAppIntegrationTestDriver::CheckRunOnOSLoginDisabled(
 #elif BUILDFLAG(IS_WIN)
   DCHECK(base::Contains(g_app_name_icon_color, app_state->name));
   SkColor color = g_app_name_icon_color.find(app_state->name)->second;
-  ASSERT_FALSE(IsShortcutAndIconFoundForProfile(
+  ASSERT_FALSE(IsShortcutAndIconCorrectOnWin(
       profile(), app_state->name, shortcut_override_->startup.GetPath(),
       color));
 #endif
@@ -1821,6 +1924,16 @@ WebAppIntegrationTestDriver::ConstructStateSnapshot() {
                                                    apps::AppType::kWeb,
                                                    /*delegate=*/nullptr, true);
     for (const auto& app_id : app_ids) {
+      std::string manifest_launcher_icon_filename;
+      std::vector<apps::IconInfo> icon_infos =
+          provider()->registrar().GetAppIconInfos(app_id);
+      for (const auto& info : icon_infos) {
+        int icon_size = info.square_size_px.value_or(-1);
+        if (icon_size == kLauncherIconSize) {
+          manifest_launcher_icon_filename = info.url.ExtractFileName();
+        }
+      }
+
       app_state.emplace(
           app_id,
           AppState(app_id, registrar.GetAppShortName(app_id),
@@ -1831,6 +1944,7 @@ WebAppIntegrationTestDriver::ConstructStateSnapshot() {
                        registrar.GetAppRunOnOsLoginMode(app_id).value),
                    registrar.GetAppEffectiveDisplayMode(app_id),
                    registrar.GetAppUserDisplayMode(app_id),
+                   manifest_launcher_icon_filename,
                    registrar.IsLocallyInstalled(app_id),
                    IsShortcutAndIconCreated(
                        profile, registrar.GetAppShortName(app_id), app_id)));
@@ -2042,20 +2156,22 @@ bool WebAppIntegrationTestDriver::IsShortcutAndIconCreated(
     const std::string& name,
     const AppId& id) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  bool shortcut_correct = false;
+  bool is_shortcut_and_icon_correct = false;
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS)
+  DCHECK(base::Contains(g_app_name_icon_color, name));
+  SkColor expected_icon_pxiel_color = g_app_name_icon_color.find(name)->second;
+#endif
 
 #if BUILDFLAG(IS_WIN)
-  DCHECK(base::Contains(g_app_name_icon_color, name));
-  SkColor color = g_app_name_icon_color.find(name)->second;
-  shortcut_correct =
-      (IsShortcutAndIconFoundForProfile(
-           profile, name, shortcut_override_->desktop.GetPath(), color) &&
-       IsShortcutAndIconFoundForProfile(
+  is_shortcut_and_icon_correct =
+      (IsShortcutAndIconCorrectOnWin(profile, name,
+                                     shortcut_override_->desktop.GetPath(),
+                                     expected_icon_pxiel_color) &&
+       IsShortcutAndIconCorrectOnWin(
            profile, name, shortcut_override_->application_menu.GetPath(),
-           color));
+           expected_icon_pxiel_color));
 #elif BUILDFLAG(IS_MAC)
-  DCHECK(base::Contains(g_app_name_icon_color, name));
-  SkColor color = g_app_name_icon_color.find(name)->second;
   std::string shortcut_filename = name + ".app";
   base::FilePath app_shortcut_path =
       shortcut_override_->chrome_apps_folder.GetPath().Append(
@@ -2075,17 +2191,22 @@ bool WebAppIntegrationTestDriver::IsShortcutAndIconCreated(
       (base::PathExists(app_shortcut_path) && is_app_profile_found);
   if (shortcut_exists) {
     SkColor icon_pixel_color = GetIconTopLeftColor(app_shortcut_path);
-    shortcut_correct = (icon_pixel_color == color);
+    is_shortcut_and_icon_correct =
+        (icon_pixel_color == expected_icon_pxiel_color);
   }
 #elif BUILDFLAG(IS_LINUX)
   std::string shortcut_filename =
       "chrome-" + id + "-" + profile->GetBaseName().value() + ".desktop";
   base::FilePath desktop_shortcut_path =
       shortcut_override_->desktop.GetPath().Append(shortcut_filename);
-  shortcut_correct = base::PathExists(desktop_shortcut_path);
+  if (base::PathExists(desktop_shortcut_path))
+    is_shortcut_and_icon_correct = IconManagerCheckIconTopLeftColor(
+        provider()->icon_manager(), id, {192, 48}, expected_icon_pxiel_color);
+#elif BUILDFLAG(IS_CHROMEOS)
+  is_shortcut_and_icon_correct = IconManagerCheckIconTopLeftColor(
+      provider()->icon_manager(), id, {192, 48}, expected_icon_pxiel_color);
 #endif
-
-  return shortcut_correct;
+  return is_shortcut_and_icon_correct;
 }
 
 void WebAppIntegrationTestDriver::SetRunOnOsLoginMode(
@@ -2157,6 +2278,7 @@ PageActionIconView* WebAppIntegrationTestDriver::intent_picker_view() {
 WebAppIntegrationBrowserTest::WebAppIntegrationBrowserTest() : helper_(this) {
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;
+  enabled_features.push_back(features::kPwaUpdateDialogForIcon);
   enabled_features.push_back(features::kPwaUpdateDialogForName);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   disabled_features.push_back(features::kWebAppsCrosapi);

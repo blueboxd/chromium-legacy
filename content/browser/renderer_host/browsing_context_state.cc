@@ -167,6 +167,8 @@ bool BrowsingContextState::CommitFramePolicy(
       replication_state_->frame_policy.required_document_policy;
   DCHECK_EQ(new_frame_policy.is_fenced,
             replication_state_->frame_policy.is_fenced);
+  DCHECK_EQ(new_frame_policy.fenced_frame_mode,
+            replication_state_->frame_policy.fenced_frame_mode);
 
   if (did_change_flags) {
     replication_state_->frame_policy.sandbox_flags =
@@ -366,17 +368,13 @@ void BrowsingContextState::ExecuteRemoteFramesBroadcastMethod(
   }
 }
 
-void BrowsingContextState::WriteIntoTrace(perfetto::TracedValue ctx) const {
-  perfetto::TracedDictionary dict = std::move(ctx).WriteDictionary();
-  dict.Add("this", static_cast<const void*>(this));
-  dict.Add("browsing_instance_id", browsing_instance_id_);
-}
-
 void BrowsingContextState::WriteIntoTrace(
-    perfetto::TracedProto<perfetto::protos::pbzero::BrowsingContextState> proto)
-    const {
+    perfetto::TracedProto<TraceProto> proto) const {
   if (browsing_instance_id_.has_value())
     proto->set_browsing_instance_id(browsing_instance_id_.value().value());
+
+  perfetto::TracedDictionary dict = std::move(proto).AddDebugAnnotations();
+  dict.Add("this", static_cast<const void*>(this));
 }
 
 }  // namespace content

@@ -31,6 +31,7 @@
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="1209796539517632982">Servidores de nome automático</translation>
 <translation id="1210831758834677569">Laosiano</translation>
+<translation id="1223825810409523901">Extensão do Chrome</translation>
 <translation id="1243314992276662751">Carregar</translation>
 <translation id="1249250836236328755">Género</translation>
 <translation id="1254593899333212300">Ligação direta à Internet</translation>
@@ -80,6 +81,7 @@
 <translation id="166439687370499867">Não é permitido alterar as configurações de rede partilhadas.</translation>
 <translation id="1665611772925418501">Não foi possível modificar o ficheiro.</translation>
 <translation id="1673103856845176271">Não foi possível aceder ao ficheiro por razões de segurança.</translation>
+<translation id="16762847117768727">Imagem ISO</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1715848075824334077">Ciclista</translation>
 <translation id="1722487484194605434">A comprimir <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
@@ -365,6 +367,7 @@
 <translation id="4215448920900139318">A fazer uma cópia de segurança de <ph name="FILE_COUNT" />...</translation>
 <translation id="4218274196133425560">Remover a exceção para <ph name="HOST_NAME" /></translation>
 <translation id="4261901459838235729">Apresentação do Google</translation>
+<translation id="4277536868133419688">O filtro <ph name="FILTER_NAME" /> está ativado.</translation>
 <translation id="4290535918735525311">1 pasta partilhada com o Linux.</translation>
 <translation id="4299729908419173967">Português (Brasil)</translation>
 <translation id="4302605047395093221">Qualquer pessoa que utilize este dispositivo tem de introduzir o PIN para estabelecer ligação a esta rede móvel</translation>
@@ -404,6 +407,7 @@
 <translation id="457386861538956877">Mais...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> foi adicionado à seleção.</translation>
 <translation id="4594543368593301662">A mostrar resultados para <ph name="SEARCH_TERM" />.</translation>
+<translation id="4599600860674643278">O filtro foi reposto.</translation>
 <translation id="4603392156942865207">A copiar <ph name="FILE_NAME" /> para <ph name="FOLDER_NAME" />…</translation>
 <translation id="4631887759990505102">Artista</translation>
 <translation id="4642769377300286600">A instalar o perfil móvel, rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
@@ -527,6 +531,7 @@
 <translation id="5469868506864199649">Italiano</translation>
 <translation id="5473333559083690127">Voltar a introduzir o PIN novo</translation>
 <translation id="5489067830765222292">Letão</translation>
+<translation id="5489965683297092283">O filtro <ph name="FILTER_NAME" /> está desativado.</translation>
 <translation id="5494920125229734069">Selecionar tudo</translation>
 <translation id="5500122897333236901">Islandês</translation>
 <translation id="5508696409934741614">Pontos</translation>
@@ -811,6 +816,7 @@
 <translation id="7925686952655276919">Não utilizar dados móveis para sincronização</translation>
 <translation id="7928710562641958568">Ejetar aparelho</translation>
 <translation id="7943385054491506837">EUA Colemak</translation>
+<translation id="7948417415021769876">Arquivo 7z</translation>
 <translation id="7953739707111622108">Não é possível abrir este aparelho porque o sistema de ficheiros não foi reconhecido.</translation>
 <translation id="7969525169268594403">Esloveno</translation>
 <translation id="7972920761225148017">Francês (Suíça)</translation>
@@ -860,6 +866,7 @@
 <translation id="8372369524088641025">Chave WEP incorrecta</translation>
 <translation id="8372852072747894550">Grego</translation>
 <translation id="8386903983509584791">Análise concluída</translation>
+<translation id="8387733224523483503"><ph name="FILE_NAME" /> extraído.</translation>
 <translation id="8395901698320285466">Dimensões</translation>
 <translation id="8408068190360279472">Rede <ph name="NETWORK_TYPE" />, a ligar…</translation>
 <translation id="8425213833346101688">Alterar</translation>
@@ -954,6 +961,7 @@
 <translation id="9174050671906956834">Os itens no lixo são eliminados definitivamente após 30 dias.</translation>
 <translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">Cazaque</translation>
+<translation id="9200427192836333033"><ph name="NUMBER_OF_ITEMS" /> itens extraídos.</translation>
 <translation id="9213073329713032541">A instalação foi iniciada com êxito.</translation>
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="9219908252191632183">Paisagem lunar</translation>

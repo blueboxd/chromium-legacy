@@ -633,7 +633,7 @@ void CopyRowsToRGB10Buffer(bool is_argb,
                            const VideoFrame* source_frame,
                            uint8_t* output,
                            int dest_stride) {
-  TRACE_EVENT2("media", "CopyRowsToXR30Buffer", "bytes_per_row", width * 2,
+  TRACE_EVENT2("media", "CopyRowsToRGB10Buffer", "bytes_per_row", width * 2,
                "rows", rows);
   if (!output)
     return;
@@ -842,6 +842,11 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_XR30:
     case PIXEL_FORMAT_XB30:
     case PIXEL_FORMAT_RGBAF16:
+    case PIXEL_FORMAT_I422A:
+    case PIXEL_FORMAT_I444A:
+    case PIXEL_FORMAT_YUV420AP10:
+    case PIXEL_FORMAT_YUV422AP10:
+    case PIXEL_FORMAT_YUV444AP10:
     case PIXEL_FORMAT_UNKNOWN:
       if (is_software_backed_video_frame) {
         UMA_HISTOGRAM_ENUMERATION(

@@ -82,7 +82,8 @@ bool CanMoveWindowOutOfDeskContainer(aura::Window* window) {
   // its desk is removed. The save desk as template widget is not activatable
   // but should also be moved to the next active desk.
   if (window->GetId() == kShellWindowId_DesksBarWindow ||
-      window->GetId() == kShellWindowId_SaveDeskAsTemplateWindow) {
+      window->GetId() == kShellWindowId_SaveDeskAsTemplateWindow ||
+      window->GetId() == kShellWindowId_OverviewNoWindowsLabelWindow) {
     return true;
   }
 
@@ -189,6 +190,37 @@ class DeskContainerObserver : public aura::WindowObserver {
     // since we want to refresh the mini_views only after the window has been
     // removed from the window tree hierarchy.
     owner_->RemoveWindowFromDesk(removed_window);
+  }
+
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
+    // We need this for desks templates, where new app windows can be created
+    // while in overview. The window may not be visible when `OnWindowAdded` is
+    // called so updating the previews then wouldn't show the new window
+    // preview.
+
+    if (!Shell::Get()->overview_controller()->InOverviewSession())
+      return;
+
+    // `OnWindowVisibilityChanged()` will be run for all windows in the tree of
+    // `container_`. We are only interested in direct children.
+    if (!window->parent() || window->parent() != container_)
+      return;
+
+    // No need to update transient children as the update will handle them.
+    if (wm::GetTransientRoot(window) != window)
+      return;
+
+    // Minimized windows may be force shown to be mirrored. They won't be
+    // visible on the desk preview however, so no need to update.
+    if (!WindowState::Get(window) || WindowState::Get(window)->IsMinimized())
+      return;
+
+    // Do not update windows shown or hidden for overview as they will not be
+    // shown in the desk previews anyways.
+    if (window->GetProperty(kHideInDeskMiniViewKey))
+      return;
+
+    owner_->NotifyContentChanged();
   }
 
   void OnWindowDestroyed(aura::Window* window) override {

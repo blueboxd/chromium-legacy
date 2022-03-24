@@ -382,6 +382,16 @@ static_library("browser") {
     "defaults.cc",
     "defaults.h",
     "device_reauth/chrome_biometric_authenticator_factory.h",
+    "dips/dips_helper.cc",
+    "dips/dips_helper.h",
+    "dips/dips_service.cc",
+    "dips/dips_service.h",
+    "dips/dips_service_factory.cc",
+    "dips/dips_service_factory.h",
+    "dips/dips_state.cc",
+    "dips/dips_state.h",
+    "dips/dips_storage.cc",
+    "dips/dips_storage.h",
     "display_capture/display_capture_permission_context.cc",
     "display_capture/display_capture_permission_context.h",
     "dom_distiller/dom_distiller_service_factory.cc",
@@ -522,10 +532,6 @@ static_library("browser") {
     "file_system_access/file_system_access_tab_helper.h",
     "file_util_service.cc",
     "file_util_service.h",
-    "first_party_sets/first_party_sets_pref_names.cc",
-    "first_party_sets/first_party_sets_pref_names.h",
-    "first_party_sets/first_party_sets_settings.cc",
-    "first_party_sets/first_party_sets_settings.h",
     "flag_descriptions.cc",
     "flag_descriptions.h",
     "font_pref_change_notifier.cc",
@@ -934,6 +940,8 @@ static_library("browser") {
     "optimization_guide/prediction/prediction_model_download_client.h",
     "page_info/about_this_site_service_factory.cc",
     "page_info/about_this_site_service_factory.h",
+    "page_info/about_this_site_tab_helper.cc",
+    "page_info/about_this_site_tab_helper.h",
     "page_info/chrome_about_this_site_service_client.cc",
     "page_info/chrome_about_this_site_service_client.h",
     "page_load_metrics/observers/aborts_page_load_metrics_observer.cc",
@@ -1923,6 +1931,7 @@ static_library("browser") {
     "//chrome/browser/devtools",
     "//chrome/browser/feature_guide/notifications:public",
     "//chrome/browser/feature_guide/notifications/internal",
+    "//chrome/browser/first_party_sets",
     "//chrome/browser/image_decoder",
     "//chrome/browser/media:media_engagement_preload_proto",
     "//chrome/browser/media:mojo_bindings",
@@ -2136,6 +2145,7 @@ static_library("browser") {
     "//components/optimization_guide/core:prediction",
     "//components/optimization_guide/optimization_guide_internals/webui",
     "//components/os_crypt",
+    "//components/page_info/core:proto",
     "//components/page_load_metrics/browser",
     "//components/page_load_metrics/browser/observers/ad_metrics",
     "//components/page_load_metrics/common",
@@ -3316,6 +3326,8 @@ static_library("browser") {
       "translate/android/translate_bridge.h",
       "video_tutorials/internal/android/video_tutorial_service_bridge_factory.cc",
       "webauthn/android/cable_module_android.cc",
+      "webauthn/chrome_conditional_ui_delegate_android.cc",
+      "webauthn/chrome_conditional_ui_delegate_android.h",
     ]
     public_deps += [
       "//chrome/android/features/dev_ui:buildflags",
@@ -3462,6 +3474,7 @@ static_library("browser") {
       "//components/signin/public/android:jni_headers",
       "//components/subresource_filter/android",
       "//components/thin_webview/internal",
+      "//components/translate/content/android",
       "//components/translate/core/language_detection",
       "//components/ukm/android:ukm_recorder",
       "//components/ukm/content",
@@ -4402,6 +4415,7 @@ static_library("browser") {
       "//chrome/app/vector_icons",
       "//chrome/browser/cart:mojo_bindings",
       "//chrome/browser/enterprise/signals:utils",
+      "//chrome/browser/first_party_sets",
       "//chrome/browser/media/router/discovery:discovery",
       "//chrome/browser/media/router/discovery/access_code:access_code_sink_service_factory",
       "//chrome/browser/new_tab_page/chrome_colors:generate_chrome_colors_info",
@@ -4932,6 +4946,8 @@ static_library("browser") {
       "//ash/services/secure_channel/public/mojom",
       "//ash/webui/projector_app",
       "//build:chromeos_buildflags",
+      "//chrome/browser/apps/app_provisioning_service/proto",
+      "//chrome/browser/apps/app_provisioning_service/proto:proto",
       "//chrome/browser/ash/crosapi",
       "//chrome/browser/ash/power/ml/smart_dim",
       "//chrome/browser/chromeos",
@@ -5281,6 +5297,9 @@ static_library("browser") {
       "//components/arc/common",
       "//ui/platform_window",
     ]
+
+    # component builds are not compatible on device.
+    assert(!is_chromeos_device || !is_component_build)
   }
 
   if (is_chromeos_ash || is_chromeos_lacros) {
@@ -6743,6 +6762,8 @@ static_library("browser") {
     sources += [
       "media/cdm_pref_service_helper.cc",
       "media/cdm_pref_service_helper.h",
+      "media/media_foundation_service_monitor.cc",
+      "media/media_foundation_service_monitor.h",
     ]
 
     if (enable_media_foundation_widevine_cdm) {

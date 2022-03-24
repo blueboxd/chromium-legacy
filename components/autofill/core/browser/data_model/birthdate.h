@@ -23,12 +23,25 @@ class Birthdate : public FormGroup {
     return !(a == b);
   }
 
+  // Convenience accessor to the day, month and 4 digit year components.
+  static ServerFieldTypeSet GetRawComponents() {
+    return {BIRTHDATE_DAY, BIRTHDATE_MONTH, BIRTHDATE_YEAR_4_DIGITS};
+  }
+
   // FormGroup:
   std::u16string GetRawInfo(ServerFieldType type) const override;
+
+  // All |GetRawComponents()| are stored as integers and directly accessible.
+  int GetRawInfoAsInt(ServerFieldType type) const override;
 
   void SetRawInfoWithVerificationStatus(
       ServerFieldType type,
       const std::u16string& value,
+      structured_address::VerificationStatus status) override;
+
+  void SetRawInfoAsIntWithVerificationStatus(
+      ServerFieldType type,
+      int value,
       structured_address::VerificationStatus status) override;
 
  private:

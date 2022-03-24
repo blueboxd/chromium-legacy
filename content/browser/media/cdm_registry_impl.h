@@ -36,6 +36,7 @@ class CONTENT_EXPORT CdmRegistryImpl : public CdmRegistry {
   // CdmRegistry implementation.
   void Init() override;
   void RegisterCdm(const CdmInfo& info) override;
+  void DisableHardwareSecureCdms() override;
 
   // Returns all registered CDMs. There might be multiple CdmInfo registered for
   // the same `key_system` and `robustness`. Notes:
@@ -83,13 +84,13 @@ class CONTENT_EXPORT CdmRegistryImpl : public CdmRegistry {
   // CdmCapability is null (lazy initialization). No-op if the CdmInfo does not
   // exist, or if the CdmInfo's CdmCapability is not null. The CdmInfo will be
   // removed if `cdm_capability` is null, since the CDM does not support any
-  // capability. Returns whether the CdmInfo was successfully updated with a
-  // valid CdmCapability.
-  bool FinalizeHardwareSecureCapability(
+  // capability.
+  void FinalizeHardwareSecureCapability(
       const std::string& key_system,
-      absl::optional<media::CdmCapability> cdm_capability);
+      absl::optional<media::CdmCapability> cdm_capability,
+      CdmInfo::Status status);
 
-  void UpdateKeySystemCapabilities();
+  void UpdateAndNotifyKeySystemCapabilities();
 
   std::set<std::string> GetSupportedKeySystems() const;
 

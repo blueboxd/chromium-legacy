@@ -145,7 +145,6 @@
 <translation id="1771761307086386028">向右捲動</translation>
 <translation id="1774796056689732716">日曆，<ph name="CURRENT_MONTH_YEAR" />，目前已選取 <ph name="DATE" />。</translation>
 <translation id="1787955149152357925">關閉</translation>
-<translation id="1804572139604454141">磁碟空間嚴重不足，因此已停止錄製</translation>
 <translation id="181103072419391116">訊號強度 <ph name="SIGNAL_STRENGTH" />，由系統管理員管理</translation>
 <translation id="1812997170047690955">我的畫面上有哪些內容？</translation>
 <translation id="1823873187264960516">乙太網路：<ph name="ADDRESS" /></translation>
@@ -263,6 +262,7 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="2658778018866295321">按住並拖曳</translation>
 <translation id="2665788051462227163">這部裝置未安裝「<ph name="UNAVAILABLE_APPS_ONE" />」和「<ph name="UNAVAILABLE_APPS_TWO" />」。</translation>
+<translation id="2673968385134502798">遊戲</translation>
 <translation id="2678852583403169292">隨選朗讀選單</translation>
 <translation id="2689613560355655046">桌面 8</translation>
 <translation id="2700493154570097719">設定鍵盤</translation>
@@ -669,6 +669,7 @@
 <translation id="5078796286268621944">PIN 不正確</translation>
 <translation id="5083553833479578423">啟用更多 Google 助理功能。</translation>
 <translation id="5106223312672646208">個人化</translation>
+<translation id="5107522548814527560">網頁</translation>
 <translation id="5117590920725113268">顯示下一個月</translation>
 <translation id="5136175204352732067">已連接其他鍵盤</translation>
 <translation id="5147567197700016471">已解鎖</translation>

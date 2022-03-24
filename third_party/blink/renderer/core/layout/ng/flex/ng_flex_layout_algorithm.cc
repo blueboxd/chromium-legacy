@@ -72,7 +72,9 @@ NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(
                  MainAxisContentExtent(LayoutUnit::Max()),
                  child_percentage_size_,
                  &Node().GetDocument()) {
-  if (Node().GetLayoutBox()->NeedsDevtoolsInfo())
+  // TODO(layout-dev): Devtools support when there are multiple fragments.
+  if (Node().GetLayoutBox()->NeedsDevtoolsInfo() &&
+      !InvolvedInBlockFragmentation(container_builder_))
     layout_info_for_devtools_ = std::make_unique<DevtoolsFlexInfo>();
 }
 
@@ -1011,8 +1013,7 @@ void NGFlexLayoutAlgorithm::PlaceFlexItems(
       continue;
     }
 
-    // TODO(almaher): How should devtools be handled for multiple fragments?
-    if (UNLIKELY(layout_info_for_devtools_ && !IsResumingLayout(BreakToken())))
+    if (UNLIKELY(layout_info_for_devtools_))
       layout_info_for_devtools_->lines.push_back(DevtoolsFlexInfo::Line());
 
     flex_line_outputs->push_back(NGFlexLine(line->line_items_.size()));
@@ -1452,9 +1453,10 @@ NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
         }
       } else {
         has_container_separation =
-            (last_line_idx_to_process_first_child_ != kNotFound &&
-             last_line_idx_to_process_first_child_ >= flex_line_idx) ||
-            (!item_break_token && offset.block_offset > LayoutUnit());
+            !item_break_token &&
+            ((last_line_idx_to_process_first_child_ != kNotFound &&
+              last_line_idx_to_process_first_child_ >= flex_line_idx) ||
+             offset.block_offset > LayoutUnit());
 
         // We may switch back and forth between columns, so we need to make sure
         // to use the break-after for the current column.
@@ -1492,7 +1494,8 @@ NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
 
     if (break_status == NGBreakStatus::kBrokeBefore) {
       ConsumeRemainingFragmentainerSpace(previously_consumed_block_size,
-                                         &line_output);
+                                         &line_output,
+                                         current_column_break_info);
       // For column flex containers, continue to the next column. For rows,
       // continue until we've processed all items in the current row.
       has_inflow_child_break_inside_line[flex_line_idx] = true;
@@ -1536,11 +1539,12 @@ NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
       }
     }
 
-    if (!is_horizontal_flow_) {
-      line_output.line_intrinsic_block_size =
-          line_output.line_intrinsic_block_size.ClampIndefiniteToZero();
-      line_output.line_intrinsic_block_size +=
-          offset.block_offset + fragment.BlockSize();
+    if (current_column_break_info) {
+      DCHECK(!is_horizontal_flow_);
+      current_column_break_info->column_intrinsic_block_size +=
+          (offset.block_offset + fragment.BlockSize() -
+           current_column_break_info->column_intrinsic_block_size)
+              .ClampNegativeToZero();
     }
 
     // TODO(almaher): What to do in the case where the line extends past
@@ -1610,15 +1614,12 @@ NGLayoutResult::EStatus NGFlexLayoutAlgorithm::PropagateFlexItemInfo(
   DCHECK(flex_item);
   NGLayoutResult::EStatus status = NGLayoutResult::kSuccess;
 
-  // TODO(almaher): How should devtools be handled for multiple fragments?
   if (UNLIKELY(layout_info_for_devtools_)) {
     // If this is a "devtools layout", execution speed isn't critical but we
     // have to not adversely affect execution speed of a regular layout.
     PhysicalRect item_rect;
     item_rect.size = fragment_size;
 
-    // TODO(almaher): Is using |total_block_size_| correct in the case of
-    // fragmentation?
     LogicalSize logical_flexbox_size =
         LogicalSize(container_builder_.InlineSize(), total_block_size_);
     PhysicalSize flexbox_size = ToPhysicalSize(
@@ -2073,17 +2074,17 @@ LayoutUnit NGFlexLayoutAlgorithm::FragmentainerSpaceAvailable(
 
 void NGFlexLayoutAlgorithm::ConsumeRemainingFragmentainerSpace(
     LayoutUnit previously_consumed_block_size,
-    NGFlexLine* flex_line) {
-  if (container_builder_.HasForcedBreak()) {
+    NGFlexLine* flex_line,
+    const NGFlexColumnBreakInfo* column_break_info) {
+  if (To<NGBlockBreakToken>(container_builder_.LastChildBreakToken())
+          ->IsForcedBreak()) {
     // This will be further adjusted by the total consumed block size once we
     // handle the break before in the next fragmentainer. This ensures that the
     // expansion is properly handled in the column balancing pass.
     LayoutUnit intrinsic_block_size = intrinsic_block_size_;
-    if (flex_line->line_intrinsic_block_size != kIndefiniteSize) {
+    if (column_break_info) {
       DCHECK(!is_horizontal_flow_);
-      intrinsic_block_size = (flex_line->line_intrinsic_block_size -
-                              previously_consumed_block_size)
-                                 .ClampNegativeToZero();
+      intrinsic_block_size = column_break_info->column_intrinsic_block_size;
     }
     flex_line->item_offset_adjustment -=
         intrinsic_block_size + previously_consumed_block_size;

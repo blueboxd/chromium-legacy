@@ -938,7 +938,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.OriginAgentCluster.Result"
-    enum="OriginAgentClusterEndResult" expires_after="2022-08-14">
+    enum="OriginAgentClusterEndResult" expires_after="2023-03-09">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>wjmaclean@chromium.org</owner>
@@ -946,7 +946,11 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     For every successful cross-document commit, this logs whether or how
     OriginAgentCluster was involved. It tracks whether it was requested, as well
     as whether the isolation was granted, which can be affected by other
-    documents in the same browsing context group.
+    documents in the same browsing context group. If OriginAgentCluster-by-
+    default is not enabled, the first four enum values track this state. If
+    OriginAgentCluster-by-default is enabled, then the second (disjoint) set of
+    six enum values tracks this state, plus the two additional cases where
+    OriginAgentCluster was explicitly not requested, and was or wasn't granted.
   </summary>
 </histogram>
 
@@ -975,6 +979,45 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Navigation.Preconnect.PreresolveJobQueueingTime" units="ms"
+    expires_after="2022-09-08">
+  <owner>alexilin@chromium.org</owner>
+  <owner>blundell@chromium.org</owner>
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Measures the amount of time that a requested preresolve job spends queueing
+    before being executed (e.g., due to a max # of preconnects being in flight).
+    Recorded for each presolve job.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.Preconnect.PreresolveJobQueueLength" units="count"
+    expires_after="2022-09-08">
+  <owner>alexilin@chromium.org</owner>
+  <owner>blundell@chromium.org</owner>
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Measures the length of the queue of preresolve jobs at the beginning of
+    PreconnectManager processing this queue to execute jobs. Recorded each time
+    that PreconnectManager processes the queue of pending jobs.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.Preconnect.ProxyLookupCallbackQueueingTime"
+    units="ms" expires_after="2022-09-08">
+  <owner>alexilin@chromium.org</owner>
+  <owner>blundell@chromium.org</owner>
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Measures the amount of time that the task corresponding to the completion
+    callback for a proxy lookup performed as part of navigation preconnect spent
+    being queued before executing. Recorded for each proxy lookup.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.Preconnect.ProxyLookupLatency" units="ms"
     expires_after="2022-09-08">
   <owner>alexilin@chromium.org</owner>
@@ -985,6 +1028,19 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     performed as part of navigation preconnect. Recorded for each proxy lookup.
     Note: Does not capture any delay spent queuing *before* initiating the proxy
     lookup (e.g., due to a max # of preconnects being in flight).
+  </summary>
+</histogram>
+
+<histogram name="Navigation.Preconnect.ResolveHostCallbackQueueingTime"
+    units="ms" expires_after="2022-09-08">
+  <owner>alexilin@chromium.org</owner>
+  <owner>blundell@chromium.org</owner>
+  <owner>lizeb@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <summary>
+    Measures the amount of time that the task corresponding to the completion
+    callback for a host resolution performed as part of navigation preconnect
+    spent being queued before executing. Recorded for each host resolution.
   </summary>
 </histogram>
 
@@ -1496,6 +1552,53 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     PrerenderHostRegistry in the browser process when the attempt finishes.
   </summary>
   <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram
+    name="Prerender.Experimental.Search.FirstCorrectPrerenderHintReceivedToRealSearchNavigationStartedDuration"
+    units="ms" expires_after="2022-09-01">
+  <owner>lingqi@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    PrerenderManager records the duration period from the time to start
+    prerendering with the search hints to the time to navigate the search hints.
+    This duration is recorded when it finds the search hints predicts correctly,
+    e.g. users do search and results in activating the prerendered page, or
+    users do saerch the prerender hints but the prerendered page has been
+    destroyed due to expiration.
+
+    |====== HitFinishedSearchResultLifeTime=======|
+
+    @ Timestamp X ------------------------------- @ Timestamp Y
+
+    or
+
+    |====== HitFinishedSearchResultLifeTime=============|
+
+    @ Timestamp X ------------------------------------- @ Timestamp Z
+
+    Where:
+
+    * Timestamp X: Chrome receives the first prerender hints for a search term
+    A.
+
+    * Timestamp Y: User selects the search term A.
+
+    * Timestamp Z: Timestamp X + Fixed period T.
+
+    HitFinishedSearchResultLifeTime = min(Timestamp Y, Timestamp Z) - Timestamp
+    X = min(Timestamp Y - Timestamp X, T).
+
+    It aims to:
+
+    1. Track the prerenders which were canceled due to expiration(Fixed period
+    T).
+
+    2. Gain the understanding of the duration between the moment when browser
+    receives the first prerender hint and the moment when the hint is selected.
+    This data will be used to determine the threshold of deciding whether to
+    reuse a prefetched response or to resend a prefetch request.
+  </summary>
 </histogram>
 
 <histogram name="Prerender.FinalStatus" enum="PrerenderFinalStatus"

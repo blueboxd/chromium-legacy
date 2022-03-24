@@ -15,6 +15,7 @@
 #include "base/i18n/base_i18n_switches.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
@@ -363,15 +364,6 @@ void UtilityProcessHost::OnProcessCrashed(int exit_code) {
   // Take ownership of |client_| so the destructor doesn't notify it of
   // termination.
   auto client = std::move(client_);
-#if BUILDFLAG(IS_ANDROID)
-  // OnProcessCrashed() is always called on Android even in the case of normal
-  // process termination. |clean_exit| gives us a reliable indication of whether
-  // this was really a crash or just normal termination.
-  if (process_->GetTerminationInfo(true /* known_dead */).clean_exit) {
-    client->OnProcessTerminatedNormally();
-    return;
-  }
-#endif
   client->OnProcessCrashed();
 }
 

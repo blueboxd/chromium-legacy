@@ -438,7 +438,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.DeepScan.DragAndDrop.Duration" units="ms"
-    expires_after="2022-07-17">
+    expires_after="2022-09-18">
   <owner>domfc@chromium.org</owner>
   <owner>webprotect-team@google.com</owner>
   <summary>
@@ -1229,7 +1229,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.NavigationObserver.AppendRecentNavigationsTime"
-    units="ms" expires_after="2022-07-17">
+    units="ms" expires_after="2022-09-18">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -1695,7 +1695,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.LocalMatch.Result"
-    enum="SafeBrowsingAllowlistAsyncMatch" expires_after="2022-08-14">
+    enum="SafeBrowsingAllowlistAsyncMatch" expires_after="2022-09-18">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -1756,7 +1756,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SafeBrowsing.RT.Request.Size" units="bytes"
-    expires_after="2022-07-17">
+    expires_after="2022-09-18">
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -1855,6 +1855,16 @@ chromium-metrics-reviews@google.com.
     Logs the user action performed on the Safe Browsing settings page. Depending
     on the enum value, logged when the page is showned to the user or when the
     user performs an action on the page.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.TailoredSecurity.SyncPromptSkippedAlreadyEnabled"
+    enum="BooleanSkipped" expires_after="2022-07-23">
+  <owner>drubery@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    Records whether a sync prompt was skipped because the user had already
+    consented to Enhanced Safe Browsing.
   </summary>
 </histogram>
 
@@ -1997,6 +2007,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     The size of the SafeBrowsing database or file on disk in kilobytes, after
     reading it from disk on startup and after a database update has occurred.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.V4Database.SizeLinear" units="MB"
+    expires_after="2022-08-28">
+  <owner>richche@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    The size of the SafeBrowsing database or file on disk in megabytes, after
+    reading it from disk on startup and after a database update has occurred.
+    Linear version of the histogram above.
   </summary>
 </histogram>
 
@@ -2496,7 +2517,7 @@ failing to fetch the updates which puts users' security at risk. -->
 </histogram>
 
 <histogram name="SafeBrowsingFCMService.IncomingMessageHasValidToken"
-    enum="Boolean" expires_after="2022-07-03">
+    enum="Boolean" expires_after="2022-09-18">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>

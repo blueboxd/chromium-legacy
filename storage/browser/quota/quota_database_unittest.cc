@@ -21,8 +21,9 @@
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "components/services/storage/public/cpp/buckets/constants.h"
 #include "sql/database.h"
-#include "sql/error_metrics.h"
 #include "sql/meta_table.h"
+#include "sql/sqlite_result_code.h"
+#include "sql/sqlite_result_code_values.h"
 #include "sql/statement.h"
 #include "sql/test/scoped_error_expecter.h"
 #include "sql/test/test_helpers.h"
@@ -56,7 +57,6 @@ bool ContainsBucket(const std::set<BucketLocator>& buckets,
 // mode. True will create the database in memory.
 class QuotaDatabaseTest : public testing::TestWithParam<bool> {
  protected:
-  using QuotaTableEntry = QuotaDatabase::QuotaTableEntry;
   using BucketTableEntry = QuotaDatabase::BucketTableEntry;
   using EnsureOpenedMode = QuotaDatabase::EnsureOpenedMode;
 
@@ -167,6 +167,20 @@ TEST_P(QuotaDatabaseTest, EnsureOpened) {
   QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
   EXPECT_FALSE(EnsureOpened(&db, EnsureOpenedMode::kFailIfNotFound));
   EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
+
+  if (GetParam()) {
+    // Path should not exist for incognito mode.
+    ASSERT_FALSE(base::PathExists(DbPath()));
+  } else {
+    ASSERT_TRUE(base::PathExists(DbPath()));
+  }
+}
+
+TEST_P(QuotaDatabaseTest, RazeAndReopenWithNoDb) {
+  QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
+  // RazeAndReopen() with no db tries to create the db one last time.
+  EXPECT_FALSE(EnsureOpened(&db, EnsureOpenedMode::kFailIfNotFound));
+  EXPECT_EQ(db.RazeAndReopen(), QuotaError::kNone);
 
   if (GetParam()) {
     // Path should not exist for incognito mode.
@@ -816,25 +830,6 @@ TEST_P(QuotaDatabaseTest, RegisterInitialStorageKeyInfo) {
   info = db.GetBucketInfo(bucket_result->id);
   EXPECT_TRUE(info.ok());
   EXPECT_EQ(1, info->use_count);
-}
-
-TEST_P(QuotaDatabaseTest, DumpQuotaTable) {
-  QuotaTableEntry kTableEntries[] = {
-      {.host = "http://go/", .type = kTemp, .quota = 1},
-      {.host = "http://oo/", .type = kTemp, .quota = 2},
-      {.host = "http://gle/", .type = kPerm, .quota = 3}};
-
-  QuotaDatabase db(use_in_memory_db() ? base::FilePath() : DbPath());
-  EXPECT_TRUE(EnsureOpened(&db, EnsureOpenedMode::kCreateIfNotFound));
-  AssignQuotaTable(&db, kTableEntries);
-
-  using Verifier = EntryVerifier<QuotaTableEntry>;
-  Verifier verifier(kTableEntries, std::end(kTableEntries));
-  EXPECT_EQ(
-      DumpQuotaTable(&db, base::BindRepeating(&Verifier::Run,
-                                              base::Unretained(&verifier))),
-      QuotaError::kNone);
-  EXPECT_TRUE(verifier.table.empty());
 }
 
 TEST_P(QuotaDatabaseTest, DumpBucketTable) {

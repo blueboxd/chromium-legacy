@@ -334,12 +334,16 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
   /** Sets the privacy guide step from the URL parameter. */
   private updateStateFromQueryParameters_() {
     assert(Router.getInstance().getCurrentRoute() === routes.PRIVACY_GUIDE);
-    const step = Router.getInstance().getQueryParameters().get('step');
-    // TODO(crbug/1215630): If the parameter is welcome but the user has opted
-    // to skip the welcome card in a previous flow, then navigate to the first
-    // settings card instead
-    if (Object.values(PrivacyGuideStep).includes(step as PrivacyGuideStep)) {
-      this.navigateToCard_(step as PrivacyGuideStep, false, true);
+    const step = Router.getInstance().getQueryParameters().get('step') as
+        PrivacyGuideStep;
+
+    if (this.privacyGuideStep_ && step === this.privacyGuideStep_) {
+      // This is the currently shown step. No need to navigate.
+      return;
+    }
+
+    if (Object.values(PrivacyGuideStep).includes(step)) {
+      this.navigateToCard_(step, false, true);
     } else {
       // If no step has been specified, then navigate to the welcome step.
       this.navigateToCard_(PrivacyGuideStep.WELCOME, false, false);
@@ -379,10 +383,9 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
   private navigateToCard_(
       step: PrivacyGuideStep, isBackwardNavigation: boolean,
       playAnimation: boolean) {
-    if (step === this.privacyGuideStep_) {
-      return;
-    }
+    assert(step !== this.privacyGuideStep_);
     this.privacyGuideStep_ = step;
+
     if (!this.privacyGuideStepToComponentsMap_.get(step)!.isAvailable()) {
       // This card is currently not available. Navigate to the next one, or
       // the previous one if this was a back navigation.

@@ -5,7 +5,6 @@
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <Security/Security.h>
 
 #include <algorithm>
 #include <set>
@@ -24,6 +23,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
+#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
@@ -94,12 +94,13 @@ void DumpError(std::string error_details) {
 }
 
 // Creates a requirement for the app shim based on the framework bundle's
-// designated requirement. The caller will own the returned SecRequirementRef.
+// designated requirement.
 // If the returned optional:
 //   * "has_value() == true" app shim validation should occur.
 //   * "has_value() == false" app shim validation should be skipped.
 //   * "has_value() == true && value() == null" validation should always fail.
-absl::optional<SecRequirementRef> CreateAppShimRequirement() {
+absl::optional<base::ScopedCFTypeRef<SecRequirementRef>>
+CreateAppShimRequirement() {
   // Note: Don't validate |framework_code|: We don't need to waste time
   // validating. We are only interested in discovering if the framework bundle
   // is code-signed, and if so what the designated requirement is.
@@ -120,7 +121,8 @@ absl::optional<SecRequirementRef> CreateAppShimRequirement() {
   // broken or something bad is happening, deny.
   if (status != errSecSuccess) {
     DumpOSStatusError(status, "SecStaticCodeCreateWithPath");
-    return nullptr;  // has_value() == true
+    // has_value() == true
+    return base::ScopedCFTypeRef<SecRequirementRef>(nullptr);
   }
 
   // Copy the signing info from the SecStaticCodeRef.
@@ -130,7 +132,8 @@ absl::optional<SecRequirementRef> CreateAppShimRequirement() {
       framework_signing_info.InitializeInto());
   if (status != errSecSuccess) {
     DumpOSStatusError(status, "SecCodeCopySigningInformation");
-    return nullptr;  // has_value() == true
+    // has_value() == true
+    return base::ScopedCFTypeRef<SecRequirementRef>(nullptr);
   }
 
   // Look up the code signing flags. If the flags are absent treat this as
@@ -162,7 +165,8 @@ absl::optional<SecRequirementRef> CreateAppShimRequirement() {
   if (!CFNumberGetValue(framework_signing_info_flags, kCFNumberLongLongType,
                         &flags)) {
     DumpError("CFNumberGetValue");
-    return nullptr;  // has_value() == true
+    // has_value() == true
+    return base::ScopedCFTypeRef<SecRequirementRef>(nullptr);
   }
   if (static_cast<uint32_t>(flags) & kSecCodeSignatureAdhoc) {
     return absl::nullopt;  // has_value() == false
@@ -178,7 +182,8 @@ absl::optional<SecRequirementRef> CreateAppShimRequirement() {
                                        framework_requirement.InitializeInto());
   if (status != errSecSuccess) {
     DumpOSStatusError(status, "SecCodeCopyDesignatedRequirement");
-    return nullptr;  // has_value() == true
+    // has_value() == true
+    return base::ScopedCFTypeRef<SecRequirementRef>(nullptr);
   }
 
   base::ScopedCFTypeRef<CFStringRef> framework_requirement_string;
@@ -187,32 +192,14 @@ absl::optional<SecRequirementRef> CreateAppShimRequirement() {
                                framework_requirement_string.InitializeInto());
   if (status != errSecSuccess) {
     DumpOSStatusError(status, "SecRequirementCopyString");
-    return nullptr;  // has_value() == true
+    // has_value() == true
+    return base::ScopedCFTypeRef<SecRequirementRef>(nullptr);
   }
 
-  base::ScopedCFTypeRef<CFStringRef> shim_requirement_string(
-      apps::AppShimManager::
-          BuildAppShimRequirementStringFromFrameworkRequirementString(
-              framework_requirement_string));
-  if (!shim_requirement_string) {
-    return nullptr;  // has_value() == true
-  }
-
-  // Parse the requirement.
-  // Using a naked SecRequirementRef here. Since the sole caller of this
-  // function will be storing the returned SecRequirementRef for the lifetime of
-  // the process there is no added benefit to wrapping the return value in a
-  // base::ScopedCFTypeRef.
-  SecRequirementRef shim_requirement;
-  status = SecRequirementCreateWithString(
-      shim_requirement_string, kSecCSDefaultFlags, &shim_requirement);
-  if (status != errSecSuccess) {
-    DumpOSStatusError(status,
-                      std::string("SecRequirementCreateWithString: ") +
-                          base::SysCFStringRefToUTF8(shim_requirement_string));
-    return nullptr;
-  }
-  return shim_requirement;
+  // Always returns has_value() == true.
+  return apps::AppShimManager::
+      BuildAppShimRequirementFromFrameworkRequirementString(
+          framework_requirement_string);
 }
 
 // Returns whether |app_shim_pid|'s code signature is trusted:
@@ -222,14 +209,15 @@ absl::optional<SecRequirementRef> CreateAppShimRequirement() {
 // - False otherwise (|app_shim_pid| does not satisfy the constructed designated
 // requirement).
 bool IsAcceptablyCodeSignedInternal(pid_t app_shim_pid) {
-  static absl::optional<SecRequirementRef> app_shim_requirement =
-      CreateAppShimRequirement();
-  if (!app_shim_requirement.has_value()) {
+  static base::NoDestructor<
+      absl::optional<base::ScopedCFTypeRef<SecRequirementRef>>>
+      app_shim_requirement(CreateAppShimRequirement());
+  if (!app_shim_requirement->has_value()) {
     // App shim validation is not required because framework bundle is not
     // code-signed or is ad-hoc code-signed.
     return true;
   }
-  if (!app_shim_requirement.value()) {
+  if (!app_shim_requirement->value()) {
     // Framework bundle is code-signed however we were unable to create the app
     // shim requirement. Deny.
     // apps::AppShimManager::BuildAppShimRequirementStringFromFrameworkRequirementString
@@ -256,7 +244,7 @@ bool IsAcceptablyCodeSignedInternal(pid_t app_shim_pid) {
     return false;
   }
   status = SecCodeCheckValidity(app_shim_code, kSecCSDefaultFlags,
-                                app_shim_requirement.value());
+                                app_shim_requirement->value());
   if (status != errSecSuccess) {
     DumpOSStatusError(status, "SecCodeCheckValidity");
     return false;
@@ -1071,6 +1059,19 @@ void AppShimManager::OnAppDeactivated(content::BrowserContext* context,
 
   if (apps_.empty())
     MaybeTerminate();
+
+  // Check the integrity of AppState::profiles across all apps. Include the app
+  // ID in the dump, to help pin down the cause.
+  //
+  // TODO(crbug.com/1302722): Remove this once we're confident this never
+  // happens.
+  std::string inconsistent_app_ids;
+  for (const auto& [app_id, app_state] : apps_) {
+    if (app_state->ShouldDeleteAppState())
+      inconsistent_app_ids += app_id + " ";
+  }
+  if (!inconsistent_app_ids.empty())
+    DumpError(inconsistent_app_ids);
 }
 
 void AppShimManager::OnAppStop(content::BrowserContext* context,
@@ -1090,26 +1091,26 @@ void AppShimManager::OnBrowserAdded(Browser* browser) {
 }
 
 void AppShimManager::OnBrowserRemoved(Browser* browser) {
-  const std::string app_id =
-      web_app::GetAppIdFromApplicationName(browser->app_name());
-  auto found_app = apps_.find(app_id);
-  if (found_app == apps_.end())
-    return;
-  AppState* app_state = found_app->second.get();
+  // We can't call OnAppDeactivated() while iterating on |apps_|. It would
+  // invalidate the iterator.
+  std::vector<std::string> apps_to_deactivate;
 
-  for (auto iter_profile = app_state->profiles.begin();
-       iter_profile != app_state->profiles.end(); ++iter_profile) {
-    ProfileState* profile_state = iter_profile->second.get();
-    auto found = profile_state->browsers.find(browser);
-    if (found != profile_state->browsers.end()) {
-      // If we have no browser windows open after erasing this window, then
-      // close the ProfileState (and potentially the shim as well).
-      profile_state->browsers.erase(found);
-      if (profile_state->browsers.empty())
-        OnAppDeactivated(browser->profile(), app_id);
-      return;
+  for (const auto& [app_id, app_state] : apps_) {
+    for (const auto& [profile, profile_state] : app_state->profiles) {
+      auto found = profile_state->browsers.find(browser);
+      if (found != profile_state->browsers.end()) {
+        // If we have no browser windows open after erasing this window, then
+        // close the ProfileState (and potentially the shim as well).
+        profile_state->browsers.erase(found);
+        if (profile_state->browsers.empty())
+          apps_to_deactivate.push_back(app_id);
+        break;  // Break to outer loop.
+      }
     }
   }
+
+  for (const std::string& app_id : apps_to_deactivate)
+    OnAppDeactivated(browser->profile(), app_id);
 }
 
 void AppShimManager::OnBrowserSetLastActive(Browser* browser) {
@@ -1125,6 +1126,29 @@ void AppShimManager::OnBrowserSetLastActive(Browser* browser) {
   auto* profile_state = GetOrCreateProfileState(browser->profile(), app_id);
   if (profile_state)
     UpdateApplicationDockMenu(browser->profile(), profile_state);
+}
+
+void AppShimManager::OnProfileWillBeDestroyed(Profile* profile) {
+  profile_observation_.RemoveObservation(profile);
+
+  // Clean up dangling Profile pointers. This can happen in rare cases, if a
+  // Browser is never created for a particular Profile. In those cases,
+  // OnBrowserRemoved() never runs, and it doesn't clean up AppState::profiles.
+  //
+  // Use the same pattern as in OnBrowserRemoved() to avoid invalidating the
+  // iterator.
+  std::vector<std::string> apps_to_deactivate;
+
+  for (const auto& [app_id, app_state] : apps_) {
+    auto found = app_state->profiles.find(profile);
+    if (found != app_state->profiles.end()) {
+      CHECK(found->second->browsers.empty());
+      apps_to_deactivate.push_back(app_id);
+    }
+  }
+
+  for (const std::string& app_id : apps_to_deactivate)
+    OnAppDeactivated(profile, app_id);
 }
 
 void AppShimManager::OnAppLaunchCancelled(content::BrowserContext* context,
@@ -1258,6 +1282,12 @@ AppShimManager::ProfileState* AppShimManager::GetOrCreateProfileState(
             .insert(std::make_pair(profile, std::move(new_profile_state)))
             .first;
   }
+
+  // Listen for OnProfileWillBeDestroyed(), but not more than once per Profile.
+  // O(n), where n is the number of loaded Profiles (AKA a very small number).
+  if (!profile_observation_.IsObservingSource(profile))
+    profile_observation_.AddObservation(profile);
+
   return found_profile->second.get();
 }
 
@@ -1276,19 +1306,22 @@ bool AppShimManager::LoadAndLaunchAppParams::HasFilesOrURLs() const {
   return !files.empty() || !urls.empty() || !override_url.is_empty();
 }
 
-base::ScopedCFTypeRef<CFStringRef>
-AppShimManager::BuildAppShimRequirementStringFromFrameworkRequirementString(
+base::ScopedCFTypeRef<SecRequirementRef>
+AppShimManager::BuildAppShimRequirementFromFrameworkRequirementString(
     CFStringRef framwork_requirement) {
   // Make sure the framework bundle requirement is in the expected format.
-  // It should start with "identifier" and have exactly 2 quotes.
+  // It should start with 'identifier "' and have at least 2 quotes. This allows
+  // us to easily find the end of the "identifier" portion of the requirement so
+  // we can swap in the desired app shim identifier leaving rest of the
+  // requirement unmodified.
   CFIndex len = CFStringGetLength(framwork_requirement);
   base::ScopedCFTypeRef<CFArrayRef> quote_ranges(
       CFStringCreateArrayWithFindResults(nullptr, framwork_requirement,
                                          CFSTR("\""), CFRangeMake(0, len), 0));
   if (!CFStringHasPrefix(framwork_requirement, CFSTR("identifier \"")) ||
-      !quote_ranges || CFArrayGetCount(quote_ranges) != 2) {
+      !quote_ranges || CFArrayGetCount(quote_ranges) < 2) {
     DumpError("Framework bundle requirement is malformed.");
-    return base::ScopedCFTypeRef<CFStringRef>(nullptr);
+    return base::ScopedCFTypeRef<SecRequirementRef>(nullptr);
   }
 
   // Get the index of the second quote.
@@ -1299,7 +1332,7 @@ AppShimManager::BuildAppShimRequirementStringFromFrameworkRequirementString(
   // Make sure there is something to read after the second quote.
   if (second_quote_index + 1 >= len) {
     DumpError("Framework bundle requirement is too short");
-    return base::ScopedCFTypeRef<CFStringRef>(nullptr);
+    return base::ScopedCFTypeRef<SecRequirementRef>(nullptr);
   }
 
   // Build the app shim requirement. Keep the data from the framework bundle
@@ -1312,7 +1345,19 @@ AppShimManager::BuildAppShimRequirementStringFromFrameworkRequirementString(
       CFStringCreateMutableCopy(nullptr, 0,
                                 CFSTR("identifier \"app_mode_loader\"")));
   CFStringAppend(shim_requirement_string, right_of_second_quote);
-  return base::ScopedCFTypeRef<CFStringRef>(shim_requirement_string);
+
+  // Parse the requirement.
+  base::ScopedCFTypeRef<SecRequirementRef> shim_requirement;
+  OSStatus status = SecRequirementCreateWithString(
+      shim_requirement_string, kSecCSDefaultFlags,
+      shim_requirement.InitializeInto());
+  if (status != errSecSuccess) {
+    DumpOSStatusError(status,
+                      std::string("SecRequirementCreateWithString: ") +
+                          base::SysCFStringRefToUTF8(shim_requirement_string));
+    return base::ScopedCFTypeRef<SecRequirementRef>(nullptr);
+  }
+  return shim_requirement;
 }
 
 }  // namespace apps

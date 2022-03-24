@@ -148,7 +148,6 @@
 <translation id="1771761307086386028">Оңға айналдыру</translation>
 <translation id="1774796056689732716">Күнтізбе, <ph name="CURRENT_MONTH_YEAR" />, ағымдағы <ph name="DATE" /> таңдалды.</translation>
 <translation id="1787955149152357925">Өшірулі</translation>
-<translation id="1804572139604454141">Дискідегі орынның аз болуына байланысты жазу тоқтатылды.</translation>
 <translation id="181103072419391116">Сигнал күші – <ph name="SIGNAL_STRENGTH" />, Әкімші басқарады</translation>
 <translation id="1812997170047690955">Экранда не бар?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -266,6 +265,7 @@
 <translation id="2653659639078652383">Жіберу</translation>
 <translation id="2658778018866295321">Басу және сүйреу</translation>
 <translation id="2665788051462227163"><ph name="UNAVAILABLE_APPS_ONE" /> және <ph name="UNAVAILABLE_APPS_TWO" /> бұл құрылғыда жоқ.</translation>
+<translation id="2673968385134502798">Ойындар</translation>
 <translation id="2678852583403169292">Select to Speak мәзірі</translation>
 <translation id="2689613560355655046">8-ші жұмыс үстелі</translation>
 <translation id="2700493154570097719">Пернетақтаны орнатыңыз</translation>
@@ -672,6 +672,7 @@
 <translation id="5078796286268621944">PIN коды дұрыс емес</translation>
 <translation id="5083553833479578423">Басқа да Assistant мүмкіндіктерін ашыңыз.</translation>
 <translation id="5106223312672646208">Жекелендіру</translation>
+<translation id="5107522548814527560">Интернет</translation>
 <translation id="5117590920725113268">Келесі айды көрсету</translation>
 <translation id="5136175204352732067">Басқа пернетақта жалғанды</translation>
 <translation id="5147567197700016471">Құлып ашылды.</translation>

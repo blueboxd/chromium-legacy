@@ -91,6 +91,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAutoScreenBrightness;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAutocorrectParamsTuning;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kAzureADIntegration;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kBentoBar;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kBluetoothFixA2dpPacketSize;
@@ -108,8 +109,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kBorealisPermitted;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCalendarView;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kCameraAppDocumentManualCrop;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCameraPrivacySwitchNotifications;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -129,6 +128,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kClipboardHistoryNudgeSessionReset;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kClipboardHistoryScreenshotNudge;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDesksCloseAll;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kContextualNudges;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kCroshSWA;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -222,6 +222,8 @@ extern const base::Feature kEnableLazyLoginWebUILoading;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableLocalSearchService;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kEnableLogControllerForDiagnosticsApp;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableNetworkingInDiagnosticsApp;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEnableOAuthIpp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -230,7 +232,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableOobePolymer3;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableOobeNetworkScreenSkip;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEnablePciguardUi;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableSamlNotificationOnPasswordChangeSuccess;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -579,6 +580,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsArcInputOverlayEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsArcNetworkDiagnosticsButtonEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAssistiveMultiWordEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAutoNightLightEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAzureADIntegrationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBackgroundBlurEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBentoBarEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBluetoothRevampEnabled();
@@ -591,6 +593,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsClipboardHistoryEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsClipboardHistoryNudgeSessionResetEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsClipboardHistoryScreenshotNudgeEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDesksCloseAllEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCryptohomeRecoveryFlowEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDarkLightModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDeepLinkingEnabled();
@@ -652,6 +655,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsLockScreenHideSensitiveNotificationsSupported();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLockScreenInlineReplyEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLockScreenNotificationsEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLogControllerForDiagnosticsAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsManagedDeviceUIRedesignEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsManagedTermsOfServiceEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsMicMuteNotificationsEnabled();

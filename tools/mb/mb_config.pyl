@@ -15,6 +15,7 @@
   'builder_groups': {
     'chrome': {
       'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto_official',
+      'chromeos-arm64-generic-cfi-thin-lto-chrome': 'chromeos_arm64-generic_cfi_thin_lto_official',
       'chromeos-betty-arc-r-chrome': 'chromeos_betty-arc-r_include_unwind_tables_official_use_fake_dbus_clients',
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto_official',
       'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables_official_use_fake_dbus_clients',
@@ -68,9 +69,9 @@
       'win32-archive-rel': 'release_bot_x86_minimal_symbols_enable_archive_compression',
       'win32-archive-dbg': 'debug_bot_x86',
       'win32-archive-tagged': 'x86_official_optimize_goma',
-      'win-archive-rel': 'release_bot_minimal_symbols_enable_archive_compression',
-      'win-archive-dbg': 'debug_bot',
-      'win-archive-tagged': 'official_optimize_goma',
+      'win-archive-rel': 'release_bot_minimal_symbols_enable_archive_compression_reclient',
+      'win-archive-dbg': 'debug_bot_reclient',
+      'win-archive-tagged': 'official_optimize_reclient',
       'win-official': 'official_optimize_goma',
     },
 
@@ -171,7 +172,7 @@
     },
 
     'chromium.clang': {
-      'CFI Linux CF': 'cfi_full_cfi_icall_cfi_diag_recover_release_static',
+      'CFI Linux CF': 'cfi_full_cfi_icall_cfi_diag_recover_release_static_reclient',
       'CFI Linux ToT': 'clang_tot_cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'CrWinAsan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release_tot',
       'CrWinAsan(dll)': 'asan_clang_shared_v8_heap_minimal_symbols_release_tot',
@@ -246,7 +247,7 @@
       'ASan Debug (32-bit x86 with V8-ARM)': 'asan_v8_heap_debug_bot_hybrid_reclient',
       'ASan Release (32-bit x86 with V8-ARM)': 'asan_fuzzer_v8_heap_release_bot_hybrid_reclient',
       'ASan Release Media (32-bit x86 with V8-ARM)': 'asan_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid_reclient',
-      'Afl Upload Linux ASan': 'afl_asan_shared_release_bot',
+      'Afl Upload Linux ASan': 'afl_asan_shared_release_bot_reclient',
       'ChromiumOS ASAN Release': 'chromeos_asan_lsan_fuzzer_v8_heap_release_bot',
       'Libfuzzer Upload Chrome OS ASan': 'libfuzzer_chromeos_asan_release_bot',
       'Libfuzzer Upload iOS Catalyst Debug': 'ios_catalyst_debug_static_bot_compile_only_libfuzzer_no_dsyms_no_lld_no_remoting',
@@ -345,12 +346,14 @@
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
       'fuchsia-fyi-x64-reviver': 'release_bot_fuchsia',
       'fuchsia-fyi-x64-wst': 'fuchsia_workstation_bot',
+      'ios-m1-simulator': 'ios_simulator_debug_static_bot_xctest_arm64',
       'ios14-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
-      'ios14-sdk-simulator': 'ios_simulator_debug_static_bot_xctest_arm64',
+      'ios14-sdk-simulator': 'ios_simulator_debug_static_bot_xctest',
       'ios15-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
       'ios15-sdk-device': 'ios_device_release_static_bot_xctest',
       'ios15-sdk-simulator': 'ios_simulator_debug_static_bot_xctest',
       'ios-asan': 'ios_simulator_release_static_asan_bot_xctest',
+      'ios-fieldtrial-rel': 'ios_simulator_debug_static_bot_xctest_arm64',
       'ios-reclient': 'ios_simulator_debug_static_bot_xctest_reclient',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios_xctest',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot_xctest',
@@ -573,8 +576,8 @@
     },
 
     'chromium.memory': {
-      'Linux ASan LSan Builder': 'asan_lsan_release_trybot',
-      'Linux CFI': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
+      'Linux ASan LSan Builder': 'asan_lsan_release_trybot_reclient',
+      'Linux CFI': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_reclient',
       'Linux Chromium OS ASan LSan Builder': 'asan_lsan_chromeos_release_bot_dcheck_always_on',
       'Linux ChromiumOS MSan Builder': 'chromeos_msan_release_bot',
       'Linux MSan Builder': 'msan_release_bot_reclient',
@@ -764,7 +767,7 @@
       'Win Builder (dbg)': 'gpu_tests_debug_bot_x86_no_symbols',
       'Win x64 Builder': 'gpu_tests_release_bot_minimal_symbols',
       'Win x64 Builder Code Coverage': 'gpu_tests_release_bot_minimal_symbols_code_coverage',
-      'Win x64 Builder (dbg)': 'gpu_tests_debug_bot',
+      'Win x64 Builder (dbg)': 'gpu_tests_debug_bot_reclient',
       'Windows deterministic': 'release_bot_x86_minimal_symbols',
     },
 
@@ -929,6 +932,7 @@
 
     'tryserver.chrome': {
       'chromeos-arm-generic-cfi-thin-lto-chrome': 'chromeos_arm-generic_cfi_thin_lto_official',
+      'chromeos-arm64-generic-cfi-thin-lto-chrome': 'chromeos_arm64-generic_cfi_thin_lto_official',
       'chromeos-betty-arc-r-chrome': 'chromeos_betty-arc-r_include_unwind_tables_official_use_fake_dbus_clients',
       'chromeos-betty-pi-arc-cfi-thin-lto-chrome': 'chromeos_betty-pi-arc_cfi_thin_lto_official',
       'chromeos-betty-pi-arc-chrome': 'chromeos_betty-pi-arc_include_unwind_tables_official_use_fake_dbus_clients',
@@ -1147,11 +1151,13 @@
       'ios-asan': 'ios_simulator_release_static_asan_bot_xctest',
       'ios-catalyst': 'ios_catalyst_debug_static_bot_compile_only_libfuzzer_no_dsyms_no_lld_no_remoting',
       'ios-device': 'ios_device_release_compile_only',
+      'ios-m1-simulator': 'ios_simulator_debug_static_bot_xctest_arm64',
       'ios14-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
-      'ios14-sdk-simulator': 'ios_simulator_debug_static_bot_xctest_arm64',
+      'ios14-sdk-simulator': 'ios_simulator_debug_static_bot_xctest',
       'ios15-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
       'ios15-sdk-simulator': 'ios_simulator_debug_static_bot_xctest',
       'ios-clang-tidy-rel': 'ios_device_release_compile_only',
+      'ios-fieldtrial-fyi-rel': 'ios_simulator_debug_static_bot_xctest_arm64',
       'ios-simulator': 'ios_simulator_code_coverage_partial_instrumentation_xctest',
       'ios-simulator-full-configs': 'ios_simulator_code_coverage_partial_instrumentation_xctest',
       'ios-simulator-cronet': 'ios_cronet_xctest',
@@ -1301,6 +1307,11 @@
     'afl_asan_shared_release_bot': [
       'afl', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
       'optimize_for_fuzzing', 'shared_release_bot', 'disable_seed_corpus',
+    ],
+
+    'afl_asan_shared_release_bot_reclient': [
+      'afl', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
+      'optimize_for_fuzzing', 'shared_release_bot_reclient', 'disable_seed_corpus',
     ],
 
     'android_binary_size': [
@@ -1860,6 +1871,10 @@
       'asan', 'lsan', 'release_trybot_minimal_symbols',
     ],
 
+    'asan_lsan_release_trybot_reclient': [
+      'asan', 'lsan', 'release_trybot_minimal_symbols_reclient',
+    ],
+
     'autofill_assistant_release_trybot': [
       'autofill_assistant_api', 'release_trybot',
     ],
@@ -1900,10 +1915,6 @@
 
     'cast_audio_release_trybot': [
       'cast', 'cast_audio', 'release_trybot',
-    ],
-
-    'cfi_full_cfi_icall_cfi_diag_recover_release_static': [
-      'cfi_full', 'cfi_icall', 'cfi_diag', 'cfi_recover', 'thin_lto', 'release', 'static', 'goma',
     ],
 
     'cfi_full_cfi_icall_cfi_diag_recover_release_static_reclient': [
@@ -1953,7 +1964,7 @@
     ],
 
     'chromeos_amd64-generic_lacros_dbg': [
-      'chromeos_amd64-generic-crostoolchain', 'amd64-lacros', 'debug',
+      'chromeos_amd64-generic-crostoolchain', 'amd64-lacros', 'debug', 'static',
     ],
 
     'chromeos_amd64-generic_dbg': [
@@ -1990,6 +2001,10 @@
 
     'chromeos_arm-generic_cfi_thin_lto_official': [
       'chromeos_device', 'arm-generic', 'cfi_full', 'thin_lto', 'official', 'full_symbols',
+    ],
+
+    'chromeos_arm64-generic_cfi_thin_lto_official': [
+      'chromeos_device', 'arm64-generic', 'cfi_full', 'thin_lto', 'official', 'full_symbols',
     ],
 
     'chromeos_arm-generic_dcheck_always_on': [
@@ -4042,7 +4057,7 @@
     },
 
     'paeverywhere': {
-      'gn_args': 'use_allocator="none" use_allocator_shim=false',
+      'gn_args': 'use_allocator="none"',
     },
 
     'backuprefptr': {

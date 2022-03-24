@@ -195,14 +195,23 @@ def _RunD8(dex_cmd, input_paths, output_path, warnings_as_errors,
 
   stderr_filter = CreateStderrFilter(show_desugar_default_interface_warnings)
 
-  with tempfile.NamedTemporaryFile(mode='w') as flag_file:
+  is_debug = logging.getLogger().isEnabledFor(logging.DEBUG)
+
+  # Avoid deleting the flag file when DEX_DEBUG is set in case the flag file
+  # needs to be examined after the build.
+  with tempfile.NamedTemporaryFile(mode='w', delete=not is_debug) as flag_file:
     # Chosen arbitrarily. Needed to avoid command-line length limits.
     MAX_ARGS = 50
     if len(dex_cmd) > MAX_ARGS:
-      flag_file.write('\n'.join(dex_cmd[MAX_ARGS:]))
-      flag_file.flush()
-      dex_cmd = dex_cmd[:MAX_ARGS]
-      dex_cmd.append('@' + flag_file.name)
+      # Add all flags to D8 (anything after the first --) as well as all
+      # positional args at the end to the flag file.
+      for idx, cmd in enumerate(dex_cmd):
+        if cmd.startswith('--'):
+          flag_file.write('\n'.join(dex_cmd[idx:]))
+          flag_file.flush()
+          dex_cmd = dex_cmd[:idx]
+          dex_cmd.append('@' + flag_file.name)
+          break
 
     # stdout sometimes spams with things like:
     # Stripped invalid locals information from 1 method.
@@ -280,12 +289,34 @@ def _DeleteStaleIncrementalDexFiles(dex_dir, dex_files):
 
 
 def _ParseDesugarDeps(desugar_dependencies_file):
+  # pylint: disable=line-too-long
+  """Returns a dict of dependent/dependency mapping parsed from the file.
+
+  Example file format:
+  $ tail out/Debug/gen/base/base_java__dex.desugardeps
+  org/chromium/base/task/SingleThreadTaskRunnerImpl.class
+    <-  org/chromium/base/task/SingleThreadTaskRunner.class
+    <-  org/chromium/base/task/TaskRunnerImpl.class
+  org/chromium/base/task/TaskRunnerImpl.class
+    <-  org/chromium/base/task/TaskRunner.class
+  org/chromium/base/task/TaskRunnerImplJni$1.class
+    <-  obj/base/jni_java.turbine.jar:org/chromium/base/JniStaticTestMocker.class
+  org/chromium/base/task/TaskRunnerImplJni.class
+    <-  org/chromium/base/task/TaskRunnerImpl$Natives.class
+  """
+  # pylint: enable=line-too-long
   dependents_from_dependency = collections.defaultdict(set)
   if desugar_dependencies_file and os.path.exists(desugar_dependencies_file):
     with open(desugar_dependencies_file, 'r') as f:
+      dependent = None
       for line in f:
-        dependent, dependency = line.rstrip().split(' -> ')
-        dependents_from_dependency[dependency].add(dependent)
+        line = line.rstrip()
+        if line.startswith('  <-  '):
+          dependency = line[len('  <-  '):]
+          # Note that this is a reversed mapping from the one in CustomD8.java.
+          dependents_from_dependency[dependency].add(dependent)
+        else:
+          dependent = line
   return dependents_from_dependency
 
 
@@ -345,14 +376,14 @@ def _CreateIntermediateDexFiles(changes, options, tmp_dir, dex_cmd):
                   strings_changed, non_direct_input_changed)
     changes = None
 
-  if changes:
+  if changes is None:
+    required_desugar_classes_set = set()
+  else:
     required_desugar_classes_set = _ComputeRequiredDesugarClasses(
         changes, options.desugar_dependencies, options.class_inputs,
         options.classpath)
     logging.debug('Class files needing re-desugar: %d',
                   len(required_desugar_classes_set))
-  else:
-    required_desugar_classes_set = set()
   class_files = _ExtractClassFiles(changes, tmp_extract_dir,
                                    options.class_inputs,
                                    required_desugar_classes_set)
@@ -363,7 +394,13 @@ def _CreateIntermediateDexFiles(changes, options, tmp_dir, dex_cmd):
     # Dex necessary classes into intermediate dex files.
     dex_cmd = dex_cmd + ['--intermediate', '--file-per-class-file']
     if options.desugar_dependencies and not options.skip_custom_d8:
-      dex_cmd += ['--file-tmp-prefix', tmp_extract_dir]
+      # Adding os.sep to remove the entire prefix.
+      dex_cmd += ['--file-tmp-prefix', tmp_extract_dir + os.sep]
+      if changes is None and os.path.exists(options.desugar_dependencies):
+        # Since incremental dexing only ever adds to the desugar_dependencies
+        # file, whenever full dexes are required the .desugardeps files need to
+        # be manually removed.
+        os.unlink(options.desugar_dependencies)
     _RunD8(dex_cmd, class_files, options.incremental_dir,
            options.warnings_as_errors,
            options.show_desugar_default_interface_warnings)

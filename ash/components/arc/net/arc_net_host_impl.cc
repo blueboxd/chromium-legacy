@@ -334,10 +334,16 @@ arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
     mojo->wifi->security =
         TranslateWiFiSecurity(network_state->security_class());
     mojo->wifi->frequency = network_state->frequency();
-    mojo->wifi->hidden_ssid =
-        shill_dict &&
-        shill_dict->FindBoolPath(shill::kWifiHiddenSsid).value_or(false);
     mojo->wifi->signal_strength = network_state->signal_strength();
+    if (shill_dict) {
+      mojo->wifi->hidden_ssid =
+          shill_dict->FindBoolPath(shill::kWifiHiddenSsid).value_or(false);
+      const auto* fqdn =
+          shill_dict->FindStringPath(shill::kPasspointFQDNProperty);
+      if (fqdn && !fqdn->empty()) {
+        mojo->wifi->fqdn = *fqdn;
+      }
+    }
   }
 
   return mojo;
@@ -470,6 +476,13 @@ void AddPasspointCredentialsFailureCallback(const std::string& error_name,
                                             const std::string& error_message) {
   NET_LOG(ERROR) << "Failed to add passpoint credentials, error:" << error_name
                  << ", message: " << error_message;
+}
+
+void RemovePasspointCredentialsFailureCallback(
+    const std::string& error_name,
+    const std::string& error_message) {
+  NET_LOG(ERROR) << "Failed to remove passpoint credentials, error:"
+                 << error_name << ", message: " << error_message;
 }
 
 }  // namespace
@@ -1152,8 +1165,33 @@ void ArcNetHostImpl::AddPasspointCredentialsWithProperties(
 }
 
 void ArcNetHostImpl::RemovePasspointCredentials(
-    const std::string& package_name) {
-  // TODO(b/195262431) Call shill Manager RemovePasspointCredentials method.
+    mojom::PasspointRemovalPropertiesPtr properties) {
+  if (!properties) {
+    NET_LOG(ERROR) << "Empty passpoint removal properties";
+    return;
+  }
+
+  const auto* profile = GetNetworkProfile();
+  if (!profile || profile->path.empty()) {
+    NET_LOG(ERROR) << "Unable to get network profile path";
+    return;
+  }
+
+  base::Value shill_properties(base::Value::Type::DICTIONARY);
+  if (properties->fqdn.has_value()) {
+    shill_properties.SetStringKey(shill::kPasspointCredentialsFQDNProperty,
+                                  properties->fqdn.value());
+  }
+  if (properties->package_name.has_value()) {
+    shill_properties.SetStringKey(
+        shill::kPasspointCredentialsAndroidPackageNameProperty,
+        properties->package_name.value());
+  }
+
+  ash::ShillManagerClient::Get()->RemovePasspointCredentials(
+      dbus::ObjectPath(profile->path), shill_properties, base::DoNothing(),
+      base::BindOnce(&RemovePasspointCredentialsFailureCallback));
+
   return;
 }
 

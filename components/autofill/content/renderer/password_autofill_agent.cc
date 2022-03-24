@@ -433,12 +433,11 @@ void FillNonTypedOrFilledPropertiesMasks(std::vector<FormFieldData>* fields,
     if (field.properties_mask & kFilledOrTyped)
       continue;
 
-    for (const auto& pair : manager.field_data_map()) {
-      const auto& field_data = pair.second;
-
-      if ((field_data.second & kFilledOrTyped) &&
-          field_data.first == field.value) {
-        field.properties_mask |= field_data.second & kFilledOrTyped;
+    for (const auto& [field_id, field_data] : manager.field_data_map()) {
+      const absl::optional<std::u16string>& value = field_data.first;
+      FieldPropertiesMask properties = field_data.second;
+      if ((properties & kFilledOrTyped) && value == field.value) {
+        field.properties_mask |= properties & kFilledOrTyped;
         break;
       }
     }
@@ -1052,8 +1051,10 @@ bool PasswordAutofillAgent::TryToShowTouchToFill(
   std::unique_ptr<FormData> form_data =
       form.IsNull() ? GetFormDataFromUnownedInputElements()
                     : GetFormDataFromWebForm(form);
-  GetPasswordManagerDriver().ShowTouchToFill(CalculateSubmissionReadiness(
-      *form_data, username_element, password_element));
+  GetPasswordManagerDriver().ShowTouchToFill(
+      form_data ? CalculateSubmissionReadiness(*form_data, username_element,
+                                               password_element)
+                : mojom::SubmissionReadinessState::kNoInformation);
 #else
   GetPasswordManagerDriver().ShowTouchToFill(
       mojom::SubmissionReadinessState::kNoInformation);

@@ -30,7 +30,8 @@ wpt_internal/webgpu/cts.https.html?q=webgpu:api,validation,attachment_compatibil
 wpt_internal/webgpu/cts.https.html?q=webgpu:api,operation,rendering,basic:large_draw:* [ Slow ]
 wpt_internal/webgpu/cts.https.html?q=webgpu:api,operation,compute,basic:large_dispatch:* [ Slow ]
 wpt_internal/webgpu/cts.https.html?worker=1&q=webgpu:api,operation,compute,basic:large_dispatch:* [ Slow ]
-wpt_internal/webgpu/cts.https.html?q=webgpu:web_platform,copyToTexture,canvas:copy_contents_from_2d_context_canvas:* [ Slow ]
+[ Mac ] wpt_internal/webgpu/cts.https.html?q=webgpu:web_platform,copyToTexture,canvas:copy_contents_from_2d_context_canvas:* [ Slow ]
+[ Win ] wpt_internal/webgpu/cts.https.html?q=webgpu:web_platform,copyToTexture,canvas:copy_contents_from_2d_context_canvas:* [ Slow ]
 [ Mac ] wpt_internal/webgpu/cts.https.html?q=webgpu:web_platform,copyToTexture,canvas:copy_contents_from_gl_context_canvas:* [ Slow ]
 [ Win ] wpt_internal/webgpu/cts.https.html?q=webgpu:web_platform,copyToTexture,canvas:copy_contents_from_gl_context_canvas:* [ Slow ]
 [ Mac ] wpt_internal/webgpu/cts.https.html?q=webgpu:web_platform,copyToTexture,canvas:copy_contents_from_gpu_context_canvas:* [ Slow ]
@@ -59,6 +60,11 @@ crbug.com/dawn/1111 [ Linux ] wpt_internal/webgpu/cts.https.html?q=webgpu:shader
 crbug.com/tint/1464 [ Linux ] wpt_internal/webgpu/cts.https.html?q=webgpu:shader,execution,memory_model,atomicity:atomicity:* [ Slow ]
 crbug.com/tint/1464 [ Linux ] wpt_internal/webgpu/cts.https.html?q=webgpu:shader,execution,memory_model,coherence:corr:* [ Slow ]
 
+# Crashing on Linux
+crbug.com/1309194 [ Linux ] wpt_internal/webgpu/cts.https.html?q=webgpu:web_platform,copyToTexture,canvas:color_space_conversion:* [ Crash Timeout ]
+crbug.com/1309194 [ Linux ] wpt_internal/webgpu/cts.https.html?q=webgpu:web_platform,copyToTexture,canvas:copy_contents_from_2d_context_canvas:* [ Crash ]
+crbug.com/1309194 [ Linux ] wpt_internal/webgpu/cts.https.html?q=webgpu:web_platform,copyToTexture,ImageBitmap:from_canvas:* [ Crash ]
+
 ###
 ### Untriaged failures. Please prefer to triage thoroughly and file a bug!
 ###
@@ -72,9 +78,11 @@ crbug.com/tint/1464 [ Linux ] wpt_internal/webgpu/cts.https.html?q=webgpu:shader
 ###
 
 # All cases take a while, and there are very many for splitting. Prefer to wait till the harness doesn't need manual splits.
-wpt_internal/webgpu/cts.https.html?q=webgpu:web_platform,copyToTexture,canvas:color_space_conversion:* [ Timeout ]
+[ Mac ] wpt_internal/webgpu/cts.https.html?q=webgpu:web_platform,copyToTexture,canvas:color_space_conversion:* [ Timeout ]
+[ Win ] wpt_internal/webgpu/cts.https.html?q=webgpu:web_platform,copyToTexture,canvas:color_space_conversion:* [ Timeout ]
 
 [ Mac ] wpt_internal/webgpu/cts.https.html?q=webgpu:api,validation,image_copy,layout_related:bound_on_bytes_per_row:* [ Timeout ]
+[ Mac ] wpt_internal/webgpu/cts.https.html?q=webgpu:api,validation,image_copy,buffer_related:bytes_per_row_alignment:* [ Timeout ]
 
 ###
 ### Test bugs
@@ -93,6 +101,23 @@ crbug.com/1083478 [ Linux ] wpt_internal/webgpu/web_platform/reftests/canvas_siz
 # Shifted by about half a pixel
 crbug.com/1083478 wpt_internal/webgpu/web_platform/reftests/canvas_complex_bgra8unorm_copy.https.html [ Failure ]
 crbug.com/1083478 wpt_internal/webgpu/web_platform/reftests/canvas_complex_bgra8unorm_draw.https.html [ Failure ]
+crbug.com/1083478 wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba16float_copy.https.html [ Failure ]
+crbug.com/1083478 wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba16float_draw.https.html [ Failure ]
+
+crbug.com/1298618 [ Mac ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba8unorm_copy.https.html [ Skip ]
+crbug.com/1298618 [ Mac ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba8unorm_draw.https.html [ Skip ]
+crbug.com/1083478 [ Win ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba8unorm_copy.https.html [ Failure ]
+crbug.com/1083478 [ Win ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba8unorm_draw.https.html [ Failure ]
+crbug.com/1083478 [ Linux ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba8unorm_copy.https.html [ Failure ]
+crbug.com/1083478 [ Linux ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba8unorm_draw.https.html [ Failure ]
+
+crbug.com/1083478 [ Win ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba8unorm_store.https.html [ Failure ]
+crbug.com/1083478 [ Win ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba16float_store.https.html [ Failure ]
+crbug.com/1241369 [ Mac ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba8unorm_store.https.html [ Skip ]
+crbug.com/1241369 [ Mac ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba16float_store.https.html [ Skip ]
+crbug.com/1241369 [ Linux ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba8unorm_store.https.html [ Skip ]
+crbug.com/1241369 [ Linux ] wpt_internal/webgpu/web_platform/reftests/canvas_complex_rgba16float_store.https.html [ Skip ]
+
 crbug.com/1083478 wpt_internal/webgpu/web_platform/reftests/canvas_composite_alpha_bgra8unorm_opaque_copy.https.html [ Failure ]
 crbug.com/1083478 wpt_internal/webgpu/web_platform/reftests/canvas_composite_alpha_bgra8unorm_opaque_draw.https.html [ Failure ]
 crbug.com/1083478 wpt_internal/webgpu/web_platform/reftests/canvas_composite_alpha_bgra8unorm_premultiplied_copy.https.html [ Failure ]
@@ -356,6 +381,22 @@ crbug.com/dawn/812 wpt_internal/webgpu/cts.https.html?q=webgpu:api,validation,re
 crbug.com/dawn/812 wpt_internal/webgpu/cts.https.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:subresources_and_binding_types_combination_for_aspect:format="depth24plus-stencil8";aspect1="stencil-only";type1="render-target";* [ Failure ]
 crbug.com/dawn/812 wpt_internal/webgpu/cts.https.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:subresources_and_binding_types_combination_for_aspect:format="depth24unorm-stencil8";compute=false;* [ Failure ]
 crbug.com/dawn/812 wpt_internal/webgpu/cts.https.html?q=webgpu:api,validation,resource_usages,texture,in_pass_encoder:subresources_and_binding_types_combination_for_aspect:format="depth32float-stencil8";compute=false;* [ Failure ]
+
+crbug.com/tint/1476 wpt_internal/webgpu/cts.https.html?q=webgpu:shader,validation,tokens:identifiers:ident="enable" [ Failure ]
+crbug.com/tint/1477 wpt_internal/webgpu/cts.https.html?q=webgpu:shader,validation,tokens:null_characters:contains_null=true;placement="comment" [ Failure ]
+crbug.com/tint/1477 wpt_internal/webgpu/cts.https.html?q=webgpu:shader,validation,tokens:null_characters:contains_null=true;placement="eol" [ Failure ]
+
+# Timeouts - should be resolved by new test infra that will split these tests.
+wpt_internal/webgpu/cts.https.html?q=webgpu:shader,execution,expression,binary,f32_arithmetic:addition:* [ Timeout ]
+wpt_internal/webgpu/cts.https.html?q=webgpu:shader,execution,expression,binary,f32_arithmetic:division:* [ Timeout ]
+wpt_internal/webgpu/cts.https.html?q=webgpu:shader,execution,expression,binary,f32_arithmetic:multiplication:* [ Timeout ]
+wpt_internal/webgpu/cts.https.html?q=webgpu:shader,execution,expression,binary,f32_arithmetic:subtraction:* [ Timeout ]
+wpt_internal/webgpu/cts.https.html?q=webgpu:shader,execution,expression,binary,f32_logical:equals:* [ Timeout ]
+wpt_internal/webgpu/cts.https.html?q=webgpu:shader,execution,expression,binary,f32_logical:greater_equals:* [ Timeout ]
+wpt_internal/webgpu/cts.https.html?q=webgpu:shader,execution,expression,binary,f32_logical:greater_than:* [ Timeout ]
+wpt_internal/webgpu/cts.https.html?q=webgpu:shader,execution,expression,binary,f32_logical:less_equals:* [ Timeout ]
+wpt_internal/webgpu/cts.https.html?q=webgpu:shader,execution,expression,binary,f32_logical:less_than:* [ Timeout ]
+wpt_internal/webgpu/cts.https.html?q=webgpu:shader,execution,expression,binary,f32_logical:not_equals:* [ Timeout ]
 
 ###
 ### Mac (Metal) specific

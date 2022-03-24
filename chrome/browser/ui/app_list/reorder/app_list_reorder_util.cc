@@ -7,6 +7,9 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "chrome/browser/ui/ash/app_icon_color_cache.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColorType.h"
+#include "third_party/skia/include/core/SkScalar.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_analysis.h"
 
@@ -201,8 +204,7 @@ sync_pb::AppListSpecifics::ColorGroup CalculateBackgroundColorGroup(
   sync_pb::AppListSpecifics::ColorGroup top_group = sync_pb::AppListSpecifics::
       ColorGroup::AppListSpecifics_ColorGroup_COLOR_BLACK;
   current = reinterpret_cast<SkColor*>(source.getAddr32(width / 2, 0));
-  const int row_bytes = source.rowBytes();
-  for (int y = 0; y < height; ++y, current += row_bytes) {
+  for (int y = 0; y < height; ++y, current += width) {
     if (SkColorGetA(*current) < SK_AlphaOPAQUE) {
       continue;
     } else {

@@ -146,22 +146,21 @@ void FloatRoundedRect::Radii::OutsetForMarginOrShadow(float outset) {
   OutsetCornerForMarginOrShadow(bottom_right_, outset);
 }
 
+void FloatRoundedRect::Radii::OutsetForShapeMargin(float outset) {
+  // We're not sure the following is fully correct for non-circular corners,
+  // but it's definitely close.
+  gfx::SizeF outset_size(outset, outset);
+  top_left_ += outset_size;
+  top_right_ += outset_size;
+  bottom_left_ += outset_size;
+  bottom_right_ += outset_size;
+}
+
 static inline float CornerRectIntercept(float y,
                                         const gfx::RectF& corner_rect) {
   DCHECK_GT(corner_rect.height(), 0);
   return corner_rect.width() *
          sqrt(1 - (y * y) / (corner_rect.height() * corner_rect.height()));
-}
-
-gfx::RectF FloatRoundedRect::RadiusCenterRect() const {
-  gfx::InsetsF maximum_radius_insets(
-      std::max(radii_.TopLeft().height(), radii_.TopRight().height()),
-      std::max(radii_.TopRight().width(), radii_.BottomRight().width()),
-      std::max(radii_.BottomLeft().height(), radii_.BottomRight().height()),
-      std::max(radii_.TopLeft().width(), radii_.BottomLeft().width()));
-  gfx::RectF center_rect(rect_);
-  center_rect.Inset(maximum_radius_insets);
-  return center_rect;
 }
 
 bool FloatRoundedRect::XInterceptsAtY(float y,
@@ -223,6 +222,14 @@ void FloatRoundedRect::OutsetForMarginOrShadow(float size) {
     return;
   rect_.Outset(size);
   radii_.OutsetForMarginOrShadow(size);
+}
+
+void FloatRoundedRect::OutsetForShapeMargin(float outset) {
+  DCHECK_GE(outset, 0);
+  if (outset == 0.f)
+    return;
+  rect_.Outset(outset);
+  radii_.OutsetForShapeMargin(outset);
 }
 
 bool FloatRoundedRect::IntersectsQuad(const gfx::QuadF& quad) const {

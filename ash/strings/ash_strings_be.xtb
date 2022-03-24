@@ -148,7 +148,6 @@
 <translation id="1771761307086386028">Прагартаць управа</translation>
 <translation id="1774796056689732716">Каляндар, <ph name="CURRENT_MONTH_YEAR" />, дата, якая цяпер выбрана, – <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">Выключана</translation>
-<translation id="1804572139604454141">Запіс закончыўся з-за крытычна малога вольнага месца на дыску</translation>
 <translation id="181103072419391116">Магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />; сетка знаходзіцца пад кіраваннем адміністратара</translation>
 <translation id="1812997170047690955">Што на маім экране?</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
@@ -266,6 +265,7 @@
 <translation id="2653659639078652383">Адправіць</translation>
 <translation id="2658778018866295321">Націснуць і перацягнуць</translation>
 <translation id="2665788051462227163">На гэтай прыладзе няма праграм "<ph name="UNAVAILABLE_APPS_ONE" />" і "<ph name="UNAVAILABLE_APPS_TWO" />".</translation>
+<translation id="2673968385134502798">Гульні</translation>
 <translation id="2678852583403169292">Меню функцыі "Чытаць уголас"</translation>
 <translation id="2689613560355655046">Працоўны стол 8</translation>
 <translation id="2700493154570097719">Наладзьце клавіятуру</translation>
@@ -672,6 +672,7 @@
 <translation id="5078796286268621944">Няправільны PIN-код</translation>
 <translation id="5083553833479578423">Адкрыйце больш функцый Памочніка.</translation>
 <translation id="5106223312672646208">Персаналізаваць</translation>
+<translation id="5107522548814527560">Інтэрнэт</translation>
 <translation id="5117590920725113268">Паказаць наступны месяц</translation>
 <translation id="5136175204352732067">Падключана іншая клавіятура</translation>
 <translation id="5147567197700016471">Прылада разблакіравана</translation>

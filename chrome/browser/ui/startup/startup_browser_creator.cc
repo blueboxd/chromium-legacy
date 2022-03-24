@@ -60,6 +60,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/startup/launch_mode_recorder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
@@ -85,6 +86,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/switches.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -421,7 +423,7 @@ StartupProfilePathInfo GetProfilePickerStartupProfilePathInfo() {
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 StartupProfileInfo GetProfilePickerStartupProfileInfo() {
   auto path_info = GetProfilePickerStartupProfilePathInfo();
   DCHECK_EQ(path_info.mode, StartupProfileMode::kProfilePicker);
@@ -442,7 +444,7 @@ StartupProfileInfo GetProfilePickerStartupProfileInfo() {
 
   return {nullptr, StartupProfileMode::kError};
 }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 void ShowProfilePicker(chrome::startup::IsProcessStartup process_startup) {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -514,6 +516,27 @@ bool MaybeLaunchAppShortcutWindow(const base::CommandLine& command_line,
   return false;
 }
 
+bool MaybeLaunchExtensionApp(const base::CommandLine& command_line,
+                             const base::FilePath& cur_dir,
+                             chrome::startup::IsFirstRun is_first_run,
+                             Profile* profile) {
+  if (!command_line.HasSwitch(switches::kAppId))
+    return false;
+
+  std::string app_id = command_line.GetSwitchValueASCII(switches::kAppId);
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
+          app_id);
+  if (!extension)
+    return false;
+
+  LaunchAppWithCallback(profile, app_id, command_line, cur_dir,
+                        base::BindOnce(&web_app::startup::FinalizeWebAppLaunch,
+                                       LaunchMode::kAsWebAppInWindowByAppId,
+                                       command_line, is_first_run));
+  return true;
+}
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. Updates need to be reflected in
 // enum IncognitoForcedStart in tools/metrics/histograms/enums.xml.
@@ -558,8 +581,11 @@ bool StartupBrowserCreator::was_restarted_read_ = false;
 // static
 bool StartupBrowserCreator::in_synchronous_profile_launch_ = false;
 
-void StartupBrowserCreator::AddFirstRunTab(const GURL& url) {
-  first_run_tabs_.push_back(url);
+void StartupBrowserCreator::AddFirstRunTabs(const std::vector<GURL>& urls) {
+  for (const auto& url : urls) {
+    if (url.is_valid())
+      first_run_tabs_.push_back(url);
+  }
 }
 
 bool StartupBrowserCreator::Start(const base::CommandLine& cmd_line,
@@ -1162,10 +1188,22 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     return true;
   }
 
-  // Try a web app launch (--app-id is present).
+  // Try a platform app launch.
+  if (MaybeLaunchExtensionApp(command_line, cur_dir, is_first_run,
+                              privacy_safe_profile)) {
+    return true;
+  }
+
+  // On Mac, PWA launch is handled in web_app_shim_manager_delegate_mac.cc.
+  // On Chrome OS, app launches are routed through the AppService and
+  // WebAppPublisherHelper. This path is mostly used for Window and Linux,
+  // but also session restore for Lacros.
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)
+  // Try a web app launch.
   if (web_app::startup::MaybeHandleWebAppLaunch(
           command_line, cur_dir, privacy_safe_profile, is_first_run))
     return true;
+#endif
 
   LaunchBrowserForLastProfiles(command_line, cur_dir, process_startup,
                                is_first_run, profile_info,
@@ -1408,7 +1446,7 @@ StartupProfilePathInfo GetStartupProfilePath(
           StartupProfileMode::kBrowserWindow};
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 StartupProfileInfo GetStartupProfile(const base::FilePath& cur_dir,
                                      const base::CommandLine& command_line) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -1482,4 +1520,4 @@ StartupProfileInfo GetFallbackStartupProfile() {
 
   return {nullptr, StartupProfileMode::kError};
 }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)

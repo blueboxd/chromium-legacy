@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/switches.h"
@@ -30,27 +31,6 @@
 namespace x11 {
 
 namespace {
-
-// On the wire, sequence IDs are 16 bits.  In xcb, they're usually extended to
-// 32 and sometimes 64 bits.  In Xlib, they're extended to unsigned long, which
-// may be 32 or 64 bits depending on the platform.  This function is intended to
-// prevent bugs caused by comparing two differently sized sequences.  Also
-// handles rollover.  To use, compare the result of this function with 0.  For
-// example, to compare seq1 <= seq2, use CompareSequenceIds(seq1, seq2) <= 0.
-template <typename T, typename U>
-auto CompareSequenceIds(T t, U u) {
-  static_assert(std::is_unsigned<T>::value, "");
-  static_assert(std::is_unsigned<U>::value, "");
-  // Cast to the smaller of the two types so that comparisons will always work.
-  // If we casted to the larger type, then the smaller type will be zero-padded
-  // and may incorrectly compare less than the other value.
-  using SmallerType =
-      typename std::conditional<sizeof(T) <= sizeof(U), T, U>::type;
-  SmallerType t0 = static_cast<SmallerType>(t);
-  SmallerType u0 = static_cast<SmallerType>(u);
-  using SignedType = typename std::make_signed<SmallerType>::type;
-  return static_cast<SignedType>(t0 - u0);
-}
 
 base::ThreadLocalOwnedPointer<Connection>& GetConnectionTLS() {
   static base::NoDestructor<base::ThreadLocalOwnedPointer<Connection>> tls;
@@ -208,12 +188,20 @@ Connection::FutureImpl::FutureImpl(Connection* connection,
 
 void Connection::FutureImpl::Wait() {
   connection->WaitForResponse(this);
+}
+
+void Connection::FutureImpl::DispatchNow() {
+  Wait();
   ProcessResponse();
+}
+
+bool Connection::FutureImpl::AfterEvent(const Event& event) const {
+  return CompareSequenceIds(event.sequence(), sequence) > 0;
 }
 
 void Connection::FutureImpl::Sync(RawReply* raw_reply,
                                   std::unique_ptr<Error>* error) {
-  connection->WaitForResponse(this);
+  Wait();
   TakeResponse(raw_reply, error);
 }
 

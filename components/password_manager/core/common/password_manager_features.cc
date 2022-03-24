@@ -55,6 +55,12 @@ const base::Feature KEnablePasswordGenerationForClearTextFields = {
     "EnablePasswordGenerationForClearTextFields",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// By default, Password Manager is disabled in fenced frames for now.
+// TODO(crbug.com/1294378): Remove once launched.
+const base::Feature kEnablePasswordManagerWithinFencedFrame{
+    "EnablePasswordManagerWithinFencedFrame",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables filling password on a website when there is saved password on
 // affiliated website.
 const base::Feature kFillingAcrossAffiliatedWebsites{
@@ -284,18 +290,22 @@ bool UsesUnifiedPasswordManagerUi() {
     case UpmExperimentVariation::kEnableForSyncingUsers:
       return true;
     case UpmExperimentVariation::kShadowSyncingUsers:
+    case UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
       return false;
   }
   NOTREACHED() << "Define explicitly whether UI is required!";
   return false;
 }
+#endif  // IS_ANDROID
 
+#if BUILDFLAG(IS_ANDROID)
 bool RequiresInitialMigrationForUnifiedPasswordManager() {
   if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid))
     return false;
   UpmExperimentVariation variation = kUpmExperimentVariationParam.Get();
   switch (variation) {
     case UpmExperimentVariation::kEnableForSyncingUsers:
+    case UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
       return true;
     case UpmExperimentVariation::kShadowSyncingUsers:
       return false;
@@ -303,7 +313,9 @@ bool RequiresInitialMigrationForUnifiedPasswordManager() {
   NOTREACHED() << "Define explicitly whether migration is required!";
   return false;
 }
+#endif  // IS_ANDROID
 
+#if BUILDFLAG(IS_ANDROID)
 bool ManagesLocalPasswordsInUnifiedPasswordManager() {
   if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid))
     return false;
@@ -311,9 +323,11 @@ bool ManagesLocalPasswordsInUnifiedPasswordManager() {
   switch (variation) {
     case UpmExperimentVariation::kEnableForSyncingUsers:
     case UpmExperimentVariation::kShadowSyncingUsers:
+    case UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
       return false;
   }
-  NOTREACHED() << "Define explicitly whether migration is required!";
+  NOTREACHED()
+      << "Define explicitly whether local password management is supported!";
   return false;
 }
 #endif  // IS_ANDROID

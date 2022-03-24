@@ -23,7 +23,7 @@ namespace ash::browser_data_migrator_util {
 namespace {
 
 constexpr char kDownloadsPath[] = "Downloads";
-constexpr char kLoginDataPath[] = "Login Data";
+constexpr char kPolicyDataPath[] = "Policy";
 constexpr char kBookmarksPath[] = "Bookmarks";
 constexpr char kCookiesPath[] = "Cookies";
 constexpr char kCachePath[] = "Cache";
@@ -71,7 +71,7 @@ void SetUpLocalStorage(const base::FilePath& path,
   batch.Put("VERSION", "1");
 
   std::string keep_extension_id =
-      browser_data_migrator_util::kExtensionKeepList[0];
+      browser_data_migrator_util::kExtensionsAshOnly[0];
   batch.Put("META:chrome-extension://" + keep_extension_id, "meta");
   batch.Put("_chrome-extension://" + keep_extension_id + "\x00key1"s, "value1");
 
@@ -95,7 +95,7 @@ void SetUpStateStore(const base::FilePath& path,
 
   leveldb::WriteBatch batch;
   std::string keep_extension_id =
-      browser_data_migrator_util::kExtensionKeepList[0];
+      browser_data_migrator_util::kExtensionsAshOnly[0];
   batch.Put(keep_extension_id + ".key1", "value1");
   batch.Put(keep_extension_id + ".key2", "value2");
   batch.Put(std::string(kMoveExtensionId) + ".key1", "value1");
@@ -211,7 +211,7 @@ TEST(BrowserDataMigratorUtilTest, GetExtensionKeys) {
   db.reset();
 
   std::string keep_extension_id =
-      browser_data_migrator_util::kExtensionKeepList[0];
+      browser_data_migrator_util::kExtensionsAshOnly[0];
   ExtensionKeys expected_keys = {
       {keep_extension_id,
        {
@@ -279,7 +279,7 @@ TEST(BrowserDataMigratorUtilTest, MigrateLevelDB) {
   db.reset();
 
   std::string keep_extension_id =
-      browser_data_migrator_util::kExtensionKeepList[0];
+      browser_data_migrator_util::kExtensionsAshOnly[0];
   ExtensionKeys expected_keys = {
       {keep_extension_id,
        {
@@ -491,7 +491,7 @@ class BrowserDataMigratorUtilWithTargetsTest : public ::testing::Test {
     // |- Downloads/     /* remain in ash */
     //     |- file
     //     |- file 2
-    // |- Login Data     /* need to copy */
+    // |- Policy         /* need to copy */
     // |- Cache          /* deletable */
     // |- Code Cache/    /* deletable */
     //     |- file
@@ -514,7 +514,7 @@ class BrowserDataMigratorUtilWithTargetsTest : public ::testing::Test {
                                 kTextFileContent, kTextFileSize));
 
     // Need to copy items.
-    ASSERT_TRUE(base::WriteFile(profile_data_dir_.Append(kLoginDataPath),
+    ASSERT_TRUE(base::WriteFile(profile_data_dir_.Append(kPolicyDataPath),
                                 kTextFileContent, kTextFileSize));
 
     // Deletable items.
@@ -564,7 +564,7 @@ TEST_F(BrowserDataMigratorUtilWithTargetsTest, GetTargetItems) {
 
   // Check for items that need copies in lacros.
   std::vector<TargetItem> expected_need_copy_items = {
-      {profile_data_dir_.Append(kLoginDataPath), kTextFileSize,
+      {profile_data_dir_.Append(kPolicyDataPath), kTextFileSize,
        TargetItem::ItemType::kFile}};
   TargetItems need_copy_items =
       GetTargetItems(profile_data_dir_, ItemType::kNeedCopy);
@@ -604,9 +604,9 @@ TEST_F(BrowserDataMigratorUtilWithTargetsTest, DryRunToCollectUMA) {
   const std::string uma_name_downloads =
       std::string(browser_data_migrator_util::kUserDataStatsRecorderDataSize) +
       "Downloads";
-  const std::string uma_name_login_data =
+  const std::string uma_name_policy =
       std::string(browser_data_migrator_util::kUserDataStatsRecorderDataSize) +
-      "LoginData";
+      "Policy";
   const std::string uma_name_cache =
       std::string(browser_data_migrator_util::kUserDataStatsRecorderDataSize) +
       "Cache";
@@ -620,7 +620,7 @@ TEST_F(BrowserDataMigratorUtilWithTargetsTest, DryRunToCollectUMA) {
                                      kTextFileSize / 1024 / 1024, 1);
   histogram_tester.ExpectBucketCount(uma_name_downloads,
                                      kTextFileSize * 2 / 1024 / 1024, 1);
-  histogram_tester.ExpectBucketCount(uma_name_login_data,
+  histogram_tester.ExpectBucketCount(uma_name_policy,
                                      kTextFileSize / 1024 / 1024, 1);
   histogram_tester.ExpectBucketCount(uma_name_cache,
                                      kTextFileSize / 1024 / 1024, 1);

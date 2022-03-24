@@ -34,7 +34,6 @@
 #include "content/browser/file_system_access/file_system_access_transfer_token_impl.h"
 #include "content/browser/file_system_access/file_system_chooser.h"
 #include "content/browser/file_system_access/fixed_file_system_access_permission_grant.h"
-#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -1479,6 +1478,23 @@ void FileSystemAccessManagerImpl::DidCleanupAccessHandleCapacityAllocation(
   size_t count_removed =
       access_handle_host_receivers_.erase(access_handle_host);
   DCHECK_EQ(1u, count_removed);
+}
+
+void FileSystemAccessManagerImpl::ResolveTransferToken(
+    mojo::PendingRemote<blink::mojom::FileSystemAccessTransferToken>
+        transfer_token,
+    ResolveTransferTokenCallback callback) {
+  ResolveTransferToken(std::move(transfer_token),
+                       base::BindOnce(
+                           [](ResolveTransferTokenCallback callback,
+                              FileSystemAccessTransferTokenImpl* token) {
+                             if (!token) {
+                               std::move(callback).Run(absl::nullopt);
+                               return;
+                             }
+                             std::move(callback).Run(token->url());
+                           },
+                           std::move(callback)));
 }
 
 base::WeakPtr<FileSystemAccessManagerImpl>

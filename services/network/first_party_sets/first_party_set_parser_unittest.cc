@@ -97,6 +97,26 @@ TEST(FirstPartySetParser, RejectsNonOriginOwner) {
   EXPECT_THAT(ParseSets(input), IsEmpty());
 }
 
+TEST(FirstPartySetParser, SkipsSetOnNonOriginOwner) {
+  const std::string input =
+      R"({"owner": "example", "members": ["https://aaaa.test"]})"
+      "\n"
+      R"({"owner": "https://example2.test", "members": )"
+      R"(["https://member2.test"]})"
+      "\n"
+      R"({"owner": "https://example.test", "members": ["https://aaaa.test"]})";
+
+  EXPECT_THAT(ParseSets(input),
+              UnorderedElementsAre(Pair(SerializesTo("https://example2.test"),
+                                        SerializesTo("https://example2.test")),
+                                   Pair(SerializesTo("https://member2.test"),
+                                        SerializesTo("https://example2.test")),
+                                   Pair(SerializesTo("https://example.test"),
+                                        SerializesTo("https://example.test")),
+                                   Pair(SerializesTo("https://aaaa.test"),
+                                        SerializesTo("https://example.test"))));
+}
+
 TEST(FirstPartySetParser, RejectsOwnerWithoutRegisteredDomain) {
   const std::string input = R"({"owner": "https://example.test..", )"
                             R"("members": ["https://aaaa.test"]})";
@@ -129,6 +149,27 @@ TEST(FirstPartySetParser, RejectsNonOriginMember) {
       R"({"owner": "https://example.test", "members": ["aaaa"]})";
 
   EXPECT_THAT(ParseSets(input), IsEmpty());
+}
+
+TEST(FirstPartySetParser, SkipsSetOnNonOriginMember) {
+  const std::string input =
+      R"({"owner": "https://example.test", "members": ["aaaa"]})"
+      "\n"
+      R"({"owner": "https://example2.test", "members": )"
+      R"(["https://member2.test"]})"
+      "\n"
+      R"({"owner": "https://example.test", "members": )"
+      R"(["https://member3.test"]})";
+
+  EXPECT_THAT(ParseSets(input),
+              UnorderedElementsAre(Pair(SerializesTo("https://example2.test"),
+                                        SerializesTo("https://example2.test")),
+                                   Pair(SerializesTo("https://member2.test"),
+                                        SerializesTo("https://example2.test")),
+                                   Pair(SerializesTo("https://example.test"),
+                                        SerializesTo("https://example.test")),
+                                   Pair(SerializesTo("https://member3.test"),
+                                        SerializesTo("https://example.test"))));
 }
 
 TEST(FirstPartySetParser, RejectsMemberWithoutRegisteredDomain) {
@@ -660,6 +701,28 @@ TEST(ParseFromEnterpriseSetsTest, SingletonSetError_EmptyMembers) {
                                                                  out_sets),
               FirstPartySetParser::PolicyParsingError(
                   {FirstPartySetParser::ParseError::kSingletonSet,
+                   FirstPartySetParser::PolicySetType::kReplacement, 0}));
+  EXPECT_THAT(out_sets, FirstPartySetParser::ParsedPolicySetLists({}, {}));
+}
+
+TEST(ParseFromEnterpriseSetsTest, RepeatedDomainError_WithinReplacements) {
+  base::Value policy_value = base::JSONReader::Read(R"(
+              {
+                "replacements": [
+                  {
+                    "owner": "https://owner1.test",
+                    "members": ["https://owner1.test"]
+                  }
+                ],
+                "additions": []
+              }
+            )")
+                                 .value();
+  FirstPartySetParser::ParsedPolicySetLists out_sets;
+  EXPECT_THAT(FirstPartySetParser::ParseSetsFromEnterprisePolicy(policy_value,
+                                                                 out_sets),
+              FirstPartySetParser::PolicyParsingError(
+                  {FirstPartySetParser::ParseError::kRepeatedDomain,
                    FirstPartySetParser::PolicySetType::kReplacement, 0}));
   EXPECT_THAT(out_sets, FirstPartySetParser::ParsedPolicySetLists({}, {}));
 }

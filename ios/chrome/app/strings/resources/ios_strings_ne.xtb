@@ -630,6 +630,7 @@
 <translation id="650279896687777322">थप जान्नुहोस्...</translation>
 <translation id="651505212789431520">सिंक गर्ने कार्य रद्द गर्ने हो? तपाईं सेटिङमा गई जुनसुकै बेला सिंक गर्ने सुविधा सक्रिय गर्न सक्नुहुन्छ।</translation>
 <translation id="6524918542306337007">इन्कोग्निटो मोड उपलब्ध छैन</translation>
+<translation id="6530992499366869131">डेटा चोरीको घटनामा पासवर्डको खुलासा हुँदा मलाई चेतावनी दिइयोस्</translation>
 <translation id="6537746030088321027">example.com</translation>
 <translation id="6561262006871132942">जुम बढाउनुहोस्</translation>
 <translation id="6583087784430677195">तपाईं अटोफिल गर्ने सुविधा अफ गर्न चाहनुहुन्छ भने <ph name="BEGIN_LINK" />सेटिङ<ph name="END_LINK" /> खोल्नुहोस् अनि "पासवर्डहरू अटोफिल गरियोस्" मा जानुहोस्।</translation>
@@ -689,7 +690,6 @@
 <translation id="6979158407327259162">Google ड्राइभ</translation>
 <translation id="6988572888918530647">आफ्नो Google खाताको व्यवस्थापन गर्नुहोस्</translation>
 <translation id="6989674195860388998">सेटिङमा गई डिफल्ट ब्राउजर बदल्नुहोस्…</translation>
-<translation id="6995899638241819463">डेटा चोरीको घटनामा पासवर्डको खुलासा हुँदा तपाईंलाई चेतावनी दिइन्छ</translation>
 <translation id="6998989275928107238">लाई</translation>
 <translation id="7004032350256606903">तपाईंको सङ्गठनको नीतिअनुसार तपाईंले गोप्य रूपमा ब्राउज गर्नु पर्ने हुन्छ।
 <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>

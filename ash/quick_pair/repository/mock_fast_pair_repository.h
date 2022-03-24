@@ -64,6 +64,15 @@ class MockFastPairRepository : public FastPairRepository {
               (nearby::fastpair::OptInStatus opt_in_status,
                UpdateOptInStatusCallback callback),
               (override));
+  MOCK_METHOD(void,
+              DeleteAssociatedDeviceByAccountKey,
+              (const std::vector<uint8_t>& account_key,
+               DeleteAssociatedDeviceByAccountKeyCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              GetSavedDevices,
+              (GetSavedDevicesCallback callback),
+              (override));
 };
 
 }  // namespace quick_pair

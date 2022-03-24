@@ -21,6 +21,8 @@ extern const char kESimRefreshedEuiccs[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kESimProfiles[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kManagedCellularIccidSmdpPair[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEmojiSuggestionEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEmojiSuggestionEnterpriseAllowed[];
@@ -233,7 +235,7 @@ extern const char kMessageCenterLockScreenModeHideSensitive[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAmbientColorEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kColorModeThemed[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDarkModeEnabled[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDarkModeAutoScheduled[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDarkModeScheduleType[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kNightLightEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kNightLightTemperature[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kNightLightScheduleType[];

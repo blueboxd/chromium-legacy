@@ -387,9 +387,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableUrlHandlers;
 
 BLINK_COMMON_EXPORT extern const base::Feature kLoadingTasksUnfreezable;
 
-BLINK_COMMON_EXPORT extern const base::Feature
-    kNetworkRequestUsesOnlyPerProcessBufferLimit;
-
 BLINK_COMMON_EXPORT extern const base::Feature kTargetBlankImpliesNoOpener;
 
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -578,6 +575,12 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kCSSCascadeLayers;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSetTimeoutWithoutClamp;
+// window.setTimeout() has a feature to remove 1ms clamp to improve performance
+// and battery life. Enterprise policy can override this to control the feature.
+// Normally, the result of this feature calculation is cached; allow tests
+// to clear the cache to recompute the feature value.
+BLINK_COMMON_EXPORT void
+ClearSetTimeoutWithout1MsClampPolicyOverrideCacheForTesting();
 BLINK_COMMON_EXPORT bool IsSetTimeoutWithoutClampEnabled();
 
 BLINK_COMMON_EXPORT extern const base::Feature

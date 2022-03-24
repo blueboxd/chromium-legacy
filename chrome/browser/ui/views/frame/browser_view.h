@@ -481,6 +481,8 @@ class BrowserView : public BrowserWindow,
   bool IsTabStripEditable() const override;
   bool IsToolbarVisible() const override;
   bool IsToolbarShowing() const override;
+  bool IsLocationBarVisible() const override;
+
   SharingDialog* ShowSharingDialog(content::WebContents* contents,
                                    SharingDialogData data) override;
   void ShowUpdateChromeDialog() override;
@@ -725,6 +727,10 @@ class BrowserView : public BrowserWindow,
   // side panel being closed.
   bool CloseOpenRightAlignedSidePanel(bool exclude_lens = false,
                                       bool exclude_side_search = false);
+
+  // Clobbers all right aligned side search side panels if
+  // kClobberAllSideSearchSidePanels is enabled.
+  void MaybeClobberAllSideSearchSidePanels();
 
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)
   bool IsSideSearchPanelVisible() const override;

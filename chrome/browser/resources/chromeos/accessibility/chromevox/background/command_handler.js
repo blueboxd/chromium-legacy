@@ -5,9 +5,14 @@
 /**
  * @fileoverview ChromeVox commands.
  */
+import {TypingEcho} from '../common/editable_text_base.js';
+
+import {AutoScrollHandler} from './auto_scroll_handler.js';
+import {BrailleBackground} from './braille_background.js';
 import {ChromeVoxBackground} from './classic_background.js';
 import {Color} from './color.js';
 import {DesktopAutomationInterface} from './desktop_automation_interface.js';
+import {GestureGranularity} from './gesture_command_data.js';
 import {GestureInterface} from './gesture_interface.js';
 import {SmartStickyMode} from './smart_sticky_mode.js';
 
@@ -124,9 +129,9 @@ export class CommandHandler extends CommandHandlerInterface {
         ChromeVox.passThroughMode = true;
         ChromeVox.tts.speak(Msgs.getMsg('pass_through_key'), QueueMode.QUEUE);
         return true;
-      case 'showKbExplorerPage':
+      case 'showLearnModePage':
         const explorerPage = {
-          url: 'chromevox/learn_mode/kbexplorer.html',
+          url: 'chromevox/learn_mode/learn_mode.html',
           type: 'panel'
         };
         chrome.windows.create(explorerPage);

@@ -959,13 +959,13 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
         About personalized ads
       </message>
       <message name="IDS_PRIVACY_SANDBOX_ADD_INTEREST_BUTTON_DESCRIPTION" desc="Content description for button that adds an ad interest for the Topics API of the Privacy Sandbox.">
-        Add interest?
+        Add <ph name="INTEREST">%1$s<ex>Acting and Theater</ex></ph>
       </message>
       <message name="IDS_PRIVACY_SANDBOX_ADD_INTEREST_SNACKBAR" desc="Text on a snackbar after an ad personalization interest was added to the Topics API of the Privacy Sandbox.">
         Interest added
       </message>
       <message name="IDS_PRIVACY_SANDBOX_REMOVE_INTEREST_BUTTON_DESCRIPTION" desc="Content description for button that removes an ad interest for the Topics API of the Privacy Sandbox.">
-        Remove interest?
+        Remove <ph name="INTEREST">%1$s<ex>Acting and Theater</ex></ph>
       </message>
       <message name="IDS_PRIVACY_SANDBOX_REMOVE_INTEREST_SNACKBAR" desc="Text on a snackbar after an ad personalization interest was removed from the Topics API of the Privacy Sandbox.">
         Interest removed
@@ -983,7 +983,7 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
         A list of interests will appear here as you browse the web
       </message>
       <message name="IDS_PRIVACY_SANDBOX_REMOVED_TOPICS_EMPTY_STATE" desc="Summary shown when no interests for ad personlization were removed from the Topics API of the Privacy Sandbox.">
-        Interest you removed will appear here
+        Interests you removed will appear here
       </message>
       <message name="IDS_PRIVACY_SANDBOX_FLEDGE_INTERESTS_CATEGORY" desc="FLEDGE API. A sub title that describes the second of 2 ways a site can get info from Chrome in order to target ads to the user.">
         Sites you visit that define your interests

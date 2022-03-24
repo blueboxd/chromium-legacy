@@ -1338,7 +1338,7 @@
       'caption': '''First-Party Sets Settings''',
       'desc': '''Controls policies for the First-Party Sets feature.''',
       'policies': [
-        'FirstPartySetsEnabled',
+        'FirstPartySetsEnabled', 'FirstPartySetsOverrides'
       ]
     },
     {
@@ -4496,6 +4496,35 @@
       'label': '''Set media disk cache size''',
     },
     {
+      'name': 'DownloadBubbleEnabled',
+      'owners': ['file://components/safe_browsing/OWNERS', 'bhatiarohit@chromium.org', 'xinghuilu@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*: 101-', 'chrome_os: 101-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable download bubble UI',
+        },
+        {
+          'value': False,
+          'caption': 'Disable download bubble UI',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 970,
+      'caption': '''Enable download bubble UI''',
+      'tags': [],
+      'desc': '''Setting the policy to Enabled or leaving it unset shows the new download bubble UI in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      Setting the policy to Disabled means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> keeps showing the old download shelf UI.''',
+    },
+    {
       'name': 'DownloadRestrictions',
       'owners': ['mad@chromium.org', 'zmin@chromium.org'],
       'type': 'int-enum',
@@ -5606,7 +5635,7 @@
     {
       'name': 'ExtensionAllowedTypes',
       'owners': ['benwells@chromium.org', 'file://extensions/OWNERS'],
-      'type': 'list',
+      'type': 'string-enum-list',
       'schema': {
         'type': 'array',
         'items': {
@@ -5622,6 +5651,38 @@
         },
         'id': 'ExtensionAllowedTypes',
       },
+      'items': [
+        {
+          'name': 'extension',
+          'value': 'extension',
+          'caption': '''Extension''',
+        },
+        {
+          'name': 'theme',
+          'value': 'theme',
+          'caption': '''Theme''',
+        },
+        {
+          'name': 'user_script',
+          'value': 'user_script',
+          'caption': '''User script''',
+        },
+        {
+          'name': 'hosted_app',
+          'value': 'hosted_app',
+          'caption': '''Hosted app''',
+        },
+        {
+          'name': 'legacy_packaged_app',
+          'value': 'legacy_packaged_app',
+          'caption': '''Legacy packaged app''',
+        },
+        {
+          'name': 'platform_app',
+          'value': 'platform_app',
+          'caption': '''Platform app''',
+        },
+      ],
       'supported_on': ['chrome.*:25-', 'chrome_os:25-'],
       'features': {
         'dynamic_refresh': True,
@@ -17094,7 +17155,7 @@
     {
       'name': 'UsbDetachableWhitelist',
       'owners': ['vpalatin@chromium.org', 'hendrich@chromium.org'],
-      'type': 'list',
+      'type': 'dict',
       'schema': {
         'type': 'array',
         'items': {
@@ -17135,7 +17196,7 @@
     {
       'name': 'UsbDetachableAllowlist',
       'owners': ['vpalatin@chromium.org', 'hendrich@chromium.org'],
-      'type': 'list',
+      'type': 'dict',
       'schema': {
         'type': 'array',
         'items': {
@@ -18754,7 +18815,7 @@
     {
       'name': 'QuickUnlockModeAllowlist',
       'owners': ['file://components/policy/resources/OWNERS', 'bartfab@chromium.org'],
-      'type': 'list',
+      'type': 'string-enum-list',
       'schema': {
         'type': 'array',
         'items': {
@@ -18767,6 +18828,23 @@
         },
         'id': 'QuickUnlockModeAllowlist',
       },
+      'items': [
+        {
+          'name': 'all',
+          'value': 'all',
+          'caption': '''All''',
+        },
+        {
+          'name': 'PIN',
+          'value': 'PIN',
+          'caption': '''PIN''',
+        },
+        {
+          'name': 'FINGERPRINT',
+          'value': 'FINGERPRINT',
+          'caption': '''Fingerprint''',
+        },
+      ],
       'supported_on': ['chrome_os:87-'],
       'features': {
         'dynamic_refresh': True,
@@ -18792,7 +18870,7 @@
     {
       'name': 'QuickUnlockModeWhitelist',
       'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
-      'type': 'list',
+      'type': 'string-enum-list',
       'schema': {
         'type': 'array',
         'items': {
@@ -18805,6 +18883,23 @@
         },
         'id': 'QuickUnlockModeWhitelist',
       },
+      'items': [
+        {
+          'name': 'all',
+          'value': 'all',
+          'caption': '''All''',
+        },
+        {
+          'name': 'PIN',
+          'value': 'PIN',
+          'caption': '''PIN''',
+        },
+        {
+          'name': 'FINGERPRINT',
+          'value': 'FINGERPRINT',
+          'caption': '''Fingerprint''',
+        },
+      ],
       'supported_on': ['chrome_os:56-100'],
       'features': {
         'dynamic_refresh': True,
@@ -22487,7 +22582,7 @@
       'name': 'CloudReportingUploadFrequency',
       'owners':  ['zmin@chromium.org', 'file://components/enterprise/browser/reporting/OWNERS'],
       'type': 'int',
-      'schema': { 'type': 'integer', 'minimum': 3 , 'maximum': 168},
+      'schema': { 'type': 'integer', 'minimum': 3 , 'maximum': 24},
       'future_on': ['chrome.*', 'chrome_os', 'android', 'ios'],
       'tags': ['admin-sharing', 'google-sharing'],
       'features': {
@@ -30165,6 +30260,92 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
                   It also controls whether Chrome supports First-Party Sets related features (e.g. the SameParty cookie attribute).''',
     },
     {
+      'name': 'FirstPartySetsOverrides',
+      'owners': ['kaklilu@chromium.com', 'chrome-first-party-sets@chromium.org'],
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'replacements': {
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'properties': {
+                'owner': { 'type': 'string' },
+                'members': {
+                  'type': 'array',
+                  'items': { 'type': 'string' }
+                },
+              },
+              'required': ['owner', 'members']
+            },
+          },
+          'additions': {
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'properties': {
+                'owner': { 'type': 'string' },
+                'members': {
+                  'type': 'array',
+                  'items': { 'type': 'string' }
+                },
+              },
+              'required': ['owner', 'members']
+            },
+          }
+        }
+      },
+      'default': {},
+      'example_value': {
+        'replacements': [
+          {
+            "owner": "https://owner1.test",
+            "members": ["https://member1.test", "https://member2.test"]
+          }
+        ],
+        'additions': [
+          {
+            "owner": "https://owner2.test",
+            "members": ["https://member3.test"]
+          }
+        ]
+      },
+      'features' : {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'future_on': ['chrome.*', 'chrome_os', 'android', 'webview_android'],
+      'tags': [],
+      'id': 969,
+      'caption': '''Override First-Party Sets.''',
+      'desc': '''This policy is as a way to override the list of sets that Chrome uses for First-Party Sets features.
+
+      When this policy is provided with an empty dictionary, the Chrome uses the public list of First-Party Sets.
+
+      When this policy receives a set in the 'replacements' list, any sets in the public list that
+      intersect with it will be removed from Chrome's list and the provided set will be added to Chrome's list.
+
+      When this policy receives a set in the 'additions' list, any sets in the Chrome's list that
+      intersect with it will be updated in order to add the provided set to the list while still maintaining
+      that Chrome's list of First-Party Sets is disjoint.
+
+      The list of First-Party Sets that Chrome uses must remain disjoint, so applying this policy requires
+      that both policy lists of First-Party Sets are disjoint within themselves, and between each other.
+
+      Additionally, all sets in both lists must adhere to the invariants of a First-Party Set.
+      A First-Party Set consists of an owner and one or more member sites. All sites in a First-Party Set must
+      be a registrable domain served over HTTPS, regardless of whether it is an owner or member site.
+      Each site in a First-Party Set must also be unique, meaning a site cannot be both owner and member, nor
+      listed more than once as a member of a First-Party Set.
+      See https://github.com/privacycg/first-party-sets for more information on First-Party Sets.
+
+      Wildcards (*) are not supported as a policy value, nor within any First-Party Set in these lists.
+
+      All sets provided by this policy must be valid First-Party Sets,  if they aren't then an
+      appropriate error will be outputted.''',
+    },
+    {
       'name': 'DeviceEncryptedReportingPipelineEnabled',
       'owners': ['cros-reporting-team@google.com', 'albertojuarez@google.com'],
       'type': 'main',
@@ -30308,6 +30489,77 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       'desc': '''WebSQL is on by default as of M101, but can be disabled via Chrome flag.
           If this policy is set to false or unset, WebSQL can be disabled.
           If this policy is set to true, WebSQL cannot be disabled.''',
+    },
+    {
+      'name': 'SetTimeoutWithout1MsClampEnabled',
+      'owners': ['file://third_party/blink/renderer/core/frame/OWNERS', 'shaseley@chromium.org', 'bokan@chromium.org', 'dcheng@chromium.org', 'japhet@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:101-104', 'chrome.*:101-104', 'android:101-104'],
+      'features': {
+        'per_profile': True,
+        'dynamic_refresh': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': '''Javascript setTimeout() with a timeout of 0ms will not clamp to 1ms.''',
+        },
+        {
+          'value': False,
+          'caption': '''Javascript setTimeout() with a timeout of 0ms will clamp to 1ms.''',
+        },
+        {
+          'value': None,
+          'caption': ''''Default behavior for setTimeout() function clamp.''',
+        },
+      ],
+      'default': None,
+      'example_value': True,
+      'id': 967,
+      'caption': '''Control Javascript setTimeout() function minimum timeout.''',
+      'tags': [],
+      'desc': '''When the policy is set to Enabled, the Javascript setTimeout() with a timeout of 0ms will not clamp to 1ms.
+          When the policy is set to Disabled,  the Javascript setTimeout() with a timeout of 0ms will clamp to 1ms.
+          When the policy is unset, use the browser's default behavior for setTimeout() function clamp.
+
+          This is a web standards compliant feature, but it may change task ordering
+          on a web page, leading to unexpected behavior on sites that are dependent on
+          a certain ordering in some way. It also may affect sites with a lot of setTimeout()
+          with a timeout of 0ms usage, e.g. increasing CPU load.
+
+          For users where this policy is unset, Chrome will roll out the change gradually on the stable channel.
+
+          This is a temporary policy that is planned be removed in Chrome 105. This deadline may be extended if there is a need for it among enterprises.
+          ''',
+    },
+    {
+      'name': 'AllowChromeDataInBackups',
+      'owners': ['ajuma@chromium.org', 'file://ios/chrome/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['ios'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data to be included in backups',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data from being included in backups',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 968,
+      'caption': '''Allow backup of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data''',
+      'tags': [],
+      'desc': '''If this policy is set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> data, including cookies and website local storage, will be excluded from iCloud and local backups on iOS.
+          If this policy is set to True or unset, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may be included in backups.''',
     },
   ],
   'messages': {
@@ -31305,6 +31557,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 966,
+  'highest_id_currently_used': 970,
   'highest_atomic_group_id_currently_used': 42
 }

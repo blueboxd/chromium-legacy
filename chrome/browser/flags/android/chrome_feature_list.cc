@@ -56,7 +56,6 @@
 #include "components/security_state/core/features.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/sync/base/features.h"
@@ -243,10 +242,10 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kInstantStart,
     &kKitKatSupported,
     &kLensCameraAssistedSearch,
+    &kLensOnQuickActionSearchWidget,
     &kLocationBarModelOptimizations,
     &kNewWindowAppMenu,
     &kNotificationPermissionVariant,
-    &kOfflineIndicatorV2,
     &kPageAnnotationsService,
     &kBookmarksImprovedSaveFlow,
     &kBookmarksRefresh,
@@ -340,6 +339,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &omnibox::kUpdatedConnectionSecurityIndicators,
     &optimization_guide::features::kPushNotifications,
     &page_info::kPageInfoAboutThisSite,
+    &page_info::kAboutThisSiteBanner,
     &page_info::kPageInfoDiscoverability,
     &password_manager::features::kBiometricTouchToFill,
     &password_manager::features::kLeakDetectionUnauthenticated,
@@ -362,13 +362,11 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &send_tab_to_self::kSendTabToSelfV2,
     &share::kPersistShareHubOnAppSwitch,
     &share::kUpcomingSharingFeatures,
-    &signin::kMobileIdentityConsistencyPromos,
     &switches::kAllowSyncOffForChildAccounts,
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
     &syncer::kSyncTrustedVaultPassphraseRecovery,
     &syncer::kSyncAndroidPromosWithSingleButton,
-    &switches::kSyncUseSessionsUnregisterDelay,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &video_tutorials::features::kVideoTutorials,
     &webapps::features::kInstallableAmbientBadgeInfoBar,
@@ -552,6 +550,9 @@ const base::Feature kGoogleLensSdkIntent{"GoogleLensSdkIntent",
 const base::Feature kLensCameraAssistedSearch{"LensCameraAssistedSearch",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kLensOnQuickActionSearchWidget{
+    "LensOnQuickActionSearchWidget", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kContextualSearchDebug{"ContextualSearchDebug",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -684,9 +685,6 @@ const base::Feature kNotificationPermissionVariant{
 
 const base::Feature kInstanceSwitcher{"InstanceSwitcher",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kOfflineIndicatorV2{"OfflineIndicatorV2",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPageAnnotationsService{"PageAnnotationsService",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
@@ -834,7 +832,7 @@ const base::Feature kUmaBackgroundSessions{"UMABackgroundSessions",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUpdateHistoryEntryPointsInIncognito{
-    "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UpdateHistoryEntryPointsInIncognito", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUpdateNotificationScheduleServiceImmediateShowOption{
     "UpdateNotificationScheduleServiceImmediateShowOption",

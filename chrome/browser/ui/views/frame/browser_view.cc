@@ -216,6 +216,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -253,7 +254,8 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
-#include "chrome/browser/ui/views/frame/browser_view_commands_mac.h"
+#include "components/remote_cocoa/app_shim/application_bridge.h"
+#include "components/remote_cocoa/browser/application_host.h"
 #endif
 
 #if defined(USE_AURA)
@@ -1749,6 +1751,8 @@ void BrowserView::SetFocusToLocationBar(bool is_user_initiated) {
   if (!IsActive())
     return;
 #endif
+  if (!IsLocationBarVisible())
+    return;
 
   LocationBarView* location_bar = GetLocationBarView();
   location_bar->FocusLocation(is_user_initiated);
@@ -2155,6 +2159,11 @@ bool BrowserView::IsToolbarShowing() const {
   return IsToolbarVisible();
 }
 
+bool BrowserView::IsLocationBarVisible() const {
+  return browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR) &&
+         GetLocationBarView()->GetVisible();
+}
+
 void BrowserView::ShowUpdateChromeDialog() {
   UpdateRecommendedMessageBox::Show(GetNativeWindow());
 }
@@ -2492,6 +2501,22 @@ bool BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
       event, GetFocusManager());
 }
 
+#if BUILDFLAG(IS_MAC)
+namespace {
+remote_cocoa::mojom::CutCopyPasteCommand CommandFromBrowserCommand(
+    int command_id) {
+  if (command_id == IDC_CUT)
+    return remote_cocoa::mojom::CutCopyPasteCommand::kCut;
+  else if (command_id == IDC_COPY)
+    return remote_cocoa::mojom::CutCopyPasteCommand::kCopy;
+  else if (command_id == IDC_PASTE)
+    return remote_cocoa::mojom::CutCopyPasteCommand::kPaste;
+  NOTREACHED();
+  return remote_cocoa::mojom::CutCopyPasteCommand::kPaste;
+}
+}  // namespace
+#endif
+
 // TODO(devint): http://b/issue?id=1117225 Cut, Copy, and Paste are always
 // enabled in the page menu regardless of whether the command will do
 // anything. When someone selects the menu item, we just act as if they hit
@@ -2501,7 +2526,16 @@ bool BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // manager to do that.
 void BrowserView::CutCopyPaste(int command_id) {
 #if BUILDFLAG(IS_MAC)
-  ForwardCutCopyPasteToNSApp(command_id);
+  auto command = CommandFromBrowserCommand(command_id);
+  auto* application_host =
+      GetWidget() ? remote_cocoa::ApplicationHost::GetForNativeView(
+                        GetWidget()->GetNativeView())
+                  : nullptr;
+  if (application_host) {
+    application_host->GetApplication()->ForwardCutCopyPaste(command);
+  } else {
+    remote_cocoa::ApplicationBridge::ForwardCutCopyPasteToNSApp(command);
+  }
 #else
   // If a WebContents is focused, call its member method.
   //
@@ -3188,13 +3222,27 @@ bool BrowserView::CloseOpenRightAlignedSidePanel(bool exclude_lens,
   // Hide side search panel if it's right aligned.
   if (!exclude_side_search &&
       base::FeatureList::IsEnabled(features::kSideSearchDSESupport) &&
-      side_search_side_panel_->GetVisible()) {
+      side_search_side_panel_ && side_search_side_panel_->GetVisible()) {
     side_search_controller_->CloseSidePanel();
     return true;
   }
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
   return false;
+}
+
+void BrowserView::MaybeClobberAllSideSearchSidePanels() {
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+  if (!base::FeatureList::IsEnabled(features::kSideSearchDSESupport) ||
+      !base::FeatureList::IsEnabled(
+          features::kClobberAllSideSearchSidePanels)) {
+    return;
+  }
+
+  if (side_search_controller_) {
+    side_search_controller_->ClobberAllInCurrentBrowser();
+  }
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 }
 
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)

@@ -215,6 +215,14 @@ std::unique_ptr<views::ImageView> GetIconImageViewByName(
 #endif
   }
 
+  if (icon_str == "googlePasswordManager") {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    return ImageViewFromVectorIcon(kGooglePasswordManagerIcon);
+#else
+    return ImageViewFromVectorIcon(kKeyIcon);
+#endif
+  }
+
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (icon_str == "googlePay" || icon_str == "googlePayDark") {
     return nullptr;
@@ -236,9 +244,9 @@ std::unique_ptr<views::ImageView> GetIconImageView(
   return GetIconImageViewByName(suggestion.icon);
 }
 
-std::unique_ptr<views::ImageView> GetStoreIndicatorIconImageView(
+std::unique_ptr<views::ImageView> GetTrailingIconImageView(
     const autofill::Suggestion& suggestion) {
-  return GetIconImageViewByName(suggestion.store_indicator_icon);
+  return GetIconImageViewByName(suggestion.trailing_icon);
 }
 
 // Creates a label with a specific context and style.
@@ -787,12 +795,12 @@ void AutofillPopupItemView::CreateContent() {
   }
 
   AddChildView(std::move(all_labels));
-  std::unique_ptr<views::ImageView> store_indicator_icon =
-      GetStoreIndicatorIconImageView(suggestions[GetLineNumber()]);
-  if (store_indicator_icon) {
+  std::unique_ptr<views::ImageView> trailing_icon =
+      GetTrailingIconImageView(suggestions[GetLineNumber()]);
+  if (trailing_icon) {
     AddSpacerWithSize(GetHorizontalMargin(),
                       /*resize=*/true, layout_manager);
-    AddChildView(std::move(store_indicator_icon));
+    AddChildView(std::move(trailing_icon));
   }
 }
 
@@ -1155,11 +1163,11 @@ void AutofillPopupFooterView::CreateContent() {
     AddChildView(std::move(icon));
   }
 
-  std::unique_ptr<views::ImageView> store_indicator_icon =
-      GetStoreIndicatorIconImageView(suggestion);
-  if (store_indicator_icon) {
+  std::unique_ptr<views::ImageView> trailing_icon =
+      GetTrailingIconImageView(suggestion);
+  if (trailing_icon) {
     AddSpacerWithSize(GetHorizontalMargin(), /*resize=*/true, layout_manager);
-    AddChildView(std::move(store_indicator_icon));
+    AddChildView(std::move(trailing_icon));
   }
 }
 

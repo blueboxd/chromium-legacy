@@ -60,6 +60,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/startup/launch_mode_recorder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
@@ -85,6 +86,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/switches.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -121,9 +123,6 @@
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/browser/printing/print_dialog_cloud_win.h"
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
@@ -421,7 +420,7 @@ StartupProfilePathInfo GetProfilePickerStartupProfilePathInfo() {
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 StartupProfileInfo GetProfilePickerStartupProfileInfo() {
   auto path_info = GetProfilePickerStartupProfilePathInfo();
   DCHECK_EQ(path_info.mode, StartupProfileMode::kProfilePicker);
@@ -442,7 +441,7 @@ StartupProfileInfo GetProfilePickerStartupProfileInfo() {
 
   return {nullptr, StartupProfileMode::kError};
 }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 void ShowProfilePicker(chrome::startup::IsProcessStartup process_startup) {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -512,6 +511,27 @@ bool MaybeLaunchAppShortcutWindow(const base::CommandLine& command_line,
     }
   }
   return false;
+}
+
+bool MaybeLaunchExtensionApp(const base::CommandLine& command_line,
+                             const base::FilePath& cur_dir,
+                             chrome::startup::IsFirstRun is_first_run,
+                             Profile* profile) {
+  if (!command_line.HasSwitch(switches::kAppId))
+    return false;
+
+  std::string app_id = command_line.GetSwitchValueASCII(switches::kAppId);
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
+          app_id);
+  if (!extension)
+    return false;
+
+  LaunchAppWithCallback(profile, app_id, command_line, cur_dir,
+                        base::BindOnce(&web_app::startup::FinalizeWebAppLaunch,
+                                       LaunchMode::kAsWebAppInWindowByAppId,
+                                       command_line, is_first_run));
+  return true;
 }
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -860,16 +880,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   Profile* privacy_safe_profile =
       GetPrivateProfileIfRequested(command_line, profile_info);
 
-#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  // If we are just displaying a print dialog we shouldn't open browser
-  // windows.
-  if (command_line.HasSwitch(switches::kCloudPrintFile) && can_use_profile &&
-      print_dialog_cloud::CreatePrintDialogFromCommandLine(privacy_safe_profile,
-                                                           command_line)) {
-    silent_launch = true;
-  }
-#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
-
   if (command_line.HasSwitch(switches::kValidateCrx)) {
     if (process_startup == chrome::startup::IsProcessStartup::kNo) {
       LOG(ERROR) << "chrome is already running; you must close all running "
@@ -1165,10 +1175,26 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     return true;
   }
 
-  // Try a web app launch (--app-id is present).
+  // Try a platform app launch.
+  if (MaybeLaunchExtensionApp(command_line, cur_dir, is_first_run,
+                              privacy_safe_profile)) {
+    return true;
+  }
+
+  // This path is mostly used for Window and Linux, but also session restore for
+  // Lacros.
+  // On Chrome OS, app launches are routed through the AppService and
+  // WebAppPublisherHelper.
+  //
+  // On Mac, PWA launch is handled in web_app_shim_manager_delegate_mac.cc, but
+  // tests still rely on this code.
+  // TODO(crbug.com/1232763): update tests and disable this path on Mac.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  // Try a web app launch.
   if (web_app::startup::MaybeHandleWebAppLaunch(
           command_line, cur_dir, privacy_safe_profile, is_first_run))
     return true;
+#endif
 
   LaunchBrowserForLastProfiles(command_line, cur_dir, process_startup,
                                is_first_run, profile_info,
@@ -1411,7 +1437,7 @@ StartupProfilePathInfo GetStartupProfilePath(
           StartupProfileMode::kBrowserWindow};
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 StartupProfileInfo GetStartupProfile(const base::FilePath& cur_dir,
                                      const base::CommandLine& command_line) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -1485,4 +1511,4 @@ StartupProfileInfo GetFallbackStartupProfile() {
 
   return {nullptr, StartupProfileMode::kError};
 }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)

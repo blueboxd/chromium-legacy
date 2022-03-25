@@ -1290,11 +1290,13 @@ void StoragePartitionImpl::Initialize(
                                 browser_context_->GetSpecialStoragePolicy(),
                                 blob_context.get());
 
-  BlobRegistryWrapper* fallback_blob_registry =
-      fallback_for_blob_urls ? fallback_for_blob_urls->GetBlobRegistry()
-                             : nullptr;
+  blob_url_registry_ = std::make_unique<storage::BlobUrlRegistry>(
+      fallback_for_blob_urls
+          ? fallback_for_blob_urls->GetBlobUrlRegistry()->AsWeakPtr()
+          : nullptr);
+
   blob_registry_ = BlobRegistryWrapper::Create(
-      blob_context, filesystem_context_, fallback_blob_registry);
+      blob_context, filesystem_context_, blob_url_registry_->AsWeakPtr());
 
   prefetch_url_loader_service_ =
       std::make_unique<PrefetchURLLoaderService>(browser_context_);
@@ -1364,8 +1366,8 @@ void StoragePartitionImpl::Initialize(
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   media_license_manager_ = std::make_unique<MediaLicenseManager>(
-      GetBucketBasePath(), browser_context_->GetSpecialStoragePolicy(),
-      quota_manager_proxy);
+      filesystem_context_, GetBucketBasePath(),
+      browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 }
 
@@ -1594,6 +1596,11 @@ StoragePartitionImpl::GetBluetoothAllowedDevicesMap() {
 BlobRegistryWrapper* StoragePartitionImpl::GetBlobRegistry() {
   DCHECK(initialized_);
   return blob_registry_.get();
+}
+
+storage::BlobUrlRegistry* StoragePartitionImpl::GetBlobUrlRegistry() {
+  DCHECK(initialized_);
+  return blob_url_registry_.get();
 }
 
 PrefetchURLLoaderService* StoragePartitionImpl::GetPrefetchURLLoaderService() {

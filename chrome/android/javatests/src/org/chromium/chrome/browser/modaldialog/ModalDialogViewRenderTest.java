@@ -71,7 +71,10 @@ public class ModalDialogViewRenderTest extends BlankUiTestActivityTestCase {
 
     @Rule
     public RenderTestRule mRenderTestRule =
-            RenderTestRule.Builder.withPublicCorpus().setRevision(1).build();
+            RenderTestRule.Builder.withPublicCorpus()
+                    .setRevision(1)
+                    .setBugComponent(RenderTestRule.Component.UI_BROWSER_MOBILE_MESSAGES)
+                    .build();
 
     public ModalDialogViewRenderTest(boolean nightModeEnabled) {
         // Sets a fake background color to make the screenshots easier to compare with bare eyes.
@@ -112,7 +115,7 @@ public class ModalDialogViewRenderTest extends BlankUiTestActivityTestCase {
     @MediumTest
     @Feature({"ModalDialog", "RenderTest"})
     public void testRender_TitleAndTitleIcon() throws IOException {
-        setUpViews(R.style.Theme_Chromium_ModalDialog_TextPrimaryButton);
+        setUpViews(R.style.ThemeOverlay_BrowserUI_ModalDialog_TextPrimaryButton);
         final Drawable icon = UiUtils.getTintedDrawable(getActivity(),
                 org.chromium.chrome.R.drawable.ic_add, R.color.default_icon_color_tint_list);
         createModel(mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title)
@@ -124,7 +127,7 @@ public class ModalDialogViewRenderTest extends BlankUiTestActivityTestCase {
     @MediumTest
     @Feature({"ModalDialog", "RenderTest"})
     public void testRender_TitleAndMessage() throws IOException {
-        setUpViews(R.style.Theme_Chromium_ModalDialog_TextPrimaryButton);
+        setUpViews(R.style.ThemeOverlay_BrowserUI_ModalDialog_TextPrimaryButton);
         createModel(
                 mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title)
                         .with(ModalDialogProperties.MESSAGE,
@@ -140,7 +143,7 @@ public class ModalDialogViewRenderTest extends BlankUiTestActivityTestCase {
     @MediumTest
     @Feature({"ModalDialog", "RenderTest"})
     public void testRender_FilledPrimaryButton() throws IOException {
-        setUpViews(R.style.Theme_Chromium_ModalDialog_FilledPrimaryButton);
+        setUpViews(R.style.ThemeOverlay_BrowserUI_ModalDialog_FilledPrimaryButton);
         createModel(
                 mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title)
                         .with(ModalDialogProperties.MESSAGE,
@@ -159,7 +162,7 @@ public class ModalDialogViewRenderTest extends BlankUiTestActivityTestCase {
         final Drawable icon = UiUtils.getTintedDrawable(getActivity(),
                 org.chromium.chrome.R.drawable.ic_add, R.color.default_icon_color_tint_list);
 
-        setUpViews(R.style.Theme_Chromium_ModalDialog_TextPrimaryButton);
+        setUpViews(R.style.ThemeOverlay_BrowserUI_ModalDialog_TextPrimaryButton);
         createModel(
                 mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title)
                         .with(ModalDialogProperties.MESSAGE, "Message")
@@ -175,7 +178,7 @@ public class ModalDialogViewRenderTest extends BlankUiTestActivityTestCase {
         final Drawable icon = AppCompatResources.getDrawable(getActivity(), R.drawable.ic_add);
         icon.mutate().setTint(SemanticColorUtils.getDefaultIconColorInverse(getActivity()));
 
-        setUpViews(R.style.Theme_Chromium_ModalDialog_FilledPrimaryButton);
+        setUpViews(R.style.ThemeOverlay_BrowserUI_ModalDialog_FilledPrimaryButton);
         createModel(
                 mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title)
                         .with(ModalDialogProperties.MESSAGE, "Message")
@@ -190,7 +193,7 @@ public class ModalDialogViewRenderTest extends BlankUiTestActivityTestCase {
     @MediumTest
     @Feature({"ModalDialog", "RenderTest"})
     public void testRender_ScrollableTitle() throws IOException {
-        setUpViews(R.style.Theme_Chromium_ModalDialog_TextPrimaryButton);
+        setUpViews(R.style.ThemeOverlay_BrowserUI_ModalDialog_TextPrimaryButton);
         createModel(
                 mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title)
                         .with(ModalDialogProperties.TITLE_SCROLLABLE, true)
@@ -204,7 +207,7 @@ public class ModalDialogViewRenderTest extends BlankUiTestActivityTestCase {
     @MediumTest
     @Feature({"ModalDialog", "RenderTest"})
     public void testRender_CustomView() throws IOException {
-        setUpViews(R.style.Theme_Chromium_ModalDialog_TextPrimaryButton);
+        setUpViews(R.style.ThemeOverlay_BrowserUI_ModalDialog_TextPrimaryButton);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mCustomTextView1.setText(
                     TextUtils.join("\n", Collections.nCopies(100, "Custom Message")));
@@ -221,7 +224,7 @@ public class ModalDialogViewRenderTest extends BlankUiTestActivityTestCase {
     @MediumTest
     @Feature({"ModalDialog", "RenderTest"})
     public void testRender_FooterMessage() throws IOException {
-        setUpViews(R.style.Theme_Chromium_ModalDialog_TextPrimaryButton);
+        setUpViews(R.style.ThemeOverlay_BrowserUI_ModalDialog_TextPrimaryButton);
         createModel(
                 mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title)
                         .with(ModalDialogProperties.MESSAGE,

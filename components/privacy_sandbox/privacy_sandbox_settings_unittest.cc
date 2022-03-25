@@ -70,7 +70,8 @@ class PrivacySandboxSettingsTest : public testing::TestWithParam<bool> {
   }
 
   virtual void InitializeDelegateBeforeStart() {
-    mock_delegate()->SetupDefaultResponse(/*restricted=*/false);
+    mock_delegate()->SetupDefaultResponse(/*restricted=*/false,
+                                          /*confirmed=*/true);
   }
 
   virtual bool IsIncognitoProfile() { return false; }
@@ -93,9 +94,11 @@ class PrivacySandboxSettingsTest : public testing::TestWithParam<bool> {
     return &browser_task_environment_;
   }
 
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+
  private:
   content::BrowserTaskEnvironment browser_task_environment_;
-  base::test::ScopedFeatureList feature_list_;
   raw_ptr<privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate>
       mock_delegate_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
@@ -863,6 +866,9 @@ class PrivacySandboxSettingsMockDelegateTest
 TEST_P(PrivacySandboxSettingsMockDelegateTest, IsPrivacySandboxRestricted) {
   // When the sandbox is otherwise enabled, the delegate returning true for
   // IsPrivacySandboxRestricted() should disable the sandbox.
+  ON_CALL(*mock_delegate(), IsPrivacySandboxConfirmed).WillByDefault([=]() {
+    return true;
+  });
   privacy_sandbox_settings()->SetPrivacySandboxEnabled(true);
   EXPECT_CALL(*mock_delegate(), IsPrivacySandboxRestricted())
       .Times(1)
@@ -882,8 +888,64 @@ TEST_P(PrivacySandboxSettingsMockDelegateTest, IsPrivacySandboxRestricted) {
   EXPECT_FALSE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
 }
 
+TEST_P(PrivacySandboxSettingsMockDelegateTest, IsPrivacySandboxConfirmed) {
+  // When the sandbox is otherwise enabled, the delegate returning false for
+  // IsPrivacySandboxConfirmed() should disable the sandbox.
+  ON_CALL(*mock_delegate(), IsPrivacySandboxRestricted).WillByDefault([=]() {
+    return false;
+  });
+  privacy_sandbox_settings()->SetPrivacySandboxEnabled(true);
+  EXPECT_CALL(*mock_delegate(), IsPrivacySandboxConfirmed())
+      .Times(1)
+      .WillOnce(testing::Return(false));
+  EXPECT_FALSE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+
+  privacy_sandbox_settings()->SetPrivacySandboxEnabled(true);
+  EXPECT_CALL(*mock_delegate(), IsPrivacySandboxConfirmed())
+      .Times(1)
+      .WillOnce(testing::Return(true));
+  EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+
+  // The delegate should not override a disabled sandbox.
+  privacy_sandbox_settings()->SetPrivacySandboxEnabled(false);
+  EXPECT_CALL(*mock_delegate(), IsPrivacySandboxConfirmed())
+      .Times(1)
+      .WillOnce(testing::Return(true));
+  EXPECT_FALSE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+}
+
 INSTANTIATE_TEST_SUITE_P(PrivacySandboxSettingsMockDelegateTestInstance,
                          PrivacySandboxSettingsMockDelegateTest,
+                         testing::Bool());
+
+class PrivacySandboxSettingLocalOverrideTest
+    : public PrivacySandboxSettingsTest {
+  void InitializeFeaturesBeforeStart() override {
+    if (GetParam()) {
+      feature_list_.InitWithFeatures(
+          {privacy_sandbox::kPrivacySandboxSettings3,
+           privacy_sandbox::kOverridePrivacySandboxSettingsLocalTesting},
+          /*disabled_features=*/{});
+    } else {
+      feature_list_.InitWithFeatures(
+          {privacy_sandbox::kPrivacySandboxSettings3},
+          {privacy_sandbox::kOverridePrivacySandboxSettingsLocalTesting});
+    }
+  }
+};
+
+TEST_P(PrivacySandboxSettingLocalOverrideTest, FollowsOverrideBehavior) {
+  // When the Release 3 flag is enabled, APIs should always be disabled in
+  // incognito. The Release 3 flag is set based on the test param.
+  privacy_sandbox_settings()->SetPrivacySandboxEnabled(false);
+  if (GetParam())
+    EXPECT_TRUE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+  else
+    EXPECT_FALSE(privacy_sandbox_settings()->IsPrivacySandboxEnabled());
+}
+
+INSTANTIATE_TEST_SUITE_P(PrivacySandboxSettingLocalOverrideTestInstance,
+                         PrivacySandboxSettingLocalOverrideTest,
                          testing::Bool());
 
 }  // namespace privacy_sandbox

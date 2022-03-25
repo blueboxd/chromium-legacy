@@ -9,13 +9,15 @@ import './issue_details.js';
 import './spinner_page.js';
 import './support_tool_shared_css.js';
 
+import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {BrowserProxy, BrowserProxyImpl} from './browser_proxy.js';
 import {DataCollectorsElement} from './data_collectors.js';
 import {IssueDetailsElement} from './issue_details.js';
 import {SpinnerPageElement} from './spinner_page.js';
 import {getTemplate} from './support_tool.html.js';
 
-enum SupportToolPageIndex {
+export enum SupportToolPageIndex {
   ISSUE_DETAILS,
   DATA_COLLECTOR_SELECTION,
   SPINNER,
@@ -29,7 +31,9 @@ export interface SupportToolElement {
   };
 }
 
-export class SupportToolElement extends PolymerElement {
+const SupportToolElementBase = WebUIListenerMixin(PolymerElement);
+
+export class SupportToolElement extends SupportToolElementBase {
   static get is() {
     return 'support-tool';
   }
@@ -53,13 +57,39 @@ export class SupportToolElement extends PolymerElement {
   }
 
   private selectedPage_: SupportToolPageIndex;
+  private browserProxy_: BrowserProxy = BrowserProxyImpl.getInstance();
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this.addWebUIListener(
+        'data-collection-completed',
+        this.onDataCollectionCompleted_.bind(this));
+    this.addWebUIListener(
+        'data-collection-cancelled',
+        this.onDataCollectionCancelled_.bind(this));
+  }
+
+  private onDataCollectionCompleted_() {
+    // TODO(b/200511640): Receive detected PII items from c++ side here and fill
+    // in the PII selection page.
+    console.log('data collection completed');
+  }
+
+  private onDataCollectionCancelled_() {
+    // Change the selected page into issue details page so they user can restart
+    // data collection if they want.
+    this.selectedPage_ = SupportToolPageIndex.ISSUE_DETAILS;
+  }
 
   private onContinueClick_() {
+    // If we are currently on data collectors selection page, send signal to
+    // start data collection.
+    if (this.selectedPage_ === SupportToolPageIndex.DATA_COLLECTOR_SELECTION) {
+      this.browserProxy_.startDataCollection(
+          this.$.issueDetails.getIssueDetails(),
+          this.$.dataCollectors.getDataCollectors());
+    }
     this.selectedPage_ = this.selectedPage_ + 1;
-    // TODO(b/219730597): If selected page is data collections page, send signal
-    // to chrome using BrowserProxy to start data collection with the data we
-    // gathered in IssueDetailsElement and DataCollectorsElement. This part will
-    // be added in follow-up CL.
   }
 
   private onBackClick_() {

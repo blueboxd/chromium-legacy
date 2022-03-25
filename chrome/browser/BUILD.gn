@@ -1795,6 +1795,8 @@ static_library("browser") {
     "url_param_filter/cross_otr_observer.h",
     "url_param_filter/url_param_classifications_loader.cc",
     "url_param_filter/url_param_classifications_loader.h",
+    "url_param_filter/url_param_filter_throttle.cc",
+    "url_param_filter/url_param_filter_throttle.h",
     "url_param_filter/url_param_filterer.cc",
     "url_param_filter/url_param_filterer.h",
     "usb/frame_usb_services.cc",
@@ -3550,6 +3552,8 @@ static_library("browser") {
       "accessibility/live_caption_controller_factory.h",
       "accessibility/live_caption_speech_recognition_host.cc",
       "accessibility/live_caption_speech_recognition_host.h",
+      "accessibility/live_caption_unavailability_notifier.cc",
+      "accessibility/live_caption_unavailability_notifier.h",
       "accuracy_tips/accuracy_service_delegate.cc",
       "accuracy_tips/accuracy_service_delegate.h",
       "accuracy_tips/accuracy_service_factory.cc",
@@ -4416,8 +4420,7 @@ static_library("browser") {
       "//chrome/browser/cart:mojo_bindings",
       "//chrome/browser/enterprise/signals:utils",
       "//chrome/browser/first_party_sets",
-      "//chrome/browser/media/router/discovery:discovery",
-      "//chrome/browser/media/router/discovery/access_code:access_code_sink_service_factory",
+      "//chrome/browser/media/router/discovery/access_code:access_code_sink_service",
       "//chrome/browser/new_tab_page/chrome_colors:generate_chrome_colors_info",
       "//chrome/browser/new_tab_page/chrome_colors:generate_colors_info",
       "//chrome/browser/policy:path_parser",
@@ -4480,8 +4483,8 @@ static_library("browser") {
       "//extensions/buildflags",
     ]
     allow_circular_includes_from += [
-      # TODO(crbug.com/1030821): Eliminate usages of browser.h from Media Router.
-      "//chrome/browser/media/router/discovery:discovery",
+      # TODO(b/220386256): Remove circular dependency from the browser.
+      "//chrome/browser/media/router/discovery/access_code:access_code_sink_service",
 
       # TODO(crbug.com/1200215): Remove cycles and simplify all dependencies.
       "//chrome/browser/web_applications",
@@ -4550,6 +4553,8 @@ static_library("browser") {
       "apps/app_discovery_service/app_discovery_util.h",
       "apps/app_discovery_service/app_fetcher_manager.cc",
       "apps/app_discovery_service/app_fetcher_manager.h",
+      "apps/app_discovery_service/game_extras.cc",
+      "apps/app_discovery_service/game_extras.h",
       "apps/app_discovery_service/play_extras.cc",
       "apps/app_discovery_service/play_extras.h",
       "apps/app_discovery_service/recommended_arc_app_fetcher.cc",
@@ -5035,6 +5040,10 @@ static_library("browser") {
     }
   } else {  # Non - Ash.
     sources += [
+      "enterprise/reporting/cloud_profile_reporting_service.cc",
+      "enterprise/reporting/cloud_profile_reporting_service.h",
+      "enterprise/reporting/cloud_profile_reporting_service_factory.cc",
+      "enterprise/reporting/cloud_profile_reporting_service_factory.h",
       "fullscreen.h",
       "policy/browser_signin_policy_handler.cc",
       "policy/browser_signin_policy_handler.h",
@@ -6416,13 +6425,6 @@ static_library("browser") {
         "printing/pwg_raster_converter.cc",
         "printing/pwg_raster_converter.h",
       ]
-
-      if (is_win) {
-        sources += [
-          "printing/print_dialog_cloud_win.cc",
-          "printing/print_dialog_cloud_win.h",
-        ]
-      }
     } else {
       # Partial - only printing support.
       sources += [

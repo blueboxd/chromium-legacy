@@ -1167,8 +1167,7 @@ void View::Paint(const PaintInfo& parent_paint_info) {
           SkFloatToScalar(paint_info.paint_recording_scale_x()),
           SkFloatToScalar(paint_info.paint_recording_scale_y()));
 
-      clip_path_in_parent.transform(
-          SkMatrix(to_parent_recording_space.matrix()));
+      clip_path_in_parent.transform(to_parent_recording_space.matrix().asM33());
       clip_recorder.ClipPathWithAntiAliasing(clip_path_in_parent);
     }
   }
@@ -1825,10 +1824,6 @@ int View::OnDragUpdated(const ui::DropTargetEvent& event) {
 }
 
 void View::OnDragExited() {}
-
-ui::mojom::DragOperation View::OnPerformDrop(const ui::DropTargetEvent& event) {
-  return ui::mojom::DragOperation::kNone;
-}
 
 void View::OnDragDone() {}
 

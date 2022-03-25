@@ -19,6 +19,7 @@ SegmentationPlatformServiceImplTest.*
 SegmentationResultPrefsTest.*
 SegmentationUkmHelperTest.*
 SegmentInfoDatabaseTest.*
+SegmentResultProviderTest.*
 SegmentScoreProviderTest.*
 SegmentSelectorTest.*
 ServiceProxyImplTest.*
@@ -28,11 +29,11 @@ SignalKeyInternalTest.*
 SignalKeyTest.*
 SignalStorageConfigTest.*
 StatsTest.*
-TrainingDataCollectorTest.*
+TrainingDataCollectorImplTest.*
 UkmConfigTest.*
-UkmObserverTest.*
-UrlSignalHandlerTest.*
 UkmDatabaseBackendTest.*
 UkmMetricsTableTest.*
+UkmObserverTest.*
 UkmUrlTableTest.*
+UrlSignalHandlerTest.*
 UserActionSignalHandlerTest.*

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/pin_setup_screen_handler.h"
 
 #include "base/i18n/number_formatting.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
 #include "chrome/grit/generated_resources.h"
@@ -94,10 +95,10 @@ void PinSetupScreenHandler::Initialize() {
 
 void PinSetupScreenHandler::Show(const std::string& token,
                                  bool is_child_account) {
-  base::DictionaryValue data;
-  data.SetKey("auth_token", base::Value(token));
-  data.SetBoolKey("is_child_account", is_child_account);
-  ShowScreenWithData(kScreenId, &data);
+  base::Value::Dict data;
+  data.Set("auth_token", base::Value(token));
+  data.Set("is_child_account", is_child_account);
+  ShowInWebUI(std::move(data));
 }
 
 void PinSetupScreenHandler::SetLoginSupportAvailable(bool available) {

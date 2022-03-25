@@ -4,7 +4,9 @@
 
 #include "ash/rgb_keyboard/rgb_keyboard_manager.h"
 
+#include <stdint.h>
 #include <memory>
+#include <vector>
 
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,4 +38,74 @@ TEST_F(RgbKeyboardManagerTest, GetKeyboardCapabilities) {
             RgbKeyboardCapabilities::kNone);
 }
 
+TEST_F(RgbKeyboardManagerTest, SetStaticRgbValues) {
+  const uint8_t expected_r = 1;
+  const uint8_t expected_g = 2;
+  const uint8_t expected_b = 3;
+
+  manager_->SetStaticBackgroundColor(expected_r, expected_g, expected_b);
+  const std::vector<uint8_t> rgb_values = manager_->recently_sent_rgb();
+
+  EXPECT_EQ(expected_r, rgb_values[0]);
+  EXPECT_EQ(expected_g, rgb_values[1]);
+  EXPECT_EQ(expected_b, rgb_values[2]);
+}
+
+TEST_F(RgbKeyboardManagerTest, SetRainbowMode) {
+  EXPECT_FALSE(manager_->is_rainbow_mode_set());
+
+  manager_->SetRainbowMode();
+
+  EXPECT_TRUE(manager_->is_rainbow_mode_set());
+}
+
+TEST_F(RgbKeyboardManagerTest, RainbowModeResetsStatic) {
+  EXPECT_FALSE(manager_->is_rainbow_mode_set());
+
+  const uint8_t expected_r = 1;
+  const uint8_t expected_g = 2;
+  const uint8_t expected_b = 3;
+
+  manager_->SetStaticBackgroundColor(expected_r, expected_g, expected_b);
+  std::vector<uint8_t> rgb_values = manager_->recently_sent_rgb();
+
+  EXPECT_EQ(expected_r, rgb_values[0]);
+  EXPECT_EQ(expected_g, rgb_values[1]);
+  EXPECT_EQ(expected_b, rgb_values[2]);
+
+  manager_->SetRainbowMode();
+  EXPECT_TRUE(manager_->is_rainbow_mode_set());
+
+  rgb_values = manager_->recently_sent_rgb();
+  EXPECT_EQ(0u, rgb_values[0]);
+  EXPECT_EQ(0u, rgb_values[1]);
+  EXPECT_EQ(0u, rgb_values[2]);
+}
+
+TEST_F(RgbKeyboardManagerTest, StaticResetRainbowMode) {
+  EXPECT_FALSE(manager_->is_rainbow_mode_set());
+  manager_->SetRainbowMode();
+  EXPECT_TRUE(manager_->is_rainbow_mode_set());
+
+  const uint8_t expected_r = 1;
+  const uint8_t expected_g = 2;
+  const uint8_t expected_b = 3;
+
+  manager_->SetStaticBackgroundColor(expected_r, expected_g, expected_b);
+  const std::vector<uint8_t> rgb_values = manager_->recently_sent_rgb();
+
+  EXPECT_EQ(expected_r, rgb_values[0]);
+  EXPECT_EQ(expected_g, rgb_values[1]);
+  EXPECT_EQ(expected_b, rgb_values[2]);
+
+  EXPECT_FALSE(manager_->is_rainbow_mode_set());
+}
+
+TEST_F(RgbKeyboardManagerTest, SetCapsLockState) {
+  EXPECT_FALSE(manager_->is_caps_lock_set());
+  manager_->SetCapsLockState(/*is_caps_lock_set=*/true);
+  EXPECT_TRUE(manager_->is_caps_lock_set());
+  manager_->SetCapsLockState(/*is_caps_lock_set=*/false);
+  EXPECT_FALSE(manager_->is_caps_lock_set());
+}
 }  // namespace ash

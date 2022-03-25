@@ -2105,13 +2105,9 @@ crbug.com/432129 html/marquee/marquee-scroll.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
 crbug.com/421283 html/marquee/marquee-scrollamount.html [ Failure Pass ]
 
-# TODO(oshima): Mac is currently not supported.
-crbug.com/567837 [ Mac ] virtual/scalefactor200withzoom/fast/hidpi/static/* [ Skip ]
-
 # TODO(oshima): Move the event scaling code to eventSender and remove this.
 crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/gesture-scroll-amount.html [ Failure Timeout ]
 crbug.com/567837 virtual/scalefactor200/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Failure Timeout ]
-crbug.com/567837 virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ Failure Timeout ]
 crbug.com/567837 [ Linux ] virtual/scalefactor150/fast/hidpi/static/mousewheel-scroll-amount.html [ Failure Timeout ]
 crbug.com/567837 [ Win ] virtual/scalefactor150/fast/hidpi/static/mousewheel-scroll-amount.html [ Failure Timeout ]
 crbug.com/567837 [ Linux ] virtual/scalefactor150/fast/hidpi/static/gesture-scroll-amount.html [ Failure Timeout ]
@@ -2804,9 +2800,6 @@ crbug.com/1298321 fast/forms/calendar-picker/calendar-picker-appearance-zoom200.
 crbug.com/1298321 fast/forms/calendar-picker/date-picker-appearance-zoom150.html [ Failure Pass Timeout ]
 crbug.com/1298321 fast/forms/select-popup/popup-menu-appearance-zoom.html [ Failure Pass Timeout ]
 crbug.com/1298321 fast/forms/suggestion-picker/date-suggestion-picker-appearance-zoom200.html [ Failure Pass Timeout ]
-crbug.com/1298321 virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-appearance.html [ Failure Pass Timeout ]
-crbug.com/1298321 virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ Failure Pass Timeout ]
-crbug.com/1298321 virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass Timeout ]
 crbug.com/1298321 virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Failure Pass Timeout ]
 crbug.com/1298321 virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass Timeout ]
 crbug.com/1298321 virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure Pass Timeout ]
@@ -3397,6 +3390,7 @@ crbug.com/626703 [ Win ] external/wpt/wasm/serialization/arraybuffer/transfer.wi
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.15 ] virtual/document-transition/wpt_internal/document-transition/one-element-two-targets.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/registered-property-interpolation-009.https.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/permission-geolocation.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/geometry-background-image-tiled-002.https.html [ Failure ]
@@ -6341,7 +6335,7 @@ crbug.com/1201346 http/tests/origin_trials/webexposed/bfcache-experiment-http-he
 crbug.com/1201365 virtual/portals/http/tests/inspector-protocol/portals/device-emulation-portals.js [ Pass Timeout ]
 
 # Sheriff 2021-04-22
-crbug.com/1191990 [ Linux ] http/tests/serviceworker/clients-openwindow.html [ Failure Pass ]
+crbug.com/1191990 http/tests/serviceworker/clients-openwindow.html [ Failure Pass ]
 
 # Sheriff 2021-04-23
 crbug.com/1198832 [ Linux ] external/wpt/css/css-sizing/aspect-ratio/replaced-element-003.html [ Failure Pass ]
@@ -7611,7 +7605,6 @@ crbug.com/1307741 webaudio/AudioParam/audioparam-k-rate.html [ Timeout ]
 # Sheriff 2022-03-21: More flaky tests.
 crbug.com/1277696 [ Mac ] fast/loader/reload-zero-byte-plugin.html [ Failure Pass ]
 crbug.com/1272376 [ Mac ] plugins/plugin-document-back-forward.html [ Failure Pass ]
-crbug.com/1191990 [ Mac ] http/tests/serviceworker/clients-openwindow.html [ Pass Timeout ]
 
 # Sheriff 2022-03-23: More flaky tests.
 crbug.com/1309483 [ Win7 ] virtual/gpu-rasterization/images/directly-composited-image-orientation.html [ Failure Pass ]
@@ -7619,3 +7612,7 @@ crbug.com/1309633 [ Mac10.12 ] external/wpt/FileAPI/url/url-lifetime.html [ Fail
 crbug.com/1309633 [ Mac10.13 ] external/wpt/FileAPI/url/url-lifetime.html [ Failure ]
 crbug.com/1309633 [ Mac10.14 ] external/wpt/FileAPI/url/url-lifetime.html [ Failure ]
 crbug.com/1309633 [ Mac10.15 ] external/wpt/FileAPI/url/url-lifetime.html [ Failure ]
+
+# Sheriff 2022-03-24
+crbug.com/1309756 http/tests/images/force-reload.html [ Skip ]
+crbug.com/1309756 [ Mac11-arm64 ] http/tests/images/force-reload-image-document.html [ Skip ]

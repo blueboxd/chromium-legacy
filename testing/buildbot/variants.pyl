@@ -28,16 +28,16 @@
   },
   'LACROS_VERSION_SKEW_CANARY': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v102.0.4960.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v102.0.4963.0/test_ash_chrome',
       '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
     ],
-    'identifier': 'Lacros version skew testing ash 102.0.4960.0',
+    'identifier': 'Lacros version skew testing ash 102.0.4963.0',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v102.0.4960.0',
-          'revision': 'version:102.0.4960.0',
+          'location': 'lacros_version_skew_tests_v102.0.4963.0',
+          'revision': 'version:102.0.4963.0',
         },
       ],
     },
@@ -496,18 +496,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M98/out/Release',
+      '../../weblayer_instrumentation_test_M99/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=98',
+      '--impl-version=99',
     ],
-    'identifier': 'with_impl_from_98',
+    'identifier': 'with_impl_from_99',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M98',
-          'revision': 'version:98.0.4758.109',
+          'location': 'weblayer_instrumentation_test_M99',
+          'revision': 'version:99.0.4844.88',
         }
       ],
     },
@@ -640,18 +640,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M98/out/Release',
+      '../../weblayer_instrumentation_test_M99/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=98',
+      '--impl-version=99',
     ],
-    'identifier': 'with_impl_from_98',
+    'identifier': 'with_impl_from_99',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M98',
-          'revision': 'version:98.0.4758.109',
+          'location': 'weblayer_instrumentation_test_M99',
+          'revision': 'version:99.0.4844.88',
         }
       ],
     },
@@ -782,20 +782,20 @@
       '--test-runner-outdir',
       '.',
       '--client-outdir',
-      '../../weblayer_instrumentation_test_M98/out/Release',
+      '../../weblayer_instrumentation_test_M99/out/Release',
       '--implementation-outdir',
       '.',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--client-version=98',
+      '--client-version=99',
     ],
-    'identifier': 'with_client_from_98',
+    'identifier': 'with_client_from_99',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M98',
-          'revision': 'version:98.0.4758.109',
+          'location': 'weblayer_instrumentation_test_M99',
+          'revision': 'version:99.0.4844.88',
         }
       ],
     },
@@ -893,8 +893,8 @@
   'CROS_ATLAS_RELEASE_BETA': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_chrome_version': '100.0.4896.44',
-      'cros_img': 'atlas-release/R100-14526.28.0',
+      'cros_chrome_version': '100.0.4896.54',
+      'cros_img': 'atlas-release/R100-14526.43.0',
     },
     'enabled': True,
     'identifier': 'ATLAS_RELEASE_BETA',
@@ -929,8 +929,8 @@
   'CROS_EVE_RELEASE_BETA': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_chrome_version': '100.0.4896.44',
-      'cros_img': 'eve-release/R100-14526.28.0',
+      'cros_chrome_version': '100.0.4896.54',
+      'cros_img': 'eve-release/R100-14526.43.0',
     },
     'enabled': True,
     'identifier': 'EVE_RELEASE_BETA',
@@ -1001,8 +1001,8 @@
   'CROS_OCTOPUS_RELEASE_BETA': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_chrome_version': '100.0.4896.44',
-      'cros_img': 'octopus-release/R100-14526.28.0',
+      'cros_chrome_version': '100.0.4896.54',
+      'cros_img': 'octopus-release/R100-14526.43.0',
     },
     'enabled': True,
     'identifier': 'OCTOPUS_RELEASE_BETA',

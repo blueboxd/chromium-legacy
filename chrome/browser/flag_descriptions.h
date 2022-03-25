@@ -1200,6 +1200,9 @@ extern const char kPrivacyGuideDescription[];
 extern const char kPrivacyGuide2Name[];
 extern const char kPrivacyGuide2Description[];
 
+extern const char kPrivacySandboxAdsAPIsOverrideName[];
+extern const char kPrivacySandboxAdsAPIsOverrideDescription[];
+
 extern const char kPrivacySandboxV3Name[];
 extern const char kPrivacySandboxV3Description[];
 
@@ -1824,9 +1827,6 @@ extern const char kFeedStampDescription[];
 extern const char kGridTabSwitcherForTabletsName[];
 extern const char kGridTabSwitcherForTabletsDescription[];
 
-extern const char kHomepagePromoCardName[];
-extern const char kHomepagePromoCardDescription[];
-
 extern const char kInstanceSwitcherName[];
 extern const char kInstanceSwitcherDescription[];
 
@@ -2379,9 +2379,6 @@ extern const char kArcFilePickerExperimentDescription[];
 
 extern const char kArcKeyboardShortcutHelperIntegrationName[];
 extern const char kArcKeyboardShortcutHelperIntegrationDescription[];
-
-extern const char kArcMouseWheelSmoothScrollName[];
-extern const char kArcMouseWheelSmoothScrollDescription[];
 
 extern const char kArcNativeBridgeToggleName[];
 extern const char kArcNativeBridgeToggleDescription[];
@@ -3290,6 +3287,11 @@ extern const char kSkipUndecryptablePasswordsDescription[];
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
 
 // Feature flags --------------------------------------------------------------
+
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+extern const char kChromeWideEchoCancellationName[];
+extern const char kChromeWideEchoCancellationDescription[];
+#endif  // BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
 
 #if defined(DCHECK_IS_CONFIGURABLE)
 extern const char kDcheckIsFatalName[];

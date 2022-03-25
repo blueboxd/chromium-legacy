@@ -1177,6 +1177,7 @@ if (!is_android) {
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//chrome/browser/safe_browsing:verdict_cache_manager_factory",
       "//chrome/browser/sharing/proto",
+      "//chrome/browser/ui/color:color_headers",
       "//chrome/browser/ui/tabs:tab_enums",
       "//chrome/browser/ui/webui/history_clusters:mojo_bindings",
       "//chrome/browser/web_applications:browser_tests",
@@ -1588,7 +1589,6 @@ if (!is_android) {
       "../browser/apps/platform_apps/platform_app_navigation_redirector_browsertest.cc",
       "../browser/apps/platform_apps/service_worker_browsertest.cc",
       "../browser/attribution_reporting/chrome_attribution_browsertest.cc",
-      "../browser/attribution_reporting/conversions_usage_restriction_trial_browsertest.cc",
       "../browser/autocomplete/autocomplete_browsertest.cc",
       "../browser/autofill/autofill_autocomplete_browsertest.cc",
       "../browser/autofill/autofill_browsertest.cc",
@@ -1877,7 +1877,6 @@ if (!is_android) {
       "../browser/policy/test/force_google_safe_search_policy_browsertest.cc",
       "../browser/policy/test/hsts_policy_browsertest.cc",
       "../browser/policy/test/jit_policy_browsertest.cc",
-      "../browser/policy/test/network_prediction_policy_browsertest.cc",
       "../browser/policy/test/policy_browsertest.cc",
       "../browser/policy/test/policy_statistics_collector_browsertest.cc",
       "../browser/policy/test/policy_test_google_browsertest.cc",
@@ -2124,7 +2123,6 @@ if (!is_android) {
       "../browser/ui/views/toolbar/app_menu_browsertest.cc",
       "../browser/ui/views/toolbar/avatar_toolbar_button_browsertest.cc",
       "../browser/ui/views/toolbar/chrome_labs_browsertest.cc",
-      "../browser/ui/views/web_apps/file_handler_launch_dialog_browsertest.cc",
       "../browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_browsertest.cc",
       "../browser/ui/views/web_apps/frame_toolbar/web_app_minimal_ui_test.cc",
       "../browser/ui/views/web_apps/web_app_protocol_handler_intent_picker_dialog_browsertest.cc",
@@ -2509,6 +2507,7 @@ if (!is_android) {
     if (!is_chromeos_ash) {
       sources += [
         "../browser/chrome_multiprofile_startup_browsertest.cc",
+        "../browser/enterprise/reporting/cloud_profile_reporting_browsertest.cc",
         "../browser/external_protocol/external_protocol_handler_browsertest.cc",
         "../browser/policy/test/variation_restrict_parameter_policy_browsertest.cc",
         "../browser/profiles/profile_window_browsertest.cc",
@@ -2670,16 +2669,15 @@ if (!is_android) {
           "//third_party/liblouis/wasm/liblouis_wrapper_browsertest.cc",
         ]
         deps += [ "//chrome/browser/chromeos" ]
-        data_deps += [ "//third_party/liblouis:liblouis_test_data" ]
+        data_deps += [
+          "//ppapi/native_client:irt",
+          "//third_party/liblouis:liblouis_test_data",
+        ]
 
-        # TODO(https://crbug.com/1299021): Implement building these NaCl
-        # targets as ARM32 when Chrome is built for ARM64 (for Linux/Chrome
-        # OS).
+        # TODO(https://crbug.com/1299021): Implement building this NaCl target
+        # as ARM32 when Chrome is built for ARM64 (for Linux/Chrome OS).
         if (target_cpu != "arm64") {
-          data_deps += [
-            "//components/nacl/loader:nacl_helper",
-            "//ppapi/native_client:irt",
-          ]
+          data_deps += [ "//components/nacl/loader:nacl_helper" ]
         }
       }
 
@@ -2952,6 +2950,7 @@ if (!is_android) {
         sources += [
           "../browser/enterprise/connectors/device_trust/device_trust_browsertest.cc",
           "../browser/extensions/api/system_indicator/system_indicator_apitest.cc",
+          "../browser/ui/views/web_apps/file_handler_launch_dialog_browsertest.cc",
         ]
 
         deps += [
@@ -3043,6 +3042,7 @@ if (!is_android) {
         deps += [
           "../browser/chromeos/extensions/telemetry/api:browser_tests",
           "//chrome/browser/error_reporting:test_support",
+          "//chromeos/components/chromebox_for_meetings/buildflags",
           "//chromeos/dbus/dlp:dlp",
         ]
 
@@ -4280,9 +4280,12 @@ if (!is_android) {
 
       use_cfv2 = false
       additional_manifest_fragments = [
+        "//build/config/fuchsia/test/audio_capabilities.test-cmx",
         "//build/config/fuchsia/test/font_capabilities.test-cmx",
         "//build/config/fuchsia/test/jit_capabilities.test-cmx",
         "//build/config/fuchsia/test/network_capabilities.test-cmx",
+        "//build/config/fuchsia/test/present_view_capabilities.test-cmx",
+        "//build/config/fuchsia/test/vulkan_capabilities.test-cmx",
       ]
 
       # TODO(crbug.com/931218): Ninja cannot handle certain characters appearing
@@ -5195,6 +5198,7 @@ test("unit_tests") {
     "../browser/update_client/chrome_update_query_params_delegate_unittest.cc",
     "../browser/url_param_filter/cross_otr_observer_unittest.cc",
     "../browser/url_param_filter/url_param_classifications_loader_unittest.cc",
+    "../browser/url_param_filter/url_param_filter_throttle_unittest.cc",
     "../browser/url_param_filter/url_param_filterer_unittest.cc",
     "../browser/visibility_timer_tab_helper_unittest.cc",
     "../browser/vr/vr_tab_helper_unittest.cc",
@@ -6462,6 +6466,7 @@ test("unit_tests") {
       "../browser/ui/tab_contents/chrome_web_contents_view_handle_drop_unittest.cc",
       "../browser/ui/tab_contents/tab_contents_iterator_unittest.cc",
       "../browser/ui/tab_sharing/tab_sharing_infobar_delegate_unittest.cc",
+      "../browser/ui/tabs/existing_base_sub_menu_model_unittest.cc",
       "../browser/ui/tabs/existing_tab_group_sub_menu_model_unittest.cc",
       "../browser/ui/tabs/existing_window_sub_menu_model_unittest.cc",
       "../browser/ui/tabs/pinned_tab_codec_unittest.cc",

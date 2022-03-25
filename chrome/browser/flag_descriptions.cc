@@ -2130,6 +2130,11 @@ const char kPrivacyGuide2Description[] =
     "Enables UI updates for Privacy Guide. This requires #privacy-guide to "
     "also be enabled";
 
+const char kPrivacySandboxAdsAPIsOverrideName[] = "Privacy Sandbox Ads APIs";
+const char kPrivacySandboxAdsAPIsOverrideDescription[] =
+    "Enables Privacy Sandbox APIs: Attribtuion Reporting, Fledge, Topics and "
+    "their associated features.";
+
 const char kPrivacySandboxV3Name[] = "Privacy Sandbox V3";
 const char kPrivacySandboxV3Description[] =
     "Enables an updated Privacy Sandbox UI. Also enables some related "
@@ -3209,12 +3214,6 @@ const char kGridTabSwitcherForTabletsName[] = "Grid tab switcher for tablets";
 const char kGridTabSwitcherForTabletsDescription[] =
     "Enable grid tab switcher for tablets, replacing the tab strip.";
 
-const char kHomepagePromoCardName[] =
-    "Enable homepage promo card on the New Tab Page";
-const char kHomepagePromoCardDescription[] =
-    "Enable homepage promo card that will be shown to users with partner "
-    "configured homepage.";
-
 const char kInstanceSwitcherName[] = "Enable instance switcher";
 const char kInstanceSwitcherDescription[] =
     "Enable instance switcher dialog UI that helps users manage multiple "
@@ -4137,12 +4136,6 @@ const char kArcKeyboardShortcutHelperIntegrationName[] =
     "Enable keyboard shortcut helper integration for ARC";
 const char kArcKeyboardShortcutHelperIntegrationDescription[] =
     "Shows keyboard shortcuts from Android apps in Chrome OS Shortcut Viewer";
-
-const char kArcMouseWheelSmoothScrollName[] =
-    "Enable ARC mouse wheel smooth scroll compatibility feature.";
-const char kArcMouseWheelSmoothScrollDescription[] =
-    "Mouse wheel will be converted to simulated smooth scroll in phone-"
-    "optimized Android apps.";
 
 const char kArcNativeBridgeToggleName[] =
     "Toggle between native bridge implementations for ARC";
@@ -5694,6 +5687,14 @@ const char kSkipUndecryptablePasswordsDescription[] =
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
 
 // Feature flags --------------------------------------------------------------
+
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+extern const char kChromeWideEchoCancellationName[] =
+    "Chrome-wide echo cancellation";
+extern const char kChromeWideEchoCancellationDescription[] =
+    "Run WebRTC capture audio processing in the audio process instead of the "
+    "renderer processes, thereby cancelling echoes from more audio sources.";
+#endif  // BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
 
 #if defined(DCHECK_IS_CONFIGURABLE)
 const char kDcheckIsFatalName[] = "DCHECKs are fatal";

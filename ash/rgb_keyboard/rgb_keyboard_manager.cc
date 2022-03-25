@@ -4,6 +4,9 @@
 
 #include "ash/rgb_keyboard/rgb_keyboard_manager.h"
 
+#include <stdint.h>
+#include <vector>
+
 #include "base/check.h"
 #include "base/check_op.h"
 
@@ -13,9 +16,12 @@ namespace {
 
 RgbKeyboardManager* g_instance = nullptr;
 
+const int kRGBLength = 3;
+
 }  // namespace
 
-RgbKeyboardManager::RgbKeyboardManager() {
+RgbKeyboardManager::RgbKeyboardManager()
+    : recently_sent_rgb_for_testing_(kRGBLength) {
   DCHECK(!g_instance);
   g_instance = this;
 }
@@ -28,6 +34,32 @@ RgbKeyboardManager::~RgbKeyboardManager() {
 // TODO(jimmyxgong): This is a stub implementation, replace with real impl.
 RgbKeyboardCapabilities RgbKeyboardManager::GetRgbKeyboardCapabilities() const {
   return RgbKeyboardCapabilities::kNone;
+}
+
+// TODO(jimmyxgong): This is a stub implementation, replace with real impl.
+void RgbKeyboardManager::SetStaticBackgroundColor(uint8_t r,
+                                                  uint8_t g,
+                                                  uint8_t b) {
+  // Reset the rainbow mode state.
+  is_rainbow_mode_set_for_testing_ = false;
+
+  recently_sent_rgb_for_testing_[0] = r;
+  recently_sent_rgb_for_testing_[1] = g;
+  recently_sent_rgb_for_testing_[2] = b;
+}
+
+// TODO(jimmyxgong): This is a stub implementation, replace with real impl.
+void RgbKeyboardManager::SetRainbowMode() {
+  is_rainbow_mode_set_for_testing_ = true;
+
+  // Reset the stored static rgb values;
+  recently_sent_rgb_for_testing_[0] = 0u;
+  recently_sent_rgb_for_testing_[1] = 0u;
+  recently_sent_rgb_for_testing_[2] = 0u;
+}
+
+void RgbKeyboardManager::SetCapsLockState(bool is_caps_lock_set) {
+  is_caps_lock_set_ = is_caps_lock_set;
 }
 
 // static

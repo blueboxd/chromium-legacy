@@ -200,6 +200,12 @@
       status: "experimental",
     },
     {
+      name: "AttributionReporting",
+      origin_trial_feature_name: "PrivacySandboxAdsAPIs",
+      origin_trial_allows_third_party: true,
+      status: "experimental",
+    },
+    {
       name: "AudioOutputDevices",
       // Android does not yet support switching of audio output devices
       status: {"Android": "", "default": "stable"},
@@ -336,6 +342,10 @@
     },
     {
       name: "Canvas2dScrollPathIntoView",
+      status: "experimental",
+    },
+    {
+      name: "Canvas2dStaysGPUOnReadback",
       status: "experimental",
     },
     {
@@ -481,9 +491,7 @@
     },
     {
       name: "ConversionMeasurement",
-      origin_trial_feature_name: "ConversionMeasurement",
-      origin_trial_allows_third_party: true,
-      status: "experimental",
+      status: "test",
     },
     {
       name: "CooperativeScheduling"
@@ -1135,7 +1143,8 @@
     },
     {
       name: "Fledge",
-      origin_trial_feature_name: "Fledge",
+      origin_trial_feature_name: "PrivacySandboxAdsAPIs",
+      origin_trial_allows_third_party: true,
     },
     {
       name: "Focusgroup",
@@ -1946,6 +1955,13 @@
       name: "PriorityHints",
       status: "stable",
     },
+    // The RTE feature encompasses multiple APIs, including: Attribution
+    // Reporting, FLEDGE, and Topics.
+    {
+      name: "PrivacySandboxAdsAPIs",
+      origin_trial_feature_name: "PrivacySandboxAdsAPIs",
+      origin_trial_allows_third_party: true,
+    },
     {
       name: "PrivateNetworkAccessNonSecureContextsAllowed",
       origin_trial_feature_name: "PrivateNetworkAccessNonSecureContextsAllowed",
@@ -2313,6 +2329,8 @@
     },
     {
       name: "TopicsAPI",
+      origin_trial_feature_name: "PrivacySandboxAdsAPIs",
+      origin_trial_allows_third_party: true,
     },
     // This feature allows touch dragging and a context menu to occur
     // simultaneously, with the assumption that the menu is non-modal.  Without

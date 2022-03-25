@@ -245,7 +245,7 @@
   {
     "name": "arc-right-click-long-press",
     "owners": [ "yhanada", "mduggan" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 102
   },
   {
     "name": "arc-rt-vcpu-dual-core",
@@ -605,17 +605,17 @@
   {
     "name": "bookmark-bottom-sheet",
     "owners": [ "wylieb" ],
-    "expiry_milestone": 102
+    "expiry_milestone": 107
   },
   {
     "name": "bookmarks-improved-save-flow",
     "owners": ["wylieb", "fgorski", "mdjones"],
-    "expiry_milestone": 102
+    "expiry_milestone": 107
   },
   {
     "name": "bookmarks-refresh",
     "owners": ["wylieb", "fgorski", "mdjones"],
-    "expiry_milestone": 102
+    "expiry_milestone": 107
   },
   {
     "name": "borealis-big-gl",
@@ -785,6 +785,11 @@
     "name": "chrome-whats-new-ui",
     "owners": [ "rbpotter" ],
     "expiry_milestone": 102
+  },
+  {
+    "name": "chrome-wide-echo-cancellation",
+    "owners": [ "olka", "saza" ],
+    "expiry_milestone": 110
   },
   {
     "name": "chromeos-direct-video-decoder",
@@ -1249,7 +1254,6 @@
   {
     "name": "disable-office-editing-component-app",
     "owners": [
-      "chrome-apps-platform-rationalization@google.com",
       "quickoffice-chrome-eng@google.com"
     ],
     "expiry_milestone": 110
@@ -1468,11 +1472,6 @@
     "name": "enable-accessibility-page-zoom",
     "owners": [ "mschillaci@google.com", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 101
-  },
-  {
-    "name": "enable-android-dark-search",
-    "owners": [ "wylieb", "twellington", "fgorski" ],
-    "expiry_milestone": 95
   },
   {
     "name": "enable-app-discovery-for-oobe",
@@ -3550,11 +3549,6 @@
     "expiry_milestone": 105
   },
   {
-    "name": "homepage-promo-card",
-    "owners": [ "wenyufu", "clank-app-team@google.com" ],
-    "expiry_milestone": 90
-  },
-  {
     "name": "http-cache-partitioning",
     "owners": [ "shivanisha" ],
     "expiry_milestone": 95
@@ -4734,7 +4728,7 @@
   },
   {
     "name": "password-scripts-fetching",
-    "owners": [ "kolos", "selakovic@google.com", "treib", "brunobraga" ],
+    "owners": [ "kolos", "treib", "brunobraga@google.com", "chrome-duplex@google.com" ],
     "expiry_milestone": 105
   },
   {
@@ -4871,6 +4865,14 @@
       "rainhard",
       "msramek",
       "chrome-friendly-settings@google.com"],
+    "expiry_milestone": 104
+  },
+  {
+    "name": "privacy-sandbox-ads-apis",
+    "owners": [
+      "johnidel",
+      "jkarlin",
+      "pauljensen"],
     "expiry_milestone": 104
   },
   {

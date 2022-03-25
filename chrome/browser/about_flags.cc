@@ -1270,27 +1270,18 @@ const FeatureEntry::FeatureVariation
         {"Signed-out Users", {}, 0, "t4693176"},
         {"All Users", {}, 0, "t4693177"}};
 
+constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestInMemoryCache[] = {
+    {"ZeroSuggestCacheCounterfactual", "true"}};
 constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration15Secs[] =
     {{"ZeroSuggestCacheDurationSec", "15"},
-     {"ZeroSuggestCacheCounterfactual", "true"},
-     {"ZeroSuggestPrefetchBypassCache", "true"}};
-constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration30Secs[] =
-    {{"ZeroSuggestCacheDurationSec", "30"},
-     {"ZeroSuggestCacheCounterfactual", "true"},
-     {"ZeroSuggestPrefetchBypassCache", "true"}};
-constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration60Secs[] =
-    {{"ZeroSuggestCacheDurationSec", "60"},
-     {"ZeroSuggestCacheCounterfactual", "true"},
-     {"ZeroSuggestPrefetchBypassCache", "true"}};
+     {"ZeroSuggestCacheCounterfactual", "true"}};
 
 constexpr FeatureEntry::FeatureVariation
     kOmniboxZeroSuggestPrefetchingVariations[] = {
-        {"15 seconds", kOmniboxZeroSuggestCacheDuration15Secs,
-         std::size(kOmniboxZeroSuggestCacheDuration15Secs), nullptr},
-        {"30 seconds", kOmniboxZeroSuggestCacheDuration30Secs,
-         std::size(kOmniboxZeroSuggestCacheDuration30Secs), nullptr},
-        {"60 seconds", kOmniboxZeroSuggestCacheDuration60Secs,
-         std::size(kOmniboxZeroSuggestCacheDuration60Secs), nullptr}};
+        {"In-memory cache", kOmniboxZeroSuggestInMemoryCache,
+         std::size(kOmniboxZeroSuggestInMemoryCache), nullptr},
+        {"15 sec HTTP cache", kOmniboxZeroSuggestCacheDuration15Secs,
+         std::size(kOmniboxZeroSuggestCacheDuration15Secs), nullptr}};
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
@@ -2128,28 +2119,6 @@ const FeatureEntry::FeatureVariation
          std::size(kAutofillUseMobileLabelDisambiguationShowAll), nullptr},
         {"(show one)", kAutofillUseMobileLabelDisambiguationShowOne,
          std::size(kAutofillUseMobileLabelDisambiguationShowOne), nullptr}};
-#endif  // BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(IS_ANDROID)
-const FeatureEntry::FeatureParam kHomepagePromoCardLarge[] = {
-    {"promo-card-variation", "Large"}};
-const FeatureEntry::FeatureParam kHomepagePromoCardCompact[] = {
-    {"promo-card-variation", "Compact"}};
-const FeatureEntry::FeatureParam kHomepagePromoCardSlim[] = {
-    {"promo-card-variation", "Slim"}};
-const FeatureEntry::FeatureParam kHomepagePromoCardSuppressing[] = {
-    {"promo-card-variation", "Compact"},
-    {"suppressing_sign_in_promo", "true"}};
-
-const FeatureEntry::FeatureVariation kHomepagePromoCardVariations[] = {
-    {"Large", kHomepagePromoCardLarge, std::size(kHomepagePromoCardLarge),
-     nullptr},
-    {"Compact", kHomepagePromoCardCompact, std::size(kHomepagePromoCardCompact),
-     nullptr},
-    {"Slim", kHomepagePromoCardSlim, std::size(kHomepagePromoCardSlim),
-     nullptr},
-    {"Compact_SuppressingSignInPromo", kHomepagePromoCardSuppressing,
-     std::size(kHomepagePromoCardSuppressing), nullptr}};
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -4595,10 +4564,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcKeyboardShortcutHelperIntegrationDescription,
      kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kKeyboardShortcutHelperIntegrationFeature)},
-    {"arc-mouse-wheel-smooth-scroll",
-     flag_descriptions::kArcMouseWheelSmoothScrollName,
-     flag_descriptions::kArcMouseWheelSmoothScrollDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(arc::kMouseWheelSmoothScroll)},
     {"arc-native-bridge-toggle", flag_descriptions::kArcNativeBridgeToggleName,
      flag_descriptions::kArcNativeBridgeToggleDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kNativeBridgeToggleFeature)},
@@ -5357,6 +5322,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpRealboxUseGoogleGIconDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kRealboxUseGoogleGIcon)},
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+    {"chrome-wide-echo-cancellation",
+     flag_descriptions::kChromeWideEchoCancellationName,
+     flag_descriptions::kChromeWideEchoCancellationDescription, kOsWin | kOsMac,
+     FEATURE_VALUE_TYPE(media::kChromeWideEchoCancellation)},
+#endif  // BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
 
 #if defined(DCHECK_IS_CONFIGURABLE)
     {"dcheck-is-fatal", flag_descriptions::kDcheckIsFatalName,
@@ -6585,14 +6557,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniDiskResizing)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_ANDROID)
-    {"homepage-promo-card", flag_descriptions::kHomepagePromoCardName,
-     flag_descriptions::kHomepagePromoCardDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kHomepagePromoCard,
-                                    kHomepagePromoCardVariations,
-                                    "HomepagePromoAndroid")},
-#endif  // BUILDFLAG(IS_ANDROID)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"sync-settings-categorization",
      flag_descriptions::kSyncSettingsCategorizationName,
@@ -7183,6 +7147,16 @@ const FeatureEntry kFeatureEntries[] = {
          "PrivacySandboxSettings3:"
          "disable-dialog-for-testing/true/show-sample-data/true,"
          "EnableFetchingAccountCapabilities")},
+
+    {"privacy-sandbox-ads-apis",
+     flag_descriptions::kPrivacySandboxAdsAPIsOverrideName,
+     flag_descriptions::kPrivacySandboxAdsAPIsOverrideDescription, kOsAll,
+     // Use a command-line parameter instead of a FEATURE_VALUE_TYPE to enable
+     // multiple related features when they are available.
+     SINGLE_VALUE_TYPE_AND_VALUE(switches::kEnableFeatures,
+                                 "PrivacySandboxAdsAPIsOverride"
+                                 "Fledge,BrowsingTopics,ConversionMeasurement"
+                                 "OverridePrivacySandboxSettingsLocalTesting")},
 
     {"animated-image-resume", flag_descriptions::kAnimatedImageResumeName,
      flag_descriptions::kAnimatedImageResumeDescription, kOsAll,

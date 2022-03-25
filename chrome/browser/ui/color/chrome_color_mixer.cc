@@ -249,8 +249,13 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorFeaturePromoBubbleDefaultButtonForeground] = {
       kColorFeaturePromoBubbleBackground};
   mixer[kColorFeaturePromoBubbleForeground] = {SK_ColorWHITE};
+  mixer[kColorFindBarBackground] = {ui::kColorTextfieldBackground};
+  mixer[kColorFindBarForeground] = {ui::kColorTextfieldForeground};
+  mixer[kColorFindBarMatchCount] = {ui::kColorSecondaryForeground};
+  mixer[kColorFindBarSeparator] = {ui::kColorSeparator};
   mixer[kColorFlyingIndicatorBackground] = {kColorToolbar};
   mixer[kColorFlyingIndicatorForeground] = {kColorToolbarButtonIcon};
+  mixer[kColorFocusHighlightDefault] = {SkColorSetRGB(0x10, 0x10, 0x10)};
   mixer[kColorFrameCaptionActive] =
       ui::GetColorWithMaxContrast({ui::kColorFrameActive});
   mixer[kColorFrameCaptionInactive] =

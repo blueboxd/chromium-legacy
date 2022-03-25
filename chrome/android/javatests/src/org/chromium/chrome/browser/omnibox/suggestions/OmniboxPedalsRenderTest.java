@@ -57,7 +57,9 @@ public class OmniboxPedalsRenderTest {
 
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
-            ChromeRenderTestRule.Builder.withPublicCorpus().build();
+            ChromeRenderTestRule.Builder.withPublicCorpus()
+                    .setBugComponent(ChromeRenderTestRule.Component.UI_BROWSER_OMNIBOX)
+                    .build();
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -101,7 +103,6 @@ public class OmniboxPedalsRenderTest {
     @MediumTest
     @Feature("RenderTest")
     @EnableFeatures("OmniboxPedalsAndroidBatch1")
-    @DisabledTest(message = "crbug.com/1301943")
     public void testRunChromeSafetyCheckPedal() throws IOException, InterruptedException {
         List<AutocompleteMatch> suggestionsList = new ArrayList<>();
         suggestionsList.add(

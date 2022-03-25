@@ -73,7 +73,7 @@ non_preprocessed_files = [
   "passwords_and_autofill_fake_data.ts",
   "passwords_device_section_test.ts",
   "passwords_export_test.ts",
-  "passwords_section_test.js",
+  "passwords_section_test.ts",
   "payments_section_interactive_test.ts",
   "payments_section_test.ts",
   "people_page_sync_controls_test.ts",
@@ -137,7 +137,7 @@ if (!is_chromeos_ash && !is_chromeos_lacros) {
     "system_page_tests.ts",
   ]
 } else {
-  non_preprocessed_files += [ "passwords_section_test_cros.js" ]
+  non_preprocessed_files += [ "passwords_section_test_cros.ts" ]
 }
 
 if (!is_mac && !is_chromeos_ash) {

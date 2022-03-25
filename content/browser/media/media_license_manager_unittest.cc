@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/test/scoped_feature_list.h"
@@ -24,8 +25,10 @@
 #include "media/cdm/cdm_type.h"
 #include "media/mojo/mojom/cdm_storage.mojom-forward.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
+#include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 
@@ -45,6 +48,7 @@ class MediaLicenseManagerTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(bucket_base_path_.CreateUniqueTempDir());
+    ASSERT_TRUE(file_system_context_path_.CreateUniqueTempDir());
     quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
         /*is_incognito=*/false, bucket_base_path_.GetPath(),
         base::ThreadTaskRunnerHandle::Get().get(),
@@ -52,8 +56,10 @@ class MediaLicenseManagerTest : public testing::Test {
     quota_manager_proxy_ = base::MakeRefCounted<storage::MockQuotaManagerProxy>(
         static_cast<storage::MockQuotaManager*>(quota_manager_.get()),
         base::ThreadTaskRunnerHandle::Get());
+    file_system_context_ = storage::CreateFileSystemContextForTesting(
+        /*quota_manager_proxy=*/nullptr, file_system_context_path_.GetPath());
     manager_ = std::make_unique<MediaLicenseManager>(
-        bucket_base_path_.GetPath(),
+        file_system_context_, bucket_base_path_.GetPath(),
         /*special storage policy=*/nullptr, quota_manager_proxy_);
   }
 
@@ -122,18 +128,19 @@ class MediaLicenseManagerTest : public testing::Test {
   }
 
  protected:
+  scoped_refptr<storage::MockQuotaManager> quota_manager_;
+  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
+  scoped_refptr<storage::FileSystemContext> file_system_context_;
+
   base::test::ScopedFeatureList feature_list_;
 
   // This must be above MediaLicenseManager, to ensure that no file is accessed
   // when the temporary directory is deleted.
   base::ScopedTempDir bucket_base_path_;
-
+  base::ScopedTempDir file_system_context_path_;
   base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<MediaLicenseManager> manager_;
-
-  scoped_refptr<storage::QuotaManager> quota_manager_;
-  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 };
 
 TEST_F(MediaLicenseManagerTest, DeleteBucketData) {
@@ -269,11 +276,37 @@ TEST_F(MediaLicenseManagerTest, DeleteBucketDataOpenConnection) {
   EXPECT_TRUE(base::PathExists(database_file.DirName()));
 }
 
+TEST_F(MediaLicenseManagerTest, BucketCreationFailed) {
+  const std::string kTestData("Test Data");
+  mojo::Remote<media::mojom::CdmStorage> remote;
+  blink::StorageKey storage_key =
+      blink::StorageKey::CreateFromStringForTesting(kExampleOrigin);
+  storage::BucketLocator bucket = GetOrCreateBucket(storage_key);
+  MediaLicenseManager::BindingContext binding_context(storage_key, kCdmType);
+
+  // Disable the quota database, causing GetOrCreateBucket() to fail.
+  quota_manager_->SetDisableDatabase(/*disable=*/true);
+
+  // Open CDM storage for a storage key.
+  manager_->OpenCdmStorage(binding_context,
+                           remote.BindNewPipeAndPassReceiver());
+  // Opening a CDM file should fail.
+  base::test::TestFuture<media::mojom::CdmStorage::Status,
+                         mojo::PendingAssociatedRemote<media::mojom::CdmFile>>
+      open_future;
+  remote->Open("test_file", open_future.GetCallback());
+
+  auto result = open_future.Take();
+  EXPECT_EQ(std::get<0>(result), media::mojom::CdmStorage::Status::kFailure);
+  EXPECT_FALSE(std::get<1>(result).is_valid());
+}
+
 class MediaLicenseManagerIncognitoTest : public MediaLicenseManagerTest {
   void SetUp() override {
     // Still create this dir so the teardown will confirm it remains empty (on
     // Windows, at least).
     ASSERT_TRUE(bucket_base_path_.CreateUniqueTempDir());
+    ASSERT_TRUE(file_system_context_path_.CreateUniqueTempDir());
 
     // `bucket_base_path` will be empty for an in-memory profile.
     base::FilePath bucket_base_path;
@@ -284,8 +317,12 @@ class MediaLicenseManagerIncognitoTest : public MediaLicenseManagerTest {
     quota_manager_proxy_ = base::MakeRefCounted<storage::MockQuotaManagerProxy>(
         static_cast<storage::MockQuotaManager*>(quota_manager_.get()),
         base::ThreadTaskRunnerHandle::Get());
+    file_system_context_ = storage::CreateIncognitoFileSystemContextForTesting(
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(), /*quota_manager_proxy=*/nullptr,
+        file_system_context_path_.GetPath());
     manager_ = std::make_unique<MediaLicenseManager>(
-        bucket_base_path,
+        file_system_context_, bucket_base_path,
         /*special storage policy=*/nullptr, quota_manager_proxy_);
   }
 };

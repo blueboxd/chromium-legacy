@@ -16,7 +16,7 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {HardwareVerificationStatusObserverInterface, HardwareVerificationStatusObserverReceiver, OsUpdateObserverInterface, OsUpdateObserverReceiver, OsUpdateOperation, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
-import {enableNextButton} from './shimless_rma_util.js';
+import {disableAllButtons, enableAllButtons, enableNextButton} from './shimless_rma_util.js';
 
 /**
  * @fileoverview
@@ -73,12 +73,6 @@ export class OnboardingUpdatePageElement extends
 
       /** @protected */
       updateVersionButtonLabel_: {
-        type: String,
-        value: '',
-      },
-
-      /** @protected */
-      updateProgressMessage_: {
         type: String,
         value: '',
       },
@@ -179,7 +173,6 @@ export class OnboardingUpdatePageElement extends
     this.updateInProgress_ = true;
     this.shimlessRmaService_.updateOs().then((res) => {
       if (!res.updateStarted) {
-        this.updateProgressMessage_ = this.i18n('osUpdateFailedToStartText');
         this.updateInProgress_ = false;
       }
     });
@@ -200,15 +193,13 @@ export class OnboardingUpdatePageElement extends
     if (!this.updateInProgress_) {
       return;
     }
+
     if (operation === OsUpdateOperation.kIdle ||
         operation === OsUpdateOperation.kReportingErrorEvent ||
         operation === OsUpdateOperation.kNeedPermissionToUpdate ||
         operation === OsUpdateOperation.kDisabled) {
       this.updateInProgress_ = false;
     }
-    this.updateProgressMessage_ = this.i18n(
-        'onboardingUpdateProgress', this.i18n(operationNameKeys[operation]),
-        Math.round(progress * 100));
   }
 
   /**
@@ -250,11 +241,11 @@ export class OnboardingUpdatePageElement extends
 
   /** @private */
   onUpdateInProgressChange_() {
-    const shouldDisableAllButtons = this.updateInProgress_;
-    this.dispatchEvent(new CustomEvent(
-        'disable-all-buttons',
-        {bubbles: true, composed: true, detail: shouldDisableAllButtons},
-        ));
+    if (this.updateInProgress_) {
+      disableAllButtons(this, /*showBusyStateOverlay=*/ false);
+    } else {
+      enableAllButtons(this);
+    }
   }
 }
 

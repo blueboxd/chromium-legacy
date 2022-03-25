@@ -95,7 +95,7 @@ export function onboardingUpdatePageTest() {
     return initializeUpdatePage(version)
         .then(() => {
           component.addEventListener('disable-all-buttons', (e) => {
-            component.allButtonsDisabled = e.detail;
+            component.allButtonsDisabled = true;
           });
 
           return flushTasks();
@@ -115,17 +115,19 @@ export function onboardingUpdatePageTest() {
     const version = '90.1.2.3';
     await initializeUpdatePage(version);
 
-    const progressComponent =
-        component.shadowRoot.querySelector('#progressMessage');
-    assertEquals('', progressComponent.textContent.trim());
+    const updateInstructionsDiv =
+        component.shadowRoot.querySelector('#updateInstructionsDiv');
+    assertFalse(updateInstructionsDiv.hidden);
+    const updateStatusDiv =
+        component.shadowRoot.querySelector('#updateStatusDiv');
+    assertTrue(updateStatusDiv.hidden);
     await clickPerformUpdateButton();
 
     service.triggerOsUpdateObserver(OsUpdateOperation.kDownloading, 0.5, 0);
     await flushTasks();
 
-    // TODO(gavindodd): update with i18n string
-    assertTrue(progressComponent.textContent.trim().startsWith(
-        'OS update progress received '));
+    assertTrue(updateInstructionsDiv.hidden);
+    assertFalse(updateStatusDiv.hidden);
   });
 
   test('UpdatePageShowHideUnqualifiedComponentsLink', () => {
@@ -179,7 +181,10 @@ export function onboardingUpdatePageTest() {
     return initializeUpdatePage(version).then(() => {
       let allButtonsDisabled = false;
       component.addEventListener('disable-all-buttons', (e) => {
-        allButtonsDisabled = e.detail;
+        allButtonsDisabled = true;
+      });
+      component.addEventListener('enable-all-buttons', (e) => {
+        allButtonsDisabled = false;
       });
 
       return clickPerformUpdateButton()

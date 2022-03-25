@@ -282,7 +282,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.AutofillAssistant.DropOutReason{Intent}"
     enum="AutofillAssistantDropOutReason" expires_after="2022-06-08">
-  <owner>selakovic@google.com</owner>
+  <owner>brunobraga@google.com</owner>
+  <owner>vizcay@google.com</owner>
   <owner>mcarlen@chromium.org</owner>
   <summary>
     Reports the drop out reason of an Autofill Assistant script during the
@@ -820,7 +821,7 @@ chromium-metrics-reviews@google.com.
     enum="DownloadNotificationForegroundLifecycle" expires_after="never">
 <!-- expires-never: Download foreground notification stability metric. -->
 
-  <owner>xingliu@chromium.org</owner>
+  <owner>qinmin@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
     Records instances where the foreground undergoes a lifecycle change (when
@@ -904,7 +905,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.DownloadManager.NotificationInteraction"
     enum="DownloadNotificationInteractions" expires_after="2022-08-28">
-  <owner>xingliu@chromium.org</owner>
+  <owner>qinmin@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
     Records instances where a user interacts with a download notification (ie.
@@ -914,14 +915,14 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.DownloadManager.OpenSource.Audio"
     enum="AndroidDownloadOpenSource" expires_after="2022-08-28">
-  <owner>xingliu@chromium.org</owner>
+  <owner>shaktisahu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>Records how users open audio download files on Android.</summary>
 </histogram>
 
 <histogram name="Android.DownloadManager.OpenSource.Other"
     enum="AndroidDownloadOpenSource" expires_after="2022-08-14">
-  <owner>xingliu@chromium.org</owner>
+  <owner>shaktisahu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
     Records the entry point for users opening downloaded files on Android, that
@@ -931,14 +932,14 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.DownloadManager.OpenSource.Video"
     enum="AndroidDownloadOpenSource" expires_after="2022-08-14">
-  <owner>xingliu@chromium.org</owner>
+  <owner>shaktisahu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>Records how users open video download files on Android.</summary>
 </histogram>
 
 <histogram name="Android.DownloadManager.ServiceStopped.DownloadForeground"
     enum="DownloadNotificationServiceStopped" expires_after="never">
-  <owner>xingliu@chromium.org</owner>
+  <owner>qinmin@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
 <!-- expires-never: Download foreground notification stability metric. -->
 
@@ -957,7 +958,6 @@ chromium-metrics-reviews@google.com.
 <histogram name="Android.DownloadManager.Share.Count" units="units"
     expires_after="M86">
   <owner>twellington@chromium.org</owner>
-  <owner>ianwen@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>The number of downloads shared at the same time.</summary>
 </histogram>
@@ -965,7 +965,6 @@ chromium-metrics-reviews@google.com.
 <histogram name="Android.DownloadManager.Share.FileTypes"
     enum="AndroidDownloadFilterType" expires_after="2020-03-01">
   <owner>twellington@chromium.org</owner>
-  <owner>ianwen@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
     Recorded when downloads are shared through the download manager. A recorded
@@ -977,7 +976,6 @@ chromium-metrics-reviews@google.com.
 <histogram name="Android.DownloadManager.SpaceUsed" units="%"
     expires_after="M81">
   <owner>twellington@chromium.org</owner>
-  <owner>ianwen@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>The percentage of total storage downloads consume.</summary>
 </histogram>
@@ -996,7 +994,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.DownloadPage.OpenSource"
     enum="AndroidDownloadOpenSource" expires_after="2023-02-16">
-  <owner>xingliu@chromium.org</owner>
+  <owner>qinmin@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
     Records the entry point for users opening the download page on Android.
@@ -3069,6 +3067,21 @@ chromium-metrics-reviews@google.com.
   <owner>wnwen@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>The number of bytes written for the tab metadata file.</summary>
+</histogram>
+
+<histogram name="Android.TabStrip.TimeToSwitchTab" units="ms"
+    expires_after="2022-07-31">
+  <owner>gauravjj@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    This captures the time taken for a user to select a tab after scrolling the
+    tab strip as one measure of tab strip switching efficiency. This is recorded
+    only when a tab switch event occurs within 60 seconds of the most recent tab
+    strip scroll. In the event of multiple back-to-back scrolls, this metric is
+    recorded so long as the sequence of scrolls occur within 60 seconds of each
+    other and is capped at 3 minutes.
+  </summary>
 </histogram>
 
 <histogram name="Android.TaskScheduling.BootstrapTaskRunnerType"

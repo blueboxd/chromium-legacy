@@ -5,6 +5,10 @@
 /**
  * @fileoverview ChromeVox keyboard handler.
  */
+import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
+
+import {MathHandler} from './math_handler.js';
+import {ChromeVoxPrefs} from './prefs.js';
 
 /**
  * @enum {string}

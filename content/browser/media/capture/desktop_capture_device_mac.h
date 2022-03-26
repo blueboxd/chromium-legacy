@@ -22,6 +22,9 @@ namespace content {
 std::unique_ptr<media::VideoCaptureDevice> CONTENT_EXPORT
 CreateDesktopCaptureDeviceMac(const DesktopMediaID& source);
 
+std::unique_ptr<media::VideoCaptureDevice> CONTENT_EXPORT
+CreateScreenCaptureKitDeviceMac(const DesktopMediaID& source);
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_MEDIA_CAPTURE_DESKTOP_CAPTURE_DEVICE_MAC_H_

@@ -78,7 +78,7 @@ void ProfilePickerSignedInFlowController::SwitchToSyncConfirmation() {
 
 void ProfilePickerSignedInFlowController::SwitchToEnterpriseProfileWelcome(
     EnterpriseProfileWelcomeUI::ScreenType type,
-    base::OnceCallback<void(bool)> proceed_callback) {
+    signin::SigninChoiceCallback proceed_callback) {
   DCHECK(IsInitialized());
   host_->ShowScreen(contents(),
                     GURL(chrome::kChromeUIEnterpriseProfileWelcomeURL),
@@ -150,7 +150,7 @@ void ProfilePickerSignedInFlowController::SwitchToSyncConfirmationFinished() {
 void ProfilePickerSignedInFlowController::
     SwitchToEnterpriseProfileWelcomeFinished(
         EnterpriseProfileWelcomeUI::ScreenType type,
-        base::OnceCallback<void(bool)> proceed_callback) {
+        signin::SigninChoiceCallback proceed_callback) {
   DCHECK(IsInitialized());
   // Initialize the WebUI page once we know it's committed.
   EnterpriseProfileWelcomeUI* enterprise_profile_welcome_ui =
@@ -163,7 +163,8 @@ void ProfilePickerSignedInFlowController::
       /*browser=*/nullptr, type,
       IdentityManagerFactory::GetForProfile(profile_)
           ->FindExtendedAccountInfoByEmailAddress(email_),
-      GetProfileColor(), std::move(proceed_callback));
+      /*force_new_profile_=*/true, GetProfileColor(),
+      std::move(proceed_callback));
 }
 
 bool ProfilePickerSignedInFlowController::IsInitialized() const {

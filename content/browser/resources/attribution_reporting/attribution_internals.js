@@ -4,7 +4,7 @@
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
-import {$, getRequiredElement} from 'chrome://resources/js/util.m.js';
+import {$, getRequiredElement, queryRequiredElement} from 'chrome://resources/js/util.m.js';
 import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
 import {AttributionInternalsHandler, AttributionInternalsHandlerRemote, AttributionInternalsObserverInterface, AttributionInternalsObserverReceiver, AttributionReportAggregatableAttributionID, AttributionReportEventLevelID, AttributionReportType, AttributionSourceType, WebUIAttributionReport, WebUIAttributionReport_Status, WebUIAttributionSource, WebUIAttributionSource_Attributability} from './attribution_internals.mojom-webui.js';
@@ -134,6 +134,36 @@ class CodeColumn extends ValueColumn {
     pre.appendChild(code);
 
     td.appendChild(pre);
+  }
+}
+
+const debugPathPattern =
+    /(?<=\/\.well-known\/attribution-reporting\/)debug(?=\/)/;
+
+/**
+ * @extends {ValueColumn<Report, string>}
+ */
+class ReportUrlColumn extends ValueColumn {
+  constructor() {
+    super('Report URL', (e) => e.reportUrl);
+  }
+
+  /** @override */
+  render(td, row) {
+    if (!row.isDebug) {
+      td.innerText = row.reportUrl;
+      return;
+    }
+
+    const [pre, post] = row.reportUrl.split(debugPathPattern, 2);
+    td.appendChild(new Text(pre));
+
+    const span = td.ownerDocument.createElement('span');
+    span.classList.add('debug-url');
+    span.innerText = 'debug';
+    td.appendChild(span);
+
+    td.appendChild(new Text(post));
   }
 }
 
@@ -519,7 +549,6 @@ class Report extends Selectable {
 
     this.id = id;
     this.reportBody = mojo.reportBody;
-    this.attributionDestination = mojo.attributionDestination;
     this.reportUrl = mojo.reportUrl.url;
     this.triggerTime = new Date(mojo.triggerTime);
     this.reportTime = new Date(mojo.reportTime);
@@ -529,6 +558,9 @@ class Report extends Selectable {
         mojo.status !== WebUIAttributionReport_Status.kPending) {
       this.input.disabled = true;
     }
+
+    this.isDebug = this.reportUrl.indexOf(
+                       '/.well-known/attribution-reporting/debug/') >= 0;
 
     switch (mojo.status) {
       case WebUIAttributionReport_Status.kSent:
@@ -609,8 +641,16 @@ class AggregatableAttributionReport extends Report {
  * @extends {TableModel<Report<ID>>}
  */
 class ReportTableModel extends TableModel {
-  constructor() {
+  /**
+   * @param {!Element} showDebugReportsContainer
+   */
+  constructor(showDebugReportsContainer) {
     super();
+
+    this.showDebugReportsCheckbox = queryRequiredElement(
+        'input[type="checkbox"]', showDebugReportsContainer);
+    this.hiddenDebugReportsSpan =
+        queryRequiredElement('span', showDebugReportsContainer);
 
     this.selectionColumn = new SelectionColumn(this);
 
@@ -621,6 +661,14 @@ class ReportTableModel extends TableModel {
 
     /** @type {!Array<!Report<ID>>} */
     this.storedReports = [];
+
+    /** @type {!Array<!Report<ID>>} */
+    this.debugReports = [];
+
+    this.showDebugReportsCheckbox.addEventListener(
+        'input', () => this.notifyRowsChanged());
+
+    this.rowsChangedListeners.add(() => this.updateHiddenDebugReportsSpan());
   }
 
   /** @override */
@@ -632,7 +680,11 @@ class ReportTableModel extends TableModel {
 
   /** @override */
   getRows() {
-    return this.sentOrDroppedReports.concat(this.storedReports);
+    let rows = this.sentOrDroppedReports.concat(this.storedReports);
+    if (this.showDebugReportsCheckbox.checked) {
+      rows = rows.concat(this.debugReports);
+    }
+    return rows;
   }
 
   /** @param {!Array<!Report<ID>>} storedReports */
@@ -645,17 +697,24 @@ class ReportTableModel extends TableModel {
   addSentOrDroppedReport(report) {
     // Prevent the page from consuming ever more memory if the user leaves the
     // page open for a long time.
-    if (this.sentOrDroppedReports.length >= 1000) {
+    if (this.sentOrDroppedReports.length + this.debugReports.length >= 1000) {
       this.sentOrDroppedReports = [];
+      this.debugReports = [];
     }
 
-    this.sentOrDroppedReports.push(report);
+    if (report.isDebug) {
+      this.debugReports.push(report);
+    } else {
+      this.sentOrDroppedReports.push(report);
+    }
+
     this.notifyRowsChanged();
   }
 
   clear() {
     this.storedReports = [];
     this.sentOrDroppedReports = [];
+    this.debugReports = [];
     this.notifyRowsChanged();
   }
 
@@ -671,19 +730,29 @@ class ReportTableModel extends TableModel {
     });
     return ids;
   }
+
+  /** @private */
+  updateHiddenDebugReportsSpan() {
+    this.hiddenDebugReportsSpan.innerText =
+        this.showDebugReportsCheckbox.checked ?
+        '' :
+        ` (${this.debugReports.length} hidden)`;
+  }
 }
 
 /** @extends {ReportTableModel<!AttributionReportEventLevelID>} */
 class EventLevelReportTableModel extends ReportTableModel {
-  constructor() {
-    super();
+  /**
+   * @param {!Element} showDebugReportsContainer
+   */
+  constructor(showDebugReportsContainer) {
+    super(showDebugReportsContainer);
 
     this.cols = [
       this.selectionColumn,
       new CodeColumn('Report Body', (e) => e.reportBody),
       new ValueColumn('Status', (e) => e.status),
-      new ValueColumn('Destination', (e) => e.attributionDestination),
-      new ValueColumn('Report URL', (e) => e.reportUrl),
+      new ReportUrlColumn(),
       new DateColumn('Trigger Time', (e) => e.triggerTime),
       new DateColumn('Report Time', (e) => e.reportTime),
       new ValueColumn('Report Priority', (e) => e.reportPriority),
@@ -692,28 +761,30 @@ class EventLevelReportTableModel extends ReportTableModel {
     ];
 
     // Sort by report time by default.
-    this.sortIdx = 6;
+    this.sortIdx = 5;
   }
 }
 
 /** @extends {ReportTableModel<!AttributionReportAggregatableAttributionID>} */
 class AggregatableAttributionReportTableModel extends ReportTableModel {
-  constructor() {
-    super();
+  /**
+   * @param {!Element} showDebugReportsContainer
+   */
+  constructor(showDebugReportsContainer) {
+    super(showDebugReportsContainer);
 
     this.cols = [
       this.selectionColumn,
       new CodeColumn('Report Body', (e) => e.reportBody),
       new ValueColumn('Status', (e) => e.status),
-      new ValueColumn('Destination', (e) => e.attributionDestination),
-      new ValueColumn('Report URL', (e) => e.reportUrl),
+      new ReportUrlColumn(),
       new DateColumn('Trigger Time', (e) => e.triggerTime),
       new DateColumn('Report Time', (e) => e.reportTime),
       new CodeColumn('Histograms', (e) => e.contributions),
     ];
 
     // Sort by report time by default.
-    this.sortIdx = 6;
+    this.sortIdx = 5;
   }
 }
 
@@ -957,9 +1028,11 @@ document.addEventListener('DOMContentLoaded', function() {
   pageHandler = AttributionInternalsHandler.getRemote();
 
   sourceTableModel = new SourceTableModel();
-  eventLevelReportTableModel = new EventLevelReportTableModel();
+  eventLevelReportTableModel = new EventLevelReportTableModel(
+      getRequiredElement('show-debug-event-reports'));
   aggregatableAttributionReportTableModel =
-      new AggregatableAttributionReportTableModel();
+      new AggregatableAttributionReportTableModel(
+          getRequiredElement('show-debug-aggregatable-reports'));
 
   $('refresh').addEventListener('click', updatePageData);
   $('clear-data').addEventListener('click', clearStorage);

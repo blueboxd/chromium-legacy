@@ -186,9 +186,6 @@ extern const char kAutofillVisualImprovementsForSuggestionUiDescription[];
 extern const char kAutofillTypeSpecificPopupWidthName[];
 extern const char kAutofillTypeSpecificPopupWidthDescription[];
 
-extern const char kAutofillEnableGoogleIssuedCardName[];
-extern const char kAutofillEnableGoogleIssuedCardDescription[];
-
 extern const char kAutofillEnableMerchantBoundVirtualCardsName[];
 extern const char kAutofillEnableMerchantBoundVirtualCardsDescription[];
 
@@ -947,9 +944,6 @@ extern const char kDestroyProfileOnBrowserCloseDescription[];
 extern const char kDestroySystemProfilesName[];
 extern const char kDestroySystemProfilesDescription[];
 
-extern const char kNewUsbBackendName[];
-extern const char kNewUsbBackendDescription[];
-
 extern const char kNotificationsRevampName[];
 extern const char kNotificationsRevampDescription[];
 
@@ -1291,6 +1285,9 @@ extern const char kSidePanelDescription[];
 extern const char kSidePanelDragAndDropFlagId[];
 extern const char kSidePanelDragAndDropName[];
 extern const char kSidePanelDragAndDropDescription[];
+
+extern const char kSidePanelImprovedClobberingName[];
+extern const char kSidePanelImprovedClobberingDescription[];
 
 extern const char kSharedClipboardUIName[];
 extern const char kSharedClipboardUIDescription[];
@@ -2240,6 +2237,9 @@ extern const char kHardwareSecureDecryptionDescription[];
 extern const char kHardwareSecureDecryptionExperimentName[];
 extern const char kHardwareSecureDecryptionExperimentDescription[];
 
+extern const char kHardwareSecureDecryptionFallbackName[];
+extern const char kHardwareSecureDecryptionFallbackDescription[];
+
 extern const char kMediaFoundationClearName[];
 extern const char kMediaFoundationClearDescription[];
 
@@ -2436,6 +2436,9 @@ extern const char kBluetoothUseFlossDescription[];
 
 extern const char kCalendarViewName[];
 extern const char kCalendarViewDescription[];
+
+extern const char kCaptureSelfieCamName[];
+extern const char kCaptureSelfieCamDescription[];
 
 extern const char kDefaultLinkCapturingInBrowserName[];
 extern const char kDefaultLinkCapturingInBrowserDescription[];

@@ -166,7 +166,7 @@
 <translation id="2874939134665556319">Vorheriger Titel</translation>
 <translation id="2878387241690264070"><ph name="RATE" /> in <ph name="NUM_SECONDS" /> Sekunden entladen.</translation>
 <translation id="291142119251986300">Nicht qualifizierte Komponenten</translation>
-<translation id="2926057806159140518">Geben Sie Nutzernamen und Passwort ein oder scannen Sie Ihren QR-Code</translation>
+<translation id="2926057806159140518">Gib Nutzernamen und Passwort ein oder scanne deinen QR-Code</translation>
 <translation id="3008341117444806826">AKTUALISIEREN</translation>
 <translation id="3009958530611748826">Ordner als Speicherort auswählen</translation>
 <translation id="3031560714565892478">Das Gerät ist eine Videokamera.</translation>
@@ -361,7 +361,7 @@
 <translation id="5090362543162270857">IPsec (IKEv2)</translation>
 <translation id="5142961317498132443">Authentifizierung</translation>
 <translation id="5154917547274118687">Speicher</translation>
-<translation id="5160857336552977725">Auf Ihrem <ph name="DEVICE_TYPE" /> anmelden</translation>
+<translation id="5160857336552977725">Auf deinem <ph name="DEVICE_TYPE" /> anmelden</translation>
 <translation id="5166918508782100047">Einstellungen für die Funktion „Schnellinfo“</translation>
 <translation id="5168185087976003268">Akkuzustand</translation>
 <translation id="5170568018924773124">In Ordner zeigen</translation>

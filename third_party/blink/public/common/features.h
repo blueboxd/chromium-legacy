@@ -478,9 +478,13 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsMaxNumberOfApiUsageContextEntriesToLoadPerEpoch;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsMaxNumberOfApiUsageContextDomainsToStorePerPageLoad;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsConfigVersion;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsTaxonomyVersion;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kBrowsingTopicsBypassIPIsPubliclyRoutableCheck;
 
 // When <dialog>s are closed, this focuses the "previously focused" element
 // which had focus when the <dialog> was first opened.
@@ -667,8 +671,12 @@ BLINK_COMMON_EXPORT extern const base::Feature kEditContext;
 BLINK_COMMON_EXPORT extern const base::Feature
     kFreeNonRequiredTileResourcesForInactiveWindows;
 
-// Enables the WindowPlacement RuntimeEnabledFeature.
+// Gates Multi-Screen Window Placement features and additional enhancements.
 BLINK_COMMON_EXPORT extern const base::Feature kWindowPlacement;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kWindowPlacementFullscreenCompanionWindow;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kWindowPlacementFullscreenOnScreensChange;
 
 // Gates the non-standard API Event.path to help its deprecation and removal.
 BLINK_COMMON_EXPORT extern const base::Feature kEventPath;
@@ -687,6 +695,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kZeroCopyTabCapture;
 BLINK_COMMON_EXPORT extern const base::Feature kUserAgentOverrideExperiment;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebSQLAccess;
+
+BLINK_COMMON_EXPORT extern const base::Feature kUACHOverrideBlank;
 
 }  // namespace features
 }  // namespace blink

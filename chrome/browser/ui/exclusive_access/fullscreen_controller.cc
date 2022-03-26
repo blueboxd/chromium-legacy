@@ -15,24 +15,22 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/blocked_content/popunder_preventer.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_within_tab_helper.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/permissions/permission_manager.h"
-#include "components/permissions/permission_result.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
@@ -163,6 +161,14 @@ void FullscreenController::EnterFullscreenModeForTab(
     return;
   }
 
+  if (base::FeatureList::IsEnabled(
+          blink::features::kWindowPlacementFullscreenCompanionWindow)) {
+    if (!popunder_preventer_)
+      popunder_preventer_ = std::make_unique<PopunderPreventer>(web_contents);
+    else
+      popunder_preventer_->WillActivateWebContents(web_contents);
+  }
+
   SetTabWithExclusiveAccess(web_contents);
   requesting_origin_ =
       requesting_frame->GetLastCommittedURL().DeprecatedGetOriginAsURL();
@@ -197,6 +203,8 @@ void FullscreenController::EnterFullscreenModeForTab(
 }
 
 void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
+  popunder_preventer_.reset();
+
   if (MaybeToggleFullscreenWithinTab(web_contents, false)) {
     // During tab capture of fullscreen-within-tab views, the browser window
     // fullscreen state is unchanged, so return now.
@@ -235,6 +243,16 @@ void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
   // This is only a change between Browser and Tab fullscreen. We generate
   // a fullscreen notification now because there is no window change.
   PostFullscreenChangeNotification();
+}
+
+void FullscreenController::FullscreenTabOpeningPopup(
+    content::WebContents* opener,
+    content::WebContents* popup) {
+  DCHECK(base::FeatureList::IsEnabled(
+      blink::features::kWindowPlacementFullscreenCompanionWindow));
+  DCHECK_EQ(exclusive_access_tab(), opener);
+  DCHECK(popunder_preventer_);
+  popunder_preventer_->AddPotentialPopunder(popup);
 }
 
 void FullscreenController::OnTabDeactivated(
@@ -406,12 +424,13 @@ void FullscreenController::EnterFullscreenModeInternal(
   if (display_id != display::kInvalidDisplayId) {
     // Check, but do not prompt, for permission to request a specific screen.
     // Sites generally need permission to get the display id in the first place.
-    auto* manager = PermissionManagerFactory::GetForProfile(
-        exclusive_access_manager()->context()->GetProfile());
-    if (!manager || !requesting_frame ||
-        manager->GetPermissionStatusForCurrentDocument(
-                   ContentSettingsType::WINDOW_PLACEMENT, requesting_frame)
-                .content_setting != ContentSetting::CONTENT_SETTING_ALLOW) {
+    if (!requesting_frame ||
+        requesting_frame->GetBrowserContext()
+                ->GetPermissionController()
+                ->GetPermissionStatusForCurrentDocument(
+                    content::PermissionType::WINDOW_PLACEMENT,
+                    requesting_frame) !=
+            blink::mojom::PermissionStatus::GRANTED) {
       display_id = display::kInvalidDisplayId;
     }
   }

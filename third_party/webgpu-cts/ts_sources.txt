@@ -3,10 +3,11 @@ src/common/internal/stack.ts
 src/common/internal/logging/log_message.ts
 src/common/internal/logging/result.ts
 src/common/internal/logging/logger.ts
+src/common/util/types.ts
+src/common/util/data_tables.ts
 src/common/util/timeout.ts
 src/common/util/util.ts
 src/common/internal/logging/test_case_recorder.ts
-src/common/util/types.ts
 src/common/runtime/helper/options.ts
 src/common/internal/query/encode_selectively.ts
 src/common/internal/query/json_param_value.ts
@@ -42,7 +43,6 @@ src/common/tools/gen_wpt_cts_html.ts
 src/common/tools/version.ts
 src/common/util/collect_garbage.ts
 src/common/util/colors.ts
-src/common/util/data_tables.ts
 src/common/util/preprocessor.ts
 src/unittests/unit_test.ts
 src/demo/a.spec.ts
@@ -245,12 +245,14 @@ src/webgpu/api/validation/render_pass/storeOp.spec.ts
 src/webgpu/api/validation/resource_usages/texture/in_pass_encoder.spec.ts
 src/webgpu/api/validation/resource_usages/texture/in_render_common.spec.ts
 src/webgpu/api/validation/resource_usages/texture/in_render_misc.spec.ts
+src/webgpu/api/validation/state/device_lost/destroy.spec.ts
 src/webgpu/api/validation/texture/destroy.spec.ts
 src/webgpu/idl/exposed.html.ts
 src/webgpu/idl/idl_test.ts
 src/webgpu/idl/constants/flags.spec.ts
 src/webgpu/shader/types.ts
 src/webgpu/shader/values.ts
+src/webgpu/shader/execution/evaluation_order.spec.ts
 src/webgpu/shader/execution/robust_access.spec.ts
 src/webgpu/shader/execution/robust_access_vertex.spec.ts
 src/webgpu/shader/execution/zero_init.spec.ts

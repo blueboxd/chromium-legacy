@@ -185,6 +185,8 @@ static_library("test_support") {
     "../public/test/mock_navigation_handle.h",
     "../public/test/mock_notification_observer.cc",
     "../public/test/mock_notification_observer.h",
+    "../public/test/mock_permission_controller.cc",
+    "../public/test/mock_permission_controller.h",
     "../public/test/mock_permission_manager.cc",
     "../public/test/mock_permission_manager.h",
     "../public/test/mock_policy_container_host.cc",
@@ -711,6 +713,9 @@ static_library("test_support") {
 # Fuchsia performance tests on smart displays use web_engine and a browser
 # like shell instead of an actual browser, so Fuchsia needs a separate target.
 if (is_fuchsia) {
+  # TODO(crbug.com/1310086): Split this test suite into chrome/WebEngine
+  # versions.
+  # TODO(crbug.com/1309686): Move WebEngine-specific suites to //fuchsia/engine
   group("performance_web_engine_test_suite") {
     testonly = true
     data = [ "//content/test/gpu/run_telemetry_benchmark_fuchsia.py" ]
@@ -1165,7 +1170,7 @@ test("content_browsertests") {
     "../browser/file_system/file_system_url_loader_factory_browsertest.cc",
     "../browser/file_system/fileapi_browsertest.cc",
     "../browser/find_request_manager_browsertest.cc",
-    "../browser/font_access/font_access_manager_impl_browsertest.cc",
+    "../browser/font_access/font_access_manager_browsertest.cc",
     "../browser/font_unique_name_lookup/font_unique_name_browsertest.cc",
     "../browser/form_controls_browsertest.cc",
     "../browser/generic_sensor/generic_sensor_browsertest.cc",
@@ -2060,7 +2065,7 @@ test("content_unittests") {
     "../browser/file_system_access/safe_move_helper_unittest.cc",
     "../browser/first_party_sets/addition_overlaps_union_find_unittest.cc",
     "../browser/first_party_sets/first_party_sets_handler_impl_unittest.cc",
-    "../browser/font_access/font_access_manager_impl_unittest.cc",
+    "../browser/font_access/font_access_manager_unittest.cc",
     "../browser/font_access/font_enumeration_data_source_unittest.cc",
     "../browser/generic_sensor/sensor_provider_proxy_impl_unittest.cc",
     "../browser/geolocation/geolocation_service_impl_unittest.cc",
@@ -2244,6 +2249,7 @@ test("content_unittests") {
     "../browser/renderer_host/render_widget_host_view_base_unittest.cc",
     "../browser/renderer_host/render_widget_host_view_child_frame_unittest.cc",
     "../browser/renderer_host/renderer_sandboxed_process_launcher_delegate_unittest.cc",
+    "../browser/renderer_host/transient_allow_popup_unittest.cc",
     "../browser/renderer_host/visible_time_request_trigger_unittest.cc",
     "../browser/scheduler/browser_io_thread_delegate_unittest.cc",
     "../browser/scheduler/browser_task_executor_unittest.cc",

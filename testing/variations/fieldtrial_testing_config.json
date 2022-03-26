@@ -4400,7 +4400,7 @@
                 {
                     "name": "EnabledWithEnhancedWindowOcclusionDetection",
                     "params": {
-                        "myparam": "EnhancedWindowOcclusionDetection"
+                        "EnhancedWindowOcclusionDetection": "true"
                     },
                     "enable_features": [
                         "MacWebContentsOcclusion"
@@ -4409,7 +4409,7 @@
                 {
                     "name": "EnabledWithDisplaySleepAndAppHideDetection",
                     "params": {
-                        "myparam": "DisplaySleepAndAppHideDetection"
+                        "DisplaySleepAndAppHideDetection": "true"
                     },
                     "enable_features": [
                         "MacWebContentsOcclusion"
@@ -4709,6 +4709,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "NtpRealboxSuggestionAnswers"
+                    ]
+                }
+            ]
+        }
+    ],
+    "NtpRealboxTailSuggest": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NtpRealboxTailSuggest"
                     ]
                 }
             ]
@@ -6221,25 +6240,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SendTabToSelfV2"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ServiceWorkerClientForegroundPriority": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "linux",
-                "chromeos",
-                "chromeos_lacros"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ServiceWorkerClientForegroundPriority"
                     ]
                 }
             ]
@@ -7789,6 +7789,22 @@
             ]
         }
     ],
+    "WebRTC-Audio-AgcMinMicLevelExperiment": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled-20_20220325"
+                }
+            ]
+        }
+    ],
     "WebRTC-Audio-AnalogAgcClippingControl": [
         {
             "platforms": [
@@ -7891,6 +7907,25 @@
             "experiments": [
                 {
                     "name": "arm:SyncDecoding,_Beta"
+                }
+            ]
+        }
+    ],
+    "WebRTC-TaskQueuePacer": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "ios",
+                "android",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled,holdback_window:5ms,holdback_packets:3,_1"
                 }
             ]
         }

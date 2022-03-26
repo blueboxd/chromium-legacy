@@ -46,10 +46,14 @@
   /* Window caption colors. */ \
   E(kColorCaptionButtonBackground, \
     ThemeProperties::COLOR_CONTROL_BUTTON_BACKGROUND) \
+  /* Captured tab colors. */ \
+  E_CPONLY(kColorCapturedTabContentsBorder) \
   /* Desktop media tab list colors. */ \
   E_CPONLY(kColorDesktopMediaTabListBorder) \
   E_CPONLY(kColorDesktopMediaTabListPreviewBackground) \
   /* Download shelf colors. */ \
+  E_CPONLY(kColorDownloadItemProgressRingBackground) \
+  E_CPONLY(kColorDownloadItemProgressRingForeground) \
   E(kColorDownloadShelfBackground, ThemeProperties::COLOR_DOWNLOAD_SHELF) \
   E(kColorDownloadShelfButtonBackground, \
     ThemeProperties::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND) \
@@ -59,9 +63,15 @@
     ThemeProperties::COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR) \
   E(kColorDownloadShelfForeground, \
     ThemeProperties::COLOR_DOWNLOAD_SHELF_FOREGROUND) \
+  E_CPONLY(kColorDownloadStartedAnimationForeground) \
   E_CPONLY(kColorDownloadToolbarButtonActive) \
   E_CPONLY(kColorDownloadToolbarButtonInactive) \
   E_CPONLY(kColorDownloadToolbarButtonRingBackground) \
+  /* Extension colors. */ \
+  E_CPONLY(kColorExtensionIconBadgeBackgroundDefault) \
+  E_CPONLY(kColorExtensionIconBadgeForegroundDefault) \
+  E_CPONLY(kColorExtensionIconDecorationAmbientShadow) \
+  E_CPONLY(kColorExtensionIconDecorationKeyShadow) \
   /* Eyedropper colors. */ \
   E_CPONLY(kColorEyedropperBoundary) \
   E_CPONLY(kColorEyedropperCentralPixelInnerRing) \
@@ -95,8 +105,6 @@
   /* Frame caption colors. */ \
   E(kColorFrameCaptionActive, ThemeProperties::COLOR_FRAME_CAPTION_ACTIVE) \
   E(kColorFrameCaptionInactive, ThemeProperties::COLOR_FRAME_CAPTION_INACTIVE) \
-  /* Google branding colors. */ \
-  E_CPONLY(kColorGooglePayLogo) \
   /* InfoBar colors. */ \
   E(kColorInfoBarBackground, ThemeProperties::COLOR_INFOBAR) \
   E(kColorInfoBarContentAreaSeparator, \
@@ -106,6 +114,10 @@
   E(kColorLocationBarBorder, ThemeProperties::COLOR_LOCATION_BAR_BORDER) \
   E(kColorLocationBarBorderOpaque, \
     ThemeProperties::COLOR_LOCATION_BAR_BORDER_OPAQUE) \
+  /* Media router colors. */ \
+  E_CPONLY(kColorMediaRouterIconActive) \
+  E_CPONLY(kColorMediaRouterIconError) \
+  E_CPONLY(kColorMediaRouterIconWarning) \
   /* New Tab Page colors. */ \
   E(kColorNewTabPageBackground, ThemeProperties::COLOR_NTP_BACKGROUND) \
   E(kColorNewTabPageHeader, ThemeProperties::COLOR_NTP_HEADER) \
@@ -180,20 +192,25 @@
   E(kColorOmniboxText, ThemeProperties::COLOR_OMNIBOX_TEXT) \
   E(kColorOmniboxTextDimmed, ThemeProperties::COLOR_OMNIBOX_TEXT_DIMMED) \
   /* Payments colors. */ \
-  E_CPONLY(kColorPaymentRequestRowBackgroundHighlighted) \
+  E_CPONLY(kColorPaymentsFeedbackTipBackground) \
+  E_CPONLY(kColorPaymentsFeedbackTipBorder) \
+  E_CPONLY(kColorPaymentsFeedbackTipForeground) \
+  E_CPONLY(kColorPaymentsFeedbackTipIcon) \
+  E_CPONLY(kColorPaymentsGooglePayLogo) \
+  E_CPONLY(kColorPaymentsPromoCodeBackground) \
+  E_CPONLY(kColorPaymentsPromoCodeForeground) \
+  E_CPONLY(kColorPaymentsPromoCodeForegroundHovered) \
+  E_CPONLY(kColorPaymentsPromoCodeForegroundPressed) \
+  E_CPONLY(kColorPaymentsPromoCodeInkDrop) \
+  E_CPONLY(kColorPaymentsRequestRowBackgroundHighlighted) \
   /* Picture-in-Picture window colors. */ \
   E_CPONLY(kColorPipWindowBackToTabButtonBackground) \
   E_CPONLY(kColorPipWindowBackground) \
+  E_CPONLY(kColorPipWindowControlsBackground) \
   E_CPONLY(kColorPipWindowForeground) \
   E_CPONLY(kColorPipWindowHangUpButtonForeground) \
   E_CPONLY(kColorPipWindowSkipAdButtonBackground) \
   E_CPONLY(kColorPipWindowSkipAdButtonBorder) \
-  /* Payments promo code colors. */ \
-  E_CPONLY(kColorPromoCodeBackground) \
-  E_CPONLY(kColorPromoCodeForeground) \
-  E_CPONLY(kColorPromoCodeForegroundHovered) \
-  E_CPONLY(kColorPromoCodeForegroundPressed) \
-  E_CPONLY(kColorPromoCodeInkDrop) \
   /* PWA colors. */ \
   E_CPONLY(kColorPwaBackground) \
   E_CPONLY(kColorPwaMenuButtonIcon) \
@@ -209,6 +226,9 @@
   /* QR code colors. */ \
   E_CPONLY(kColorQrCodeBackground) \
   E_CPONLY(kColorQrCodeBorder) \
+  /* Quick Answers colors. */ \
+  E_CPONLY(kColorQuickAnswersReportQueryButtonBackground) \
+  E_CPONLY(kColorQuickAnswersReportQueryButtonForeground) \
   /* Read Later button colors. */ \
   E(kColorReadLaterButtonHighlight, \
     ThemeProperties::COLOR_READ_LATER_BUTTON_HIGHLIGHT) \
@@ -348,6 +368,9 @@
     ThemeProperties::COLOR_TAB_STROKE_FRAME_ACTIVE) \
   E(kColorTabStrokeFrameInactive, \
     ThemeProperties::COLOR_TAB_STROKE_FRAME_INACTIVE) \
+  E_CPONLY(kColorTabstripLoadingProgressBackground) \
+  E_CPONLY(kColorTabstripLoadingProgressForeground) \
+  E_CPONLY(kColorTabstripScrollContainerShadow) \
   /* Thumbnail tab colors. */ \
   E_CPONLY(kColorThumbnailTabBackground) \
   E_CPONLY(kColorThumbnailTabForeground) \
@@ -376,6 +399,8 @@
     ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_ACTIVE) \
   E(kColorToolbarTopSeparatorFrameInactive, \
     ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_INACTIVE) \
+  /* WebAuthn colors. */ \
+  E_CPONLY(kColorWebAuthnPinTextfieldBottomBorder) \
   /* Web contents colors. */ \
   E_CPONLY(kColorWebContentsBackground) \
   E_CPONLY(kColorWebContentsBackgroundLetterboxing) \

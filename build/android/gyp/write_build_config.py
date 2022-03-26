@@ -671,13 +671,18 @@ def DepPathsOfType(wanted_type, config_paths):
 
 
 def GetAllDepsConfigsInOrder(deps_config_paths, filter_func=None):
-  def GetDeps(path):
-    config = GetDepConfig(path)
-    if filter_func and not filter_func(config):
-      return []
-    return config['deps_configs']
+  def apply_filter(paths):
+    if filter_func:
+      return [p for p in paths if filter_func(GetDepConfig(p))]
+    return paths
 
-  return build_utils.GetSortedTransitiveDependencies(deps_config_paths, GetDeps)
+  def discover(path):
+    return apply_filter(GetDepConfig(path)['deps_configs'])
+
+  deps_config_paths = apply_filter(deps_config_paths)
+  deps_config_paths = build_utils.GetSortedTransitiveDependencies(
+      deps_config_paths, discover)
+  return deps_config_paths
 
 
 def GetObjectByPath(obj, key_path):
@@ -802,20 +807,16 @@ def _MergeAssets(all_assets):
 
 def _ResolveGroups(config_paths):
   """Returns a list of configs with all groups inlined."""
-  ret = list(config_paths)
-  ret_set = set(config_paths)
-  while True:
-    group_paths = DepPathsOfType('group', ret)
-    if not group_paths:
-      return ret
-    for group_path in group_paths:
-      index = ret.index(group_path)
-      expanded_config_paths = []
-      for deps_config_path in GetDepConfig(group_path)['deps_configs']:
-        if not deps_config_path in ret_set:
-          expanded_config_paths.append(deps_config_path)
-      ret[index:index + 1] = expanded_config_paths
-      ret_set.update(expanded_config_paths)
+
+  def helper(config_path):
+    config = GetDepConfig(config_path)
+    if config['type'] == 'group':
+      # Groups combine public_deps with deps_configs, so no need to check
+      # public_config_paths separately.
+      return config['deps_configs']
+    return []
+
+  return build_utils.GetSortedTransitiveDependencies(config_paths, helper)
 
 
 def _DepsFromPaths(dep_paths,
@@ -857,6 +858,18 @@ def _DepsFromPaths(dep_paths,
   return _DepsFromPathsWithFilters(dep_paths, blocklist, allowlist)
 
 
+def _FilterConfigPaths(dep_paths, blocklist=None, allowlist=None):
+  if not blocklist and not allowlist:
+    return dep_paths
+  configs = [GetDepConfig(p) for p in dep_paths]
+  if blocklist:
+    configs = [c for c in configs if c['type'] not in blocklist]
+  if allowlist:
+    configs = [c for c in configs if c['type'] in allowlist]
+
+  return [c['path'] for c in configs]
+
+
 def _DepsFromPathsWithFilters(dep_paths, blocklist=None, allowlist=None):
   """Resolves all groups and trims dependency branches that we never want.
 
@@ -869,17 +882,10 @@ def _DepsFromPathsWithFilters(dep_paths, blocklist=None, allowlist=None):
   about (i.e. we wish to prune all other branches that do not start from one of
   these).
   """
-  group_paths = DepPathsOfType('group', dep_paths)
-  config_paths = dep_paths
-  if group_paths:
-    config_paths = _ResolveGroups(dep_paths) + group_paths
-  configs = [GetDepConfig(p) for p in config_paths]
-  if blocklist:
-    configs = [c for c in configs if c['type'] not in blocklist]
-  if allowlist:
-    configs = [c for c in configs if c['type'] in allowlist]
+  dep_paths = _ResolveGroups(dep_paths)
+  dep_paths = _FilterConfigPaths(dep_paths, blocklist, allowlist)
 
-  return Deps([c['path'] for c in configs])
+  return Deps(dep_paths)
 
 
 def _ExtractSharedLibsFromRuntimeDeps(runtime_deps_file):
@@ -1271,6 +1277,9 @@ def main(argv):
   }
 
   deps_configs_paths = build_utils.ParseGnList(options.deps_configs)
+  public_deps_configs_paths = build_utils.ParseGnList(
+      options.public_deps_configs)
+  deps_configs_paths += public_deps_configs_paths
   deps = _DepsFromPaths(deps_configs_paths,
                         options.type,
                         recursive_resource_deps=options.recursive_resource_deps)
@@ -1294,14 +1303,16 @@ def main(argv):
   system_library_deps = deps.Direct('system_java_library')
   all_deps = deps.All()
   all_library_deps = deps.All('java_library')
-  all_resources_deps = deps.All('android_resources')
 
   if options.type == 'java_library':
-    java_library_deps = _DepsFromPathsWithFilters(
-        deps_configs_paths, allowlist=['android_resources'])
     # for java libraries, we only care about resources that are directly
     # reachable without going through another java_library.
+    java_library_deps = _DepsFromPathsWithFilters(
+        deps_configs_paths, allowlist=['android_resources'])
     all_resources_deps = java_library_deps.All('android_resources')
+  else:
+    all_resources_deps = deps.All('android_resources')
+
   if options.type == 'android_resources' and options.recursive_resource_deps:
     # android_resources targets that want recursive resource deps also need to
     # collect package_names from all library deps. This ensures the R.java files
@@ -1370,21 +1381,24 @@ def main(argv):
     deps_info['java_sources_file'] = options.java_sources_file
 
   if is_java_target:
-    if options.bundled_srcjars:
-      gradle['bundled_srcjars'] = deps_info['bundled_srcjars']
-
-    gradle['dependent_android_projects'] = []
-    gradle['dependent_java_projects'] = []
-    gradle['dependent_prebuilt_jars'] = deps.GradlePrebuiltJarPaths()
-
     if options.main_class:
       deps_info['main_class'] = options.main_class
 
+    dependent_prebuilt_jars = deps.GradlePrebuiltJarPaths()
+    dependent_prebuilt_jars.sort()
+    if dependent_prebuilt_jars:
+      gradle['dependent_prebuilt_jars'] = dependent_prebuilt_jars
+
+    dependent_android_projects = []
+    dependent_java_projects = []
     for c in deps.GradleLibraryProjectDeps():
       if c['requires_android']:
-        gradle['dependent_android_projects'].append(c['path'])
+        dependent_android_projects.append(c['path'])
       else:
-        gradle['dependent_java_projects'].append(c['path'])
+        dependent_java_projects.append(c['path'])
+
+    gradle['dependent_android_projects'] = dependent_android_projects
+    gradle['dependent_java_projects'] = dependent_java_projects
 
   if options.r_text_path:
     deps_info['r_text_path'] = options.r_text_path
@@ -1449,9 +1463,8 @@ def main(argv):
     if options.unprocessed_jar_path:
       deps_info['unprocessed_jar_path'] = options.unprocessed_jar_path
       deps_info['interface_jar_path'] = options.interface_jar_path
-    if options.public_deps_configs:
-      deps_info['public_deps_configs'] = build_utils.ParseGnList(
-          options.public_deps_configs)
+    if public_deps_configs_paths:
+      deps_info['public_deps_configs'] = public_deps_configs_paths
     if options.device_jar_path:
       deps_info['device_jar_path'] = options.device_jar_path
     if options.host_jar_path:
@@ -1552,22 +1565,6 @@ def main(argv):
       ]
       deps_info['dependency_r_txt_files'] = r_text_files
 
-    # For feature modules, remove any resources that already exist in the base
-    # module.
-    if base_module_build_config:
-      dependency_zips = [
-          c for c in dependency_zips
-          if c not in base_module_build_config['deps_info']['dependency_zips']
-      ]
-      dependency_zip_overlays = [
-          c for c in dependency_zip_overlays if c not in
-          base_module_build_config['deps_info']['dependency_zip_overlays']
-      ]
-      extra_package_names = [
-          c for c in extra_package_names if c not in
-          base_module_build_config['deps_info']['extra_package_names']
-      ]
-
     if options.type == 'android_apk' and options.tested_apk_config:
       config['deps_info']['arsc_package_name'] = (
           tested_apk_config['package_name'])
@@ -1580,17 +1577,23 @@ def main(argv):
     if options.res_size_info:
       config['deps_info']['res_size_info'] = options.res_size_info
 
+    # Safe to sort: Build checks that non-overlay resource have no overlap.
+    dependency_zips.sort()
     config['deps_info']['dependency_zips'] = dependency_zips
     config['deps_info']['dependency_zip_overlays'] = dependency_zip_overlays
+    # Order doesn't matter, so make stable.
+    extra_package_names.sort()
     config['deps_info']['extra_package_names'] = extra_package_names
 
   # These are .jars to add to javac classpath but not to runtime classpath.
   extra_classpath_jars = build_utils.ParseGnList(options.extra_classpath_jars)
   if extra_classpath_jars:
+    extra_classpath_jars.sort()
     deps_info['extra_classpath_jars'] = extra_classpath_jars
 
   mergeable_android_manifests = build_utils.ParseGnList(
       options.mergeable_android_manifests)
+  mergeable_android_manifests.sort()
   if mergeable_android_manifests:
     deps_info['mergeable_android_manifests'] = mergeable_android_manifests
 
@@ -1947,8 +1950,8 @@ def main(argv):
     config['javac']['processor_classpath'] += [
         c['host_jar_path'] for c in processor_deps.All('java_library')
     ]
-    config['javac']['processor_classes'] = [
-        c['main_class'] for c in processor_deps.Direct()]
+    config['javac']['processor_classes'] = sorted(
+        c['main_class'] for c in processor_deps.Direct())
     deps_info['javac_full_classpath'] = list(javac_full_classpath)
     deps_info['javac_full_interface_classpath'] = list(
         javac_full_interface_classpath)
@@ -2015,17 +2018,22 @@ def main(argv):
     if options.secondary_abi_shared_libraries_runtime_deps:
       secondary_abi_library_paths = _ExtractSharedLibsFromRuntimeDeps(
           options.secondary_abi_shared_libraries_runtime_deps)
+      secondary_abi_library_paths.sort()
       all_inputs.append(options.secondary_abi_shared_libraries_runtime_deps)
 
     native_library_placeholder_paths = build_utils.ParseGnList(
         options.native_lib_placeholders)
+    native_library_placeholder_paths.sort()
 
     secondary_native_library_placeholder_paths = build_utils.ParseGnList(
         options.secondary_native_lib_placeholders)
+    secondary_native_library_placeholder_paths.sort()
 
     loadable_modules = build_utils.ParseGnList(options.loadable_modules)
+    loadable_modules.sort()
     secondary_abi_loadable_modules = build_utils.ParseGnList(
         options.secondary_abi_loadable_modules)
+    secondary_abi_loadable_modules.sort()
 
     config['native'] = {
         'libraries':
@@ -2069,6 +2077,7 @@ def main(argv):
                                   if 'java_resources_jar' in d]
       java_resources_jars = [jar for jar in java_resources_jars
                              if jar not in tested_apk_resource_jars]
+    java_resources_jars.sort()
     config['java_resources_jars'] = java_resources_jars
 
   if options.java_resources_jar_path:
@@ -2079,6 +2088,9 @@ def main(argv):
   # are not duplicated on the feature module.
   if base_module_build_config:
     base = base_module_build_config
+    RemoveObjDups(config, base, 'deps_info', 'dependency_zips')
+    RemoveObjDups(config, base, 'deps_info', 'dependency_zip_overlays')
+    RemoveObjDups(config, base, 'deps_info', 'extra_package_names')
     RemoveObjDups(config, base, 'deps_info', 'device_classpath')
     RemoveObjDups(config, base, 'deps_info', 'javac_full_classpath')
     RemoveObjDups(config, base, 'deps_info', 'javac_full_interface_classpath')
@@ -2103,9 +2115,8 @@ def main(argv):
 
     # Used by bytecode_processor to give better error message when missing
     # deps are found.
-    config['deps_info']['javac_full_classpath_targets'] = [
-        jar_to_target[x] for x in deps_info['javac_full_classpath']
-    ]
+    config['deps_info']['javac_full_classpath_targets'] = sorted(
+        jar_to_target[x] for x in deps_info['javac_full_classpath'])
 
   build_utils.WriteJson(config, options.build_config, only_if_changed=True)
 

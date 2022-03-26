@@ -619,6 +619,8 @@ source_set("browser") {
     "browsing_data/storage_partition_code_cache_data_remover.h",
     "browsing_instance.cc",
     "browsing_instance.h",
+    "browsing_topics/browsing_topics_document_host.cc",
+    "browsing_topics/browsing_topics_document_host.h",
     "browsing_topics/browsing_topics_site_data_manager_impl.cc",
     "browsing_topics/browsing_topics_site_data_manager_impl.h",
     "browsing_topics/browsing_topics_site_data_storage.cc",
@@ -935,8 +937,8 @@ source_set("browser") {
     "first_party_sets/addition_overlaps_union_find.h",
     "first_party_sets/first_party_sets_handler_impl.cc",
     "first_party_sets/first_party_sets_handler_impl.h",
-    "font_access/font_access_manager_impl.cc",
-    "font_access/font_access_manager_impl.h",
+    "font_access/font_access_manager.cc",
+    "font_access/font_access_manager.h",
     "font_access/font_enumeration_cache.cc",
     "font_access/font_enumeration_cache.h",
     "font_access/font_enumeration_data_source.cc",
@@ -1720,6 +1722,8 @@ source_set("browser") {
     "renderer_host/stored_page.h",
     "renderer_host/text_input_manager.cc",
     "renderer_host/text_input_manager.h",
+    "renderer_host/transient_allow_popup.cc",
+    "renderer_host/transient_allow_popup.h",
     "renderer_host/ui_events_helper.cc",
     "renderer_host/ui_events_helper.h",
     "renderer_host/visible_time_request_trigger.cc",
@@ -2549,7 +2553,11 @@ source_set("browser") {
       sources += [
         "media/capture/desktop_capture_device_mac.cc",
         "media/capture/desktop_capture_device_mac.h",
+        "media/capture/io_surface_capture_device_base_mac.cc",
+        "media/capture/io_surface_capture_device_base_mac.h",
         "media/capture/mouse_cursor_overlay_controller_mac.mm",
+        "media/capture/screen_capture_kit_device_mac.h",
+        "media/capture/screen_capture_kit_device_mac.mm",
         "media/capture/views_widget_video_capture_device_mac.cc",
         "media/capture/views_widget_video_capture_device_mac.h",
       ]
@@ -2557,6 +2565,8 @@ source_set("browser") {
         "//sandbox/mac:seatbelt",
         "//sandbox/mac:seatbelt_extension",
       ]
+      frameworks += [ "CoreMedia.framework" ]
+      weak_frameworks = [ "ScreenCaptureKit.framework" ]
     }
     if (is_chromeos_lacros) {
       sources += [

@@ -64,10 +64,6 @@ Config::Config() {
           internal::kJourneys, "JourneysSortClustersWithinBatchForQuery",
           sort_clusters_within_batch_for_query);
 
-  alternate_omnibox_action_text = base::GetFieldTrialParamByFeatureAsBool(
-      internal::kJourneys, "JourneysAlternateOmniboxActionText",
-      alternate_omnibox_action_text);
-
   omnibox_action = base::FeatureList::IsEnabled(internal::kOmniboxAction);
 
   non_user_visible_debug =
@@ -217,6 +213,9 @@ Config::Config() {
                                  base::WhitespaceHandling::TRIM_WHITESPACE,
                                  base::SplitResult::SPLIT_WANT_NONEMPTY);
   hosts_to_skip_clustering_for = {hosts.begin(), hosts.end()};
+
+  use_continue_on_shutdown = base::FeatureList::IsEnabled(
+      internal::kHistoryClustersUseContinueOnShutdown);
 }
 
 Config::Config(const Config& other) = default;

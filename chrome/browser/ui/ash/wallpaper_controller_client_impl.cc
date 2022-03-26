@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 
+#include <algorithm>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "ash/components/cryptohome/system_salt_getter.h"
 #include "ash/components/settings/cros_settings_names.h"
@@ -183,7 +186,8 @@ std::string GetDailyRefreshCollectionId(value_store::ValueStore* value_store) {
     return std::string();
 
   const auto* daily_refresh_info_string =
-      read_result.settings().FindStringKey(kChromeAppDailyRefreshInfoPref);
+      read_result.settings().GetDict().FindString(
+          kChromeAppDailyRefreshInfoPref);
 
   if (!daily_refresh_info_string)
     return std::string();
@@ -195,7 +199,7 @@ std::string GetDailyRefreshCollectionId(value_store::ValueStore* value_store) {
     return std::string();
 
   const auto* collection_id =
-      daily_refresh_info->FindStringKey(kChromeAppCollectionId);
+      daily_refresh_info->GetDict().FindString(kChromeAppCollectionId);
 
   if (!collection_id)
     return std::string();
@@ -825,11 +829,16 @@ void WallpaperControllerClientImpl::OnGooglePhotosPhotoFetched(
     FetchGooglePhotosPhotoCallback callback,
     ash::personalization_app::mojom::FetchGooglePhotosPhotosResponsePtr
         response) {
-  if (!response->photos.has_value() || response->photos.value().size() != 1) {
-    std::move(callback).Run(nullptr);
-    return;
+  // If we have a `GooglePhotosPhoto`, pass that along. Otherwise, indicate to
+  // `callback` whether the the request succeeded or failed, since `callback`
+  // can take action if the `GooglePhotosPhoto` with the given id has been
+  // deleted.
+  if (response->photos.has_value() && response->photos.value().size() == 1) {
+    std::move(callback).Run(std::move(response->photos.value()[0]),
+                            /*success=*/true);
+  } else {
+    std::move(callback).Run(nullptr, /*success=*/response->photos.has_value());
   }
-  std::move(callback).Run(std::move(response->photos.value()[0]));
 }
 
 void WallpaperControllerClientImpl::ObserveVolumeManagerForAccountId(

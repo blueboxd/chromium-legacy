@@ -34,7 +34,8 @@ FrameTreeNode* CreateDelegateFrameTreeNode(
 }  // namespace
 
 FencedFrame::FencedFrame(
-    base::SafeRef<RenderFrameHostImpl> owner_render_frame_host)
+    base::SafeRef<RenderFrameHostImpl> owner_render_frame_host,
+    blink::mojom::FencedFrameMode mode)
     : web_contents_(static_cast<WebContentsImpl*>(
           WebContents::FromRenderFrameHost(&*owner_render_frame_host))),
       owner_render_frame_host_(owner_render_frame_host),
@@ -50,7 +51,8 @@ FencedFrame::FencedFrame(
                                       /*render_widget_delegate=*/web_contents_,
                                       /*manager_delegate=*/web_contents_,
                                       /*page_delegate=*/web_contents_,
-                                      FrameTree::Type::kFencedFrame)) {
+                                      FrameTree::Type::kFencedFrame)),
+      mode_(mode) {
   scoped_refptr<SiteInstance> site_instance =
       SiteInstance::Create(web_contents_->GetBrowserContext());
   // Note that even though this is happening in response to an event in the
@@ -84,6 +86,11 @@ FencedFrame::~FencedFrame() {
 
 void FencedFrame::Navigate(const GURL& url,
                            base::TimeTicks navigation_start_time) {
+  // We don't need guard against a bad message in the case of prerendering since
+  // we wouldn't even establish the mojo connection in that case.
+  DCHECK_NE(RenderFrameHost::LifecycleState::kPrerendering,
+            owner_render_frame_host_->GetLifecycleState());
+
   FrameTreeNode* inner_root = frame_tree_->root();
 
   // TODO(crbug.com/1237552): Resolve the discussion around navigations being

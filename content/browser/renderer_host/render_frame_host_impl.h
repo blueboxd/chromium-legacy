@@ -53,6 +53,7 @@
 #include "content/browser/renderer_host/page_impl.h"
 #include "content/browser/renderer_host/policy_container_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/transient_allow_popup.h"
 #include "content/browser/site_instance_group.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -387,6 +388,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   service_manager::InterfaceProvider* GetRemoteInterfaces() override;
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
   content::PageVisibilityState GetVisibilityState() override;
+  bool IsLastCommitIPAddressPubliclyRoutable() const override;
   bool IsRenderFrameCreated() override;
   bool IsRenderFrameLive() override;
   LifecycleState GetLifecycleState() override;
@@ -2675,6 +2677,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateFencedFrame(
       mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>
           pending_receiver,
+      blink::mojom::FencedFrameMode mode,
       CreateFencedFrameCallback callback) override;
   void GetKeepAliveHandleFactory(
       mojo::PendingReceiver<blink::mojom::KeepAliveHandleFactory> receiver)
@@ -4158,6 +4161,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Manages the snapshot processing by Screen AI, if enabled.
   std::unique_ptr<AXScreenAIAnnotator> ax_screen_ai_annotator_;
 #endif
+
+  // Manages a transient affordance for this frame or subframes to open a popup.
+  TransientAllowPopup transient_allow_popup_;
 
   // BrowserInterfaceBroker implementation through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently

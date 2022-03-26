@@ -5118,7 +5118,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- End Extension Settings Overridden Dialog strings. -->
       <!-- Force Installed Deprecated Apps Deletion Dialog strings. -->
       <message name="IDS_FORCE_INSTALLED_DEPRECATED_APPS_CONTENT" desc="Content of the force installed deprecated app dialog">
-        Your administrator installed "<ph name="EXTENSION_NAME">$1<ex>Google Dos</ex></ph>" but this Chrome App is no longer supported. Contact your administrator to remove it. <ph name="LEARN_MORE">$2<ex>Learn more</ex></ph>
+        Your administrator installed "<ph name="EXTENSION_NAME">$1<ex>Google Dos</ex></ph>" but this Chrome App is no longer supported. Contact your administrator to remove it.
+      </message>
+      <message name="IDS_FORCE_INSTALLED_DEPRECATED_APPS_LEARN_MORE_AX_LABEL" desc="Accessibility label text for IDS_DEPRECATED_APPS_LEARN_MORE link">
+        Learn more about unsupported Chrome Apps
       </message>
       <!-- End Force Installed Deprecated Apps Deletion Dialog strings. -->
       <!-- Deprecated Apps Deletion Dialog strings. -->
@@ -6452,7 +6455,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Pick cards that keep you updated on things that matter to you
       </message>
       <message name="IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_BODY_LINE_2" desc="Line 2 of Modular NTP Desktop v1 First Run Experience's body.">
-        See all card options in <ph name="BEGIN_LINK">&lt;a is="action-link" id="customizeChromeLink" on-click="onCustomizeModuleFre_"&gt;</ph>Customize Chrome<ph name="END_LINK">&lt;/a&gt;</ph>
+        See all card options in <ph name="BEGIN_LINK">&lt;a is="action-link" id="customizeChromeLink" tabIndex=0 on-click="onCustomizeModuleFre_"&gt;</ph>Customize Chrome<ph name="END_LINK">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_OPT_IN" desc="Opt in button for Modular NTP Desktop v1 First Run Experience.">
         Got it

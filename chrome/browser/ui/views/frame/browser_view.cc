@@ -2773,11 +2773,6 @@ bool BrowserView::CanActivate() const {
     return true;
   }
 
-#if defined(USE_AURA) && BUILDFLAG(IS_CHROMEOS_ASH)
-  // On Aura window manager controls all windows so settings focus via PostTask
-  // will make only worse because posted task will keep trying to steal focus.
-  queue->ActivateModalDialog();
-#else
   // If another browser is app modal, flash and activate the modal browser. This
   // has to be done in a post task, otherwise if the user clicked on a window
   // that doesn't have the modal dialog the windows keep trying to get the focus
@@ -2785,7 +2780,6 @@ bool BrowserView::CanActivate() const {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&BrowserView::ActivateAppModalDialog,
                                 weak_ptr_factory_.GetWeakPtr()));
-#endif
   return false;
 }
 
@@ -3999,9 +3993,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
         // occluding the active window receiving key events on Mac and Linux,
         // and also prevents an inactive fullscreen window and its exit bubble
         // from being occluded by the active window on Windows and Chrome OS.
-        // Initial content fullscreen requests require user activation (so the
-        // window should already be active), but swapping the screen used for
-        // fullscreen does not require user activation on the fullscreen window.
+        // Content fullscreen requests require user activation (so the window
+        // should already be active), but it is safer to ensure activation here.
         Activate();
       }
 

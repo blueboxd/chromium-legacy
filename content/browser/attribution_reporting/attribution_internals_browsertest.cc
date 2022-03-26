@@ -527,18 +527,17 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       let table = document.querySelector("#report-table-wrapper tbody");
       let obs = new MutationObserver(() => {
         if (table.children.length === 12 &&
-            table.children[0].children[3].innerText === "https://conversion.test" &&
-            table.children[0].children[4].innerText ===
+            table.children[0].children[3].innerText ===
               "https://report.test/.well-known/attribution-reporting/report-event-attribution" &&
-            table.children[0].children[7].innerText === "13" &&
-            table.children[0].children[8].innerText === "yes" &&
+            table.children[0].children[6].innerText === "13" &&
+            table.children[0].children[7].innerText === "yes" &&
             table.children[0].children[2].innerText === "Pending" &&
-            table.children[1].children[7].innerText === "11" &&
+            table.children[1].children[6].innerText === "11" &&
             table.children[1].children[2].innerText === "Dropped due to low priority" &&
-            table.children[2].children[7].innerText === "12" &&
+            table.children[2].children[6].innerText === "12" &&
             table.children[2].children[2].innerText === "Dropped for noise" &&
-            table.children[3].children[7].innerText === "0" &&
-            table.children[3].children[8].innerText === "no" &&
+            table.children[3].children[6].innerText === "0" &&
+            table.children[3].children[7].innerText === "no" &&
             table.children[3].children[2].innerText === "Sent: HTTP 200" &&
             table.children[4].children[2].innerText === "Prohibited by browser policy" &&
             table.children[5].children[2].innerText === "Network error" &&
@@ -547,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
             table.children[8].children[2].innerText === "Deduplicated" &&
             table.children[9].children[2].innerText === "No report capacity for destination site" &&
             table.children[10].children[2].innerText === "Internal error" &&
-            table.children[11].children[4].innerText ===
+            table.children[11].children[3].innerText ===
               "https://report.test/.well-known/attribution-reporting/debug/report-event-attribution") {
           document.title = $1;
         }
@@ -565,18 +564,17 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       let table = document.querySelector("#report-table-wrapper tbody");
       let obs = new MutationObserver(() => {
         if (table.children.length === 12 &&
-            table.children[11].children[3].innerText === "https://conversion.test" &&
-            table.children[11].children[4].innerText ===
+            table.children[11].children[3].innerText ===
               "https://report.test/.well-known/attribution-reporting/report-event-attribution" &&
-            table.children[11].children[7].innerText === "13" &&
-            table.children[11].children[8].innerText === "yes" &&
+            table.children[11].children[6].innerText === "13" &&
+            table.children[11].children[7].innerText === "yes" &&
             table.children[11].children[2].innerText === "Pending" &&
-            table.children[10].children[7].innerText === "12" &&
+            table.children[10].children[6].innerText === "12" &&
             table.children[10].children[2].innerText === "Dropped for noise" &&
-            table.children[9].children[7].innerText === "11" &&
+            table.children[9].children[6].innerText === "11" &&
             table.children[9].children[2].innerText === "Dropped due to low priority" &&
-            table.children[8].children[7].innerText === "0" &&
-            table.children[8].children[8].innerText === "no" &&
+            table.children[8].children[6].innerText === "0" &&
+            table.children[8].children[7].innerText === "no" &&
             table.children[8].children[2].innerText === "Sent: HTTP 200" &&
             table.children[7].children[2].innerText === "Prohibited by browser policy" &&
             table.children[6].children[2].innerText === "Network error" &&
@@ -585,7 +583,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
             table.children[3].children[2].innerText === "Deduplicated" &&
             table.children[2].children[2].innerText === "No report capacity for destination site" &&
             table.children[1].children[2].innerText === "Internal error" &&
-            table.children[0].children[4].innerText ===
+            table.children[0].children[3].innerText ===
               "https://report.test/.well-known/attribution-reporting/debug/report-event-attribution") {
           document.title = $1;
         }
@@ -596,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle2);
     // Sort by priority ascending.
     EXPECT_TRUE(ExecJsInWebUI(
-        "document.querySelectorAll('#report-table-wrapper th')[7].click();"));
+        "document.querySelectorAll('#report-table-wrapper th')[6].click();"));
     EXPECT_EQ(kCompleteTitle2, title_watcher.WaitAndGetTitle());
   }
 
@@ -605,18 +603,17 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       let table = document.querySelector("#report-table-wrapper tbody");
       let obs = new MutationObserver(() => {
         if (table.children.length === 12 &&
-            table.children[0].children[3].innerText === "https://conversion.test" &&
-            table.children[0].children[4].innerText ===
+            table.children[0].children[3].innerText ===
               "https://report.test/.well-known/attribution-reporting/report-event-attribution" &&
-            table.children[0].children[7].innerText === "13" &&
-            table.children[0].children[8].innerText === "yes" &&
+            table.children[0].children[6].innerText === "13" &&
+            table.children[0].children[7].innerText === "yes" &&
             table.children[0].children[2].innerText === "Pending" &&
-            table.children[1].children[7].innerText === "12" &&
+            table.children[1].children[6].innerText === "12" &&
             table.children[1].children[2].innerText === "Dropped for noise" &&
-            table.children[2].children[7].innerText === "11" &&
+            table.children[2].children[6].innerText === "11" &&
             table.children[2].children[2].innerText === "Dropped due to low priority" &&
-            table.children[3].children[7].innerText === "0" &&
-            table.children[3].children[8].innerText === "no" &&
+            table.children[3].children[6].innerText === "0" &&
+            table.children[3].children[7].innerText === "no" &&
             table.children[3].children[2].innerText === "Sent: HTTP 200" &&
             table.children[4].children[2].innerText === "Prohibited by browser policy" &&
             table.children[5].children[2].innerText === "Network error" &&
@@ -625,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
             table.children[8].children[2].innerText === "Deduplicated" &&
             table.children[9].children[2].innerText === "No report capacity for destination site" &&
             table.children[10].children[2].innerText === "Internal error" &&
-            table.children[11].children[4].innerText ===
+            table.children[11].children[3].innerText ===
               "https://report.test/.well-known/attribution-reporting/debug/report-event-attribution") {
           document.title = $1;
         }
@@ -636,7 +633,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle3);
     // Sort by priority descending.
     EXPECT_TRUE(ExecJsInWebUI(
-        "document.querySelectorAll('#report-table-wrapper th')[7].click();"));
+        "document.querySelectorAll('#report-table-wrapper th')[6].click();"));
 
     EXPECT_EQ(kCompleteTitle3, title_watcher.WaitAndGetTitle());
   }
@@ -675,7 +672,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     let table = document.querySelector("#report-table-wrapper tbody");
     let obs = new MutationObserver(() => {
       if (table.children.length === 2 &&
-          table.children[0].children[7].innerText === "7" &&
+          table.children[0].children[6].innerText === "7" &&
           table.children[1].children[2].innerText === "Sent: HTTP 200") {
         document.title = $1;
       }
@@ -786,7 +783,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     let table = document.querySelector("#report-table-wrapper tbody");
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
-          table.children[0].children[7].innerText === "7") {
+          table.children[0].children[6].innerText === "7") {
         document.title = $1;
       }
     });
@@ -804,7 +801,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   SetTitleOnReportsTableEmpty(kSentTitle);
 
   EXPECT_TRUE(ExecJsInWebUI(
-      R"(document.querySelector('input[type="checkbox"]').click();)"));
+      R"(document.querySelector('#report-table-wrapper input[type="checkbox"]').click();)"));
   EXPECT_TRUE(
       ExecJsInWebUI("document.getElementById('send-reports').click();"));
 
@@ -981,11 +978,10 @@ IN_PROC_BROWSER_TEST_F(
       let table = document.querySelector("#aggregatable-report-table-wrapper tbody");
       let obs = new MutationObserver(() => {
         if (table.children.length === 11 &&
-            table.children[0].children[3].innerText === "https://conversion.test" &&
-            table.children[0].children[4].innerText ===
+            table.children[0].children[3].innerText ===
               "https://report.test/.well-known/attribution-reporting/report-aggregate-attribution" &&
             table.children[0].children[2].innerText === "Pending" &&
-            table.children[0].children[7].innerText === '[\n {\n  "key": {\n   "highBits": "0",\n   "lowBits": "1"\n  },\n  "value": 2\n }\n]' &&
+            table.children[0].children[6].innerText === '[\n {\n  "key": {\n   "highBits": "0",\n   "lowBits": "1"\n  },\n  "value": 2\n }\n]' &&
             table.children[1].children[2].innerText === "Dropped due to insufficient aggregatable budget" &&
             table.children[2].children[2].innerText === "No report capacity for destination site" &&
             table.children[3].children[2].innerText === "Sent: HTTP 200" &&
@@ -995,7 +991,7 @@ IN_PROC_BROWSER_TEST_F(
             table.children[7].children[2].innerText === "Dropped due to excessive attributions" &&
             table.children[8].children[2].innerText === "Dropped due to excessive reporting origins" &&
             table.children[9].children[2].innerText === "Internal error" &&
-            table.children[10].children[4].innerText ===
+            table.children[10].children[3].innerText ===
               "https://report.test/.well-known/attribution-reporting/debug/report-aggregate-attribution") {
           document.title = $1;
         }
@@ -1069,7 +1065,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       ExecJsInWebUI(JsReplace(kObserveEmptyReportsTableScript, kSentTitle)));
 
   EXPECT_TRUE(ExecJsInWebUI(
-      R"(document.querySelectorAll('input[type="checkbox"]')[1].click();)"));
+      R"(document.querySelectorAll('#aggregatable-report-table-wrapper input[type="checkbox"]')[1].click();)"));
   EXPECT_TRUE(ExecJsInWebUI(
       "document.getElementById('send-aggregatable-reports').click();"));
 
@@ -1079,6 +1075,119 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       AttributionReport::ReportType::kAggregatableAttribution);
 
   EXPECT_EQ(kSentTitle, sent_title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
+                       ToggleDebugReports) {
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
+
+  const base::Time now = base::Time::Now();
+
+  OverrideWebUIAttributionManager();
+
+  manager_.NotifyReportSent(
+      ReportBuilder(
+          AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
+          .SetReportTime(now)
+          .SetPriority(1)
+          .Build(),
+      /*is_debug_report=*/true,
+      SendResult(SendResult::Status::kSent,
+                 /*http_response_code=*/200));
+
+  ON_CALL(manager_, GetPendingReportsForInternalUse)
+      .WillByDefault(InvokeCallback(
+          {ReportBuilder(
+               AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
+               .SetReportTime(now + base::Hours(1))
+               .SetPriority(2)
+               .Build()}));
+
+  // By default, debug reports are shown.
+  {
+    static constexpr char wait_script[] = R"(
+      let table = document.querySelector("#report-table-wrapper tbody");
+      let label = document.querySelector('#show-debug-event-reports span');
+      let obs = new MutationObserver(() => {
+        if (table.children.length === 2 &&
+            table.children[0].children[6].innerText === "1" &&
+            table.children[1].children[6].innerText === "2" &&
+            label.innerText === '') {
+          document.title = $1;
+        }
+      });
+      obs.observe(table, {'childList': true});
+      obs.observe(label, {'characterData': true});)";
+    EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+
+    TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+    ClickRefreshButton();
+    EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+  }
+
+  // Toggle checkbox.
+  EXPECT_TRUE(ExecJsInWebUI(R"(
+      document.querySelector('#show-debug-event-reports input').click();)"));
+
+  manager_.NotifyReportSent(
+      ReportBuilder(
+          AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
+          .SetReportTime(now + base::Hours(2))
+          .SetPriority(3)
+          .Build(),
+      /*is_debug_report=*/true,
+      SendResult(SendResult::Status::kSent,
+                 /*http_response_code=*/200));
+
+  // The debug reports, including the newly received one, should be hidden and
+  // the label should indicate the number.
+  {
+    static constexpr char wait_script[] = R"(
+      let table = document.querySelector("#report-table-wrapper tbody");
+      let label = document.querySelector('#show-debug-event-reports span');
+      let obs = new MutationObserver(() => {
+        if (table.children.length === 1 &&
+            table.children[0].children[6].innerText === "2" &&
+            label.innerText === ' (2 hidden)') {
+          document.title = $1;
+        }
+      });
+      obs.observe(table, {'childList': true});
+      obs.observe(label, {'characterData': true});)";
+    EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle2)));
+
+    TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle2);
+    ClickRefreshButton();
+    EXPECT_EQ(kCompleteTitle2, title_watcher.WaitAndGetTitle());
+  }
+
+  // Toggle checkbox.
+  EXPECT_TRUE(ExecJsInWebUI(R"(
+      document.querySelector('#show-debug-event-reports input').click();)"));
+
+  // The debug reports should be visible again and the hidden label should be
+  // cleared.
+  {
+    static constexpr char wait_script[] = R"(
+      let table = document.querySelector("#report-table-wrapper tbody");
+      let label = document.querySelector('#show-debug-event-reports span');
+      let obs = new MutationObserver(() => {
+        if (table.children.length === 3 &&
+            table.children[0].children[6].innerText === "1" &&
+            table.children[1].children[6].innerText === "2" &&
+            table.children[2].children[6].innerText === "3" &&
+            label.innerText === '') {
+          document.title = $1;
+        }
+      });
+      obs.observe(table, {'childList': true});
+      obs.observe(label, {'characterData': true});)";
+    EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle3)));
+
+    TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle3);
+    ClickRefreshButton();
+    EXPECT_EQ(kCompleteTitle3, title_watcher.WaitAndGetTitle());
+  }
 }
 
 }  // namespace content

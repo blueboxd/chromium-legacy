@@ -1069,6 +1069,12 @@ const base::FeatureParam<int>
     kBrowsingTopicsMaxNumberOfApiUsageContextEntriesToLoadPerEpoch{
         &kBrowsingTopics,
         "max_number_of_api_usage_context_entries_to_load_per_epoch", 100000};
+// The max number of API usage context domains allowed to be stored per page
+// load.
+const base::FeatureParam<int>
+    kBrowsingTopicsMaxNumberOfApiUsageContextDomainsToStorePerPageLoad{
+        &kBrowsingTopics,
+        "max_number_of_api_usage_context_domains_to_store_per_page_load", 30};
 // Encodes the configuration parameters above. Each version number should only
 // be mapped to one configuration set. In practice, this can be guaranteed by
 // always bumping up the version number whenever parameters are updated.
@@ -1078,6 +1084,13 @@ const base::FeatureParam<int> kBrowsingTopicsConfigVersion{&kBrowsingTopics,
 // during this browser session, and doesn't affect the pre-existing epochs.
 const base::FeatureParam<int> kBrowsingTopicsTaxonomyVersion{
     &kBrowsingTopics, "taxonomy_version", 1};
+
+// If enabled, the check for whether the IP address is publicly routable will be
+// bypassed when determining the eligibility for a page to be included in topics
+// calculation. This is useful for developers to test in local environment.
+const base::Feature kBrowsingTopicsBypassIPIsPubliclyRoutableCheck{
+    "BrowsingTopicsBypassIPIsPubliclyRoutableCheck",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When <dialog>s are closed, this focuses the "previously focused" element
 // which had focus when the <dialog> was first opened.
@@ -1361,9 +1374,19 @@ const base::Feature kFreeNonRequiredTileResourcesForInactiveWindows{
     "FreeNonRequiredTileResourcesForInactiveWindows",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the WindowPlacement RuntimeEnabledFeature.
+// Enables basic Multi-Screen Window Placement functionality.
 const base::Feature kWindowPlacement{"WindowPlacement",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Allows sites to request fullscreen and open a popup from a single gesture.
+const base::Feature kWindowPlacementFullscreenCompanionWindow{
+    "WindowPlacementFullscreenCompanionWindow",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Allows sites to request fullscreen when the set of screens change.
+const base::Feature kWindowPlacementFullscreenOnScreensChange{
+    "WindowPlacementFullscreenOnScreensChange",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // TODO(crbug.com/1277431): This flag should be eventually disabled.
 const base::Feature kEventPath{"EventPath", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1385,6 +1408,11 @@ const base::Feature kUserAgentOverrideExperiment{
 // Allow access to WebSQL APIs.
 const base::Feature kWebSQLAccess{"kWebSQLAccess",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Changes behavior of User-Agent Client Hints to send blank headers when the
+// User-Agent string is overridden, instead of disabling the headers altogether.
+const base::Feature kUACHOverrideBlank{"UACHOverrideBlank",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

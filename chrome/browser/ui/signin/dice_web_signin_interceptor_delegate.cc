@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/core_account_id.h"
@@ -63,19 +64,29 @@ class ForcedEnterpriseSigninInterceptionHandle
   void ShowEnterpriseProfileInterceptionDialog(const AccountInfo& account_info,
                                                SkColor profile_color) {
     browser_->signin_view_controller()->ShowModalEnterpriseConfirmationDialog(
-        account_info, profile_color,
+        account_info, /*force_new_profile=*/true, profile_color,
         base::BindOnce(&ForcedEnterpriseSigninInterceptionHandle::
                            OnEnterpriseInterceptionDialogClosed,
                        base::Unretained(this)));
   }
 
-  void OnEnterpriseInterceptionDialogClosed(bool create_profile) {
-    if (!create_profile)
-      browser_->signin_view_controller()->CloseModalSignin();
-    std::move(callback_).Run(create_profile
-                                 ? SigninInterceptionResult::kAccepted
-                                 : SigninInterceptionResult::kDeclined);
+  void OnEnterpriseInterceptionDialogClosed(signin::SigninChoice choice) {
+    switch (choice) {
+      case signin::SIGNIN_CHOICE_NEW_PROFILE:
+        std::move(callback_).Run(SigninInterceptionResult::kAccepted);
+        break;
+      case signin::SIGNIN_CHOICE_CANCEL:
+        browser_->signin_view_controller()->CloseModalSignin();
+        std::move(callback_).Run(SigninInterceptionResult::kDeclined);
+        break;
+      case signin::SIGNIN_CHOICE_CONTINUE:
+      case signin::SIGNIN_CHOICE_SIZE:
+      default:
+        NOTREACHED();
+        break;
+    }
   }
+
   raw_ptr<Browser> browser_;
   base::OnceCallback<void(SigninInterceptionResult)> callback_;
 };

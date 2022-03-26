@@ -65,10 +65,6 @@ struct Config {
   // reverse chronologically, but the clusters within batches will be resorted.
   bool sort_clusters_within_batch_for_query = false;
 
-  // If enabled, changes the History Clusters omnibox action text to be:
-  // "Resume your research" instead of "Resume your journey".
-  bool alternate_omnibox_action_text = false;
-
   // Enables the Journeys Omnibox Action chip. `kJourneys` must also be enabled
   // for this to take effect.
   bool omnibox_action = false;
@@ -197,6 +193,9 @@ struct Config {
   // The set of hosts for which all visits belonging to that host will not be in
   // any cluster.
   base::flat_set<std::string> hosts_to_skip_clustering_for;
+
+  // True if the task runner should use trait CONTINUE_ON_SHUTDOWN.
+  bool use_continue_on_shutdown = true;
 
   Config();
   Config(const Config& other);

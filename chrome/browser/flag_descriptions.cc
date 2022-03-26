@@ -318,12 +318,6 @@ const char kAutofillTypeSpecificPopupWidthDescription[] =
     "Controls if different width limits are used for the popup that provides "
     "Autofill suggestions, depending on the type of data that is filled.";
 
-const char kAutofillEnableGoogleIssuedCardName[] =
-    "Enable Autofill Google-issued card";
-const char kAutofillEnableGoogleIssuedCardDescription[] =
-    "When enabled, Google-issued cards will be available in the autofill "
-    "suggestions.";
-
 const char kAutofillEnableMerchantBoundVirtualCardsName[] =
     "Offer merchant bound virtual cards in Autofill";
 const char kAutofillEnableMerchantBoundVirtualCardsDescription[] =
@@ -1663,10 +1657,6 @@ const char kDestroySystemProfilesDescription[] =
     "owned by the System Profile. This requires "
     "#destroy-profile-on-browser-close.";
 
-const char kNewUsbBackendName[] = "Enable new USB backend";
-const char kNewUsbBackendDescription[] =
-    "Enables the new experimental USB backend for macOS";
-
 const char kNotificationsRevampName[] = "Notifications Revamp";
 const char kNotificationsRevampDescription[] =
     "Enable notification UI revamp and grouped web notifications.";
@@ -2281,6 +2271,11 @@ const char kSidePanelDragAndDropName[] = "Side panel drag and drop";
 const char kSidePanelDragAndDropDescription[] =
     "Enables drag and drop of bookmarks within the side panel.";
 
+const char kSidePanelImprovedClobberingName[] =
+    "Side panel improved clobbering";
+const char kSidePanelImprovedClobberingDescription[] =
+    "Improves the side panel clobbering experience for RHS side panels.";
+
 const char kSharedClipboardUIName[] =
     "Enable shared clipboard feature signals to be handled";
 const char kSharedClipboardUIDescription[] =
@@ -2546,9 +2541,12 @@ const char kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesName[] =
 const char
     kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesDescription[] =
         "When enabled, all cross-origin iframes with zero visibility (either "
-        "display:none or zero area) will be throttled, regardless of whether "
-        "they are same-process or cross-process. When disabled, only cross-"
-        "process iframes will be throttled.";
+        "display:none or zero viewport intersection with non-zero area) will be"
+        " throttled, regardless of whether they are same-process or "
+        "cross-process. When disabled, throttling for cross-process iframes is "
+        "the same, but for same-process iframes throttling only occurs when "
+        "the frame has zero viewport intersection, a non-zero area, and is "
+        "not display:none.";
 
 const char kTouchDragDropName[] = "Touch initiated drag and drop";
 const char kTouchDragDropDescription[] =
@@ -3907,6 +3905,14 @@ const char kHardwareSecureDecryptionExperimentDescription[] =
     "Enable/Disable the use of hardware secure Content Decryption Module (CDM) "
     "for experimental protected content playback.";
 
+const char kHardwareSecureDecryptionFallbackName[] =
+    "Hardware Secure Decryption Fallback";
+const char kHardwareSecureDecryptionFallbackDescription[] =
+    "Allows automatically disabling hardware secure Content Decryption Module "
+    "(CDM) after failures or crashes. Subsequent playback may use software "
+    "secure CDMs. If this feature is disabled, the fallback will never happen "
+    "and users could be stuck with playback failures.";
+
 const char kMediaFoundationClearName[] = "MediaFoundation for Clear";
 const char kMediaFoundationClearDescription[] =
     "Enable/Disable the use of MediaFoundation for non-protected content "
@@ -4240,6 +4246,11 @@ const char kCalendarViewName[] =
 const char kCalendarViewDescription[] =
     "Show Monthly Calendar View with Google Calendar events to increase "
     "productivity by helping users view their schedules more quickly.";
+
+const char kCaptureSelfieCamName[] = "Enable selfie camera in screen capture";
+const char kCaptureSelfieCamDescription[] =
+    "Enables the ability to record the selected camera feed along with screen "
+    "recordings for personalized demos and more.";
 
 const char kDefaultLinkCapturingInBrowserName[] =
     "Default link capturing in the browser";

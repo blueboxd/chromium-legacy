@@ -68,7 +68,7 @@
 #include "content/browser/file_system/file_system_manager_impl.h"
 #include "content/browser/file_system/file_system_url_loader_factory.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
-#include "content/browser/font_access/font_access_manager_impl.h"
+#include "content/browser/font_access/font_access_manager.h"
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
 #include "content/browser/idle/idle_manager_impl.h"
@@ -243,6 +243,7 @@
 #include "ui/accessibility/ax_action_handler_registry.h"
 #include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_tree_update.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -1056,6 +1057,17 @@ bool IsAvoidUnnecessaryBeforeUnloadCheckPostTaskEnabled() {
   return base::FeatureList::IsEnabled(
              features::kAvoidUnnecessaryBeforeUnloadCheckPostTask) &&
          !IsAvoidUnnecessaryBeforeUnloadCheckSyncEnabled();
+}
+
+// Returns true if `host` has the Window Placement permission granted.
+bool IsWindowPlacementGranted(RenderFrameHost* host) {
+  content::PermissionController* permission_controller =
+      host->GetBrowserContext()->GetPermissionController();
+  DCHECK(permission_controller);
+
+  return permission_controller->GetPermissionStatusForCurrentDocument(
+             PermissionType::WINDOW_PLACEMENT, host) ==
+         blink::mojom::PermissionStatus::GRANTED;
 }
 
 }  // namespace
@@ -6238,6 +6250,20 @@ void RenderFrameHostImpl::EnterFullscreen(
     std::move(callback).Run(/*granted=*/false);
     return;
   }
+
+  // Allow sites with the window-placement permission to open a popup window
+  // after requesting fullscreen on a specific screen of a multi-screen device.
+  // This enables multi-screen content experiences from a single user gesture.
+  const display::Screen* screen = display::Screen::GetScreen();
+  display::Display display;
+  if (base::FeatureList::IsEnabled(
+          blink::features::kWindowPlacementFullscreenCompanionWindow) &&
+      screen && screen->GetNumDisplays() > 1 &&
+      screen->GetDisplayWithDisplayId(options->display_id, &display) &&
+      IsWindowPlacementGranted(this)) {
+    transient_allow_popup_.Activate();
+  }
+
   std::move(callback).Run(/*granted=*/true);
 
   // Entering fullscreen from a cross-process subframe also affects all
@@ -6868,7 +6894,9 @@ void RenderFrameHostImpl::CreateNewWindow(
   GetProcess()->FilterURL(false, &params->target_url);
 
   bool effective_transient_activation_state =
-      params->allow_popup || frame_tree_node_->HasTransientUserActivation();
+      params->allow_popup || frame_tree_node_->HasTransientUserActivation() ||
+      (transient_allow_popup_.IsActive() &&
+       params->disposition == WindowOpenDisposition::NEW_POPUP);
 
   // Ignore window creation when sent from a frame that's not active or
   // created.
@@ -6996,6 +7024,8 @@ void RenderFrameHostImpl::CreateNewWindow(
   FrameTree* new_frame_tree =
       delegate_->CreateNewWindow(this, *params, is_new_browsing_instance,
                                  was_consumed, cloned_namespace.get());
+
+  transient_allow_popup_.Deactivate();
 
   if (is_new_browsing_instance || !new_frame_tree) {
     // Opener suppressed, Javascript access disabled, or delegate did not
@@ -7173,7 +7203,18 @@ void RenderFrameHostImpl::DestroyFencedFrame(FencedFrame& fenced_frame) {
 void RenderFrameHostImpl::CreateFencedFrame(
     mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>
         pending_receiver,
+    blink::mojom::FencedFrameMode mode,
     CreateFencedFrameCallback callback) {
+  // We should defer fenced frame creation during prerendering, so creation at
+  // this point is an error.
+  if (GetLifecycleState() == RenderFrameHost::LifecycleState::kPrerendering) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::FF_CREATE_WHILE_PRERENDERING);
+    std::move(callback).Run(0, blink::mojom::FrameReplicationState::New(),
+                            blink::RemoteFrameToken(),
+                            base::UnguessableToken::Create());
+    return;
+  }
   if (!blink::features::IsFencedFramesEnabled() ||
       !blink::features::IsFencedFramesMPArchBased()) {
     bad_message::ReceivedBadMessage(
@@ -7195,7 +7236,7 @@ void RenderFrameHostImpl::CreateFencedFrame(
     return;
   }
   fenced_frames_.push_back(
-      std::make_unique<FencedFrame>(weak_ptr_factory_.GetSafeRef()));
+      std::make_unique<FencedFrame>(weak_ptr_factory_.GetSafeRef(), mode));
   FencedFrame* fenced_frame = fenced_frames_.back().get();
   fenced_frame->Bind(std::move(pending_receiver));
 
@@ -9196,6 +9237,14 @@ void RenderFrameHostImpl::InsertVisualStateCallback(
   GetRenderWidgetHost()->InsertVisualStateCallback(std::move(callback));
 }
 
+bool RenderFrameHostImpl::IsLastCommitIPAddressPubliclyRoutable() const {
+  net::IPEndPoint ip_end_point =
+      last_response_head().get() ? last_response_head().get()->remote_endpoint
+                                 : net::IPEndPoint();
+
+  return ip_end_point.address().IsPubliclyRoutable();
+}
+
 bool RenderFrameHostImpl::IsRenderFrameCreated() {
   return is_render_frame_created();
 }
@@ -9385,16 +9434,8 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
 }
 
 bool RenderFrameHostImpl::WindowPlacementAllowsFullscreen() {
-  if (!delegate_->IsTransientAllowFullscreenActive())
-    return false;
-
-  content::PermissionController* permission_controller =
-      GetBrowserContext()->GetPermissionController();
-  DCHECK(permission_controller);
-
-  return permission_controller->GetPermissionStatusForCurrentDocument(
-             PermissionType::WINDOW_PLACEMENT, this) ==
-         blink::mojom::PermissionStatus::GRANTED;
+  return IsWindowPlacementGranted(this) &&
+         delegate_->IsTransientAllowFullscreenActive();
 }
 
 mojo::AssociatedRemote<mojom::NavigationClient>
@@ -10100,7 +10141,6 @@ void RenderFrameHostImpl::BindWebOTPServiceReceiver(
 
 void RenderFrameHostImpl::BindFederatedAuthRequestReceiver(
     mojo::PendingReceiver<blink::mojom::FederatedAuthRequest> receiver) {
-  DCHECK(IsFedCmEnabled());
   FederatedAuthRequestService::Create(this, std::move(receiver));
 }
 
@@ -10664,10 +10704,11 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // Check(s) specific to sub-frame navigation.
   if (navigation_request && !is_main_frame()) {
     if (!CanSubframeCommitOriginAndUrl(navigation_request)) {
-      // TODO(crbug.com/1303184): Prefer to terminate a renderer process if
-      // it makes invalid requests, so switch DumpWithoutCrashing to
-      // ReportBadMessage if this looks stable.
-      base::debug::DumpWithoutCrashing();
+      // Terminate the renderer if allowing this subframe navigation to commit
+      // would change the origin of the main frame.
+      bad_message::ReceivedBadMessage(
+          GetProcess(),
+          bad_message::RFHI_SUBFRAME_NAV_WOULD_CHANGE_MAINFRAME_ORIGIN);
       return false;
     }
   }

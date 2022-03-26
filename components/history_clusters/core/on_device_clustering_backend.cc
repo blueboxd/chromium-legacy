@@ -90,12 +90,26 @@ OnDeviceClusteringBackend::OnDeviceClusteringBackend(
     : template_url_service_(template_url_service),
       entity_metadata_provider_(entity_metadata_provider),
       engagement_score_provider_(engagement_score_provider),
+      user_visible_task_traits_(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}),
+      continue_on_shutdown_user_visible_task_traits_(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
       user_visible_priority_background_task_runner_(
           base::ThreadPool::CreateSequencedTaskRunner(
-              {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
+              GetConfig().use_continue_on_shutdown
+                  ? continue_on_shutdown_user_visible_task_traits_
+                  : user_visible_task_traits_)),
+      best_effort_task_traits_(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+      continue_on_shutdown_best_effort_task_traits_(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
       best_effort_priority_background_task_runner_(
           base::ThreadPool::CreateSequencedTaskRunner(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
+              GetConfig().use_continue_on_shutdown
+                  ? continue_on_shutdown_best_effort_task_traits_
+                  : best_effort_task_traits_)),
       engagement_score_cache_last_refresh_timestamp_(base::TimeTicks::Now()),
       engagement_score_cache_(
           GetFieldTrialParamByFeatureAsInt(features::kUseEngagementScoreCache,
@@ -305,7 +319,8 @@ void OnDeviceClusteringBackend::ProcessBatchOfVisits(
       for (const auto& entity :
            visit.content_annotations.model_annotations.entities) {
         auto entity_metadata_it = entity_metadata_map.find(entity.id);
-        if (entity_metadata_it == entity_metadata_map.end()) {
+        if (entity_metadata_it == entity_metadata_map.end() ||
+            entity.weight < GetConfig().entity_relevance_threshold) {
           continue;
         }
 

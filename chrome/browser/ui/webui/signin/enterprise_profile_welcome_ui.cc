@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_handler.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -43,6 +44,11 @@ EnterpriseProfileWelcomeUI::EnterpriseProfileWelcomeUI(content::WebUI* web_ui)
   source->AddLocalizedString("enterpriseProfileWelcomeTitle",
                              IDS_ENTERPRISE_PROFILE_WELCOME_TITLE);
   source->AddLocalizedString("cancelLabel", IDS_CANCEL);
+  source->AddLocalizedString("proceedAlternateLabel",
+                             IDS_WELCOME_SIGNIN_VIEW_SIGNIN);
+  source->AddLocalizedString("linkDataText",
+                             IDS_ENTERPRISE_PROFILE_WELCOME_LINK_DATA_CHECKBOX);
+  source->AddBoolean("showLinkDataCheckbox", false);
   source->AddBoolean("isModalDialog", false);
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
@@ -54,8 +60,9 @@ void EnterpriseProfileWelcomeUI::Initialize(
     Browser* browser,
     EnterpriseProfileWelcomeUI::ScreenType type,
     const AccountInfo& account_info,
+    bool force_new_profile,
     absl::optional<SkColor> profile_color,
-    base::OnceCallback<void(bool)> proceed_callback) {
+    signin::SigninChoiceCallback proceed_callback) {
   auto handler = std::make_unique<EnterpriseProfileWelcomeHandler>(
       browser, type, account_info, profile_color, std::move(proceed_callback));
   handler_ = handler.get();
@@ -64,10 +71,15 @@ void EnterpriseProfileWelcomeUI::Initialize(
       EnterpriseProfileWelcomeUI::ScreenType::kEnterpriseAccountCreation) {
     base::DictionaryValue update_data;
     update_data.SetBoolKey("isModalDialog", true);
-    update_data.SetStringKey(
-        "enterpriseProfileWelcomeTitle",
-        l10n_util::GetStringUTF16(
-            IDS_ENTERPRISE_WELCOME_PROFILE_REQUIRED_TITLE));
+
+    int title_id = force_new_profile
+                       ? IDS_ENTERPRISE_WELCOME_PROFILE_REQUIRED_TITLE
+                       : IDS_ENTERPRISE_WELCOME_PROFILE_WILL_BE_MANAGED_TITLE;
+    update_data.SetStringKey("enterpriseProfileWelcomeTitle",
+                             l10n_util::GetStringUTF16(title_id));
+    if (force_new_profile)
+      update_data.SetBoolKey("showLinkDataCheckbox", true);
+
     content::WebUIDataSource::Update(
         Profile::FromWebUI(web_ui()),
         chrome::kChromeUIEnterpriseProfileWelcomeHost,

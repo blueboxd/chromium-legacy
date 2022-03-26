@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_ui.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "google_apis/gaia/core_account_id.h"
@@ -41,7 +42,7 @@ class EnterpriseProfileWelcomeHandler
       EnterpriseProfileWelcomeUI::ScreenType type,
       const AccountInfo& account_info,
       absl::optional<SkColor> profile_color,
-      base::OnceCallback<void(bool)> proceed_callback);
+      signin::SigninChoiceCallback proceed_callback);
   ~EnterpriseProfileWelcomeHandler() override;
 
   EnterpriseProfileWelcomeHandler(const EnterpriseProfileWelcomeHandler&) =
@@ -69,16 +70,16 @@ class EnterpriseProfileWelcomeHandler
 
   // Access to construction parameters for tests.
   EnterpriseProfileWelcomeUI::ScreenType GetTypeForTesting();
-  void CallProceedCallbackForTesting(bool proceed);
+  void CallProceedCallbackForTesting(signin::SigninChoice choice);
 
  private:
-  void HandleInitialized(const base::ListValue* args);
+  void HandleInitialized(const base::Value::List& args);
   // Handles the web ui message sent when the html content is done being laid
   // out and it's time to resize the native view hosting it to fit. |args| is
   // a single integer value for the height the native view should resize to.
   void HandleInitializedWithSize(const base::ListValue* args);
-  void HandleProceed(const base::ListValue* args);
-  void HandleCancel(const base::ListValue* args);
+  void HandleProceed(const base::Value::List& args);
+  void HandleCancel(const base::Value::List& args);
 
   // Sends an updated profile info (avatar and colors) to the WebUI.
   // `profile_path` is the path of the profile being updated, this function does
@@ -108,7 +109,7 @@ class EnterpriseProfileWelcomeHandler
   const std::string domain_name_;
   const CoreAccountId account_id_;
   absl::optional<SkColor> profile_color_;
-  base::OnceCallback<void(bool)> proceed_callback_;
+  signin::SigninChoiceCallback proceed_callback_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_ENTERPRISE_PROFILE_WELCOME_HANDLER_H_

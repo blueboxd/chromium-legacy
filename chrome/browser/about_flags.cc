@@ -1993,6 +1993,14 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_CandidateB[] = {
     {"tab_count_button_on_start_surface", "true"},
     {"open_ntp_instead_of_start", "true"}};
 
+const FeatureEntry::FeatureParam
+    kStartSurfaceAndroid_CandidateB_AlwaysShowIncognito[] = {
+        {"start_surface_variation", "single"},
+        {"show_last_active_tab_only", "true"},
+        {"hide_switch_when_no_incognito_tabs", "false"},
+        {"tab_count_button_on_start_surface", "true"},
+        {"open_ntp_instead_of_start", "true"}};
+
 const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
     {"Canidate A", kStartSurfaceAndroid_CandidateA,
      std::size(kStartSurfaceAndroid_CandidateA), nullptr},
@@ -2003,6 +2011,9 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
      std::size(kStartSurfaceAndroid_CandidateA_SigninPromoTimeLimit), nullptr},
     {"Canidate B", kStartSurfaceAndroid_CandidateB,
      std::size(kStartSurfaceAndroid_CandidateB), nullptr},
+    {"Canidate B + Always show Incognito icon",
+     kStartSurfaceAndroid_CandidateB_AlwaysShowIncognito,
+     std::size(kStartSurfaceAndroid_CandidateB_AlwaysShowIncognito), nullptr},
     {"Single Surface", kStartSurfaceAndroid_SingleSurface,
      std::size(kStartSurfaceAndroid_SingleSurface), nullptr},
     {"Single Surface Finale", kStartSurfaceAndroid_SingleSurfaceFinale,
@@ -3204,6 +3215,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"ash-bento-bar", flag_descriptions::kBentoBarName,
      flag_descriptions::kBentoBarDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kBentoBar)},
+    {"ash-capture-mode-selfie-cam", flag_descriptions::kCaptureSelfieCamName,
+     flag_descriptions::kCaptureSelfieCamDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kCaptureModeSelfieCamera)},
     {"ash-drag-window-to-new-desk", flag_descriptions::kDragWindowToNewDeskName,
      flag_descriptions::kDragWindowToNewDeskDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDragWindowToNewDesk)},
@@ -3493,6 +3507,13 @@ const FeatureEntry kFeatureEntries[] = {
         flag_descriptions::kHardwareSecureDecryptionExperimentDescription,
         kOsWin,
         FEATURE_VALUE_TYPE(media::kHardwareSecureDecryptionExperiment),
+    },
+    {
+        "enable-hardware-secure-decryption-fallback",
+        flag_descriptions::kHardwareSecureDecryptionFallbackName,
+        flag_descriptions::kHardwareSecureDecryptionFallbackDescription,
+        kOsWin,
+        FEATURE_VALUE_TYPE(media::kHardwareSecureDecryptionFallback),
     },
     {
         "enable-media-foundation-clear",
@@ -4717,9 +4738,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-universal-links", flag_descriptions::kEnableUniversalLinksName,
      flag_descriptions::kEnableUniversalLinksDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kEnableUniveralLinks)},
-    {"new-usb-backend", flag_descriptions::kNewUsbBackendName,
-     flag_descriptions::kNewUsbBackendDescription, kOsMac,
-     FEATURE_VALUE_TYPE(device::kNewUsbBackend)},
 #endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -5165,6 +5183,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSidePanelDragAndDropName,
      flag_descriptions::kSidePanelDragAndDropDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSidePanelDragAndDrop)},
+
+    {"side-panel-improved-clobbering",
+     flag_descriptions::kSidePanelImprovedClobberingName,
+     flag_descriptions::kSidePanelImprovedClobberingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSidePanelImprovedClobbering)},
 
     {flag_descriptions::kUnifiedSidePanelFlagId,
      flag_descriptions::kUnifiedSidePanelName,
@@ -6825,11 +6848,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableExperimentalCookieFeaturesDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableExperimentalCookieFeaturesChoices)},
 
-    {"autofill-enable-google-issued-card",
-     flag_descriptions::kAutofillEnableGoogleIssuedCardName,
-     flag_descriptions::kAutofillEnableGoogleIssuedCardDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableGoogleIssuedCard)},
-
     {"permission-chip", flag_descriptions::kPermissionChipName,
      flag_descriptions::kPermissionChipDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(permissions::features::kPermissionChip)},
@@ -7154,8 +7172,8 @@ const FeatureEntry kFeatureEntries[] = {
      // Use a command-line parameter instead of a FEATURE_VALUE_TYPE to enable
      // multiple related features when they are available.
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kEnableFeatures,
-                                 "PrivacySandboxAdsAPIsOverride"
-                                 "Fledge,BrowsingTopics,ConversionMeasurement"
+                                 "PrivacySandboxAdsAPIsOverride,"
+                                 "Fledge,BrowsingTopics,ConversionMeasurement,"
                                  "OverridePrivacySandboxSettingsLocalTesting")},
 
     {"animated-image-resume", flag_descriptions::kAnimatedImageResumeName,

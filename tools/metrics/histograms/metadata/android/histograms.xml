@@ -1427,20 +1427,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Input.EditableContentTypes" enum="EditableContentType"
-    expires_after="2022-04-09">
-  <owner>alexmitra@chromium.org</owner>
-  <owner>ctzsm@chromium.org</owner>
-  <owner>nator@chromium.org</owner>
-  <owner>src/android_webview/OWNERS</owner>
-  <summary>
-    Tracks whether a WebView is being used to get user input and how the input
-    is being collected (through an input tag, textarea tag or through an element
-    with the contenteditable attribute). We will log this each time the user
-    focuses on an element.
-  </summary>
-</histogram>
-
 <histogram name="Android.InstantApps.ApiCallDurationWithApp" units="ms"
     expires_after="M81">
   <owner>sbirch@google.com</owner>
@@ -3060,6 +3046,22 @@ chromium-metrics-reviews@google.com.
     per browser start and may be recorded in the renderer if isLowEndDevice()
     bit is checked.
   </summary>
+</histogram>
+
+<histogram name="Android.TabNavigationInterceptResult.For{ProtocolType}"
+    enum="NavigationInterceptResult" expires_after="2023-03-24">
+  <owner>blundell@chromium.org</owner>
+  <owner>mthiesse@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <summary>
+    The distribution of results when running ExternalNavigationHandler for
+    navigations that have an {ProtocolType}. This shows how often we send
+    intents to be handled by other applications.
+  </summary>
+  <token key="ProtocolType">
+    <variant name="ExternalProtocol" summary="external protocol"/>
+    <variant name="InternalProtocol" summary="internal protocol"/>
+  </token>
 </histogram>
 
 <histogram name="Android.TabPersistentStore.MetadataFileSize" units="units"

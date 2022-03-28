@@ -16,6 +16,7 @@ module.exports = {
     // Enabled checks.
     'brace-style': ['error', '1tbs'],
     'curly': ['error', 'multi-line', 'consistent'],
+    'no-console': ['error', {allow: ['info', 'warn', 'error', 'assert']}],
     'no-extra-boolean-cast': 'error',
     'no-extra-semi': 'error',
     'no-new-wrappers': 'error',
@@ -74,6 +75,29 @@ module.exports = {
 
       'semi': 'off',
       '@typescript-eslint/semi': ['error'],
+
+      '@typescript-eslint/member-delimiter-style': ['error', {
+        multiline: {
+          delimiter: 'comma',
+          requireLast: true,
+        },
+        singleline: {
+          delimiter: 'comma',
+          requireLast: false,
+        },
+        overrides: {
+          interface: {
+            multiline: {
+              delimiter: 'semi',
+              requireLast: true,
+            },
+            singleline: {
+              delimiter: 'semi',
+              requireLast: false,
+            },
+          },
+        },
+      }]
     }
   }]
 };

@@ -36,7 +36,7 @@ class PLATFORM_EXPORT FontGlobalContext {
 
   static inline FontCache& GetFontCache() { return Get().font_cache_; }
 
-  static HarfBuzzFontCache* GetHarfBuzzFontCache();
+  static HarfBuzzFontCache& GetHarfBuzzFontCache();
 
   enum HorizontalAdvanceSource {
     kSkiaHorizontalAdvances,
@@ -67,6 +67,9 @@ class PLATFORM_EXPORT FontGlobalContext {
 
   // Called by MemoryPressureListenerRegistry to clear memory.
   static void ClearMemory();
+
+  // |Init()| should be called in main thread.
+  static void Init();
 
  private:
   friend class WTF::ThreadSpecific<FontGlobalContext>;

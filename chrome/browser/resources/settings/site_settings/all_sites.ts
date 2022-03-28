@@ -91,7 +91,7 @@ const AllSitesElementBaseTemp = GlobalScrollTargetMixin(
 
 const AllSitesElementBase = AllSitesElementBaseTemp as unknown as {
   new (): PolymerElement & I18nMixinInterface & WebUIListenerMixinInterface &
-  SiteSettingsMixinInterface & RouteObserverMixinInterface
+      SiteSettingsMixinInterface & RouteObserverMixinInterface,
 };
 
 export class AllSitesElement extends AllSitesElementBase {
@@ -487,7 +487,6 @@ export class AllSitesElement extends AllSitesElementBase {
       updatedSiteGroup.origins = siteGroupToUpdate.origins.filter(
           o => (o.isPartitioned !== isPartitioned || o.origin !== origin));
 
-      console.log(updatedSiteGroup.origins);
       updatedSiteGroup.hasInstalledPWA =
           updatedSiteGroup.origins.some(o => o.isInstalled);
       updatedSiteGroup.numCookies -=

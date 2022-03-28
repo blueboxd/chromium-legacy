@@ -410,8 +410,6 @@ static_library("ui") {
     "//chrome/browser/ui/webui/download_shelf:mojo_bindings",
     "//chrome/browser/ui/webui/downloads:mojo_bindings",
     "//chrome/browser/ui/webui/history_clusters:mojo_bindings",
-    "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
-    "//chrome/browser/ui/webui/new_tab_page_third_party:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
     "//chrome/browser/ui/webui/read_later:mojo_bindings",
     "//chrome/browser/ui/webui/read_later/side_panel:mojo_bindings",
@@ -645,9 +643,6 @@ static_library("ui") {
     "//ui/surface",
     "//ui/web_dialogs",
     "//ui/webui",
-    "//ui/webui/resources/cr_components/color_change_listener:mojom",
-    "//ui/webui/resources/cr_components/customize_themes:mojom",
-    "//ui/webui/resources/cr_components/most_visited:mojom",
     "//v8:v8_version",
   ]
 
@@ -813,6 +808,8 @@ static_library("ui") {
       "android/tab_contents/chrome_web_contents_view_delegate_android.h",
       "android/tab_model/android_live_tab_context.cc",
       "android/tab_model/android_live_tab_context.h",
+      "android/tab_model/android_live_tab_context_wrapper.cc",
+      "android/tab_model/android_live_tab_context_wrapper.h",
       "android/tab_model/tab_model.cc",
       "android/tab_model/tab_model.h",
       "android/tab_model/tab_model_jni_bridge.cc",
@@ -1562,8 +1559,6 @@ static_library("ui") {
       "webui/ntp/ntp_resource_cache.h",
       "webui/ntp/ntp_resource_cache_factory.cc",
       "webui/ntp/ntp_resource_cache_factory.h",
-      "webui/omnibox/omnibox_popup_handler.cc",
-      "webui/omnibox/omnibox_popup_handler.h",
       "webui/page_not_available_for_guest/page_not_available_for_guest_ui.cc",
       "webui/page_not_available_for_guest/page_not_available_for_guest_ui.h",
       "webui/plural_string_handler.cc",
@@ -1747,6 +1742,8 @@ static_library("ui") {
       "//chrome/browser/ui/webui/app_service_internals:mojo_bindings",
       "//chrome/browser/ui/webui/image_editor:mojo_bindings",
       "//chrome/browser/ui/webui/internals/user_education:mojo_bindings",
+      "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
+      "//chrome/browser/ui/webui/new_tab_page_third_party:mojo_bindings",
       "//chrome/browser/ui/webui/tab_strip:mojo_bindings",
       "//chrome/browser/web_applications",
       "//chrome/common:buildflags",
@@ -3259,6 +3256,7 @@ static_library("ui") {
       "//chromeos/ui/base",
       "//chromeos/ui/frame",
       "//chromeos/ui/wm",
+      "//ui/chromeos",
     ]
   }
 
@@ -4447,8 +4445,6 @@ static_library("ui") {
       "views/omnibox/remove_suggestion_bubble.h",
       "views/omnibox/rounded_omnibox_results_frame.cc",
       "views/omnibox/rounded_omnibox_results_frame.h",
-      "views/omnibox/webui_omnibox_popup_view.cc",
-      "views/omnibox/webui_omnibox_popup_view.h",
       "views/overlay/back_to_tab_image_button.cc",
       "views/overlay/back_to_tab_image_button.h",
       "views/overlay/back_to_tab_label_button.cc",

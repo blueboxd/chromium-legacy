@@ -50,13 +50,13 @@ FontUniqueNameLookup* FontGlobalContext::GetFontUniqueNameLookup() {
   return Get().font_unique_name_lookup_.get();
 }
 
-HarfBuzzFontCache* FontGlobalContext::GetHarfBuzzFontCache() {
+HarfBuzzFontCache& FontGlobalContext::GetHarfBuzzFontCache() {
   std::unique_ptr<HarfBuzzFontCache>& global_context_harfbuzz_font_cache =
       Get().harfbuzz_font_cache_;
   if (!global_context_harfbuzz_font_cache) {
     global_context_harfbuzz_font_cache = std::make_unique<HarfBuzzFontCache>();
   }
-  return global_context_harfbuzz_font_cache.get();
+  return *global_context_harfbuzz_font_cache;
 }
 
 IdentifiableToken FontGlobalContext::GetOrComputeTypefaceDigest(
@@ -105,6 +105,12 @@ void FontGlobalContext::ClearMemory() {
   context->font_cache_.Invalidate();
   context->typeface_digest_cache_.Clear();
   context->postscript_name_digest_cache_.Clear();
+}
+
+void FontGlobalContext::Init() {
+  DCHECK(IsMainThread());
+  if (auto* name_lookup = FontGlobalContext::Get().GetFontUniqueNameLookup())
+    name_lookup->Init();
 }
 
 }  // namespace blink

@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
@@ -101,35 +102,6 @@ bool DidDevicesChange(
   return false;
 }
 
-// Picks and returns the most suitable supported camera format from the given
-// list of `supported_formats` for the given camera `preview_widget_size`.
-// Note that this assumes that `supported_formats` is sorted as described in the
-// documentation of `CameraInfo::supported_formats`.
-media::VideoCaptureFormat PickSuitableCaptureFormat(
-    const gfx::Size& preview_widget_size,
-    const media::VideoCaptureFormats& supported_formats) {
-  DCHECK(!supported_formats.empty());
-  DCHECK_EQ(preview_widget_size.height(), preview_widget_size.width())
-      << "The preview widget is always assumed to be a square.";
-
-  size_t result_index = 0;
-  float current_frame_rate = 0.f;
-  for (size_t i = 0; i < supported_formats.size(); ++i) {
-    const auto& format = supported_formats[i];
-    // Once we find a format with a larger height than the preview's, we stop
-    // and return what we found so far.
-    if (format.frame_size.height() > preview_widget_size.height())
-      break;
-
-    if (format.frame_rate >= current_frame_rate && format.frame_rate <= 30.f) {
-      current_frame_rate = format.frame_rate;
-      result_index = i;
-    }
-  }
-
-  return supported_formats[result_index];
-}
-
 // Returns the CameraInfo item in `list` whose ID is equal to the given `id`, or
 // nullptr if no such item exists.
 const CameraInfo* GetCameraInfoById(const CameraId& id,
@@ -138,6 +110,16 @@ const CameraInfo* GetCameraInfoById(const CameraId& id,
       list.begin(), list.end(),
       [&id](const CameraInfo& info) { return info.camera_id == id; });
   return iter == list.end() ? nullptr : &(*iter);
+}
+
+// Stacking the camera preview window on top of all children of its parent so
+// that it can show up in the recording above everything else.
+void StackingPreviewAtTop(views::Widget* preview_widget) {
+  DCHECK(preview_widget);
+  auto* preview_window = preview_widget->GetNativeWindow();
+  auto* parent = preview_window->parent();
+  DCHECK(parent);
+  parent->StackChildAtTop(preview_window);
 }
 
 std::unique_ptr<views::Widget> CreateCameraPreviewWidget(
@@ -152,6 +134,7 @@ std::unique_ptr<views::Widget> CreateCameraPreviewWidget(
   params.child = true;
   params.name = "CameraPreviewWidget";
   camera_preview_widget->Init(std::move(params));
+  StackingPreviewAtTop(camera_preview_widget.get());
   return camera_preview_widget;
 }
 
@@ -289,10 +272,10 @@ void CaptureModeCameraController::MaybeReparentPreviewWidget() {
   auto* parent = controller->GetCameraPreviewParentWindow();
   DCHECK(parent);
   auto* native_window = camera_preview_widget_->GetNativeWindow();
-
-  if (parent != native_window->parent())
+  if (parent != native_window->parent()) {
     views::Widget::ReparentNativeView(native_window, parent);
-
+    StackingPreviewAtTop(camera_preview_widget_.get());
+  }
   MaybeUpdatePreviewWidgetBounds();
 }
 
@@ -318,10 +301,6 @@ void CaptureModeCameraController::MaybeUpdatePreviewWidgetBounds(bool animate) {
   }
 
   const gfx::Rect target_bounds = GetPreviewWidgetBounds();
-  const bool did_bounds_change =
-      target_bounds != GetCurrentBoundsMatchingConfineBoundsCoordinates();
-  if (!did_bounds_change)
-    return;
 
   if (animate) {
     ui::Layer* layer = camera_preview_widget_->GetLayer();
@@ -334,21 +313,13 @@ void CaptureModeCameraController::MaybeUpdatePreviewWidgetBounds(bool animate) {
   } else {
     camera_preview_widget_->SetBounds(target_bounds);
   }
-
-  auto* controller = CaptureModeController::Get();
-  if (controller->IsActive())
-    controller->capture_mode_session()->OnCameraPreviewBoundsChanged();
 }
 
 void CaptureModeCameraController::StartDraggingPreview(
     const gfx::PointF& screen_location) {
-  is_drag_in_progress_ = true;
   previous_location_in_screen_ = screen_location;
 
-  auto* controller = CaptureModeController::Get();
-  if (controller->IsActive())
-    controller->capture_mode_session()->OnCameraPreviewDragStarted();
-
+  is_drag_in_progress_ = true;
   // Use cursor compositing instead of the platform cursor when dragging to
   // ensure the cursor is aligned with the camera preview.
   Shell::Get()->UpdateCursorCompositingEnabled();
@@ -393,9 +364,9 @@ void CaptureModeCameraController::EndDraggingPreview(
   // Disable cursor compositing at the end of the drag.
   Shell::Get()->UpdateCursorCompositingEnabled();
 
-  auto* controller = CaptureModeController::Get();
-  if (controller->IsActive()) {
-    controller->capture_mode_session()->OnCameraPreviewDragEnded(
+  // Make sure cursor is updated correctly after camera preview is snapped.
+  if (CaptureModeController::Get()->IsActive()) {
+    CaptureModeController::Get()->capture_mode_session()->UpdateCursor(
         gfx::ToRoundedPoint(screen_location), is_touch);
   }
 }
@@ -480,16 +451,16 @@ void CaptureModeCameraController::OnCameraDevicesReceived(
 }
 
 void CaptureModeCameraController::RefreshCameraPreview() {
-  const CameraInfo* camera_info = nullptr;
+  bool create_or_keep_widget = false;
   if (selected_camera_.is_valid()) {
-    if (camera_info = GetCameraInfoById(selected_camera_, available_cameras_);
+    if (const CameraInfo* camera_info =
+            GetCameraInfoById(selected_camera_, available_cameras_);
         camera_info) {
       // When a selected camera becomes available, we stop any grace period
       // timer (if any), and decide whether to show or hide the preview widget
       // based on the current value of `should_show_preview_`.
       camera_reconnect_timer_.Stop();
-      if (!should_show_preview_)
-        camera_info = nullptr;
+      create_or_keep_widget = should_show_preview_;
     } else {
       // Here the selected camera is disconnected, we'll give it a grace period
       // just in case it may reconnect again (this helps in the case of flaky
@@ -503,33 +474,20 @@ void CaptureModeCameraController::RefreshCameraPreview() {
     }
   }
 
-  if (!camera_info) {
+  if (!create_or_keep_widget) {
     camera_preview_widget_.reset();
     camera_preview_view_ = nullptr;
     return;
   }
 
   if (!camera_preview_widget_) {
-    const auto preview_bounds = GetPreviewWidgetBounds();
+    const gfx::Rect preview_bounds = GetPreviewWidgetBounds();
     camera_preview_widget_ = CreateCameraPreviewWidget(preview_bounds);
-    mojo::Remote<video_capture::mojom::VideoSource> camera_video_source;
-    video_source_provider_remote_->GetVideoSource(
-        camera_info->device_id,
-        camera_video_source.BindNewPipeAndPassReceiver());
     camera_preview_view_ = camera_preview_widget_->SetContentsView(
-        std::make_unique<CameraPreviewView>(
-            this, selected_camera_, preview_bounds.size(),
-            std::move(camera_video_source),
-            PickSuitableCaptureFormat(preview_bounds.size(),
-                                      camera_info->supported_formats)));
+        std::make_unique<CameraPreviewView>(this, preview_bounds.size()));
     ui::Layer* layer = camera_preview_widget_->GetLayer();
     layer->SetFillsBoundsOpaquely(false);
-    layer->SetMasksToBounds(true);
   }
-
-  DCHECK(camera_preview_view_);
-  DCHECK_EQ(selected_camera_, camera_preview_view_->camera_id());
-
   camera_preview_widget_->Show();
 }
 

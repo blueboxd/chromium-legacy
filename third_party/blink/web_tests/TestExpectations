@@ -1683,13 +1683,10 @@ crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-scrolled.
 crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned.html [ Crash Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/flexbox-with-overflow-in-bottom-aligned-fixedpos.html [ Crash Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/forced-break-tree-dump-only.html [ Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/frameset.html [ Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/iframe-svg-in-object-print.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/multi-page-background.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/multicol-2-pages.html [ Crash ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/multicol.html [ Crash ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/named-page-breaks.html [ Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/no-content-empty-pages.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/overflow-auto.html [ Crash ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/page-break-avoid.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/page-orientation-propagated.html [ Failure ]
@@ -1698,7 +1695,6 @@ crbug.com/1121942 virtual/layout_ng_printing/printing/pageProperty-with-multicol
 crbug.com/1121942 virtual/layout_ng_printing/printing/print-subframe.html [ Crash Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/simultaneous-position-float-change.html [ Crash Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/single-line-must-not-be-split-into-two-pages.html [ Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/thead-under-multicol.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/vertical-lr.html [ Crash Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/vertical-rl.html [ Crash Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/webgl-oversized-printing.html [ Skip ]
@@ -1840,6 +1836,11 @@ crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-003.html [ Fail
 crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-004.html [ Failure ]
 crbug.com/1295264 crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-currentcolor-001.html [ Failure ]
 crbug.com/1295264 crbug.com/1147859 external/wpt/css/css-pseudo/highlight-painting-currentcolor-002.html [ Failure ]
+crbug.com/1179938 external/wpt/css/css-pseudo/highlight-painting-currentcolor-003.html [ Failure ]
+crbug.com/1179938 external/wpt/css/css-pseudo/highlight-painting-currentcolor-004.html [ Failure ]
+crbug.com/1179938 external/wpt/css/css-pseudo/highlight-painting-currentcolor-005.html [ Failure ]
+crbug.com/1024156 external/wpt/css/css-pseudo/highlight-pseudos-inheritance-computed-001.html [ Failure ]
+crbug.com/1024156 external/wpt/css/css-pseudo/highlight-pseudos-currentcolor-inheritance-computed-001.html [ Failure ]
 crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-marker.html [ Failure ]
 crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-child-marker.html [ Failure ]
 crbug.com/1172333 external/wpt/css/css-pseudo/first-letter-hi-001.html [ Failure ]
@@ -1956,25 +1957,17 @@ crbug.com/1068610 [ Win ] external/wpt/css/css-color/t425-hsla-onscreen-b.xht [ 
 crbug.com/1068610 external/wpt/css/css-color/at-color-profile-001.html [ Failure ]
 
 # Some CSS System Colors need to be deprecated
-crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-001.html [ Failure ]
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-002.html [ Failure ]
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-004.html [ Failure ]
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-005.html [ Failure ]
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-006.html [ Failure ]
-crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-008.html [ Failure ]
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-010.html [ Failure ]
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-011.html [ Failure ]
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-013.html [ Failure ]
-crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-016.html [ Failure ]
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-017.html [ Failure ]
-crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-018.html [ Failure ]
-crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-019.html [ Failure ]
-crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-020.html [ Failure ]
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-022.html [ Failure ]
-crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-001.html [ Failure ]
 crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-002.html [ Failure ]
 crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-004.html [ Failure ]
-crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-008.html [ Failure ]
 crbug.com/1299441 [ Mac11 ] virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-006.html [ Failure Timeout ]
 crbug.com/1299441 [ Linux ] virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-006.html [ Failure ]
 crbug.com/1299441 [ Mac10.12 ] virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-006.html [ Failure ]
@@ -1986,11 +1979,7 @@ crbug.com/1299441 [ Win ] virtual/system-color-compute/external/wpt/css/css-colo
 crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-010.html [ Failure ]
 crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-011.html [ Failure ]
 crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-013.html [ Failure ]
-crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-016.html [ Failure ]
 crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-017.html [ Failure ]
-crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-018.html [ Failure ]
-crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-019.html [ Failure ]
-crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-020.html [ Failure ]
 crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-022.html [ Failure ]
 
 crbug.com/1299585 [ Mac11 ] external/wpt/css/css-color-adjust/inheritance.html [ Failure ]
@@ -2061,6 +2050,11 @@ crbug.com/803276 [ Mac ] inspector-protocol/memory/sampling-native-profile-parti
 crbug.com/803276 [ Win ] inspector-protocol/memory/sampling-native-profile-partition-alloc.js [ Skip ]
 crbug.com/803276 [ Mac ] inspector-protocol/memory/sampling-native-snapshot.js [ Skip ]
 crbug.com/803276 [ Win ] inspector-protocol/memory/sampling-native-snapshot.js [ Skip ]
+
+# Elastic overscroll doesn't work on Mac/Linux when running as a web_test. Manually,
+# this works as expected.
+crbug.com/1310079 [ Mac ] virtual/elastic-overscroll/fixed-elements-dont-overscroll.html [ Failure ]
+crbug.com/1310079 [ Linux ] virtual/elastic-overscroll/fixed-elements-dont-overscroll.html [ Failure ]
 
 # For win10, see crbug.com/955109
 crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Crash Failure ]
@@ -3209,6 +3203,7 @@ crbug.com/932343 external/wpt/css/css-pseudo/active-selection-014.html [ Failure
 # virtual/css-highlight-inheritance/
 crbug.com/1217745 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/active-selection-018.html [ Failure ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/cascade-highlight-004.html [ Pass ]
+crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/cascade-highlight-005.html [ Pass ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-cascade-001.html [ Pass ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-cascade-002.html [ Pass ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-paired-cascade-003.html [ Pass ]
@@ -3220,11 +3215,11 @@ crbug.com/1035708 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/
 crbug.com/1179938 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/target-text-dynamic-003.html [ Failure ]
 crbug.com/1179938 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/target-text-dynamic-004.html [ Failure ]
 crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/grammar-error-color-dynamic-001.html [ Pass ]
-crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/grammar-error-color-dynamic-002.html [ Failure ]
+crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/grammar-error-color-dynamic-002.html [ Pass ]
 crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/grammar-error-color-dynamic-003.html [ Pass ]
 crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/grammar-error-color-dynamic-004.html [ Pass ]
 crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/spelling-error-color-dynamic-001.html [ Pass ]
-crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/spelling-error-color-dynamic-002.html [ Failure ]
+crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/spelling-error-color-dynamic-002.html [ Pass ]
 crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/spelling-error-color-dynamic-003.html [ Pass ]
 crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/spelling-error-color-dynamic-004.html [ Pass ]
 
@@ -3232,11 +3227,11 @@ crbug.com/1035708 virtual/css-highlight-inheritance/wpt_internal/css/css-pseudo/
 crbug.com/1295264 virtual/css-highlight-overlay-painting/external/wpt/css/css-highlight-api/painting/custom-highlight-painting-overlapping-highlights-001.html [ Failure ]
 crbug.com/1295264 virtual/css-highlight-overlay-painting/external/wpt/css/css-highlight-api/painting/custom-highlight-painting-overlapping-highlights-002.html [ Failure ]
 crbug.com/1147859 virtual/css-highlight-overlay-painting/external/wpt/css/css-highlight-api/painting/custom-highlight-painting-text-decoration-001.html [ Failure ]
-crbug.com/1147859 virtual/css-highlight-overlay-painting/wpt_internal/css/css-pseudo/grammar-error-color-001.html [ Pass ]
+crbug.com/1147859 virtual/css-highlight-overlay-painting/wpt_internal/css/css-pseudo/grammar-error-color-001.html [ Failure ]
 crbug.com/1147859 virtual/css-highlight-overlay-painting/wpt_internal/css/css-pseudo/grammar-error-color-002.html [ Pass ]
 crbug.com/1147859 virtual/css-highlight-overlay-painting/wpt_internal/css/css-pseudo/grammar-error-color-003.html [ Failure ]
 crbug.com/1147859 virtual/css-highlight-overlay-painting/wpt_internal/css/css-pseudo/grammar-error-color-dynamic-002.html [ Failure ]
-crbug.com/1147859 virtual/css-highlight-overlay-painting/wpt_internal/css/css-pseudo/spelling-error-color-001.html [ Pass ]
+crbug.com/1147859 virtual/css-highlight-overlay-painting/wpt_internal/css/css-pseudo/spelling-error-color-001.html [ Failure ]
 crbug.com/1147859 virtual/css-highlight-overlay-painting/wpt_internal/css/css-pseudo/spelling-error-color-002.html [ Pass ]
 crbug.com/1147859 virtual/css-highlight-overlay-painting/wpt_internal/css/css-pseudo/spelling-error-color-003.html [ Failure ]
 crbug.com/1147859 virtual/css-highlight-overlay-painting/wpt_internal/css/css-pseudo/spelling-error-color-dynamic-002.html [ Failure ]
@@ -3393,8 +3388,6 @@ crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protoc
 crbug.com/626703 [ Mac10.15 ] virtual/document-transition/wpt_internal/document-transition/one-element-two-targets.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/registered-property-interpolation-009.https.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/permission-geolocation.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/geometry-background-image-tiled-002.https.html [ Failure ]
-crbug.com/626703 [ Mac11 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/registered-property-value-015.https.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/service-workers/service-worker/same-site-cookies.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/signed-exchange/subresource/sxg-subresource-header-integrity-mismatch.tentative.html [ Timeout ]
@@ -7114,6 +7107,8 @@ crbug.com/1123886 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-a
 crbug.com/1123886 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/one-custom-property-animation.https.html [ Skip ]
 crbug.com/1123886 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/parse-input-arguments-011.https.html [ Skip ]
 crbug.com/1123886 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/geometry-border-image-004.https.html [ Skip ]
+crbug.com/1123886 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/geometry-background-image-tiled-002.https.html [ Skip ]
+crbug.com/1123886 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/registered-property-value-015.https.html [ Skip ]
 
 # Sheriff 2021-09-29
 crbug.com/1254163 [ Mac ] virtual/scroll-unification/ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]
@@ -7455,9 +7450,6 @@ crbug.com/1253323 http/tests/devtools/sources/debugger/navigator-view.js [ Skip 
 crbug.com/1290978 [ Win ] external/wpt/css/CSS2/normal-flow/crashtests/block-in-inline-ax-crash.html [ Crash Failure Pass Timeout ]
 crbug.com/1290978 [ Mac ] external/wpt/css/CSS2/normal-flow/crashtests/block-in-inline-ax-crash.html [ Crash Failure Pass Timeout ]
 crbug.com/1290978 [ Win7 ] http/tests/devtools/elements/accessibility/edit-aria-attributes.js [ Crash Failure Pass Skip Timeout ]
-
-# Now flaky due to a timing issue.
-crbug.com/1292296 http/tests/inspector-protocol/accessibility/accessibility-getRootNode.js [ Failure Pass ]
 
 # Sheriff 2022-02-01
 # Flaky test on Mac

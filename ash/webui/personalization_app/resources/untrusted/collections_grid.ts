@@ -7,7 +7,7 @@ import './setup.js';
 import '../trusted/wallpaper/styles.js';
 
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
-import {afterNextRender, html, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
@@ -15,6 +15,8 @@ import {Events, EventType, kMaximumGooglePhotosPreviews, kMaximumLocalImagePrevi
 import {getCountText, getLoadingPlaceholderAnimationDelay, getNumberOfGridItemsPerRow, isNullOrArray, isNullOrNumber, isSelectionEvent} from '../common/utils.js';
 import {WallpaperCollection} from '../trusted/personalization_app.mojom-webui.js';
 import {selectCollection, selectGooglePhotosCollection, selectLocalCollection, validateReceivedData} from '../untrusted/iframe_api.js';
+
+import {getTemplate} from './collections_grid.html.js';
 
 /**
  * @fileoverview Responds to |SendCollectionsEvent| from trusted. Handles user
@@ -74,8 +76,10 @@ function getGooglePhotosTile(
   return {
     name: loadTimeData.getString('googlePhotosLabel'),
     id: kGooglePhotosCollectionId,
-    count: getCountText(googlePhotosCount ?? 0),
-    preview: googlePhotos?.slice(0, kMaximumGooglePhotosPreviews) ?? [],
+    count: getCountText(googlePhotosCount || 0),
+    preview: Array.isArray(googlePhotos) ?
+        googlePhotos.slice(0, kMaximumGooglePhotosPreviews) :
+        [],
     type: TileType.IMAGE,
   };
 }
@@ -139,7 +143,7 @@ export class CollectionsGrid extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -357,7 +361,8 @@ export class CollectionsGrid extends PolymerElement {
   }
 
   private getClassForImagesContainer_(tile: ImageTile): string {
-    const numImages = Array.isArray(tile?.preview) ? tile.preview.length : 0;
+    const numImages =
+        !!tile && Array.isArray(tile.preview) ? tile.preview.length : 0;
     return `photo-images-container photo-images-container-${
         Math.min(numImages, kMaximumLocalImagePreviews)}`;
   }
@@ -403,11 +408,11 @@ export class CollectionsGrid extends PolymerElement {
   }
 
   private isLoadingTile_(item: Tile|null): item is LoadingTile {
-    return item?.type === TileType.LOADING;
+    return !!item && item.type === TileType.LOADING;
   }
 
   private isFailureTile_(item: Tile|null): item is FailureTile {
-    return item?.type === TileType.FAILURE;
+    return !!item && item.type === TileType.FAILURE;
   }
 
   private isEmptyTile_(item: Tile|null): item is ImageTile {
@@ -416,11 +421,11 @@ export class CollectionsGrid extends PolymerElement {
 
   private isGooglePhotosTile_(item: Tile|null): item is ImageTile|FailureTile {
     return !!item && (item.type !== TileType.LOADING) &&
-        (item?.id === kGooglePhotosCollectionId);
+        (item.id === kGooglePhotosCollectionId);
   }
 
   private isImageTile_(item: Tile|null): item is ImageTile {
-    return item?.type === TileType.IMAGE && !this.isEmptyTile_(item);
+    return !!item && item.type === TileType.IMAGE && !this.isEmptyTile_(item);
   }
 
   private isSelectableTile_(item: Tile|null): item is ImageTile|FailureTile {

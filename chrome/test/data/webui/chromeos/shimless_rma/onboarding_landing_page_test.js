@@ -74,6 +74,18 @@ export function onboardingLandingPageTest() {
     assertEquals('Hardware verification is not complete.', savedError.message);
   });
 
+  /**
+   * @param {string} buttonNameSelector
+   * @return {!Promise}
+   */
+  function clickButton(buttonNameSelector) {
+    assertTrue(!!component);
+
+    const button = component.shadowRoot.querySelector(buttonNameSelector);
+    button.click();
+    return flushTasks();
+  }
+
   test('OnBoardingPageValidationCompleteEnablesNextButton', async () => {
     await initializeLandingPage();
     let disableNextButtonEventFired = false;
@@ -177,4 +189,39 @@ export function onboardingLandingPageTest() {
         failedComponent,
         component.shadowRoot.querySelector('#dialogBody').textContent.trim());
   });
+
+  test('OnBoardingPageCancelButtonDispatchesCancelEvent', async () => {
+    await initializeLandingPage();
+
+    let cancelButtonEventFired = false;
+    component.addEventListener('click-cancel-button', (e) => {
+      cancelButtonEventFired = true;
+    });
+
+    await clickButton('#landingCancel');
+    await flushTasks();
+
+    assertTrue(cancelButtonEventFired);
+  });
+
+  test(
+      'OnBoardingPageGetStartedButtonDispatchesTransitionStateEvent',
+      async () => {
+        await initializeLandingPage();
+
+        let getStartedButtonEventFired = false;
+        component.addEventListener('transition-state', (e) => {
+          getStartedButtonEventFired = true;
+        });
+
+        const getStartedButton =
+            component.shadowRoot.querySelector('#getStartedButton');
+        getStartedButton.disabled = false;
+
+        await clickButton('#getStartedButton');
+
+        await flushTasks();
+
+        assertTrue(getStartedButtonEventFired);
+      });
 }

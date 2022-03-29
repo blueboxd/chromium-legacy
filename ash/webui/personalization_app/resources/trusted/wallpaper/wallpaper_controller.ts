@@ -68,18 +68,22 @@ async function fetchAllImagesForCollections(
 export async function fetchGooglePhotosAlbum(
     provider: WallpaperProviderInterface, store: PersonalizationStore,
     albumId: string): Promise<void> {
+  // Photos should only be fetched after confirming access is allowed.
+  const enabled = store.data.wallpaper.googlePhotos.enabled;
+  assert(enabled === GooglePhotosEnablementState.kEnabled);
+
   store.dispatch(action.beginLoadGooglePhotosAlbumAction(albumId));
 
   let photos: Array<GooglePhotosPhoto>|null = [];
   let resumeToken =
-      store.data.wallpaper.googlePhotos.resumeTokens.photosByAlbumId[albumId] ??
+      store.data.wallpaper.googlePhotos.resumeTokens.photosByAlbumId[albumId] ||
       null;
 
   const {response} = await provider.fetchGooglePhotosPhotos(
       /*itemId=*/ null, albumId, resumeToken);
   if (Array.isArray(response.photos)) {
     photos.push(...response.photos);
-    resumeToken = response.resumeToken ?? null;
+    resumeToken = response.resumeToken || null;
   } else {
     console.warn('Failed to fetch Google Photos album');
     photos = null;
@@ -101,6 +105,10 @@ export async function fetchGooglePhotosAlbum(
 export async function fetchGooglePhotosAlbums(
     provider: WallpaperProviderInterface,
     store: PersonalizationStore): Promise<void> {
+  // Albums should only be fetched after confirming access is allowed.
+  const enabled = store.data.wallpaper.googlePhotos.enabled;
+  assert(enabled === GooglePhotosEnablementState.kEnabled);
+
   store.dispatch(action.beginLoadGooglePhotosAlbumsAction());
 
   let albums: Array<GooglePhotosAlbum>|null = [];
@@ -109,7 +117,7 @@ export async function fetchGooglePhotosAlbums(
   const {response} = await provider.fetchGooglePhotosAlbums(resumeToken);
   if (Array.isArray(response.albums)) {
     albums.push(...response.albums);
-    resumeToken = response.resumeToken ?? null;
+    resumeToken = response.resumeToken || null;
   } else {
     console.warn('Failed to fetch Google Photos albums');
     albums = null;
@@ -131,6 +139,9 @@ export async function fetchGooglePhotosAlbums(
 async function fetchGooglePhotosEnabled(
     provider: WallpaperProviderInterface,
     store: PersonalizationStore): Promise<void> {
+  // Whether access is allowed should only be fetched once.
+  assert(store.data.wallpaper.googlePhotos.enabled === undefined);
+
   store.dispatch(action.beginLoadGooglePhotosEnabledAction());
   const {state} = await provider.fetchGooglePhotosEnabled();
   if (state === GooglePhotosEnablementState.kError) {
@@ -143,6 +154,10 @@ async function fetchGooglePhotosEnabled(
 async function fetchGooglePhotosCount(
     provider: WallpaperProviderInterface,
     store: PersonalizationStore): Promise<void> {
+  // Count should only be fetched after confirming access is allowed.
+  const enabled = store.data.wallpaper.googlePhotos.enabled;
+  assert(enabled === GooglePhotosEnablementState.kEnabled);
+
   store.dispatch(action.beginLoadGooglePhotosCountAction());
   const {count} = await provider.fetchGooglePhotosCount();
   store.dispatch(action.setGooglePhotosCountAction(count >= 0 ? count : null));
@@ -152,6 +167,10 @@ async function fetchGooglePhotosCount(
 export async function fetchGooglePhotosPhotos(
     provider: WallpaperProviderInterface,
     store: PersonalizationStore): Promise<void> {
+  // Photos should only be fetched after confirmed access is allowed.
+  const enabled = store.data.wallpaper.googlePhotos.enabled;
+  assert(enabled === GooglePhotosEnablementState.kEnabled);
+
   store.dispatch(action.beginLoadGooglePhotosPhotosAction());
 
   let photos: Array<GooglePhotosPhoto>|null = [];
@@ -161,7 +180,7 @@ export async function fetchGooglePhotosPhotos(
       /*itemId=*/ null, /*albumId=*/ null, resumeToken);
   if (Array.isArray(response.photos)) {
     photos.push(...response.photos);
-    resumeToken = response.resumeToken ?? null;
+    resumeToken = response.resumeToken || null;
   } else {
     console.warn('Failed to fetch Google Photos photos');
     photos = null;
@@ -283,15 +302,15 @@ export async function setCurrentWallpaperLayout(
     layout: WallpaperLayout, provider: WallpaperProviderInterface,
     store: PersonalizationStore): Promise<void> {
   const image = store.data.wallpaper.currentSelected;
+  assert(image);
   assert(
-      image &&
-      ((image.type === WallpaperType.kCustomized) ||
-       (image.type === WallpaperType.kGooglePhotos)));
+      image.type === WallpaperType.kCustomized ||
+      image.type === WallpaperType.kGooglePhotos);
   assert(
       layout === WallpaperLayout.kCenter ||
       layout === WallpaperLayout.kCenterCropped);
 
-  if (image?.layout === layout) {
+  if (image.layout === layout) {
     return;
   }
 

@@ -127,6 +127,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   DCHECK(arc_app_list_pref_);
   if (wait_default_apps_)
     WaitForDefaultApps();
+  WaitForRemoveAllApps();
 
   // Check initial conditions.
   if (activate_arc_on_start_) {
@@ -158,6 +159,15 @@ void ArcAppTest::WaitForDefaultApps() {
   run_loop.Run();
 }
 
+void ArcAppTest::WaitForRemoveAllApps() {
+  DCHECK(arc_app_list_pref_);
+  if (arc_app_list_pref_->is_remove_all_in_progress()) {
+    base::RunLoop run_loop;
+    arc_app_list_pref_->SetRemoveAllCallbackForTesting(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+}
+
 void ArcAppTest::CreateFakeAppsAndPackages() {
   arc::mojom::AppInfo app;
   // Make sure we have enough data for test.
@@ -184,7 +194,8 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
       kPackageName1 /* package_name */, 1 /* package_version */,
       1 /* last_backup_android_id */, 1 /* last_backup_time */,
       false /* sync */, false /* system */, false /* vpn_provider */,
-      nullptr /* web_app_info */, absl::nullopt, std::move(permissions1)));
+      nullptr /* web_app_info */, absl::nullopt, std::move(permissions1),
+      absl::nullopt /* version_name */));
 
   base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
       permissions2;
@@ -198,7 +209,8 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
       kPackageName2 /* package_name */, 2 /* package_version */,
       2 /* last_backup_android_id */, 2 /* last_backup_time */, true /* sync */,
       false /* system */, false /* vpn_provider */, nullptr /* web_app_info */,
-      absl::nullopt, std::move(permissions2)));
+      absl::nullopt, std::move(permissions2),
+      absl::nullopt /* version_name */));
 
   base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
       permissions3;
@@ -215,7 +227,8 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
       kPackageName3 /* package_name */, 3 /* package_version */,
       3 /* last_backup_android_id */, 3 /* last_backup_time */,
       false /* sync */, false /* system */, false /* vpn_provider */,
-      nullptr /* web_app_info */, absl::nullopt, std::move(permissions3)));
+      nullptr /* web_app_info */, absl::nullopt, std::move(permissions3),
+      absl::nullopt /* version_name */));
 
   for (int i = 0; i < 3; ++i) {
     arc::mojom::ShortcutInfo shortcut_info;

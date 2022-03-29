@@ -33,12 +33,19 @@
         </span>
       </span>
     </div>
-    <cr-button id="nextButton" class="action-button"
+    <cr-button id="getStartedButton" class="action-button"
         on-click="onGetStartedButtonClicked_"
         disabled="[[isGetStartedButtonDisabled_(verificationInProgress_,
         allButtonsDisabled)]]">
       [[i18n('getStartedButtonLabel')]]
       <span id="nextButtonCaret">&#62;</span>
+    </cr-button>
+    <cr-button id="landingCancel" class="pill"
+        on-click="onLandingCancelButtonClicked_"
+        disabled="[[allButtonsDisabled]]">
+      <span id="cancelButtonLabel">
+        [[i18n('cancelButtonLabel')]]
+      </span>
     </cr-button>
   </div>
   <div slot="right-pane">

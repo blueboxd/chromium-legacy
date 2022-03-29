@@ -75,14 +75,15 @@ export class FilteredVolumeInfoList {
  */
 export class FilteredVolumeManager extends EventTarget {
   /**
-   *
    * @param {!AllowedPaths} allowedPaths Which paths are supported in the Files
    *     app dialog.
    * @param {boolean} writableOnly If true, only writable volumes are returned.
    * @param {!Promise<!VolumeManager>} volumeManagerGetter Promise that resolves
    *     when the VolumeManager has been initialized.
+   * @param {!Array<string>} volumeFilter Array of Files app mode dependent
+   *     volume filter names from Files app launch params, [] typically.
    */
-  constructor(allowedPaths, writableOnly, volumeManagerGetter) {
+  constructor(allowedPaths, writableOnly, volumeManagerGetter, volumeFilter) {
     super();
 
     this.allowedPaths_ = allowedPaths;
@@ -102,8 +103,14 @@ export class FilteredVolumeManager extends EventTarget {
 
     this.disposed_ = false;
 
-    /** private {!Promise<!VolumeManager>} */
+    /** @private {!Promise<!VolumeManager>} */
     this.volumeManagerGetter_ = volumeManagerGetter;
+
+    /**
+     * Array of Files app mode dependent volume filter names.
+     * @private @const {!Array<string>}
+     */
+    this.volumeFilter_ = volumeFilter;
 
     /**
      * Tracks async initialization of volume manager.
@@ -118,6 +125,11 @@ export class FilteredVolumeManager extends EventTarget {
    * Note that even if a volume type is allowed, a volume of that type might be
    * disallowed for other restrictions. To check if a specific volume is allowed
    * or not, use isAllowedVolume_() instead.
+   *
+   * TODO(crbug.com/1292825): The above is cleary confusing. This API is only
+   * used by Drive, to work if the 'drive-connection-changed' event should be
+   * emitted, or blocking access to the drive connection state. Make this API
+   * Drive-specific to remove the confusion.
    *
    * @param {VolumeManagerCommon.VolumeType} volumeType
    * @return {boolean}
@@ -143,12 +155,18 @@ export class FilteredVolumeManager extends EventTarget {
     if (!volumeInfo.volumeType) {
       return false;
     }
-    if (!this.isAllowedVolumeType_(volumeInfo.volumeType)) {
-      return false;
-    }
+
     if (this.writableOnly_ && volumeInfo.isReadOnly) {
       return false;
     }
+
+    // TODO(crbug.com/1292825): implement fusebox-only filter here.
+
+    // TODO(crbug.com/1292825): maybe remove isAllowedVolumeType_ use here.
+    if (!this.isAllowedVolumeType_(volumeInfo.volumeType)) {
+      return false;
+    }
+
     return true;
   }
 

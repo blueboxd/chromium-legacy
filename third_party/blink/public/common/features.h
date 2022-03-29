@@ -28,8 +28,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kExcludeLowEntropyImagesFromLCP;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<double>
     kMinimumEntropyForLCP;
 BLINK_COMMON_EXPORT extern const base::Feature kGMSCoreEmoji;
-BLINK_COMMON_EXPORT extern const base::Feature
-    kHandwritingRecognitionWebPlatformApiFinch;
 BLINK_COMMON_EXPORT extern const base::Feature kPaintHolding;
 BLINK_COMMON_EXPORT extern const base::Feature kPaintHoldingCrossOrigin;
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -666,10 +664,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kDurableClientHintsCache;
 // If enabled, allows web pages to use the experimental EditContext API to
 // better control text input. See crbug.com/999184.
 BLINK_COMMON_EXPORT extern const base::Feature kEditContext;
-
-// If enabled, non-required tiles in inactive windows are freed.
-BLINK_COMMON_EXPORT extern const base::Feature
-    kFreeNonRequiredTileResourcesForInactiveWindows;
 
 // Gates Multi-Screen Window Placement features and additional enhancements.
 BLINK_COMMON_EXPORT extern const base::Feature kWindowPlacement;

@@ -5,10 +5,15 @@
 package org.chromium.chrome.browser.history_clusters;
 
 import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
+import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 
 /**
@@ -16,7 +21,6 @@ import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
  * visits grouped into clusters.
  */
 public class HistoryClustersCoordinator {
-    private final HistoryClustersQueryManager mHistoryClustersQueryManager;
     private final HistoryClustersMediator mMediator;
     private final ModelList mModelList;
     private final Context mContext;
@@ -29,14 +33,19 @@ public class HistoryClustersCoordinator {
      */
     public HistoryClustersCoordinator(@NonNull Profile profile, @NonNull Context context) {
         mContext = context;
-        mHistoryClustersQueryManager = new HistoryClustersQueryManager(profile);
         mModelList = new ModelList();
-        mMediator = new HistoryClustersMediator(
-                mHistoryClustersQueryManager, context, context.getResources(), mModelList, profile);
+        mMediator = new HistoryClustersMediator(HistoryClustersBridge.getForProfile(profile),
+                new LargeIconBridge(profile), context, context.getResources(), mModelList);
     }
 
     public void destroy() {
-        mHistoryClustersQueryManager.destroy();
         mMediator.destroy();
+    }
+
+    private View buildVisitView(ViewGroup parent) {
+        SelectableItemView<ClusterVisit> itemView =
+                (SelectableItemView<ClusterVisit>) LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.history_cluster_visit, parent, false);
+        return itemView;
     }
 }

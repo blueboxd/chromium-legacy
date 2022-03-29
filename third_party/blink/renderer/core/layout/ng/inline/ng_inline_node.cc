@@ -1587,14 +1587,21 @@ void NGInlineNode::ShapeTextIncludingFirstLine(
   DCHECK_NE(new_state, NGInlineNodeData::kShapingNone);
   data->shaping_state_ = new_state;
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
-  ShapeText(data, previous_text, previous_items);
-  ShapeTextForFirstLineIfNeeded(data);
+  // Because |ElapsedTimer| causes notable speed regression on Android and
+  // ChromeOS, we don't use it. See http://crbug.com/1261519
 #else
-  base::ElapsedTimer shaping_timer;
+  struct ShapeTextTimingScope final {
+    ~ShapeTextTimingScope() {
+      FontPerformance::AddShapingTime(shaping_timer.Elapsed());
+    }
+    base::ElapsedTimer shaping_timer;
+  };
+
+  ShapeTextTimingScope shape_text_timing_scope;
+#endif
+
   ShapeText(data, previous_text, previous_items);
   ShapeTextForFirstLineIfNeeded(data);
-  FontPerformance::AddShapingTime(shaping_timer.Elapsed());
-#endif
 }
 
 void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) const {
@@ -2020,8 +2027,17 @@ bool NGInlineNode::UseFirstLineStyle() const {
 bool NGInlineNode::ShouldBeReshaped() const {
   if (!Data().IsShapingDeferred())
     return false;
-  if (const auto* context = GetDisplayLockContext())
-    return !context->IsLocked();
+  if (const auto* context = GetDisplayLockContext()) {
+    if (context->IsLocked())
+      return false;
+    // Need to check the request queue because
+    // 1. ShapeTextOrDefer() in ComputeMinMaxSizes() requested to lock an
+    //    element.
+    // 2. ShapeTextOrDefer() in Layout() calls this function before handling
+    //    the request queue.
+    return !GetLayoutBox()->GetFrameView()->LockDeferredRequested(
+        *To<Element>(GetDOMNode()));
+  }
   // This is deferred, but not locked yet.
   return false;
 }

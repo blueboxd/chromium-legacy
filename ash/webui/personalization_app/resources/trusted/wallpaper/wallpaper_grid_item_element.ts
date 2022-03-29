@@ -9,7 +9,8 @@
 import 'chrome://resources/cr_elements/cr_auto_img/cr_auto_img.js';
 import '../../common/styles.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {getTemplate} from './wallpaper_grid_item_element.html.js';
 
 export class WallpaperGridItem extends PolymerElement {
   static get is() {
@@ -17,7 +18,7 @@ export class WallpaperGridItem extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -47,17 +48,17 @@ export class WallpaperGridItem extends PolymerElement {
 
   /** Whether the image is currently visible. */
   private isImageVisible_() {
-    return !!this.imageSrc?.length;
+    return !!this.imageSrc && !!this.imageSrc.length;
   }
 
   /** Whether the primary text is currently visible. */
   private isPrimaryTextVisible_() {
-    return !!this.primaryText?.length;
+    return !!this.primaryText && !!this.primaryText.length;
   }
 
   /** Whether the secondary text is currently visible. */
   private isSecondaryTextVisible_() {
-    return !!this.secondaryText?.length;
+    return !!this.secondaryText && !!this.secondaryText.length;
   }
 
   /** Whether any text is currently visible. */

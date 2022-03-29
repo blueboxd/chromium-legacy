@@ -112,6 +112,15 @@ void TriggerAccessibilityAlert(int message_id) {
   TriggerAccessibilityAlert(l10n_util::GetStringUTF8(message_id));
 }
 
+void TriggerAccessibilityAlertSoon(int message_id) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &AccessibilityControllerImpl::TriggerAccessibilityAlertWithMessage,
+          Shell::Get()->accessibility_controller()->GetWeakPtr(),
+          l10n_util::GetStringUTF8(message_id)));
+}
+
 std::unique_ptr<views::View> CreateClipboardShortcutView() {
   std::unique_ptr<views::View> clipboard_shortcut_view =
       std::make_unique<views::View>();
@@ -186,10 +195,8 @@ std::unique_ptr<views::View> CreateBannerView() {
   label->SetEnabledColor(text_icon_color);
 
   if (!Shell::Get()->tablet_mode_controller()->InTabletMode()) {
-    if (features::IsClipboardHistoryScreenshotNudgeEnabled()) {
-      banner_view->AddChildView(CreateClipboardShortcutView());
-      layout->SetFlexForView(label, 1);
-    }
+    banner_view->AddChildView(CreateClipboardShortcutView());
+    layout->SetFlexForView(label, 1);
 
     // Notify the clipboard history of the created notification.
     ClipboardHistoryController::Get()->OnScreenshotNotificationCreated();

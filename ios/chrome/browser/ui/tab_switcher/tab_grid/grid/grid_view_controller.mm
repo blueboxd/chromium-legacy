@@ -692,6 +692,18 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                  nextLayout:toLayout];
 }
 
+- (void)collectionView:(UICollectionView*)collectionView
+    didEndDisplayingCell:(UICollectionViewCell*)cell
+      forItemAtIndexPath:(NSIndexPath*)indexPath {
+  if ([cell isKindOfClass:[GridCell class]]) {
+    // Stop animation of GridCells when removing them from the collection view.
+    // This is important to prevent cells from animating indefinitely. This is
+    // safe because the animation state of GridCells is set in
+    // |configureCell:withItem:| whenever a cell is used.
+    [base::mac::ObjCCastStrict<GridCell>(cell) hideActivityIndicator];
+  }
+}
+
 #pragma mark - UIPointerInteractionDelegate
 
 - (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
@@ -1268,18 +1280,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (CGFloat)offsetPastEndOfScrollView {
-  CGFloat offset;
-  if (UseRTLLayout()) {
-    offset = -self.collectionView.contentOffset.x;
-  } else {
-    // Use collectionViewLayout.collectionViwContentSize because it has the
-    // correct size during a batch update.
-    offset = self.collectionView.contentOffset.x +
-             self.collectionView.frame.size.width -
-             self.collectionView.collectionViewLayout.collectionViewContentSize
-                 .width;
-  }
-  return offset;
+  // Use collectionViewLayout.collectionViwContentSize because it has the
+  // correct size during a batch update.
+  return self.collectionView.contentOffset.x +
+         self.collectionView.frame.size.width -
+         self.collectionView.collectionViewLayout.collectionViewContentSize
+             .width;
 }
 
 - (void)setFractionVisibleOfLastItem:(CGFloat)fractionVisibleOfLastItem {

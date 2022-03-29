@@ -58,12 +58,6 @@ const base::FeatureParam<double> kMinimumEntropyForLCP{
 const base::Feature kGMSCoreEmoji{"GMSCoreEmoji",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether the HandwritingRecognition API can be enabled by origin trial.
-// Disabling this feature disables both the origin trial and the mojo interface.
-const base::Feature kHandwritingRecognitionWebPlatformApiFinch{
-    "HandwritingRecognitionWebPlatformApiFinch",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable defer commits to avoid flash of unstyled content, for same origin
 // navigation only.
 const base::Feature kPaintHolding{"PaintHolding",
@@ -1369,10 +1363,6 @@ const base::Feature kDurableClientHintsCache{"DurableClientHintsCache",
 // better control text input. See crbug.com/999184.
 const base::Feature kEditContext{"EditContext",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kFreeNonRequiredTileResourcesForInactiveWindows{
-    "FreeNonRequiredTileResourcesForInactiveWindows",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables basic Multi-Screen Window Placement functionality.
 const base::Feature kWindowPlacement{"WindowPlacement",

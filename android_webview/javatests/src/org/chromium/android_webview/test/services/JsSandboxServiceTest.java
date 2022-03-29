@@ -43,7 +43,7 @@ public class JsSandboxServiceTest {
         final String expected = "PASS";
         TestExecutionCallback callback = new TestExecutionCallback();
 
-        AwJsSandbox.newConnectedInstance((AwJsSandbox jsSandbox) -> {
+        AwJsSandbox.newConnectedInstanceForTesting((AwJsSandbox jsSandbox) -> {
             AwJsContext jsContext = jsSandbox.createContext();
             jsContext.evaluateJavascript(code, callback);
         });
@@ -59,7 +59,7 @@ public class JsSandboxServiceTest {
         final String expected = "PASS";
         TestExecutionCallback callback = new TestExecutionCallback();
 
-        AwJsSandbox.newConnectedInstance((AwJsSandbox jsSandbox) -> {
+        AwJsSandbox.newConnectedInstanceForTesting((AwJsSandbox jsSandbox) -> {
             AwJsContext jsContext1 = jsSandbox.createContext();
             AwJsContext jsContext2 = jsSandbox.createContext();
             jsContext1.close();
@@ -81,7 +81,7 @@ public class JsSandboxServiceTest {
         TestExecutionCallback callback1 = new TestExecutionCallback();
         TestExecutionCallback callback2 = new TestExecutionCallback();
 
-        AwJsSandbox.newConnectedInstance((AwJsSandbox jsSandbox) -> {
+        AwJsSandbox.newConnectedInstanceForTesting((AwJsSandbox jsSandbox) -> {
             AwJsContext jsContext1 = jsSandbox.createContext();
             jsContext1.evaluateJavascript(code1, callback1);
             AwJsContext jsContext2 = jsSandbox.createContext();
@@ -106,7 +106,7 @@ public class JsSandboxServiceTest {
         TestExecutionCallback callback1 = new TestExecutionCallback();
         TestExecutionCallback callback2 = new TestExecutionCallback();
 
-        AwJsSandbox.newConnectedInstance((AwJsSandbox jsSandbox) -> {
+        AwJsSandbox.newConnectedInstanceForTesting((AwJsSandbox jsSandbox) -> {
             AwJsContext jsContext1 = jsSandbox.createContext();
             jsContext1.evaluateJavascript(code1, callback1);
             AwJsContext jsContext2 = jsSandbox.createContext();
@@ -131,7 +131,7 @@ public class JsSandboxServiceTest {
         TestExecutionCallback callback1 = new TestExecutionCallback();
         TestExecutionCallback callback2 = new TestExecutionCallback();
 
-        AwJsSandbox.newConnectedInstance((AwJsSandbox jsSandbox) -> {
+        AwJsSandbox.newConnectedInstanceForTesting((AwJsSandbox jsSandbox) -> {
             AwJsContext jsContext1 = jsSandbox.createContext();
             jsContext1.evaluateJavascript(code1, callback1);
             jsContext1.evaluateJavascript(code2, callback2);
@@ -152,7 +152,7 @@ public class JsSandboxServiceTest {
         final String contains = "SyntaxError";
         TestExecutionCallback callback = new TestExecutionCallback();
 
-        AwJsSandbox.newConnectedInstance(jsSandbox -> {
+        AwJsSandbox.newConnectedInstanceForTesting(jsSandbox -> {
             AwJsContext jsContext = jsSandbox.createContext();
             jsContext.evaluateJavascript(code, callback);
         });

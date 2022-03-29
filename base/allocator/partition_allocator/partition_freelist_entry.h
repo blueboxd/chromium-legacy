@@ -23,15 +23,13 @@
 
 namespace partition_alloc::internal {
 
-namespace {
-
-[[noreturn]] NOINLINE void FreelistCorruptionDetected(size_t extra) {
+// TODO(thakis): Move this back to `NOINLINE static` once
+// https://llvm.org/PR54599 is fixed and the fix is rolled in.
+[[noreturn]] NOINLINE inline void FreelistCorruptionDetected(size_t extra) {
   // Make it visible in minidumps.
   PA_DEBUG_DATA_ON_STACK("extra", extra);
   IMMEDIATE_CRASH();
 }
-
-}  // namespace
 
 class PartitionFreelistEntry;
 
@@ -70,7 +68,7 @@ class EncodedPartitionFreelistEntryPtr {
 #if defined(ARCH_CPU_BIG_ENDIAN)
     uintptr_t transformed = ~address;
 #else
-    uintptr_t transformed = base::ByteSwapUintPtrT(address);
+    uintptr_t transformed = ::base::ByteSwapUintPtrT(address);
 #endif
     return transformed;
   }
@@ -267,7 +265,7 @@ static_assert(kSmallestBucket >= sizeof(PartitionFreelistEntry),
 // it's 0, it gets patched to 1), and ref-count gets added to it.
 namespace {
 constexpr size_t kSmallestUsedBucket =
-    base::bits::AlignUp(1 + sizeof(PartitionRefCount), kSmallestBucket);
+    ::base::bits::AlignUp(1 + sizeof(PartitionRefCount), kSmallestBucket);
 }
 static_assert(kSmallestUsedBucket >=
                   sizeof(PartitionFreelistEntry) + sizeof(PartitionRefCount),

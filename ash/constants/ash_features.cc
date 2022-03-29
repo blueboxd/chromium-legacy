@@ -303,11 +303,6 @@ const base::Feature kClipboardHistoryContextMenuNudge{
 const base::Feature kClipboardHistoryNudgeSessionReset{
     "ClipboardHistoryNudgeSessionReset", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, the clipboard history shortcut will appear in screenshot
-// notifications.
-const base::Feature kClipboardHistoryScreenshotNudge{
-    "ClipboardHistoryScreenshotNudge", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If enabled, replaces the `DeskMiniView` legacy desk close button and behavior
 // with a button to close desk and windows and a button to combine desks (the
 // legacy behavior).
@@ -796,13 +791,6 @@ const base::Feature kHoldingSpaceInProgressAnimationV2{
 const base::FeatureParam<bool> kHoldingSpaceInProgressAnimationV2DelayEnabled{
     &kHoldingSpaceInProgressAnimationV2, "delay_enabled", true};
 
-// Enables in-progress downloads integration with the productivity feature that
-// aims to reduce context switching by enabling users to collect content and
-// transfer or access it later.
-const base::Feature kHoldingSpaceInProgressDownloadsIntegration{
-    "HoldingSpaceInProgressDownloadsIntegration",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables in-progress downloads notification suppression with the productivity
 // feature that aims to reduce context switching by enabling users to collect
 // content and transfer or access it later.
@@ -813,10 +801,6 @@ const base::Feature kHoldingSpaceInProgressDownloadsNotificationSuppression{
 // Controls whether the snooping protection prototype is enabled.
 const base::Feature kSnoopingProtection{"SnoopingProtection",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable or disable dark mode support for the Chrome OS virtual keyboard.
-const base::Feature kVirtualKeyboardDarkMode{"VirtualKeyboardDarkMode",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable a new header bar for the Chrome OS virtual keyboard.
 const base::Feature kVirtualKeyboardNewHeader{
@@ -1609,10 +1593,6 @@ bool IsLauncherItemColorSyncEnabled() {
          base::FeatureList::IsEnabled(kLauncherItemColorSync);
 }
 
-bool IsClipboardHistoryScreenshotNudgeEnabled() {
-  return base::FeatureList::IsEnabled(kClipboardHistoryScreenshotNudge);
-}
-
 bool IsCryptohomeRecoveryFlowEnabled() {
   return base::FeatureList::IsEnabled(kCryptohomeRecoveryFlow);
 }
@@ -1749,11 +1729,6 @@ bool IsHoldingSpaceInProgressAnimationV2Enabled() {
 bool IsHoldingSpaceInProgressAnimationV2DelayEnabled() {
   return IsHoldingSpaceInProgressAnimationV2Enabled() &&
          kHoldingSpaceInProgressAnimationV2DelayEnabled.Get();
-}
-
-bool IsHoldingSpaceInProgressDownloadsIntegrationEnabled() {
-  return base::FeatureList::IsEnabled(
-      kHoldingSpaceInProgressDownloadsIntegration);
 }
 
 bool IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled() {

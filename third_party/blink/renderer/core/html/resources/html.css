@@ -31,7 +31,7 @@ html {
 
 body {
     display: block;
-    margin: 8px
+    margin: 8px;
 }
 
 body:-webkit-full-page-media {
@@ -1376,8 +1376,8 @@ dialog {
     margin: auto;
     border: solid;
     padding: 1em;
-    background: -internal-light-dark(white, black);
-    color: FieldText;
+    background-color: Canvas;
+    color: CanvasText;
 }
 
 dialog:-internal-modal {

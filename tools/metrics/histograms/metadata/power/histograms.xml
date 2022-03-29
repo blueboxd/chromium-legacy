@@ -803,7 +803,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerProcessType" enum="ProcessType2"
-    expires_after="2022-09-18">
+    expires_after="2022-09-25">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -868,6 +868,22 @@ chromium-metrics-reviews@google.com.
     <variant name="GPU" summary="GPU"/>
     <variant name="Other" summary="other type of"/>
     <variant name="Renderer" summary="renderer"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Power.DarkMode{prefers-color-scheme}.InferredDarkPageColorScheme"
+    enum="BooleanIsDarkColorScheme" expires_after="2022-09-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>pdr@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Whether the primary main document has an inferred dark color scheme. Emitted
+    each time WebContents infers a new non-empty color scheme.
+  </summary>
+  <token key="prefers-color-scheme">
+    <variant name=""/>
+    <variant name=".DarkColorScheme" summary="when the embedder prefers dark."/>
   </token>
 </histogram>
 
@@ -1475,7 +1491,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Power.Mac" units="mW" expires_after="2022-09-18">
+<histogram base="true" name="Power.Mac" units="mW" expires_after="2022-09-25">
   <owner>olivierli@chromium.org</owner>
   <owner>markchang@chromium.org</owner>
   <summary>

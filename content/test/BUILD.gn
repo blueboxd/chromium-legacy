@@ -682,7 +682,9 @@ static_library("test_support") {
     ]
   }
 
-  if (is_linux || is_chromeos) {
+  # TODO(crbug.com/1290940): Should Fuchsia use this? If so, the condition can
+  # probably be changed to just `use_ozone`, especially after crbug.com/1293575.
+  if (is_linux || is_chromeos || is_fuchsia) {
     deps += [ "//ui/platform_window/common" ]
   }
 
@@ -2064,7 +2066,9 @@ test("content_unittests") {
     "../browser/file_system_access/file_system_chooser_unittest.cc",
     "../browser/file_system_access/safe_move_helper_unittest.cc",
     "../browser/first_party_sets/addition_overlaps_union_find_unittest.cc",
+    "../browser/first_party_sets/first_party_set_parser_unittest.cc",
     "../browser/first_party_sets/first_party_sets_handler_impl_unittest.cc",
+    "../browser/first_party_sets/first_party_sets_loader_unittest.cc",
     "../browser/font_access/font_access_manager_unittest.cc",
     "../browser/font_access/font_enumeration_data_source_unittest.cc",
     "../browser/generic_sensor/sensor_provider_proxy_impl_unittest.cc",
@@ -2179,7 +2183,6 @@ test("content_unittests") {
     "../browser/renderer_host/embedded_frame_sink_provider_impl_unittest.cc",
     "../browser/renderer_host/fenced_frame_tree_node_unittest.cc",
     "../browser/renderer_host/frame_token_message_queue_unittest.cc",
-    "../browser/renderer_host/frame_tree_node_blame_context_unittest.cc",
     "../browser/renderer_host/frame_tree_unittest.cc",
     "../browser/renderer_host/input/fling_controller_unittest.cc",
     "../browser/renderer_host/input/fling_scheduler_unittest.cc",
@@ -2857,7 +2860,6 @@ test("content_unittests") {
       "//ui/base/dragdrop:types",
       "//ui/base/dragdrop/mojom",
       "//ui/wm",
-      "//ui/wm/public",
     ]
   } else {
     sources -= [

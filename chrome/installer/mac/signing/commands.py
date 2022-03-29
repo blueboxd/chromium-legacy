@@ -83,16 +83,25 @@ def set_executable(path):
 
 def run_command(args, **kwargs):
     logger.info('Running command: %s', args)
-    if 'stderr' not in kwargs:
-        kwargs['stderr'] = subprocess.STDOUT
     subprocess.check_call(args, **kwargs)
 
 
 def run_command_output(args, **kwargs):
     logger.info('Running command: %s', args)
-    if 'stderr' not in kwargs:
-        kwargs['stderr'] = subprocess.STDOUT
     return subprocess.check_output(args, **kwargs)
+
+
+def run_password_command_output(args, password, **kwargs):
+    """Runs a command that expects a password on stdin. This function feeds
+    |password| to that command and returns the output like
+    run_command_output().
+    """
+    assert 'stdin' not in kwargs
+    return run_command_output(
+        args,
+        start_new_session=True,
+        input=(password + '\n').encode('utf8'),
+        **kwargs)
 
 
 def lenient_run_command_output(args, **kwargs):

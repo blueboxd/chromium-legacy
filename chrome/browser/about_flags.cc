@@ -653,16 +653,6 @@ const FeatureEntry::FeatureVariation kQueryTilesVariations[] = {
      std::size(kShowSingleRowMVTiles), nullptr},
     {"(show two rows of MV tiles)", kShowTwoRowsMVTiles,
      std::size(kShowTwoRowsMVTiles), nullptr}};
-
-const FeatureEntry::FeatureParam kDangerousDownloadNoFilledNegativeButton = {
-    "filled_negative_button", "false"};
-const FeatureEntry::FeatureParam kDangerousDownloadFilledNegativeButton = {
-    "filled_negative_button", "true"};
-const FeatureEntry::FeatureVariation kDangerousDownloadDialogVariations[] = {
-    {"without filled negative button",
-     &kDangerousDownloadNoFilledNegativeButton, 1, nullptr},
-    {"with filled negative button", &kDangerousDownloadFilledNegativeButton, 1,
-     nullptr}};
 #endif  // BUILDFLAG(IS_ANDROID)
 
 const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
@@ -2892,6 +2882,16 @@ constexpr FeatureEntry::FeatureVariation kLensStandaloneVariations[] = {
      std::size(kLensStandaloneWithSidePanel), nullptr},
 };
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const FeatureEntry::Choice kAlwaysEnableHdcpChoices[] = {
+    {flag_descriptions::kAlwaysEnableHdcpDefault, "", ""},
+    {flag_descriptions::kAlwaysEnableHdcpType0,
+     ash::switches::kAlwaysEnableHdcp, "type0"},
+    {flag_descriptions::kAlwaysEnableHdcpType1,
+     ash::switches::kAlwaysEnableHdcp, "type1"},
+};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -4166,13 +4166,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"query-tiles-ntp", flag_descriptions::kQueryTilesNTPName,
      flag_descriptions::kQueryTilesNTPDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(query_tiles::features::kQueryTilesInNTP)},
-    {"query-tiles-omnibox", flag_descriptions::kQueryTilesOmniboxName,
-     flag_descriptions::kQueryTilesOmniboxDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(query_tiles::features::kQueryTilesInOmnibox)},
-    {"query-tiles-local-ordering",
-     flag_descriptions::kQueryTilesLocalOrderingName,
-     flag_descriptions::kQueryTilesLocalOrderingDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(query_tiles::features::kQueryTilesLocalOrdering)},
     {"query-tiles-single-tier", flag_descriptions::kQueryTilesSingleTierName,
      flag_descriptions::kQueryTilesSingleTierDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(query_tiles::switches::kQueryTilesSingleTier)},
@@ -4192,10 +4185,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kQueryTilesInstantFetchDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(
          query_tiles::switches::kQueryTilesInstantBackgroundTask)},
-    {"query-tiles-more-trending",
-     flag_descriptions::kQueryTilesMoreTrendingName,
-     flag_descriptions::kQueryTilesMoreTrendingDescription, kOsAndroid,
-     SINGLE_VALUE_TYPE(query_tiles::switches::kQueryTilesMoreTrending)},
     {"query-tiles-rank-tiles", flag_descriptions::kQueryTilesRankTilesName,
      flag_descriptions::kQueryTilesRankTilesDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(query_tiles::switches::kQueryTilesRankTiles)},
@@ -4408,14 +4397,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeAssistPersonalInfoName,
      flag_descriptions::kImeAssistPersonalInfoDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAssistPersonalInfo)},
-    {"enable-cros-virtual-keyboard-dark-mode",
-     flag_descriptions::kVirtualKeyboardDarkModeName,
-     flag_descriptions::kVirtualKeyboardDarkModeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardDarkMode)},
-    {"enable-cros-virtual-keyboard-new-header",
-     flag_descriptions::kVirtualKeyboardNewHeaderName,
-     flag_descriptions::kVirtualKeyboardNewHeaderDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardNewHeader)},
     {"enable-cros-ime-system-emoji-picker-clipboard",
      flag_descriptions::kImeSystemEmojiPickerClipboardName,
      flag_descriptions::kImeSystemEmojiPickerClipboardDescription, kOsCrOS,
@@ -4496,7 +4477,8 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::
          kExperimentalAccessibilityGoogleTtsLanguagePacksDescription,
      kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityDictationCommands)},
+     FEATURE_VALUE_TYPE(
+         features::kExperimentalAccessibilityGoogleTtsLanguagePacks)},
     {"enable-experimental-accessibility-switch-access-text",
      flag_descriptions::kExperimentalAccessibilitySwitchAccessTextName,
      flag_descriptions::kExperimentalAccessibilitySwitchAccessTextDescription,
@@ -5150,10 +5132,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppsShortcutDefaultOffDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(bookmarks::features::kAppsShortcutDefaultOff)},
 
-    {"tab-groups-auto-create", flag_descriptions::kTabGroupsAutoCreateName,
-     flag_descriptions::kTabGroupsAutoCreateDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kTabGroupsAutoCreate)},
-
     {"tab-groups-new-badge-promo",
      flag_descriptions::kTabGroupsNewBadgePromoName,
      flag_descriptions::kTabGroupsNewBadgePromoDescription, kOsDesktop,
@@ -5392,25 +5370,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDownloadLaterDebugOnWifiName,
      flag_descriptions::kDownloadLaterDebugOnWifiNameDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(download::switches::kDownloadLaterDebugOnWifi)},
-
-    {"enable-dangerous-download-dialog",
-     flag_descriptions::kEnableDangerousDownloadDialogName,
-     flag_descriptions::kEnableDangerousDownloadDialogDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         chrome::android::kEnableDangerousDownloadDialog,
-         kDangerousDownloadDialogVariations,
-         "DangerousDownloadDialogVariations")},
-
-    {"enable-duplicate-download-dialog",
-     flag_descriptions::kEnableDuplicateDownloadDialogName,
-     flag_descriptions::kEnableDuplicateDownloadDialogDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kEnableDuplicateDownloadDialog)},
-
-    {"enable-mixed-content-download-dialog",
-     flag_descriptions::kEnableMixedContentDownloadDialogName,
-     flag_descriptions::kEnableMixedContentDownloadDialogDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kEnableMixedContentDownloadDialog)},
 #endif
 
     {"enable-new-download-backend",
@@ -6757,10 +6716,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnhancedClipboardNudgeSessionResetDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kClipboardHistoryNudgeSessionReset)},
-    {"enhanced_clipboard_screenshot_nudge",
-     flag_descriptions::kEnhancedClipboardScreenshotNudgeName,
-     flag_descriptions::kEnhancedClipboardScreenshotNudgeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kClipboardHistoryScreenshotNudge)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_WIN)
@@ -7788,12 +7743,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHoldingSpaceInProgressAnimationV2Name,
      flag_descriptions::kHoldingSpaceInProgressAnimationV2Description, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kHoldingSpaceInProgressAnimationV2)},
-    {"enable-holding-space-in-progress-downloads-integration",
-     flag_descriptions::kHoldingSpaceInProgressDownloadsIntegrationName,
-     flag_descriptions::kHoldingSpaceInProgressDownloadsIntegrationDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         ash::features::kHoldingSpaceInProgressDownloadsIntegration)},
 #endif
 
     {"omnibox-updated-connection-security-indicators",
@@ -8315,6 +8264,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLauncherLacrosIntegrationName,
      flag_descriptions::kLauncherLacrosIntegrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kLauncherLacrosIntegration)},
+    {"always-enable-hdcp", flag_descriptions::kAlwaysEnableHdcpName,
+     flag_descriptions::kAlwaysEnableHdcpDescription, kOsCrOS,
+     MULTI_VALUE_TYPE(kAlwaysEnableHdcpChoices)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

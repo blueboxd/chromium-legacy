@@ -47,7 +47,7 @@ try_.orchestrator_builder(
     # branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 50,
+        experiment_percentage = 80,
     ),
 )
 
@@ -99,8 +99,6 @@ try_.builder(
         },
     },
     tryjob = try_.job(),
-    # TODO(crbug/1202741)
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
     ssd = True,
 )
 
@@ -197,6 +195,7 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "android-marshmallow-arm64-rel",
+    check_for_flakiness = True,
     compilator = "android-marshmallow-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
@@ -208,12 +207,14 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "android-marshmallow-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
     cores = 64 if settings.is_main else 32,
     main_list_view = "try",
 )
 
 try_.orchestrator_builder(
     name = "android-marshmallow-x86-rel",
+    check_for_flakiness = True,
     compilator = "android-marshmallow-x86-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
@@ -225,6 +226,7 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "android-marshmallow-x86-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
     main_list_view = "try",
 )
 
@@ -398,8 +400,6 @@ try_.builder(
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(),
-    # TODO(crbug/1202741)
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 
 try_.builder(
@@ -448,8 +448,6 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-    # TODO(crbug/1202741)
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 
 try_.builder(
@@ -470,8 +468,6 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-    # TODO(crbug/1202741)
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 
 try_.builder(

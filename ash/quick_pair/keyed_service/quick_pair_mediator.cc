@@ -192,6 +192,7 @@ void Mediator::SetFastPairState(bool is_enabled) {
 void Mediator::OnDevicePaired(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": Device=" << device;
   ui_broker_->RemoveNotifications();
+  scanner_broker_->OnDevicePaired(device);
   fast_pair_repository_->PersistDeviceImages(device);
 }
 
@@ -255,6 +256,7 @@ void Mediator::OnAssociateAccountAction(scoped_refptr<Device> device,
   switch (action) {
     case AssociateAccountAction::kAssoicateAccount:
       pairer_broker_->PairDevice(device);
+      ui_broker_->RemoveNotifications();
       break;
     case AssociateAccountAction::kLearnMore:
       break;

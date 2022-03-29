@@ -3473,6 +3473,31 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Conversions.TriggerQueueDelay" units="ms"
+    expires_after="2022-09-17">
+  <owner>apaseltiner@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the delay between a trigger being received by the
+    AttributionDataHostManagerImpl and it being processed. Only recorded for
+    triggers that are added to the trigger queue, rather than handled
+    immediately or dropped.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.TriggerQueueEvents"
+    enum="ConversionTriggerQueueEvent" expires_after="2022-09-17">
+  <owner>apaseltiner@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records events for triggers that may be delayed using a queue by
+    AttributionDataHostManagerImpl. A single trigger may emit multiple events if
+    it is part of the queue.
+  </summary>
+</histogram>
+
 <histogram name="Conversions.UniqueReportingOriginsPerPage.Conversions"
     units="origins" expires_after="M105">
   <owner>linnan@chromium.org</owner>
@@ -5871,7 +5896,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Hyphenation.Open" units="ms" expires_after="2022-06-26">
+<histogram name="Hyphenation.Open" units="ms" expires_after="2022-09-25">
   <owner>kojii@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
   <summary>The time it takes to open a hyphenation dictionary.</summary>
@@ -9170,8 +9195,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrefetchedSignedExchangeCache.BodySize" units="bytes"
-    expires_after="2022-04-24">
-  <owner>horo@chromium.org</owner>
+    expires_after="2022-09-29">
+  <owner>ksakamoto@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
     The body size of each prefetched signed exchanges in
@@ -9181,8 +9206,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrefetchedSignedExchangeCache.BodySizeTotal" units="bytes"
-    expires_after="2022-05-01">
-  <owner>horo@chromium.org</owner>
+    expires_after="2022-09-29">
+  <owner>ksakamoto@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
     The total body size of prefetched signed exchanges in
@@ -9193,8 +9218,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrefetchedSignedExchangeCache.Count" units="count"
-    expires_after="2022-05-01">
-  <owner>horo@chromium.org</owner>
+    expires_after="2022-09-29">
+  <owner>ksakamoto@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
     The number of prefetched signed exchanges in PrefetchedSignedExchangeCache
@@ -9205,8 +9230,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PrefetchedSignedExchangeCache.HeadersSizeTotal" units="bytes"
-    expires_after="2022-07-11">
-  <owner>horo@chromium.org</owner>
+    expires_after="2022-09-29">
+  <owner>hoksakamotoro@chromium.org</owner>
   <owner>webpackage-dev@chromium.org</owner>
   <summary>
     The total headers size of prefetched signed exchanges including outer
@@ -11015,7 +11040,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SB2.RemoteCall.CanCheckUrl" enum="BooleanCanCheckUrl"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -13978,7 +14003,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.QueryDuration.Android" units="ms"
-    expires_after="2022-09-18">
+    expires_after="2022-09-25">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <summary>
@@ -14078,7 +14103,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.VoiceResultConfidenceValue" units="%"
-    expires_after="2022-09-18">
+    expires_after="2022-09-25">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yusufo@chromium.org</owner>
@@ -14102,7 +14127,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.VoiceSearchResult" enum="BooleanSuccess"
-    expires_after="2022-09-18">
+    expires_after="2022-09-25">
   <owner>wylieb@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yusufo@chromium.org</owner>
@@ -14299,7 +14324,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebFont.DownloadTime.LoadError" units="ms"
-    expires_after="2022-07-24">
+    expires_after="2022-09-25">
   <owner>kenjibaheux@chromium.org</owner>
   <owner>ksakamoto@chromium.org</owner>
   <summary>

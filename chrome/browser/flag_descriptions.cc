@@ -2477,10 +2477,6 @@ const char kAppsShortcutDefaultOffName[] = "Apps Shortcut Default Off";
 const char kAppsShortcutDefaultOffDescription[] =
     "Changes the apps shortcut on the bookmarks bar to default to off.";
 
-const char kTabGroupsAutoCreateName[] = "Tab Groups Auto Create";
-const char kTabGroupsAutoCreateDescription[] =
-    "Automatically creates groups for users, if tab groups are enabled.";
-
 const char kTabGroupsNewBadgePromoName[] = "Tab Groups 'New' Badge Promo";
 const char kTabGroupsNewBadgePromoDescription[] =
     "Causes a 'New' badge to appear on the entry point for creating a tab "
@@ -3163,21 +3159,6 @@ const char kEnableCommandLineOnNonRootedName[] =
 const char kEnableCommandLineOnNoRootedDescription[] =
     "Enable reading command line file on non-rooted devices (DANGEROUS).";
 
-const char kEnableDangerousDownloadDialogName[] =
-    "Enable dangerous download dialog";
-const char kEnableDangerousDownloadDialogDescription[] =
-    "Use dialog instead of infobar for user to confirm dangerous download";
-
-const char kEnableDuplicateDownloadDialogName[] =
-    "Enable duplicate download dialog";
-const char kEnableDuplicateDownloadDialogDescription[] =
-    "Use dialog instead of infobar for user to confirm duplicate download";
-
-const char kEnableMixedContentDownloadDialogName[] =
-    "Enable mixed content download dialog";
-const char kEnableMixedContentDownloadDialogDescription[] =
-    "Use dialog instead of infobar for user to confirm mixed content download";
-
 const char kExploreSitesName[] = "Explore websites";
 const char kExploreSitesDescription[] =
     "Enables portal from new tab page to explore websites.";
@@ -3362,8 +3343,6 @@ const char kQueryTilesName[] = "Show query tiles";
 const char kQueryTilesDescription[] = "Shows query tiles in Chrome";
 const char kQueryTilesNTPName[] = "Show query tiles in NTP";
 const char kQueryTilesNTPDescription[] = "Shows query tiles in NTP";
-const char kQueryTilesOmniboxName[] = "Show query tiles in omnibox";
-const char kQueryTilesOmniboxDescription[] = "Shows query tiles in omnibox";
 const char kQueryTilesSingleTierName[] = "Show only one level of query tiles";
 const char kQueryTilesSingleTierDescription[] =
     "Show only one level of query tiles";
@@ -3392,10 +3371,6 @@ const char kQueryTilesLocalOrderingDescription[] =
 const char kQueryTilesInstantFetchName[] = "Query tile instant fetch";
 const char kQueryTilesInstantFetchDescription[] =
     "Immediately schedule background task to fetch query tiles";
-const char kQueryTilesMoreTrendingName[] =
-    "Query Tiles - more trending queries";
-const char kQueryTilesMoreTrendingDescription[] =
-    "Request more trending queries from the server";
 const char kQueryTilesRankTilesName[] = "Query Tiles - rank tiles on server";
 const char kQueryTilesRankTilesDescription[] =
     "Rank tiles on server based on client context";
@@ -4085,6 +4060,14 @@ const char kAllowTouchpadHapticClickSettingsName[] =
 const char kAllowTouchpadHapticClickSettingsDescription[] =
     "Shows settings to adjust click sensitivity for haptic touchpads.";
 
+const char kAlwaysEnableHdcpName[] = "Always enable HDCP for external displays";
+const char kAlwaysEnableHdcpDescription[] =
+    "Enables the specified type for HDCP whenever an external display is "
+    "connected. By default, HDCP is only enabled when required.";
+const char kAlwaysEnableHdcpDefault[] = "Default";
+const char kAlwaysEnableHdcpType0[] = "Type 0";
+const char kAlwaysEnableHdcpType1[] = "Type 1";
+
 const char kAmbientModeAnimationName[] =
     "Launch the Lottie animated ChromeOS Screensaver";
 const char kAmbientModeAnimationDescription[] =
@@ -4516,12 +4499,6 @@ const char kEnhancedClipboardNudgeSessionResetDescription[] =
     "When enabled, this will reset the clipboard nudge shown data on every new "
     "user session, allowing the nudge to be shown again.";
 
-const char kEnhancedClipboardScreenshotNudgeName[] =
-    "Enable clipboard history screenshot nudge";
-const char kEnhancedClipboardScreenshotNudgeDescription[] =
-    "When enabled, the keyboard shortcut for clipboard history will show in "
-    "the screenshot notification banner in clamshell mode.";
-
 const char kEnableCrOSActionRecorderName[] = "Enable CrOS action recorder";
 const char kEnableCrOSActionRecorderDescription[] =
     "When enabled, each app launching, file opening, setting change, and url "
@@ -4906,12 +4883,6 @@ const char kHoldingSpaceInProgressAnimationV2Name[] =
 const char kHoldingSpaceInProgressAnimationV2Description[] =
     "Show v2 in-progress animations in Tote.";
 
-const char kHoldingSpaceInProgressDownloadsIntegrationName[] =
-    "Enable showing in-progress downloads in Tote.";
-const char kHoldingSpaceInProgressDownloadsIntegrationDescription[] =
-    "Show in-progress download functionality in Tote to increase productivity "
-    "by giving users one place to go to monitor and access their downloads.";
-
 const char kDiacriticsOnPhysicalKeyboardLongpressName[] =
     "Enable diacritics and variant character selection on PK longpress.";
 const char kDiacriticsOnPhysicalKeyboardLongpressDescription[] =
@@ -4944,12 +4915,6 @@ const char kImeAssistMultiWordLacrosSupportDescription[] =
 const char kImeAssistPersonalInfoName[] = "Enable assistive personal info";
 const char kImeAssistPersonalInfoDescription[] =
     "Enable auto-complete suggestions on personal infomation for native IME.";
-
-const char kVirtualKeyboardDarkModeName[] =
-    "Enable Dark Mode support for virtual keyboard";
-const char kVirtualKeyboardDarkModeDescription[] =
-    "Enable dark mode colors for the virtual keyboard when dark mode is "
-    "active.";
 
 const char kVirtualKeyboardNewHeaderName[] =
     "Enable new header for virtual keyboard";

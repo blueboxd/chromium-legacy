@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/memory/raw_ptr.h"
@@ -187,7 +188,7 @@ TEST_F(StyledLabelTest, BasicWrapping) {
       StyledLabelContentHeightForWidth(styled(), label_preferred_size.width()));
 
   // Also respect the border.
-  styled()->SetBorder(CreateEmptyBorder(3, 3, 3, 3));
+  styled()->SetBorder(CreateEmptyBorder(3));
   styled()->SetBounds(
       0, 0, styled()->GetInsets().width() + label_preferred_size.width(),
       styled()->GetInsets().height() + 2 * label_preferred_size.height());
@@ -610,8 +611,7 @@ TEST_F(StyledLabelTest, Border) {
   InitStyledLabel(text);
   Label label(ASCIIToUTF16(text));
   gfx::Size label_preferred_size = label.GetPreferredSize();
-  styled()->SetBorder(
-      CreateEmptyBorder(5 /*top*/, 10 /*left*/, 6 /*bottom*/, 20 /*right*/));
+  styled()->SetBorder(CreateEmptyBorder(gfx::Insets::TLBR(5, 10, 6, 20)));
   styled()->SetBounds(0, 0, 1000, 0);
   styled()->Layout();
   EXPECT_EQ(

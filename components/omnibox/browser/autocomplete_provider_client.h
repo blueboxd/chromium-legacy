@@ -19,7 +19,6 @@
 #include "components/omnibox/browser/shortcuts_backend.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
-class AutocompleteController;
 struct AutocompleteMatch;
 class AutocompleteClassifier;
 class AutocompleteSchemeClassifier;
@@ -174,12 +173,6 @@ class AutocompleteProviderClient : public OmniboxAction::Client {
   // mode. On platforms where this is supported, the service worker lookup can
   // be expensive so this method should only be called once per input session.
   virtual void StartServiceWorker(const GURL& destination_url) {}
-
-  // Called by |controller| when its results have changed and all providers are
-  // done processing the autocomplete request. Used by chrome to inform the
-  // prefetch service of updated results.
-  virtual void OnAutocompleteControllerResultReady(
-      AutocompleteController* controller) {}
 
   // Called after creation of |keyword_provider| to allow the client to
   // configure the provider if desired.

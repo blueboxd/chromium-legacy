@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -2396,7 +2395,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ(model->group_model()->GetTabGroup(group)->ListTabs(),
             gfx::Range(1, 3));
   EXPECT_FALSE(model->IsGroupCollapsed(group));
-  tab_strip->controller()->ToggleTabGroupCollapsedState(group);
+  tab_strip->ToggleTabGroupCollapsedState(group);
   StopAnimating(tab_strip);
   EXPECT_TRUE(model->IsGroupCollapsed(group));
 
@@ -2432,7 +2431,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ(model->group_model()->GetTabGroup(group)->ListTabs(),
             gfx::Range(1, 3));
   EXPECT_FALSE(model->IsGroupCollapsed(group));
-  tab_strip->controller()->ToggleTabGroupCollapsedState(group);
+  tab_strip->ToggleTabGroupCollapsedState(group);
   StopAnimating(tab_strip);
   EXPECT_TRUE(model->IsGroupCollapsed(group));
 
@@ -2464,7 +2463,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_FALSE(model->IsGroupCollapsed(group));
   EnsureFocusToTabStrip(tab_strip);
 
-  tab_strip->controller()->ToggleTabGroupCollapsedState(group);
+  tab_strip->ToggleTabGroupCollapsedState(group);
   StopAnimating(tab_strip);
   EXPECT_TRUE(model->IsGroupCollapsed(group));
 
@@ -2482,7 +2481,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ(1u, groups.size());
   EXPECT_EQ(model->group_model()->GetTabGroup(groups[0])->ListTabs(),
             gfx::Range(0, 1));
-  EXPECT_TRUE(tab_strip->controller()->IsGroupCollapsed(group));
+  EXPECT_TRUE(tab_strip->IsGroupCollapsed(group));
 }
 
 // Creates a browser with four tabs. The first two tabs belong in Tab Group 1.
@@ -2499,7 +2498,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   AddTabsAndResetBrowser(browser(), 3);
   tab_groups::TabGroupId group = model->AddToNewGroup({2, 3});
   ASSERT_FALSE(model->IsGroupCollapsed(group));
-  tab_strip->controller()->ToggleTabGroupCollapsedState(group);
+  tab_strip->ToggleTabGroupCollapsedState(group);
   StopAnimating(tab_strip);
   ASSERT_TRUE(model->IsGroupCollapsed(group));
   EnsureFocusToTabStrip(tab_strip);
@@ -2538,7 +2537,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   AddTabsAndResetBrowser(browser(), 2);
   tab_groups::TabGroupId group = model->AddToNewGroup({0, 1});
   EXPECT_FALSE(model->IsGroupCollapsed(group));
-  tab_strip->controller()->ToggleTabGroupCollapsedState(group);
+  tab_strip->ToggleTabGroupCollapsedState(group);
   StopAnimating(tab_strip);
   EXPECT_TRUE(model->IsGroupCollapsed(group));
 
@@ -2563,7 +2562,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ(1u, browser2_groups.size());
   EXPECT_EQ(model2->group_model()->GetTabGroup(browser2_groups[0])->ListTabs(),
             gfx::Range(1, 3));
-  ASSERT_FALSE(tab_strip->controller()->IsGroupCollapsed(browser2_groups[0]));
+  ASSERT_FALSE(tab_strip->IsGroupCollapsed(browser2_groups[0]));
   EXPECT_EQ(browser2_groups[0], group);
 }
 

@@ -40,6 +40,7 @@
 #include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_log_record.h"
+#include "media/base/media_switches.h"
 #include "media/webrtc/webrtc_features.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "sandbox/policy/features.h"
@@ -474,14 +475,15 @@ void MediaInternals::SendGeneralAudioInformation() {
   base::Value audio_info_data(base::Value::Type::DICTIONARY);
 
   // Audio feature information.
-  auto set_feature_data = [&](auto& feature) {
+  auto set_feature_data = [&audio_info_data](auto& feature) {
     audio_info_data.SetKey(
         feature.name,
         base::Value(base::FeatureList::IsEnabled(feature) ? "Enabled"
                                                           : "Disabled"));
   };
 
-  auto set_explicit_feature_data = [&](auto& feature, bool feature_value) {
+  auto set_explicit_feature_data = [&audio_info_data](auto& feature,
+                                                      bool feature_value) {
     audio_info_data.SetKey(feature.name,
                            base::Value(feature_value ? "Enabled" : "Disabled"));
   };
@@ -507,6 +509,9 @@ void MediaInternals::SendGeneralAudioInformation() {
   set_explicit_feature_data(
       features::kAudioServiceSandbox,
       GetContentClient()->browser()->ShouldSandboxAudioService());
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+  set_feature_data(media::kChromeWideEchoCancellation);
+#endif
   std::u16string audio_info_update =
       SerializeUpdate("media.updateGeneralAudioInformation", &audio_info_data);
   SendUpdate(audio_info_update);

@@ -920,103 +920,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, BeforeUnloadVsBeforeReload) {
   alert->view()->AcceptAppModalDialog();
 }
 
-class BrowserTestWithTabGroupsAutoCreateEnabled : public BrowserTest {
- public:
-  BrowserTestWithTabGroupsAutoCreateEnabled() {
-    feature_list_.InitWithFeatures({features::kTabGroupsAutoCreate}, {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(BrowserTestWithTabGroupsAutoCreateEnabled,
-                       FirstNewTabFromLinkWithSameDomainDoesNotCreateGroup) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Open a tab not in a group.
-  TabStripModel* const model = browser()->tab_strip_model();
-  GURL url1("http://www.example.com/empty.html");
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url1));
-  ASSERT_FALSE(model->GetTabGroupForTab(0).has_value());
-
-  // Open a new background tab with the same domain as the active tab.
-  WebContents* const contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL url2("http://www.example.com/");
-  OpenURLFromTab(
-      contents,
-      OpenURLParams(url2, Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                    ui::PAGE_TRANSITION_TYPED, false));
-
-  // The new tab which has the same domain as the tab it originated from should
-  // not create a new group.
-  EXPECT_FALSE(model->GetTabGroupForTab(0).has_value());
-  EXPECT_FALSE(model->GetTabGroupForTab(1).has_value());
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserTestWithTabGroupsAutoCreateEnabled,
-                       SecondNewTabFromLinkWithSameDomainCreatesGroup) {
-  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Open a tab not in a group.
-  TabStripModel* const model = browser()->tab_strip_model();
-  GURL url1("http://www.example.com/empty.html");
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url1));
-  ASSERT_FALSE(model->GetTabGroupForTab(0).has_value());
-
-  // Open two new background tabs with the same domain as the active tab.
-  WebContents* const contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL url2("http://www.example.com/");
-  OpenURLFromTab(
-      contents,
-      OpenURLParams(url2, Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                    ui::PAGE_TRANSITION_TYPED, false));
-  OpenURLFromTab(
-      contents,
-      OpenURLParams(url2, Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                    ui::PAGE_TRANSITION_TYPED, false));
-
-  // Opening the second tab from the source will result in the source tab and
-  // the two tabs opened from the source to be added in a new group.
-  ASSERT_EQ(model->count(), 3);
-  EXPECT_TRUE(model->GetTabGroupForTab(0).has_value());
-  EXPECT_TRUE(model->GetTabGroupForTab(1).has_value());
-  EXPECT_TRUE(model->GetTabGroupForTab(2).has_value());
-  EXPECT_EQ(model->GetTabGroupForTab(0).value(),
-            model->GetTabGroupForTab(1).value());
-  EXPECT_EQ(model->GetTabGroupForTab(0).value(),
-            model->GetTabGroupForTab(2).value());
-}
-
-// TODO(crbug.com/997344): Test this with implicitly-created links.
-IN_PROC_BROWSER_TEST_F(BrowserTestWithTabGroupsAutoCreateEnabled,
-                       NewTabFromLinkWithDifferentDomainDoesNotCreateGroup) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Open a tab not in a group.
-  TabStripModel* const model = browser()->tab_strip_model();
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/empty.html")));
-  ASSERT_FALSE(model->GetTabGroupForTab(0).has_value());
-
-  // Open a new background tab with a different domain from the active tab.
-  WebContents* const contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  GURL url2("http://www.example.com/");
-  OpenURLFromTab(
-      contents,
-      OpenURLParams(url2, Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                    ui::PAGE_TRANSITION_TYPED, false));
-
-  // The new tab which has a different domain as the tab it originated from will
-  // open without creating a group.
-  EXPECT_FALSE(model->GetTabGroupForTab(0).has_value());
-  EXPECT_FALSE(model->GetTabGroupForTab(1).has_value());
-}
-
 // TODO(crbug.com/997344): Test this with implicitly-created links.
 IN_PROC_BROWSER_TEST_F(BrowserTest, TargetBlankLinkOpensInGroup) {
   ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
@@ -2250,7 +2153,7 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 
   // Starting a browser window should work just fine.
-  CreateBrowser(ProfileManager::GetActiveUserProfile());
+  CreateBrowser(ProfileManager::GetLastUsedProfile());
 
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
@@ -2259,7 +2162,7 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
 // session state.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, DontInitSessionServiceForApps) {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
+  Profile* profile = ProfileManager::GetLastUsedProfileIfLoaded();
 
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile);
@@ -2696,7 +2599,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ChangeDisplayMode) {
   CheckDisplayModeMQ(u"browser",
                      browser()->tab_strip_model()->GetActiveWebContents());
 
-  Profile* profile = ProfileManager::GetActiveUserProfile();
+  Profile* profile = browser()->profile();
   Browser* app_browser = CreateBrowserForApp("blah", profile);
   auto* app_contents = app_browser->tab_strip_model()->GetActiveWebContents();
   CheckDisplayModeMQ(u"standalone", app_contents);

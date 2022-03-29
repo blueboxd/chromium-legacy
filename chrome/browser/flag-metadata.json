@@ -31,7 +31,7 @@
   {
     "name": "accessible-pdf-form",
     "owners": [ "ankk@microsoft.com", "mohitb@microsoft.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 105
   },
   {
     "name": "account-id-migration",
@@ -124,6 +124,13 @@
     "expiry_milestone": 101
   },
   {
+    "name": "always-enable-hdcp",
+    "owners": [ "chromeos-gfx-video@google.com" ],
+    // This flag is used for HDCP compliance testing on ChromeOS so should not
+    // be removed.
+    "expiry_milestone": -1
+  },
+  {
     "name": "ambient-mode-animation",
     "owners": [ "esum", "assistive-eng@google.com" ],
     "expiry_milestone": 103
@@ -141,7 +148,7 @@
   {
     "name": "android-force-app-language-prompt",
     "owners": [ "perrier", "chrome-language@google.com" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 104
   },
   {
     "name": "android-picture-in-picture-api",
@@ -1789,11 +1796,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "enable-cros-virtual-keyboard-dark-mode",
-    "owners": ["jopalmer", "essential-inputs-team@google.com"],
-    "expiry_milestone" : 105
-  },
-  {
     "name": "enable-cros-virtual-keyboard-multipaste",
     "owners": [ "jiwan", "essential-inputs-team@google.com" ],
     "expiry_milestone": 100
@@ -1817,11 +1819,6 @@
     "name": "enable-css-selector-fragment-anchor",
     "owners": [ "mehdika", "blink-interactions-team@google.com" ],
     "expiry_milestone": 102
-  },
-  {
-    "name": "enable-dangerous-download-dialog",
-    "owners": [ "qinmin", "chrome-downloads@google.com" ],
-    "expiry_milestone": 99
   },
   {
     "name": "enable-de-jelly",
@@ -1989,11 +1986,6 @@
     "name": "enable-drdc",
     "owners": [ "vikassoni", "sunnyps" ],
     "expiry_milestone": 102
-  },
-  {
-    "name": "enable-duplicate-download-dialog",
-    "owners": [ "qinmin", "chrome-downloads@google.com" ],
-    "expiry_milestone": 99
   },
   {
     "name": "enable-enhanced-safe-browsing",
@@ -2221,11 +2213,6 @@
     "expiry_milestone": 101
   },
   {
-    "name": "enable-holding-space-in-progress-downloads-integration",
-    "owners": [ "//ash/public/cpp/holding_space/OWNERS" ],
-    "expiry_milestone": 101
-  },
-  {
     "name": "enable-hostname-setting",
     "owners": [ "khorimoto", "cros-connectivity@google.com" ],
     "expiry_milestone": 105
@@ -2383,11 +2370,6 @@
     "name": "enable-migrate-default-chrome-app-to-web-apps-non-gsuite",
     "owners": [ "alancutter", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 104
-  },
-  {
-    "name": "enable-mixed-content-download-dialog",
-    "owners": [ "qinmin", "chrome-downloads@google.com" ],
-    "expiry_milestone": 102
   },
   {
     "name": "enable-nacl",
@@ -3119,11 +3101,6 @@
     "name": "enhanced_clipboard_nudge_session_reset",
     "owners":["mmourgos@chromium.org", "newcomer@chromium.org"],
     "expiry_milestone": 90
-  },
-  {
-    "name": "enhanced_clipboard_screenshot_nudge",
-    "owners":["anasalazar@chromium.org", "gzadina@google.com"],
-    "expiry_milestone": 101
   },
   {
     "name": "enhanced-network-voices",
@@ -4974,19 +4951,9 @@
     "expiry_milestone": 100
   },
   {
-    "name": "query-tiles-more-trending",
-    "owners": [ "qinmin" ],
-    "expiry_milestone": 100
-  },
-  {
     "name": "query-tiles-ntp",
     "owners": [ "shaktisahu", "qinmin" ],
     "expiry_milestone": 120
-  },
-  {
-    "name": "query-tiles-omnibox",
-    "owners": [ "shaktisahu", "qinmin" ],
-    "expiry_milestone": 93
   },
   {
     "name": "query-tiles-rank-tiles",
@@ -5603,11 +5570,6 @@
     // allows the caller to select whether system hooks are enabled.
     // See: https://github.com/WICG/keyboard-lock/blob/gh-pages/explainer2.md
     "expiry_milestone": -1
-  },
-  {
-    "name": "tab-groups-auto-create",
-    "owners": [ "chrome-desktop-ui-sea@google.com", "cyan" ],
-    "expiry_milestone": 95
   },
   {
     "name": "tab-groups-new-badge-promo",

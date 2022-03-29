@@ -1411,9 +1411,6 @@ extern const char kTabToGTSAnimationAndroidDescription[];
 extern const char kAppsShortcutDefaultOffName[];
 extern const char kAppsShortcutDefaultOffDescription[];
 
-extern const char kTabGroupsAutoCreateName[];
-extern const char kTabGroupsAutoCreateDescription[];
-
 extern const char kTabGroupsNewBadgePromoName[];
 extern const char kTabGroupsNewBadgePromoDescription[];
 
@@ -1790,15 +1787,6 @@ extern const char kChromeManagementPageAndroidDescription[];
 extern const char kEnableCommandLineOnNonRootedName[];
 extern const char kEnableCommandLineOnNoRootedDescription[];
 
-extern const char kEnableDangerousDownloadDialogName[];
-extern const char kEnableDangerousDownloadDialogDescription[];
-
-extern const char kEnableDuplicateDownloadDialogName[];
-extern const char kEnableDuplicateDownloadDialogDescription[];
-
-extern const char kEnableMixedContentDownloadDialogName[];
-extern const char kEnableMixedContentDownloadDialogDescription[];
-
 extern const char kExploreSitesName[];
 extern const char kExploreSitesDescription[];
 
@@ -1926,8 +1914,6 @@ extern const char kQueryTilesName[];
 extern const char kQueryTilesDescription[];
 extern const char kQueryTilesNTPName[];
 extern const char kQueryTilesNTPDescription[];
-extern const char kQueryTilesOmniboxName[];
-extern const char kQueryTilesOmniboxDescription[];
 extern const char kQueryTilesSingleTierName[];
 extern const char kQueryTilesSingleTierDescription[];
 extern const char kQueryTilesEnableQueryEditingName[];
@@ -1945,8 +1931,6 @@ extern const char kQueryTilesLocalOrderingName[];
 extern const char kQueryTilesLocalOrderingDescription[];
 extern const char kQueryTilesInstantFetchName[];
 extern const char kQueryTilesInstantFetchDescription[];
-extern const char kQueryTilesMoreTrendingName[];
-extern const char kQueryTilesMoreTrendingDescription[];
 extern const char kQueryTilesRankTilesName[];
 extern const char kQueryTilesRankTilesDescription[];
 extern const char kQueryTilesSegmentationName[];
@@ -2347,6 +2331,12 @@ extern const char kAllowScrollSettingsDescription[];
 extern const char kAllowTouchpadHapticClickSettingsName[];
 extern const char kAllowTouchpadHapticClickSettingsDescription[];
 
+extern const char kAlwaysEnableHdcpName[];
+extern const char kAlwaysEnableHdcpDescription[];
+extern const char kAlwaysEnableHdcpDefault[];
+extern const char kAlwaysEnableHdcpType0[];
+extern const char kAlwaysEnableHdcpType1[];
+
 extern const char kAmbientModeAnimationName[];
 extern const char kAmbientModeAnimationDescription[];
 
@@ -2587,9 +2577,6 @@ extern const char kEnhancedClipboardDescription[];
 extern const char kEnhancedClipboardNudgeSessionResetName[];
 extern const char kEnhancedClipboardNudgeSessionResetDescription[];
 
-extern const char kEnhancedClipboardScreenshotNudgeName[];
-extern const char kEnhancedClipboardScreenshotNudgeDescription[];
-
 extern const char kEnableCrOSActionRecorderName[];
 extern const char kEnableCrOSActionRecorderDescription[];
 
@@ -2819,9 +2806,6 @@ extern const char kHelpAppSearchServiceIntegrationDescription[];
 extern const char kHoldingSpaceInProgressAnimationV2Name[];
 extern const char kHoldingSpaceInProgressAnimationV2Description[];
 
-extern const char kHoldingSpaceInProgressDownloadsIntegrationName[];
-extern const char kHoldingSpaceInProgressDownloadsIntegrationDescription[];
-
 extern const char kDiacriticsOnPhysicalKeyboardLongpressName[];
 extern const char kDiacriticsOnPhysicalKeyboardLongpressDescription[];
 
@@ -2848,9 +2832,6 @@ extern const char kLacrosProfileMigrationForceOffDescription[];
 
 extern const char kImeAssistPersonalInfoName[];
 extern const char kImeAssistPersonalInfoDescription[];
-
-extern const char kVirtualKeyboardDarkModeName[];
-extern const char kVirtualKeyboardDarkModeDescription[];
 
 extern const char kVirtualKeyboardNewHeaderName[];
 extern const char kVirtualKeyboardNewHeaderDescription[];

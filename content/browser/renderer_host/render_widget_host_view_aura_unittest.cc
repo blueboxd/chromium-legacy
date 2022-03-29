@@ -122,7 +122,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/selection_bound.h"
 #include "ui/wm/core/window_util.h"
-#include "ui/wm/public/activation_client.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/base/ime/input_method.h"
@@ -411,8 +410,6 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
   const ui::LatencyInfo& LastWheelOrTouchEventLatencyInfo() const {
     return last_wheel_or_touch_event_latency_info_;
   }
-
-  MockWidget& mock_widget() { return widget_; }
 
  private:
   MockRenderWidgetHostImpl(FrameTree* frame_tree,
@@ -1089,28 +1086,6 @@ class RenderWidgetHostViewAuraShutdownTest
     // No TearDownEnvironment here, we do this explicitly during the test.
   }
 };
-
-TEST_F(RenderWidgetHostViewAuraTest, ActiveWindow) {
-  InitViewForFrame(parent_view_->GetNativeView());
-  view_->SetBounds(gfx::Rect(0, 0, 400, 200));
-  view_->Hide();
-  view_->Show();
-  widget_host_->mock_widget().FlushWidgetForTesting();
-  EXPECT_EQ(false, widget_host_->mock_widget().IsHidden());
-  EXPECT_EQ(false, widget_host_->mock_widget().IsInActiveWindow());
-  aura::Window* aura_window = view_->GetNativeView();
-  wm::GetActivationClient(aura_window->GetRootWindow())
-      ->ActivateWindow(aura_window);
-  ASSERT_TRUE(view_->IsInActiveWindow());
-  widget_host_->mock_widget().FlushWidgetForTesting();
-  EXPECT_EQ(true, widget_host_->mock_widget().IsInActiveWindow());
-
-  wm::GetActivationClient(aura_window->GetRootWindow())
-      ->ActivateWindow(nullptr);
-  ASSERT_FALSE(view_->IsInActiveWindow());
-  widget_host_->mock_widget().FlushWidgetForTesting();
-  EXPECT_EQ(false, widget_host_->mock_widget().IsInActiveWindow());
-}
 
 // Checks that a popup is positioned correctly relative to its parent using
 // screen coordinates.
@@ -3490,7 +3465,7 @@ TEST_F(RenderWidgetHostViewAuraTest, VisibleViewportTest) {
   }
   widget_host_->ClearVisualProperties();
 
-  view_->SetInsets(gfx::Insets(0, 0, 40, 0));
+  view_->SetInsets(gfx::Insets::TLBR(0, 0, 40, 0));
   EXPECT_EQ(60, view_->GetVisibleViewportSize().height());
 
   // Update to the renderer has the inset size.
@@ -5020,10 +4995,10 @@ TEST_F(RenderWidgetHostViewAuraTest, UpdateInsetsWithVirtualKeyboardEnabled) {
   const gfx::Rect moved_view_bounds = gfx::Rect(100, 250, 400, 200);
   const gfx::Rect resized_view_bounds = gfx::Rect(100, 250, 300, 175);
 
-  const gfx::Insets origin_view_insets = gfx::Insets(0, 0, 100, 0);
-  const gfx::Insets shifted_view_insets = gfx::Insets(0, 0, 0, 0);
-  const gfx::Insets moved_view_insets = gfx::Insets(0, 0, 50, 0);
-  const gfx::Insets resized_view_insets = gfx::Insets(0, 0, 25, 0);
+  const auto origin_view_insets = gfx::Insets::TLBR(0, 0, 100, 0);
+  const auto shifted_view_insets = gfx::Insets();
+  const auto moved_view_insets = gfx::Insets::TLBR(0, 0, 50, 0);
+  const auto resized_view_insets = gfx::Insets::TLBR(0, 0, 25, 0);
 
   const gfx::Rect root_bounds = root_window->bounds();
   const int keyboard_height = 200;
@@ -5040,7 +5015,7 @@ TEST_F(RenderWidgetHostViewAuraTest, UpdateInsetsWithVirtualKeyboardEnabled) {
 
   // Simulate virtual keyboard. For chrome browser window, the window insets
   // will be changed.
-  view_->SetInsets(gfx::Insets(
+  view_->SetInsets(gfx::Insets::TLBR(
       0, 0,
       gfx::IntersectRects(orig_view_bounds, keyboard_view_bounds).height(), 0));
   EXPECT_EQ(view_->insets_, origin_view_insets);

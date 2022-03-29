@@ -198,6 +198,8 @@ class ASH_EXPORT CaptureModeCameraController
   }
 
  private:
+  friend class CaptureModeTestApi;
+
   // Called to connect to the video capture services's video source provider for
   // the first time, or when the connection to it is lost. It also queries the
   // list of currently available cameras by calling the below
@@ -238,6 +240,14 @@ class ASH_EXPORT CaptureModeCameraController
   // Returns the current bounds of camemra preview widget that match the
   // coordinate system of the confine bounds.
   gfx::Rect GetCurrentBoundsMatchingConfineBoundsCoordinates();
+
+  void SetBoundsOnPreviewWidget(const gfx::Rect& bounds);
+
+  // Triggers a11y alert after RefreshCameraPreview() based on
+  // `was_preview_visible_before` and the current visibility of
+  // `camera_preview_widget_`. `was_preview_visible_before` is the visibility of
+  // the camera preview when RefreshCameraPreview() was called.
+  void TriggerA11yAlertAfterCameraRefresh(bool was_preview_visible_before);
 
   // Owned by CaptureModeController and guaranteed to be not null and to outlive
   // `this`.

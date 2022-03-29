@@ -12,6 +12,7 @@
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/support_tool/data_collection_module.pb.h"
@@ -88,6 +89,8 @@ std::string GetDataCollectorName(
       return "Lacros";
     case support_tool::CHROMEOS_REVEN:
       return "Chrome OS Reven";
+    case support_tool::CHROMEOS_DBUS:
+      return "DBus Details";
     default:
       return "Error: Undefined";
   }

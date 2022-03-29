@@ -15,13 +15,14 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {IronScrollThresholdElement} from 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
-import {afterNextRender, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getNumberOfGridItemsPerRow, isNonEmptyArray, isSelectionEvent, normalizeKeyForRTL} from '../../common/utils.js';
 import {CurrentWallpaper, GooglePhotosPhoto, WallpaperImage, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {isGooglePhotosPhoto} from '../utils.js';
 
+import {getTemplate} from './google_photos_photos_element.html.js';
 import {fetchGooglePhotosPhotos, selectWallpaper} from './wallpaper_controller.js';
 import {getWallpaperProvider} from './wallpaper_interface_provider.js';
 
@@ -44,7 +45,7 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -177,7 +178,10 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
     // at the focused column index.
     const currentTarget = e.currentTarget as HTMLElement;
     const selector = `.photo[colindex="${this.focusedColIndex_}"]`;
-    (currentTarget.querySelector(selector) as HTMLElement | null)?.focus();
+    const element = currentTarget.querySelector(selector) as HTMLElement;
+    if (element) {
+      element.focus();
+    }
   }
 
   /** Invoked on key down of a grid row. */
@@ -249,7 +253,10 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
     this.updateList(
         /*propertyPath=*/ 'photosByRow_', /*identityGetter=*/
         (row: GooglePhotosPhotosRow) => row.map(photo => photo.id).join('_'),
-        /*newList=*/ photosBySection?.flatMap(section => section.rows) ?? [],
+        /*newList=*/
+        Array.isArray(photosBySection) ?
+            photosBySection.flatMap(section => section.rows) :
+            [],
         /*identityBasedUpdate=*/ true);
   }
 
@@ -282,14 +289,14 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
 
       // Find/create the appropriate |section| in which to insert |photo|.
       let section = sections[sections.length - 1];
-      if (section?.title !== title) {
+      if (!section || section.title !== title) {
         section = {title, rows: []};
         sections.push(section);
       }
 
       // Find/create the appropriate |row| in which to insert |photo|.
       let row = section.rows[section.rows.length - 1];
-      if ((row?.length ?? photosPerRow) === photosPerRow) {
+      if (!row || row.length === photosPerRow) {
         row = [];
         section.rows.push(row);
       }
@@ -305,7 +312,11 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
       row: GooglePhotosPhotosRow,
       photosBySection: GooglePhotosPhotos['photosBySection_']): string
       |undefined {
-    return photosBySection?.find(section => section.rows[0] === row)?.title;
+    if (!photosBySection) {
+      return undefined;
+    }
+    const gridRow = photosBySection.find(section => section.rows[0] === row);
+    return !gridRow ? undefined : gridRow.title;
   }
 
   // Returns whether the title for the specified grid |row| is visible.
@@ -327,9 +338,9 @@ export class GooglePhotosPhotos extends WithPersonalizationStore {
         pendingSelected!.id === photo.id) {
       return true;
     }
-    if (!pendingSelected &&
-        currentSelected?.type === WallpaperType.kGooglePhotos &&
-        currentSelected!.key === photo.id) {
+    if (!pendingSelected && !!currentSelected &&
+        currentSelected.type === WallpaperType.kGooglePhotos &&
+        currentSelected.key === photo.id) {
       return true;
     }
     return false;

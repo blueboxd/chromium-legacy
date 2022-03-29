@@ -170,6 +170,7 @@
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
@@ -1362,27 +1363,6 @@ void LocalFrameView::InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
       continue;
     layout_object->SetBackgroundNeedsFullPaintInvalidation();
   }
-}
-
-bool LocalFrameView::InvalidateViewportConstrainedObjects() {
-  bool fast_path_allowed = true;
-  for (const auto& layout_object : *viewport_constrained_objects_) {
-    DCHECK(layout_object->StyleRef().HasViewportConstrainedPosition() ||
-           layout_object->StyleRef().HasStickyConstrainedPosition());
-    DCHECK(layout_object->HasLayer());
-    PaintLayer* layer = To<LayoutBoxModelObject>(layout_object.Get())->Layer();
-    // If the layer has no visible content, then we shouldn't invalidate; but
-    // if we're not compositing-inputs-clean, then we can't query
-    // layer->SubtreeIsInvisible() here.
-    layout_object->SetSubtreeShouldCheckForPaintInvalidation();
-
-    // If the fixed layer has a blur/drop-shadow filter applied on at least one
-    // of its parents, we cannot scroll using the fast path, otherwise the
-    // outsets of the filter will be moved around the page.
-    if (layer->HasAncestorWithFilterThatMovesPixels())
-      fast_path_allowed = false;
-  }
-  return fast_path_allowed;
 }
 
 HitTestResult LocalFrameView::HitTestWithThrottlingAllowed(
@@ -4951,6 +4931,11 @@ DarkModeFilter& LocalFrameView::EnsureDarkModeFilter() {
 
 void LocalFrameView::RequestToLockDeferred(Element& element) {
   deferred_to_be_locked_.push_back(element);
+}
+
+bool LocalFrameView::LockDeferredRequested(Element& element) const {
+  return !deferred_to_be_locked_.IsEmpty() &&
+         deferred_to_be_locked_.Find(&element) != WTF::kNotFound;
 }
 
 }  // namespace blink

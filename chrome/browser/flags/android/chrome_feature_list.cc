@@ -223,8 +223,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDuetTabStripIntegrationAndroid,
     &kDynamicColorAndroid,
     &kDynamicColorButtonsAndroid,
-    &kEnableDangerousDownloadDialog,
-    &kEnableDuplicateDownloadDialog,
     &kExperimentsForAgsa,
     &kExploreSites,
     &kFixedUmaSessionResumeOrder,
@@ -302,6 +300,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kVoiceButtonInTopToolbar,
     &kVrBrowsingFeedback,
     &kWebOtpCrossDeviceSimpleString,
+    &content_creation::kWebNotesDynamicTemplates,
     &content_creation::kWebNotesStylizeEnabled,
     &kWebApkInstallCompleteNotification,
     &kWebApkTrampolineOnInitialIntent,
@@ -351,8 +350,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &privacy_sandbox::kPrivacySandboxSettings3,
     &query_tiles::features::kQueryTiles,
     &query_tiles::features::kQueryTilesInNTP,
-    &query_tiles::features::kQueryTilesInOmnibox,
-    &query_tiles::features::kQueryTilesLocalOrdering,
     &query_tiles::features::kQueryTilesSegmentation,
     &reading_list::switches::kReadLater,
     &send_tab_to_self::kSendTabToSelfSigninPromo,
@@ -616,15 +613,6 @@ const base::Feature kDynamicColorAndroid{"DynamicColorAndroid",
 
 const base::Feature kDynamicColorButtonsAndroid{
     "DynamicColorButtonsAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kEnableDangerousDownloadDialog{
-    "EnableDangerousDownloadDialog", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kEnableDuplicateDownloadDialog{
-    "EnableDuplicateDownloadDialog", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kEnableMixedContentDownloadDialog{
-    "EnableMixedContentDownloadDialog", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kExperimentsForAgsa{"ExperimentsForAgsa",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

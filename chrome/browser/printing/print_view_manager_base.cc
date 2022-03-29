@@ -164,9 +164,7 @@ void GetDefaultPrintSettingsOnIO(
   // Loads default settings. This is asynchronous, only the mojo message sender
   // will hang until the settings are retrieved.
   auto* printer_query_ptr = printer_query.get();
-  printer_query_ptr->GetSettings(
-      PrinterQuery::GetSettingsAskParam::DEFAULTS, 0, false,
-      printing::mojom::MarginType::kDefaultMargins, false, false,
+  printer_query_ptr->GetDefaultSettings(
       base::BindOnce(&GetDefaultPrintSettingsReplyOnIO, queue,
                      std::move(printer_query), std::move(callback)));
 }
@@ -268,6 +266,7 @@ void ScriptedPrintReplyOnIO(
 void ScriptedPrintOnIO(mojom::ScriptedPrintParamsPtr params,
                        mojom::PrintManagerHost::ScriptedPrintCallback callback,
                        scoped_refptr<PrintQueriesQueue> queue,
+                       bool is_modifiable,
                        content::GlobalRenderFrameHostId rfh_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -280,10 +279,9 @@ void ScriptedPrintOnIO(mojom::ScriptedPrintParamsPtr params,
     printer_query = queue->CreatePrinterQuery(rfh_id);
 
   auto* printer_query_ptr = printer_query.get();
-  printer_query_ptr->GetSettings(
-      PrinterQuery::GetSettingsAskParam::ASK_USER, params->expected_pages_count,
-      params->has_selection, params->margin_type, params->is_scripted,
-      params->is_modifiable,
+  printer_query_ptr->GetSettingsFromUser(
+      params->expected_pages_count, params->has_selection, params->margin_type,
+      params->is_scripted, is_modifiable,
       base::BindOnce(&ScriptedPrintReplyOnIO, queue, std::move(printer_query),
                      std::move(callback)));
 }
@@ -718,6 +716,7 @@ void PrintViewManagerBase::ScriptedPrint(mojom::ScriptedPrintParamsPtr params,
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&ScriptedPrintOnIO, std::move(params),
                                 std::move(callback_wrapper), queue_,
+                                !render_process_host->IsPdf(),
                                 render_frame_host->GetGlobalId()));
 }
 

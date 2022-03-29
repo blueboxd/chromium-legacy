@@ -46,6 +46,7 @@ class Crosapi;
 }  // namespace mojom
 
 class BrowserLoader;
+class FilesAppLauncher;
 class TestMojoConnectionManager;
 
 using browser_util::LacrosSelection;
@@ -110,6 +111,10 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // startup URLs, etc). Otherwise, don't restore the session and instead open a
   // new window with the default blank tab.
   void NewWindow(bool incognito, bool should_trigger_session_restore);
+
+  // Performs a full restore of the lacros browser. This must be done after
+  // Lacros has been launched from a background state.
+  void OpenForFullRestore();
 
   // Returns true if crosapi interface supports NewWindowForDetachingTab API.
   bool NewWindowForDetachingTabSupported() const;
@@ -507,6 +512,10 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   base::ObserverList<BrowserManagerObserver> observers_;
 
   bool disable_autolaunch_for_testing_ = false;
+
+  // Used to launch files.app when user clicked "Go to files" on the migration
+  // error screen.
+  std::unique_ptr<FilesAppLauncher> files_app_launcher_;
 
   base::WeakPtrFactory<BrowserManager> weak_factory_{this};
 };

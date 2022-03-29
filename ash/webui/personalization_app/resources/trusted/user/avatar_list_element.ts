@@ -9,13 +9,13 @@
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
-import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {isSelectionEvent} from '../../common/utils.js';
 import {DefaultUserImage, UserImage} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 
 import {AvatarCamera, AvatarCameraMode} from './avatar_camera_element.js';
+import {getTemplate} from './avatar_list_element.html.js';
 import {fetchDefaultUserImages} from './user_controller.js';
 import {getUserProvider} from './user_interface_provider.js';
 import {selectLastExternalUserImageUrl} from './user_selectors.js';
@@ -30,7 +30,7 @@ export class AvatarList extends WithPersonalizationStore {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -94,16 +94,19 @@ export class AvatarList extends WithPersonalizationStore {
 
   private getProfileImageAriaSelected_(
       profileImage: Url|null, selectedImage: UserImage|null): string {
-    return (!!profileImage && !!selectedImage?.profileImage).toString();
+    return (!!profileImage && !!selectedImage && !!selectedImage.profileImage)
+        .toString();
   }
 
   private getDefaultUserImageAriaSelected_(
       image: DefaultUserImage, selectedImage: UserImage|null): string {
-    return (image.index === selectedImage?.defaultImage?.index).toString();
+    return (!!selectedImage && !!selectedImage.defaultImage &&
+            image.index === selectedImage.defaultImage.index)
+        .toString();
   }
 
   private getExternalImageAriaSelected_(image: UserImage|null): string {
-    return (!!image?.externalImage).toString();
+    return (!!image && !!image.externalImage).toString();
   }
 
   private onSelectProfileImage_(event: Event) {

@@ -1221,9 +1221,10 @@ int Element::OffsetLeft() {
   GetDocument().EnsurePaintLocationDataValidForNode(
       this, DocumentUpdateReason::kJavaScript);
   if (const auto* layout_object = GetLayoutBoxModelObject()) {
-    return AdjustForAbsoluteZoom::AdjustInt(
-        layout_object->PixelSnappedOffsetLeft(OffsetParent()),
-        layout_object->StyleRef());
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
+               layout_object->OffsetLeft(OffsetParent()),
+               layout_object->StyleRef())
+        .Round();
   }
   return 0;
 }
@@ -1232,9 +1233,10 @@ int Element::OffsetTop() {
   GetDocument().EnsurePaintLocationDataValidForNode(
       this, DocumentUpdateReason::kJavaScript);
   if (const auto* layout_object = GetLayoutBoxModelObject()) {
-    return AdjustForAbsoluteZoom::AdjustInt(
-        layout_object->PixelSnappedOffsetTop(OffsetParent()),
-        layout_object->StyleRef());
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
+               layout_object->OffsetTop(OffsetParent()),
+               layout_object->StyleRef())
+        .Round();
   }
   return 0;
 }
@@ -1243,9 +1245,9 @@ int Element::OffsetWidth() {
   GetDocument().EnsurePaintLocationDataValidForNode(
       this, DocumentUpdateReason::kJavaScript);
   if (const auto* layout_object = GetLayoutBoxModelObject()) {
-    return AdjustForAbsoluteZoom::AdjustInt(
-        layout_object->PixelSnappedOffsetWidth(OffsetParent()),
-        layout_object->StyleRef());
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(layout_object->OffsetWidth(),
+                                                   layout_object->StyleRef())
+        .Round();
   }
   return 0;
 }
@@ -1254,9 +1256,9 @@ int Element::OffsetHeight() {
   GetDocument().EnsurePaintLocationDataValidForNode(
       this, DocumentUpdateReason::kJavaScript);
   if (const auto* layout_object = GetLayoutBoxModelObject()) {
-    return AdjustForAbsoluteZoom::AdjustInt(
-        layout_object->PixelSnappedOffsetHeight(OffsetParent()),
-        layout_object->StyleRef());
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
+               layout_object->OffsetHeight(), layout_object->StyleRef())
+        .Round();
   }
   return 0;
 }
@@ -1274,8 +1276,9 @@ int Element::clientLeft() {
                                             DocumentUpdateReason::kJavaScript);
 
   if (const auto* layout_object = GetLayoutBox()) {
-    return AdjustForAbsoluteZoom::AdjustInt(layout_object->ClientLeft().Round(),
-                                            layout_object->StyleRef());
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(layout_object->ClientLeft(),
+                                                   layout_object->StyleRef())
+        .Round();
   }
   return 0;
 }
@@ -1285,8 +1288,9 @@ int Element::clientTop() {
                                             DocumentUpdateReason::kJavaScript);
 
   if (const auto* layout_object = GetLayoutBox()) {
-    return AdjustForAbsoluteZoom::AdjustInt(layout_object->ClientTop().Round(),
-                                            layout_object->StyleRef());
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(layout_object->ClientTop(),
+                                                   layout_object->StyleRef())
+        .Round();
   }
   return 0;
 }
@@ -1392,9 +1396,11 @@ int Element::clientWidth() {
         // OverflowClipRect() may return infinite along a particular axis if
         // |layout_view| is not a scroll-container.
         DCHECK(layout_view->IsScrollContainer());
-        int result = AdjustForAbsoluteZoom::AdjustInt(
-            layout_view->OverflowClipRect(PhysicalOffset()).Width().Round(),
-            layout_view->StyleRef());
+        int result =
+            AdjustForAbsoluteZoom::AdjustLayoutUnit(
+                layout_view->OverflowClipRect(PhysicalOffset()).Width(),
+                layout_view->StyleRef())
+                .Round();
         RecordScrollbarSizeForStudy(result, /* is_width= */ true,
                                     /* is_offset= */ false);
         return result;
@@ -1412,9 +1418,10 @@ int Element::clientWidth() {
 
   int result = 0;
   if (const auto* layout_object = GetLayoutBox()) {
-    result = AdjustForAbsoluteZoom::AdjustInt(
-        layout_object->PixelSnappedClientWidthWithTableSpecialBehavior(),
-        layout_object->StyleRef());
+    result = AdjustForAbsoluteZoom::AdjustLayoutUnit(
+                 layout_object->ClientWidthWithTableSpecialBehavior(),
+                 layout_object->StyleRef())
+                 .Round();
     RecordScrollbarSizeForStudy(result, /* is_width= */ true,
                                 /* is_offset= */ false);
   }
@@ -1439,9 +1446,11 @@ int Element::clientHeight() {
         // OverflowClipRect() may return infinite along a particular axis if
         // |layout_view| is not a scroll-container.
         DCHECK(layout_view->IsScrollContainer());
-        int result = AdjustForAbsoluteZoom::AdjustInt(
-            layout_view->OverflowClipRect(PhysicalOffset()).Height().Round(),
-            layout_view->StyleRef());
+        int result =
+            AdjustForAbsoluteZoom::AdjustLayoutUnit(
+                layout_view->OverflowClipRect(PhysicalOffset()).Height(),
+                layout_view->StyleRef())
+                .Round();
         RecordScrollbarSizeForStudy(result, /* is_width= */ false,
                                     /* is_offset= */ false);
         return result;
@@ -1459,9 +1468,10 @@ int Element::clientHeight() {
 
   int result = 0;
   if (const auto* layout_object = GetLayoutBox()) {
-    result = AdjustForAbsoluteZoom::AdjustInt(
-        layout_object->PixelSnappedClientHeightWithTableSpecialBehavior(),
-        layout_object->StyleRef());
+    result = AdjustForAbsoluteZoom::AdjustLayoutUnit(
+                 layout_object->ClientHeightWithTableSpecialBehavior(),
+                 layout_object->StyleRef())
+                 .Round();
     RecordScrollbarSizeForStudy(result, /* is_width= */ false,
                                 /* is_offset= */ false);
   }
@@ -1669,8 +1679,8 @@ int Element::scrollWidth() {
   }
 
   if (LayoutBox* box = GetLayoutBox()) {
-    return AdjustForAbsoluteZoom::AdjustInt(box->PixelSnappedScrollWidth(),
-                                            box);
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(box->ScrollWidth(), *box)
+        .Round();
   }
   return 0;
 }
@@ -1692,8 +1702,8 @@ int Element::scrollHeight() {
   }
 
   if (LayoutBox* box = GetLayoutBox()) {
-    return AdjustForAbsoluteZoom::AdjustInt(box->PixelSnappedScrollHeight(),
-                                            box);
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(box->ScrollHeight(), *box)
+        .Round();
   }
   return 0;
 }
@@ -2296,6 +2306,8 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
   } else if (name == html_names::kPartAttr) {
     part().DidUpdateAttributeValue(params.old_value, params.new_value);
     GetDocument().GetStyleEngine().PartChangedForElement(*this);
+  } else if (name == html_names::kPopupAttr) {
+    UpdatePopupAttribute(params.new_value);
   } else if (name == html_names::kExportpartsAttr) {
     EnsureElementRareData().SetPartNamesMap(params.new_value);
     GetDocument().GetStyleEngine().ExportpartsChangedForElement(*this);
@@ -2331,6 +2343,64 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
     GetDocument().UpdateStyleAndLayoutTreeForNode(this);
     if (!SupportsFocus())
       blur();
+  }
+}
+
+void Element::UpdatePopupAttribute(String value) {
+  if (!RuntimeEnabledFeatures::HTMLPopupAttributeEnabled())
+    return;
+  PopupValueType type = PopupValueType::kNone;
+  if (EqualIgnoringASCIICase(value, "popup")) {
+    type = PopupValueType::kPopup;
+  } else if (EqualIgnoringASCIICase(value, "hint")) {
+    type = PopupValueType::kHint;
+  } else if (EqualIgnoringASCIICase(value, "async")) {
+    type = PopupValueType::kAsync;
+  } else {
+    if (HasValidPopupAttribute()) {
+      // If the popup is changing from valid to invalid, hide it and remove the
+      // PopupData.
+      hidePopup();
+      GetElementRareData()->RemovePopupData();
+    }
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kOther,
+        mojom::blink::ConsoleMessageLevel::kInfo,
+        "Found a 'popup' attribute with an invalid value."));
+    return;
+  }
+  UseCounter::Count(GetDocument(), WebFeature::kValidPopupAttribute);
+  EnsureElementRareData().EnsurePopupData().setType(type);
+}
+
+bool Element::HasValidPopupAttribute() const {
+  return GetPopupData();
+}
+PopupData* Element::GetPopupData() const {
+  return HasRareData() ? GetElementRareData()->GetPopupData() : nullptr;
+}
+bool Element::popupOpen() const {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+  if (auto* popup_data = GetPopupData())
+    return popup_data->open();
+  return false;
+}
+void Element::showPopup() {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+  if (HasValidPopupAttribute() && !popupOpen()) {
+    // TODO(masonf): Need to properly handle top layer access and the popup
+    // stack.
+    GetPopupData()->setOpen(true);
+    PseudoStateChanged(CSSSelector::kPseudoPopupOpen);
+  }
+}
+void Element::hidePopup() {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+  if (HasValidPopupAttribute() && popupOpen()) {
+    // TODO(masonf): Need to properly handle top layer access and the popup
+    // stack.
+    GetPopupData()->setOpen(false);
+    PseudoStateChanged(CSSSelector::kPseudoPopupOpen);
   }
 }
 
@@ -2792,6 +2862,10 @@ void Element::DetachLayoutTree(bool performing_reattach) {
 
   DetachPrecedingPseudoElements(performing_reattach);
 
+  auto* context = GetDisplayLockContext();
+  bool was_shaping_deferred =
+      context && GetLayoutObject() && GetLayoutObject()->IsShapingDeferred();
+
   // TODO(futhark): We need to traverse into IsUserActionElement() subtrees,
   // even if they are already display:none because we do not clear the
   // hovered/active bits as part of style recalc, but wait until the next time
@@ -2827,8 +2901,10 @@ void Element::DetachLayoutTree(bool performing_reattach) {
     GetDocument().UserActionElements().DidDetach(*this);
   }
 
-  if (auto* context = GetDisplayLockContext()) {
+  if (context) {
     context->DetachLayoutTree();
+    if (was_shaping_deferred)
+      context->SetRequestedState(EContentVisibility::kVisible);
   }
 }
 
@@ -4792,7 +4868,7 @@ bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
           .DisplayLockBlockingAllActivationCount())
     return false;
 
-  HeapVector<std::pair<Member<Element>, Member<Element>>> activatable_targets;
+  HeapVector<Member<Element>> activatable_targets;
   for (Node* previous = this; previous;
        previous = FlatTreeTraversal::Previous(*previous)) {
     Element* prior_element = DynamicTo<Element>(previous);
@@ -4802,32 +4878,28 @@ bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
       // Collect display-locked ancestors and shaping-deferred prior elements.
       if (prior_element->GetLayoutObject() &&
           prior_element->GetLayoutObject()->IsShapingDeferred()) {
-        activatable_targets.push_back(std::make_pair(
-            prior_element, &prior_element->GetTreeScope().Retarget(*this)));
+        activatable_targets.push_back(prior_element);
       } else if (FlatTreeTraversal::Contains(*prior_element, *this)) {
         // If any of the ancestors is not activatable for the given reason, we
         // can't activate.
         if (context->IsLocked() && !context->IsActivatable(reason))
           return false;
-        activatable_targets.push_back(std::make_pair(
-            prior_element, &prior_element->GetTreeScope().Retarget(*this)));
+        activatable_targets.push_back(prior_element);
       }
     }
   }
 
   bool activated = false;
   for (const auto& target : activatable_targets) {
-    if (auto* context = target.first->GetDisplayLockContext()) {
+    if (auto* context = target->GetDisplayLockContext()) {
       if (context->ShouldCommitForActivation(reason)) {
         activated = true;
-        if (target.first->GetLayoutObject() &&
-            target.first->GetLayoutObject()->IsShapingDeferred()) {
+        if (target->GetLayoutObject() &&
+            target->GetLayoutObject()->IsShapingDeferred()) {
           // Unlock shaping-deferred IFCs permanently.
           context->SetRequestedState(EContentVisibility::kVisible);
         } else {
-          // Dispatch event on activatable ancestor (target.first), with
-          // the retargeted element (target.second) as the |activated_element|.
-          context->CommitForActivationWithSignal(target.second, reason);
+          context->CommitForActivation(reason);
         }
       }
     }

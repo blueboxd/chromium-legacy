@@ -42,6 +42,7 @@
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
@@ -1999,6 +2000,7 @@ static void AssertLayoutTreeUpdated(Node& root,
 #if EXPENSIVE_DCHECKS_ARE_ON()
 void Document::AssertLayoutTreeUpdatedAfterLayout() {
   AssertLayoutTreeUpdated(*this, false /* allow_dirty_container_subtrees */);
+  DCHECK(!GetStyleEngine().SkippedContainerRecalc());
 }
 #endif
 
@@ -2037,6 +2039,13 @@ void Document::UpdateStyleAndLayoutTree(LayoutUpgrade& upgrade) {
     // TODO(crbug.com/1145970): Provide a better reason.
     UpdateStyleAndLayout(DocumentUpdateReason::kUnknown);
   }
+
+  // If the above call to UpdateStyleAndLayoutTreeForThisDocument caused us to
+  // skip style recalc for some node, we should have upgraded [1] and performed
+  // layout to clear that flag again.
+  //
+  // [1] LayoutUpgrade::ShouldUpgrade
+  DCHECK(!GetStyleEngine().SkippedContainerRecalc());
 }
 
 void Document::UpdateStyleAndLayoutTreeForThisDocument() {
@@ -2243,7 +2252,7 @@ bool Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
   bool maybe_needs_layout =
       (update != StyleAndLayoutTreeUpdate::kNone) || View()->NeedsLayout();
   if (!analyze)
-    analyze = GetStyleEngine().StyleMayRequireLayout() && maybe_needs_layout;
+    analyze = GetStyleEngine().StyleAffectedByLayout() && maybe_needs_layout;
 
   if (!analyze) {
     DCHECK_EQ(StyleAndLayoutTreeUpdate::kNone, update);
@@ -7094,6 +7103,14 @@ const ScriptRegexp& Document::EnsureEmailRegexp() const {
   return *data_->email_regexp_;
 }
 
+void Document::SetMediaFeatureEvaluated(int feature) {
+  evaluated_media_features_ |= (1 << feature);
+}
+
+bool Document::WasMediaFeatureEvaluated(int feature) {
+  return (evaluated_media_features_ >> feature) & 1;
+}
+
 void Document::AddConsoleMessage(ConsoleMessage* message,
                                  bool discard_duplicates) const {
   // Don't let non-attached Documents spam the console.
@@ -7143,21 +7160,38 @@ HTMLDialogElement* Document::ActiveModalDialog() const {
 bool Document::PopupShowing() const {
   return !popup_element_stack_.IsEmpty();
 }
-void Document::HideTopmostPopupElement() const {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled());
-  if (popup_element_stack_.IsEmpty())
-    return;
-  popup_element_stack_.back()->hide();
-}
-void Document::HideAllPopupsUntil(const HTMLPopupElement* endpoint) {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled());
-  while (!popup_element_stack_.IsEmpty() &&
-         popup_element_stack_.back() != endpoint) {
-    popup_element_stack_.back()->hide();
+
+void Document::HidePopup(Element* popup) {
+  if (auto* popup_element = DynamicTo<HTMLPopupElement>(popup)) {
+    popup_element->hide();
+  } else if (popup->HasValidPopupAttribute()) {
+    popup->hidePopup();
+  } else {
+    NOTREACHED() << "popup should be either a <popup> or have a valid "
+                    "popup attribute";
   }
 }
-void Document::HidePopupIfShowing(const HTMLPopupElement* popup) {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled());
+
+void Document::HideTopmostPopupElement() {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
+         RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+  if (popup_element_stack_.IsEmpty())
+    return;
+  HidePopup(popup_element_stack_.back());
+}
+
+void Document::HideAllPopupsUntil(const Element* endpoint) {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
+         RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+  while (!popup_element_stack_.IsEmpty() &&
+         popup_element_stack_.back() != endpoint) {
+    HidePopup(popup_element_stack_.back());
+  }
+}
+
+void Document::HidePopupIfShowing(const Element* popup) {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
+         RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
   if (!popup_element_stack_.Contains(popup))
     return;
   HideAllPopupsUntil(popup);

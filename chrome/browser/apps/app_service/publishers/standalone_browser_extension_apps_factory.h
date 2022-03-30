@@ -14,27 +14,54 @@ namespace apps {
 
 class StandaloneBrowserExtensionApps;
 
-// Singleton that owns all StandaloneBrowserExtensionApps publisher and
-// associates them with Profiles.
-class StandaloneBrowserExtensionAppsFactory
+// Singleton that owns all StandaloneBrowserExtensionApps publisher for
+// Chrome Apps and associates them with Profiles.
+class StandaloneBrowserExtensionAppsFactoryForApp
     : public BrowserContextKeyedServiceFactory {
  public:
   static StandaloneBrowserExtensionApps* GetForProfile(Profile* profile);
 
-  static StandaloneBrowserExtensionAppsFactory* GetInstance();
+  static StandaloneBrowserExtensionAppsFactoryForApp* GetInstance();
 
   static void ShutDownForTesting(content::BrowserContext* context);
 
  private:
   friend struct base::DefaultSingletonTraits<
-      StandaloneBrowserExtensionAppsFactory>;
+      StandaloneBrowserExtensionAppsFactoryForApp>;
 
-  StandaloneBrowserExtensionAppsFactory();
-  StandaloneBrowserExtensionAppsFactory(
-      const StandaloneBrowserExtensionAppsFactory&) = delete;
-  StandaloneBrowserExtensionAppsFactory& operator=(
-      const StandaloneBrowserExtensionAppsFactory&) = delete;
-  ~StandaloneBrowserExtensionAppsFactory() override = default;
+  StandaloneBrowserExtensionAppsFactoryForApp();
+  StandaloneBrowserExtensionAppsFactoryForApp(
+      const StandaloneBrowserExtensionAppsFactoryForApp&) = delete;
+  StandaloneBrowserExtensionAppsFactoryForApp& operator=(
+      const StandaloneBrowserExtensionAppsFactoryForApp&) = delete;
+  ~StandaloneBrowserExtensionAppsFactoryForApp() override = default;
+
+  // BrowserContextKeyedServiceFactory overrides.
+  KeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* context) const override;
+};
+
+// Singleton that owns all StandaloneBrowserExtensionApps publisher for
+// Extensions and associates them with Profiles.
+class StandaloneBrowserExtensionAppsFactoryForExtension
+    : public BrowserContextKeyedServiceFactory {
+ public:
+  static StandaloneBrowserExtensionApps* GetForProfile(Profile* profile);
+
+  static StandaloneBrowserExtensionAppsFactoryForExtension* GetInstance();
+
+  static void ShutDownForTesting(content::BrowserContext* context);
+
+ private:
+  friend struct base::DefaultSingletonTraits<
+      StandaloneBrowserExtensionAppsFactoryForExtension>;
+
+  StandaloneBrowserExtensionAppsFactoryForExtension();
+  StandaloneBrowserExtensionAppsFactoryForExtension(
+      const StandaloneBrowserExtensionAppsFactoryForExtension&) = delete;
+  StandaloneBrowserExtensionAppsFactoryForExtension& operator=(
+      const StandaloneBrowserExtensionAppsFactoryForExtension&) = delete;
+  ~StandaloneBrowserExtensionAppsFactoryForExtension() override = default;
 
   // BrowserContextKeyedServiceFactory overrides.
   KeyedService* BuildServiceInstanceFor(

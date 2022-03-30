@@ -2548,8 +2548,10 @@ void StyleEngine::RecalcStyleForNonLayoutNGContainerDescendants(
   if (!cq_data)
     return;
 
-  if (cq_data->SkippedStyleRecalc())
+  if (cq_data->SkippedStyleRecalc()) {
+    DecrementSkippedContainerRecalc();
     RecalcStyleForContainer(container, {});
+  }
 }
 
 void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
@@ -2559,8 +2561,6 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
   DCHECK(!style_recalc_root_.GetRootNode());
   DCHECK(!container.NeedsStyleRecalc());
   DCHECK(!in_container_query_style_recalc_);
-
-  skipped_container_recalc_ = false;
 
   base::AutoReset<bool> cq_recalc(&in_container_query_style_recalc_, true);
 
@@ -2595,6 +2595,8 @@ void StyleEngine::UpdateStyleAndLayoutTreeForContainer(
 
   NthIndexCache nth_index_cache(GetDocument());
 
+  if (cq_data->SkippedStyleRecalc())
+    DecrementSkippedContainerRecalc();
   RecalcStyleForContainer(container, change);
 
   if (UNLIKELY(container.NeedsReattachLayoutTree())) {

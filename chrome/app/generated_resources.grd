@@ -2557,14 +2557,6 @@ are declared in tools/grit/grit_rule.gni.
                desc="When a download is blocked because of warnings, let the user know.">
         Blocked
       </message>
-      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_FAILED"
-               desc="When a download is failed, let the user know.">
-        Failed
-      </message>
-      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_FAILED_WEBDRIVE"
-               desc="When a download is failed and was expecting to save to web drive, let the user know.">
-        '''Failed to save to '''
-      </message>
       <message name="IDS_DOWNLOAD_BUBBLE_STATUS_MALWARE"
                desc="Malware warning for the user.">
         Malware
@@ -2575,11 +2567,135 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_CONTINUE"
                desc="Label for the Continue button on the blocked download bubble subpage.">
-        Continue
+        Continue download
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_DELETE"
                desc="Label for the Delete button on the blocked download bubble subpage.">
         Delete
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_DISK_FULL"
+               desc="Status text for a download item that was interrupted because there is not enough room on the disk to download this file.">
+        Out of storage space
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_DISK_FULL"
+               desc="Subpage summary text for a download item that was interrupted because there is not enough room on the disk to download this file.">
+        Free up space on your device. Then, try to download again
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_PATH_TOO_LONG"
+               desc="Status text for a download item that was interrupted because the file path name is too long.">
+        File name or location is too long
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_PATH_TOO_LONG"
+               desc="Subpage summary text for a download item that was interrupted because the file path name is too long.">
+        Try using a shorter file name or saving to a different folder
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_NEEDS_PERMISSION"
+               desc="Status text for a download item that was interrupted because of insufficient permissions.">
+        Needs permission to download
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_FILE_TOO_LARGE"
+               desc="Status text for a download item that was interrupted because the file is too large for the file system.">
+        File is too big for this device
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_FILE_TOO_LARGE"
+               desc="Subpage summary text for a download item that was interrupted because the file is too large for the file system.">
+        This file is too big for your device to manage. Try to download it on another device
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_UNFINISHED"
+               desc="Status text for a download item that was interrupted and could not finish.">
+        Couldn&#x2019;t finish download
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_BLOCKED_ORGANIZATION"
+               desc="Status text for a download item that was blocked by the organization.">
+        Blocked by your organization
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_BLOCKED_ORGANIZATION"
+               desc="Subpage summary text for a download item that was blocked by the organization.">
+        Your organization blocked this file because it didn't meet a security policy
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_WARNING_SUBPAGE_SUMMARY_BLOCKED_ORGANIZATION"
+               desc="Subpage summary text of warning for download item that was blocked by the organization.">
+        Your organization blocked this file because it has sensitive content
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_WRONG"
+               desc="Status text for a download item that had something go wrong.">
+        Something went wrong
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_NETWORK_ERROR"
+               desc="Status text for a download item with a network error.">
+        Check internet connection
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_SITE_UNAVAILABLE"
+               desc="Status text for a download item when the site has a problem.">
+        Site wasn&#x2019;t available
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_FILE_UNAVAILABLE"
+               desc="Status text for a download item when the file could not be fetched.">
+        File wasn&#x2019;t available on site
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_SUBPAGE_SUMMARY_FILE_UNAVAILABLE"
+               desc="Subpage summary text for a download item when the file could not be fetched.">
+        Try to sign in to the site. Then, download again
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_INTERRUPTED_STATUS_FILE_UNFINISHED"
+               desc="Status text for a download item when the file could not be finished.">
+        Couldn&#x2019;t finish download
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_WARNING_STATUS_INSECURE"
+               desc="Status text for a download item when the download is insecure.">
+        Insecure download
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_WARNING_SUBPAGE_SUMMARY_INSECURE"
+               desc="Subpage summary text for a download item when the download is insecure.">
+        This file may have been read or edited because this site isn't using a secure connection
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_WARNING_SUBPAGE_ACCOUNT_COMPROMISE"
+               desc="Subpage summary text for a download item when the download might cause compromise.">
+        This file may let attackers steal your personal information
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_DANGEROUS"
+               desc="Dangerous warning for the user.">
+        Dangerous
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_ENCRYPTED"
+               desc="Dangerous warning for an encrypted file.">
+        Encrypted
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_TOO_BIG"
+               desc="Dangerous warning for a file blocked for being too large.">
+        Too big
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_ADVANCED_PROTECTION"
+               desc="Dangerous warning for a file blocked by Advanced Protection.">
+        Blocked by Advanced Protection
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ADVANCED_PROTECTION"
+               desc="Subpage summary of warning for a file blocked by Advanced Protection.">
+        This file is not commonly downloaded and has been blocked by Advanced Protection
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_UNCOMMON_FILE"
+               desc="Dangerous warning for a file with uncommon content.">
+        Uncommon file
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_UNCOMMON_FILE"
+               desc="Subpage summary for warning for a file with uncommon content.">
+        This file is not commonly downloaded and may be dangerous
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_UNKNOWN_SOURCE"
+               desc="Dangerous warning for a file (like an extension) from an unknown source.">
+        Unknown source
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_SENSITIVE_CONTENT"
+               desc="Dangerous warning for a file with sensitive content">
+        Sensitive content
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SENSITIVE_CONTENT"
+               desc="Subpage summary of dangerous warning for a file with sensitive content">
+        Your organization recommends deleting this file because it has sensitive content
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_TRY_AGAIN"
+               desc="Retry button when a download is failed">
+        Try again
       </message>
 
       <!-- Desktop omnibox PWA install icon -->
@@ -4748,6 +4864,12 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS" desc="The label in an extension's context menu for the submenu specifying whether or not the extension can run on the current page (sentence case).">
             This can read and change site data
           </message>
+          <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_ALL_EXTENSIONS_GRANTED" desc="The label in an extension's page access submenu when the user allowed all extensions on the current page (sentence case).">
+            You previously chose to allow all extensions on <ph name="ORIGIN">$1<ex>google.com</ex></ph>
+          </message>
+          <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_ALL_EXTENSIONS_BLOCKED" desc="The label in an extension's page access submenu when the user blocked any extensions on the current page (sentence case).">
+            You previously chose to not allow any extensions on <ph name="ORIGIN">$1<ex>google.com</ex></ph>
+          </message>
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_CLICK" desc="The label in an extension's context menu to allow the extension access to the page only when the user clicks on the extension action (sentence case).">
             When you click the extension
           </message>
@@ -4803,6 +4925,12 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS" desc="The label in an extension's context menu for the submenu specifying whether or not the extension can run on the current page (title case).">
             This Can Read and Change Site Data
+          </message>
+          <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_ALL_EXTENSIONS_GRANTED" desc="The label in an extension's page access submenu when the user allowed all extensions on the current page (title case).">
+            You Previously Chose To Allow All Extensions On <ph name="ORIGIN">$1<ex>google.com</ex></ph>
+          </message>
+          <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_ALL_EXTENSIONS_BLOCKED" desc="The label in an extension's page access submenu when the user blocked any extensions on the current page (title case).">
+            You Previously Chose To Not Allow Any Extensions On <ph name="ORIGIN">$1<ex>google.com</ex></ph>
           </message>
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_RUN_ON_CLICK" desc="The label in an extension's context menu to allow the extension access to the page only when the user clicks on the extension action (title case).">
             When You Click the Extension
@@ -5118,7 +5246,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- End Extension Settings Overridden Dialog strings. -->
       <!-- Force Installed Deprecated Apps Deletion Dialog strings. -->
       <message name="IDS_FORCE_INSTALLED_DEPRECATED_APPS_CONTENT" desc="Content of the force installed deprecated app dialog">
-        Your administrator installed "<ph name="EXTENSION_NAME">$1<ex>Google Dos</ex></ph>" but this Chrome App is no longer supported. Contact your administrator to remove it.
+        Your administrator installed "<ph name="EXTENSION_NAME">$1<ex>Google Docs</ex></ph>" but this Chrome App is no longer supported. Contact your administrator to remove it.
+      </message>
+      <message name="IDS_FORCE_INSTALLED_PREINSTALLED_DEPRECATED_APPS_TITLE" desc="Title of the force installed and pre-installed deprecated app dialog">
+        <ph name="EXTENSION_NAME">$1<ex>Google Docs</ex></ph> needs to be updated
+      </message>
+      <message name="IDS_FORCE_INSTALLED_PREINSTALLED_DEPRECATED_APPS_CONTENT" desc="Content of the force installed and pre-installed deprecated app dialog">
+        Contact your administrator for the newest version.
       </message>
       <message name="IDS_FORCE_INSTALLED_DEPRECATED_APPS_LEARN_MORE_AX_LABEL" desc="Accessibility label text for IDS_DEPRECATED_APPS_LEARN_MORE link">
         Learn more about unsupported Chrome Apps
@@ -6805,7 +6939,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Open in app
         </message>
 
-        <if expr="chromeos_ash">
+        <if expr="chromeos_ash or chromeos_lacros">
           <message name="IDR_INTENT_PICKER_SUPPORTED_LINKS_INFOBAR_MESSAGE" desc="The text of an infobar asking if the user wants to open web links supported by a particular app (e.g. https://www.youtube.com) in that app.">
             Always use the <ph name="APP">$1<ex>YouTube</ex></ph> app to open supported web links?
           </message>

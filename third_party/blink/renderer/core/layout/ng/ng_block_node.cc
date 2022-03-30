@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
-#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
 #include "third_party/blink/renderer/core/layout/ng/custom/ng_custom_layout_algorithm.h"
@@ -34,6 +33,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_view.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_fraction_layout_algorithm.h"
@@ -196,9 +196,7 @@ NOINLINE void DetermineAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
     // the flow thread.
   } else if (GetFlowThread(box) && style.SpecifiesColumns()) {
     CreateAlgorithmAndRun<NGColumnLayoutAlgorithm>(params, callback);
-  } else if (!box.Parent() &&
-             LayoutView::ShouldUsePrintingLayout(box.GetDocument())) {
-    DCHECK(box.IsLayoutView());
+  } else if (UNLIKELY(!box.Parent() && params.node.IsPaginatedRoot())) {
     DCHECK(RuntimeEnabledFeatures::LayoutNGPrintingEnabled());
     CreateAlgorithmAndRun<NGPageLayoutAlgorithm>(params, callback);
   } else {
@@ -455,7 +453,7 @@ const NGLayoutResult* NGBlockNode::Layout(
 
   if (!fragment_geometry) {
     fragment_geometry =
-        CalculateInitialFragmentGeometry(constraint_space, *this);
+        CalculateInitialFragmentGeometry(constraint_space, *this, break_token);
   }
 
   if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled() &&
@@ -536,7 +534,7 @@ const NGLayoutResult* NGBlockNode::Layout(
   if (!intrinsic_logical_widths_dirty_before &&
       box_->IntrinsicLogicalWidthsDirty()) {
     fragment_geometry =
-        CalculateInitialFragmentGeometry(constraint_space, *this);
+        CalculateInitialFragmentGeometry(constraint_space, *this, break_token);
   }
 
   // We may need to relayout if:
@@ -586,8 +584,8 @@ const NGLayoutResult* NGBlockNode::Layout(
       box_->SetNeedsLayout(layout_invalidation_reason::kScrollbarChanged,
                            kMarkOnlyThis);
 
-      fragment_geometry =
-          CalculateInitialFragmentGeometry(constraint_space, *this);
+      fragment_geometry = CalculateInitialFragmentGeometry(constraint_space,
+                                                           *this, break_token);
       layout_result = LayoutWithAlgorithm(params);
       FinishLayout(block_flow, constraint_space, break_token, layout_result);
 
@@ -855,6 +853,7 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
   if (!is_in_perform_layout && IsGrid()) {
     const NGFragmentGeometry fragment_geometry =
         CalculateInitialFragmentGeometry(constraint_space, *this,
+                                         /* break_token */ nullptr,
                                          /* is_intrinsic */ true);
     const NGBoxStrut border_padding =
         fragment_geometry.border + fragment_geometry.padding;
@@ -912,6 +911,7 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
       type == MinMaxSizesType::kContent) {
     const NGFragmentGeometry fragment_geometry =
         CalculateInitialFragmentGeometry(constraint_space, *this,
+                                         /* break_token */ nullptr,
                                          /* is_intrinsic */ true);
     const NGBoxStrut border_padding =
         fragment_geometry.border + fragment_geometry.padding;
@@ -946,7 +946,8 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
       UseParentPercentageResolutionBlockSizeForChildren();
 
   const NGFragmentGeometry fragment_geometry = CalculateInitialFragmentGeometry(
-      constraint_space, *this, /* is_intrinsic */ true);
+      constraint_space, *this, /* break_token */ nullptr,
+      /* is_intrinsic */ true);
   const LayoutUnit initial_block_size =
       fragment_geometry.border_box_size.block_size;
 
@@ -1589,6 +1590,11 @@ void NGBlockNode::CopyFragmentItemsToLayoutBox(
       }
     }
   }
+}
+
+bool NGBlockNode::IsPaginatedRoot() const {
+  const auto* view = DynamicTo<LayoutNGView>(box_.Get());
+  return view && view->IsFragmentationContextRoot();
 }
 
 bool NGBlockNode::IsInlineFormattingContextRoot(

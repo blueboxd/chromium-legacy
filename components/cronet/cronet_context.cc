@@ -285,6 +285,12 @@ void CronetContext::ConfigureNetworkQualityEstimatorForTesting(
                      use_smaller_responses, disable_offline_check));
 }
 
+bool CronetContext::URLRequestContextExistsForTesting(
+    net::NetworkChangeNotifier::NetworkHandle network) {
+  DCHECK(IsOnNetworkThread());
+  return network_tasks_->URLRequestContextExistsForTesting(network);  // IN-TEST
+}
+
 void CronetContext::NetworkTasks::ProvideRTTObservations(bool should) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
   if (!network_quality_estimator_)
@@ -329,7 +335,7 @@ void CronetContext::NetworkTasks::SpawnNetworkBoundURLRequestContextForTesting(
   contexts_[network] = BuildNetworkBoundURLRequestContext(network);
 }
 
-bool CronetContext::NetworkTasks::DoesURLRequestContextExistForTesting(
+bool CronetContext::NetworkTasks::URLRequestContextExistsForTesting(
     net::NetworkChangeNotifier::NetworkHandle network) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
   return contexts_.contains(network);
@@ -462,13 +468,13 @@ void CronetContext::NetworkTasks::SetSharedURLRequestContextBuilderConfig(
 
   // Disable net::CookieStore.
   context_builder->SetCookieStore(nullptr);
+
+  context_builder->set_check_cleartext_permitted(true);
+  context_builder->set_enable_brotli(context_config_->enable_brotli);
 }
 
 void CronetContext::NetworkTasks::SetSharedURLRequestContextConfig(
     net::URLRequestContext* context) {
-  context->set_check_cleartext_permitted(true);
-  context->set_enable_brotli(context_config_->enable_brotli);
-
   if (context_config_->enable_quic) {
     for (const auto& quic_hint : context_config_->quic_hints)
       SetQuicHint(context, quic_hint.get());

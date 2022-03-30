@@ -492,6 +492,9 @@
       },
       'variations_smoke_tests': {
         'isolate_name': 'variations_smoke_tests',
+        'mixins': [
+          'skia_gold_test',
+        ],
         'resultdb': {
           'enable': True,
           'result_format': 'single'
@@ -5111,6 +5114,9 @@
     'variations_smoke_tests': {
       'variations_smoke_tests': {
         'isolate_name': 'variations_smoke_tests',
+        'mixins': [
+          'skia_gold_test',
+        ],
         'resultdb': {
           'enable': True,
           'result_format': 'single'
@@ -6930,6 +6936,16 @@
 
     'fieldtrial_ios_simulator_tests': {
       'ios_eg2_cq_tests': {
+        'mixins': [
+          'xcode_parallelization',
+          'disable_field_trial_config_for_earl_grey',
+        ],
+        'variants': [
+          'SIM_IPAD_AIR_2_15_2',
+          'SIM_IPHONE_6S_15_2',
+        ]
+      },
+      'ios_eg2_tests': {
         'mixins': [
           'xcode_parallelization',
           'disable_field_trial_config_for_earl_grey',

@@ -61,6 +61,7 @@
 #include "chrome/browser/unexpire_flags.h"
 #include "chrome/browser/unexpire_flags_gen.h"
 #include "chrome/browser/video_tutorials/switches.h"
+#include "chrome/browser/webauthn/webauthn_switches.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
@@ -3885,13 +3886,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-login-detection", flag_descriptions::kEnableLoginDetectionName,
      flag_descriptions::kEnableLoginDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(login_detection::kLoginDetection)},
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
-    {"enable-navigation-predictor",
-     flag_descriptions::kEnableNavigationPredictorName,
-     flag_descriptions::kEnableNavigationPredictorDescription,
-     kOsCrOS | kOsLinux,
-     FEATURE_VALUE_TYPE(blink::features::kNavigationPredictor)},
-#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
     {"enable-google-srp-isolated-prerender-probing",
      flag_descriptions::kEnableSRPIsolatedPrerenderProbingName,
      flag_descriptions::kEnableSRPIsolatedPrerenderProbingDescription, kOsAll,
@@ -5424,6 +5418,17 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWebAuthenticationCableDiscoCredsDescription,
      kOsAll, FEATURE_VALUE_TYPE(device::kWebAuthCableDisco)},
 
+#if !BUILDFLAG(IS_ANDROID)
+    {"web-authentication-permit-enterprise-attestation",
+     flag_descriptions::kWebAuthenticationPermitEnterpriseAttestationName,
+     flag_descriptions::
+         kWebAuthenticationPermitEnterpriseAttestationDescription,
+     kOsAll,
+     ORIGIN_LIST_VALUE_TYPE(
+         webauthn::switches::kPermitEnterpriseAttestationOriginList,
+         "")},
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-web-authentication-chromeos-authenticator",
      flag_descriptions::kEnableWebAuthenticationChromeOSAuthenticatorName,
@@ -6017,10 +6022,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePalmOnToolTypePalmDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnablePalmOnToolTypePalm)},
 
-    {"enable-reven-log-source", flag_descriptions::kEnableRevenLogSourceName,
-     flag_descriptions::kEnableRevenLogSourceDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kRevenLogSource)},
-
     {"enable-heuristic-stylus-palm-rejection",
      flag_descriptions::kEnableHeuristicStylusPalmRejectionName,
      flag_descriptions::kEnableHeuristicStylusPalmRejectionDescription, kOsCrOS,
@@ -6070,11 +6071,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisplayAlignmentAssistanceName,
      flag_descriptions::kDisplayAlignmentAssistanceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDisplayAlignAssist)},
-
-    {"diagnostics-app-navigation",
-     flag_descriptions::kDiagnosticsAppNavigationName,
-     flag_descriptions::kDiagnosticsAppNavigationDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kDiagnosticsAppNavigation)},
 
     {"enable-hostname-setting", flag_descriptions::kEnableHostnameSettingName,
      flag_descriptions::kEnableHostnameSettingDescription, kOsCrOS,
@@ -6729,9 +6725,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"scan-app-multi-page-scan", flag_descriptions::kScanAppMultiPageScanName,
      flag_descriptions::kScanAppMultiPageScanDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kScanAppMultiPageScan)},
-    {"scan-app-searchable-pdf", flag_descriptions::kScanAppSearchablePdfName,
-     flag_descriptions::kScanAppSearchablePdfDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kScanAppSearchablePdf)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"color-provider-redirection-for-theme-provider",
@@ -6864,6 +6857,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLauncherNudgeShortIntervalName,
      flag_descriptions::kLauncherNudgeShortIntervalDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kLauncherNudgeShortInterval)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"launcher-pulsing-blocks-refresh",
+     flag_descriptions::kLauncherPulsingBlocksRefreshName,
+     flag_descriptions::kLauncherPulsingBlocksRefreshDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kLauncherPulsingBlocksRefresh)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -8060,9 +8060,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopCaptureLacrosV2Description, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(features::kDesktopCaptureLacrosV2)},
 
+    // TODO(b/180051795): Remove kOsLinux when lacros-chrome switches to
+    // kOsCrOS.
     {"lacros-merge-icu-data-file",
      flag_descriptions::kLacrosMergeIcuDataFileName,
-     flag_descriptions::kLacrosMergeIcuDataFileDescription, kOsCrOS,
+     flag_descriptions::kLacrosMergeIcuDataFileDescription, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(base::i18n::kLacrosMergeIcuDataFile)},
 
     {"lacros-non-syncing-profiles",

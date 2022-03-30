@@ -69,9 +69,9 @@ void OnDllProcessDetach() {
 static bool g_thread_cache_key_created = false;
 }  // namespace
 
-constexpr ::base::TimeDelta ThreadCacheRegistry::kMinPurgeInterval;
-constexpr ::base::TimeDelta ThreadCacheRegistry::kMaxPurgeInterval;
-constexpr ::base::TimeDelta ThreadCacheRegistry::kDefaultPurgeInterval;
+constexpr base::TimeDelta ThreadCacheRegistry::kMinPurgeInterval;
+constexpr base::TimeDelta ThreadCacheRegistry::kMaxPurgeInterval;
+constexpr base::TimeDelta ThreadCacheRegistry::kDefaultPurgeInterval;
 constexpr size_t ThreadCacheRegistry::kMinCachedMemoryForPurging;
 uint8_t ThreadCache::global_limits_[ThreadCache::kBucketCount];
 
@@ -280,6 +280,17 @@ void ThreadCacheRegistry::RunPeriodicPurge() {
         std::min(kMaxPurgeInterval, periodic_purge_next_interval_ * 2);
   }
 
+  // Make sure that the next interval is in the right bounds. Even though the
+  // logic above should eventually converge to a reasonable interval, if a
+  // sleeping background thread holds onto a large amount of cached memory, then
+  // |PurgeAll()| will not free any memory from it, and the first branch above
+  // can be taken repeatedly until the interval gets very small, as the amount
+  // of cached memory cannot change between calls (since we do not purge
+  // background threads, but only ask them to purge their own cache at the next
+  // allocation).
+  periodic_purge_next_interval_ = std::clamp(
+      periodic_purge_next_interval_, kMinPurgeInterval, kMaxPurgeInterval);
+
   PurgeAll();
 }
 
@@ -395,7 +406,7 @@ void ThreadCache::SetGlobalLimits(PartitionRoot<>* root, float multiplier) {
     // |PutInBucket()| is called on a full bucket, which should not overflow.
     constexpr size_t kMaxLimit = std::numeric_limits<uint8_t>::max() - 1;
     global_limits_[index] =
-        static_cast<uint8_t>(::base::clamp(value, kMinLimit, kMaxLimit));
+        static_cast<uint8_t>(base::clamp(value, kMinLimit, kMaxLimit));
     PA_DCHECK(global_limits_[index] >= kMinLimit);
     PA_DCHECK(global_limits_[index] <= kMaxLimit);
   }
@@ -459,7 +470,7 @@ ThreadCache* ThreadCache::Create(PartitionRoot<internal::ThreadSafe>* root) {
 ThreadCache::ThreadCache(PartitionRoot<>* root)
     : should_purge_(false),
       root_(root),
-      thread_id_(::base::PlatformThread::CurrentId()),
+      thread_id_(base::PlatformThread::CurrentId()),
       next_(nullptr),
       prev_(nullptr) {
   ThreadCacheRegistry::Instance().RegisterThreadCache(this);

@@ -22,14 +22,15 @@
 namespace apps {
 
 StandaloneBrowserExtensionApps::StandaloneBrowserExtensionApps(
-    AppServiceProxy* proxy)
-    : apps::AppPublisher(proxy) {
+    AppServiceProxy* proxy,
+    AppType app_type)
+    : apps::AppPublisher(proxy), app_type_(app_type) {
   mojo::Remote<apps::mojom::AppService>& app_service = proxy->AppService();
   if (!app_service.is_bound()) {
     return;
   }
   PublisherBase::Initialize(app_service,
-                            apps::mojom::AppType::kStandaloneBrowserChromeApp);
+                            apps::ConvertAppTypeToMojomAppType(app_type_));
   login_observation_.Observe(chromeos::LoginState::Get());
   // Check now in case login has already happened.
   LoggedInStateChanged();
@@ -37,14 +38,13 @@ StandaloneBrowserExtensionApps::StandaloneBrowserExtensionApps(
 
 StandaloneBrowserExtensionApps::~StandaloneBrowserExtensionApps() = default;
 
-void StandaloneBrowserExtensionApps::RegisterChromeAppsCrosapiHost(
+void StandaloneBrowserExtensionApps::RegisterCrosapiHost(
     mojo::PendingReceiver<crosapi::mojom::AppPublisher> receiver) {
-  RegisterPublisher(AppType::kStandaloneBrowserChromeApp);
-  apps::AppPublisher::Publish(std::vector<AppPtr>{},
-                              AppType::kStandaloneBrowserChromeApp,
+  RegisterPublisher(app_type_);
+  apps::AppPublisher::Publish(std::vector<AppPtr>{}, app_type_,
                               /*should_notify_initialized=*/true);
 
-  // At the moment the app service publisher will only accept one client
+  // At the moment the app service publisher will only accept one browser client
   // publishing apps to ash chrome. Any extra clients will be ignored.
   // TODO(crbug.com/1174246): Support SxS lacros.
   if (receiver_.is_bound()) {
@@ -132,9 +132,9 @@ void StandaloneBrowserExtensionApps::Connect(
     apps.push_back(it.second.Clone());
   }
 
-  subscribers_.Get(id)->OnApps(
-      std::move(apps), apps::mojom::AppType::kStandaloneBrowserChromeApp,
-      true /* should_notify_initialized */);
+  subscribers_.Get(id)->OnApps(std::move(apps),
+                               apps::ConvertAppTypeToMojomAppType(app_type_),
+                               true /* should_notify_initialized */);
 }
 
 void StandaloneBrowserExtensionApps::LoadIcon(const std::string& app_id,
@@ -286,8 +286,7 @@ void StandaloneBrowserExtensionApps::OnApps(std::vector<AppPtr> deltas) {
     PublisherBase::Publish(ConvertAppToMojomApp(delta), subscribers_);
   }
 
-  apps::AppPublisher::Publish(std::move(deltas),
-                              AppType::kStandaloneBrowserChromeApp,
+  apps::AppPublisher::Publish(std::move(deltas), app_type_,
                               /*should_notify_initialized=*/false);
 }
 
@@ -311,8 +310,13 @@ void StandaloneBrowserExtensionApps::OnCapabilityAccesses(
 void StandaloneBrowserExtensionApps::LoggedInStateChanged() {
   if (chromeos::LoginState::Get()->IsUserLoggedIn()) {
     if (!keep_alive_) {
-      keep_alive_ = crosapi::BrowserManager::Get()->KeepAlive(
-          crosapi::BrowserManager::Feature::kChromeApps);
+      if (app_type_ == AppType::kStandaloneBrowserChromeApp) {
+        keep_alive_ = crosapi::BrowserManager::Get()->KeepAlive(
+            crosapi::BrowserManager::Feature::kChromeApps);
+      } else if (app_type_ == AppType::kStandaloneBrowserExtension) {
+        keep_alive_ = crosapi::BrowserManager::Get()->KeepAlive(
+            crosapi::BrowserManager::Feature::kExtensions);
+      }
     }
   } else {
     keep_alive_.reset();

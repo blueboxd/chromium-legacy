@@ -246,6 +246,40 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Arc.AppCount.HasInstalledOrUnknownApp" enum="Boolean"
+    expires_after="2022-09-23">
+  <owner>yusukes@google.com</owner>
+  <owner>arcvm-eng@google.com</owner>
+  <summary>
+    True if the user (or Chrome app sync) has manually installed one or more
+    apps or Ash has one or more &quot;unknown&quot; apps. See
+    Arc.AppCount.InstalledApp and Arc.AppCount.UnknownApp for more details.
+    Collected once every time when ARC starts.
+  </summary>
+</histogram>
+
+<histogram name="Arc.AppCount.{AppType}" units="apps"
+    expires_after="2022-09-23">
+  <owner>yusukes@google.com</owner>
+  <owner>arcvm-eng@google.com</owner>
+  <summary>
+    The number of ARC {AppType}s that are managed by Chrome (Ash). Collected
+    once every time when ARC starts.
+  </summary>
+  <token key="AppType">
+    <variant name="DefaultApp"
+        summary="'Default' ARC app. Either PAI or one in system/vendor image.
+                 Can be 1+ even for opt-out users."/>
+    <variant name="InstalledApp"
+        summary="ARC app which the user has manually installed. This includes
+                 the one installed via Chrome app sync. 0 for opt-out users."/>
+    <variant name="StickyApp"
+        summary="'Sticky' ARC app in a system/vendor image. This is always 0
+                 for opt-out users."/>
+    <variant name="UnknownApp" summary="ARC app whose type is unknown to Ash."/>
+  </token>
+</histogram>
+
 <histogram name="Arc.AppInstalledReason" enum="InstallationCounterReasonEnum"
     expires_after="2022-10-31">
   <owner>thanhdng@chromium.org</owner>
@@ -1514,9 +1548,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.SdkVersionUpgradeType" enum="ArcSdkVersionUpgradeType"
-    expires_after="2022-04-24">
+    expires_after="2023-04-24">
   <owner>niwa@google.com</owner>
+  <owner>risan@google.com</owner>
   <owner>yusukes@google.com</owner>
+  <owner>arcvm-eng@google.com</owner>
   <summary>
     The types of ARC SDK version upgrade. (e.g. Upgrade from N to P) Reported
     when SDK version upgrade is detected during ARC boot.
@@ -1701,11 +1737,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.UserInteraction" enum="ArcUserInteraction"
-    expires_after="2022-04-03">
+    expires_after="2023-04-03">
   <owner>jhorwich@chromium.org</owner>
-  <owner>elijahtaylor@chromium.org</owner>
-  <owner>shihuis@google.com</owner>
-  <owner>maajid@chromium.org</owner>
+  <owner>arc-core@google.com</owner>
   <summary>
     Counts user interactions with ARC by type, such as ARC app launches via the
     shelf or launcher.

@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/bluetooth_config_service.h"
 #include "ash/quick_pair/common/device.h"
 #include "ash/quick_pair/common/logging.h"
@@ -99,6 +100,8 @@ Mediator::Mediator(
       retroactive_pairing_detector_.get());
   pairer_broker_observation_.Observe(pairer_broker_.get());
   ui_broker_observation_.Observe(ui_broker_.get());
+  config_delegate_observation_.Observe(
+      fast_pair_bluetooth_config_delegate_.get());
 
   // If we already have a discovery session via the Settings pairing dialog,
   // don't start Fast Pair scanning.
@@ -106,11 +109,13 @@ Mediator::Mediator(
                    !has_at_least_one_discovery_session_);
   quick_pair_process::SetProcessManager(process_manager_.get());
 
-  // Asynchronously bind to CrosBluetoothConfig so that we don't want to attempt
-  // to bind to it before it has initialized.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&Mediator::BindToCrosBluetoothConfig,
-                                weak_ptr_factory_.GetWeakPtr()));
+  if (ash::features::IsBluetoothRevampEnabled()) {
+    // Asynchronously bind to CrosBluetoothConfig so that we don't attempt to
+    // bind to it before it has initialized.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&Mediator::BindToCrosBluetoothConfig,
+                                  weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 Mediator::~Mediator() {
@@ -170,23 +175,20 @@ void Mediator::OnRetroactivePairFound(scoped_refptr<Device> device) {
 void Mediator::SetFastPairState(bool is_enabled) {
   QP_LOG(VERBOSE) << __func__ << ": " << is_enabled;
 
-  if (is_enabled)
+  if (is_enabled) {
     scanner_broker_->StartScanning(Protocol::kFastPairInitial);
-  else {
-    scanner_broker_->StopScanning(Protocol::kFastPairInitial);
-
-    // If we are midway through pairing, return early so we don't remove
-    // handshakes where they are required.
-    if (pairer_broker_->IsPairing()) {
-      return;
-    }
-
-    // Clear all existing handshakes.
-    FastPairHandshakeLookup::GetInstance()->Clear();
-
-    // Dismiss all UI notifications.
-    ui_broker_->RemoveNotifications();
+    return;
   }
+
+  scanner_broker_->StopScanning(Protocol::kFastPairInitial);
+
+  // Clear all existing handshakes.
+  FastPairHandshakeLookup::GetInstance()->Clear();
+
+  pairer_broker_->StopPairing();
+
+  // Dismiss all UI notifications.
+  ui_broker_->RemoveNotifications();
 }
 
 void Mediator::OnDevicePaired(scoped_refptr<Device> device) {
@@ -263,6 +265,33 @@ void Mediator::OnAssociateAccountAction(scoped_refptr<Device> device,
     case AssociateAccountAction::kDismissedByUser:
     case AssociateAccountAction::kDismissed:
       break;
+  }
+}
+
+void Mediator::OnAdapterStateControllerChanged(
+    chromeos::bluetooth_config::AdapterStateController*
+        adapter_state_controller) {
+  // Always reset the observation first to handle the case where the ptr
+  // became a nullptr (i.e. AdapterStateController was destroyed).
+  adapter_state_controller_observation_.Reset();
+  if (adapter_state_controller)
+    adapter_state_controller_observation_.Observe(adapter_state_controller);
+}
+
+void Mediator::OnAdapterStateChanged() {
+  chromeos::bluetooth_config::AdapterStateController* adapter_state_controller =
+      fast_pair_bluetooth_config_delegate_->adapter_state_controller();
+  DCHECK(adapter_state_controller);
+  chromeos::bluetooth_config::mojom::BluetoothSystemState adapter_state =
+      adapter_state_controller->GetAdapterState();
+
+  // The FeatureStatusTracker already observes when Bluetooth is enabled,
+  // disabled, or unavailable. We observe the Bluetooth Config to additionally
+  // disable Fast Pair when the adapter is disabling.
+  if (adapter_state ==
+      chromeos::bluetooth_config::mojom::BluetoothSystemState::kDisabling) {
+    QP_LOG(INFO) << __func__ << ": Adapter disabling, disabling Fast Pair.";
+    SetFastPairState(false);
   }
 }
 

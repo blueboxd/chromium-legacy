@@ -12,6 +12,7 @@
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/shell_observer.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/time/time_view.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/unified/unified_system_tray_model.h"
@@ -135,13 +136,15 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // bubble is shown.
   void SetTrayBubbleHeight(int height);
 
-  // Focus the first notification in the message center.
-  void FocusFirstNotification();
+  // Transfer focus to the message center bubble. Will focus only on the message
+  // center if vox is enabled. Otherwise, will focus on the first element in the
+  // message center while honoring the `reverse` attribute that is passed in.
+  bool FocusMessageCenter(bool reverse, bool collapse_quick_settings = false);
 
-  // Transfer focus to the message center bubble.
-  bool FocusMessageCenter(bool reverse);
-
-  // Transfer focus to the quick settings bubble.
+  // Transfer focus to the quick settings bubble. Will focus only on the quick
+  // settings bubble if vox is enabled. Otherwise, will focus on the first
+  // element in the quick settings while honoring the `reverse` attribute that
+  // is passed in.
   bool FocusQuickSettings(bool reverse);
 
   // Returns true if the user manually expanded the quick settings.
@@ -182,9 +185,11 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // ShelfConfig::Observer:
   void OnShelfConfigUpdated() override;
 
-  // Repeating callback passed to TimeView which is called when an action is
-  // performed.
-  void OnTimeViewActionPerformed(const ui::Event& event);
+  // Gets called when an action is performed on the `DateTray`.
+  void OnDateTrayActionPerformed(const ui::Event& event);
+
+  // Whether the bubble is currently showing the calendar view.
+  bool IsShowingCalendarView() const;
 
   std::u16string GetAccessibleNameForQuickSettingsBubble();
 

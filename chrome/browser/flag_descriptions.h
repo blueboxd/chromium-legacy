@@ -447,9 +447,6 @@ extern const char
 extern const char kEnableExperimentalCookieFeaturesName[];
 extern const char kEnableExperimentalCookieFeaturesDescription[];
 
-extern const char kEnableNavigationPredictorName[];
-extern const char kEnableNavigationPredictorDescription[];
-
 extern const char kEnableRawDrawName[];
 extern const char kEnableRawDrawDescription[];
 
@@ -584,9 +581,6 @@ extern const char kDeprecateAltClickDescription[];
 
 extern const char kDeprecateAltBasedSixPackName[];
 extern const char kDeprecateAltBasedSixPackDescription[];
-
-extern const char kDiagnosticsAppNavigationName[];
-extern const char kDiagnosticsAppNavigationDescription[];
 
 extern const char kDisableKeepaliveFetchName[];
 extern const char kDisableKeepaliveFetchDescription[];
@@ -2117,6 +2111,9 @@ extern const char kNtpModulesDescription[];
 extern const char kNtpDriveModuleName[];
 extern const char kNtpDriveModuleDescription[];
 
+extern const char kWebAuthenticationPermitEnterpriseAttestationName[];
+extern const char kWebAuthenticationPermitEnterpriseAttestationDescription[];
+
 #if !defined(OFFICIAL_BUILD)
 extern const char kNtpDummyModulesName[];
 extern const char kNtpDummyModulesDescription[];
@@ -2685,9 +2682,6 @@ extern const char kEnableNetworkingInDiagnosticsAppDescription[];
 extern const char kEnableOAuthIppName[];
 extern const char kEnableOAuthIppDescription[];
 
-extern const char kEnableRevenLogSourceName[];
-extern const char kEnableRevenLogSourceDescription[];
-
 extern const char kEnableSuggestedFilesName[];
 extern const char kEnableSuggestedFilesDescription[];
 
@@ -2982,9 +2976,6 @@ extern const char kArcInputOverlayDescription[];
 extern const char kScanAppMultiPageScanName[];
 extern const char kScanAppMultiPageScanDescription[];
 
-extern const char kScanAppSearchablePdfName[];
-extern const char kScanAppSearchablePdfDescription[];
-
 extern const char kSecondaryGoogleAccountUsageName[];
 extern const char kSecondaryGoogleAccountUsageDescription[];
 
@@ -3115,6 +3106,9 @@ extern const char kLauncherNudgeShortIntervalDescription[];
 
 extern const char kLauncherNudgeSessionResetName[];
 extern const char kLauncherNudgeSessionResetDescription[];
+
+extern const char kLauncherPulsingBlocksRefreshName[];
+extern const char kLauncherPulsingBlocksRefreshDescription[];
 
 // Prefer keeping this section sorted to adding new declarations down here.
 

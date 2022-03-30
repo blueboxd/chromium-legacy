@@ -152,22 +152,6 @@
             ]
         }
     ],
-    "AndroidIndependentFlingAnimation": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "IndependentFlingAnimation"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidMediaPickerVideoSupport": [
         {
             "platforms": [
@@ -2204,113 +2188,6 @@
             ]
         }
     ],
-    "CombinedNavigationOptimizations": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20220314",
-                    "enable_features": [
-                        "AvoidUnnecessaryBeforeUnloadCheck",
-                        "DefaultStyleSheetsEarlyInit",
-                        "EarlyBodyLoad",
-                        "EarlyCodeCache",
-                        "ElidePrioritizationOfPreNativeBootstrapTasks",
-                        "ElideTabPreloadAtStartup",
-                        "FasterSetCookie",
-                        "FontManagerEarlyInit",
-                        "IncludeIpcOverheadInNavigationStart",
-                        "NavigationRequestPreconnect",
-                        "NavigationThreadingOptimizations",
-                        "OnlySendStoragePolicyUpdatesForModifiedOrigins",
-                        "OptimizeEarlyNavigation",
-                        "OptimizeLookalikeUrlNavigationThrottle",
-                        "PrefetchAndroidFonts",
-                        "TreatBootstrapAsDefault",
-                        "URLLoaderSyncClient"
-                    ],
-                    "disable_features": [
-                        "EarlyEstablishGpuChannel"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CombinedNavigationOptimizationsDesktop": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20220314",
-                    "enable_features": [
-                        "AvoidUnnecessaryBeforeUnloadCheck",
-                        "DefaultStyleSheetsEarlyInit",
-                        "EarlyBodyLoad",
-                        "EarlyCodeCache",
-                        "ElidePrioritizationOfPreNativeBootstrapTasks",
-                        "ElideTabPreloadAtStartup",
-                        "FasterSetCookie",
-                        "IncludeIpcOverheadInNavigationStart",
-                        "NavigationRequestPreconnect",
-                        "NavigationThreadingOptimizations",
-                        "OnlySendStoragePolicyUpdatesForModifiedOrigins",
-                        "OptimizeEarlyNavigation",
-                        "PrefetchAndroidFonts",
-                        "PrewarmSearchResultsPageFonts",
-                        "TreatBootstrapAsDefault",
-                        "URLLoaderSyncClient"
-                    ],
-                    "disable_features": [
-                        "EarlyEstablishGpuChannel",
-                        "OptimizeLookalikeUrlNavigationThrottle"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CombinedNavigationOptimizationsWebView": [
-        {
-            "platforms": [
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20220314",
-                    "enable_features": [
-                        "AvoidUnnecessaryBeforeUnloadCheck",
-                        "DefaultStyleSheetsEarlyInit",
-                        "EarlyBodyLoad",
-                        "EarlyCodeCache",
-                        "ElidePrioritizationOfPreNativeBootstrapTasks",
-                        "ElideTabPreloadAtStartup",
-                        "FasterSetCookie",
-                        "FontManagerEarlyInit",
-                        "IncludeIpcOverheadInNavigationStart",
-                        "NavigationRequestPreconnect",
-                        "NavigationThreadingOptimizations",
-                        "OnlySendStoragePolicyUpdatesForModifiedOrigins",
-                        "OptimizeEarlyNavigation",
-                        "OptimizeLookalikeUrlNavigationThrottle",
-                        "PrefetchAndroidFonts",
-                        "TreatBootstrapAsDefault",
-                        "URLLoaderSyncClient"
-                    ],
-                    "disable_features": [
-                        "EarlyEstablishGpuChannel"
-                    ]
-                }
-            ]
-        }
-    ],
     "CommerceMerchantViewer": [
         {
             "platforms": [
@@ -3843,21 +3720,6 @@
             ]
         }
     ],
-    "IOSMetrickitCrashReport": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MetrickitCrashReport"
-                    ]
-                }
-            ]
-        }
-    ],
     "IOSNewOverflowMenu": [
         {
             "platforms": [
@@ -4094,6 +3956,22 @@
                     },
                     "enable_features": [
                         "IncognitoParamFilterEnabled"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IndependentFlingAnimation": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IndependentFlingAnimation"
                     ]
                 }
             ]
@@ -4466,6 +4344,21 @@
                         "EncryptedReportingPipeline",
                         "MeetDevicesCloudLogger",
                         "MeetDevicesMojoServices"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MetrickitCrashReport": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MetrickitCrashReport"
                     ]
                 }
             ]
@@ -5743,6 +5636,18 @@
             "experiments": [
                 {
                     "name": "EnabledWithContinueSection",
+                    "params": {
+                        "enable_continue": "true"
+                    },
+                    "enable_features": [
+                        "ProductivityLauncher"
+                    ]
+                },
+                {
+                    "name": "EnabledWithoutContinueSection",
+                    "params": {
+                        "enable_continue": "false"
+                    },
                     "enable_features": [
                         "ProductivityLauncher"
                     ]
@@ -6914,6 +6819,21 @@
                     "name": "Enabled_20220119",
                     "enable_features": [
                         "ThreadingOptimizationsOnIO"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TouchToFillPasswordSubmissionAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TouchToFillPasswordSubmission"
                     ]
                 }
             ]

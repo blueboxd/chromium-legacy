@@ -108,10 +108,16 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1282369
   "apps.LaunchHelpAppOffline",
 
-  # https://crbug.com/1282366
+  # https://crbug.com/1282366 and https://crbug.com/1311184
+  "inputs.VirtualKeyboardChangeInput.a11y",
   "inputs.VirtualKeyboardDeadKeys.french",
-  "inputs.VirtualKeyboardSystemLanguages.es",
   "inputs.VirtualKeyboardFloat.clamshell",
+  "inputs.VirtualKeyboardGlideTyping.clamshell_a11y_floating",
+  "inputs.VirtualKeyboardHandwriting.docked",
+  "inputs.VirtualKeyboardHandwriting.floating",
+  "inputs.VirtualKeyboardMultipaste",
+  "inputs.VirtualKeyboardOOBE",
+  "inputs.VirtualKeyboardSystemLanguages.es",
 
   # https://crbug.com/1282370
   "arc.Boot.vm_with_per_vcpu_core_scheduling",
@@ -180,19 +186,14 @@ tast_disabled_tests_from_chrome_all = [
   "arc.TextToSpeech.vm",
   "arc.VMPstoreDump",
 
-  # Flaky on chromeos-eve-chrome. b/226284050.
-  "crostini.UninstallInvalidApp.bullseye_stable",
-  "crostini.Xattrs.bullseye_stable",
-  "crostini.SSHFSMount.bullseye_stable",
-  "crostini.GPUEnabled.gpu_bullseye_stable",
-  "crostini.Basic.bullseye_stable",
-  "crostini.CrashReporter.bullseye_stable",
-
   # https://crbug.com/1307671
   "policy.SafeBrowsingProtectionLevel",
 
   # https://crbug.com/1310750
   "launcher.SearchBuiltInApps.productivity_launcher_clamshell_mode",
+
+  # https://crbug.com/1309331
+  "policy.CookiesAllowedForUrls",
 ]
 
 # To disable a specific test in lacros_all_tast_tests, add it the following

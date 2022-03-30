@@ -412,10 +412,6 @@ const base::Feature kDesksTemplates{"DesksTemplates",
 const base::Feature kDiacriticsOnPhysicalKeyboardLongpress{
     "DiacriticsOnPhysicalKeyboardLongpress", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, the navigation panel will be shown in the diagnostics app.
-const base::Feature kDiagnosticsAppNavigation{"DiagnosticsAppNavigation",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Disables the CryptAuth v1 DeviceSync flow. Note: During the first phase
 // of the v2 DeviceSync rollout, v1 and v2 DeviceSync run in parallel. This flag
 // is needed to disable the v1 service during the second phase of the rollout.
@@ -904,6 +900,11 @@ const base::Feature kLauncherNudgeShortInterval{
 const base::Feature kLauncherNudgeSessionReset{
     "LauncherNudgeSessionReset", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, the new launcher pulsing blocks UI will show while syncing apps.
+const base::Feature kLauncherPulsingBlocksRefresh(
+    "LauncherPulsingBlocksRefresh",
+    base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enables new flow for license packaged devices with enterprise license.
 const base::Feature kLicensePackagedOobeFlow{"LicensePackagedOobeFlow",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1165,11 +1166,6 @@ const base::Feature kReleaseNotesNotificationAllChannels{
 const base::Feature kReleaseNotesSuggestionChip{
     "ReleaseNotesSuggestionChip", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables Reven Log Source on Chrome OS. This adds hardware
-// information to Feedback reports and chrome://system on ChromeOS Flex systems.
-const base::Feature kRevenLogSource{"RevenLogSource",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, the overivew and desk reverse scrolling behaviors are changed
 // and if the user performs the old gestures, a notification or toast will show
 // up.
@@ -1184,10 +1180,6 @@ const base::Feature kScalableStatusArea{"ScalableStatusArea",
 // Enables or disables flatbed multi-page scanning.
 const base::Feature kScanAppMultiPageScan{"ScanAppMultiPageScan",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables or disables use of Searchable PDF file type in the Scan app.
-const base::Feature kScanAppSearchablePdf{"ScanAppSearchablePdf",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable kSecondaryGoogleAccountUsage policy.
 const base::Feature kSecondaryGoogleAccountUsage{
@@ -1796,6 +1788,11 @@ bool IsLauncherNudgeSessionResetEnabled() {
          base::FeatureList::IsEnabled(kLauncherNudgeSessionReset);
 }
 
+bool IsLauncherPulsingBlocksRefreshEnabled() {
+  return IsProductivityLauncherEnabled() &&
+         base::FeatureList::IsEnabled(kLauncherPulsingBlocksRefresh);
+}
+
 bool IsLicensePackagedOobeFlowEnabled() {
   return base::FeatureList::IsEnabled(kLicensePackagedOobeFlow);
 }
@@ -1838,8 +1835,7 @@ bool IsNearbyKeepAliveFixEnabled() {
 }
 
 bool IsNetworkingInDiagnosticsAppEnabled() {
-  return base::FeatureList::IsEnabled(kEnableNetworkingInDiagnosticsApp) &&
-         base::FeatureList::IsEnabled(kDiagnosticsAppNavigation);
+  return base::FeatureList::IsEnabled(kEnableNetworkingInDiagnosticsApp);
 }
 
 bool IsOAuthIppEnabled() {

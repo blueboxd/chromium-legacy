@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/time/time.h"
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/internal/parse_name.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -41,6 +42,10 @@ class X509CertificateModel {
   std::string GetVersion() const;
   std::string GetSerialNumberHexified() const;
 
+  // Get the validity notBefore and notAfter times, returning true on success
+  // or false on error in parsing or converting to a base::Time.
+  bool GetTimes(base::Time* not_before, base::Time* not_after) const;
+
   // These methods returns the issuer/subject commonName/orgName/orgUnitName
   // formatted as a string, if present. Returns NotPresent if the attribute
   // type was not present, or Error if there was a parsing error.
@@ -54,6 +59,13 @@ class X509CertificateModel {
   OptionalStringOrError GetSubjectCommonName() const;
   OptionalStringOrError GetSubjectOrgName() const;
   OptionalStringOrError GetSubjectOrgUnitName() const;
+
+  // Get the issuer/subject name as a text block with one line per
+  // attribute-value pair. Will process IDN in commonName, showing original and
+  // decoded forms. Returns NotPresent if the Name was an empty sequence.
+  // (Although note that technically an empty issuer name is invalid.)
+  OptionalStringOrError GetIssuerName() const;
+  OptionalStringOrError GetSubjectName() const;
 
  private:
   bool ParseExtensions(const net::der::Input& extensions_tlv);

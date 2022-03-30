@@ -2,15 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/page_load_metrics/integration_tests/metric_integration_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 
 #if defined(USE_AURA)
-IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, DISABLED_EventCounts) {
+// TODO(crbug.com/1311383) Fix flakiness and reenable the test.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_EventCounts DISABLED_EventCounts
+#else
+#define MAYBE_EventCounts EventCounts
+#endif
+IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, MAYBE_EventCounts) {
   LoadHTML(R"HTML(
     <p>Sample website</p>
+    <script type="text/javascript">
+    window.eventCounts =
+        {mousedown: 0, touchstart: 0, pointerdown: 0, click: 0};
+    function recordEvent(e) {
+        eventCounts[e.type]++;
+    }
+    for (var evt in eventCounts) {
+        document.addEventListener(evt, recordEvent);
+    }
+    </script>
   )HTML");
 
   // Simulate tap on screen.
@@ -27,7 +44,13 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, DISABLED_EventCounts) {
   content::SimulateMouseClick(web_contents(), 0,
                               blink::WebMouseEvent::Button::kLeft);
 
-  base::PlatformThread::Sleep(base::Milliseconds(3000));
+  while (EvalJs(web_contents(), "window.eventCounts.mousedown").ExtractInt() <
+         3) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(100));
+    run_loop.Run();
+  }
 
   // Check event counts.
   int expected_pointerdown =

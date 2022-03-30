@@ -771,11 +771,6 @@ const char kEnableExperimentalCookieFeaturesDescription[] =
     "Enable new features that affect setting, sending, and managing cookies. "
     "The enabled features are subject to change at any time.";
 
-const char kEnableNavigationPredictorName[] = "Enables navigation predictor";
-const char kEnableNavigationPredictorDescription[] =
-    "Enables navigation predictor feature that predicts the next likely "
-    "navigation using a set of heuristics.";
-
 const char kEnableRawDrawName[] = "Enable raw draw";
 const char kEnableRawDrawDescription[] =
     "When enabled, web content will be rastered on output surface directly.";
@@ -1098,10 +1093,6 @@ const char kDeprecateAltBasedSixPackName[] =
 const char kDeprecateAltBasedSixPackDescription[] =
     "Show deprecation notifications and disable functionality for Alt based "
     "six pack deprecations. The Search based versions continue to work.";
-
-const char kDiagnosticsAppNavigationName[] = "Diagnostics app navigation";
-const char kDiagnosticsAppNavigationDescription[] =
-    "Enables the navigation panel in the Diagnostics app.";
 
 const char kDisableKeepaliveFetchName[] = "Disable fetch with keepalive set";
 const char kDisableKeepaliveFetchDescription[] =
@@ -3699,6 +3690,13 @@ const char kNtpDriveModuleName[] = "NTP Drive Module";
 const char kNtpDriveModuleDescription[] =
     "Shows the Google Drive module on the New Tab Page";
 
+const char kWebAuthenticationPermitEnterpriseAttestationName[] =
+    "Web Authentication Enterprise Attestation";
+const char kWebAuthenticationPermitEnterpriseAttestationDescription[] =
+    "Permit a set of origins to request a uniquely identifying enterprise "
+    "attestation statement from a security key when creating a Web "
+    "Authentication credential.";
+
 #if !defined(OFFICIAL_BUILD)
 const char kNtpDummyModulesName[] = "NTP Dummy Modules";
 const char kNtpDummyModulesDescription[] =
@@ -4684,11 +4682,6 @@ const char kEnableOAuthIppName[] =
 const char kEnableOAuthIppDescription[] =
     "Enable OAuth when printing via the IPP protocol";
 
-const char kEnableRevenLogSourceName[] =
-    "Enable Reven Log Source on chrome://system and feedback logs";
-const char kEnableRevenLogSourceDescription[] =
-    "Enable Reven Log Source on chrome://system and feedback logs";
-
 const char kEnableSuggestedFilesName[] = "Enable Suggested Files";
 const char kEnableSuggestedFilesDescription[] =
     "Enable the Suggested Files feature in Launcher, which will show Drive "
@@ -5182,12 +5175,6 @@ const char kScanAppMultiPageScanName[] =
 const char kScanAppMultiPageScanDescription[] =
     "Enables creating a single PDF file from multiple flatbed scans";
 
-const char kScanAppSearchablePdfName[] =
-    "Enable saving scans as a searchable PDF.";
-const char kScanAppSearchablePdfDescription[] =
-    "Allow selecting Searchable PDF file type in Scan app"
-    " with incorporation of OCR service.";
-
 const char kSecondaryGoogleAccountUsageName[] =
     "Enable Secondary Google account usage policy.";
 const char kSecondaryGoogleAccountUsageDescription[] =
@@ -5411,6 +5398,11 @@ const char kLauncherNudgeSessionResetName[] =
 const char kLauncherNudgeSessionResetDescription[] =
     "When enabled, this will reset the launcher nudge shown data on every new "
     "user session, allowing the nudge to be shown again.";
+
+const char kLauncherPulsingBlocksRefreshName[] =
+    "Launcher pulsing blocks' new UI";
+const char kLauncherPulsingBlocksRefreshDescription[] =
+    "Show the new pulsing blocks' UI in launcher during initial apps sync.";
 
 // Prefer keeping this section sorted to adding new definitions down here.
 

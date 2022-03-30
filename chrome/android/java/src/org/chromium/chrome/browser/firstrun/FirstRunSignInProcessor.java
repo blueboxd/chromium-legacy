@@ -122,8 +122,7 @@ public final class FirstRunSignInProcessor {
     /**
      * @return Whether there is no pending sign-in requests from the First Run Experience.
      */
-    @VisibleForTesting
-    public static boolean getFirstRunFlowSignInComplete() {
+    private static boolean getFirstRunFlowSignInComplete() {
         return SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_COMPLETE, false);
     }
@@ -150,7 +149,7 @@ public final class FirstRunSignInProcessor {
      * Sets the account name for the pending sign-in First Run Experience request.
      * @param accountName The account name, or null.
      */
-    private static void setFirstRunFlowSignInAccountName(String accountName) {
+    public static void setFirstRunFlowSignInAccountName(String accountName) {
         SharedPreferencesManager.getInstance().writeString(
                 ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME, accountName);
     }
@@ -167,20 +166,8 @@ public final class FirstRunSignInProcessor {
      * Sets the preference to see the settings once signed in after FRE.
      * @param isComplete Whether the user selected to see the settings once signed in.
      */
-    private static void setFirstRunFlowSignInSetup(boolean isComplete) {
+    public static void setFirstRunFlowSignInSetup(boolean isComplete) {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_SETUP, isComplete);
-    }
-
-    /**
-     * Finalize the state of the FRE flow (mark is as "complete" and finalize parameters).
-     * @param syncConsentAccountName The account name for the pending sign-in request. (Or null)
-     * @param showAdvancedSyncSettings Whether the user selected to see the settings once signed in.
-     */
-    public static void finalizeFirstRunFlowState(
-            String syncConsentAccountName, boolean showAdvancedSyncSettings) {
-        FirstRunStatus.setFirstRunFlowComplete(true);
-        setFirstRunFlowSignInAccountName(syncConsentAccountName);
-        setFirstRunFlowSignInSetup(showAdvancedSyncSettings);
     }
 }

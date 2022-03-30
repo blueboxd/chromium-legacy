@@ -380,9 +380,8 @@
     },
     {
       name: "CaptureHandle",
-      origin_trial_feature_name: "CaptureHandle",
       depends_on: ["GetDisplayMedia"],
-      status: {"Android": "", "default": "experimental"},
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "CaptureTimeInCsrc",
@@ -2285,11 +2284,6 @@
       name: "SystemWakeLock",
       status: "experimental",
     },
-    {
-      // TODO(crbug.com/898942): Remove this in Chrome 95.
-      name: "TargetBlankImpliesNoOpener",
-      status: "stable",
-    },
     // For unit tests.
     {
       name: "TestFeature",
@@ -2678,6 +2672,10 @@
     {
       name: "WebHID",
       status: {"Android": "", "default": "stable"},
+    },
+    {
+      name: "WebHIDExclusionFiltersOption",
+      status: "stable",
     },
     {
       name: "WebNFC",

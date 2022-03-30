@@ -182,9 +182,9 @@ ScriptPromise HID::requestDevice(ScriptState* script_state,
   if (options->hasFilters()) {
     mojo_filters.ReserveCapacity(options->filters().size());
     for (const auto& filter : options->filters()) {
-      absl::optional<String> error_message = CheckDeviceFilterValidity(*filter);
+      String error_message = CheckDeviceFilterValidity(*filter);
       if (error_message) {
-        RejectWithTypeError(error_message.value(), resolver);
+        RejectWithTypeError(error_message, resolver);
         return promise;
       }
       mojo_filters.push_back(ConvertDeviceFilter(*filter));
@@ -192,9 +192,29 @@ ScriptPromise HID::requestDevice(ScriptState* script_state,
   }
   DCHECK_EQ(options->filters().size(), mojo_filters.size());
 
+  Vector<mojom::blink::HidDeviceFilterPtr> mojo_exclusion_filters;
+  if (options->hasExclusionFilters()) {
+    if (options->exclusionFilters().size() == 0) {
+      exception_state.ThrowTypeError(
+          "'exclusionFilters', if present, must contain at least one filter.");
+      return ScriptPromise();
+    }
+    mojo_exclusion_filters.ReserveCapacity(options->exclusionFilters().size());
+    for (const auto& exclusion_filter : options->exclusionFilters()) {
+      String error_message = CheckDeviceFilterValidity(*exclusion_filter);
+      if (error_message) {
+        RejectWithTypeError(error_message, resolver);
+        return promise;
+      }
+      mojo_exclusion_filters.push_back(ConvertDeviceFilter(*exclusion_filter));
+    }
+    DCHECK_EQ(options->exclusionFilters().size(),
+              mojo_exclusion_filters.size());
+  }
+
   EnsureServiceConnection();
   service_->RequestDevice(
-      std::move(mojo_filters),
+      std::move(mojo_filters), std::move(mojo_exclusion_filters),
       WTF::Bind(&HID::FinishRequestDevice, WrapPersistent(this),
                 WrapPersistent(resolver)));
   return promise;
@@ -288,7 +308,7 @@ void HID::CloseServiceConnection() {
 
 mojom::blink::HidDeviceFilterPtr HID::ConvertDeviceFilter(
     const HIDDeviceFilter& filter) {
-  DCHECK(!CheckDeviceFilterValidity(filter).has_value());
+  DCHECK(!CheckDeviceFilterValidity(filter));
 
   auto mojo_filter = mojom::blink::HidDeviceFilter::New();
   if (filter.hasVendorId()) {
@@ -315,8 +335,7 @@ mojom::blink::HidDeviceFilterPtr HID::ConvertDeviceFilter(
   return mojo_filter;
 }
 
-absl::optional<String> HID::CheckDeviceFilterValidity(
-    const HIDDeviceFilter& filter) {
+String HID::CheckDeviceFilterValidity(const HIDDeviceFilter& filter) {
   if (!filter.hasVendorId() && !filter.hasProductId() &&
       !filter.hasUsagePage() && !filter.hasUsage()) {
     return "A filter must provide a property to filter by.";
@@ -330,7 +349,7 @@ absl::optional<String> HID::CheckDeviceFilterValidity(
     return "A filter containing a usage must also contain a usagePage.";
   }
 
-  return absl::nullopt;
+  return String();
 }
 
 void HID::Trace(Visitor* visitor) const {

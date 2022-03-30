@@ -130,7 +130,7 @@ group("gn_all") {
     ]
   }
 
-  if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
+  if (!is_ios && !is_android && !is_chromecast) {
     deps += [
       "//chrome",
       "//chrome/browser/ui/color:dump_colors",
@@ -238,7 +238,7 @@ group("gn_all") {
     deps += [ "//chrome/browser/media/router:openscreen_unittests" ]
   }
 
-  if (!is_ios && !is_fuchsia) {
+  if (!is_ios) {
     deps += [
       "//google_apis/gcm:mcs_probe",
       "//media/cast:cast_unittests",
@@ -252,12 +252,14 @@ group("gn_all") {
         deps += [ "//chrome/test:telemetry_perf_unittests${_target_suffix}" ]
       }
     }
-  } else if (is_ios) {
+  } else {
     deps += [
       "//ios:all",
       "//third_party/crashpad/crashpad:crashpad_tests",
     ]
-  } else if (is_fuchsia && !is_chromecast) {
+  }
+
+  if (is_fuchsia && !is_chromecast) {
     deps += [
       ":d8_fuchsia",
       "//fuchsia:gn_all",
@@ -503,7 +505,7 @@ group("gn_all") {
     }
   }
 
-  if (is_ios || is_win || (is_linux || is_chromeos_lacros) || is_fuchsia) {
+  if (is_ios || is_win || is_linux || is_chromeos_lacros || is_fuchsia) {
     deps += [
       "//base:base_i18n_perftests",
       "//google_apis:google_apis_unittests",
@@ -516,8 +518,8 @@ group("gn_all") {
   }
 
   # TODO(GYP): Figure out which of these should (and can) build
-  # for Chrome OS, iOS, and Fuchsia.
-  if (!is_chromeos_ash && !is_ios && !is_fuchsia) {
+  # for Chrome OS and iOS.
+  if (!is_chromeos_ash && !is_ios) {
     deps += [
       "//base:build_utf8_validator_tables",
       "//base:check_example",
@@ -589,7 +591,14 @@ group("gn_all") {
     ]
   }
 
-  if (is_fuchsia) {
+  # TODO(crbug.com/1258253): Consolidate all ChromeDriver deps in one location
+  # and avoid conditionally removing targets.
+  if (is_fuchsia && !is_chromecast) {
+    # For Fuchsia, ChromeDriver runs on the host, not on Fuchsia.
+    deps -= [
+      "//chrome/test/chromedriver:chromedriver",
+      "//chrome/test/chromedriver:chromedriver_unittests",
+    ]
     deps += [ "//chrome/test/chromedriver:chromedriver($host_toolchain)" ]
   }
 
@@ -703,7 +712,7 @@ group("gn_all") {
     deps += [ "//ui/message_center:message_center_unittests" ]
   }
 
-  if (!is_android && !is_ios && !is_fuchsia) {
+  if (!is_android && !is_ios) {
     deps += [ "//content/browser/bluetooth/tools:bluetooth_metrics_hash" ]
   }
 
@@ -1496,7 +1505,7 @@ if (!is_ios) {
 group("chromium_builder_perf") {
   testonly = true
 
-  if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
+  if (!is_ios && !is_android && !is_chromecast) {
     data_deps = [
       "//cc:cc_perftests",
       "//chrome/test:load_library_perf_tests",
@@ -1538,10 +1547,17 @@ group("chromium_builder_perf") {
         "//third_party/angle/src/tests:angle_perftests",
       ]
     }
+
+    # An `if (is_fuchsia)` condition in //chrome/test/BUILD.gn prevents this
+    # target from being defined.
+    # TODO(crbug.com/1310086): Resolve that and remove this exception.
+    if (is_fuchsia) {
+      data_deps -= [ "//chrome/test:performance_test_suite" ]
+    }
   }
 }
 
-if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
+if (!is_ios && !is_android && !is_chromecast) {
   group("chromium_builder_asan") {
     testonly = true
 

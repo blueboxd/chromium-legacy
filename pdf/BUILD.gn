@@ -64,8 +64,7 @@ if (enable_pdf) {
 
       # TODO(crbug.com/1158929): Eliminate chrome_find_request_manager_browsertest.cc's dependence
       # on document_loader_impl.h.
-      "//chrome/test:browser_tests",
-      "//chrome/test:browser_tests__exec",  # Fuchsia variant.
+      "//chrome/test:browser_tests${exec_target_suffix}",
     ]
 
     sources = [
@@ -88,6 +87,8 @@ if (enable_pdf) {
       "draw_utils/shadow.h",
       "file_extension.cc",
       "file_extension.h",
+      "metrics_handler.cc",
+      "metrics_handler.h",
       "page_orientation.cc",
       "page_orientation.h",
       "paint_aggregator.cc",
@@ -212,8 +213,7 @@ if (enable_pdf) {
   source_set("accessibility") {
     visibility = [
       ":*",
-      "//components:components_browsertests",
-      "//components:components_browsertests__exec",  # Fuchsia variant.
+      "//components:components_browsertests${exec_target_suffix}",
       "//components/pdf/renderer",
       "//components/pdf/renderer:unit_tests",
     ]

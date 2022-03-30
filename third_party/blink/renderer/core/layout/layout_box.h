@@ -43,7 +43,7 @@ class CustomLayoutChild;
 class LayoutBlockFlow;
 class LayoutMultiColumnSpannerPlaceholder;
 class NGBoxFragmentBuilder;
-class NGBreakToken;
+class NGBlockBreakToken;
 class NGConstraintSpace;
 class NGEarlyBreak;
 class NGLayoutResult;
@@ -887,7 +887,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   int PixelSnappedScrollWidth() const;
   int PixelSnappedScrollHeight() const;
 
-  void ScrollByRecursively(const ScrollOffset& delta);
   // If makeVisibleInVisualViewport is set, the visual viewport will be scrolled
   // if required to make the rect visible.
   PhysicalRect ScrollRectToVisibleRecursive(
@@ -1224,7 +1223,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // TODO(ikilpatrick): Move this function into NGBlockNode.
   const NGLayoutResult* CachedLayoutResult(
       const NGConstraintSpace&,
-      const NGBreakToken*,
+      const NGBlockBreakToken*,
       const NGEarlyBreak*,
       absl::optional<NGFragmentGeometry>* initial_fragment_geometry,
       NGLayoutCacheStatus* out_cache_status);
@@ -1510,7 +1509,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool CanBeScrolledAndHasScrollableArea() const;
   virtual bool CanBeProgramaticallyScrolled() const;
   virtual void Autoscroll(const PhysicalOffset&);
-  bool CanAutoscroll() const;
   PhysicalOffset CalculateAutoscrollDirection(
       const gfx::PointF& point_in_root_frame) const;
   static LayoutBox* FindAutoscrollable(LayoutObject*,

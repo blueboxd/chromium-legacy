@@ -888,7 +888,7 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::FinishLayout(
 
   LayoutUnit unconstrained_intrinsic_block_size = intrinsic_block_size_;
   intrinsic_block_size_ = ClampIntrinsicBlockSize(
-      ConstraintSpace(), Node(), BorderScrollbarPadding(),
+      ConstraintSpace(), Node(), BreakToken(), BorderScrollbarPadding(),
       intrinsic_block_size_,
       CalculateQuirkyBodyMarginBlockSum(end_margin_strut));
 
@@ -1015,9 +1015,6 @@ bool NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
     NGPreviousInflowPosition* previous_inflow_position,
     const NGInlineBreakToken** inline_break_token_out) {
   DCHECK(previous_result_);
-
-  if (inline_node.ShouldBeReshaped())
-    return false;
 
   const auto& previous_fragment =
       To<NGPhysicalBoxFragment>(previous_result_->PhysicalFragment());
@@ -1426,8 +1423,9 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     // The block-size of a textfield doesn't depend on its contents, so we can
     // compute the block-size without passing the actual intrinsic block-size.
     const LayoutUnit bsp_block_sum = BorderScrollbarPadding().BlockSum();
-    LayoutUnit block_size = ClampIntrinsicBlockSize(
-        ConstraintSpace(), Node(), BorderScrollbarPadding(), bsp_block_sum);
+    LayoutUnit block_size =
+        ClampIntrinsicBlockSize(ConstraintSpace(), Node(), BreakToken(),
+                                BorderScrollbarPadding(), bsp_block_sum);
     block_size = ComputeBlockSizeForFragment(
         ConstraintSpace(), Style(), BorderPadding(), block_size,
         container_builder_.InitialBorderBoxSize().inline_size);

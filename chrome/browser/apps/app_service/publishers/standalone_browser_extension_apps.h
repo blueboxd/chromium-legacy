@@ -56,7 +56,7 @@ class StandaloneBrowserExtensionApps : public KeyedService,
                                        public crosapi::mojom::AppPublisher,
                                        public chromeos::LoginState::Observer {
  public:
-  explicit StandaloneBrowserExtensionApps(AppServiceProxy* proxy);
+  StandaloneBrowserExtensionApps(AppServiceProxy* proxy, AppType app_type);
   ~StandaloneBrowserExtensionApps() override;
 
   StandaloneBrowserExtensionApps(const StandaloneBrowserExtensionApps&) =
@@ -64,9 +64,9 @@ class StandaloneBrowserExtensionApps : public KeyedService,
   StandaloneBrowserExtensionApps& operator=(
       const StandaloneBrowserExtensionApps&) = delete;
 
-  // Register the chrome apps host from lacros-chrome to allow lacros-chrome
-  // to publish chrome apps to the app service in ash-chrome.
-  void RegisterChromeAppsCrosapiHost(
+  // Register the host (for Chrome Apps or Extensions) from Lacros to allow the
+  // matching publisher to publish to the App Service in Ash.
+  void RegisterCrosapiHost(
       mojo::PendingReceiver<crosapi::mojom::AppPublisher> receiver);
 
  private:
@@ -138,6 +138,8 @@ class StandaloneBrowserExtensionApps : public KeyedService,
                   int size_hint_in_dip,
                   apps::LoadIconCallback callback,
                   IconValuePtr icon_value);
+
+  const AppType app_type_;
 
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 

@@ -575,6 +575,7 @@ static_library("test_support") {
   }
 
   if (!is_fuchsia) {
+    # Crashes are handled by the platform.
     public_deps += [ "//components/crash/core/app" ]
   }
 
@@ -961,6 +962,7 @@ if (is_android) {
       "//components/sync:test_support_nigori",
       "//components/sync/test/fake_server:fake_server",
       "//components/sync_bookmarks",
+      "//components/sync_device_info:test_support",
       "//components/undo",
       "//content/test:android_test_message_pump_support",
       "//testing/android/native_test:native_test_support",
@@ -1583,8 +1585,6 @@ if (!is_android) {
       "../browser/accessibility/browser_accessibility_state_browsertest.cc",
       "../browser/accessibility/image_annotation_browsertest.cc",
       "../browser/accessibility/interstitial_accessibility_browsertest.cc",
-      "../browser/accessibility/live_caption_controller_browsertest.cc",
-      "../browser/accessibility/live_caption_speech_recognition_host_browsertest.cc",
       "../browser/apps/guest_view/app_view_browsertest.cc",
       "../browser/apps/guest_view/web_view_browsertest.cc",
       "../browser/apps/platform_apps/app_browsertest.cc",
@@ -1891,7 +1891,6 @@ if (!is_android) {
       "../browser/policy/test/url_blocklist_policy_browsertest.cc",
       "../browser/policy/test/url_keyed_anonymized_data_collection_enabled_browsertest.cc",
       "../browser/policy/test/web_rtc_udp_port_range_policy_browsertest.cc",
-      "../browser/policy/test/window_opener_policy_browsertest.cc",
       "../browser/portal/portal_browsertest.cc",
       "../browser/portal/portal_recently_audible_browsertest.cc",
       "../browser/predictors/loading_predictor_browsertest.cc",
@@ -2272,6 +2271,12 @@ if (!is_android) {
 
         # Lacros does not seem to have any actual WebView-based UI to test.
         "../browser/ui/webui/webui_webview_browsertest.cc",
+
+        # TODO(b/223493879): Migration of Live Caption feature to LaCrOS is not
+        # finished yet. These should probably be moved to
+        # lacros_chrome_browsertests as well.
+        "../browser/accessibility/live_caption_controller_browsertest.cc",
+        "../browser/accessibility/live_caption_speech_recognition_host_browsertest.cc",
 
         # This test is run as part of lacros_chrome_browsertests below.
         "../browser/ui/views/location_bar/intent_chip_button_browsertest.cc",
@@ -4068,6 +4073,7 @@ if (!is_android) {
         "//components/services/app_service/public/cpp:icon_types",
         "//components/services/app_service/public/cpp:instance_update",
         "//components/services/app_service/public/cpp:intents",
+        "//components/services/app_service/public/cpp:preferred_apps",
         "//components/services/app_service/public/cpp:run_on_os_login",
         "//components/services/app_service/public/cpp:test_support",
         "//components/session_manager/core",
@@ -4474,6 +4480,7 @@ if (is_chromeos_lacros) {
     ]
 
     sources = [
+      "../browser/apps/intent_helper/supported_links_infobar_delegate_browsertest.cc",
       "../browser/chromeos/extensions/login_screen/login_screen_storage/login_screen_storage_apitest.cc",
       "../browser/lacros/browser_service_lacros_browsertest.cc",
       "../browser/lacros/browser_test_util.cc",
@@ -4528,10 +4535,12 @@ if (is_chromeos_lacros) {
       "//components/captive_portal/core:buildflags",
       "//components/feature_engagement/public:public",
       "//components/feature_engagement/test:test_support",
+      "//components/infobars/content:content",
       "//components/metrics/structured",
       "//components/metrics/structured:structured_events",
       "//components/proxy_config:proxy_config",
       "//components/services/app_service/public/cpp:intents",
+      "//components/services/app_service/public/cpp:preferred_apps",
       "//ui/platform_window",
     ]
 
@@ -4733,7 +4742,7 @@ template("performance_test_suite_template_base") {
       data_deps += [ "//third_party/angle/src/tests:angle_perftests" ]
     }
 
-    if (!is_android && !is_fuchsia && !is_chromeos_lacros) {
+    if (!is_android && !is_chromeos_lacros) {
       data_deps += [
         "//chrome/test:load_library_perf_tests",
         "//ui/views:views_perftests",
@@ -4749,7 +4758,7 @@ template("performance_test_suite_template_base") {
       }
     }
 
-    if (!is_ios && !is_fuchsia && !is_android && !is_chromeos_lacros) {
+    if (!is_ios && !is_android && !is_chromeos_lacros) {
       data_deps += [ "//net:net_perftests" ]
     }
   }
@@ -5654,6 +5663,7 @@ test("unit_tests") {
     "//components/browsing_data/content",
     "//components/browsing_data/content:test_support",
     "//components/browsing_data/core",
+    "//components/browsing_topics",
     "//components/captive_portal/content",
     "//components/captive_portal/core:buildflags",
     "//components/cast_channel:cast_channel",
@@ -7055,6 +7065,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/arc/arc_playstore_search_provider_unittest.cc",
       "../browser/ui/app_list/search/arc/recommend_apps_fetcher_impl_unittest.cc",
       "../browser/ui/app_list/search/assistant_text_search_provider_unittest.cc",
+      "../browser/ui/app_list/search/common/string_util_unittest.cc",
       "../browser/ui/app_list/search/cros_action_history/cros_action_recorder_tab_tracker_unittest.cc",
       "../browser/ui/app_list/search/cros_action_history/cros_action_recorder_unittest.cc",
       "../browser/ui/app_list/search/files/file_result_unittest.cc",
@@ -8097,7 +8108,7 @@ test("unit_tests") {
       deps += [ "//dbus:test_support" ]
     }
   }
-  if ((is_linux || is_chromeos) && is_chrome_branded && current_cpu == "x86") {
+  if (is_chrome_branded && (is_linux || is_chromeos) && current_cpu == "x86") {
     ldflags = [ "-Wl,--strip-debug" ]
   }
   if (is_win || is_mac) {
@@ -8406,7 +8417,7 @@ test("unit_tests") {
     ]
   }
 
-  if (!is_android && is_chrome_branded) {
+  if (is_chrome_branded && !is_android) {
     sources += [
       "../browser/ui/views/lens/lens_region_search_controller_unittest.cc",
       "../browser/ui/views/lens/lens_side_panel_controller_unittest.cc",
@@ -9402,7 +9413,7 @@ test("chrome_app_unittests") {
   }
 }
 
-if (!is_android && !is_fuchsia) {
+if (!is_android) {
   # Everything needed to build/copy to run the performance_browser_tests isolate.
   # See: //testing/buildbot/gn_isolate_map.pyl
   group("performance_browser_tests") {
@@ -9611,7 +9622,7 @@ source_set("sync_integration_test_support") {
   }
 }
 
-if (!is_android && !is_fuchsia) {
+if (!is_android) {
   test("sync_integration_tests") {
     use_xvfb = use_xvfb_in_this_config
 
@@ -9657,6 +9668,7 @@ if (!is_android && !is_fuchsia) {
       "//components/sync/test/fake_server",
       "//components/sync/trusted_vault:test_support",
       "//components/sync_bookmarks",
+      "//components/sync_device_info:test_support",
       "//components/undo",
       "//components/webapps/browser",
       "//crypto:platform",
@@ -9827,7 +9839,11 @@ if (!is_android && !is_fuchsia) {
     # This target should not require the Chrome executable to run.
     assert_no_deps = [ "//chrome" ]
   }
+}
 
+# TODO(crbug.com/1310351): Once WPR is supported, enable this suite on Fuchsia
+# and merge with the blocks above and below.
+if (!is_android && !is_fuchsia) {
   # Tests autofill on captured websites
   test("captured_sites_interactive_tests") {
     use_xvfb = use_xvfb_in_this_config
@@ -9932,7 +9948,10 @@ if (!is_android && !is_fuchsia) {
       ]
     }
   }
+}
 
+# TODO(crbug.com/1310351): Merge with the block above once fixed.
+if (!is_android) {
   # The Chrome Enterprise File System Connector requires Google API keys,
   # and only works on Google Chrome branded builds.
   # The connectors file system interactive tests are not supported on
@@ -9959,6 +9978,24 @@ if (!is_android && !is_fuchsia) {
         "//third_party/catapult/web_page_replay_go/deterministic.js",
       ]
 
+      if (is_fuchsia) {
+        # TODO(crbug.com/1310351): Once WPR is supported, update the test and
+        # remove these exceptions.
+        sources -= [ "../browser/enterprise/connectors/file_system/box_captured_sites_interactive_uitest.cc" ]
+        data -= [ "//third_party/catapult/telemetry/telemetry/bin/" ]
+
+        # Fuchsia needs |data| dependencies when building the test package, but
+        # these files are only downloaded if the disabled by default
+        # `checkout_chromium_fsc_test_dependencies` is true.
+        # TODO(crbug.com/1310966): Find a solution for including this data
+        # without requiring that `checkout_chromium_fsc_test_dependencies` be
+        # true when `checkout_fuchsia`.
+        data -= [
+          "//chrome/test/data/enterprise/connectors/file_system/captured_sites/",
+          "//chrome/test/data/enterprise/connectors/file_system/downloads/",
+        ]
+      }
+
       if (is_linux || is_chromeos || is_win) {
         data_deps = [ "//chrome:packed_resources" ]
       }
@@ -9977,7 +10014,6 @@ if (!is_android && !is_fuchsia) {
         "//chrome/browser/devtools",
         "//chrome/browser/metrics:test_support",
         "//chrome/renderer",
-        "//chrome/test:browser_tests",
         "//chrome/test:sync_integration_test_support",
         "//components/invalidation/impl:impl",
         "//components/invalidation/impl:test_support",
@@ -10042,7 +10078,10 @@ if (!is_android && !is_fuchsia) {
       }
     }
   }
+}
 
+# TOOD(crbug.com/1258253): Merge with block above when it is enabled on Fuchsia.
+if (!is_android) {
   group("telemetry_unittests") {
     testonly = true
     deps = [ "//tools/perf/chrome_telemetry_build:telemetry_chrome_test" ]
@@ -10454,10 +10493,14 @@ if (is_linux || is_mac || is_win) {
       "//chrome",
       "//chrome/test/chromedriver",
       "//testing:test_scripts_shared",
+      "//ui/base:goldctl",
     ]
 
     data = [
       "//.vpython3",
+      "//build/skia_gold_common",
+      "//testing/scripts/skia_gold_infra/finch_skia_gold_properties.py",
+      "//testing/scripts/skia_gold_infra/finch_skia_gold_session_manager.py",
       "//testing/scripts/run_variations_smoke_tests.py",
       "//testing/scripts/variations_seed_access_helper.py",
       "//testing/scripts/variations_smoke_test_data/",

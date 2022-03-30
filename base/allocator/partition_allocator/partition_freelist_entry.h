@@ -68,7 +68,7 @@ class EncodedPartitionFreelistEntryPtr {
 #if defined(ARCH_CPU_BIG_ENDIAN)
     uintptr_t transformed = ~address;
 #else
-    uintptr_t transformed = ::base::ByteSwapUintPtrT(address);
+    uintptr_t transformed = base::ByteSwapUintPtrT(address);
 #endif
     return transformed;
   }
@@ -265,7 +265,7 @@ static_assert(kSmallestBucket >= sizeof(PartitionFreelistEntry),
 // it's 0, it gets patched to 1), and ref-count gets added to it.
 namespace {
 constexpr size_t kSmallestUsedBucket =
-    ::base::bits::AlignUp(1 + sizeof(PartitionRefCount), kSmallestBucket);
+    base::bits::AlignUp(1 + sizeof(PartitionRefCount), kSmallestBucket);
 }
 static_assert(kSmallestUsedBucket >=
                   sizeof(PartitionFreelistEntry) + sizeof(PartitionRefCount),
@@ -287,6 +287,13 @@ ALWAYS_INLINE PartitionFreelistEntry* PartitionFreelistEntry::GetNextInternal(
   // |for_thread_cache|, since the argument is always a compile-time constant.
   if (UNLIKELY(!IsSane(this, ret, for_thread_cache))) {
     if constexpr (crash_on_corruption) {
+      // Put the corrupted data on the stack, it may give us more information
+      // about what kind of corruption that was.
+      PA_DEBUG_DATA_ON_STACK("first",
+                             static_cast<size_t>(encoded_next_.encoded_));
+#if defined(PA_HAS_FREELIST_SHADOW_ENTRY)
+      PA_DEBUG_DATA_ON_STACK("second", static_cast<size_t>(shadow_));
+#endif
       FreelistCorruptionDetected(extra);
     } else {
       return nullptr;

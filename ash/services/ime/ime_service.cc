@@ -97,12 +97,14 @@ void ImeService::ConnectToImeEngine(
   // The extension will only use ConnectToImeEngine, and NativeInputMethodEngine
   // will only use ConnectToInputMethod.
   if ((connection_factory_ && connection_factory_->IsConnected()) ||
-      (input_engine_ && input_engine_->IsConnected())) {
+      (system_engine_ && system_engine_->IsConnected()) ||
+      (rule_based_engine_ && rule_based_engine_->IsConnected())) {
     std::move(callback).Run(/*bound=*/false);
     return;
   }
 
-  input_engine_.reset();
+  system_engine_.reset();
+  rule_based_engine_.reset();
   decoder_engine_ = std::make_unique<DecoderEngine>(
       this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
   bool bound = decoder_engine_->BindRequest(
@@ -118,17 +120,19 @@ void ImeService::ConnectToInputMethod(
   decoder_engine_.reset();
 
   if (IsRuleBasedInputMethod(ime_spec)) {
-    input_engine_ = RuleBasedEngine::Create(ime_spec, std::move(input_method),
-                                            std::move(input_method_host));
-    std::move(callback).Run(/*bound=*/input_engine_ != nullptr);
+    system_engine_.reset();
+    rule_based_engine_ = RuleBasedEngine::Create(
+        ime_spec, std::move(input_method), std::move(input_method_host));
+    std::move(callback).Run(/*bound=*/rule_based_engine_ != nullptr);
     return;
   }
 
+  rule_based_engine_.reset();
   auto system_engine = std::make_unique<SystemEngine>(
       this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
   bool bound = system_engine->BindRequest(ime_spec, std::move(input_method),
                                           std::move(input_method_host));
-  input_engine_ = std::move(system_engine);
+  system_engine_ = std::move(system_engine);
   std::move(callback).Run(bound);
 }
 
@@ -139,7 +143,8 @@ void ImeService::InitializeConnectionFactory(
   // Drop any currently bound pipes.
   connection_factory_.reset();
   decoder_engine_.reset();
-  input_engine_.reset();
+  system_engine_.reset();
+  rule_based_engine_.reset();
 
   if (connection_target == mojom::ConnectionTarget::kImeService) {
     connection_factory_ =
@@ -152,7 +157,7 @@ void ImeService::InitializeConnectionFactory(
       this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
   bool bound =
       system_engine->BindConnectionFactory(std::move(connection_factory));
-  input_engine_ = std::move(system_engine);
+  system_engine_ = std::move(system_engine);
   std::move(callback).Run(bound);
 }
 

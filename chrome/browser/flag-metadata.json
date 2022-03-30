@@ -1642,7 +1642,7 @@
   {
     "name": "enable-component-updater-test-request",
     "owners": [ "romanarora@google.com", "lacros-team@google.com" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 120
   },
   {
     "name": "enable-conditional-tabstrip",
@@ -1708,7 +1708,7 @@
   {
     "name": "enable-cros-ime-assist-multi-word-lacros",
     "owners": [ "curtismcmullan", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 120
   },
   {
     "name": "enable-cros-ime-assist-personal-info",
@@ -1860,7 +1860,7 @@
   {
     "name": "enable-desktop-capture-lacros-v2",
     "owners": [ "alcooper", "mfoltz" ],
-    "expiry_milestone": 105
+    "expiry_milestone": 115
   },
   {
     "name": "enable-desktop-pwas-additional-windowing-controls",
@@ -2277,7 +2277,7 @@
   {
     "name": "enable-lacros-in-web-kiosk",
     "owners": ["bfranz", "chromeos-kiosk-eng@google.com"],
-    "expiry_milestone": 110
+    "expiry_milestone": 120
   },
   {
     "name": "enable-launcher-app-paging",
@@ -2375,11 +2375,6 @@
     "name": "enable-nacl",
     "owners": [ "dschuff", "native-client-dev@googlegroups.com" ],
     "expiry_milestone": 128
-  },
-  {
-    "name": "enable-navigation-predictor",
-    "owners": [ "spelchat", "ryansturm", "instant-nav@google.com" ],
-    "expiry_milestone": 100
   },
   {
     "name": "enable-network-logging-to-file",
@@ -2630,11 +2625,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "enable-reven-log-source",
-    "owners": [ "xiangdongkong", "cros-feedback-app@google.com" ],
-    "expiry_milestone": 112
-  },
-  {
     "name": "enable-rgb-keyboard",
     "owners": [ "jimmyxgong", "zentaro", "cros-peripherals@google.com"],
     "expiry_milestone": 108
@@ -2852,7 +2842,7 @@
   {
     "name": "enable-tts-lacros-support",
     "owners": ["jennyz"],
-    "expiry_milestone": 100
+    "expiry_milestone": 120
   },
   {
     "name": "enable-ui-devtools",
@@ -2929,7 +2919,7 @@
   },
   {
     "name": "enable-web-authentication-cable-disco-creds",
-    "owners": [ "webauthn-team@google.com" ],
+    "owners": [ "chrome-webauthn@google.com" ],
     "expiry_milestone": 112
   },
   {
@@ -3406,7 +3396,7 @@
   {
     "name": "full-restore-for-lacros",
     "owners": [ "dominickn", "nancylingwang", "sammiequon", "xdai" ],
-    "expiry_milestone": 105
+    "expiry_milestone": 115
   },
   {
     "name": "full-user-agent",
@@ -3839,7 +3829,7 @@
   {
     "name": "launcher-lacros-integration",
     "owners": ["wrong", "thanhdng", "tby"],
-    "expiry_milestone": 105
+    "expiry_milestone": 115
   },
   {
     "name": "launcher-nudge",
@@ -3855,6 +3845,11 @@
     "name": "launcher-nudge-short-interval",
     "owners": [ "wcwang", "//ash/app_list/OWNERS" ],
     "expiry_milestone": 104
+  },
+  {
+    "name": "launcher-pulsing-blocks-refresh",
+    "owners": [ "anasalazar", "cros-system-ui-eng@google.com" ],
+    "expiry_milestone": 105
   },
   {
     "name": "launcher-search-normalization",
@@ -4118,8 +4113,8 @@
   },
   {
     "name": "nearby-sharing-background-scanning",
-    "owners": [ "hansenmichael@google.com", "cvandermerwe@google.com", "chromeos-cross-device-eng@google.com" ],
-    "expiry_milestone": 101
+    "owners": [ "hansenmichael@google.com", "chromeos-cross-device-eng@google.com" ],
+    "expiry_milestone": 103
   },
   {
     "name": "nearby-sharing-one-page-onboarding",
@@ -4883,12 +4878,12 @@
   {
     "name": "productivity-launcher",
     "owners": [ "cros-system-ui-eng@google.com" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 104
   },
   {
     "name": "productivity-launcher-animation",
     "owners": [ "jamescook", "tbarzic", "cros-system-ui-eng@google.com" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 104
   },
   {
     "name":"productivity-reorder-apps",
@@ -5169,11 +5164,6 @@
   },
   {
     "name": "scan-app-multi-page-scan",
-    "owners": [ "gavinwill", "cros-peripherals@google.com" ],
-    "expiry_milestone": 112
-  },
-  {
-    "name": "scan-app-searchable-pdf",
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
     "expiry_milestone": 112
   },
@@ -6022,6 +6012,14 @@
     "name": "web-apps-crosapi",
     "owners": [ "mxcai", "ericwilligers", "chromeos-apps-foundation-team@google.com" ],
     "expiry_milestone": 115
+  },
+  {
+    "name": "web-authentication-permit-enterprise-attestation",
+    "owners": [ "chrome-webauthn@google.com" ],
+    // This flag lets end users enroll security keys with an enterprise that
+    // requires individual attestation on a device that is not enterprised
+    // managed (e.g. during onboarding).
+    "expiry_milestone": -1
   },
   {
     "name": "web-bundles",

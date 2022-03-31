@@ -2303,11 +2303,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           safe_browsing::IsSafeBrowsingEnabled(*prefs) &&
           !base::CommandLine::ForCurrentProcess()->HasSwitch(
               ::switches::kDisableClientSidePhishingDetection);
-#if BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
-      client_side_detection_enabled &= base::FeatureList::IsEnabled(
-          safe_browsing::kClientSideDetectionForAndroid);
-#endif  // BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
-
       // Disable client-side phishing detection in the renderer if it is
       // disabled in the Profile preferences, or by command line flag, or by not
       // being enabled on Android.
@@ -5998,8 +5993,32 @@ ChromeContentBrowserClient::GetBrowsingTopicsForJsApi(
   if (!browsing_topics_service)
     return {};
 
-  return browsing_topics_service->GetBrowsingTopicsForJsApi(context_origin,
-                                                            main_frame);
+  auto topics = browsing_topics_service->GetBrowsingTopicsForJsApi(
+      context_origin, main_frame);
+
+  // Compare the provided topics to the real (i.e. non random) topics available
+  // for the site, this allows filtering out of the randomly generated topics
+  // for passing to the Page Specific Content Settings.
+  auto real_topics = browsing_topics_service->GetTopicsForSiteForDisplay(
+      main_frame->GetLastCommittedOrigin());
+
+  // |topics| and |real_topics| will contain only a handful of entries,
+  // and |topics| order must be preserved. A simple loop is thus appropriate.
+  for (const auto& topic : topics) {
+    int taxonomy_version = 0;
+    base::StringToInt(topic->taxonomy_version, &taxonomy_version);
+    DCHECK(taxonomy_version);
+
+    privacy_sandbox::CanonicalTopic canonical_topic(
+        browsing_topics::Topic(topic->topic), taxonomy_version);
+    if (base::Contains(real_topics, canonical_topic)) {
+      content_settings::PageSpecificContentSettings::TopicAccessed(
+          main_frame, context_origin, /*blocked_by_policy=*/false,
+          canonical_topic);
+    }
+  }
+
+  return topics;
 }
 
 bool ChromeContentBrowserClient::IsBluetoothScanningBlocked(

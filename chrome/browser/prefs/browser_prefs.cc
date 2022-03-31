@@ -729,6 +729,10 @@ const char kFlocIdComputeTimePrefKey[] =
 // Deprecated 03/2022.
 const char kStabilityChildProcessCrashCount[] =
     "user_experience_metrics.stability.child_process_crash_count";
+const char kStabilityRendererFailedLaunchCount[] =
+    "user_experience_metrics.stability.renderer_failed_launch_count";
+const char kStabilityExtensionRendererFailedLaunchCount[] =
+    "user_experience_metrics.stability.extension_renderer_failed_launch_count";
 #if BUILDFLAG(ENABLE_PLUGINS)
 const char kStabilityPluginStats[] =
     "user_experience_metrics.stability.plugin_stats2";
@@ -737,6 +741,8 @@ const char kStabilityPluginStats[] =
 const char kStabilityLaunchCount[] =
     "user_experience_metrics.stability.launch_count";
 #endif
+const char kStabilityExtensionRendererLaunchCount[] =
+    "user_experience_metrics.stability.extension_renderer_launch_count";
 
 // Register local state used only for migration (clearing or moving to a new
 // key).
@@ -768,12 +774,16 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 
   // Deprecated 03/2002.
   registry->RegisterIntegerPref(kStabilityChildProcessCrashCount, 0);
+  registry->RegisterIntegerPref(kStabilityRendererFailedLaunchCount, 0);
+  registry->RegisterIntegerPref(kStabilityExtensionRendererFailedLaunchCount,
+                                0);
 #if BUILDFLAG(ENABLE_PLUGINS)
   registry->RegisterListPref(kStabilityPluginStats);
 #endif
 #if !BUILDFLAG(IS_ANDROID)
   registry->RegisterIntegerPref(kStabilityLaunchCount, 0);
 #endif
+  registry->RegisterIntegerPref(kStabilityExtensionRendererLaunchCount, 0);
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -1608,14 +1618,17 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
   // Added 02/2022.
   local_state->ClearPref(kWebSQLInThirdPartyContextEnabled);
 
-  // Added 03/2002.
+  // Added 03/2022.
   local_state->ClearPref(kStabilityChildProcessCrashCount);
+  local_state->ClearPref(kStabilityRendererFailedLaunchCount);
+  local_state->ClearPref(kStabilityExtensionRendererFailedLaunchCount);
 #if BUILDFLAG(ENABLE_PLUGINS)
   local_state->ClearPref(kStabilityPluginStats);
 #endif
 #if !BUILDFLAG(IS_ANDROID)
   local_state->ClearPref(kStabilityLaunchCount);
 #endif
+  local_state->ClearPref(kStabilityExtensionRendererLaunchCount);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS

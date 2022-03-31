@@ -8,7 +8,7 @@ import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 
-import org.chromium.chrome.browser.tab.TabUtils;
+import org.chromium.base.MathUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
 
@@ -19,8 +19,12 @@ import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
  * behavior of this Class is the same as the RoundedCornerImageView.
  */
 public class TabGridThumbnailView extends RoundedCornerImageView {
+    private final float mAspectRatio;
+
     public TabGridThumbnailView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mAspectRatio = MathUtils.clamp(
+                (float) TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO.getValue(), 0.5f, 2.0f);
     }
 
     @Override
@@ -30,8 +34,7 @@ public class TabGridThumbnailView extends RoundedCornerImageView {
         int measuredWidth = getMeasuredWidth();
         int measureHeight = getMeasuredHeight();
 
-        int expectedHeight =
-                (int) (measuredWidth * 1.0 / TabUtils.getTabThumbnailAspectRatio(getContext()));
+        int expectedHeight = (int) (measuredWidth * 1.0 / mAspectRatio);
         if ((TabUiFeatureUtilities.isLaunchPolishEnabled()
                     || ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(getContext()))
                 && isPlaceHolder()) {
@@ -71,8 +74,15 @@ public class TabGridThumbnailView extends RoundedCornerImageView {
             return;
         }
 
-        float expectedThumbnailAspectRatio = TabUtils.getTabThumbnailAspectRatio(getContext());
-        int height = (int) (getWidth() * 1.0 / expectedThumbnailAspectRatio);
-        setMinimumHeight(Math.min(getHeight(), height));
+        if (TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()) {
+            float expectedThumbnailAspectRatio =
+                    (float) TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO.getValue();
+            expectedThumbnailAspectRatio =
+                    MathUtils.clamp(expectedThumbnailAspectRatio, 0.5f, 2.0f);
+            int height = (int) (getWidth() * 1.0 / expectedThumbnailAspectRatio);
+            setMinimumHeight(Math.min(getHeight(), height));
+        } else {
+            setMinimumHeight(getWidth());
+        }
     }
 }

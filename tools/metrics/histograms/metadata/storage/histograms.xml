@@ -113,6 +113,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Clipboard.TimeIntervalBetweenCommitAndRead" units="ms"
+    expires_after="2022-09-25">
+  <owner>dcheng@chromium.org</owner>
+  <owner>src/ui/base/clipboard/OWNERS</owner>
+  <summary>
+    Records the time interval between when clipboard data was committed to the
+    clipboard and the same clipboard data was read from the clipboard. The same
+    clipboard data may be read multiple times. Emitted at the moment the
+    clipboard data was read. Currently only implemented for Chrome OS' in-memory
+    clipboard (`ui::ClipboardNonBacked`).
+  </summary>
+</histogram>
+
 <histogram name="Clipboard.Write" enum="ClipboardFormatWrite"
     expires_after="2022-08-07">
   <owner>huangdarwin@chromium.org</owner>
@@ -720,6 +733,45 @@ chromium-metrics-reviews@google.com.
     SharedStorageDatabase::DatabaseErrorCallback() just before the SQLite
     database determines whether the error is catastrophic and handles it
     accordingly.
+  </summary>
+</histogram>
+
+<histogram name="Storage.SharedStorage.OnShutdown.NumSqlErrors" units="Errors"
+    expires_after="2023-01-31">
+  <owner>cammie@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Count of SQL errors that have occurred in Shared Storage. Recorded by
+    SharedStorageManager::RecordShutdownMetrics() when the StoragePartitionImpl
+    is destroyed.
+  </summary>
+</histogram>
+
+<histogram
+    name="Storage.SharedStorage.OnShutdown.RecoveryFromInitFailureAttempted"
+    units="BooleanRecoveryAttempted" expires_after="2023-01-31">
+  <owner>cammie@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Whether or not the SharedStorageManager tried to recover from
+    SharedStorageDatabase::InitStatus::kInitFailure. Recorded by
+    SharedStorageManager::RecordShutdownMetrics() when the StoragePartitionImpl
+    is destroyed.
+  </summary>
+</histogram>
+
+<histogram name="Storage.SharedStorage.OnShutdown.RecoveryOnDiskAttempted"
+    units="BooleanRecoveryOnDiskAttempted" expires_after="2023-01-31">
+  <owner>cammie@chromium.org</owner>
+  <owner>yaoxia@chromium.org</owner>
+  <owner>chrome-ads-histograms@google.com</owner>
+  <summary>
+    Whether or not the SharedStorageManager tried to recover from
+    SharedStorageDatabase::InitStatus::kInitFailure on disk. Recorded by
+    SharedStorageManager::RecordShutdownMetrics() when the StoragePartitionImpl
+    is destroyed.
   </summary>
 </histogram>
 

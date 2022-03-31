@@ -1955,13 +1955,11 @@ crbug.com/1068610 external/wpt/css/css-color/at-color-profile-001.html [ Failure
 # Some CSS System Colors need to be deprecated
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-002.html [ Failure ]
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-004.html [ Failure ]
-crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-010.html [ Failure ]
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-011.html [ Failure ]
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-013.html [ Failure ]
 crbug.com/1299441 external/wpt/css/css-color/deprecated-sameas-022.html [ Failure ]
 crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-002.html [ Failure ]
 crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-004.html [ Failure ]
-crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-010.html [ Failure ]
 crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-011.html [ Failure ]
 crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-013.html [ Failure ]
 crbug.com/1299441 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-022.html [ Failure ]
@@ -2430,7 +2428,6 @@ crbug.com/528062 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-
 crbug.com/997202 [ Mac ] virtual/text-antialias/international/bdo-bidi-width.html [ Failure ]
 
 crbug.com/574283 [ Mac ] fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
-crbug.com/574283 [ Mac ] virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth-scroll/fixed-background-in-iframe.html [ Skip ]
 crbug.com/574283 virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-correctness.html [ Skip ]
 crbug.com/574283 virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Skip ]
 
@@ -2810,9 +2807,6 @@ crbug.com/1299212 [ Linux ] fast/forms/week/week-picker-ax.html [ Failure Pass ]
 crbug.com/1299212 [ Linux ] fast/forms/month/month-picker-ax.html [ Failure Pass ]
 crbug.com/1299212 [ Linux ] fast/forms/calendar-picker/date-picker-ax.html [ Failure Pass ]
 crbug.com/1299212 [ Linux ] fast/forms/select-popup/popup-menu-ax.html [ Failure Pass ]
-
-# Popup attribute tests for not yet implemented features
-crbug.com/1307772 external/wpt/html/semantics/popups/popup-initiallyopen-display.tentative.html [ Failure ]
 
 # isInputPending requires threaded compositing and layerized iframes
 crbug.com/910421 external/wpt/is-input-pending/* [ Skip ]
@@ -3250,6 +3244,7 @@ crbug.com/1147859 virtual/css-highlight-overlay-painting/external/wpt/css/css-hi
 crbug.com/1147859 virtual/css-highlight-overlay-painting/external/wpt/css/css-highlight-api/painting/custom-highlight-painting-iframe-004.html [ Pass ]
 crbug.com/1147859 virtual/css-highlight-overlay-painting/external/wpt/css/css-highlight-api/painting/custom-highlight-painting-iframe-005.html [ Pass ]
 crbug.com/1147859 virtual/css-highlight-overlay-painting/external/wpt/css/css-highlight-api/painting/custom-highlight-painting-iframe-006.html [ Pass ]
+crbug.com/1147859 virtual/css-highlight-overlay-painting/external/wpt/css/css-highlight-api/painting/custom-highlight-painting-inheritance-003.html [ Failure ]
 crbug.com/1147859 virtual/css-highlight-overlay-painting/external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-001.html [ Pass ]
 crbug.com/1147859 virtual/css-highlight-overlay-painting/external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-002.html [ Pass ]
 crbug.com/1147859 virtual/css-highlight-overlay-painting/external/wpt/css/css-highlight-api/painting/custom-highlight-painting-invalidation-003.html [ Pass ]
@@ -4471,9 +4466,10 @@ crbug.com/764235 external/wpt/css/css-grid/alignment/grid-baseline-align-001.htm
 crbug.com/764235 external/wpt/css/css-grid/alignment/grid-baseline-justify-001.html [ Failure ]
 
 # [css-subgrid]
-crbug.com/618969 external/wpt/css/css-grid/subgrid/abs-pos-002.html [ Failure ]
+crbug.com/618969 external/wpt/css/css-grid/subgrid/abs-pos-002.html [ Failure Crash Timeout ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/abs-pos-003.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/abs-pos-004.html [ Failure ]
+crbug.com/618969 external/wpt/css/css-grid/subgrid/auto-track-sizing-001.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/auto-track-sizing-002.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/baseline-001.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/grid-gap-001.html [ Failure ]
@@ -4514,9 +4510,9 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/repeat-auto-fill-006.html [ F
 crbug.com/618969 external/wpt/css/css-grid/subgrid/repeat-auto-fill-007.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/repeat-auto-fill-008.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-item-block-size-001.html [ Failure ]
-crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-001.html [ Failure ]
-crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-002.html [ Failure ]
-crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-003.html [ Failure ]
+crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-001.html [ Failure Crash Timeout ]
+crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-002.html [ Failure Crash Timeout ]
+crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-003.html [ Failure Crash Timeout ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-004.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-stretch.html [ Failure ]
 
@@ -6699,8 +6695,7 @@ crbug.com/1274174 external/wpt/css/css-highlight-api/painting/custom-highlight-p
 crbug.com/1274174 external/wpt/css/css-highlight-api/painting/custom-highlight-painting-text-decoration-dynamic-001.html [ Pass ]
 crbug.com/1147859 [ Linux ] external/wpt/css/css-highlight-api/painting/* [ Failure ]
 crbug.com/1147859 [ Linux ] virtual/css-highlight-inheritance/external/wpt/css/css-highlight-api/painting/* [ Failure ]
-crbug.com/1024156 external/wpt/css/css-highlight-api/painting/custom-highlight-painting-inheritance-* [ Failure ]
-crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-highlight-api/painting/custom-highlight-painting-inheritance-* [ Pass ]
+crbug.com/1147859 [ Linux ] paint/custom-highlight-only-inheritance.html [ Failure ]
 
 # Sheriff 2021-06-11
 crbug.com/1218667 [ Win ] virtual/portals/wpt_internal/portals/portals-dangling-markup.sub.html [ Pass Timeout ]
@@ -7629,6 +7624,17 @@ crbug.com/1300352 http/tests/inspector-protocol/network/blocked-cookie-not-on-pa
 crbug.com/1298836 external/wpt/fetch/api/basic/response-null-body.any.* [ Failure Pass ]
 crbug.com/1298836 virtual/plz-dedicated-worker/external/wpt/fetch/api/basic/response-null-body.any.* [ Failure Pass ]
 
+# Anonymous iframe:
+#------------------
+#
+# Anonymous iframe > CacheStorage:
+# From two same-origin-different-partition context, the second `cache.put`
+# request hangs indefinitely.
+crbug.com/1285275 external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Timeout Pass ]
+crbug.com/1285275 virtual/fenced-frame-mparch/external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Timeout Pass ]
+crbug.com/1285275 virtual/fenced-frame-shadow-dom/external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Timeout Pass ]
+crbug.com/1285275 virtual/partitioned-cookies/external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Timeout Pass ]
+
 # Sheriff 2022-03-10
 crbug.com/1304956 storage/indexeddb/dont-wedge.html [ Failure Pass ]
 
@@ -7673,7 +7679,6 @@ crbug.com/1197296 [ Linux ] external/wpt/feature-policy/feature-policy-frame-pol
 
 # Sheriff 2022-03-28
 crbug.com/1311015 [ Mac ] external/wpt/paint-timing/fcp-only/fcp-document-opacity-image.html [ Failure Pass ]
-crbug.com/1311060 [ Mac ] virtual/dark-color-scheme/fast/forms/color-scheme/scrollbar/dynamic-color-scheme-change.html [ Skip ]
 crbug.com/1311128 external/wpt/paint-timing/fcp-only/fcp-document-opacity-text.html [ Skip ]
 
 # Sheriff 2022-03-29

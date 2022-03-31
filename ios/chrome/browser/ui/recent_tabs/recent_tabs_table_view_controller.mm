@@ -12,6 +12,7 @@
 #include "base/notreached.h"
 #import "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/session_id.h"
@@ -754,6 +755,10 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 
   TableViewModel* model = self.tableViewModel;
 
+  UIColor* actionsTextColor = self.styler.tintColor
+                                  ? self.styler.tintColor
+                                  : [UIColor colorNamed:kBlueColor];
+
   [model addSectionWithIdentifier:SectionIdentifierSuggestedActions];
   TableViewTextHeaderFooterItem* header = [[TableViewTextHeaderFooterItem alloc]
       initWithType:ItemTypeSuggestedActionsHeader];
@@ -765,7 +770,8 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
       initWithType:ItemTypeSuggestedActionSearchWeb];
   searchWebItem.title =
       l10n_util::GetNSString(IDS_IOS_TABS_SEARCH_SUGGESTED_ACTION_SEARCH_WEB);
-  searchWebItem.image = [[UIImage imageNamed:@"popup_menu_web"]
+  searchWebItem.textColor = actionsTextColor;
+  searchWebItem.image = [[UIImage imageNamed:@"suggested_action_web"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [model addItem:searchWebItem
       toSectionWithIdentifier:SectionIdentifierSuggestedActions];
@@ -776,8 +782,10 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
         initWithType:ItemTypeSuggestedActionSearchOpenTabs];
     searchOpenTabsItem.title = l10n_util::GetNSString(
         IDS_IOS_TABS_SEARCH_SUGGESTED_ACTION_SEARCH_OPEN_TABS);
-    searchOpenTabsItem.image = [[UIImage imageNamed:@"popup_menu_open_tabs"]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    searchOpenTabsItem.textColor = actionsTextColor;
+    searchOpenTabsItem.image =
+        [[UIImage imageNamed:@"suggested_action_open_tabs"]
+            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [model addItem:searchOpenTabsItem
         toSectionWithIdentifier:SectionIdentifierSuggestedActions];
   }
@@ -785,6 +793,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   TableViewTabsSearchSuggestedHistoryItem* searchHistoryItem =
       [[TableViewTabsSearchSuggestedHistoryItem alloc]
           initWithType:ItemTypeSuggestedActionSearchHistory];
+  searchHistoryItem.textColor = actionsTextColor;
   [model addItem:searchHistoryItem
       toSectionWithIdentifier:SectionIdentifierSuggestedActions];
 }

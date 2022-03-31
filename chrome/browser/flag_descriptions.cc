@@ -2209,6 +2209,13 @@ const char kPartitionedCookiesBypassOriginTrialDescription[] =
     "origin trial in order to send or receive cookies set with the Partitioned "
     "attribute.";
 
+const char kNoncedPartitionedCookiesName[] = "Nonced partitioned cookies only";
+const char kNoncedPartitionedCookiesDescription[] =
+    "When this flag is enabled, we allow partitioned cookies whose "
+    "partition keys contain a nonce even if the \"Partitioned cookies\" "
+    "feature is disabled. If \"Partitioned cookies\" are enabled, then "
+    "enabling or disabling this feature does nothing.";
+
 const char kScrollableTabStripFlagId[] = "scrollable-tabstrip";
 const char kScrollableTabStripName[] = "Tab Scrolling";
 const char kScrollableTabStripDescription[] =
@@ -4084,11 +4091,6 @@ const char kAppDiscoveryForOobeName[] =
 const char kAppDiscoveryForOobeDescription[] =
     "Use the App Discovery Service to request recommended apps for OOBE.";
 
-const char kAppDiscoveryRemoteUrlSearchName[] =
-    "Remote URL app discovery results";
-const char kAppDiscoveryRemoteUrlSearchDescription[] =
-    "Surface results from a URL in the app discovery service.";
-
 const char kAppProvisioningStaticName[] =
     "App Provisioning with static server setup.";
 const char kAppProvisioningStaticDescription[] =
@@ -4438,6 +4440,12 @@ const char kFastPairSoftwareScanningName[] =
 const char kFastPairSoftwareScanningDescription[] =
     "Allow using Fast Pair on devices which don't support hardware offloading "
     "of BLE scans. For development use.";
+
+const char kFastPairSubsequentPairingUXName[] =
+    "Enable Fast Pair Subsequent Pairing UX";
+const char kFastPairSubsequentPairingUXDescription[] =
+    "Enables the \"Subsequent Pairing\" Fast Pair scenario in Bluetooth "
+    "Settings and Quick Settings.";
 
 const char kUseHDRTransferFunctionName[] =
     "Monitor/Display HDR transfer function";
@@ -4809,6 +4817,11 @@ const char kFilesWebDriveOfficeName[] =
     "Enable Files App Web Drive Office support.";
 const char kFilesWebDriveOfficeDescription[] =
     "Enable opening Office files located in Files app Drive in Web Drive.";
+
+const char kFloatWindow[] = "CrOS Labs: Float current active window";
+const char kFloatWindowDescription[] =
+    "Enables the accelerator (Command + Alt + F) to float current active "
+    "window.";
 
 const char kForceSpectreVariant2MitigationName[] =
     "Force Spectre variant 2 mitigagtion";
@@ -5383,6 +5396,10 @@ const char kWindowControlMenu[] = "Float current active window";
 const char kWindowControlMenuDescription[] =
     "Enables the accelerator (Command + Alt + F) to float current active "
     "window.";
+
+const char kLauncherGameSearchName[] = "Enable launcher game search";
+const char kLauncherGameSearchDescription[] =
+    "Enables cloud game search results in the launcher.";
 
 const char kLauncherNudgeName[] = "Enable launcher nudge";
 const char kLauncherNudgeDescription[] =

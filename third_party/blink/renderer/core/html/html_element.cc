@@ -417,6 +417,8 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        &HTMLElement::OnTabIndexAttrChanged},
       {xml_names::kLangAttr, kNoWebFeature, kNoEvent,
        &HTMLElement::OnXMLLangAttrChanged},
+      {html_names::kPopupAttr, kNoWebFeature, kNoEvent,
+       &HTMLElement::OnPopupAttrChanged},
 
       {html_names::kOnabortAttr, kNoWebFeature, event_type_names::kAbort,
        nullptr},
@@ -1899,7 +1901,17 @@ void HTMLElement::UpdateDescendantDirectionality(TextDirection direction) {
         node = FlatTreeTraversal::NextSkippingChildren(*node, this);
         continue;
       }
+
       node->SetCachedDirectionality(direction);
+      if (auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(node)) {
+        ShadowRoot* root = slot->ContainingShadowRoot();
+        // Defer to update the directionality of slot's descendant to avoid
+        // recalcuating slot assignment in FlatTreeTraversal when updating slot.
+        if (root->NeedsSlotAssignmentRecalc()) {
+          node = FlatTreeTraversal::NextSkippingChildren(*node, this);
+          continue;
+        }
+      }
     }
     node = FlatTreeTraversal::Next(*node, this);
   }
@@ -1992,6 +2004,11 @@ void HTMLElement::OnTabIndexAttrChanged(
 }
 
 void HTMLElement::OnXMLLangAttrChanged(
+    const AttributeModificationParams& params) {
+  Element::ParseAttribute(params);
+}
+
+void HTMLElement::OnPopupAttrChanged(
     const AttributeModificationParams& params) {
   Element::ParseAttribute(params);
 }

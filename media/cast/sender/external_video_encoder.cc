@@ -18,6 +18,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitrate.h"
@@ -264,8 +265,9 @@ class ExternalVideoEncoder::VEAClientImpl final
         CastEnvironment::MAIN, FROM_HERE,
         base::BindOnce(status_change_cb_, STATUS_CODEC_RUNTIME_ERROR));
 
-    // TODO(crbug.com/1199930): Force-flush all |in_progress_frame_encodes_|
-    // immediately so pending frames do not become stuck, freezing VideoSender.
+    // Flush all in progress frames to avoid any getting stuck.
+    while (!in_progress_frame_encodes_.empty())
+      AbortLatestEncodeAttemptDueToErrors();
   }
 
   void AllocateInputBuffer(size_t size) {

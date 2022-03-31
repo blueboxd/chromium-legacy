@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RENDER_BLOCKING_RESOURCE_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RENDER_BLOCKING_RESOURCE_MANAGER_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
@@ -15,7 +16,7 @@ namespace blink {
 
 class Document;
 class FontFace;
-class LinkLoaderClient;
+class PendingLinkPreload;
 class Node;
 class ScriptElementBase;
 
@@ -53,8 +54,8 @@ class CORE_EXPORT RenderBlockingResourceManager final
   // have a higher chance to be used by the first paint.
   // Design doc: https://bit.ly/36E8UKB
   enum class PreloadType { kRegular, kShortBlockingFont };
-  void AddPendingPreload(const LinkLoaderClient& link, PreloadType type);
-  void RemovePendingPreload(const LinkLoaderClient& link);
+  void AddPendingPreload(const PendingLinkPreload& link, PreloadType type);
+  void RemovePendingPreload(const PendingLinkPreload& link);
 
   void AddImperativeFontLoading(FontFace*);
   void RemoveImperativeFontLoading();
@@ -85,7 +86,7 @@ class CORE_EXPORT RenderBlockingResourceManager final
 
   // Tracks the currently pending render-blocking preload and modulepreload
   // links, including short-blocking font preloads.
-  HeapHashMap<WeakMember<const LinkLoaderClient>, PreloadType>
+  HeapHashMap<WeakMember<const PendingLinkPreload>, PreloadType>
       pending_preloads_;
 
   unsigned imperative_font_loading_count_ = 0;

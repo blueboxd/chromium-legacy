@@ -20,7 +20,6 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/task/bind_post_task.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -251,15 +250,7 @@ void UpdateServiceImpl::RegisterApp(
   crx_component.requires_network_encryption = false;
   crx_component.ap = request.ap;
   crx_component.brand = request.brand_code;
-  update_client_->SendRegistrationPing(
-      crx_component,
-      base::BindOnce(
-          [](base::OnceCallback<void(const RegistrationResponse&)> callback,
-             update_client::Error /*error*/) {
-            // Ping failures do not count as registration failures.
-            std::move(callback).Run(RegistrationResponse(kRegistrationSuccess));
-          },
-          std::move(callback)));
+  std::move(callback).Run(RegistrationResponse(kRegistrationSuccess));
 }
 
 void UpdateServiceImpl::GetAppStates(
@@ -458,6 +449,23 @@ void UpdateServiceImpl::OnShouldBlockUpdateForMeteredNetwork(
     PolicySameVersionUpdate policy_same_version_update,
     bool update_blocked) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(crbug.com/1311743): The Install case is inferred by the presence of
+  // `PolicySameVersionUpdate::kAllowed` and only having one app.
+  if (policy_same_version_update == PolicySameVersionUpdate::kAllowed &&
+      app_install_data_index.size() == 1) {
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &update_client::UpdateClient::Install, update_client_,
+            app_install_data_index.begin()->first,
+            base::BindOnce(&GetComponents, config_, persisted_data_,
+                           app_install_data_index, false, update_blocked,
+                           policy_same_version_update),
+            MakeUpdateClientCrxStateChangeCallback(config_, state_update),
+            MakeUpdateClientCallback(std::move(callback))));
+    return;
+  }
 
   main_task_runner_->PostTask(
       FROM_HERE,

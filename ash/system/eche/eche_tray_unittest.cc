@@ -19,6 +19,20 @@
 
 namespace ash {
 
+namespace {
+
+bool is_web_content_unloaded_ = false;
+
+void UnloadWebContent() {
+  is_web_content_unloaded_ = true;
+}
+
+void ResetUnloadWebContent() {
+  is_web_content_unloaded_ = false;
+}
+
+}  // namespace
+
 class EcheTrayTest : public AshTestBase {
  public:
   EcheTrayTest() = default;
@@ -53,6 +67,11 @@ class EcheTrayTest : public AshTestBase {
         eche_tray_->GetBoundsInScreen().CenterPoint());
   }
 
+  void ClickButton(views::Button* button) {
+    GetEventGenerator()->GestureTapAt(
+        button->GetBoundsInScreen().CenterPoint());
+  }
+
   EcheTray* eche_tray() { return eche_tray_; }
   PhoneHubTray* phone_hub_tray() { return phone_hub_tray_; }
 
@@ -82,7 +101,7 @@ TEST_F(EcheTrayTest, EcheTrayShowBubbleAndTapTwice) {
   EXPECT_FALSE(eche_tray()->GetVisible());
 
   eche_tray()->SetVisiblePreferred(true);
-  eche_tray()->LoadBubble(GURL("http://google.com"), gfx::Image());
+  eche_tray()->LoadBubble(GURL("http://google.com"), gfx::Image(), u"app 1");
   eche_tray()->ShowBubble();
 
   EXPECT_TRUE(eche_tray()->is_active());
@@ -120,7 +139,7 @@ TEST_F(EcheTrayTest, EcheTrayCreatesBubbleButHideFirst) {
 
   // Allow us to create the bubble but it is not visible until we need this
   // bubble to show up.
-  eche_tray()->LoadBubble(GURL("http://google.com"), gfx::Image());
+  eche_tray()->LoadBubble(GURL("http://google.com"), gfx::Image(), u"app 1");
 
   EXPECT_FALSE(eche_tray()->is_active());
   EXPECT_TRUE(eche_tray()->get_bubble_wrapper_for_test());
@@ -147,7 +166,7 @@ TEST_F(EcheTrayTest, EcheTrayCreatesBubbleButStreamStatusChanged) {
 
   // Allow us to create the bubble but it is not visible until we need this
   // bubble to show up.
-  eche_tray()->LoadBubble(GURL("http://google.com"), gfx::Image());
+  eche_tray()->LoadBubble(GURL("http://google.com"), gfx::Image(), u"app 1");
 
   EXPECT_FALSE(eche_tray()->is_active());
   EXPECT_TRUE(eche_tray()->get_bubble_wrapper_for_test());
@@ -171,6 +190,31 @@ TEST_F(EcheTrayTest, EcheTrayCreatesBubbleButStreamStatusChanged) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(eche_tray()->is_active());
   EXPECT_FALSE(eche_tray()->GetVisible());
+}
+
+TEST_F(EcheTrayTest, EcheTrayMinimizeButtonClicked) {
+  eche_tray()->LoadBubble(GURL("http://google.com"), gfx::Image(), u"app 1");
+  eche_tray()->ShowBubble();
+
+  EXPECT_TRUE(
+      eche_tray()->get_bubble_wrapper_for_test()->bubble_view()->GetVisible());
+
+  ClickButton(eche_tray()->GetMinimizeButtonForTesting());
+
+  EXPECT_FALSE(
+      eche_tray()->get_bubble_wrapper_for_test()->bubble_view()->GetVisible());
+  EXPECT_FALSE(is_web_content_unloaded_);
+}
+
+TEST_F(EcheTrayTest, EcheTrayCloseButtonClicked) {
+  ResetUnloadWebContent();
+  eche_tray()->SetGracefulCloseCallback(base::BindOnce(&UnloadWebContent));
+  eche_tray()->LoadBubble(GURL("http://google.com"), gfx::Image(), u"app 1");
+  eche_tray()->ShowBubble();
+
+  ClickButton(eche_tray()->GetCloseButtonForTesting());
+
+  EXPECT_TRUE(is_web_content_unloaded_);
 }
 
 }  // namespace ash

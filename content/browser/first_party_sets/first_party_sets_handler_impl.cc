@@ -14,10 +14,10 @@
 #include "base/containers/flat_set.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/files/important_file_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
@@ -47,13 +47,9 @@ std::string LoadSetsFromDisk(const base::FilePath& path) {
 }
 
 // Writes the sets as raw JSON to the storage file.
-//
-// TODO(crbug.com/1219656): To handle the cases of file corrupting due to
-// incomplete writes, write to a temp file then rename over the old file.
-void MaybeWriteSetsToDisk(const base::FilePath& path, const std::string& sets) {
+void MaybeWriteSetsToDisk(const base::FilePath& path, base::StringPiece sets) {
   DCHECK(!path.empty());
-
-  if (!base::WriteFile(path, sets)) {
+  if (!base::ImportantFileWriter::WriteFileAtomically(path, sets)) {
     VLOG(1) << "Failed writing serialized First-Party Sets to file "
             << path.MaybeAsASCII();
   }

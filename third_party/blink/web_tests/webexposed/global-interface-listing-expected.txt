@@ -2237,6 +2237,7 @@ interface Element : Node
     getter elementTiming
     getter firstElementChild
     getter id
+    getter initiallyOpen
     getter innerHTML
     getter lastElementChild
     getter localName
@@ -2252,6 +2253,7 @@ interface Element : Node
     getter onwebkitfullscreenerror
     getter outerHTML
     getter part
+    getter popup
     getter prefix
     getter previousElementSibling
     getter role
@@ -2371,6 +2373,7 @@ interface Element : Node
     setter className
     setter elementTiming
     setter id
+    setter initiallyOpen
     setter innerHTML
     setter onbeforecopy
     setter onbeforecut
@@ -2382,6 +2385,7 @@ interface Element : Node
     setter onwebkitfullscreenerror
     setter outerHTML
     setter part
+    setter popup
     setter role
     setter scrollLeft
     setter scrollTop
@@ -8706,6 +8710,7 @@ interface SubApps
     method add
     method constructor
     method list
+    method remove
 interface SubmitEvent : Event
     attribute @@toStringTag
     getter submitter

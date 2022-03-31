@@ -10,7 +10,7 @@
 
 @implementation PedalSuggestionWrapper
 
-- (instancetype)initWithPedal:(id<OmniboxPedal>)pedal {
+- (instancetype)initWithPedal:(id<OmniboxPedal, OmniboxIcon>)pedal {
   self = [super init];
   if (self) {
     _innerPedal = pedal;
@@ -52,15 +52,15 @@
 }
 
 - (NSAttributedString*)text {
-  return [[NSAttributedString alloc] initWithString:self.innerPedal.hint];
+  return [[NSAttributedString alloc] initWithString:self.innerPedal.title];
 }
 
 - (NSAttributedString*)detailText {
-  return [[NSAttributedString alloc] initWithString:@"Replace → me"];
+  return [[NSAttributedString alloc] initWithString:self.innerPedal.subtitle];
 }
 
 - (id<OmniboxIcon>)icon {
-  return nil;
+  return self.innerPedal;
 }
 
 @end

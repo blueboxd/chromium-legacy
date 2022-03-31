@@ -32,7 +32,6 @@
 #include "build/build_config.h"
 #include "cc/base/features.h"
 #include "cc/base/switches.h"
-#include "chrome/browser/apps/app_discovery_service/app_discovery_features.h"
 #include "chrome/browser/ash/android_sms/android_sms_switches.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
@@ -960,6 +959,7 @@ const FeatureEntry::FeatureVariation kJourneysVariations[] = {
 const FeatureEntry::FeatureParam
     kJourneysOnDeviceClusteringLabelingNoContentClusteringParams[] = {
         {"should_label_clusters", "true"},
+        {"labels_from_entities", "true"},
         {"content_clustering_enabled", "false"},
 };
 const FeatureEntry::FeatureParam
@@ -970,6 +970,7 @@ const FeatureEntry::FeatureParam
 const FeatureEntry::FeatureParam
     kJourneysOnDeviceClusteringLabelingWithContentClusteringParams[] = {
         {"should_label_clusters", "true"},
+        {"labels_from_entities", "true"},
         {"content_clustering_enabled", "true"},
 };
 const FeatureEntry::FeatureParam
@@ -1864,6 +1865,7 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabTile[] = {
     {"tab_grid_layout_android_new_tab_tile", "NewTabTile"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
+    {"thumbnail_aspect_ratio", "0.85"},
     {"allow_to_refetch", "true"},
     {"tab_grid_layout_android_new_tab", "NewTabVariation"},
     {"enable_launch_polish", "true"},
@@ -5862,9 +5864,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnablePipRoundedCornersName,
      flag_descriptions::kAshEnablePipRoundedCornersDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kPipRoundedCorners)},
-    {"ash-enable-floating-window", flag_descriptions::kWindowControlMenu,
-     flag_descriptions::kWindowControlMenuDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kWindowControlMenu)},
+    {"cros-labs-float-window", flag_descriptions::kFloatWindow,
+     flag_descriptions::kFloatWindowDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kFloatWindow)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6039,6 +6041,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFastPairSoftwareScanningName,
      flag_descriptions::kFastPairSoftwareScanningDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kFastPairSoftwareScanning)},
+
+    {"fast-pair-subsequent-pairing-ux",
+     flag_descriptions::kFastPairSubsequentPairingUXName,
+     flag_descriptions::kFastPairSubsequentPairingUXDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kFastPairSubsequentPairingUX)},
 
     {"pcie-billboard-notification",
      flag_descriptions::kPcieBillboardNotificationName,
@@ -6846,6 +6853,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceShowContinueSectionName,
      flag_descriptions::kForceShowContinueSectionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kForceShowContinueSection)},
+    {"launcher-game-search", flag_descriptions::kLauncherGameSearchName,
+     flag_descriptions::kLauncherGameSearchDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(search_features::kLauncherGameSearch)},
     {"launcher-nudge", flag_descriptions::kLauncherNudgeName,
      flag_descriptions::kLauncherNudgeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kShelfLauncherNudge)},
@@ -6885,11 +6895,6 @@ const FeatureEntry kFeatureEntries[] = {
          app_list_features::kDynamicSearchUpdateAnimation,
          kDynamicSearchUpdateAnimationVariations,
          "LauncherDynamicAnimations")},
-
-    {"app-discovery-remote-url-search",
-     flag_descriptions::kAppDiscoveryRemoteUrlSearchName,
-     flag_descriptions::kAppDiscoveryRemoteUrlSearchDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(apps::kAppDiscoveryRemoteUrlSearch)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"enable-bluetooth-spp-in-serial-api",
@@ -7128,7 +7133,9 @@ const FeatureEntry kFeatureEntries[] = {
      // multiple related features when they are available.
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kEnableFeatures,
                                  "PrivacySandboxAdsAPIsOverride,"
-                                 "Fledge,BrowsingTopics,ConversionMeasurement,"
+                                 "InterestGroupStorage,Fledge,"
+                                 "AllowURNsInIframes,BrowsingTopics,"
+                                 "ConversionMeasurement,"
                                  "OverridePrivacySandboxSettingsLocalTesting")},
 
     {"animated-image-resume", flag_descriptions::kAnimatedImageResumeName,
@@ -7694,6 +7701,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPartitionedCookiesBypassOriginTrialName,
      flag_descriptions::kPartitionedCookiesBypassOriginTrialDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kPartitionedCookiesBypassOriginTrial)},
+
+    {"nonced-partitioned-cookies",
+     flag_descriptions::kNoncedPartitionedCookiesName,
+     flag_descriptions::kNoncedPartitionedCookiesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kNoncedPartitionedCookies)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {kBorealisBigGlInternalName, flag_descriptions::kBorealisBigGlName,

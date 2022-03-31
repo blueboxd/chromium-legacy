@@ -257,6 +257,9 @@ const base::Feature kPartitionedCookies{"PartitionedCookies",
 const base::Feature kPartitionedCookiesBypassOriginTrial{
     "PartitionedCookiesBypassOriginTrial", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kNoncedPartitionedCookies{
+    "NoncedPartitionedCookies", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kExtraCookieValidityChecks{
     "ExtraCookieValidityChecks", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -265,6 +268,10 @@ const base::Feature kRecordRadioWakeupTrigger{
 
 const base::Feature kSandboxHttpCache("SandboxHttpCache",
                                       base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::Feature kClampCookieExpiryTo400Days(
+    "ClampCookieExpiryTo400Days",
+    base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace net

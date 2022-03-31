@@ -40,6 +40,7 @@
 #include "third_party/blink/public/web/web_css_origin.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/active_style_sheets.h"
+#include "third_party/blink/renderer/core/css/color_scheme_flags.h"
 #include "third_party/blink/renderer/core/css/css_global_rule_set.h"
 #include "third_party/blink/renderer/core/css/invalidation/pending_invalidations.h"
 #include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
@@ -261,14 +262,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   }
   bool UsesWindowInactiveSelector() const {
     return GetRuleFeatureSet().UsesWindowInactiveSelector();
-  }
-  bool UsesContainerQueries() const {
-    return GetRuleFeatureSet().UsesContainerQueries() ||
-           uses_container_relative_units_ || skipped_container_recalc_;
-  }
-
-  void SetUsesContainerRelativeUnits() {
-    uses_container_relative_units_ = true;
   }
 
   // Set when we recalc the style of any element that depends on layout.
@@ -544,8 +537,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       parent_for_detached_subtree_ = parent;
   }
 
-  void SetColorSchemeFromMeta(const CSSValue* color_scheme);
-  const CSSValue* GetMetaColorSchemeValue() const { return meta_color_scheme_; }
+  void SetPageColorSchemes(const CSSValue* color_scheme);
+  ColorSchemeFlags GetPageColorSchemes() const { return page_color_schemes_; }
   mojom::PreferredColorScheme GetPreferredColorScheme() const {
     return preferred_color_scheme_;
   }
@@ -762,7 +755,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   String preferred_stylesheet_set_name_;
 
   bool uses_rem_units_{false};
-  bool uses_container_relative_units_{false};
   // True if we have performed style recalc for at least one element that
   // depends on container queries.
   bool style_affected_by_layout_{false};
@@ -860,10 +852,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   scoped_refptr<StyleInitialData> initial_data_;
 
-  // Color schemes explicitly supported by the author through the viewport meta
-  // tag. E.g. <meta name="color-scheme" content="light dark">. A dark color-
-  // scheme is used to opt-out of forced darkening.
-  Member<const CSSValue> meta_color_scheme_;
+  // Page color schemes set by the viewport meta tag. E.g.
+  // <meta name="color-scheme" content="light dark">.
+  ColorSchemeFlags page_color_schemes_ =
+      static_cast<ColorSchemeFlags>(ColorSchemeFlag::kNormal);
 
   // The preferred color scheme is set in settings, but may be overridden by the
   // ForceDarkMode setting where the preferred_color_scheme_ will be set to

@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom-forward.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
@@ -190,6 +191,7 @@ class SellerWorklet : public mojom::SellerWorklet {
     V8State(scoped_refptr<AuctionV8Helper> v8_helper,
             scoped_refptr<AuctionV8Helper::DebugId> debug_id,
             const GURL& decision_logic_url,
+            const absl::optional<GURL>& trusted_scoring_signals_url,
             const url::Origin& top_window_origin,
             base::WeakPtr<SellerWorklet> parent);
 
@@ -261,6 +263,7 @@ class SellerWorklet : public mojom::SellerWorklet {
     v8::Global<v8::UnboundScript> worklet_script_;
 
     const GURL decision_logic_url_;
+    const absl::optional<GURL> trusted_scoring_signals_url_;
     const url::Origin top_window_origin_;
 
     SEQUENCE_CHECKER(v8_sequence_checker_);

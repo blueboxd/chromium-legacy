@@ -1224,6 +1224,7 @@ if (!is_android) {
       "//components/cast_channel",
       "//components/cbor",
       "//components/certificate_transparency",
+      "//components/certificate_transparency:proto",
       "//components/commerce/core:feature_list",
       "//components/constrained_window",
       "//components/content_settings/browser",
@@ -1646,6 +1647,7 @@ if (!is_android) {
       "../browser/chrome_worker_browsertest.cc",
       "../browser/client_hints/client_hints_browsertest.cc",
       "../browser/component_updater/component_patcher_operation_browsertest.cc",
+      "../browser/component_updater/pki_metadata_component_installer_browsertest.cc",
       "../browser/content_index/content_index_browsertest.cc",
       "../browser/content_language/content_language_browsertest.cc",
       "../browser/content_settings/mixed_content_settings_tab_helper_browsertest.cc",
@@ -4385,6 +4387,16 @@ if (!is_android) {
         "../browser/apps/platform_apps/platform_app_navigation_redirector_browsertest.cc",
         "../browser/apps/platform_apps/service_worker_browsertest.cc",
         "../browser/ui/startup/startup_browser_creator_browsertest.cc",
+        "../browser/ui/views/web_apps/deprecated_apps_dialog_view_browsertest.cc",
+        "../browser/ui/views/web_apps/force_installed_deprecated_apps_dialog_view_browsertest.cc",
+        "../browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_browsertest.cc",
+        "../browser/ui/views/web_apps/frame_toolbar/web_app_minimal_ui_test.cc",
+        "../browser/ui/views/web_apps/pwa_confirmation_bubble_view_browsertest.cc",
+        "../browser/ui/views/web_apps/web_app_confirmation_view_browsertest.cc",
+        "../browser/ui/views/web_apps/web_app_identity_update_confirmation_view_browsertest.cc",
+        "../browser/ui/views/web_apps/web_app_integration_browsertest.cc",
+        "../browser/ui/views/web_apps/web_app_protocol_handler_intent_picker_dialog_browsertest.cc",
+        "../browser/ui/views/web_apps/web_app_tab_strip_browsertest.cc",
       ]
 
       # Exclude tests which depend on native messaging.
@@ -4914,6 +4926,7 @@ test("unit_tests") {
     "../browser/component_updater/pki_metadata_component_installer_unittest.cc",
     "../browser/component_updater/subresource_filter_component_installer_unittest.cc",
     "../browser/component_updater/trust_token_key_commitments_component_installer_unittest.cc",
+    "../browser/component_updater/url_param_classification_component_installer_unittest.cc",
     "../browser/content_index/content_index_provider_unittest.cc",
     "../browser/content_settings/content_settings_default_provider_unittest.cc",
     "../browser/content_settings/content_settings_mock_observer.cc",
@@ -6535,6 +6548,7 @@ test("unit_tests") {
       "../browser/ui/toolbar/toolbar_actions_model_unittest.cc",
       "../browser/ui/user_education/active_tab_tracker_unittest.cc",
       "../browser/ui/user_education/help_bubble_factory_registry_unittest.cc",
+      "../browser/ui/user_education/interaction_sequence_browser_util_unittest.cc",
       "../browser/ui/user_education/mock_feature_promo_controller.cc",
       "../browser/ui/user_education/mock_feature_promo_controller.h",
       "../browser/ui/user_education/reopen_tab_in_product_help_trigger_unittest.cc",
@@ -6976,8 +6990,6 @@ test("unit_tests") {
     sources += [
       "../browser/apps/app_discovery_service/app_discovery_service_unittest.cc",
       "../browser/apps/app_discovery_service/recommended_arc_app_fetcher_unittest.cc",
-      "../browser/apps/app_discovery_service/remote_url_search/remote_url_client_unittest.cc",
-      "../browser/apps/app_discovery_service/remote_url_search/remote_url_index_unittest.cc",
       "../browser/apps/app_service/file_utils_unittest.cc",
       "../browser/apps/app_service/intent_util_unittest.cc",
       "../browser/apps/app_service/metrics/app_platform_metrics_service_unittest.cc",
@@ -7726,7 +7738,7 @@ test("unit_tests") {
 
       deps += [ "//components/enterprise:test_support" ]
     }
-    if (!is_chromeos_ash && !is_chromeos_lacros && !is_fuchsia) {
+    if (!is_chromeos && !is_fuchsia) {
       sources += [
         "../browser/extensions/api/messaging/native_message_process_host_unittest.cc",
         "../browser/extensions/api/messaging/native_messaging_launch_from_native_unittest.cc",
@@ -9956,7 +9968,7 @@ if (!is_android) {
   # and only works on Google Chrome branded builds.
   # The connectors file system interactive tests are not supported on
   # ASH and LaCros.
-  if (is_chrome_branded && !is_chromeos_ash && !is_chromeos_lacros) {
+  if (is_chrome_branded && !is_chromeos) {
     test("enterprise_connector_file_system_interactive_tests") {
       use_xvfb = use_xvfb_in_this_config
       sources = [
@@ -10052,15 +10064,14 @@ if (!is_android) {
       }
 
       if (use_ozone) {
-        deps += [ "//ui/ozone" ]
+        deps += [
+          "//ui/ozone",
+          "//ui/platform_window/common",
+        ]
       }
 
       if (use_aura) {
         deps += [ "//ui/aura:test_support" ]
-      }
-
-      if (is_linux) {
-        deps += [ "//ui/platform_window/common" ]
       }
 
       if (is_mac) {

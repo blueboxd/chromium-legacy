@@ -312,11 +312,18 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
   void SetUp() override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     if (GetParam() == TestParam::kLacrosEnabled) {
-      scoped_feature_list_.InitAndEnableFeature(features::kWebAppsCrosapi);
+      scoped_feature_list_.InitWithFeatures(
+          {features::kDesktopPWAsEnforceWebAppSettingsPolicy,
+           features::kWebAppsCrosapi},
+          {});
     } else if (GetParam() == TestParam::kLacrosDisabled) {
       scoped_feature_list_.InitWithFeatures(
-          {}, {features::kWebAppsCrosapi, ash::features::kLacrosPrimary});
+          {features::kDesktopPWAsEnforceWebAppSettingsPolicy},
+          {features::kWebAppsCrosapi, ash::features::kLacrosPrimary});
     }
+#else
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kDesktopPWAsEnforceWebAppSettingsPolicy);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     ChromeRenderViewHostTestHarness::SetUp();
 
@@ -1112,7 +1119,7 @@ TEST_P(WebAppPolicyManagerTest, DisableWebApps) {
   // Add camera to system features disable list policy.
   auto disabled_apps_list =
       std::make_unique<base::Value>(base::Value::Type::LIST);
-  disabled_apps_list->Append(policy::SystemFeature::kCamera);
+  disabled_apps_list->Append(static_cast<int>(policy::SystemFeature::kCamera));
   testing_local_state_.Get()->SetUserPref(
       policy::policy_prefs::kSystemFeaturesDisableList,
       std::move(disabled_apps_list));

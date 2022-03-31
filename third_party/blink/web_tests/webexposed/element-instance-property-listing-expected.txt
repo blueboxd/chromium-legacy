@@ -138,6 +138,7 @@ namespace http://www.w3.org/1999/xhtml
     property hidePopup
     property id
     property inert
+    property initiallyOpen
     property innerHTML
     property innerText
     property inputMode
@@ -284,6 +285,7 @@ namespace http://www.w3.org/1999/xhtml
     property parentElement
     property parentNode
     property part
+    property popup
     property prefix
     property prepend
     property previousElementSibling
@@ -919,7 +921,6 @@ html element plaintext
 html element popup
     property anchor
     property hide
-    property initiallyOpen
     property open
     property show
 html element pre
@@ -1372,6 +1373,7 @@ namespace http://www.w3.org/2000/svg
     property hasPointerCapture
     property hidePopup
     property id
+    property initiallyOpen
     property innerHTML
     property insertAdjacentElement
     property insertAdjacentHTML
@@ -1509,6 +1511,7 @@ namespace http://www.w3.org/2000/svg
     property parentElement
     property parentNode
     property part
+    property popup
     property prefix
     property prepend
     property previousElementSibling

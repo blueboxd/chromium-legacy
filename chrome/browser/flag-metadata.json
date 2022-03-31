@@ -161,11 +161,6 @@
     "expiry_milestone": 93
   },
   {
-    "name": "app-discovery-remote-url-search",
-    "owners": [ "tby" ],
-    "expiry_milestone": 102
-  },
-  {
     "name": "app-management-app-details",
     "owners": [ "ajlinker" ],
     "expiry_milestone": 104
@@ -306,11 +301,6 @@
     "name": "ash-drag-window-to-new-desk",
     "owners": [ "conniekxu",  "janetmac" ],
     "expiry_milestone": 102
-  },
-  {
-    "name": "ash-enable-floating-window",
-    "owners": [ "shidi", "afakhry" ],
-    "expiry_milestone": 100
   },
   {
     "name": "ash-enable-pip-rounded-corners",
@@ -1004,6 +994,11 @@
     "name": "credential-provider-extension-promo",
     "owners": ["ginnyhuang","bling-flags@google.com"],
     "expiry_milestone": 100
+  },
+  {
+    "name": "cros-labs-float-window",
+    "owners": [ "shidi", "afakhry" ],
+    "expiry_milestone": 110
   },
   {
     "name": "crosh-swa",
@@ -3183,6 +3178,11 @@
     "expiry_milestone": 102
   },
   {
+    "name": "fast-pair-subsequent-pairing-ux",
+    "owners": [ "//ash/quick_pair/OWNERS", "dclasson@google.com" ],
+    "expiry_milestone": 104
+  },
+  {
     "name": "feature-notification-guide",
     "owners": [ "shaktisahu"],
     "expiry_milestone": 110
@@ -3827,6 +3827,11 @@
     "expiry_milestone": 105
   },
   {
+    "name": "launcher-game-search",
+    "owners": ["wrong", "napper", "tby"],
+    "expiry_milestone": 110
+  },
+  {
     "name": "launcher-lacros-integration",
     "owners": ["wrong", "thanhdng", "tby"],
     "expiry_milestone": 115
@@ -4170,6 +4175,11 @@
     "name": "new-window-app-menu",
     "owners": [ "jinsukkim" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "nonced-partitioned-cookies",
+    "owners": [ "dylancutler" ],
+    "expiry_milestone": 112
   },
   {
     "name": "notification-permission-rationale-dialog",

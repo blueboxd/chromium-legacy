@@ -12,7 +12,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
@@ -339,6 +338,30 @@ TEST_P(RecordHandlerImplTest, InvalidPriorityField) {
                 request, force_confirm_by_server, response);
             std::move(callback).Run(std::move(response));
           })));
+
+  test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
+  test::TestEvent<DmServerUploadService::CompletionResponse> responder_event;
+
+  RecordHandlerImpl handler(client_.get());
+  handler.HandleRecords(need_encryption_key(), std::move(test_records),
+                        responder_event.cb(),
+                        encryption_key_attached_event.cb());
+
+  auto response = responder_event.result();
+  EXPECT_EQ(response.status().error_code(), error::INTERNAL);
+}
+
+TEST_P(RecordHandlerImplTest, MissingSequenceInformation) {
+  static constexpr int64_t kNumTestRecords = 10;
+  static constexpr int64_t kGenerationId = 1234;
+  // test records that has one record with missing sequence information.
+  auto test_records = BuildTestRecordsVector(kNumTestRecords, kGenerationId);
+  test_records->back().clear_sequence_information();
+
+  // The response should show an error and UploadEncryptedReport should not have
+  // been even called, because UploadEncryptedReportingRequestBuilder::Build()
+  // should fail in this situation.
+  EXPECT_CALL(*client_, UploadEncryptedReport(_, _, _)).Times(0);
 
   test::TestEvent<SignedEncryptionInfo> encryption_key_attached_event;
   test::TestEvent<DmServerUploadService::CompletionResponse> responder_event;

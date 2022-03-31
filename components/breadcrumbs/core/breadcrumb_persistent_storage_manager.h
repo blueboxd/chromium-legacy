@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/breadcrumbs/core/breadcrumb_manager_observer.h"
 #include "components/breadcrumbs/core/crash_reporter_breadcrumb_constants.h"
@@ -88,10 +89,6 @@ class BreadcrumbPersistentStorageManager : public BreadcrumbManagerObserver {
 
   // Writes breadcrumbs stored in |pending_breadcrumbs_| to |breadcrumbs_file_|.
   void WritePendingBreadcrumbs();
-
-  // Writes |event| to |breadcrumbs_file_|.
-  // NOTE: Writing may be delayed if the file has recently been written into.
-  void WriteEvent(const std::string& event);
 
   // BreadcrumbManagerObserver
   void EventAdded(BreadcrumbManager* manager,

@@ -11,9 +11,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "media/audio/audio_input_device.h"
@@ -78,7 +78,6 @@ scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
     const blink::LocalFrameToken& frame_token,
     const media::AudioSinkParameters& params) {
   DCHECK(IsMainThread()) << __func__ << "() is called on a wrong thread.";
-  DCHECK(!params.processing_id.has_value());
   return AudioRendererMixerManager::GetInstance().CreateInput(
       frame_token, params.session_id, params.device_id,
       AudioDeviceFactory::GetSourceLatencyType(source_type));
@@ -127,10 +126,6 @@ AudioDeviceFactory::NewAudioRendererSink(
     if (device)
       return device;
   }
-
-  // Perhaps streams with a processing ID just shouldn't be mixable, i.e. call
-  // NewFinalAudioRendererSink for them rather than DCHECK?
-  DCHECK(!(params.processing_id.has_value() && IsMixable(source_type)));
 
   if (IsMixable(source_type))
     return NewMixableSink(source_type, frame_token, params);

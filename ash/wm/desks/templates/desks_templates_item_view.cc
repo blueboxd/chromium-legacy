@@ -30,6 +30,7 @@
 #include "ash/wm/overview/overview_session.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -427,6 +428,18 @@ void DesksTemplatesItemView::OnViewBlurred(views::View* observed_view) {
   if (!should_commit_name_changes_ || user_entered_name.empty() ||
       desk_template_->template_name() == user_entered_name) {
     OnTemplateNameChanged(desk_template_->template_name());
+    // Saving a desk template always puts it in the top left corner of the desk
+    // templates grid. This may mean that the grid is no longer sorted
+    // alphabetically by template name. Ensure that the grid is sorted.
+    for (auto& overview_grid : overview_session->grid_list()) {
+      if (views::Widget* grid_widget =
+              overview_grid->desks_templates_grid_widget()) {
+        auto* grid_view = static_cast<DesksTemplatesGridView*>(
+            grid_widget->GetContentsView());
+        grid_view->SortTemplateGridItems(
+            /*last_saved_template_uuid=*/base::GUID());
+      }
+    }
     return;
   }
 

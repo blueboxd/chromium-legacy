@@ -7,6 +7,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/buildflags.h"
@@ -96,13 +97,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // Maximum number of tries to initialize the database.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kMaxSharedStorageInitTries;
-// Maximum number of consecutive database errors allowed before the database is
-// razed. Consecutive errors are tallied, and if the next database operation
-// returns successfully, the consecutive error count is reset back to zero. If
-// the consecutive error count exceeds the threshold, then the database is
-// destroyed and recreated.
-BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
-    kMaxSharedStorageConsecutiveOperationErrorsAllowed;
 // The length of the initial interval from service startup after which
 // SharedStorageManager first checks for any stale origins, purging any that it
 // finds.

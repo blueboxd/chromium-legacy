@@ -122,7 +122,7 @@ TEST_F(
 var OSSettingsNearbyShareSubPageV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/nearby_share_subpage_tests.m.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/nearby_share_subpage_tests.js';
   }
 
   /** @override */
@@ -182,7 +182,7 @@ var OSSettingsOsBluetoothDevicesSubpageV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_devices_subpage_tests.m.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_devices_subpage_tests.js';
   }
 
   /** @override */
@@ -207,7 +207,7 @@ var OSSettingsOsPairedBluetoothListItemV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_paired_bluetooth_list_item_tests.m.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_paired_bluetooth_list_item_tests.js';
   }
 
   /** @override */
@@ -229,7 +229,7 @@ var OSSettingsOsBluetoothDeviceDetailSubpageV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_device_detail_subpage_tests.m.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_device_detail_subpage_tests.js';
   }
 
   /** @override */
@@ -251,7 +251,7 @@ var OSSettingsOsBluetoothTrueWirelessImagesV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_true_wireless_images_tests.m.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_true_wireless_images_tests.js';
   }
 
   /** @override */
@@ -368,7 +368,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['AppManagementSupportedLinksItem', 'supported_links_item_test.m.js'],
  ['AppManagementToggleRow', 'toggle_row_test.m.js'],
  ['AppManagementUninstallButton', 'uninstall_button_test.m.js'],
- ['BluetoothPage', 'bluetooth_page_tests.m.js'],
+ ['BluetoothPage', 'bluetooth_page_tests.js'],
  ['CellularNetworksList', 'cellular_networks_list_test.m.js'],
  ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.m.js'],
  ['CellularSetupDialog', 'cellular_setup_dialog_test.m.js'],
@@ -392,69 +392,69 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['GuestOsSharedUsbDevices', 'guest_os_shared_usb_devices_test.m.js'],
  ['InputMethodOptionPage', 'input_method_options_page_test.m.js'],
  ['InputPage', 'input_page_test.m.js'],
- ['InternetConfig', 'internet_config_test.m.js'],
- ['InternetDetailMenu', 'internet_detail_menu_test.m.js'],
- ['InternetDetailPage', 'internet_detail_page_tests.m.js'],
- ['InternetKnownNetworksPage', 'internet_known_networks_page_tests.m.js'],
- ['InternetSubpage', 'internet_subpage_tests.m.js'],
- ['InternetPage', 'internet_page_tests.m.js'],
+ ['InternetConfig', 'internet_config_test.js'],
+ ['InternetDetailMenu', 'internet_detail_menu_test.js'],
+ ['InternetDetailPage', 'internet_detail_page_tests.js'],
+ ['InternetKnownNetworksPage', 'internet_known_networks_page_tests.js'],
+ ['InternetSubpage', 'internet_subpage_tests.js'],
+ ['InternetPage', 'internet_page_tests.js'],
  ['KerberosAccounts', 'kerberos_accounts_test.m.js'],
  ['KerberosPage', 'kerberos_page_test.m.js'],
  ['KeyboardShortcutBanner', 'keyboard_shortcut_banner_test.m.js'],
  ['LockScreenPage', 'lock_screen_tests.m.js'],
  ['ManageAccessibilityPage', 'manage_accessibility_page_tests.m.js'],
- ['MultideviceCombinedSetupItem', 'multidevice_combined_setup_item_tests.m.js'],
+ ['MultideviceCombinedSetupItem', 'multidevice_combined_setup_item_tests.js'],
  // TODO(crbug.com/1227116): Re-enable once flakiness is fixed.
- //  ['MultideviceFeatureItem', 'multidevice_feature_item_tests.m.js'],
- ['MultideviceFeatureToggle', 'multidevice_feature_toggle_tests.m.js'],
+ //  ['MultideviceFeatureItem', 'multidevice_feature_item_tests.js'],
+ ['MultideviceFeatureToggle', 'multidevice_feature_toggle_tests.js'],
  [
    'MultideviceNotificationAccessSetupDialog',
-   'multidevice_notification_access_setup_dialog_tests.m.js'
+   'multidevice_notification_access_setup_dialog_tests.js'
  ],
- ['MultidevicePage', 'multidevice_page_tests.m.js'],
+ ['MultidevicePage', 'multidevice_page_tests.js'],
  [
    'MultidevicePermissionsSetupDialog',
-   'multidevice_permissions_setup_dialog_tests.m.js'
+   'multidevice_permissions_setup_dialog_tests.js'
  ],
- ['MultideviceSmartLockItem', 'multidevice_smartlock_item_test.m.js'],
- ['MultideviceSmartLockSubPage', 'multidevice_smartlock_subpage_test.m.js'],
- ['MultideviceSubPage', 'multidevice_subpage_tests.m.js'],
+ ['MultideviceSmartLockItem', 'multidevice_smartlock_item_test.js'],
+ ['MultideviceSmartLockSubPage', 'multidevice_smartlock_subpage_test.js'],
+ ['MultideviceSubPage', 'multidevice_subpage_tests.js'],
  [
    'MultideviceTaskContinuationItem',
-   'multidevice_task_continuation_item_tests.m.js'
+   'multidevice_task_continuation_item_tests.js'
  ],
  [
    'MultideviceTaskContinuationDisabledLink',
-   'multidevice_task_continuation_disabled_link_tests.m.js'
+   'multidevice_task_continuation_disabled_link_tests.js'
  ],
  [
    'MultideviceWifiSyncDisabledLink',
-   'multidevice_wifi_sync_disabled_link_tests.m.js'
+   'multidevice_wifi_sync_disabled_link_tests.js'
  ],
- ['MultideviceWifiSyncItem', 'multidevice_wifi_sync_item_tests.m.js'],
+ ['MultideviceWifiSyncItem', 'multidevice_wifi_sync_item_tests.js'],
+ ['NearbyShareConfirmPage', 'nearby_share_confirm_page_test.js'],
+ ['NearbyShareReceiveDialog', 'nearby_share_receive_dialog_tests.js'],
  ['NetworkAlwaysOnVpn', 'network_always_on_vpn_test.m.js'],
  ['NetworkProxySection', 'network_proxy_section_test.m.js'],
  ['NetworkSummary', 'network_summary_test.m.js'],
  ['NetworkSummaryItem', 'network_summary_item_test.m.js'],
  ['OncMojoTest', 'onc_mojo_test.m.js'],
- ['OsBluetoothPage', 'os_bluetooth_page_tests.m.js'],
- ['OsBluetoothPairingDialog', 'os_bluetooth_pairing_dialog_tests.m.js'],
- ['OsBluetoothSummary', 'os_bluetooth_summary_tests.m.js'],
+ ['OsBluetoothPage', 'os_bluetooth_page_tests.js'],
+ ['OsBluetoothPairingDialog', 'os_bluetooth_pairing_dialog_tests.js'],
+ ['OsBluetoothSummary', 'os_bluetooth_summary_tests.js'],
  [
    'OsBluetoothChangeDeviceNameDialog',
-   'os_bluetooth_change_device_name_dialog_tests.m.js'
+   'os_bluetooth_change_device_name_dialog_tests.js'
  ],
  ['OsEditDictionaryPage', 'os_edit_dictionary_page_test.m.js'],
  ['OsLanguagesPageV2', 'os_languages_page_v2_tests.m.js'],
- ['OsPairedBluetoothList', 'os_paired_bluetooth_list_tests.m.js'],
+ ['OsPairedBluetoothList', 'os_paired_bluetooth_list_tests.js'],
  ['OsSettingsUi', 'os_settings_ui_test.m.js'],
  ['OsSettingsUi2', 'os_settings_ui_test_2.m.js'],
  ['OsSettingsMain', 'os_settings_main_test.m.js'],
  ['OsSearchPage', 'os_search_page_test.m.js'],
  ['OsSettingsSearchBox', 'os_settings_search_box_test.m.js'],
  ['OSSettingsMenu', 'os_settings_menu_test.m.js'],
- ['NearbyShareConfirmPage', 'nearby_share_confirm_page_test.m.js'],
- ['NearbyShareReceiveDialog', 'nearby_share_receive_dialog_tests.m.js'],
  ['ParentalControlsPage', 'parental_controls_page_test.m.js'],
  ['PeoplePage', 'os_people_page_test.m.js'],
  ['PeoplePageChangePicture', 'people_page_change_picture_test.m.js'],

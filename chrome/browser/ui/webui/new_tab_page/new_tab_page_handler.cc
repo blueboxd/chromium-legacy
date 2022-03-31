@@ -6,6 +6,9 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
+#include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -286,45 +289,46 @@ new_tab_page::mojom::PromoPtr MakePromo(const PromoData& data) {
     if (parts) {
       std::vector<new_tab_page::mojom::PromoPartPtr> mojom_parts;
       for (const base::Value& part : parts->GetListDeprecated()) {
-        if (part.FindKey("image")) {
+        const base::Value::Dict& part_dict = part.GetDict();
+        if (part_dict.Find("image")) {
           auto mojom_image = new_tab_page::mojom::PromoImagePart::New();
-          auto* image_url = part.FindStringPath("image.image_url");
+          auto* image_url = part_dict.FindStringByDottedPath("image.image_url");
           if (!image_url || image_url->empty()) {
             continue;
           }
           mojom_image->image_url = GURL(*image_url);
-          auto* target = part.FindStringPath("image.target");
+          auto* target = part_dict.FindStringByDottedPath("image.target");
           if (target && !target->empty()) {
             mojom_image->target = GURL(*target);
           }
           mojom_parts.push_back(
               new_tab_page::mojom::PromoPart::NewImage(std::move(mojom_image)));
-        } else if (part.FindKey("link")) {
+        } else if (part_dict.Find("link")) {
           auto mojom_link = new_tab_page::mojom::PromoLinkPart::New();
-          auto* url = part.FindStringPath("link.url");
+          auto* url = part_dict.FindStringByDottedPath("link.url");
           if (!url || url->empty()) {
             continue;
           }
           mojom_link->url = GURL(*url);
-          auto* text = part.FindStringPath("link.text");
+          auto* text = part_dict.FindStringByDottedPath("link.text");
           if (!text || text->empty()) {
             continue;
           }
           mojom_link->text = *text;
-          auto* color = part.FindStringPath("link.color");
+          auto* color = part_dict.FindStringByDottedPath("link.color");
           if (color && !color->empty()) {
             mojom_link->color = *color;
           }
           mojom_parts.push_back(
               new_tab_page::mojom::PromoPart::NewLink(std::move(mojom_link)));
-        } else if (part.FindKey("text")) {
+        } else if (part_dict.Find("text")) {
           auto mojom_text = new_tab_page::mojom::PromoTextPart::New();
-          auto* text = part.FindStringPath("text.text");
+          auto* text = part_dict.FindStringByDottedPath("text.text");
           if (!text || text->empty()) {
             continue;
           }
           mojom_text->text = *text;
-          auto* color = part.FindStringPath("text.color");
+          auto* color = part_dict.FindStringByDottedPath("text.color");
           if (color && !color->empty()) {
             mojom_text->color = *color;
           }
@@ -399,6 +403,8 @@ void NewTabPageHandler::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kNtpDisabledModules, true);
   registry->RegisterListPref(prefs::kNtpModulesOrder, true);
   registry->RegisterBooleanPref(prefs::kNtpModulesVisible, true);
+  registry->RegisterIntegerPref(prefs::kNtpModulesShownCount, 0);
+  registry->RegisterTimePref(prefs::kNtpModulesFirstShownTime, base::Time());
   registry->RegisterBooleanPref(prefs::kNtpModulesFreVisible, true);
   registry->RegisterIntegerPref(prefs::kNtpModulesFreShownCount, 0);
   registry->RegisterTimePref(prefs::kNtpModulesFreFirstShownTime, base::Time());
@@ -653,6 +659,18 @@ void NewTabPageHandler::GetModulesOrder(GetModulesOrderCallback callback) {
                });
 
   std::move(callback).Run(std::move(module_ids));
+}
+
+void NewTabPageHandler::IncrementModulesShownCount() {
+  const auto ntp_modules_shown_count =
+      profile_->GetPrefs()->GetInteger(prefs::kNtpModulesShownCount);
+
+  if (ntp_modules_shown_count == 0) {
+    profile_->GetPrefs()->SetTime(prefs::kNtpModulesFirstShownTime,
+                                  base::Time::Now());
+  }
+  profile_->GetPrefs()->SetInteger(prefs::kNtpModulesShownCount,
+                                   ntp_modules_shown_count + 1);
 }
 
 void NewTabPageHandler::UpdateModulesFreVisibility() {

@@ -14,6 +14,7 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/webui/eche_app_ui/mojom/eche_app.mojom.h"
 #include "base/gtest_prod_util.h"
+#include "base/timer/timer.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/views/controls/button/button.h"
 #include "url/gurl.h"
@@ -50,6 +51,8 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView, public SessionObserver {
  public:
   METADATA_HEADER(EcheTray);
 
+  using GracefulCloseCallback = base::OnceCallback<void()>;
+
   explicit EcheTray(Shelf* shelf);
   EcheTray(const EcheTray&) = delete;
   EcheTray& operator=(const EcheTray&) = delete;
@@ -83,14 +86,27 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView, public SessionObserver {
   void SetUrl(const GURL& url);
 
   // Sets the icon that will be used on the tray.
-  void SetIcon(const gfx::Image& icon);
+  void SetIcon(const gfx::Image& icon, const std::u16string& tooltip_text);
+
+  // Sets graceful close callback functiion. When close Eche Bubble, it will
+  // notify to Eche Web to release connection resource.  Be aware that once this
+  // is set, close button will not call PurgeAndClose() but rely on Eche Web to
+  // close window when connection resource is released; if it is not set, then
+  // it will immediaely call PurgeAndClose() to close window.
+  void SetGracefulCloseCallback(GracefulCloseCallback graceful_close_callback);
+
+  views::Button* GetMinimizeButtonForTesting() const;
+  views::Button* GetCloseButtonForTesting() const;
 
   // Initializes the bubble with given parameters. If there is any previous
   // bubble already shown with a different URL it is going to be closed. The
-  // bubble is not shown initially until `ShowBubble` is called. The `url`
-  // parameter is used to load the `WebView` inside the bubble. The `icon` is
-  // used to update the tray icon for `EcheTray`.
-  void LoadBubble(const GURL& url, const gfx::Image& icon);
+  // bubble is not shown initially until `ShowBubble` is called.
+  // The `url` parameter is used to load the `WebView` inside the bubble.
+  // The `icon` is used to update the tray icon for `EcheTray`.
+  // The `visible_name` is shown as a tooltip for the Eche icon.
+  void LoadBubble(const GURL& url,
+                  const gfx::Image& icon,
+                  const std::u16string& visible_name);
 
   // Destroys the view inclusing the web view.
   // Note: `CloseBubble` only hides the view.
@@ -115,9 +131,9 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView, public SessionObserver {
  private:
   FRIEND_TEST_ALL_PREFIXES(EcheTrayTest, EcheTrayCreatesBubbleButHideFirst);
 
-  // Returns the size of the Exo bubble based on the screen size and
-  // orientation.
-  gfx::Size GetSizeForEche() const;
+  // Calculates and returns the size of the Exo bubble based on the screen size
+  // and orientation.
+  gfx::Size CalculateSizeForEche() const;
 
   // Handles the click on the "back" arrow in the header.
   void OnArrowBackActivated();
@@ -130,6 +146,10 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView, public SessionObserver {
   void StopLoadingAnimation();
   void StartLoadingAnimation();
   void SetIconVisibility(bool visibility);
+
+  // Starts graceful close to ensure connection resource is released before
+  // window is closed.
+  void StartGracefulClose();
 
   PhoneHubTray* GetPhoneHubTray();
   EcheIconLoadingIndicatorView* GetLoadingIndicator();
@@ -152,6 +172,14 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView, public SessionObserver {
 
   base::ScopedObservation<SessionControllerImpl, SessionObserver>
       observed_session_{this};
+
+  GracefulCloseCallback graceful_close_callback_;
+
+  // The unload timer to force close EcheTray in case unload error.
+  std::unique_ptr<base::DelayTimer> unload_timer_;
+
+  views::Button* close_button_ = nullptr;
+  views::Button* minimize_button_ = nullptr;
 
   base::WeakPtrFactory<EcheTray> weak_factory_{this};
 };

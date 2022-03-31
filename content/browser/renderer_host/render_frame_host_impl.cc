@@ -7599,10 +7599,9 @@ void RenderFrameHostImpl::HandleAXLocationChanges(
 
 media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
 RenderFrameHostImpl::GetRecordAggregateWatchTimeCallback() {
-  // TODO(crbug.com/1240924): Consider if it needs a URL from the outermost
-  // frame, either.
+  // The URL used for UKM must always be the top level frame.
   return delegate_->GetRecordAggregateWatchTimeCallback(
-      GetMainFrame()->GetLastCommittedURL());
+      GetOutermostMainFrame()->GetLastCommittedURL());
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {
@@ -13341,6 +13340,14 @@ void RenderFrameHostImpl::OnDidRunContentWithCertificateErrors() {
   if (lifecycle_state() != LifecycleStateImpl::kPendingCommit &&
       IsInactiveAndDisallowActivation(
           DisallowActivationReasonId::kCertificateErrors)) {
+    return;
+  }
+  // To update mixed content status in a fenced frame, we should call
+  // an outer frame's OnDidRunContentWithCertificateErrors.
+  // Otherwise, no update can be processed from fenced frames since they have
+  // their own NavigationController"
+  if (IsNestedWithinFencedFrame()) {
+    GetParentOrOuterDocument()->OnDidRunContentWithCertificateErrors();
     return;
   }
   frame_tree_->controller().ssl_manager()->DidRunContentWithCertErrors(

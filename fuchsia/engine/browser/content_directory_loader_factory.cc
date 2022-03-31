@@ -21,7 +21,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "fuchsia/base/fuchsia_dir_scheme.h"
@@ -314,7 +313,7 @@ net::Error OpenFileFromDirectory(
 
   const zx_status_t status =
       fdio_open(absolute_file_path.value().c_str(),
-                static_cast<uint32_t>(fuchsia::io::OPEN_RIGHT_READABLE),
+                static_cast<uint32_t>(fuchsia::io::OpenFlags::RIGHT_READABLE),
                 file_request.TakeChannel().release());
   if (status != ZX_OK) {
     ZX_DLOG(WARNING, status) << "fdio_open";

@@ -145,6 +145,7 @@
 #include "third_party/blink/renderer/core/html/nesting_level_incrementer.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
+#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
@@ -2310,8 +2311,6 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
   } else if (name == html_names::kPartAttr) {
     part().DidUpdateAttributeValue(params.old_value, params.new_value);
     GetDocument().GetStyleEngine().PartChangedForElement(*this);
-  } else if (name == html_names::kPopupAttr) {
-    UpdatePopupAttribute(params.new_value);
   } else if (name == html_names::kExportpartsAttr) {
     EnsureElementRareData().SetPartNamesMap(params.new_value);
     GetDocument().GetStyleEngine().ExportpartsChangedForElement(*this);
@@ -2334,6 +2333,13 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
       if (params.old_value != params.new_value)
         cache->HandleAttributeChanged(name, this);
     }
+  }
+
+  if (params.reason == AttributeModificationReason::kByParser &&
+      name == html_names::kInitiallyopenAttr && HasValidPopupAttribute()) {
+    DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+    DCHECK(!isConnected());
+    GetPopupData()->setHadInitiallyOpenWhenParsed(true);
   }
 
   if (params.reason == AttributeModificationReason::kDirectly &&
@@ -2367,6 +2373,10 @@ void Element::UpdatePopupAttribute(String value) {
       hidePopup();
       GetElementRareData()->RemovePopupData();
     }
+    // TODO(masonf) This console message might be too much log spam. Though
+    // in case there's a namespace collision with something the developer is
+    // doing with e.g. a function called 'popup', this will be helpful to
+    // troubleshoot that.
     GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kOther,
         mojom::blink::ConsoleMessageLevel::kInfo,
@@ -2537,6 +2547,14 @@ void Element::HandlePopupLightDismiss(const Event& event) {
       document.HideTopmostPopupElement();
     }
   }
+}
+
+void Element::InvokePopup(Element* invoker) {
+  DCHECK(invoker);
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+  DCHECK(HasValidPopupAttribute());
+  GetPopupData()->setInvoker(invoker);
+  showPopup();
 }
 
 bool Element::HasLegalLinkAttribute(const QualifiedName&) const {
@@ -2766,6 +2784,24 @@ Node::InsertionNotificationRequest Element::InsertedInto(
       CustomElement::TryToUpgrade(*this);
   }
 
+  if (GetPopupData() && GetPopupData()->hadInitiallyOpenWhenParsed()) {
+    // If a Popup element has the `initiallyopen` attribute upon page
+    // load, and it is the *first* such popup, show it.
+    DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+    DCHECK(isConnected());
+    GetPopupData()->setHadInitiallyOpenWhenParsed(false);
+    GetDocument()
+        .GetTaskRunner(TaskType::kDOMManipulation)
+        ->PostTask(FROM_HERE, WTF::Bind(
+                                  [](Element* popup) {
+                                    if (popup && popup->isConnected() &&
+                                        !popup->GetDocument().PopupShowing()) {
+                                      popup->showPopup();
+                                    }
+                                  },
+                                  WrapWeakPersistent(this)));
+  }
+
   TreeScope& scope = insertion_point.GetTreeScope();
   if (scope != GetTreeScope())
     return kInsertionDone;
@@ -2806,6 +2842,12 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
           ->SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(
               false);
     }
+  }
+
+  // If a popup is removed from the document, make sure it gets
+  // removed from the popup element stack and the top layer.
+  if (was_in_document && HasValidPopupAttribute()) {
+    insertion_point.GetDocument().HidePopupIfShowing(this);
   }
 
   if (GetDocument().GetPage())
@@ -3499,47 +3541,52 @@ StyleRecalcChange Element::RecalcOwnStyle(
   if (new_style && !ShouldStoreComputedStyle(*new_style))
     new_style = nullptr;
 
-  if (RuntimeEnabledFeatures::HighlightInheritanceEnabled() && new_style) {
+  if (new_style) {
     const StyleHighlightData* parent_highlights =
         parent_style ? parent_style->HighlightData().get() : nullptr;
 
-    if (new_style->HasPseudoElementStyle(kPseudoIdSelection)) {
-      StyleHighlightData& highlights = new_style->MutableHighlightData();
-      const ComputedStyle* highlight_parent =
-          parent_highlights ? parent_highlights->Selection() : nullptr;
-      StyleRequest style_request{kPseudoIdSelection, highlight_parent};
-      highlights.SetSelection(
-          StyleForPseudoElement(new_style_recalc_context, style_request));
-    }
+    if (RuntimeEnabledFeatures::HighlightInheritanceEnabled()) {
+      if (new_style->HasPseudoElementStyle(kPseudoIdSelection)) {
+        StyleHighlightData& highlights = new_style->MutableHighlightData();
+        const ComputedStyle* highlight_parent =
+            parent_highlights ? parent_highlights->Selection() : nullptr;
+        StyleRequest style_request{kPseudoIdSelection, highlight_parent};
+        highlights.SetSelection(
+            StyleForPseudoElement(new_style_recalc_context, style_request));
+      }
 
-    if (new_style->HasPseudoElementStyle(kPseudoIdTargetText)) {
-      StyleHighlightData& highlights = new_style->MutableHighlightData();
-      const ComputedStyle* highlight_parent =
-          parent_highlights ? parent_highlights->TargetText() : nullptr;
-      StyleRequest style_request{kPseudoIdTargetText, highlight_parent};
-      highlights.SetTargetText(
-          StyleForPseudoElement(new_style_recalc_context, style_request));
-    }
+      if (new_style->HasPseudoElementStyle(kPseudoIdTargetText)) {
+        StyleHighlightData& highlights = new_style->MutableHighlightData();
+        const ComputedStyle* highlight_parent =
+            parent_highlights ? parent_highlights->TargetText() : nullptr;
+        StyleRequest style_request{kPseudoIdTargetText, highlight_parent};
+        highlights.SetTargetText(
+            StyleForPseudoElement(new_style_recalc_context, style_request));
+      }
 
-    if (new_style->HasPseudoElementStyle(kPseudoIdSpellingError)) {
-      StyleHighlightData& highlights = new_style->MutableHighlightData();
-      const ComputedStyle* highlight_parent =
-          parent_highlights ? parent_highlights->SpellingError() : nullptr;
-      StyleRequest style_request{kPseudoIdSpellingError, highlight_parent};
-      highlights.SetSpellingError(
-          StyleForPseudoElement(new_style_recalc_context, style_request));
-    }
+      if (new_style->HasPseudoElementStyle(kPseudoIdSpellingError)) {
+        StyleHighlightData& highlights = new_style->MutableHighlightData();
+        const ComputedStyle* highlight_parent =
+            parent_highlights ? parent_highlights->SpellingError() : nullptr;
+        StyleRequest style_request{kPseudoIdSpellingError, highlight_parent};
+        highlights.SetSpellingError(
+            StyleForPseudoElement(new_style_recalc_context, style_request));
+      }
 
-    if (new_style->HasPseudoElementStyle(kPseudoIdGrammarError)) {
-      StyleHighlightData& highlights = new_style->MutableHighlightData();
-      const ComputedStyle* highlight_parent =
-          parent_highlights ? parent_highlights->GrammarError() : nullptr;
-      StyleRequest style_request{kPseudoIdGrammarError, highlight_parent};
-      highlights.SetGrammarError(
-          StyleForPseudoElement(new_style_recalc_context, style_request));
+      if (new_style->HasPseudoElementStyle(kPseudoIdGrammarError)) {
+        StyleHighlightData& highlights = new_style->MutableHighlightData();
+        const ComputedStyle* highlight_parent =
+            parent_highlights ? parent_highlights->GrammarError() : nullptr;
+        StyleRequest style_request{kPseudoIdGrammarError, highlight_parent};
+        highlights.SetGrammarError(
+            StyleForPseudoElement(new_style_recalc_context, style_request));
+      }
     }
-
-    if (new_style->HasPseudoElementStyle(kPseudoIdHighlight)) {
+    // Use new inheritance model for custom highlights even if it is not enabled
+    // for other types of highlights.
+    if (new_style && new_style->HasPseudoElementStyle(kPseudoIdHighlight)) {
+      const StyleHighlightData* parent_highlights =
+          parent_style ? parent_style->HighlightData().get() : nullptr;
       StyleHighlightData& highlights = new_style->MutableHighlightData();
 
       const HashSet<AtomicString>* custom_highlight_names =
@@ -4502,6 +4549,8 @@ void Element::ParseAttribute(const AttributeModificationParams& params) {
     }
   } else if (params.name == xml_names::kLangAttr) {
     PseudoStateChanged(CSSSelector::kPseudoLang);
+  } else if (params.name == html_names::kPopupAttr) {
+    UpdatePopupAttribute(params.new_value);
   }
 }
 
@@ -6266,8 +6315,9 @@ const ComputedStyle* Element::CachedStyleForPseudoElement(
     const AtomicString& pseudo_argument) {
   // Highlight pseudos are resolved into StyleHighlightData during originating
   // style recalc, and should never be stored in StyleCachedData.
-  DCHECK(!RuntimeEnabledFeatures::HighlightInheritanceEnabled() ||
-         !IsHighlightPseudoElement(pseudo_id));
+  DCHECK((!RuntimeEnabledFeatures::HighlightInheritanceEnabled() ||
+          !IsHighlightPseudoElement(pseudo_id)) &&
+         pseudo_id != PseudoId::kPseudoIdHighlight);
 
   const ComputedStyle* style = GetComputedStyle();
 
@@ -6293,8 +6343,9 @@ scoped_refptr<ComputedStyle> Element::UncachedStyleForPseudoElement(
     const StyleRequest& request) {
   // Highlight pseudos are resolved into StyleHighlightData during originating
   // style recalc, where we have the actual StyleRecalcContext.
-  DCHECK(!RuntimeEnabledFeatures::HighlightInheritanceEnabled() ||
-         !IsHighlightPseudoElement(request.pseudo_id));
+  DCHECK((!RuntimeEnabledFeatures::HighlightInheritanceEnabled() ||
+          !IsHighlightPseudoElement(request.pseudo_id)) &&
+         request.pseudo_id != PseudoId::kPseudoIdHighlight);
 
   return StyleForPseudoElement(
       StyleRecalcContext::FromInclusiveAncestors(*this), request);

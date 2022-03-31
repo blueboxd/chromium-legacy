@@ -25,6 +25,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
@@ -3867,7 +3868,6 @@ void GLRenderer::ScheduleCALayers() {
     return;
 
   scoped_refptr<CALayerOverlaySharedState> shared_state;
-  size_t copied_render_pass_count = 0;
 
   for (const CALayerOverlay& ca_layer_overlay : current_frame()->overlay_list) {
     if (ca_layer_overlay.rpdq) {
@@ -3876,7 +3876,6 @@ void GLRenderer::ScheduleCALayers() {
       if (overlay_texture)
         awaiting_swap_overlay_textures_.push_back(std::move(overlay_texture));
       shared_state = nullptr;
-      ++copied_render_pass_count;
       continue;
     }
 

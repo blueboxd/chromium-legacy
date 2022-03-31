@@ -1247,6 +1247,9 @@ extern const char kPartitionedCookiesDescription[];
 extern const char kPartitionedCookiesBypassOriginTrialName[];
 extern const char kPartitionedCookiesBypassOriginTrialDescription[];
 
+extern const char kNoncedPartitionedCookiesName[];
+extern const char kNoncedPartitionedCookiesDescription[];
+
 extern const char kScrollableTabStripFlagId[];
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
@@ -2343,9 +2346,6 @@ extern const char kAmbientModeNewUrlDescription[];
 extern const char kAppDiscoveryForOobeName[];
 extern const char kAppDiscoveryForOobeDescription[];
 
-extern const char kAppDiscoveryRemoteUrlSearchName[];
-extern const char kAppDiscoveryRemoteUrlSearchDescription[];
-
 extern const char kAppProvisioningStaticName[];
 extern const char kAppProvisioningStaticDescription[];
 
@@ -2543,6 +2543,9 @@ extern const char kFastPairLowPowerDescription[];
 
 extern const char kFastPairSoftwareScanningName[];
 extern const char kFastPairSoftwareScanningDescription[];
+
+extern const char kFastPairSubsequentPairingUXName[];
+extern const char kFastPairSubsequentPairingUXDescription[];
 
 extern const char kUseHDRTransferFunctionName[];
 extern const char kUseHDRTransferFunctionDescription[];
@@ -2762,6 +2765,9 @@ extern const char kFilesWebDriveOfficeDescription[];
 
 extern const char kFiltersInRecentsName[];
 extern const char kFiltersInRecentsDescription[];
+
+extern const char kFloatWindow[];
+extern const char kFloatWindowDescription[];
 
 extern const char kFocusFollowsCursorName[];
 extern const char kFocusFollowsCursorDescription[];
@@ -3097,6 +3103,9 @@ extern const char kWifiSyncAndroidDescription[];
 
 extern const char kWindowControlMenu[];
 extern const char kWindowControlMenuDescription[];
+
+extern const char kLauncherGameSearchName[];
+extern const char kLauncherGameSearchDescription[];
 
 extern const char kLauncherNudgeName[];
 extern const char kLauncherNudgeDescription[];

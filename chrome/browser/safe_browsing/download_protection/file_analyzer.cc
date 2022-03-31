@@ -8,7 +8,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
@@ -103,9 +102,7 @@ void FileAnalyzer::Start(const base::FilePath& target_path,
     StartExtractDmgFeatures();
 #endif
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
-  } else if (base::FeatureList::IsEnabled(
-                 safe_browsing::kClientSideDetectionDocumentScanning) &&
-             inspection_type == DownloadFileType::OFFICE_DOCUMENT) {
+  } else if (inspection_type == DownloadFileType::OFFICE_DOCUMENT) {
     StartExtractDocumentFeatures();
 #endif
   } else {

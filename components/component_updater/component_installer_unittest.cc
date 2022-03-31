@@ -18,7 +18,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
-#include "base/task/post_task.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/task_environment.h"
@@ -100,12 +99,6 @@ class MockUpdateClient : public UpdateClient {
     std::move(callback).Run(update_client::Error::NONE);
   }
 
-  void SendRegistrationPing(const CrxComponent& crx_component,
-                            Callback callback) override {
-    DoSendRegistrationPing(crx_component);
-    std::move(callback).Run(update_client::Error::NONE);
-  }
-
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
   MOCK_METHOD2(DoInstall,
@@ -120,7 +113,6 @@ class MockUpdateClient : public UpdateClient {
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD2(DoSendUninstallPing,
                void(const CrxComponent& crx_component, int reason));
-  MOCK_METHOD1(DoSendRegistrationPing, void(const CrxComponent& crx_component));
 
  private:
   ~MockUpdateClient() override = default;

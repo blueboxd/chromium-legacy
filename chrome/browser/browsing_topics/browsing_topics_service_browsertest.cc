@@ -21,10 +21,10 @@
 #include "components/browsing_topics/browsing_topics_service_impl.h"
 #include "components/browsing_topics/epoch_topics.h"
 #include "components/browsing_topics/test_util.h"
+#include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/optimization_guide/content/browser/page_content_annotations_service.h"
 #include "components/optimization_guide/content/browser/test_page_content_annotator.h"
-#include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/test_model_info_builder.h"
 #include "components/optimization_guide/core/test_optimization_guide_model_provider.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
@@ -54,7 +54,8 @@ constexpr size_t kTaxonomySize = 349;
 constexpr int kTaxonomyVersion = 1;
 constexpr int64_t kModelVersion = 2;
 constexpr size_t kPaddedTopTopicsStartIndex = 5;
-
+constexpr Topic kExpectedTopic1 = Topic(1);
+constexpr Topic kExpectedTopic2 = Topic(10);
 constexpr char kExpectedResultOrder1[] =
     "[{\"configVersion\":\"chrome.1\",\"modelVersion\":\"2\","
     "\"taxonomyVersion\":\"1\",\"topic\":1,\"version\":\"chrome.1:1:2\"};{"
@@ -176,8 +177,7 @@ class BrowsingTopicsDisabledBrowserTest : public BrowsingTopicsBrowserTestBase {
  public:
   BrowsingTopicsDisabledBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{optimization_guide::features::
-                                  kPageContentAnnotations},
+        /*enabled_features=*/{},
         /*disabled_features=*/{blink::features::kBrowsingTopics});
   }
 
@@ -205,8 +205,7 @@ class BrowsingTopicsBrowserTest : public BrowsingTopicsBrowserTestBase {
   BrowsingTopicsBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/
-        {optimization_guide::features::kPageContentAnnotations,
-         blink::features::kBrowsingTopics,
+        {blink::features::kBrowsingTopics,
          blink::features::kBrowsingTopicsBypassIPIsPubliclyRoutableCheck,
          features::kPrivacySandboxAdsAPIsOverride},
         /*disabled_features=*/{});
@@ -561,6 +560,20 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
 
   EXPECT_TRUE(result == kExpectedResultOrder1 ||
               result == kExpectedResultOrder2);
+
+  // Ensure access has been reported to the Page Specific Content Settings.
+  auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
+      web_contents()->GetPrimaryPage());
+  EXPECT_TRUE(pscs->HasAccessedTopics());
+  auto topics = pscs->GetAccessedTopics();
+  ASSERT_EQ(2u, topics.size());
+
+  // No ordering is enforced by the PSCS.
+  ASSERT_NE(topics[0].topic_id(), topics[1].topic_id());
+  ASSERT_TRUE(topics[0].topic_id() == kExpectedTopic1 ||
+              topics[0].topic_id() == kExpectedTopic2);
+  ASSERT_TRUE(topics[1].topic_id() == kExpectedTopic1 ||
+              topics[1].topic_id() == kExpectedTopic2);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
@@ -601,6 +614,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
   // b.test has yet to call the API so it shouldn't receive a topic.
   EXPECT_EQ("[]", InvokeTopicsAPI(content::ChildFrameAt(
                       web_contents()->GetMainFrame(), 0)));
+  auto* pscs = content_settings::PageSpecificContentSettings::GetForPage(
+      web_contents()->GetPrimaryPage());
+  EXPECT_FALSE(pscs->HasAccessedTopics());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,

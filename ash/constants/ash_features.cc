@@ -635,6 +635,11 @@ const base::FeatureParam<double> kFastPairLowPowerInactiveSeconds{
 const base::Feature kFastPairSoftwareScanning{
     "FastPairSoftwareScanning", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the "Subsequent Pairing" Fast Pair scenario in Bluetooth Settings
+// and Quick Settings.
+const base::Feature kFastPairSubsequentPairingUX{
+    "FastPairSubsequentPairingUX", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables mounting various archive formats (in two tiers) in Files App. This
 // flag controls the first tier, whose support is very good.
 // https://crbug.com/1216245
@@ -678,6 +683,11 @@ const base::Feature kFirmwareUpdaterApp = {"FirmwareUpdaterApp",
 // Enables or disables Floating Workspace feature on Chrome OS
 const base::Feature kFloatingWorkspace{"FloatingWorkspace",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables a window to float.
+// https://crbug.com/1240411
+const base::Feature kFloatWindow{"CrOSLabsFloatWindow",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to allow keeping full screen mode after unlock.
 const base::Feature kFullscreenAfterUnlockAllowed = {
@@ -1415,11 +1425,6 @@ const base::Feature kWifiSyncAndroid{"WifiSyncAndroid",
 const base::Feature kWifiSyncApplyDeletes{"WifiSyncApplyDeletes",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables a window control menu to snap, float and move window to another desk.
-// https://crbug.com/1240411
-const base::Feature kWindowControlMenu{"WindowControlMenu",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Change window creation to be based on cursor position when there are multiple
 // displays.
 const base::Feature kWindowsFollowCursor{"WindowsFollowCursor",
@@ -1660,6 +1665,10 @@ bool IsFastPairLowPowerEnabled() {
 
 bool IsFastPairSoftwareScanningEnabled() {
   return base::FeatureList::IsEnabled(kFastPairSoftwareScanning);
+}
+
+bool IsFastPairSubsequentPairingUXEnabled() {
+  return base::FeatureList::IsEnabled(kFastPairSubsequentPairingUX);
 }
 
 bool IsFileManagerFuseBoxEnabled() {
@@ -2092,8 +2101,8 @@ bool IsWifiSyncAndroidEnabled() {
   return base::FeatureList::IsEnabled(kWifiSyncAndroid);
 }
 
-bool IsWindowControlMenuEnabled() {
-  return base::FeatureList::IsEnabled(kWindowControlMenu);
+bool IsFloatWindowEnabled() {
+  return base::FeatureList::IsEnabled(kFloatWindow);
 }
 
 bool ShouldShowPlayStoreInDemoMode() {

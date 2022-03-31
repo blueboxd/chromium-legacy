@@ -21,6 +21,7 @@
 #include "base/task/sequence_manager/task_time_observer.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "components/power_scheduler/power_mode_voter.h"
@@ -267,8 +268,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   base::TimeTicks NowTicks() const;
 
-  scoped_refptr<base::SingleThreadTaskRunner> VirtualTimeControlTaskRunner();
-
   TaskAttributionTracker* GetTaskAttributionTracker() override {
     return main_thread_only().task_attribution_tracker.get();
   }
@@ -308,6 +307,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   // Returns true if virtual time is not paused.
   bool VirtualTimeAllowedToAdvance() const;
+  void GrantVirtualTimeBudget(base::TimeDelta budget,
+                              base::OnceClosure budget_exhausted_callback);
   void SetVirtualTimePolicy(VirtualTimePolicy virtual_time_policy);
   void SetMaxVirtualTimeTaskStarvationCount(int max_task_starvation_count);
   base::TimeTicks IncrementVirtualTimePauseCount();
@@ -424,9 +425,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   scoped_refptr<MainThreadTaskQueue> DefaultTaskQueue();
   scoped_refptr<MainThreadTaskQueue> CompositorTaskQueue();
   scoped_refptr<MainThreadTaskQueue> V8TaskQueue();
-  // A control task queue which also respects virtual time. Only available if
-  // virtual time has been enabled.
-  scoped_refptr<MainThreadTaskQueue> VirtualTimeControlTaskQueue();
 
   // `current_use_case` will be overwritten by the next call to UpdatePolicy.
   // Thus, this function should be only used for testing purposes.

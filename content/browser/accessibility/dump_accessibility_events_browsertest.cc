@@ -662,6 +662,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsIframeSrcChanged) {
+  RunEventTest(FILE_PATH_LITERAL("iframe-src-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsInnerHtmlChange) {
   RunEventTest(FILE_PATH_LITERAL("inner-html-change.html"));
 }
@@ -1042,11 +1047,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest, ValueValueChanged) {
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsMenuOpenedClosed) {
   RunEventTest(FILE_PATH_LITERAL("menu-opened-closed.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsMenuOpenedClosedViaInnerText) {
-  RunEventTest(FILE_PATH_LITERAL("menu-opened-closed-via-inner-text.html"));
 }
 
 #if BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)

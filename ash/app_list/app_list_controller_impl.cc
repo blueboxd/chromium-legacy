@@ -469,6 +469,17 @@ void AppListControllerImpl::OnSessionStateChanged(
     OnVisibilityChanged(true, last_visible_display_id_);
 }
 
+void AppListControllerImpl::OnUserSessionAdded(const AccountId& account_id) {
+  if (!ash::features::IsLauncherAppSortEnabled())
+    return;
+
+  if (!client_)
+    return;
+
+  ash::ReportPrefSortOrderOnSessionStart(client_->GetPermanentSortingOrder(),
+                                         IsTabletMode());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Methods used in Ash
 
@@ -1697,11 +1708,6 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
       client_->OnAppListVisibilityChanged(real_visibility);
 
     last_visible_ = real_visibility;
-
-    // We could make Assistant sub-controllers an AppListControllerObserver,
-    // but we do not want to introduce new dependency of AppListController to
-    // Assistant.
-    GetAssistantViewDelegate()->OnHostViewVisibilityChanged(real_visibility);
 
     // Updates AppsContainerView in `fullscreen_presenter_`.
     if (app_list_view)

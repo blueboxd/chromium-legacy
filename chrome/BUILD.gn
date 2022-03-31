@@ -481,6 +481,7 @@ if (is_win) {
       ":chrome_resources",
       ":chrome_versioned_bundle_data",
       "//base/allocator:early_zone_registration_mac",
+      "//build:branding_buildflags",
       "//chrome/common:buildflags",
       "//chrome/common:version_header",
     ]
@@ -721,6 +722,7 @@ if (is_win) {
 
       deps = [
         "//base/allocator:early_zone_registration_mac",
+        "//build:branding_buildflags",
         "//chrome/common:version_header",
         "//sandbox/mac:seatbelt",
       ]
@@ -1912,11 +1914,18 @@ if (is_linux || is_chromeos) {
   # Copies some scripts and resources that are used for desktop integration.
   copy("xdg_mime") {
     sources = [
-      "//chrome/app/theme/$branding_path_component/product_logo_48.png",
       "//chrome/tools/build/linux/chrome-wrapper",
       "//third_party/xdg-utils/scripts/xdg-mime",
       "//third_party/xdg-utils/scripts/xdg-settings",
     ]
+    if (is_linux) {
+      sources +=
+          [ "//chrome/app/theme/$branding_path_component/product_logo_48.png" ]
+    } else {
+      sources += [
+        "//chrome/app/theme/$branding_path_component/linux/product_logo_48.png",
+      ]
+    }
     outputs = [ "$root_out_dir/{{source_file_part}}" ]
   }
 }

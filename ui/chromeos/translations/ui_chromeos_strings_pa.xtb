@@ -106,6 +106,7 @@
 <translation id="1853795129690976061">ਇਹ ਫੋਲਡਰ Linux ਨਾਲ ਸਾਂਝਾ ਕੀਤਾ ਗਿਆ ਹੈ</translation>
 <translation id="1864756863218646478">ਫਾਈਲ ਨਹੀਂ ਲੱਭੀ ਜਾ ਸਕੀ।</translation>
 <translation id="1884013283844450420">ਨੈੱਟਵਰਕ <ph name="NETWORK_COUNT" /> ਵਿੱਚੋਂ <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, ਕਨੈਕਟ ਕਰੋ</translation>
+<translation id="1914901738028575085">CloudReady 2.0 ਡੀਵਾਈਸ</translation>
 <translation id="1920670151694390848">ਮਲਿਆਲਮ ਲਿਪੀਅੰਤਰਨ</translation>
 <translation id="1920798810075583923">ਤਰਬੂਜ਼</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> ਨੂੰ ਫਾਰਮੈਟ ਕੀਤਾ ਗਿਆ</translation>
@@ -316,7 +317,7 @@
 <translation id="3726463242007121105">ਇਹ ਡੀਵਾਈਸ ਖੋਲ੍ਹੀ ਨਹੀਂ ਜਾ ਸਕਦੀ ਕਿਉਂਕਿ ਇਸਦਾ ਫਾਈਲਸਿਸਟਮ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ।</translation>
 <translation id="3727148787322499904">ਇਸ ਸੈਟਿੰਗ ਨੂੰ ਬਦਲਣ ਨਾਲ ਸਭ ਸਾਂਝੇ ਕੀਤੇ ਨੈੱਟਵਰਕ ਪ੍ਰਭਾਵਿਤ ਹੋਣਗੇ</translation>
 <translation id="3737576078404241332">ਸਾਈਡਬਾਰ ਵਿੱਚੋਂ ਹਟਾਓ</translation>
-<translation id="3741243925913727067">ਆਪਣੇ ਮੀਡੀਆ ਡੀਵਾਈਸ ਦੀਆਂ ਫੋਟੋਆਂ ਅਤੇ ਵੀਡੀਓ ਦਾ 'Google ਡਰਾਈਵ' 'ਤੇ ਬੈਕਅੱਪ ਲਵੋ।</translation>
+<translation id="3741243925913727067">ਆਪਣੇ ਮੀਡੀਆ ਡੀਵਾਈਸ ਦੀਆਂ ਫ਼ੋਟੋਆਂ ਅਤੇ ਵੀਡੀਓ ਦਾ Google Drive ਵਿੱਚ ਬੈਕਅੱਪ ਲਓ।</translation>
 <translation id="3749289110408117711">ਫਾਈਲ ਨਾਮ</translation>
 <translation id="3780536599611287598">ਤੁਹਾਡੇ ਕੋਲ '<ph name="FOLDER_NAME" />' ਵਿੱਚ ਫ਼ਾਈਲਾਂ ਲਿਜਾਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ।</translation>
 <translation id="3786301125658655746">ਤੁਸੀਂ ਆਫ਼ਲਾਈਨ ਹੋ</translation>
@@ -901,6 +902,7 @@
 <translation id="8714406895390098252">ਸਾਈਕਲ</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> ਨੂੰ ਚੁਣਿਆ ਗਿਆ।</translation>
 <translation id="872537912056138402">Croatian</translation>
+<translation id="873847021056608403">CloudReady 2.0 ਡੀਵਾਈਸ</translation>
 <translation id="8743164338060742337">ਨੈੱਟਵਰਕ <ph name="NETWORK_COUNT" /> ਵਿੱਚੋਂ <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /> ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" />%, ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤਾ ਜਾਂਦਾ ਹੈ, ਕਨੈਕਟ ਕਰੋ</translation>
 <translation id="8750438273876807512">ਫ਼ਾਈਲ ਨੂੰ ਸਪਰਸ਼ ਕਰਕੇ ਰੱਖੋ ਅਤੇ <ph name="ICON" /> 'ਤੇ ਟੈਪ ਕਰੋ ਅਤੇ ਸ਼ੈਲਫ ਵਿੱਚ ਆਪਣੀਆਂ ਫ਼ਾਈਲਾਂ ਤੱਕ ਤਤਕਾਲ ਪਹੁੰਚ ਕਰਨ ਲਈ "ਸ਼ੈਲਫ 'ਤੇ ਪਿੰਨ ਕਰੋ" ਨੂੰ ਚੁਣੋ।</translation>
 <translation id="8787254343425541995">ਸ਼ੇਅਰ ਕੀਤੇ ਨੈਟਵਰਕਾਂ ਲਈ ਪ੍ਰੌਕਸੀਆਂ ਦੀ ਆਗਿਆ ਦਿਓ</translation>

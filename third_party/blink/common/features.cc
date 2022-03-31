@@ -141,10 +141,6 @@ const base::Feature kEditingNG{"EditingNG", base::FEATURE_ENABLED_BY_DEFAULT};
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable by default. This feature is for a kill switch.
-const base::Feature kLayoutNGBlockInInline{"LayoutNGBlockInInline",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -1193,7 +1189,7 @@ const base::Feature kClientHintsMetaHTTPEquivAcceptCH{
 
 // Allow use of a named meta tag to set client hints.
 const base::Feature kClientHintsMetaNameAcceptCH{
-    "ClientHintsMetaNameAcceptCH", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ClientHintsMetaNameAcceptCH", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOriginAgentClusterDefaultEnabled{
     "OriginAgentClusterDefaultEnable", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1203,7 +1199,7 @@ const base::Feature kOriginAgentClusterDefaultWarning{
 
 // Allow third-party delegation of client hint information.
 const base::Feature kClientHintThirdPartyDelegation{
-    "ClientHintThirdPartyDelegation", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ClientHintThirdPartyDelegation", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_ANDROID)
 // Enables prefetching Android fonts on renderer startup.
@@ -1255,9 +1251,13 @@ const base::Feature kDurableClientHintsCache{"DurableClientHintsCache",
 const base::Feature kEditContext{"EditContext",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kFreeNonRequiredTileResourcesForInactiveWindows{
+    "FreeNonRequiredTileResourcesForInactiveWindows",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the WindowPlacement RuntimeEnabledFeature.
 const base::Feature kWindowPlacement{"WindowPlacement",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

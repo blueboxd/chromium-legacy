@@ -84,12 +84,19 @@ AutofillClient::GetVirtualCardEnrollmentManager() {
 }
 
 void AutofillClient::ShowVirtualCardEnrollDialog(
-    const raw_ptr<VirtualCardEnrollmentFields> virtual_card_enrollment_fields,
+    const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
     base::OnceClosure accept_virtual_card_callback,
     base::OnceClosure decline_virtual_card_callback) {
   // This is overridden by platform subclasses. Currently only
   // ChromeAutofillClient (Chrome Desktop and Clank) implements this.
 }
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+void AutofillClient::HideVirtualCardEnrollBubbleAndIconIfVisible() {
+  // This is overridden by platform subclasses. Currently only
+  // ChromeAutofillClient (Chrome Desktop) implements this.
+}
+#endif
 
 #if !BUILDFLAG(IS_IOS)
 std::unique_ptr<webauthn::InternalAuthenticator>

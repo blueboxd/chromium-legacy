@@ -106,6 +106,7 @@
 <translation id="1853795129690976061">Այս պանակը հասանելի է Լինուքսին</translation>
 <translation id="1864756863218646478">Ֆայլը չգտնվեց:</translation>
 <translation id="1884013283844450420">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, կապակցում</translation>
+<translation id="1914901738028575085">CloudReady 2.0 սարք</translation>
 <translation id="1920670151694390848">մալայալամ տառադարձում</translation>
 <translation id="1920798810075583923">Ձմերուկ</translation>
 <translation id="1924372192547904021">«<ph name="DRIVE_NAME" />» կրիչը ձևաչափվեց</translation>
@@ -241,6 +242,7 @@
 <translation id="3078461028045006476">Ուղարկել <ph name="EXTENSION_NAME" />-ի միջոցով</translation>
 <translation id="3083975830683400843">Chromebit սարքեր</translation>
 <translation id="3085752524577180175">SOCKS խնամորդ</translation>
+<translation id="3104793765551262433">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, արգելափակված է ադմինիստրատորի կողմից, մանրամասներ</translation>
 <translation id="3113153474486991170">Չհաջողվեց բացել «<ph name="PATH" />» ֆայլն այս պանակից։ Ֆայլը բացելու համար այն պատճենեք «Իմ ֆայլերը» պանակում։</translation>
 <translation id="3113592018909187986">Մնաց 1 փորձ։ Դուք չեք կարողանա օգտագործել այս ցանցը, մինչև չսահմանեք նոր PIN կոդ։</translation>
 <translation id="3124404833828281817">Երազկոտ մարդ</translation>
@@ -882,6 +884,7 @@
 <translation id="8551494947769799688">Լատվիական</translation>
 <translation id="8560515948038859357">կանտոներեն</translation>
 <translation id="8561206103590473338">Փիղ</translation>
+<translation id="8566466896628108558">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, արգելափակված է ադմինիստրատորի կողմից, մանրամասներ</translation>
 <translation id="8569764466147087991">Ընտրեք ֆայլ</translation>
 <translation id="8577897833047451336">խորվաթերեն</translation>
 <translation id="8578308463707544055">ինդոնեզերեն</translation>
@@ -899,6 +902,7 @@
 <translation id="8714406895390098252">Հեծանիվ</translation>
 <translation id="8719721339511222681">Ընտրվեց «<ph name="ENTRY_NAME" />» գրառումը:</translation>
 <translation id="872537912056138402">Խորվաթական</translation>
+<translation id="873847021056608403">CloudReady 2.0 սարքեր</translation>
 <translation id="8743164338060742337">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />-ի ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, կառավարվում է ձեր ադմինիստրատորի կողմից, միացում</translation>
 <translation id="8750438273876807512">Սեղմեք որևէ ֆայլի վրա և պահեք, ապա սեղմեք <ph name="ICON" /> և ընտրեք «Ամրացնել դարակին»։</translation>
 <translation id="8787254343425541995">Օգտագործել պրոքսի-սերվերներ՝ համօգտագործվող ցանցերի համար</translation>

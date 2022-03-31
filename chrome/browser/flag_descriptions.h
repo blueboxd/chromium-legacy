@@ -639,6 +639,9 @@ extern const char kQuickActionSearchWidgetAndroidDinoVariantDescription[];
 extern const char kDownloadAutoResumptionNativeName[];
 extern const char kDownloadAutoResumptionNativeDescription[];
 
+extern const char kDownloadBubbleName[];
+extern const char kDownloadBubbleDescription[];
+
 extern const char kDownloadLaterName[];
 extern const char kDownloadLaterDescription[];
 
@@ -660,9 +663,9 @@ extern const char kEnableFirmwareUpdaterAppDescription[];
 extern const char kEnableGamepadButtonAxisEventsName[];
 extern const char kEnableGamepadButtonAxisEventsDescription[];
 
-extern const char kEnableLensRegionSearchFlagId[];
-extern const char kEnableLensRegionSearchName[];
-extern const char kEnableLensRegionSearchDescription[];
+extern const char kEnableLensStandaloneFlagId[];
+extern const char kEnableLensStandaloneName[];
+extern const char kEnableLensStandaloneDescription[];
 
 extern const char kEnableLoginDetectionName[];
 extern const char kEnableLoginDetectionDescription[];
@@ -1269,6 +1272,9 @@ extern const char kSamePartyCookiesConsideredFirstPartyDescription[];
 
 extern const char kPartitionedCookiesName[];
 extern const char kPartitionedCookiesDescription[];
+// TODO(crbug.com/1296161): Remove this when the CHIPS OT ends.
+extern const char kPartitionedCookiesBypassOriginTrialName[];
+extern const char kPartitionedCookiesBypassOriginTrialDescription[];
 
 extern const char kScrollableTabStripFlagId[];
 extern const char kScrollableTabStripName[];
@@ -2155,6 +2161,9 @@ extern const char kNtpPhotosModuleDescription[];
 extern const char kNtpPhotosModuleOptInTitleName[];
 extern const char kNtpPhotosModuleOptInTitleDescription[];
 
+extern const char kNtpPhotosModuleOptInArtWorkName[];
+extern const char kNtpPhotosModuleOptInArtWorkDescription[];
+
 extern const char kNtpRecipeTasksModuleName[];
 extern const char kNtpRecipeTasksModuleDescription[];
 
@@ -2567,15 +2576,6 @@ extern const char kQuickSettingsPWANotificationsDescription[];
 
 extern const char kDriveFsBidirectionalNativeMessagingName[];
 extern const char kDriveFsBidirectionalNativeMessagingDescription[];
-
-extern const char kCrOSDspBasedAecAllowedName[];
-extern const char kCrOSDspBasedAecAllowedDescription[];
-
-extern const char kCrOSDspBasedNsAllowedName[];
-extern const char kCrOSDspBasedNsAllowedDescription[];
-
-extern const char kCrOSDspBasedAgcAllowedName[];
-extern const char kCrOSDspBasedAgcAllowedDescription[];
 
 extern const char kCrOSEnforceSystemAecName[];
 extern const char kCrOSEnforceSystemAecDescription[];

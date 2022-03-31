@@ -52,6 +52,13 @@ class TestVirtualCardEnrollmentManager : public VirtualCardEnrollmentManager {
     autofill_client_ = autofill_client;
   }
 
+  void SetVirtualCardEnrollmentFieldsLoadedCallback(
+      VirtualCardEnrollmentFieldsLoadedCallback
+          virtual_card_enrollment_fields_loaded_callback) {
+    virtual_card_enrollment_fields_loaded_callback_ =
+        std::move(virtual_card_enrollment_fields_loaded_callback);
+  }
+
   bool AutofillClientIsPresent() { return autofill_client_ != nullptr; }
 
   // VirtualCardEnrollmentManager:
@@ -59,6 +66,7 @@ class TestVirtualCardEnrollmentManager : public VirtualCardEnrollmentManager {
       raw_ptr<PrefService> user_prefs,
       base::OnceCallback<void(const std::string&)> callback) override;
   void OnDidGetUpdateVirtualCardEnrollmentResponse(
+      VirtualCardEnrollmentRequestType type,
       AutofillClient::PaymentsRpcResult result) override;
   void Reset() override;
   void ShowVirtualCardEnrollBubble() override;

@@ -9,7 +9,7 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {HelpContentList, HelpContentProviderInterface} from './feedback_types.js';
+import {HelpContentProviderInterface, SearchRequest, SearchResponse, stringToMojoString16} from './feedback_types.js';
 import {getHelpContentProvider} from './mojo_interface_provider.js';
 
 /**
@@ -24,6 +24,12 @@ const MIN_CHARS_COUNT = 3;
  *  @type {number}
  */
 const MAX_RESULTS = 5;
+
+/**
+ * The host of untrusted child page.
+ * @type {string}
+ */
+export const OS_FEEDBACK_UNTRUSTED_ORIGIN = 'chrome-untrusted://os-feedback';
 
 /**
  * @fileoverview
@@ -52,11 +58,33 @@ export class SearchPageElement extends PolymerElement {
     /** @private {!HelpContentProviderInterface} */
     this.helpContentProvider_ = getHelpContentProvider();
 
-    /** @private {!HelpContentList} */
-    this.helpContentList_ = [];
+    /**
+     * The event handler called when the iframe is loaded. It is set in the
+     * html.
+     * @private {function()}
+     */
+    this.resolveIframeLoaded_;
+
+    /**
+     * A promise that resolves when the iframe loading is completed.
+     * @private {Promise}
+     */
+    this.iframeLoaded_ = new Promise(resolve => {
+      this.resolveIframeLoaded_ = resolve;
+    });
+
+    /** @private {?HTMLIFrameElement} */
+    this.iframe_ = null;
   }
 
+  ready() {
+    super.ready();
+
+    this.iframe_ = /** @type {HTMLIFrameElement} */ (
+        this.shadowRoot.querySelector('iframe'));
+  }
   /**
+   *
    * @private
    */
   handleInputChanged_(e) {
@@ -66,18 +94,39 @@ export class SearchPageElement extends PolymerElement {
 
     if (Math.abs(newCharCount - this.lastCharCount_) >= MIN_CHARS_COUNT) {
       this.lastCharCount_ = newCharCount;
-      this.fetchHelpContent_(newInput);
+
+      /** @type {!SearchRequest} */
+      const request = {
+        query: stringToMojoString16(newInput),
+        maxResults: MAX_RESULTS,
+      };
+
+      this.fetchHelpContent_(request);
     }
   }
 
   /**
-   * @param {string} query
+   * @param {!SearchRequest} request
    * @private
    */
-  fetchHelpContent_(query) {
-    this.helpContentProvider_.getHelpContents(query, MAX_RESULTS)
-        .then((/** !HelpContentList */ newContentList) => {
-          this.helpContentList_ = newContentList;
+  fetchHelpContent_(request) {
+    this.helpContentProvider_.getHelpContents(request).then(
+        /**  {{response: !SearchResponse}} */ (response) => {
+          if (!this.iframe_) {
+            console.warn('untrusted iframe is not found');
+            return;
+          }
+
+          const data = {
+            response: response.response,
+          };
+
+          // Wait for the iframe to complete loading before postMessage.
+          this.iframeLoaded_.then(() => {
+            // TODO(xiangdongkong): Use Mojo to communicate with untrusted page.
+            this.iframe_.contentWindow.postMessage(
+                data, OS_FEEDBACK_UNTRUSTED_ORIGIN);
+          });
         });
   }
 }

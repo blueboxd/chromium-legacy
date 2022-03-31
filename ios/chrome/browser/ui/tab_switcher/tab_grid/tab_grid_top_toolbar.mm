@@ -21,7 +21,7 @@ namespace {
 // approximately 33 pts between the plus button and the done button.
 const int kIconButtonAdditionalSpace = 20;
 const int kSelectionModeButtonSize = 17;
-const int kSearchBarTrailingSpace = 40;
+const int kSearchBarTrailingSpace = 24;
 }
 
 @interface TabGridTopToolbar () <UIToolbarDelegate>
@@ -72,6 +72,13 @@ const int kSearchBarTrailingSpace = 40;
   // Reset the Select All button to its default title.
   [self configureSelectAllButtonTitle];
   [self setItemsForTraitCollection:self.traitCollection];
+  if (mode == TabGridModeSearch) {
+    // Focus the search bar, and make it a first responder once the user enter
+    // to search mode. Doing that here instead in |setItemsForTraitCollection|
+    // makes sure it's only called once and allows the voicOver to transition
+    // smoothly and to say that there is a search field opened.
+    [_searchBar becomeFirstResponder];
+  }
 }
 
 - (void)setSelectedTabsCount:(int)count {
@@ -232,8 +239,11 @@ const int kSearchBarTrailingSpace = 40;
   if (![self shouldUseCompactLayout:traitCollection])
     widthModifier = kTabGridSearchBarNonCompactWidthRatioModifier;
 
-  CGFloat cancelWidth =
-      [_cancelSearchButton.title sizeWithAttributes:nil].width;
+  CGFloat cancelWidth = [_cancelSearchButton.title sizeWithAttributes:@{
+                          NSFontAttributeName : [UIFont
+                              preferredFontForTextStyle:UIFontTextStyleBody]
+                        }]
+                            .width;
   CGFloat barWidth =
       (self.bounds.size.width - kSearchBarTrailingSpace - cancelWidth) *
       kTabGridSearchBarWidthRatio * widthModifier;
@@ -243,7 +253,6 @@ const int kSearchBarTrailingSpace = 40;
   [self setNeedsLayout];
   [self setItems:@[ _searchBarItem, _spaceItem, _cancelSearchButton ]
         animated:YES];
-  [_searchBar becomeFirstResponder];
 }
 
 - (void)setItemsForTraitCollection:(UITraitCollection*)traitCollection {
@@ -308,7 +317,8 @@ const int kSearchBarTrailingSpace = 40;
     [self setItems:@[
       _leadingButton, _iconButtonAdditionalSpaceItem, _searchButton, _spaceItem,
       centralItem, _spaceItem, trailingButton
-    ]];
+    ]
+          animated:YES];
     return;
   }
 
@@ -402,7 +412,7 @@ const int kSearchBarTrailingSpace = 40;
     // create a custom cancel button.
     _searchBar.showsCancelButton = NO;
     _cancelSearchButton = [[UIBarButtonItem alloc] init];
-    _cancelSearchButton.style = UIBarButtonItemStyleDone;
+    _cancelSearchButton.style = UIBarButtonItemStylePlain;
     _cancelSearchButton.tintColor =
         UIColorFromRGB(kTabGridToolbarTextButtonColor);
     _cancelSearchButton.accessibilityIdentifier =

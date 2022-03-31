@@ -195,11 +195,7 @@ void ServiceWorkerRegistry::CreateNewRegistrationWithBucketInfo(
     const blink::StorageKey& key,
     NewRegistrationCallback callback,
     storage::QuotaErrorOr<storage::BucketInfo> result) {
-  // Return nullptr if GetOrCreateBucket fails.
-  if (!result.ok()) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
+  DCHECK(result.ok());
   CreateInvokerAndStartRemoteCall(
       &storage::mojom::ServiceWorkerStorageControl::GetNewRegistrationId,
       base::BindOnce(&ServiceWorkerRegistry::DidGetNewRegistrationId,
@@ -1556,6 +1552,15 @@ void ServiceWorkerRegistry::OnRemoteStorageDisconnected() {
 
   if (!context_)
     return;
+
+  if (is_storage_disabled_) {
+    // When the storage is disabled a storage error recovery process is ongoing
+    // and the storage control will be destroyed soon. Don't try to reconnect
+    // storage control remote but flush inflight calls. These calls will check
+    // `is_storage_disabled_` and return errors.
+    DidRecover();
+    return;
+  }
 
   if (connection_state_ == ConnectionState::kRecovering) {
     ++recovery_retry_counts_;

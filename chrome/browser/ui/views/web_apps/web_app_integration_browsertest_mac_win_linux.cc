@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
 IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
                        CheckRunOnOsLoginModeOnPolicyAppWorks) {
   helper_.InstallPolicyAppTabbedNoShortcut("SiteA");
-  helper_.CheckPlatformShortcutNotExists("SiteA");
+  helper_.CheckAppInListTabbed("SiteA");
   helper_.EnableRunOnOSLoginMode("SiteA");
   helper_.CheckRunOnOSLoginModeEnabled("SiteA");
   helper_.DisableRunOnOSLoginMode("SiteA");
@@ -102,6 +102,15 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
   helper_.LaunchFromChromeApps("SiteA");
   helper_.LaunchAppSettingsFromAppMenu("SiteA");
   helper_.CheckBrowserNavigationIsAppSettings("SiteA");
+  helper_.UninstallFromMenu("SiteA");
+  helper_.CheckAppNotInList("SiteA");
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTestMacWinLinux,
+                       CheckAppSettingsAppState) {
+  helper_.InstallCreateShortcutWindowed("SiteA");
+  helper_.CheckAppInListWindowed("SiteA");
+  helper_.CheckAppSettingsAppState("SiteA");
   helper_.UninstallFromMenu("SiteA");
   helper_.CheckAppNotInList("SiteA");
 }

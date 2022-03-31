@@ -125,7 +125,7 @@ Refer to README.md for content description and update process.
  <item id="indexed_db_internals_handler" added_in_milestone="62" content_hash_code="0384abe6" os_list="linux,windows,chromeos,android" file_path="content/browser/indexed_db/indexed_db_internals_ui.cc" />
  <item id="interest_feedv2_image_send" added_in_milestone="86" content_hash_code="06687258" os_list="linux,windows,chromeos,android" file_path="components/feed/core/v2/image_fetcher.cc" />
  <item id="interest_feedv2_send" added_in_milestone="83" content_hash_code="02f676af" os_list="linux,windows,chromeos,android" file_path="components/feed/core/v2/feed_network_impl.cc" />
- <item id="interest_group_update_fetcher" added_in_milestone="94" content_hash_code="0272b26d" os_list="linux,windows,chromeos,android" file_path="content/browser/interest_group/interest_group_manager_impl.cc" />
+ <item id="interest_group_update_fetcher" added_in_milestone="94" content_hash_code="0272b26d" os_list="linux,windows,chromeos,android" file_path="content/browser/interest_group/interest_group_update_manager.cc" />
  <item id="intranet_redirect_detector" added_in_milestone="62" content_hash_code="03b26f7b" os_list="linux,windows,chromeos" file_path="chrome/browser/intranet_redirect_detector.cc" />
  <item id="javascript_report_error" added_in_milestone="87" content_hash_code="006e4e54" os_list="linux" file_path="chrome/browser/error_reporting/chrome_js_error_report_processor_nonchromeos.cc" />
  <item id="lib_address_input" added_in_milestone="62" content_hash_code="0374aae8" os_list="linux,windows,chromeos,android" file_path="third_party/libaddressinput/chromium/chrome_metadata_source.cc" />
@@ -356,4 +356,5 @@ Refer to README.md for content description and update process.
  <item id="wallpaper_google_photos_photos" added_in_milestone="100" content_hash_code="00c76007" os_list="chromeos" file_path="chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc" />
  <item id="webview_proxy_config" added_in_milestone="100" content_hash_code="009d2396" os_list="android" file_path="android_webview/browser/network_service/aw_proxy_config_monitor.cc" />
  <item id="device_trust_key_rotation" added_in_milestone="100" content_hash_code="05cc1b9b" os_list="linux" file_path="chrome/browser/enterprise/connectors/device_trust/key_management/core/network/linux_key_network_delegate.cc" />
+ <item id="sct_auditing_hashdance" added_in_milestone="100" content_hash_code="00ea07d2" os_list="linux,windows,android,chromeos" file_path="chrome/browser/ssl/sct_reporting_service.cc" />
 </annotations>

@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.DropdownItemViewInfo;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdown;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownAdapter;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderView;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
@@ -218,7 +219,7 @@ public class OmniboxTestUtils {
         checkSuggestionsShown();
         AtomicReference<SuggestionInfo<T>> result = new AtomicReference<>();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        CriteriaHelper.pollUiThread(() -> {
             ModelList currentModels =
                     mLocationBar.getAutocompleteCoordinator().getSuggestionModelListForTest();
             for (int i = 0; i < currentModels.size(); i++) {
@@ -226,10 +227,11 @@ public class OmniboxTestUtils {
                 if (info.type == type) {
                     result.set(new SuggestionInfo<T>(i, info.type, mAutocomplete.getSuggestionAt(i),
                             info.model, getSuggestionViewForIndex(i)));
-                    return;
+                    return true;
                 }
             }
-        });
+            return false;
+        }, MAX_TIME_TO_POLL_MS, POLL_INTERVAL_MS);
 
         return result.get();
     }
@@ -259,6 +261,21 @@ public class OmniboxTestUtils {
             }
 
             return null;
+        });
+    }
+
+    /**
+     * Highligh suggestion at a specific index.
+     *
+     * @param index The index of the suggestion to be highlighted.
+     */
+    public void focusSuggestion(int index) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            OmniboxSuggestionsDropdownAdapter adapter =
+                    (OmniboxSuggestionsDropdownAdapter) mLocationBar.getAutocompleteCoordinator()
+                            .getSuggestionsDropdownForTest()
+                            .getAdapter();
+            adapter.setSelectedViewIndex(index);
         });
     }
 

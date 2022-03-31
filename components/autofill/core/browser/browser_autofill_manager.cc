@@ -27,6 +27,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
+#include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -699,20 +700,25 @@ void BrowserAutofillManager::OnFormSubmittedImpl(const FormData& form,
     }
   }
 
-  // However, if Autofill has recognized a field as CVC, that shouldn't be
-  // saved.
   FormData form_for_autocomplete = submitted_form->ToFormData();
   for (size_t i = 0; i < submitted_form->field_count(); ++i) {
     if (submitted_form->field(i)->Type().GetStorableType() ==
         CREDIT_CARD_VERIFICATION_CODE) {
+      // However, if Autofill has recognized a field as CVC, that shouldn't be
+      // saved.
       form_for_autocomplete.fields[i].should_autocomplete = false;
     }
 
-    if (!submitted_form->field(i)
-             ->value_not_autofilled_over_existing_value()
-             .empty()) {
-      // TODO(crbug.com/1275649): Compare and record the currently filled value
-      // with the value that was supposed to be autofilled.
+    if (submitted_form->field(i)
+            ->value_not_autofilled_over_existing_value_hash()) {
+      // Compare and record if the currently filled value is same as the
+      // non-empty value that was to be autofilled in the field.
+      AutofillMetrics::
+          LogIsValueNotAutofilledOverExistingValueSameAsSubmittedValue(
+              *submitted_form->field(i)
+                   ->value_not_autofilled_over_existing_value_hash() ==
+              base::FastHash(
+                  base::UTF16ToUTF8(submitted_form->field(i)->value)));
     }
   }
   single_field_form_fill_router_->OnWillSubmitForm(
@@ -1762,23 +1768,35 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
 
     // Do not override prefilled text/input field values. Selection fields are
     // excluded from this check because they may have a non-empty value.
+    // If the initiating element had a prefilled value but the autofill
+    // suggestion is present that includes the currently filled value in the
+    // field as a substring, Autofill would override the filled value in that
+    // case.
     if (base::FeatureList::IsEnabled(
-            features::kAutofillPreventOverridingPrefilledValues) &&
-        form.fields[i].form_control_type != "select-one" &&
-        !form.fields[i].value.empty()) {
-      buffer << Tr{} << field_number << "Skipped: value is prefilled";
-      if (action == mojom::RendererFormDataAction::kFill) {
+            features::kAutofillPreventOverridingPrefilledValues)) {
+      if (form.fields[i].form_control_type != "select-one" &&
+          !form.fields[i].value.empty() &&
+          !FormFieldData::DeepEqual(form.fields[i], field)) {
+        buffer << Tr{} << field_number << "Skipped: value is prefilled";
         std::string unused_failure_to_fill;
         const std::u16string kEmptyCvc{};
-        // Save the value that was supposed to be autofilled for this field.
-        form_structure->field(i)->set_value_not_autofilled_over_existing_value(
-            field_filler_.GetValueForFilling(
-                *cached_field, profile_or_credit_card, &result.fields[i],
-                optional_cvc ? *optional_cvc : kEmptyCvc, action,
-                &unused_failure_to_fill));
+        const std::u16string fill_value = field_filler_.GetValueForFilling(
+            *cached_field, profile_or_credit_card, &result.fields[i],
+            optional_cvc ? *optional_cvc : kEmptyCvc, action,
+            &unused_failure_to_fill);
+        if (action == mojom::RendererFormDataAction::kFill &&
+            !fill_value.empty() && fill_value != form.fields[i].value) {
+          // Save the value that was supposed to be autofilled for this field.
+          form_structure->field(i)
+              ->set_value_not_autofilled_over_existing_value_hash(
+                  base::FastHash(base::UTF16ToUTF8(fill_value)));
+        }
+        continue;
       }
 
-      continue;
+      // Clear out the value in case the autofill happens for the field.
+      form_structure->field(i)
+          ->set_value_not_autofilled_over_existing_value_hash(absl::nullopt);
     }
 
     // Do not fill fields that have been edited by the user, except if the field

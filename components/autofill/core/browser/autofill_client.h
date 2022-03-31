@@ -422,11 +422,14 @@ class AutofillClient : public RiskDataLoader {
 
   // Shows a dialog for the user to enroll in a virtual card.
   virtual void ShowVirtualCardEnrollDialog(
-      const raw_ptr<VirtualCardEnrollmentFields> virtual_card_enrollment_fields,
+      const VirtualCardEnrollmentFields& virtual_card_enrollment_fields,
       base::OnceClosure accept_virtual_card_callback,
       base::OnceClosure decline_virtual_card_callback);
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  // Hides the virtual card enroll bubble and icon if it is visible.
+  virtual void HideVirtualCardEnrollBubbleAndIconIfVisible();
+
   // Returns the list of allowed merchants and BIN ranges for virtual cards.
   virtual std::vector<std::string> GetAllowedMerchantsForVirtualCards() = 0;
   virtual std::vector<std::string> GetAllowedBinRangesForVirtualCards() = 0;

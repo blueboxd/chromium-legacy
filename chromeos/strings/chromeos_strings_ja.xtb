@@ -30,6 +30,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">更新中（<ph name="PERCENTAGE_VALUE" />% 完了）</translation>
 <translation id="1310380015393971138">利用できる <ph name="NETWORK_NAME" /> ネットワークがありません</translation>
+<translation id="131421566576084655">前回のデータリセット日は不明です</translation>
 <translation id="1314565355471455267">Android VPN</translation>
 <translation id="131461803491198646">ホーム ネットワーク、ローミングなし</translation>
 <translation id="1327977588028644528">ゲートウェイ</translation>
@@ -42,8 +43,10 @@
 <translation id="1413240736185167732">失敗 - フィルタエラー</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="142228117786570094">入力した鍵ペアを使用</translation>
+<translation id="1435763214710588005">指定した日に毎月データ使用量が自動的にリセットされます</translation>
 <translation id="1442433966118452622">画像ソース</translation>
 <translation id="1451536289672181509">デバイスの種類はキーボードです。</translation>
+<translation id="1459693405370120464">天気</translation>
 <translation id="1468664791493211953">クーポン</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> はこのデバイスを管理しており、アクティビティを監視できる可能性があります。</translation>
 <translation id="1478594628797167447">スキャナ</translation>
@@ -55,6 +58,7 @@
 <translation id="1565038567006703504">「<ph name="DEVICE_NAME" />」を更新できません</translation>
 <translation id="1567064801249837505">アルバム</translation>
 <translation id="1572585716423026576">壁紙に設定</translation>
+<translation id="1615335640928990664"><ph name="FRIENDLY_DATE" /> 以降のデータ使用量</translation>
 <translation id="1621067168122174824">充電テストを実行</translation>
 <translation id="1639239467298939599">読み込み中</translation>
 <translation id="1641857168437328880">ドキュメント フィーダー（片面）</translation>
@@ -103,6 +107,7 @@
 <translation id="2212733584906323460">名前解決</translation>
 <translation id="2217935453350629363">現在の速度</translation>
 <translation id="2224337661447660594">インターネットに接続されていません</translation>
+<translation id="2230005943220647148">摂氏</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">起動状態</translation>
 <translation id="2287186687001756809">画像がありません。写真を追加するには、<ph name="LINK" /> にアクセスしてください</translation>
@@ -120,7 +125,7 @@
 <translation id="2421798028054665193">画像 <ph name="CURRENT_PAGE" />/<ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">浮動小数点数精度</translation>
 <translation id="2448312741937722512">種類</translation>
-<translation id="2461822463642141190">電流</translation>
+<translation id="2461822463642141190">現在</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">現在の壁紙画像を更新する</translation>
 <translation id="2517472476991765520">スキャン</translation>
@@ -207,6 +212,7 @@
 <translation id="3858860766373142691">名前</translation>
 <translation id="3865414814144988605">解像度</translation>
 <translation id="387301095347517405">電池がフル充電されたサイクルの回数です</translation>
+<translation id="3923184630988645767">データ使用</translation>
 <translation id="3924044641767672375">修理手続きをスムーズに進めるため、Wi-Fi に接続することをおすすめします。ネットワークは保存されます。</translation>
 <translation id="3932043219784172185">接続されているデバイスはありません</translation>
 <translation id="3941014780699102620">ホストを解決できませんでした</translation>
@@ -228,6 +234,7 @@
 <translation id="4145784616224233563">HTTP ファイアウォール</translation>
 <translation id="4147897805161313378">Google フォト</translation>
 <translation id="4155551848414053977">スキャナの電源がオンになっていて、ネットワーク経由または直接接続して使用できることを確認してください</translation>
+<translation id="4170180284036919717">写真を撮る</translation>
 <translation id="4170700058716978431">失敗</translation>
 <translation id="4176463684765177261">停止中</translation>
 <translation id="4213104098953699324">USB キーボード</translation>
@@ -376,6 +383,7 @@
 <translation id="5784136236926853061">HTTP レイテンシが高くなっています</translation>
 <translation id="5832805196449965646">ユーザーを追加</translation>
 <translation id="583281660410589416">不明</translation>
+<translation id="5843706793424741864">華氏</translation>
 <translation id="5849570051105887917">ホーム プロバイダのコード</translation>
 <translation id="5860033963881614850">オフ</translation>
 <translation id="5866840822086176774">非常に強い</translation>
@@ -384,8 +392,10 @@
 <translation id="5916664084637901428">オン</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{ファイルは正常にスキャンされ、<ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> に保存されました。}other{ファイルは正常にスキャンされ、<ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> に保存されました。}}</translation>
 <translation id="5931523347251946569">ファイルが見つかりません</translation>
+<translation id="5939518447894949180">リセット</translation>
 <translation id="594552776027197022">ランダムな鍵ペアを生成</translation>
 <translation id="5972388717451707488">エンジンを更新</translation>
+<translation id="6034694447310538551">毎月の自動リセットを有効にする</translation>
 <translation id="6037291330010597344">スキャナの給紙トレイが空です。用紙を追加してから、もう一度お試しください。</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6040852767465482106">匿名 ID</translation>
@@ -409,6 +419,7 @@
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">利用可能なスキャナがありません</translation>
 <translation id="6232017090690406397">バッテリー</translation>
+<translation id="6235460611964961764">データ使用量を手動でリセットする</translation>
 <translation id="6243280677745499710">現在設定されている壁紙</translation>
 <translation id="6278428485366576908">テーマ</translation>
 <translation id="6280912520669706465">ARC</translation>
@@ -620,6 +631,7 @@
 <translation id="8910721771319628100">デフォルトのネットワークの応答時間がしきい値を超えています</translation>
 <translation id="8918637186205009138"><ph name="GIVEN_NAME" /> さんの <ph name="DEVICE_TYPE" /></translation>
 <translation id="8919837981463578619">失敗 - トレイがありません</translation>
+<translation id="8923267550422472772">リセット日</translation>
 <translation id="8928727111548978589">失敗 - 用紙がありません</translation>
 <translation id="8930521118335213258">ピア</translation>
 <translation id="8930622219860340959">ワイヤレス</translation>

@@ -106,6 +106,7 @@
 <translation id="1853795129690976061">Thư mục này được chia sẻ với Linux</translation>
 <translation id="1864756863218646478">Không thể tìm thấy tệp.</translation>
 <translation id="1884013283844450420">Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Kết nối</translation>
+<translation id="1914901738028575085">Thiết bị CloudReady 2.0</translation>
 <translation id="1920670151694390848">Tiếng Malayalam (chuyển tự)</translation>
 <translation id="1920798810075583923">Dưa hấu</translation>
 <translation id="1924372192547904021">Đã định dạng <ph name="DRIVE_NAME" /></translation>
@@ -241,6 +242,7 @@
 <translation id="3078461028045006476">Chia sẻ với <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit</translation>
 <translation id="3085752524577180175">Máy chủ SOCKS</translation>
+<translation id="3104793765551262433">Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" />%, Quản trị viên đã chặn, Thông tin chi tiết</translation>
 <translation id="3113153474486991170">Không thể mở "<ph name="PATH" />" từ vị trí này. Vui lòng sao chép vào "Tệp của tôi" để mở.</translation>
 <translation id="3113592018909187986">Bạn còn 1 lần nhập. Bạn sẽ không thể dùng mạng này cho đến khi thiết lập một mã PIN mới.</translation>
 <translation id="3124404833828281817">Người mơ mộng</translation>
@@ -883,6 +885,7 @@
 <translation id="8551494947769799688">Tiếng Lát-vi-a</translation>
 <translation id="8560515948038859357">Tiếng Quảng Đông</translation>
 <translation id="8561206103590473338">Voi</translation>
+<translation id="8566466896628108558">Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" />%, Quản trị viên đã chặn, Thông tin chi tiết</translation>
 <translation id="8569764466147087991">Chọn tệp để mở</translation>
 <translation id="8577897833047451336">Tiếng Croatia</translation>
 <translation id="8578308463707544055">Tiếng Indonesia</translation>
@@ -900,6 +903,7 @@
 <translation id="8714406895390098252">Xe đạp</translation>
 <translation id="8719721339511222681">Đã chọn <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">Tiếng Croatia</translation>
+<translation id="873847021056608403">Thiết bị CloudReady 2.0</translation>
 <translation id="8743164338060742337">Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" />%, Do quản trị viên của bạn quản lý, Kết nối</translation>
 <translation id="8750438273876807512">Chạm và giữ một tệp rồi nhấn vào biểu tượng <ph name="ICON" />, sau đó chọn "Ghim vào kệ" để truy cập nhanh vào các tệp trong kệ.</translation>
 <translation id="8787254343425541995">Cho phép các proxy đối với mạng chia sẻ</translation>

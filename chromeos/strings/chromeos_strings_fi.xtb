@@ -30,6 +30,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">Päivitetään (<ph name="PERCENTAGE_VALUE" /> % valmiina)</translation>
 <translation id="1310380015393971138"><ph name="NETWORK_NAME" />-verkkoja ei ole käytettävissä</translation>
+<translation id="131421566576084655">Edellisen nollauksen päivämäärä ei ole saatavilla</translation>
 <translation id="1314565355471455267">Android VPN</translation>
 <translation id="131461803491198646">Kotiverkko, ei roaming-tilassa </translation>
 <translation id="1327977588028644528">Yhdyskäytävä</translation>
@@ -42,7 +43,10 @@
 <translation id="1413240736185167732">Epäonnistui – Suodatin epäkunnossa</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="142228117786570094">Minulla on avainpari</translation>
+<translation id="1435763214710588005">Nollaa datan käytön valittuna päivänä joka kuukausi</translation>
+<translation id="1442433966118452622">Kuvan lähde</translation>
 <translation id="1451536289672181509">Laite on näppäimistö.</translation>
+<translation id="1459693405370120464">Sää</translation>
 <translation id="1468664791493211953">Tarjoukset</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> ylläpitää tätä laitetta ja voi ehkä seurata toimintaasi.</translation>
 <translation id="1478594628797167447">Skanneri</translation>
@@ -54,6 +58,7 @@
 <translation id="1565038567006703504">Päivitys ei onnistu: <ph name="DEVICE_NAME" /></translation>
 <translation id="1567064801249837505">Albumit</translation>
 <translation id="1572585716423026576">Aseta taustakuvaksi</translation>
+<translation id="1615335640928990664">Datan käyttö <ph name="FRIENDLY_DATE" /> jälkeen</translation>
 <translation id="1621067168122174824">Suorita lataustesti</translation>
 <translation id="1639239467298939599">Ladataan</translation>
 <translation id="1641857168437328880">Syöttölaite (yksipuolinen)</translation>
@@ -102,6 +107,7 @@
 <translation id="2212733584906323460">Verkkotunnuksen muuntaminen</translation>
 <translation id="2217935453350629363">Nykyinen nopeus</translation>
 <translation id="2224337661447660594">Ei internetyhteyttä</translation>
+<translation id="2230005943220647148">Celsius</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Aktivoinnin tila</translation>
 <translation id="2287186687001756809">Kuvia ei saatavilla. Jos haluat lisätä kuvia, avaa <ph name="LINK" /></translation>
@@ -131,6 +137,7 @@
 <translation id="2619761439309613843">Uusi päivittäin</translation>
 <translation id="2620436844016719705">Järjestelmä</translation>
 <translation id="2695514675076754339">Lisää 8-numeroinen avauskoodi</translation>
+<translation id="2712812801627182647">TLS-todennusavain</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2751739896257479635">EAPin 2. vaiheen todennus</translation>
 <translation id="2783010256799387990">ONNISTUI</translation>
@@ -155,7 +162,7 @@
 <translation id="3122464029669770682">Keskusyksikkö</translation>
 <translation id="3124039320086536031">Laite on yhdistetty.</translation>
 <translation id="3127341325625468058">{PAGE_NUMBER,plural, =0{Poistetaanko sivu?}=1{Poistetaanko sivu {PAGE_NUMBER}?}other{Poistetaanko sivu {PAGE_NUMBER}?}}</translation>
-<translation id="315116470104423982">Mobiilitiedonsiirto</translation>
+<translation id="315116470104423982">Mobiilidata</translation>
 <translation id="3156846309055100599">Skannataan sivu <ph name="PAGE_NUMBER" />…</translation>
 <translation id="315738237743207937">Captive portal havaittu</translation>
 <translation id="3170673040743561620">Aseta dokumentti skanneriin</translation>
@@ -167,6 +174,7 @@
 <translation id="3268178239013324452">Epäonnistui – Luukku auki</translation>
 <translation id="3283504360622356314">{0,plural, =1{Muokkaa tiedostoa}other{Muokkaa tiedostoja}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
+<translation id="3291996639387199448">Avaimen suunta</translation>
 <translation id="3310640316857623290">DNS-viive merkittävästi yli sallitun rajan</translation>
 <translation id="3328783797891415197">Testi käynnissä</translation>
 <translation id="3340011300870565703">Laitteen oikean kuulokkeen akun varaus on <ph name="BATTERY_PERCENTAGE" /> %.</translation>
@@ -204,6 +212,7 @@
 <translation id="3858860766373142691">Nimi</translation>
 <translation id="3865414814144988605">Resoluutio</translation>
 <translation id="387301095347517405">Kuinka monta kertaa akku on ollut täynnä ja sitten tyhjentynyt</translation>
+<translation id="3923184630988645767">Datan käyttö</translation>
 <translation id="3924044641767672375">Korjaus sujuu helpommin, jos muodostat yhteyden Wi-Fi-verkkoon. Verkkosi tallennetaan.</translation>
 <translation id="3932043219784172185">Ei yhdistettyjä laitteita</translation>
 <translation id="3941014780699102620">Isännän selvittäminen epäonnistui</translation>
@@ -225,6 +234,7 @@
 <translation id="4145784616224233563">HTTP-palomuuri</translation>
 <translation id="4147897805161313378">Google Kuvat</translation>
 <translation id="4155551848414053977">Varmista, että skanneri on päällä ja käytettävissä verkkosi tai suoran yhteyden kautta</translation>
+<translation id="4170180284036919717">Ota kuva</translation>
 <translation id="4170700058716978431">EPÄONNISTUI</translation>
 <translation id="4176463684765177261">Pois käytöstä</translation>
 <translation id="4213104098953699324">USB-näppäimistö</translation>
@@ -279,6 +289,7 @@
 <translation id="475869545581454722">Chrome-käyttöjärjestelmän salasana vaihdettu</translation>
 <translation id="4773299976671772492">Keskeytetty</translation>
 <translation id="4782311465517282004">Voit nähdä määritelmiä, käännöksiä tai yksikkömuunnoksia klikkaamalla tekstiä kakkospainikkeella tai koskettamalla sitä pitkään</translation>
+<translation id="4793756956024303490">Pakkausalgoritmi</translation>
 <translation id="4794140124556169553">CPU-testin suorittaminen voi vaikuttaa järjestelmän suorituskykyyn</translation>
 <translation id="4808449224298348341">Peruutettu tulostustyö: <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4813136279048157860">Omat kuvat</translation>
@@ -291,6 +302,7 @@
 <translation id="484790837831576105">(Android) DNS-selvitys</translation>
 <translation id="4848429997038228357">KÄYNNISSÄ</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} yritys jäljellä}other{<ph name="ERROR_MESSAGE" /> {0} yritystä jäljellä}}</translation>
+<translation id="4873827928179867585">Todennusalgoritmi</translation>
 <translation id="4880328057631981605">Tukiaseman nimi</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4890353053343094602">Valitse uusi välittömästi</translation>
@@ -308,6 +320,7 @@
 <translation id="4999333166442584738">Piilota raportti</translation>
 <translation id="500920857929044050">Lopeta testi</translation>
 <translation id="5017508259293544172">LEAP</translation>
+<translation id="5019310272469539976">Kun näyttö on epäaktiivinen, näytä kuvia, kellonaika sekä sää- ja mediatietoja.</translation>
 <translation id="5039804452771397117">Salli</translation>
 <translation id="5049856988445523908">SIM-kortti lukittu (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Ryhmän nimi</translation>
@@ -370,6 +383,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="5784136236926853061">Suuri HTTP-viive</translation>
 <translation id="5832805196449965646">Lisää henkilö</translation>
 <translation id="583281660410589416">Tuntematon</translation>
+<translation id="5843706793424741864">Fahrenheit</translation>
 <translation id="5849570051105887917">Kotiverkon palveluntarjoajan koodi</translation>
 <translation id="5860033963881614850">Pois päältä</translation>
 <translation id="5866840822086176774">Hyvin vahva</translation>
@@ -378,8 +392,10 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="5916664084637901428">Päällä</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Tiedostosi skannaus onnistui. Se on tallennettu tänne: <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Tiedostojesi skannaus onnistui. Ne on tallennettu tänne: <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Tiedostoa ei löydy</translation>
+<translation id="5939518447894949180">Tyhjennä</translation>
 <translation id="594552776027197022">Luo satunnainen avainpari</translation>
 <translation id="5972388717451707488">Update Engine</translation>
+<translation id="6034694447310538551">Ota automaattinen kuukausittainen nollaus käyttöön</translation>
 <translation id="6037291330010597344">Skannerin syöttölaite on tyhjä. Lisää dokumentteja ja yritä uudelleen.</translation>
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="6040852767465482106">Anonyymi henkilöllisyys</translation>
@@ -403,6 +419,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">Skannereita ei saatavilla</translation>
 <translation id="6232017090690406397">Akku</translation>
+<translation id="6235460611964961764">Nollaa datan käyttö manuaalisesti</translation>
 <translation id="6243280677745499710">Nykyinen taustakuva</translation>
 <translation id="6278428485366576908">Teema</translation>
 <translation id="6280912520669706465">ARC</translation>
@@ -436,6 +453,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="6618744767048954150">Käynnissä</translation>
 <translation id="6620487321149975369">Tulostustyöt näkyvät historiassa, ellei niitä poisteta manuaalisesti</translation>
 <translation id="6643016212128521049">Tyhjennä</translation>
+<translation id="6647510110698214773">Salausalgoritmi</translation>
 <translation id="6657585470893396449">Salasana</translation>
 <translation id="6692996468359469499">Tietoja valinnastasi</translation>
 <translation id="6704062477274546131">DNS-ratkaisu</translation>
@@ -613,6 +631,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="8910721771319628100">Oletusverkko yli viiverajan</translation>
 <translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> (<ph name="GIVEN_NAME" />)</translation>
 <translation id="8919837981463578619">Epäonnistui – Lokero puuttuu</translation>
+<translation id="8923267550422472772">Nollaamispäivä</translation>
 <translation id="8928727111548978589">Epäonnistui – Paperi loppu</translation>
 <translation id="8930521118335213258">Vertaisominaisuudet</translation>
 <translation id="8930622219860340959">Langaton</translation>

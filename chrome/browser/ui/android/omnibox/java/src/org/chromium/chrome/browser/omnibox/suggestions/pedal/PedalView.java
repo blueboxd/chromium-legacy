@@ -5,12 +5,19 @@
 package org.chromium.chrome.browser.omnibox.suggestions.pedal;
 
 import android.content.Context;
+import android.view.KeyEvent;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 
+import com.google.android.material.color.MaterialColors;
+
+import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SimpleHorizontalLayoutView;
+import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.components.browser_ui.widget.chips.ChipView;
+import org.chromium.ui.util.ColorUtils;
 
 /**
  * Container view for the {@link ChipView}.
@@ -19,6 +26,8 @@ import org.chromium.components.browser_ui.widget.chips.ChipView;
  * the end of the chip need to be same as the action in BaseSuggestionView.
  */
 public class PedalView extends SimpleHorizontalLayoutView {
+    private static final String TAG = "PedalView";
+
     private final @NonNull ChipView mPedal;
 
     /**
@@ -29,9 +38,37 @@ public class PedalView extends SimpleHorizontalLayoutView {
     public PedalView(Context context) {
         super(context);
 
-        mPedal = new ChipView(context, null);
+        setFocusable(true);
+
+        mPedal = new ChipView(context, R.style.OmniboxPedalChipThemeOverlay);
         mPedal.setLayoutParams(LayoutParams.forDynamicView());
+
+        final int baseColor = MaterialColors.getColor(context, R.attr.colorSurface, TAG);
+        final int overlayColor = MaterialColors.getColor(context, R.attr.colorOutline, TAG);
+        final float alpha =
+                ResourcesCompat.getFloat(context.getResources(), R.dimen.chip_outline_alpha);
+        mPedal.setBorder(context.getResources().getDimensionPixelSize(R.dimen.chip_border_width),
+                ColorUtils.getColorWithOverlay(baseColor, overlayColor, alpha));
+
         addView(mPedal);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_TAB) {
+            mPedal.setSelected(!mPedal.isSelected());
+            return true;
+        } else if (KeyNavigationUtil.isEnter(event) && mPedal.isSelected()) {
+            return mPedal.performClick();
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void setSelected(boolean isSelected) {
+        super.setSelected(isSelected);
+        mPedal.setSelected(false);
     }
 
     @Override
@@ -57,5 +94,10 @@ public class PedalView extends SimpleHorizontalLayoutView {
     /** @return The {@link ChipView} in this view. */
     ChipView getChipView() {
         return mPedal;
+    }
+
+    @Override
+    public boolean isFocused() {
+        return super.isFocused() || (isSelected() && !isInTouchMode());
     }
 }

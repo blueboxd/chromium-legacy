@@ -3,6 +3,7 @@
 <translationbundle lang="pa">
 <translation id="102360288709523007">Google ਨੂੰ ਵਰਤੋਂ ਅੰਕੜੇ ਅਤੇ ਕ੍ਰੈਸ਼ ਰਿਪੋਰਟਾਂ ਭੇਜ ਕੇ Chromium ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਵਿੱਚ ਮਦਦ ਕਰੋ।</translation>
 <translation id="1047130070405668746">Chromium ਚੁਣੋ</translation>
+<translation id="1091252999271033193">ਇਸਦਾ ਮਤਲਬ ਹੈ ਕਿ Chromium ਹਰ ਵਾਰ ਮੋਬਾਈਲ ਸਾਈਟ ਲਈ ਬੇਨਤੀ ਕਰੇਗਾ।</translation>
 <translation id="1185134272377778587">Chromium ਬਾਰੇ</translation>
 <translation id="1257458525759135959">ਚਿੱਤਰਾਂ ਨੂੰ ਰੱਖਿਅਤ ਕਰਨ ਲਈ, Chromium ਨੂੰ ਤੁਹਾਡੀਆਂ ਫ਼ੋਟੋਆਂ ਸ਼ਾਮਲ ਕਰਨ ਦੇਣ ਲਈ ਸੈਟਿੰਗਾਂ 'ਤੇ ਟੈਪ ਕਰੋ</translation>
 <translation id="1289216811211435351">Chromium 'ਤੇ ਜਾਓ</translation>
@@ -26,6 +27,7 @@
 <translation id="2178608107313874732">Chromium ਇਸ ਸਮੇਂ ਤੁਹਾਡੇ ਕੈਮਰੇ ਦੀ ਵਰਤੋਂ ਨਹੀਂ ਕਰ ਸਕਦਾ ਹੈ</translation>
 <translation id="2195025571279539885">ਕੀ ਤੁਸੀਂ ਚਾਹੋਗੇ ਕਿ Chromium ਅਗਲੀ ਵਾਰ ਇਸ ਸਾਈਟ ਦੇ <ph name="LANGUAGE_NAME" /> ਪੰਨਿਆਂ ਦਾ ਅਨੁਵਾਦ ਕਰਨ ਦੀ ਪੇਸ਼ਕਸ਼ ਕਰੇ?</translation>
 <translation id="2218146227246548550">ਤੁਹਾਡੀ ਸੰਸਥਾ ਲਈ Chromium ਵਰਤਣ ਵਾਸਤੇ ਤੁਹਾਨੂੰ ਸਾਈਨ-ਇਨ ਕਰਨ ਦੀ ਲੋੜ ਹੈ। <ph name="BEGIN_LINK" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK" /></translation>
+<translation id="2236584955986023187">ਇਸਦਾ ਮਤਲਬ ਹੈ ਕਿ Chromium ਹਰ ਵਾਰ ਡੈਸਕਟਾਪ ਸਾਈਟ ਲਈ ਬੇਨਤੀ ਕਰੇਗਾ।</translation>
 <translation id="2426113998523353159">ਤੁਹਾਡੀ ਸੰਸਥਾ ਲਈ Chromium ਵਰਤਣ ਵਾਸਤੇ ਤੁਹਾਨੂੰ ਸਾਈਨ-ਇਨ ਕਰਨ ਦੀ ਲੋੜ ਹੈ।</translation>
 <translation id="2450140762465183767">ਤੁਸੀਂ ਹੁਣ ਸੁਨੇਹੇ, ਦਸਤਾਵੇਜ਼ ਅਤੇ ਹੋਰ ਐਪਾਂ ਵਿਚਲੇ ਲਿੰਕਾਂ 'ਤੇ ਟੈਪ ਕਰਕੇ ਕਿਸੇ ਵੇਲੇ ਵੀ Chromium ਵਰਤ ਸਕਦੇ ਹੋ।</translation>
 <translation id="2478931088402984578"><ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> ਚੁਣੋ</translation>
@@ -43,7 +45,6 @@
 <translation id="3472200483164753384">Chromium Canary 'ਤੇ ਸਮਰਥਿਤ ਨਹੀਂ</translation>
 <translation id="3639997914391704523">ਤੁਹਾਡੇ ਵੱਲੋਂ ਆਪਣੇ Google ਖਾਤੇ ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰਨ 'ਤੇ Chromium ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ ਦੀ ਜਾਂਚ ਕਰ ਸਕਦਾ ਹੈ।</translation>
 <translation id="3805899903892079518">Chromium ਦੀ ਤੁਹਾਡੀਆਂ ਫ਼ੋਟੋਆਂ ਜਾਂ ਵੀਡੀਓ ਤੱਕ ਪਹੁੰਚ ਨਹੀਂ ਹੈ। iOS ਸੈਟਿੰਗਾਂ &gt; ਪਰਦੇਦਾਰੀ &gt; ਫ਼ੋਟੋਆਂ ਵਿੱਚ ਪਹੁੰਚ ਨੂੰ ਚਾਲੂ ਕਰੋ।</translation>
-<translation id="3946918322491238254">ਤੁਸੀਂ ਅਜੇ ਵੀ ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਆਪਣੇ ਸਾਰੇ ਬੁੱਕਮਾਰਕ, ਇਤਿਹਾਸ, ਪਾਸਵਰਡ ਅਤੇ ਹੋਰ ਸੈਟਿੰਗਾਂ ਦੇਖ ਸਕਦੇ ਹੋ। ਜੇ ਤੁਸੀਂ ਤਬਦੀਲੀਆਂ ਕਰਦੇ ਹੋ, ਤਾਂ ਉਹਨਾਂ ਦਾ ਸਿੰਕ ਤੁਹਾਡੇ ਖਾਤੇ ਨਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾਵੇਗਾ।</translation>
 <translation id="4043291146360695975">ਪਾਸਵਰਡ ਸਿਰਫ਼ ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਪਾਸਵਰਡ ਪ੍ਰਬੰਧਕ ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤੇ ਗਏ ਹਨ।</translation>
 <translation id="4099085513035183040">Chromium ਬੀਟਾ 'ਤੇ ਸਮਰਥਿਤ ਨਹੀਂ</translation>
 <translation id="4555020257205549924">ਜਦੋਂ ਇਹ ਵਿਸ਼ੇਸ਼ਤਾ ਚਾਲੂ ਹੁੰਦੀ ਹੈ, ਤਾਂ Chromium ਹੋਰਾਂ ਭਾਸ਼ਾਵਾਂ ਵਿੱਚ ਲਿਖੇ ਪੰਨਿਆਂ ਨੂੰ Google ਅਨੁਵਾਦ ਵਰਤਦੇ ਹੋਏ ਅਨੁਵਾਦ ਕਰਨ ਦੀ ਪੇਸ਼ਕਸ਼ ਕਰੇਗਾ। <ph name="BEGIN_LINK" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK" /></translation>
@@ -61,7 +62,6 @@
 <translation id="5521125884468363740">ਜਿਸ ਡੀਵਾਈਸ 'ਤੇ ਵੀ ਤੁਸੀਂ Chromium ਵਰਤਦੇ ਹੋ, ਉੱਥੇ ਆਪਣੀਆਂ ਟੈਬਾਂ ਦੇਖਣ ਲਈ ਸਾਈਨ-ਇਨ ਕਰਕੇ ਸਮਾਲੀਕਰਨ ਕਰੋ</translation>
 <translation id="5573014823074921752">Chromium ਨੁਕਤਾ। ਹੋਰ ਟੈਬ ਵਿਕਲਪਾਂ ਲਈ, ਟੂਲਬਾਰ ਵਿੱਚ 'ਟੈਬਾਂ ਦਿਖਾਓ' ਬਟਨ ਨੂੰ ਸਪਰਸ਼ ਕਰਕੇ ਰੱਖੋ, ਜੋ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਦੇ ਹੇਠਾਂ ਜਾਂ ਉੱਪਰ ਹੈ।</translation>
 <translation id="5700709190537129682">Chromium ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ ਦੀ ਜਾਂਚ ਨਹੀਂ ਕਰ ਸਕਦਾ</translation>
-<translation id="5722855707162262109">ਚੁਣੋ ਕਿ ਤੁਸੀਂ Chromium ਨੂੰ ਹਰ ਵਾਰ ਸਾਈਟ ਦਾ ਕਿਹੜਾ ਮੋਡ ਲੋਡ ਕਰਨ ਦੇਣਾ ਚਾਹੁੰਦੇ ਹੋ</translation>
 <translation id="5777187867430702742">Chromium ਪੰਨਾ</translation>
 <translation id="5862307444128926510">Chromium ਵਿੱਚ ਸੁਆਗਤ ਹੈ</translation>
 <translation id="5945387852661427312">ਤੁਸੀਂ <ph name="DOMAIN" /> ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤੇ ਖਾਤੇ ਨਾਲ ਸਾਈਨ-ਇਨ ਕਰ ਰਹੇ ਹੋ ਅਤੇ ਉਸਦੇ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਆਪਣੇ Chromium ਡਾਟੇ ਦਾ ਕੰਟਰੋਲ ਦੇ ਰਹੇ ਹੋ। ਤੁਹਾਡਾ ਡਾਟਾ ਸਥਾਈ ਤੌਰ 'ਤੇ ਇਸ ਖਾਤੇ ਨਾਲ ਜੋੜ ਦਿੱਤਾ ਜਾਵੇਗਾ। Chromium ਤੋਂ ਸਾਈਨ-ਆਊਟ ਹੋਣ ਨਾਲ ਤੁਹਾਡਾ ਡਾਟਾ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਮਿਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ, ਪਰ ਇਹ ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ ਸਟੋਰ ਰਹੇਗਾ।</translation>

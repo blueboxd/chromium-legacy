@@ -104,6 +104,7 @@
 <translation id="1122089575901325963">A definição da política configura o controlador de diagnósticos e telemetria (DTC, na sigla em inglês) <ph name="WILCO_NAME" />, se disponível no dispositivo. O tamanho da configuração não pode exceder 1 MB (1.000.000 de bytes) e precisa estar no formato JSON. O DTC <ph name="WILCO_NAME" /> é responsável pelo processamento dela. O hash criptográfico verifica a integridade do download. A configuração é transferida por download e armazenada em cache. O download é refeito sempre que o URL ou o hash mudam.
 
       Se você definir a política, os usuários não poderão mudá-la.</translation>
+<translation id="1123650965531933634">Nega a permissão para posicionamento de janelas em todos os sites por padrão</translation>
 <translation id="1133622335785078255">Permitir que usuários criem e usem perfis secundários e usem o modo visitante no navegador <ph name="LACROS_NAME" /></translation>
 <translation id="1133814529606590009">Se a política for definida como "Ativada", a coleta de dados anônimos inseridos no URL (que envia os URLs das páginas acessadas pelo usuário ao Google para melhorar a pesquisa e navegação) ficará sempre ativa.
 
@@ -186,6 +187,7 @@
 <translation id="1223789468190631420">Ativar Navegação segura para fontes confiáveis</translation>
 <translation id="123018742985150697">Exigir correspondência entre o usuário local e o proprietário do host de acesso remoto</translation>
 <translation id="123081309365616809">Ativa transmissão de conteúdo para o dispositivo</translation>
+<translation id="1239411164172567974">Ativar a API Direct Sockets.</translation>
 <translation id="1239526922294123540">Controla se os sites têm permissão para fazer solicitações para endpoints de rede mais particulares de forma não segura.
 
           Quando esta política é definida como verdadeira, todas as verificações de <ph name="PRIVATE_NETWORK_ACCESS" /> são desativadas para todas as origens. Isso pode permitir que invasores realizem ataques <ph name="CSRF" /> a servidores de rede particular.
@@ -203,6 +205,7 @@
 <translation id="1240722269871366886">Esta política permite que o <ph name="PRODUCT_OS_NAME" /> sugira emojis quando os usuários digitam com o teclado virtual ou físico.
       Se ela for definida como verdadeira, o recurso será ativado e os usuários poderão mudá-lo.
       Por padrão, esta política é definida como falsa. Nenhum emoji será sugerido, e o usuário não poderá modificar isso.</translation>
+<translation id="1241536186320046498">Perguntar sempre que um site quiser uma permissão para posicionamento de janelas</translation>
 <translation id="1243570869342663665">Controlar a filtragem de conteúdo adulto SafeSites.</translation>
 <translation id="1244309789361056660">Esta política foi removida na versão M87. Os diretórios principais serão migrados automaticamente para ext4 ao fazer login.
       A definição da política especifica a ação a ser tomada quando o diretório principal do usuário tiver sido criado com criptografia ecryptfs. A não ser que seja realizada a migração de diretórios principais da criptografia ecryptfs para ext4, os apps Android poderão parar de funcionar.
@@ -476,6 +479,11 @@ Se você desativar a política, essa rolagem será desativada.</translation>
       Se a política for definida como "Desativada", solicitações HTTP não seguras não poderão usar o esquema de autenticação <ph name="BASIC_AUTH" />. Apenas conexões HTTPS seguras serão aceitas.
 
       Se a política <ph name="AUTH_SCHEMES_POLICY_NAME" /> for definida e não incluir o esquema <ph name="BASIC_AUTH" />, a definição da política será ignorada e o <ph name="BASIC_AUTH" /> será sempre proibido.</translation>
+<translation id="1573444493980402757">Permite definir uma lista de padrões de URL que especificam os sites que vão negar automaticamente a permissão para posicionamento de janelas. Isso vai limitar a capacidade dos sites de ver informações sobre as telas do dispositivo e de usar essas informações para abrir e posicionar janelas ou solicitar a tela cheia em locais específicos.
+
+      Para ver informações detalhadas sobre padrões de URL válidos, consulte https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. Os caracteres curinga (<ph name="WILDCARD_VALUE" />) são permitidos. A política só faz a correspondência com base na origem, então os caminhos no padrão do URL são ignorados.
+
+      Se esta política for deixada sem definição para um site, a política de <ph name="DEFAULT_WINDOW_PLACEMENT_SETTING_POLICY_NAME" /> será aplicada, se configurada. Caso contrário, a permissão vai seguir os padrões do navegador e autorizar a escolha dos usuários para cada site.</translation>
 <translation id="1574258262373444557">Não usar <ph name="AES_KL_NAME" /> como o algoritmo para a criptografia de armazenamento do usuário</translation>
 <translation id="1575015449587326319">Política de configuração para o conector OnFileDownloaded do Chrome Enterprise</translation>
 <translation id="1583248206450240930">Usar o <ph name="PRODUCT_FRAME_NAME" /> por padrão</translation>
@@ -1251,6 +1259,7 @@ Web e PWAs. No momento, com suporte apenas no
 <translation id="2355876547176311490">Desativar o uso de servidores de redirecionamento pelo host de acesso remoto</translation>
 <translation id="2358176879566587521">Esta política foi removida. Ela não é compatível com esta versão do <ph name="PRODUCT_NAME" />. Leia mais em https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="2362469626417133796">Janela de tempo de reinicialização</translation>
+<translation id="2362539163677485510">Token de registro da política de nuvem</translation>
 <translation id="2363928351203698966">Se a política for definida com um valor válido, o <ph name="PRODUCT_NAME" /> não usará versões SSL/TLS anteriores à versão especificada. Valores não reconhecidos serão ignorados.
 
       Se esta política não for definida, o <ph name="PRODUCT_NAME" /> mostrará uma mensagem de erro para TLS 1.0 e TLS 1.1, mas o usuário poderá ignorá-la.
@@ -1429,6 +1438,8 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="2509919237512982967">Usar controles de formulários legados até a M84.</translation>
 <translation id="2512972020817284317">Ativar a mesclagem de políticas da nuvem no nível do usuário.</translation>
 <translation id="2515699738406900920">Disponibilidade do seletor de perfil na inicialização</translation>
+<translation id="251594860034549963">Se a política for definida como "Ativada", as janelas do navegador do último dispositivo usado pelo usuário atual serão abertas automaticamente no login.
+      Se a política for definida como "Desativada" ou não for definida, as configurações de restauração completa vão determinar o que será iniciado no login.</translation>
 <translation id="2517466659416174529">Permitir congelamento das guias em segundo plano</translation>
 <translation id="2518231489509538392">Permitir a reprodução de áudio</translation>
 <translation id="2520551905471951523">Usar a prioridade alta para o processo de áudio</translation>
@@ -1743,6 +1754,11 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="2905984450136807296">Ciclo de vida do cache de dados de autenticação</translation>
 <translation id="2906874737073861391">Lista de extensões AppPack</translation>
 <translation id="2908277604670530363">Número máximo de conexões simultâneas ao servidor proxy</translation>
+<translation id="2909068176249499360">A definição desta política força a ativação ou desativação do Pareamento rápido,
+      que é um novo fluxo de pareamento por Bluetooth que vincula periféricos pareados com uma conta do GAIA.
+      Isso permite que outros dispositivos Chrome OS (e Android) conectados à mesma conta do GAIA sejam pareados automaticamente.
+      Se a política for deixada sem definição, o valor padrão será desativado para usuários corporativos e ativado para
+      contas não gerenciadas.</translation>
 <translation id="2912366658685903301">Configurar a cor do tema do navegador</translation>
 <translation id="291853569864365550">Não mostrar sugestões de conteúdo na página "Nova guia"</translation>
 <translation id="2920795918401557243">Esta configuração permite coletar o rastreamento de desempenho do sistema usando o serviço de rastreamento do sistema.
@@ -2150,7 +2166,6 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="3284094172359247914">Controla o uso da API WebUSB</translation>
 <translation id="3288595667065905535">Liberar canal</translation>
 <translation id="3291318845269544294">Ativar Projector</translation>
-<translation id="3292784416244243447">Permitir que os usuários escolham quais sites podem usar informações sobre telas para abrir e posicionar janelas</translation>
 <translation id="3294430356898755483">A definição da política permite aos administradores configurar uma lista de impressoras para os usuários. A seleção da impressora ocorre na primeira vez que os usuários tentam imprimir.
 
       Ao usar a política:
@@ -2397,6 +2412,8 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 
       A remoção desta política foi anunciada para o <ph name="PRODUCT_NAME" /> versão 82, mas ela foi removida na versão 84.</translation>
 <translation id="3606571057705314194">Seletor de perfil desativado na inicialização</translation>
+<translation id="3608206578291537084">Ativar o pipeline de geração de relatórios criptografados</translation>
+<translation id="3612809274815536412">Configurações do posicionamento de janelas</translation>
 <translation id="3627678165642179114">Ativar ou desativar serviço da web de verificação ortográfica</translation>
 <translation id="3628480121685794414">Ativar impressão simplex</translation>
 <translation id="3634125384445314047">Permitir que fotos e vídeos recentes capturados no smartphone sejam acessados usando o recurso Seu smartphone.</translation>
@@ -2522,6 +2539,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 
       Se esta política não for definida, o comportamento padrão será não permitir o login para usuários gerenciados por empresas e permitir o login para usuários não gerenciados.</translation>
 <translation id="3791179836066841809">Documentação da política</translation>
+<translation id="3791556154364029875">Ativar o Workspace flutuante e abrir janelas do navegador remoto ao fazer login</translation>
 <translation id="3794413118360704299">Esta política permite que um administrador especifique configurações para apps da Web instalados.
 
       Esta política mapeia um ID de app da Web para a própria configuração específica. Consulte <ph name="WEB_APP_ID_REFERENCE_URL" /> para ver instruções sobre como determinar o ID de um app da Web instalado.
@@ -2744,6 +2762,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
       Se a política não for definida, os usuários poderão decidir se concedem ou não permissão para o "Respostas rápidas" acessar conteúdos selecionados.</translation>
 <translation id="4016700865356669962">Se a política for ativada, os usuários poderão usar modelos de layout do espaço de trabalho.  Se ela for desativada ou deixada sem definição, esses modelos não ficarão disponíveis.</translation>
 <translation id="4020682745012723568">Os cookies transferidos para o perfil do usuário não podem ser acessados por apps Android.</translation>
+<translation id="4025176296532430931">Desativar o Workspace flutuante e não abrir janelas do navegador remoto ao fazer login</translation>
 <translation id="4025500273782820766">Permitir que os usuários selecionem "Sempre permitir" em uma caixa de diálogo de protocolo externo para pular as solicitações de confirmação futuras</translation>
 <translation id="402759845255257575">Não permitir que nenhum site execute o JavaScript</translation>
 <translation id="4027608872760987929">Ativar o provedor de pesquisa padrão</translation>
@@ -3016,6 +3035,7 @@ Quando a política for definida, o <ph name="PRODUCT_OS_NAME" /> permitirá que 
       Para informações detalhadas sobre padrões de <ph name="URL_LABEL" /> válidos, consulte https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns (link em inglês). <ph name="WILDCARD_VALUE" /> não é um valor aceitável para esta política.</translation>
 <translation id="4389073105055031853">Permitir que os usuários gerenciem todos os certificados</translation>
 <translation id="4389091865841123886">Configurar a declaração remota com mecanismo TPM</translation>
+<translation id="4397464099112037398">Configuração padrão da permissão para posicionamento de janelas</translation>
 <translation id="4401496838830169080">Permite que você controle se o recurso "Navegação segura" do <ph name="PRODUCT_NAME" /> está ativado e em que modo ele opera.
 
       Se esta política for definida como "NoProtection" (valor 0), o "Navegação segura" nunca estará ativo.
@@ -3217,16 +3237,6 @@ Quando a política for definida, o <ph name="PRODUCT_OS_NAME" /> permitirá que 
 <translation id="4617338332148204752">Ignorar a verificação de metatags em <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4624417808625504735">Bloquear o uso de JIT pelo JavaScript nestes sites</translation>
 <translation id="4625915093043961294">Configurar a lista branca de instalação de extensão</translation>
-<translation id="4631165564645497047">Quando esta configuração estiver ativada, o <ph name="PRODUCT_NAME" /> verifica os certificados do servidor usando o verificador integrado de certificados.
-      Quando ela estiver desativada, o <ph name="PRODUCT_NAME" /> verifica os certificados do servidor usando o verificador legado disponibilizado pela plataforma.
-      Quando esta configuração não for definida, tanto o verificador de certificados integrado quanto o legado podem ser usados.
-
-      Esta política vai ser removida na versão 81 do <ph name="PRODUCT_OS_NAME" />, quando o suporte ao verificador de certificados legado no <ph name="PRODUCT_OS_NAME" /> também vai ser removido.
-
-      Esta política vai ser removida do <ph name="PRODUCT_NAME" /> na versão 83 do Linux, quando o suporte ao verificador de certificados legado nesse SO também vai ser removido.
-
-      Esta política vai ser removida do <ph name="PRODUCT_NAME" /> na versão 104 do Mac OS X, quando o suporte ao verificador de certificados legado nesse SO também vai ser removido.
-      </translation>
 <translation id="4632343302005518762">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo listados</translation>
 <translation id="4632566332417930481">Não permite o uso das Ferramentas para Desenvolvedores em extensões instaladas por uma política corporativa; permite o uso das Ferramentas para desenvolvedores em outros contextos</translation>
 <translation id="4635284822166984665">Horário em que o carregamento do dispositivo será iniciado, interpretado no fuso horário local do dispositivo.</translation>
@@ -3293,33 +3303,6 @@ Quando a política for definida, o <ph name="PRODUCT_OS_NAME" /> permitirá que 
 <translation id="475479145997699293">Se a política for definida como <ph name="ASK_FILE_HANDLING" />, os apps da Web poderão solicitar acesso a tipos de arquivos usando a API File Handling. Se a política for definida como <ph name="BLOCK_FILE_HANDLING" />, o acesso será negado.
 
       Se ela não for definida, os apps da Web solicitarão acesso, mas os usuários poderão mudar a configuração.</translation>
-<translation id="4755492101519343259">Configura uma lista de regras para evitar vazamentos de dados no <ph name="PRODUCT_OS_NAME" />.
-      Vazamentos de dados podem acontecer ao copiar e colar dados, transferir arquivos, imprimir, compartilhar ou capturar a tela etc.
-
-      Cada regra consiste no seguinte:
-      - Uma lista de origens definidas como URLs. Qualquer dado nas origens será considerado confidencial, e as restrições serão aplicadas a eles.
-      - Uma lista de destinos definidos como URLs ou componentes, em que os dados confidenciais terão permissão ou não para serem compartilhados.
-      - Uma lista de restrições a serem aplicadas aos dados das origens.
-
-      As regras podem ser aplicadas para:
-      - controlar os dados na área de transferência compartilhados entre as origens e os destinos;
-      - controlar as capturas de telas de qualquer uma das origens;
-      - controlar a impressão de qualquer uma das origens;
-      - controlar a tela de privacidade quando qualquer uma das origens estiver visível.
-      - controlar o compartilhamento de tela de qualquer uma das origens.
-
-      O nível de restrição pode ser definido como BLOCK, ALLOW, REPORT ou WARN (bloquear, autorizar, denunciar ou alertar).
-      - Se a restrição for definida como BLOCK, a ação não será autorizada. Se <ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED" /> for definida como verdadeira, a ação bloqueada será denunciada para o administrador.
-      - Se a restrição for definida como ALLOW, a ação será autorizada.
-      - Se a restrição for definida como REPORT e <ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED" /> for definida como verdadeira, a ação será denunciada para o administrador.
-      - Se a restrição for definida como WARN, o usuário será alertado e poderá escolher entre continuar ou cancelar a ação. Se <ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED" /> for definida como verdadeira, a exibição do alerta será enviada ao administrador. Se o usuário continuar a ação, essa informação também será enviada.
-
-      Observações:
-      - Restrições PRIVACY_SCREEN não bloqueiam a capacidade de ativar a tela de privacidade, mas forçam o uso dela quando a classe de restrição é definida como BLOCK.
-      - Os destinos não podem ficar vazios caso uma das restrições seja CLIPBOARD, mas eles não vão afetar as outras restrições.
-      - Formate o padrões de URL da maneira descrita em https://www.chromium.org/administrators/url-blocklist-filter-format.
-
-      Se a política não for definida, nenhuma restrição será aplicada.</translation>
 <translation id="4757053978738874325">Ativar o recurso de acessibilidade de áudio mono.
 
           Este recurso é responsável pela saída de áudio estéreo, que inclui os canais esquerdo e direito, para que cada ouvido possa receber sons diferentes.
@@ -3349,6 +3332,7 @@ Quando a política for definida, o <ph name="PRODUCT_OS_NAME" /> permitirá que 
 <translation id="4812714598405913256">Configurar a mensagem de expiração da atualização automática para a política DeviceMinimumVersion</translation>
 <translation id="4816674326202173458">Permitir que o usuário corporativo seja ao mesmo tempo primário e secundário (comportamento padrão para usuários não gerenciados)</translation>
 <translation id="4820432864264617413">Evitar que a <ph name="BOREALIS_NAME" /> seja executada para um usuário</translation>
+<translation id="4821987881803903281">Bloquear a permissão para posicionamento de janelas nesses sites</translation>
 <translation id="4826326557828204741">Ação a ser executada quando o tempo de inatividade for atingido durante execução com bateria</translation>
 <translation id="482803100714220060">Exibir URLs completos</translation>
 <translation id="4832852360828533362">Relatórios de usuário e do dispositivo</translation>
@@ -3988,9 +3972,6 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 <translation id="5526184558582921522">Permitir consultas ao Quirks Server e possíveis downloads de arquivos de configuração específicos de hardware</translation>
 <translation id="5526701598901867718">Todos (não seguro)</translation>
 <translation id="5534079385061985566">Ativar o recurso de restauração completa.</translation>
-<translation id="5535012472025435092">Se esta política for ativada, a permissão para posicionamento de janelas vai ser concedida automaticamente para todos os sites.
-      Assim, os sites vão poder ver e usar informações sobre telas conectadas para abrir e posicionar janelas.
-      Se não for definida ou estiver desativada, esta política vai seguir os padrões do navegador e permitir que os usuários escolham essa permissão em cada site.</translation>
 <translation id="5535256585099022933">Configurar o intervalo de tempo para reinicialização</translation>
 <translation id="5535973522252703021">Lista branca do servidor de delegação Kerberos</translation>
 <translation id="553806128266843748">Uma sinalização booleana indicando se a limitação está ativada.</translation>
@@ -4080,7 +4061,6 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
       Observação: separe vários nomes de servidor usando vírgulas. Caracteres curinga (<ph name="WILDCARD_VALUE" />) são permitidos.</translation>
 <translation id="5645779841392247734">Permitir cookies nestes sites</translation>
 <translation id="5646234199535103501">Política de configuração para o conector OnBulkDataEntry do Chrome Enterprise</translation>
-<translation id="5647868527087096729">Permitir que todos os sites usem informações sobre telas para abrir e posicionar janelas</translation>
 <translation id="5649046890958064703">Se <ph name="PRINTERS_BLACKLIST" /> for escolhida para <ph name="DEVICE_PRINTERS_ACCESS_MODE_POLICY_NAME" />, a definição de <ph name="DEVICE_NATIVE_PRINTERS_BLACKLIST_POLICY_NAME" /> especificará quais impressoras os usuários não podem usar. Todas as impressoras estão disponíveis para os usuários, com exceção dos IDs listados nesta política. Os IDs precisam corresponder aos campos <ph name="ID_FIELD" /> ou <ph name="GUID_FIELD" /> no arquivo especificado na <ph name="DEVICE_PRINTERS_POLICY_NAME" />.
 
       Esta política está suspensa. Use a <ph name="DEVICE_PRINTERS_BLOCKLIST_POLICY_NAME" />.</translation>
@@ -4217,11 +4197,14 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 <translation id="5766438888216077649">Não defina a propriedade <ph name="WINDOW_OPENER_PROPERTY" /> para links direcionados a <ph name="BLANK_PAGE_NAME" /></translation>
 <translation id="5767776869128458023">Desativar páginas de erro alternativas</translation>
 <translation id="5770738360657678870">Canal de desenvolvedores (pode ser instável)</translation>
+<translation id="5774345930803672932">Se a política for definida como verdadeira ou for deixada sem definição, isso vai permitir que eventos, telemetria e informações sejam
+      reportados para o pipeline de geração de relatórios criptografados. Se a política for definida como falsa, o pipeline de geração de relatórios criptografados será desativado.</translation>
 <translation id="5774856474228476867">URL de pesquisa do provedor de pesquisa padrão</translation>
 <translation id="5775235485119094648">Carregar a bateria enquanto ela estiver dentro de um intervalo fixo.</translation>
 <translation id="5776485039795852974">Perguntar cada vez que um site quiser exibir notificações da área de trabalho</translation>
 <translation id="5783009211970309878">Imprimir cabeçalhos e rodapés</translation>
 <translation id="5790763087505467169">Reduzir notificações de lançamento automático para sessões de visitante gerenciadas</translation>
+<translation id="5802931736499687181">Desativar o pipeline de geração de relatórios criptografados</translation>
 <translation id="5806128552675651249">Permitir impressão apenas sem gráficos de segundo plano</translation>
 <translation id="5809210507920527553">Controla configurações do contêiner Linux (Crostini).</translation>
 <translation id="5809728392451418079">Definir o nome de exibição das contas locais de dispositivo</translation>
@@ -4493,6 +4476,14 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 <translation id="6144046700495610112">Se a política for definida como ativada, os dados de preenchimento automático de formulários serão importados do navegador padrão anterior durante a primeira execução. Se a política for definida como desativada ou não for definida, nenhum dado de preenchimento automático de formulário será importado durante a primeira execução.
 
       O usuário pode acionar uma caixa de diálogo de importação em que a caixa de seleção de dados de preenchimento automático de formulários estará marcada ou desmarcada de acordo com o valor da política.</translation>
+<translation id="614522356524762803">
+      Controla a frequência de uploads de relatórios de status do Chrome.
+
+      Isso inclui relatórios que são ativados pela <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" />.
+
+      Quando a política é deixada sem definição, o upload dos relatórios é feito a cada 24 horas.
+      Quando a política é configurada, o número de horas entre dois uploads sucessivos de relatórios é definido por ela.
+      </translation>
 <translation id="614616930188030377">Os padrões desta lista serão comparados com a origem de segurança do URL solicitante.
       Se uma correspondência for encontrada ou a opção chrome://flags/#enable-webrtc-hide-local-ips-with-mdns estiver desativada, os endereços IP locais serão mostrados nos candidatos ICE do WebRTC.
       Caso contrário, os endereços IP locais serão ocultos com os nomes de host de mDNS.
@@ -5526,6 +5517,11 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Se esta política for deixada sem definição ou em branco, o usuário poderá configurar qualquer Conta do Google como uma conta principal do navegador no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="723103540848640830">Definir o tamanho mínimo do PIN da tela de bloqueio</translation>
 <translation id="7234280155140786597">Nomes dos hosts de mensagens nativas proibidos (ou "*" para todos)</translation>
+<translation id="723621412149834592">Se a política for definida como <ph name="BLOCK_WINDOW_PLACEMENT_POLICY_NAME" /> (valor 2), por padrão, a permissão a sites para posicionamento de janelas será automaticamente negada. Isso vai limitar a capacidade dos sites de ver informações sobre as telas do dispositivo e de usar essas informações para abrir e posicionar janelas ou solicitar a tela cheia em locais específicos.
+
+      Se a política for definida como <ph name="ASK_WINDOW_PLACEMENT_POLICY_NAME" /> (valor 3), por padrão, o usuário receberá um aviso quando a permissão para posicionamento de janelas for solicitada. Se o usuário conceder a permissão, ela vai ampliar a capacidade dos sites de ver informações sobre as telas do dispositivo e usar essas informações para abrir e posicionar janelas ou solicitar a tela cheia em locais específicos.
+
+      Se a política for deixada sem definição, a <ph name="ASK_WINDOW_PLACEMENT_POLICY_NAME" /> será aplicada, mas o usuário poderá mudar essa configuração.</translation>
 <translation id="7246767840750730334">Permitir a ativação das notificações do "Seu smartphone".</translation>
 <translation id="7249828445670652637">Ativar certificados de CA (Autoridade de certificação) do <ph name="PRODUCT_OS_NAME" /> para apps ARC</translation>
 <translation id="7251825257294351251">Permitir notificações do sistema</translation>
@@ -5543,6 +5539,7 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       No <ph name="MS_WIN_NAME" />, essa funcionalidade está disponível apenas em instâncias associadas a um domínio do <ph name="MS_AD_NAME" />, executadas no Windows 10 Pro ou registradas no <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />. No <ph name="MAC_OS_NAME" />, essa funcionalidade está disponível apenas em instâncias gerenciadas por MDM ou associadas a um domínio via MCX.</translation>
 <translation id="7258823566580374486">Ativar cortinas de hosts de acesso remoto</translation>
 <translation id="7260204423892780600">Controla as configurações do Google Assistente.</translation>
+<translation id="7261140115553020049">Ativar serviço do Workspace flutuante</translation>
 <translation id="7261252191178797385">Imagem de plano de fundo do dispositivo</translation>
 <translation id="7264704483008663819">O uso desta política foi suspenso no M68. Substitua-a por DeveloperToolsAvailability.
 
@@ -5611,6 +5608,11 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7340034977315324840">Informar horário das atividades do dispositivo</translation>
 <translation id="7343004974628511824">Realizar verificações de interceptação de DNS</translation>
 <translation id="7343497214039883642">Arquivo de configuração de impressora empresarial para dispositivos</translation>
+<translation id="7358012133037776875">Permite definir uma lista de padrões de URL que especificam os sites que vão conceder automaticamente a permissão para posicionamento de janelas. Isso vai ampliar a capacidade dos sites de ver informações sobre as telas do dispositivo e de usar essas informações para abrir e posicionar janelas ou solicitar a tela cheia em locais específicos.
+
+      Para ver informações detalhadas sobre padrões de URL válidos, consulte https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. Os caracteres curinga (<ph name="WILDCARD_VALUE" />) são permitidos. A política só faz a correspondência com base na origem, então os caminhos no padrão do URL são ignorados.
+
+      Se esta política for deixada sem definição para um site, a política de <ph name="DEFAULT_WINDOW_PLACEMENT_SETTING_POLICY_NAME" /> será aplicada, se configurada. Caso contrário, a permissão vai seguir os padrões do navegador e autorizar a escolha dos usuários para cada site.</translation>
 <translation id="7358359585412734876">Ativar o <ph name="LACROS_NAME" /></translation>
 <translation id="7358744897221281073">Se esta configuração estiver ativada, os usuários que já ativaram o recurso "Seu smartphone" poderão continuar tarefas no Chrome OS, como visualizar as páginas da Web do smartphone.
 
@@ -5674,6 +5676,9 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7459601923199346224">Controla as políticas do usuário e dispositivo para o gerenciamento de certificados.</translation>
 <translation id="7459633275230216698">Permitir caixas de diálogo para seleção de arquivo</translation>
 <translation id="7464991223784276288">Limita cookies de URLs correspondentes à sessão atual</translation>
+<translation id="7466522266556143347">Se a política for definida como "Ativada", os usuários vão poder usar a API Direct Sockets (desde que todas as outras condições obrigatórias sejam atendidas).
+      Se a política for definida como 'Desativada", os usuários não vão poder acessar a API.
+      Se esta política for deixada sem definição, o comportamento padrão será não permitir para usuários gerenciados por empresas e permitir para usuários não gerenciados.</translation>
 <translation id="7468182772656807573">Se a política for definida, a frequência do envio de pacotes de monitoramento de rede será determinada, em milissegundos. Os intervalos variam de 30 segundos a 24 horas. Valores fora desse intervalo serão ajustados dentro dessa faixa.
 
       Se a política não for definida, o intervalo padrão será de 3 minutos.</translation>
@@ -5694,6 +5699,33 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7477149584454865826">Sinalização booleana indicando se o IPP Everywhere deve ser usado ou não para configurar a impressora.</translation>
 <translation id="7477231245051133709">Ativar o recurso de acessibilidade de áudio mono</translation>
 <translation id="7477239290070847560">Destinos de protocolos baseados em Zeroconf (mDNS + DNS-SD)</translation>
+<translation id="7477526482439041787">Configura uma lista de regras para prevenir vazamentos de dados no <ph name="PRODUCT_OS_NAME" />.
+      Os vazamentos podem acontecer ao copiar e colar dados, transferir arquivos, imprimir, compartilhar ou capturar a tela etc.
+
+      Cada regra consiste no seguinte:
+      - Uma lista de origens definidas como URLs. Qualquer dado nas origens será considerado confidencial, e as restrições serão aplicadas a eles.
+      - Uma lista de destinos definidos como URLs ou componentes, em que os dados confidenciais terão permissão ou não para serem compartilhados.
+      - Uma lista de restrições a serem aplicadas aos dados das origens.
+
+      As regras podem ser aplicadas para controlar:
+      - os dados na área de transferência compartilhados entre as origens e os destinos;
+      - as capturas de tela de qualquer uma das origens;
+      - a impressão de qualquer uma das origens;
+      - a tela de privacidade quando qualquer uma das origens estiver visível;
+      - o compartilhamento de tela de qualquer uma das origens.
+
+      O nível de restrição pode ser definido como BLOCK, ALLOW, REPORT ou WARN (bloquear, autorizar, denunciar ou alertar).
+      - Se a restrição for definida como BLOCK, a ação não será autorizada. Se <ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED" /> for definida como verdadeira, a ação bloqueada será denunciada para o administrador.
+      - Se a restrição for definida como ALLOW, a ação será autorizada.
+      - Se a restrição for definida como REPORT e <ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED" /> for definida como verdadeira, a ação será denunciada ao administrador.
+      - Se a restrição for definida como WARN, o usuário será avisado e poderá escolher entre continuar ou cancelar a ação. Se <ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED" /> for definida como verdadeira, a exibição do alerta será enviada ao administrador. Se o usuário continuar a ação, essa informação também será enviada.
+
+      Observações:
+      - Restrições PRIVACY_SCREEN não bloqueiam a capacidade de ativar a tela de privacidade, mas forçam o uso dela quando a classe de restrição é definida como BLOCK.
+      - Os destinos não podem ficar vazios caso uma das restrições seja CLIPBOARD, mas eles não vão afetar as outras restrições.
+      - Formate o padrões de URL da maneira descrita em https://www.chromium.org/administrators/url-blocklist-filter-format.
+
+      Se a política não for definida, nenhuma restrição será aplicada.</translation>
 <translation id="7480826412572122600">Lista de configurações para os serviços do Chrome Enterprise Connectors que serão aplicadas ao conector <ph name="ON_FILE_DOWNLOADED_ENTERPRISE_CONNECTOR" />, que é acionado quando o download de um arquivo é feito no Chrome.
 
       Os campos <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> e <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> são usados para determinar se o conector envia um arquivo para análise quando o download é feito em uma página específica e quais tags são incluídas na solicitação de análise desse arquivo. Uma tag correspondente ao padrão "ativar" será incluída na solicitação de análise se o URL da página corresponder a um padrão associado a essa tag. Isso acontece apenas se nenhum padrão "desativar" com a mesma tag corresponder ao URL da página. A análise é feita quando há pelo menos uma tag incluída na solicitação.
@@ -5866,7 +5898,6 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7638300388094655454">Google Cast</translation>
 <translation id="7638764766629234761">Permitir o uso de notificações do sistema</translation>
 <translation id="7643883929273267746">Contas restritas que estão visíveis no <ph name="PRODUCT_NAME" /></translation>
-<translation id="7644125656003029520">Ativar permissão para posicionamento de janelas em todos os sites</translation>
 <translation id="7648664871086956188">Esta política é uma orientação geral para todas as regras definidas na política DataLeakPreventionRulesList.
       Se ela for definida como verdadeira, os relatórios em tempo real de eventos para prevenção de vazamentos de dados serão ativados.
       Se ela for definida como falsa ou for deixada sem definição, os relatórios serão desativados.
@@ -6161,6 +6192,7 @@ Se a política não for definida, a configuração ficará ativada, mas o usuár
           Quando esta política não é definida, um período padrão é usado.
 
           O valor da política precisa ser especificado em milissegundos. Os valores são ajustados para serem menores ou iguais ao intervalo de inatividade.</translation>
+<translation id="7992613144342460685">Permitir o posicionamento de janelas nesses sites</translation>
 <translation id="7995610550667275367">Digitalização (compatível desde a versão 87)</translation>
 <translation id="7999023147219236247">Política para conceder solicitações de permissão a apps. PERMISSION_POLICY_UNSPECIFIED: política não especificada. Se nenhuma política for especificada para uma permissão em qualquer nível, o comportamento "PROMPT" será usado por padrão. PROMPT: solicita que o usuário conceda uma permissão. GRANT: concede uma permissão automaticamente. DENY: nega uma permissão automaticamente.</translation>
 <translation id="7999818120028621358">Ativar relatórios de eventos para prevenção de vazamento de dados</translation>
@@ -6230,10 +6262,6 @@ Se a política não for definida, a configuração ficará ativada, mas o usuár
 <translation id="8101381354936029836">Grupo atômico de políticas:</translation>
 <translation id="8102913158860568230">Configuração padrão mediastream</translation>
 <translation id="8104962233214241919">Selecionar certificados de cliente automaticamente para estes sites</translation>
-<translation id="8111502498815410897">A definição desta política forçará a ativação ou desativação do Pareamento rápido.
-      O Pareamento rápido é um novo fluxo de pareamento por Bluetooth que vincula periféricos pareados com uma conta do GAIA.
-      Isso permite que outros dispositivos do Chrome OS (e Android) conectados à mesma conta do GAIA sejam pareados automaticamente.
-      Se esta política não for definida, o Pareamento rápido seguirá o padrão do Chrome OS, que é a ativação.</translation>
 <translation id="8114382167597081590">Não aplicar o Modo restrito no YouTube</translation>
 <translation id="8117921351531866504">Permite que você defina se os sites têm permissão de verificar se os usuários salvaram formas de pagamento.
 
@@ -6791,6 +6819,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       Se a política for definida como "Desativada" ou deixada sem definição, o host de acesso remoto poderá ser associado com qualquer usuário local.</translation>
 <translation id="867708016260789630">Forçar o Modo restrito do YouTube pelo menos no nível moderado</translation>
 <translation id="8677853537025397834">Autorizar o uso da API WebHID nestes sites</translation>
+<translation id="8684781382594546769">Desativar a API Direct Sockets.</translation>
 <translation id="8685024486845674965">O aviso de proteção de senha é acionado pela reutilização da senha</translation>
 <translation id="8685680544554917389">Se a política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> poderá tocar mídia automaticamente. Se a política for definida como falsa, o <ph name="PRODUCT_NAME" /> será impedido de tocar mídia automaticamente.
 
@@ -6987,6 +7016,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8892783613915541293">Intervalos e ações a serem tomadas quando o dispositivo estiver inativo e funcionando com energia CA.</translation>
 <translation id="8897796778265450949">Limitar o tempo em que um usuário autenticado via GAIA sem SAML pode fazer login off-line</translation>
 <translation id="889814528399907891">Permitir que os usuários ativem o <ph name="LACROS_NAME" /> e torná-lo o navegador principal</translation>
+<translation id="8900312706328930425">Frequência em horas dos relatórios de nuvem</translation>
 <translation id="8903283771634816230">Se a política for definida como "Ativada", o <ph name="PRODUCT_NAME" /> usará impressão padrão do SO como o destino padrão para a visualização de impressão.
 
       Se a política for definida como "Desativada" ou deixada sem definição, o <ph name="PRODUCT_NAME" /> usará a impressora usada mais recentemente como o destino padrão para a visualização de impressão.</translation>
@@ -7039,6 +7069,12 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       Esta política é usada apenas para usuários do Family Link.</translation>
 <translation id="8947415621777543415">Informar a localização do dispositivo</translation>
 <translation id="8948062138228904066">Lista de permissões do servidor de autenticação</translation>
+<translation id="8949511380888040821">Quando esta configuração estiver ativada, o <ph name="PRODUCT_NAME" /> vai verificar os certificados do servidor usando o verificador integrado de certificados.
+      Quando ela estiver desativada, o <ph name="PRODUCT_NAME" /> vai verificar os certificados do servidor usando o verificador legado disponibilizado pela plataforma.
+      Quando esta configuração não for definida, tanto o verificador de certificados integrado quanto o legado vão poder ser usados.
+
+      Esta política será removida no <ph name="PRODUCT_NAME" /> para <ph name="MAC_OS_NAME" /> versão 104, quando o suporte para o verificador de certificados legado no <ph name="MAC_OS_NAME" /> também será removido.
+      </translation>
 <translation id="8951350807133946005">Definir o diretório de cache de disco</translation>
 <translation id="8955719471735800169">Voltar ao início</translation>
 <translation id="8956312248048980644">Permite o clustering do agente com origin-key por padrão.</translation>

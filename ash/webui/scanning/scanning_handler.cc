@@ -193,8 +193,14 @@ void ScanningHandler::HandleGetPluralString(const base::ListValue* args) {
   const std::string name = args->GetListDeprecated()[1].GetString();
   const int count = args->GetListDeprecated()[2].GetInt();
 
-  const std::u16string localized_string = l10n_util::GetPluralStringFUTF16(
-      string_id_map_.find(name)->second, count);
+  auto iter = string_id_map_.find(name);
+  if (iter == string_id_map_.end()) {
+    // Only reachable if the WebUI renderer is misbehaving.
+    return;
+  }
+
+  const std::u16string localized_string =
+      l10n_util::GetPluralStringFUTF16(iter->second, count);
   ResolveJavascriptCallback(base::Value(callback),
                             base::Value(localized_string));
 }
@@ -242,8 +248,8 @@ void ScanningHandler::HandleEnsureValidFilePath(const base::ListValue* args) {
 
   task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE, base::BindOnce(&base::PathExists, file_path),
-      base::BindOnce(&ScanningHandler::OnPathExists, base::Unretained(this),
-                     file_path, callback));
+      base::BindOnce(&ScanningHandler::OnPathExists,
+                     weak_ptr_factory_.GetWeakPtr(), file_path, callback));
 }
 
 void ScanningHandler::OnPathExists(const base::FilePath& file_path,

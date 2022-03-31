@@ -22,12 +22,15 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton.CompositorOnClickHandler;
+import org.chromium.chrome.browser.compositor.layouts.components.TintedCompositorButton;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.AreaGestureEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayer;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.EventFilter;
+import org.chromium.chrome.browser.layouts.LayoutStateProvider.LayoutStateObserver;
+import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.layouts.SceneOverlay;
 import org.chromium.chrome.browser.layouts.components.VirtualView;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneOverlayLayer;
@@ -42,7 +45,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
@@ -90,7 +92,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
     private TabStripSceneLayer mTabStripTreeProvider;
 
     private TabStripEventHandler mTabStripEventHandler;
-    private StartSurfaceOverviewObserver mStartSurfaceOverviewObserver;
+    private TabSwitcherLayoutObserver mTabSwitcherLayoutObserver;
 
     private TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
@@ -168,24 +170,21 @@ public class StripLayoutHelperManager implements SceneOverlay {
     }
 
     /**
-     * Observer for Start Surface overview events.
+     * Observer for Tab Switcher layout events.
      */
-    class StartSurfaceOverviewObserver implements StartSurface.OverviewModeObserver {
+    class TabSwitcherLayoutObserver implements LayoutStateObserver {
         @Override
-        public void startedShowing() {
+        public void onStartedShowing(@LayoutType int layoutType, boolean showToolbar) {
+            if (layoutType != LayoutType.TAB_SWITCHER) return;
             updateScrimVisibility(true);
         }
 
         @Override
-        public void finishedShowing() {}
-
-        @Override
-        public void startedHiding() {
+        public void onStartedHiding(
+                @LayoutType int layoutType, boolean showToolbar, boolean delayAnimation) {
+            if (layoutType != LayoutType.TAB_SWITCHER) return;
             updateScrimVisibility(false);
         }
-
-        @Override
-        public void finishedHiding() {}
 
         private void updateScrimVisibility(boolean visibility) {
             if (!isGridTabSwitcherEnabled()) return;
@@ -210,10 +209,10 @@ public class StripLayoutHelperManager implements SceneOverlay {
     }
 
     /**
-     * @return Returns overview mode observer for start surface.
+     * @return Returns layout observer for tab switcher.
      */
-    public StartSurfaceOverviewObserver getStartSurfaceObserver() {
-        return mStartSurfaceOverviewObserver;
+    public TabSwitcherLayoutObserver getTabSwitcherObserver() {
+        return mTabSwitcherLayoutObserver;
     }
 
     /**
@@ -230,7 +229,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
         mLayerTitleCacheSupplier = layerTitleCacheSupplier;
         mTabStripTreeProvider = new TabStripSceneLayer(context);
         mTabStripEventHandler = new TabStripEventHandler();
-        mStartSurfaceOverviewObserver = new StartSurfaceOverviewObserver();
+        mTabSwitcherLayoutObserver = new TabSwitcherLayoutObserver();
         mDefaultTitle = context.getString(R.string.tab_loading_default_title);
         mEventFilter =
                 new AreaGestureEventFilter(context, mTabStripEventHandler, null, false, false);
@@ -376,7 +375,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
                 + MODEL_SELECTOR_BUTTON_START_PADDING_DP;
     }
 
-    public CompositorButton getNewTabButton() {
+    public TintedCompositorButton getNewTabButton() {
         return getActiveStripLayoutHelper().getNewTabButton();
     }
 
@@ -529,6 +528,19 @@ public class StripLayoutHelperManager implements SceneOverlay {
             public void didCloseTab(int tabId, boolean incognito) {
                 getStripLayoutHelper(incognito).tabClosed(time(), tabId);
                 updateModelSwitcherButton();
+            }
+
+            @Override
+            public void willCloseAllTabs(boolean incognito) {
+                getStripLayoutHelper(incognito).allTabsClosed();
+                updateModelSwitcherButton();
+            }
+
+            @Override
+            public void allTabsClosureCommitted() {
+                if (mLayerTitleCacheSupplier.hasValue()) {
+                    mLayerTitleCacheSupplier.get().clearExcept(Tab.INVALID_TAB_ID);
+                }
             }
 
             @Override

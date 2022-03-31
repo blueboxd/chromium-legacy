@@ -515,6 +515,7 @@
 <translation id="2523886232349826891">カードはこのデバイスのみに保存されます</translation>
 <translation id="2524461107774643265">その他の情報の追加</translation>
 <translation id="2529899080962247600">このフィールドで指定できるエントリは <ph name="MAX_ITEMS_LIMIT" /> 件までです。それ以降のエントリはすべて無視されます。</translation>
+<translation id="2535585790302968248">新しいシークレット タブを開いてシークレット モードでブラウジングします</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{、他 1 件}other{、他 # 件}}</translation>
 <translation id="2536110899380797252">住所を追加</translation>
 <translation id="2539524384386349900">検出</translation>
@@ -581,6 +582,7 @@
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="2713444072780614174">白</translation>
 <translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" /> です。Tab キー、Enter キーの順に押すと、Chrome の設定でお支払いとクレジット カードの情報を管理します</translation>
+<translation id="271663710482723385">全画面表示を終了するには |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| を押します</translation>
 <translation id="2721148159707890343">リクエストを正常に送信しました</translation>
 <translation id="2723669454293168317">Chrome の設定で安全確認を実行</translation>
 <translation id="2726001110728089263">サイドトレイ</translation>
@@ -1220,6 +1222,7 @@
 <translation id="4757993714154412917">偽のサイトでパスワードを入力しました。アカウントを保護するため、保存したパスワードをすぐに確認することをおすすめします。</translation>
 <translation id="4758311279753947758">連絡先情報を追加</translation>
 <translation id="4761104368405085019">マイクを使用する</translation>
+<translation id="4761869838909035636">Chrome の安全確認を実行</translation>
 <translation id="4764776831041365478"><ph name="URL" /> のウェブページは一時的に停止しているか、新しいウェブアドレスに移動した可能性があります。</translation>
 <translation id="4766713847338118463">2 か所のステープル（下）</translation>
 <translation id="4771973620359291008">不明なエラーが発生しました。</translation>
@@ -1251,6 +1254,7 @@
 <translation id="4854362297993841467">この配達方法はご利用いただけません。別の方法を選択してください。</translation>
 <translation id="4854853140771946034">Google Keep で新しいメモをすばやく作成します</translation>
 <translation id="485902285759009870">コードを確認しています...</translation>
+<translation id="4866506163384898554">カーソルを表示するには |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| を押します</translation>
 <translation id="4876188919622883022">簡易表示</translation>
 <translation id="4876305945144899064">ユーザー名が指定されていません</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{なし}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" />、<ph name="AND_MORE" />}}</translation>
@@ -1264,6 +1268,7 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
 <translation id="4900217275619098670">ロール 9</translation>
 <translation id="4901778704868714008">保存...</translation>
+<translation id="4905659621780993806">デバイスは <ph name="DATE" /> <ph name="TIME" /> に管理者によって自動的に再起動されます。デバイスが再起動される前に、開いているすべてのアイテムを保存してください。</translation>
 <translation id="4913987521957242411">パンチ（左上）</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" /> をインストール（ダウンロードは不要です）</translation>
 <translation id="4923459931733593730">お支払い</translation>
@@ -1473,6 +1478,7 @@
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5560088892362098740">有効期限</translation>
 <translation id="55635442646131152">ドキュメントの概要</translation>
+<translation id="5565613213060953222">シークレット タブを開く</translation>
 <translation id="5565735124758917034">有効</translation>
 <translation id="5570825185877910964">アカウントを保護</translation>
 <translation id="5571083550517324815">この住所での受け取りはできません。別の住所を選択してください。</translation>
@@ -1677,6 +1683,7 @@
 <translation id="6290238015253830360">おすすめの記事がここに表示されます</translation>
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6295618774959045776">CVC:</translation>
+<translation id="6300452962057769623">{0,plural, =0{デバイスは今すぐ再起動されます}=1{デバイスは 1 秒後に再起動されます}other{デバイスは # 秒後に再起動されます}}</translation>
 <translation id="6302269476990306341">Chrome の Google アシスタントを停止しています</translation>
 <translation id="6305205051461490394"><ph name="URL" /> にアクセスできません。</translation>
 <translation id="6312113039770857350">ウェブページへのアクセス不可</translation>
@@ -1938,6 +1945,7 @@
 <translation id="7192203810768312527"><ph name="SIZE" /> を解放します。サイトによっては、次回アクセスする際に読み込みがこれまでより遅くなる可能性があります。</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7201591969684833065">管理者は、以下の情報を確認できます。</translation>
+<translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" /> です。Tab キー、Enter キーの順に押すと、新しいシークレット タブを開いてシークレット モードでブラウジングします</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ではセキュリティ規格が遵守されていません。</translation>
 <translation id="7210993021468939304">コンテナ内の Linux アクティビティ、コンテナ内での Linux アプリのインストールと実行</translation>
@@ -2000,6 +2008,7 @@
 <translation id="7378627244592794276">いいえ</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7386364858855961704">対象外です</translation>
+<translation id="7388594495505979117">{0,plural, =1{デバイスは 1 分後に再起動されます}other{デバイスは # 分後に再起動されます}}</translation>
 <translation id="7390545607259442187">カードの確認</translation>
 <translation id="7392089738299859607">住所を更新</translation>
 <translation id="7399802613464275309">安全確認</translation>
@@ -2202,6 +2211,7 @@
 <translation id="799149739215780103">製本</translation>
 <translation id="7992044431894087211"><ph name="APPLICATION_TITLE" /> との画面共有が再開されました</translation>
 <translation id="7995512525968007366">指定なし</translation>
+<translation id="7998269595945679889">シークレット タブを開くボタンです。Enter キーを押すと、新しいシークレット タブを開いてシークレット モードでブラウジングします</translation>
 <translation id="800218591365569300">メモリを解放するために、他のタブやプログラムを閉じてみてください。</translation>
 <translation id="8004582292198964060">ブラウザ</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{このカードと請求先住所は保存され、<ph name="USER_EMAIL" /> にログインすると使用できます。}other{これらのカードと請求先住所は保存され、<ph name="USER_EMAIL" /> にログインすると使用できます。}}</translation>
@@ -2356,6 +2366,7 @@
 <translation id="8507227106804027148">コマンドライン</translation>
 <translation id="8508648098325802031">検索アイコン</translation>
 <translation id="8511402995811232419">Cookie を管理する</translation>
+<translation id="8519753333133776369">管理者が許可した HID デバイス</translation>
 <translation id="8522552481199248698">Chrome には Google アカウントの保護とパスワードの変更をサポートする機能があります。</translation>
 <translation id="8530813470445476232">Chrome の設定で閲覧履歴、Cookie、キャッシュなどを消去する</translation>
 <translation id="8533619373899488139">&lt;strong&gt;chrome://policy&lt;/strong&gt; で、ブロックされた URL のリストとシステム管理者が設定した他のポリシーを確認できます。</translation>

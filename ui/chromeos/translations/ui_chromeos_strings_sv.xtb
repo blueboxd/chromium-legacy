@@ -106,6 +106,7 @@
 <translation id="1853795129690976061">Den här mappen delas med Linux</translation>
 <translation id="1864756863218646478">Filen hittades inte.</translation>
 <translation id="1884013283844450420">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, anslut</translation>
+<translation id="1914901738028575085">CloudReady 2.0-enhet</translation>
 <translation id="1920670151694390848">malayalam, translitterering</translation>
 <translation id="1920798810075583923">Vattenmelon</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> har formaterats</translation>
@@ -241,6 +242,7 @@
 <translation id="3078461028045006476">Dela med <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Chromebit-modeller</translation>
 <translation id="3085752524577180175">SOCKS-värd</translation>
+<translation id="3104793765551262433">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" /> %, blockerat av administratören, information</translation>
 <translation id="3113153474486991170">Det gick inte att öppna <ph name="PATH" /> från den här platsen. Kopiera den till Mina filer innan du öppnar.</translation>
 <translation id="3113592018909187986">Du har 1 försök kvar Du kan inte använda det här nätverket förrän du har ställt in en ny pinkod.</translation>
 <translation id="3124404833828281817">Någon som dagdrömmer</translation>
@@ -883,6 +885,7 @@
 <translation id="8551494947769799688">lettiska</translation>
 <translation id="8560515948038859357">kantonesiska</translation>
 <translation id="8561206103590473338">Elefant</translation>
+<translation id="8566466896628108558">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" /> %, blockerat av administratören, information</translation>
 <translation id="8569764466147087991">Välj fil att öppna</translation>
 <translation id="8577897833047451336">kroatiska</translation>
 <translation id="8578308463707544055">indonesiska</translation>
@@ -900,6 +903,7 @@
 <translation id="8714406895390098252">Cykel</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> har markerats.</translation>
 <translation id="872537912056138402">kroatiska</translation>
+<translation id="873847021056608403">CloudReady 2.0-enheter</translation>
 <translation id="8743164338060742337">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /> signalstyrka <ph name="SIGNAL_STRENGTH" /> %, hanteras av administratören, anslut</translation>
 <translation id="8750438273876807512">Om du snabbt vill kunna komma åt dina filer i hyllan trycker du länge på en fil och trycker på <ph name="ICON" />. Välj sedan Fäst på hyllan.</translation>
 <translation id="8787254343425541995">Tillåt proxyservrar för delade nätverk</translation>

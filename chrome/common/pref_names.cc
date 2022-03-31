@@ -3079,6 +3079,12 @@ const char kTabStatsWindowCountMax[] = "tab_stats.window_count_max";
 //  Timestamp of the last time the tab stats daily metrics have been reported.
 const char kTabStatsDailySample[] = "tab_stats.last_daily_sample";
 
+// Discards/Reloads since last daily report.
+const char kTabStatsDiscardsExternal[] = "tab_stats.discards_external";
+const char kTabStatsDiscardsUrgent[] = "tab_stats.discards_urgent";
+const char kTabStatsReloadsExternal[] = "tab_stats.reloads_external";
+const char kTabStatsReloadsUrgent[] = "tab_stats.reloads_urgent";
+
 // A list of origins (URLs) to treat as "secure origins" for debugging purposes.
 const char kUnsafelyTreatInsecureOriginAsSecure[] =
     "unsafely_treat_insecure_origin_as_secure";
@@ -3323,6 +3329,31 @@ const char kCartDiscountLastFetchedTime[] = "cart_discount_last_fetched_time";
 // Boolean pref indicating whether the consent for discount has ever shown or
 // not.
 const char kCartDiscountConsentShown[] = "cart_discount_consent_shown";
+// Integer pref indicating in which variation the user has made their decision,
+// accept or reject the consent.
+const char kDiscountConsentDecisionMadeIn[] =
+    "discount_consent_decision_made_in";
+// Integer pref indicating in which variation the user has dismissed the
+// consent. Only the Inline and Dialog variation applies.
+const char kDiscountConsentDismissedIn[] = "discount_consent_dismissed_in";
+// A time pref indicating the timestamp of when user last explicitly dismissed
+// the discount consent.
+const char kDiscountConsentLastDimissedTime[] =
+    "discount_consent_last_dimissed_time";
+// Integer pref indicating the last consent was shown in which variation.
+const char kDiscountConsentLastShownInVariation[] =
+    "discount_consent_last_shown_in";
+// An integer pref that keeps track of how many times user has explicitly
+// dismissed the disount consent.
+const char kDiscountConsentPastDismissedCount[] =
+    "discount_consent_dismissed_count";
+// Boolean pref indicating whether the user has shown interest in the consent,
+// e.g. if the use has clicked the 'continue' button.
+const char kDiscountConsentShowInterest[] = "discount_consent_show_interest";
+// Integer pref indicating in which variation the user has shown interest to the
+// consent, they has clicked the 'continue' button.
+const char kDiscountConsentShowInterestIn[] =
+    "discount_consent_show_interest_in";
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -3389,5 +3420,10 @@ const char kCorsNonWildcardRequestHeadersSupport[] =
 // used by default.
 const char kOriginAgentClusterDefaultEnabled[] =
     "origin_agent_cluster_default_enabled";
+
+// An integer count of how many SCT Auditing hashdance reports have ever been
+// sent by this client, across all profiles.
+const char kSCTAuditingHashdanceReportCount[] =
+    "sct_auditing.hashdance_report_count";
 
 }  // namespace prefs

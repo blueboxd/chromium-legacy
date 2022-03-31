@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
 #include "base/feature_list.h"
+#include "base/hash/hash.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
@@ -9398,6 +9399,93 @@ TEST_F(BrowserAutofillManagerTest, PreventOverridingOfPrefilledValues) {
   form.url = GURL("https://myform.com/form.html");
   form.action = GURL("about:blank");
   FormFieldData field;
+  test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City", "city", "Test City", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestSelectField("State", "state", "California",
+                              {"Washington", "Tennessee", "California"},
+                              {"DC", "TN", "CA"}, 3, &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Country", "country", "Test Country", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Phone Number", "phonenumber", "12345678901", "tel",
+                            &field);
+  form.fields.push_back(field);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const char guid[] = "00000000-0000-0000-0000-000000000001";
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
+                                     MakeFrontendID(std::string(), guid),
+                                     &response_page_id, &response_data);
+  EXPECT_EQ(response_data.fields[0].value, u"Elvis Aaron Presley");
+  EXPECT_EQ(response_data.fields[1].value, u"Test City");
+  EXPECT_EQ(response_data.fields[2].value, u"Tennessee");
+  EXPECT_EQ(response_data.fields[3].value, u"Test Country");
+  EXPECT_EQ(response_data.fields[4].value, u"12345678901");
+
+  {
+    FormStructure* form_structure;
+    AutofillField* autofill_field;
+    std::vector<std::string> expected_values = {"", "Memphis", "",
+                                                "United States", ""};
+    bool found = browser_autofill_manager_->GetCachedFormAndField(
+        form, form.fields[0], &form_structure, &autofill_field);
+    ASSERT_TRUE(found);
+    for (size_t i = 0; i < form.fields.size(); ++i) {
+      ASSERT_TRUE(form_structure->field(i)->SameFieldAs(form.fields[i]));
+      if (!expected_values[i].empty()) {
+        EXPECT_TRUE(form_structure->field(i)
+                        ->value_not_autofilled_over_existing_value_hash()
+                        .has_value());
+        EXPECT_FALSE(form_structure->field(i)->is_autofilled);
+        EXPECT_EQ(form_structure->field(i)
+                      ->value_not_autofilled_over_existing_value_hash(),
+                  base::FastHash(expected_values[i]));
+      }
+    }
+
+    EXPECT_TRUE(form_structure->field(0)->is_autofilled);  // No prefilled value
+    EXPECT_TRUE(form_structure->field(2)->is_autofilled);  // Selection field.
+
+    // Prefilled value is same as the value to be autofilled so
+    // |value_not_autofilled_over_existing_value_hash| is not set for the field.
+    EXPECT_FALSE(form_structure->field(4)->is_autofilled);
+    EXPECT_FALSE(form_structure->field(4)
+                     ->value_not_autofilled_over_existing_value_hash());
+  }
+
+  features.Reset();
+  features.InitAndDisableFeature(
+      autofill::features::kAutofillPreventOverridingPrefilledValues);
+
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
+                                     MakeFrontendID(std::string(), guid),
+                                     &response_page_id, &response_data);
+  EXPECT_EQ(response_data.fields[0].value, u"Elvis Aaron Presley");
+  EXPECT_EQ(response_data.fields[1].value, u"Memphis");
+  EXPECT_EQ(response_data.fields[2].value, u"Tennessee");
+  EXPECT_EQ(response_data.fields[3].value, u"United States");
+  EXPECT_EQ(response_data.fields[4].value, u"12345678901");
+}
+
+// Tests that the Autofill does override the prefilled field value since the
+// field is the initiating field for the Autofill and has a prefilled value
+// which is a substring of the autofillable value.
+TEST_F(BrowserAutofillManagerTest, AutofillOverridePrefilledValue) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      autofill::features::kAutofillPreventOverridingPrefilledValues);
+  // Set up our form data.
+  FormData form;
+  form.name = u"MyForm";
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("about:blank");
+  FormFieldData field;
   test::CreateTestFormField("Name", "name", "Test Name", "text", &field);
   form.fields.push_back(field);
   test::CreateTestFormField("City", "city", "Test City", "text", &field);
@@ -9412,44 +9500,22 @@ TEST_F(BrowserAutofillManagerTest, PreventOverridingOfPrefilledValues) {
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
 
+  // "Elv" is a substring of "Elvis Aaron Presley".
+  form.fields[0].value = u"Elv";
+  // Simulate editing a field.
+  browser_autofill_manager_->OnTextFieldDidChange(
+      form, form.fields.front(), gfx::RectF(), AutofillTickClock::NowTicks());
+
   const char guid[] = "00000000-0000-0000-0000-000000000001";
   int response_page_id = 0;
   FormData response_data;
   FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
                                      MakeFrontendID(std::string(), guid),
                                      &response_page_id, &response_data);
-  EXPECT_EQ(response_data.fields[0].value, u"Test Name");
+  EXPECT_EQ(response_data.fields[0].value, u"Elvis Aaron Presley");
   EXPECT_EQ(response_data.fields[1].value, u"Test City");
   EXPECT_EQ(response_data.fields[2].value, u"Tennessee");
   EXPECT_EQ(response_data.fields[3].value, u"Test Country");
-
-  {
-    FormStructure* form_structure;
-    AutofillField* autofill_field;
-    std::vector<std::u16string> expected_values = {
-        u"Elvis Aaron Presley", u"Memphis", u"", u"United States"};
-    bool found = browser_autofill_manager_->GetCachedFormAndField(
-        form, form.fields[0], &form_structure, &autofill_field);
-    ASSERT_TRUE(found);
-    for (size_t i = 0; i < form.fields.size(); ++i) {
-      ASSERT_TRUE(form_structure->field(i)->SameFieldAs(form.fields[i]));
-      EXPECT_EQ(
-          form_structure->field(i)->value_not_autofilled_over_existing_value(),
-          expected_values[i]);
-    }
-  }
-
-  features.Reset();
-  features.InitAndDisableFeature(
-      autofill::features::kAutofillPreventOverridingPrefilledValues);
-
-  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
-                                     MakeFrontendID(std::string(), guid),
-                                     &response_page_id, &response_data);
-  EXPECT_EQ(response_data.fields[0].value, u"Elvis Aaron Presley");
-  EXPECT_EQ(response_data.fields[1].value, u"Memphis");
-  EXPECT_EQ(response_data.fields[2].value, u"Tennessee");
-  EXPECT_EQ(response_data.fields[3].value, u"United States");
 }
 
 // Desktop only tests.

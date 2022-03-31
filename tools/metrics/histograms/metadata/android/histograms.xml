@@ -957,6 +957,136 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.DragDrop.FromWebContent.DropInWebContent.DistanceDip"
+    units="dp" expires_after="2022-07-01">
+  <owner>wenyufu@chromium.org</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Records the distance of the drag end position from the initial drag start
+    position when dragging starts and ends within ContentView containing web
+    contents. Note that the distance only counts the distance of drag event
+    happend on the screen; scrolling for the web content will be disabled during
+    drag. Used to assist in setting proper threshold to dismiss context menu
+    during drag. Android only.
+  </summary>
+</histogram>
+
+<histogram name="Android.DragDrop.FromWebContent.DropInWebContent.Duration"
+    units="ms" expires_after="2022-07-01">
+  <owner>wenyufu@chromium.org</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Records the duration in ms of drag process when drop happend inside
+    ContentView containing web contents, regardless DragEvent#getResult. Does
+    not capture drag events that end outside the ContentView (Use
+    Android.DragDrop.FromWebContent.Duration instead). Android only.
+  </summary>
+</histogram>
+
+<histogram name="Android.DragDrop.FromWebContent.Duration{DropResult}"
+    units="ms" expires_after="2022-07-01">
+  <owner>wenyufu@chromium.org</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Records the duration in ms of drag process when {DropResult}. Recorded for
+    the drag process starts from the web content, and drop happens outside of
+    the web content. Does not capture drag events that end inside the
+    ContentView containing web contents. Recorded when such a drag event ends.
+    Android only.
+
+    For more information regarding drag results, see:
+    https://developer.android.com/reference/android/view/DragEvent#getResult()
+  </summary>
+  <token key="DropResult">
+    <variant name=".Canceled" summary="DragEvent#getResult() returns false."/>
+    <variant name=".Success" summary="DragEvent#getResult() returns true."/>
+  </token>
+</histogram>
+
+<histogram name="Android.DragDrop.FromWebContent.TargetType"
+    enum="AndroidDragTargetType" expires_after="2022-07-01">
+  <owner>wenyufu@chromium.org</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Records the type of object being dragged, for the drag process starts from
+    the web content, and drop happens outside of the web content. Does not
+    capture drag events that end inside the ContentView containing web contents.
+    Recorded when such a drag event ends. Android only.
+  </summary>
+</histogram>
+
+<histogram name="Android.DragDrop.Image.OpenFileTime.AllExpired" units="ms"
+    expires_after="2022-07-01">
+  <owner>shuyng@google.com</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Records the duration between the URI being cleared and
+    ContentProvider#openFile attempts with that expired URI. This is used to
+    evaluate how long we should keep the image data. Because drop target app
+    could request data multiple times with the same URI, this metric could
+    record multiple times per URI, which gives us the holistic view about the
+    timing when the image data associated with the URI is needed. Another metric
+    Android.DragDrop.Image.OpenFileTime.FirstExpired only records at most once
+    per URI, to avoid counting in retries from drop target app when Chrome
+    rejects the expired URI. This metric is recoreded when Chrome receives an
+    expired URI to retrieve data. If the URI is not the latest expired one, the
+    metric will not be recoreded because we could not calcuate the elapsed time
+    for older URIs. Android only.
+  </summary>
+</histogram>
+
+<histogram name="Android.DragDrop.Image.OpenFileTime.FirstExpired" units="ms"
+    expires_after="2022-07-01">
+  <owner>shuyng@google.com</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Records the duration between the URI being cleared and the first
+    ContentProvider#openFile attempt with that expired URI. This is used to
+    evaluate how long we should keep the image data. Because drop target app may
+    retry after Chrome rejects the expired URI; and the retries are not helpful
+    to evaluate how long the data is needed; this metric records at most once
+    per URI. Another metric Android.DragDrop.Image.OpenFileTime.AllExpired
+    records multiple times per URI, to gives us the holistic view about the
+    timing when the image data associated with the URI is needed. This metric is
+    recoreded when Chrome receives an expired URI to retrieve data. If the URI
+    is not the latest expired one, the metric will not be recoreded because we
+    could not calcuate the elapsed time for older URIs. Android only.
+  </summary>
+</histogram>
+
+<histogram name="Android.DragDrop.Image.OpenFileTime.LastAttempt" units="ms"
+    expires_after="2022-07-01">
+  <owner>shuyng@google.com</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Records the duration between receiving Android Drag End event and the last
+    ContentProvider#openFile attempted by the drop target app. The duration is
+    calculated when the image data expired at the designated time limit. Android
+    only.
+  </summary>
+</histogram>
+
+<histogram name="Android.DragDrop.Image.Size" units="KB"
+    expires_after="2022-07-01">
+  <owner>shuyng@google.com</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Records the image size being dragged from Chrome. Recorded when start
+    dragging an image from Chrome's web content, regardless of whether drop is
+    handled successfully. Used to evaluate the memory consumption. Android only.
+  </summary>
+</histogram>
+
+<histogram name="Android.DragDrop.Image.UriCreatedInterval" units="ms"
+    expires_after="2022-07-01">
+  <owner>shuyng@google.com</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Records the interval between two back-to-back image drags. This is used to
+    evaluate the duration to preserve the image data. Android only.
+  </summary>
+</histogram>
+
 <histogram name="Android.DynamicColors.IsAvailable" enum="Boolean"
     expires_after="2023-02-02">
   <owner>skym@chromium.org</owner>
@@ -3513,6 +3643,16 @@ chromium-metrics-reviews@google.com.
     loaded and looked up. This only records when a new version of the allowlist
     is loaded successfully. i.e it's not recorded if the loading the allowlist
     fails or if a cached version is used.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.Metrics.PackagesAllowList.ThrottleStatus"
+    enum="Boolean" expires_after="2022-05-30">
+  <owner>hazems@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Whether requests to query the app package names allowlist component is
+    throttled or not.
   </summary>
 </histogram>
 

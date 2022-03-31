@@ -165,13 +165,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   [[nodiscard]] QuotaError SetBucketLastAccessTime(BucketId bucket_id,
                                                    base::Time last_accessed);
 
-  // TODO(crbug.com/1202167): Remove once all usages have updated to use
-  // SetBucketLastModifiedTime.
-  [[nodiscard]] QuotaError SetStorageKeyLastModifiedTime(
-      const blink::StorageKey& storage_key,
-      blink::mojom::StorageType type,
-      base::Time last_modified);
-
   // Called by QuotaClient implementers to update when the bucket was last
   // modified. Returns QuotaError::kNone on a successful update.
   [[nodiscard]] QuotaError SetBucketLastModifiedTime(BucketId bucket_id,
@@ -216,6 +209,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   // keys that have stored data by quota managed Storage APIs.
   bool IsBootstrapped();
   QuotaError SetIsBootstrapped(bool bootstrap_flag);
+
+  // Returns QuotaError::kNone if the database was successfully reopened after
+  // `corrupter` was run, or QuotaError::kDatabaseError otherwise.
+  QuotaError CorruptForTesting(
+      base::OnceCallback<void(const base::FilePath&)> corrupter);
 
   // Manually disable database to test database error scenarios for testing.
   void SetDisabledForTesting(bool disable) { is_disabled_ = disable; }

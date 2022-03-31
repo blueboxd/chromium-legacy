@@ -128,18 +128,6 @@
 
     <dimen name="fre_button_vertical_margin_small">16dp</dimen>
 
-    <!-- Chrome Management dimensions -->
-    <dimen name="cm_max_width">600dp</dimen>
-    <dimen name="cm_padding">32dp</dimen>
-    <dimen name="cm_logo_width">40dp</dimen>
-    <dimen name="cm_logo_height">36dp</dimen>
-    <dimen name="cm_title_margin_top">30dp</dimen>
-    <dimen name="cm_description_margin_top">24dp</dimen>
-    <dimen name="cm_learn_more_margin_top">22dp</dimen>
-    <dimen name="cm_browser_margin_top">42dp</dimen>
-    <dimen name="cm_browser_item_margin_top">20dp</dimen>
-    <dimen name="cm_browser_item_drawable_padding">18dp</dimen>
-
     <!-- Account Signin dimensions -->
     <!-- The Account Signin page appears in the First Run Experience (amongst other places), so uses
     a lot of the fre_* dimensions for consistency. -->
@@ -272,7 +260,6 @@
      <!-- We intentionally use px to avoid showing fewer favicons in some UIs on higher density devices. -->
      <dimen name="bookmark_refresh_min_start_icon_size" tools:ignore="PxUsage">32px</dimen>
      <dimen name="bookmark_refresh_circular_monogram_text_size">18dp</dimen>
-
 
     <!-- Bookmark widget dimensions -->
     <dimen name="bookmark_widget_min_width">64dp</dimen>
@@ -431,4 +418,6 @@
     <dimen name="virtual_card_enrollment_dialog_description_margin_top">16dp</dimen>
     <dimen name="virtual_card_enrollment_dialog_google_legal_message_margin_top">20dp</dimen>
     <dimen name="virtual_card_enrollment_dialog_google_issuer_message_margin_top">8dp</dimen>
+    <dimen name="virtual_card_enrollment_dialog_card_art_width">32dp</dimen>
+    <dimen name="virtual_card_enrollment_dialog_card_art_height">20dp</dimen>
 </resources>

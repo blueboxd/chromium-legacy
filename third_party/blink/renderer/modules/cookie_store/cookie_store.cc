@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/containers/contains.h"
+#include "net/base/features.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
@@ -65,7 +66,8 @@ network::mojom::blink::CookieManagerGetOptionsPtr ToBackendOptions(
 std::unique_ptr<net::CanonicalCookie> ToCanonicalCookie(
     const KURL& cookie_url,
     const CookieInit* options,
-    ExceptionState& exception_state) {
+    ExceptionState& exception_state,
+    bool partitioned_cookies_runtime_feature_enabled) {
   const String& name = options->name();
   const String& value = options->value();
   if (name.IsEmpty() && value.Contains('=')) {
@@ -151,7 +153,10 @@ std::unique_ptr<net::CanonicalCookie> ToCanonicalCookie(
   }
 
   absl::optional<net::CookiePartitionKey> cookie_partition_key = absl::nullopt;
-  if (options->partitioned()) {
+  if (options->partitioned() &&
+      (partitioned_cookies_runtime_feature_enabled ||
+       base::FeatureList::IsEnabled(
+           net::features::kPartitionedCookiesBypassOriginTrial))) {
     // We don't trust the renderer to determine the cookie partition key, so we
     // use this factory to indicate we are using a temporary value here.
     cookie_partition_key = net::CookiePartitionKey::FromScript();
@@ -425,6 +430,7 @@ ScriptPromise CookieStore::DoRead(
   backend_->GetAllForUrl(
       cookie_url, default_site_for_cookies_, default_top_frame_origin_,
       std::move(backend_options),
+      RuntimeEnabledFeatures::PartitionedCookiesEnabled(GetExecutionContext()),
       WTF::Bind(backend_result_converter, WrapPersistent(resolver)));
   return resolver->Promise();
 }
@@ -484,8 +490,9 @@ ScriptPromise CookieStore::DoWrite(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  std::unique_ptr<net::CanonicalCookie> canonical_cookie =
-      ToCanonicalCookie(default_cookie_url_, options, exception_state);
+  std::unique_ptr<net::CanonicalCookie> canonical_cookie = ToCanonicalCookie(
+      default_cookie_url_, options, exception_state,
+      RuntimeEnabledFeatures::PartitionedCookiesEnabled(GetExecutionContext()));
   if (!canonical_cookie) {
     DCHECK(exception_state.HadException());
     return ScriptPromise();

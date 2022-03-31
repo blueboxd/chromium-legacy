@@ -29,6 +29,7 @@
 #include "content/public/browser/allow_service_worker_result.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/commit_deferring_condition.h"
 #include "content/public/browser/generated_code_cache_settings.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/mojo_binder_policy_map.h"
@@ -842,6 +843,15 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void OnTrustAnchorUsed(BrowserContext* browser_context) {}
 #endif
 
+  // Allows the embedder to implement policy for whether an SCT auditing report
+  // should be sent.
+  virtual void CanSendSCTAuditingReport(
+      BrowserContext* browser_context,
+      base::OnceCallback<void(bool)> callback);
+
+  // Notification that a new SCT auditing report has been sent.
+  virtual void OnNewSCTAuditingReportSent(BrowserContext* browser_context) {}
+
   // Allows the embedder to override the LocationProvider implementation.
   // Return nullptr to indicate the default one for the platform should be
   // created. This is used by Qt, see
@@ -1215,9 +1225,25 @@ class CONTENT_EXPORT ContentBrowserClient {
   // navigation indicated by |navigation_handle|.  A NavigationThrottle is used
   // to control the flow of a navigation on the UI thread. The embedder is
   // guaranteed that the throttles will be executed in the order they were
-  // provided.
+  // provided. NavigationThrottles are run only for document loading
+  // navigations; they are specifically not run for page activating navigations
+  // such as prerender activation and back-forward cache restores or for
+  // navigations that don't use a URLLoader like same-document navigations.
   virtual std::vector<std::unique_ptr<NavigationThrottle>>
   CreateThrottlesForNavigation(NavigationHandle* navigation_handle);
+
+  // Allows the embedder to register one or more CommitDeferringConditions for
+  // the navigation indicated by |navigation_handle|. A
+  // CommitDeferringCondition is used to delay committing a navigation until an
+  // embedder-defined condition is met. Similar to NavigationThrottles,
+  // CommitDeferringConditions are not used in navigations that don't use a
+  // URLLoader, like same-document navigations. Unlike NavigationThrottles,
+  // CommitDeferringConditions are also run on page activating navigations such
+  // as prerender activation and back-forward cache restores.
+  virtual std::vector<std::unique_ptr<CommitDeferringCondition>>
+  CreateCommitDeferringConditionsForNavigation(
+      NavigationHandle* navigation_handle,
+      content::CommitDeferringCondition::NavigationType type);
 
   // Called at the start of the navigation to get opaque data the embedder
   // wants to see passed to the corresponding URLRequest on the IO thread.

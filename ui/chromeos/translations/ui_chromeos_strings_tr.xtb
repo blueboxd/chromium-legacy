@@ -106,6 +106,7 @@
 <translation id="1853795129690976061">Bu klasör Linux ile paylaşılıyor.</translation>
 <translation id="1864756863218646478">Dosya bulunamadı.</translation>
 <translation id="1884013283844450420">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Bağlan</translation>
+<translation id="1914901738028575085">CloudReady 2.0 cihazı</translation>
 <translation id="1920670151694390848">Malayalam Harf Çevirisi</translation>
 <translation id="1920798810075583923">Karpuz</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> biçimlendirildi</translation>
@@ -241,6 +242,7 @@
 <translation id="3078461028045006476"><ph name="EXTENSION_NAME" /> ile paylaş</translation>
 <translation id="3083975830683400843">Chromebit'ler</translation>
 <translation id="3085752524577180175">SOCKS Ana Makinesi</translation>
+<translation id="3104793765551262433">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Sinyal Gücü %<ph name="SIGNAL_STRENGTH" />, Yöneticiniz tarafından engellenmiş, Ayrıntılar</translation>
 <translation id="3113153474486991170">"<ph name="PATH" />" bu konumda açılamadı. Açmak için lütfen "Dosyalarım"a kopyalayın.</translation>
 <translation id="3113592018909187986">1 deneme hakkınız kaldı. Yeni bir PIN oluşturana kadar bu ağı kullanamazsınız.</translation>
 <translation id="3124404833828281817">Hayal kuran bir kişi</translation>
@@ -883,6 +885,7 @@
 <translation id="8551494947769799688">Letonca</translation>
 <translation id="8560515948038859357">Kantonca</translation>
 <translation id="8561206103590473338">Fil</translation>
+<translation id="8566466896628108558">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Sinyal Gücü %<ph name="SIGNAL_STRENGTH" />, Yöneticiniz tarafından engellenmiş, Ayrıntılar</translation>
 <translation id="8569764466147087991">Açılacak dosyayı seçin</translation>
 <translation id="8577897833047451336">Hırvatça</translation>
 <translation id="8578308463707544055">Endonezce</translation>
@@ -900,6 +903,7 @@
 <translation id="8714406895390098252">Bisiklet</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> seçildi.</translation>
 <translation id="872537912056138402">Hırvatça</translation>
+<translation id="873847021056608403">CloudReady 2.0 cihazları</translation>
 <translation id="8743164338060742337">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /> %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, Yöneticiniz tarafından Yönetiliyor, Bağlan</translation>
 <translation id="8750438273876807512">Bir dosyaya dokunup basılı tutun ve <ph name="ICON" /> simgesine dokunun. Ardından "Rafa sabitle"yi seçerek raftaki dosyalarınıza hızlıca erişebilirsiniz.</translation>
 <translation id="8787254343425541995">Paylaşılan ağlar için proxy'lere izin ver</translation>

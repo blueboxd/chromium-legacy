@@ -557,6 +557,7 @@ class TabStripModel : public TabGroupController {
   void AddToReadLater(const std::vector<int>& indices);
 
   // TabGroupController:
+  Profile* GetProfile() override;
   void CreateTabGroup(const tab_groups::TabGroupId& group) override;
   void OpenTabGroupEditor(const tab_groups::TabGroupId& group) override;
   void ChangeTabGroupContents(const tab_groups::TabGroupId& group) override;
@@ -844,7 +845,9 @@ class TabStripModel : public TabGroupController {
   // no tabs. Returns that group.
   absl::optional<tab_groups::TabGroupId> UngroupTab(int index);
 
-  // Helper function for MoveAndSetGroup. Adds the tab at |index| to |group|.
+  // Helper function for MoveAndSetGroup. Adds the tab at |index| to |group|,
+  // updates the group model, and notifies the observers if the group at that
+  // index would change.
   void GroupTab(int index, const tab_groups::TabGroupId& group);
 
   // Changes the pinned state of the tab at |index|.

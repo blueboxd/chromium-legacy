@@ -17,7 +17,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -527,6 +526,11 @@ class SiteSettingsHandlerTest : public testing::Test {
         "__Host-A=1; Path=/; Partitioned; Secure;",
         net::CookiePartitionKey::FromURLForTesting(GURL("https://google.com")));
 
+    // Add an entry which will not be grouped with any other entries. This
+    // will require a placeholder origin to be correctly added & removed.
+    mock_browsing_data_cookie_helper->AddCookieSamples(
+        GURL("http://ungrouped.com"), "A=1");
+
     mock_browsing_data_cookie_helper->Notify();
 
     handler()->SetCookiesTreeModelForTesting(
@@ -905,7 +909,7 @@ TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
   ASSERT_TRUE(data.arg2()->is_list());
   base::Value::ConstListView storage_and_cookie_list =
       data.arg2()->GetListDeprecated();
-  EXPECT_EQ(3U, storage_and_cookie_list.size());
+  EXPECT_EQ(4U, storage_and_cookie_list.size());
 
   {
     const base::Value& site_group = storage_and_cookie_list[0];
@@ -1041,6 +1045,29 @@ TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
     EXPECT_TRUE(
         partitioned_origin_three_info.FindKey("isPartitioned")->GetBool());
   }
+
+  {
+    const base::Value& site_group = storage_and_cookie_list[3];
+    ASSERT_TRUE(site_group.is_dict());
+
+    ASSERT_TRUE(site_group.FindStringKey("etldPlus1"));
+    ASSERT_EQ("ungrouped.com", *site_group.FindStringKey("etldPlus1"));
+
+    EXPECT_EQ(1, site_group.FindKey("numCookies")->GetDouble());
+
+    const base::Value* origin_list = site_group.FindListKey("origins");
+    ASSERT_TRUE(origin_list && origin_list->is_list());
+    EXPECT_EQ(1U, origin_list->GetListDeprecated().size());
+
+    const base::Value& origin_info = origin_list->GetListDeprecated()[0];
+    ASSERT_TRUE(origin_info.is_dict());
+
+    EXPECT_EQ("http://ungrouped.com/",
+              origin_info.FindKey("origin")->GetString());
+    EXPECT_EQ(0, origin_info.FindKey("engagement")->GetDouble());
+    EXPECT_EQ(0, origin_info.FindKey("usage")->GetDouble());
+    EXPECT_EQ(1, origin_info.FindKey("numCookies")->GetDouble());
+  }
 }
 
 TEST_F(SiteSettingsHandlerTest, InstalledApps) {
@@ -1050,7 +1077,7 @@ TEST_F(SiteSettingsHandlerTest, InstalledApps) {
 
   base::Value::ConstListView storage_and_cookie_list =
       GetOnStorageFetchedSentListView();
-  EXPECT_EQ(3U, storage_and_cookie_list.size());
+  EXPECT_EQ(4U, storage_and_cookie_list.size());
 
   {
     const base::Value& site_group = storage_and_cookie_list[0];
@@ -1278,7 +1305,6 @@ TEST_F(SiteSettingsHandlerTest, ResetCategoryPermissionForInvalidOrigins) {
 
 TEST_F(SiteSettingsHandlerTest, Origins) {
   const std::string google("https://www.google.com:443");
-  const std::string uma_base("WebsiteSettings.Menu.PermissionChanged");
   {
     // Test the JS -> C++ -> JS callback path for configuring origins, by
     // setting Google.com to blocked.
@@ -1289,15 +1315,9 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
     set_args.Append(
         content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
     set_args.Append(false);  // Incognito.
-    base::HistogramTester histograms;
     handler()->HandleSetCategoryPermissionForPattern(
         set_args.GetListDeprecated());
     EXPECT_EQ(1U, web_ui()->call_data().size());
-    histograms.ExpectTotalCount(uma_base, 1);
-    histograms.ExpectTotalCount(uma_base + ".Allowed", 0);
-    histograms.ExpectTotalCount(uma_base + ".Blocked", 1);
-    histograms.ExpectTotalCount(uma_base + ".Reset", 0);
-    histograms.ExpectTotalCount(uma_base + ".SessionOnly", 0);
   }
 
   base::Value get_exception_list_args(base::Value::Type::LIST);
@@ -1315,14 +1335,9 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
     reset_args.Append(std::string());
     reset_args.Append(kNotifications);
     reset_args.Append(false);  // Incognito.
-    base::HistogramTester histograms;
     handler()->HandleResetCategoryPermissionForPattern(
         reset_args.GetListDeprecated());
     EXPECT_EQ(3U, web_ui()->call_data().size());
-    histograms.ExpectTotalCount(uma_base, 1);
-    histograms.ExpectTotalCount(uma_base + ".Allowed", 0);
-    histograms.ExpectTotalCount(uma_base + ".Blocked", 0);
-    histograms.ExpectTotalCount(uma_base + ".Reset", 1);
   }
 
   // Verify the reset was successful.
@@ -1882,7 +1897,6 @@ TEST_F(SiteSettingsHandlerInfobarTest, SettingPermissionsTriggersInfobar) {
 
 TEST_F(SiteSettingsHandlerTest, SessionOnlyException) {
   const std::string google_with_port("https://www.google.com:443");
-  const std::string uma_base("WebsiteSettings.Menu.PermissionChanged");
   base::Value set_args(base::Value::Type::LIST);
   set_args.Append(google_with_port);  // Primary pattern.
   set_args.Append(std::string());     // Secondary pattern.
@@ -1890,13 +1904,10 @@ TEST_F(SiteSettingsHandlerTest, SessionOnlyException) {
   set_args.Append(
       content_settings::ContentSettingToString(CONTENT_SETTING_SESSION_ONLY));
   set_args.Append(false);  // Incognito.
-  base::HistogramTester histograms;
   handler()->HandleSetCategoryPermissionForPattern(
       set_args.GetListDeprecated());
 
   EXPECT_EQ(kNumberContentSettingListeners, web_ui()->call_data().size());
-  histograms.ExpectTotalCount(uma_base, 1);
-  histograms.ExpectTotalCount(uma_base + ".SessionOnly", 1);
 }
 
 TEST_F(SiteSettingsHandlerTest, BlockAutoplay_SendOnRequest) {
@@ -2486,7 +2497,7 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
 TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
   SetUpCookiesTreeModel();
 
-  EXPECT_EQ(28, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(31, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   auto verify_site_group = [](const base::Value& site_group,
                               std::string expected_etld_plus1) {
@@ -2498,7 +2509,7 @@ TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
 
   base::ListValue::ConstListView storage_and_cookie_list =
       GetOnStorageFetchedSentListView();
-  EXPECT_EQ(3U, storage_and_cookie_list.size());
+  EXPECT_EQ(4U, storage_and_cookie_list.size());
   verify_site_group(storage_and_cookie_list[0], "example.com");
 
   base::Value args(base::Value::Type::LIST);
@@ -2526,10 +2537,10 @@ TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
     EXPECT_TRUE(cookie->IsPartitioned());
   }
 
-  EXPECT_EQ(19, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(22, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   storage_and_cookie_list = GetOnStorageFetchedSentListView();
-  EXPECT_EQ(2U, storage_and_cookie_list.size());
+  EXPECT_EQ(3U, storage_and_cookie_list.size());
   verify_site_group(storage_and_cookie_list[0], "google.com");
 
   args.ClearList();
@@ -2537,10 +2548,10 @@ TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
 
   handler()->HandleClearEtldPlus1DataAndCookies(args.GetListDeprecated());
 
-  EXPECT_EQ(11, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(14, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   storage_and_cookie_list = GetOnStorageFetchedSentListView();
-  EXPECT_EQ(1U, storage_and_cookie_list.size());
+  EXPECT_EQ(2U, storage_and_cookie_list.size());
   verify_site_group(storage_and_cookie_list[0], "google.com.au");
 
   args.ClearList();
@@ -2567,13 +2578,22 @@ TEST_F(SiteSettingsHandlerTest, HandleClearEtldPlus1DataAndCookies) {
   }
 
   storage_and_cookie_list = GetOnStorageFetchedSentListView();
+  EXPECT_EQ(1U, storage_and_cookie_list.size());
+  verify_site_group(storage_and_cookie_list[0], "ungrouped.com");
+
+  args.ClearList();
+  args.Append("ungrouped.com");
+
+  handler()->HandleClearEtldPlus1DataAndCookies(args.GetListDeprecated());
+
+  storage_and_cookie_list = GetOnStorageFetchedSentListView();
   EXPECT_EQ(0U, storage_and_cookie_list.size());
 }
 
 TEST_F(SiteSettingsHandlerTest, HandleClearUnpartitionedUsage) {
   SetUpCookiesTreeModel();
 
-  EXPECT_EQ(28, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(31, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   base::Value args(base::Value::Type::LIST);
   args.Append("https://www.example.com/");
@@ -2689,7 +2709,7 @@ TEST_F(SiteSettingsHandlerTest, HandleClearPartitionedUsage) {
   // Confirm that removing unpartitioned storage correctly removes the
   // appropriate nodes.
   SetUpCookiesTreeModel();
-  EXPECT_EQ(28, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(31, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   base::Value args(base::Value::Type::LIST);
   args.Append("https://www.example.com/");
@@ -2837,7 +2857,7 @@ TEST_F(SiteSettingsHandlerTest, HandleGetUsageInfo) {
   // Confirm that usage info only returns unpartitioned storage.
   SetUpCookiesTreeModel();
 
-  EXPECT_EQ(28, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
+  EXPECT_EQ(31, handler()->cookies_tree_model_->GetRoot()->GetTotalNodeCount());
 
   base::Value args(base::Value::Type::LIST);
   args.Append("www.example.com");

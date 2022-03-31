@@ -150,6 +150,7 @@ class TileTaskManagerImpl;
 namespace chrome {
 #if BUILDFLAG(IS_MAC)
 void DeveloperIDCertificateReauthorizeInApp();
+void PurgeStaleScreenCapturePermission();
 #endif  // BUILDFLAG(IS_MAC)
 }  // namespace chrome
 namespace chromecast {
@@ -184,6 +185,7 @@ class PepperPrintSettingsManagerImpl;
 class RenderProcessHostImpl;
 class RenderProcessHost;
 class RenderWidgetHostViewMac;
+class RendererBlinkPlatformImpl;
 class RTCVideoDecoder;
 class SandboxHostLinux;
 class ScopedAllowWaitForDebugURL;
@@ -491,6 +493,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend bool PathProviderWin(int, FilePath*);
 #if BUILDFLAG(IS_MAC)
   friend void chrome::DeveloperIDCertificateReauthorizeInApp();
+  friend void chrome::PurgeStaleScreenCapturePermission();
 #endif  // BUILDFLAG(IS_MAC)
   friend bool chromeos::system::IsCoreSchedulingAvailable();
   friend int chromeos::system::NumberOfPhysicalCores();
@@ -569,6 +572,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class chrome_cleaner::SystemReportComponent;
   friend class content::BrowserMainLoop;
   friend class content::BrowserProcessIOThread;
+  friend class content::RendererBlinkPlatformImpl;
   friend class content::DWriteFontCollectionProxy;
   friend class content::ServiceWorkerContextClient;
   friend class device::UsbContext;

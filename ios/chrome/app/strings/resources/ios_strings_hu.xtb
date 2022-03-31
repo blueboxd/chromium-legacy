@@ -12,6 +12,7 @@
 
         
 Az Ön keresőmotorja a következő: <ph name="DSE_NAME" />. A keresési előzmények törléséről a keresőmotorja útmutatójából tájékozódhat, ha van ilyen.</translation>
+<translation id="1054045277222934172">A webhely asztali számítógépre vonatkozó alapértelmezett nézetének módosításához lépjen a Beállítások, majd a Tartalombeállítások menüpontra.</translation>
 <translation id="1063454504051558093">Másik jelszó használata…</translation>
 <translation id="1066060668811609597">Szinkronizálás kezelése</translation>
 <translation id="1076421457278169141">Kód beolvasva</translation>
@@ -31,7 +32,7 @@ Az Ön keresőmotorja a következő: <ph name="DSE_NAME" />. A keresési előzm�
 <translation id="1176932207622159128">A kép nem menthető</translation>
 <translation id="1181037720776840403">Eltávolítás</translation>
 <translation id="1207113853726624428">Új keresés</translation>
-<translation id="1209206284964581585">Elrejtés most</translation>
+<translation id="1209206284964581585">Elrejtés ideiglenesen</translation>
 <translation id="1219674500290482172">Nem lehet kapcsolódni az internethez.</translation>
 <translation id="122699739164161391">Összes lap bezárása</translation>
 <translation id="1229222343402087523">Keresés a következőre a Chrome-ban: ${searchPhrase}</translation>
@@ -182,6 +183,7 @@ A webhelyek nem használhatnak cookie-kat arra, hogy megfigyeljék más webhelye
 <translation id="2690858294534178585">A kamera épp használatban van</translation>
 <translation id="2691653761409724435">Nem érhető el offline</translation>
 <translation id="2695507686909505111">Oldal lefordítva</translation>
+<translation id="2700241355396984822">Az engedélyek beállítására vonatkozó lehetőségek</translation>
 <translation id="2702801445560668637">Olvasási lista</translation>
 <translation id="2704491540504985681">Letöltések</translation>
 <translation id="2704606927547763573">Másolt</translation>
@@ -250,7 +252,6 @@ A keresési előzmények törléséről a keresőmotorja útmutatójából táj�
 <translation id="3207960819495026254">Könyvjelző rögzítve</translation>
 <translation id="3224641773458703735">A jelszavak exportálásához előbb be kell állítania az eszközön a biztonsági kódot.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
-<translation id="3230318355092723906">Ha a szinkronizálás ki van kapcsolva, Ön továbbra is láthatja könyvjelzőit, előzményeit, jelszavait és más beállításait ezen az eszközön. A módosítások azonban nem szinkronizálódnak az Ön fiókjába.</translation>
 <translation id="3240426699337459095">Link másolva</translation>
 <translation id="3244271242291266297">HH</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="NUM_SUGGESTIONS" />/<ph name="INDEX" />. javaslat</translation>
@@ -319,6 +320,8 @@ Hajtsa végre az alábbi lépéseket:</translation>
 <translation id="3861486700625780712">Követés megszüntetése</translation>
 <translation id="3892144330757387737">Itt láthatja majd az előzményeit</translation>
 <translation id="3897092660631435901">Menü</translation>
+<translation id="3904829425754749514">A szervezete kikapcsolta a szinkronizálást. Továbbra is láthatja könyvjelzőit, előzményeit, jelszavait és más beállításait ezen az eszközön. A módosítások azonban nem szinkronizálódnak az Ön fiókjába.</translation>
+<translation id="3905353503976611311">Keresés az interneten</translation>
 <translation id="3913386780052199712">Bejelentkezve: Chrome</translation>
 <translation id="3915450441834151894">Webhelyadatok</translation>
 <translation id="3922310737605261887">Másolt szöveg keresése</translation>
@@ -348,6 +351,7 @@ Hajtsa végre az alábbi lépéseket:</translation>
 <translation id="4172051516777682613">Mindig mutassa</translation>
 <translation id="418156467088430727">Offline verzió megtekintése új lapon</translation>
 <translation id="4181841719683918333">Nyelvek</translation>
+<translation id="4223967053752765281">Szervezete kikapcsolta a bejelentkezést. Továbbra is láthatja könyvjelzőit, előzményeit, jelszavait és más beállításait ezen az eszközön. A módosítások azonban nem szinkronizálódnak az Ön fiókjába.</translation>
 <translation id="4237377247299956313">Koppintson az <ph name="BEGIN_BOLD" />Alapértelmezett böngésző<ph name="END_BOLD" /> lehetőségre.</translation>
 <translation id="424315890655130736">Összetett jelszó megadása</translation>
 <translation id="4249955472157341256">Rendezés a legutóbbiak szerint</translation>
@@ -372,6 +376,7 @@ Hajtsa végre az alábbi lépéseket:</translation>
 <translation id="4469418912670346607">Beállítás folytatása</translation>
 <translation id="4474494258097106883">iPhone-hoz készült</translation>
 <translation id="4476574785019001431">Beállítások</translation>
+<translation id="448433063499977729">A szinkronizálás ki lett kapcsolva</translation>
 <translation id="4496373720959965247">Lapok hozzáadása és oldalak közötti váltás</translation>
 <translation id="4502566650163919158">Ellenőrzés most</translation>
 <translation id="4505980578794259603">Legutóbb ellenőrizve: <ph name="TIME" />.</translation>
@@ -379,6 +384,7 @@ Hajtsa végre az alábbi lépéseket:</translation>
 <translation id="4526249700380860531">A mentett jelszavak megtekintése és kezelése a <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> címen</translation>
 <translation id="4536418791685807335">Próbáljon meg újra bejelentkezni.</translation>
 <translation id="4540780316273593836">Hiba történt</translation>
+<translation id="4572065712096155137">Hozzáférés</translation>
 <translation id="457386861538956877">Továbbiak...</translation>
 <translation id="4592368184551360546">Billentyűzet</translation>
 <translation id="461440297010471931">Keresés a Google segítségével</translation>
@@ -400,6 +406,7 @@ Adatai az összetett szinkronizálási jelszavával vannak titkosítva. Írja be
 <translation id="4689564913179979534">Fizetési módok kezelése...</translation>
 <translation id="470966556546083668">Ne legyen bekapcsolva a szinkronizálás</translation>
 <translation id="4731472194328757163">Kamera- és mikrofon-hozzáférés engedélyezve</translation>
+<translation id="4737560986434232178">Keresés a legutóbb megnyitott lapokon</translation>
 <translation id="473775607612524610">Frissítés</translation>
 <translation id="4747097190499141774">Az összetett jelszavas titkosítás nem tartalmazza a Google Payben megadott fizetési módokat és címeket. Titkosított adatait csak az olvashatja el, aki rendelkezik az Ön összetett jelszavával. Az összetett jelszót a Google nem kapja meg, és nem is tárolja. Ha elfelejtette összetett jelszavát, vagy módosítaná ezt a beállítást, alaphelyzetbe kell állítania a szinkronizálást. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="4751645464639803239">Új inkognitó lap</translation>
@@ -481,6 +488,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5490005495580364134">Az összes cookie letiltása (nem ajánlott)</translation>
 <translation id="5513681519188741830"><ph name="TIME" /> órája</translation>
 <translation id="5525269841082836315">Jelszó létrehozása</translation>
+<translation id="5542540507657872337"><ph name="COUNT" /> találat</translation>
 <translation id="5548760955356983418">Az Átadás segítségével ha ezen az eszközön kezd böngészni egy webhelyet, könnyedén folytathatja azt Mac típusú számítógépén. A jelenleg megnyitott webhely a Mac dokkján jelenik meg.
 
 Az Átadást engedélyezni kell a Beállítások általános részében is, és az eszközöknek ugyanazt az iCloud-fiókot kell használniuk.</translation>
@@ -489,6 +497,7 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 <translation id="5580834567471114021">Felveszi az Olvasólistára, hogy később elolvashassa?</translation>
 <translation id="5592679540098330836">Szinkronizálás bekapcsolása <ph name="NAME" /> számára</translation>
 <translation id="560322036295180549">Kikapcsolta a szervezete</translation>
+<translation id="560999923643681074">Szerkesztési hozzáférés</translation>
 <translation id="5614553682702429503">Szeretné elmenteni a jelszót?</translation>
 <translation id="5626245204502895507">A fájlt jelenleg nem lehet letölteni.</translation>
 <translation id="5631164295104953411">Fizetési mód hozzáadása</translation>
@@ -570,6 +579,7 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 <translation id="6202364442240589072">{COUNT,plural, =1{{COUNT} lap bezárása}other{{COUNT} lap bezárása}}</translation>
 <translation id="6219688215832490856">Soha ne fordítsa le</translation>
 <translation id="6223816392543092032">Bármely eszközéről hozzáférhet könyvjelzőihez, előzményeihez, jelszavaihoz és egyéb beállításaihoz.</translation>
+<translation id="6231782223312638214">Javasolt</translation>
 <translation id="6232329973559504466">Keresés inkognitó módban</translation>
 <translation id="6232736989810857397">Ez lehetővé teszi, hogy könnyedén hozzon létre naptáreseményeket a Google Lens szolgáltatással.</translation>
 <translation id="6254066287920239840">Linkek megnyitása az alkalmazásban a böngésző helyett.</translation>
@@ -655,7 +665,6 @@ Inkognitó módban a webhelyek nem használhatnak cookie-kat arra, hogy megfigye
 <translation id="6801927553864092214">Privát böngészéshez nyisson inkognitó lapot</translation>
 <translation id="6807889908376551050">Összes megjelenítése...</translation>
 <translation id="681368974849482173">Elem létrehozva</translation>
-<translation id="681450999322335505">A szervezete kikapcsolta a szinkronizálást.</translation>
 <translation id="683022620450280906">A mentett jelszavakat bármelyik eszközön használhatja. A jelszavakat elmenti a rendszer a fiókhoz (<ph name="EMAIL" />) kapcsolt Google Jelszókezelőbe.</translation>
 <translation id="6830804042318138535">További információ</translation>
 <translation id="6831043979455480757">Fordítás</translation>
@@ -759,6 +768,7 @@ Inkognitó módban a webhelyek nem használhatnak cookie-kat arra, hogy megfigye
 <translation id="7840771868269352570">A kiválasztott elemek törlődnek.</translation>
 <translation id="7856733331829174190">Nem sikerült letölteni</translation>
 <translation id="7859704718976024901">Böngészési előzmények</translation>
+<translation id="7884694604461143138">Keresési előzmények (<ph name="COUNT" /> elem található)</translation>
 <translation id="7887198238286927132">Adatai védelme érdekében a Chrome nem tölti ki automatikusan ezt a mezőt.</translation>
 <translation id="7911190106180361398">Szervezete nem engedélyezi mindennek a szinkronizálását.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
@@ -790,6 +800,7 @@ A webhelyek használhatnak cookie-kat arra, hogy megfigyeljék más webhelyekre 
 <translation id="8076014560081431679">A mentett webhelybeállítások nem törlődnek, és tájékozódási alapul szolgálhatnak böngészési szokásait illetően. <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="8079602123447022758">Felügyelt beállítás. További információért koppintson duplán.</translation>
 <translation id="8080028325999236607">Összes lap bezárása</translation>
+<translation id="809543534949702122">Keresési előzmények</translation>
 <translation id="8101409298456377967">Létrehozhat, menthet és kezelhet jelszavakat, hogy egyszerűen be tudjon jelentkezni a webhelyekre és az alkalmazásokba. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" />.</translation>
 <translation id="8105368624971345109">Kikapcsolás</translation>
 <translation id="8114753159095730575">A fájlletöltés megvalósítható. A beállításokat a képernyő alján nyithatja meg.</translation>
@@ -811,6 +822,7 @@ A webhelyek használhatnak cookie-kat arra, hogy megfigyeljék más webhelyekre 
 <translation id="8319076807703933069">Új keresés</translation>
 <translation id="8323906514956095947">Nyomva tartva további lapbeállításokat láthat</translation>
 <translation id="8328777765163860529">Összes bezárása</translation>
+<translation id="8364085047956854021">A(z) „<ph name="SITE_NAME" />” webhelyre vonatkozó engedélyeket a rendszer letiltott beállításra állítja vissza, amikor Ön elhagyja ezt a webhelyet.</translation>
 <translation id="8378714024927312812">Az Ön szervezete kezeli</translation>
 <translation id="8386068868580335421">Visszaállítás</translation>
 <translation id="8407669440184693619">Nem található jelszó a webhelyhez</translation>
@@ -897,6 +909,7 @@ A webhelyek használhatnak cookie-kat arra, hogy megfigyeljék más webhelyekre 
 <translation id="9148126808321036104">Jelentkezzen be újra</translation>
 <translation id="9152539721251340337">QR-kód létrehozása</translation>
 <translation id="9157836665414082580">Párbeszédablakok elrejtése</translation>
+<translation id="9177438225260810839">Keresés a megnyitott lapokon</translation>
 <translation id="9188680907066685419">Kijelentkezés felügyelt fiókból</translation>
 <translation id="9200875785104711666"><ph name="TIME" /> napja</translation>
 <translation id="9203116392574189331">Átadás</translation>

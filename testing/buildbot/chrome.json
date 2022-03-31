@@ -31,7 +31,7 @@
           ],
           "idempotent": false,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 6
         },
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/"
@@ -107,7 +107,7 @@
             ]
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 6
         },
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/"
@@ -354,7 +354,7 @@
             ]
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 6
         },
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/"
@@ -1324,7 +1324,7 @@
           ],
           "idempotent": false,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 6
         },
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
@@ -1417,7 +1417,7 @@
           ],
           "idempotent": false,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 6
         },
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
@@ -1617,7 +1617,7 @@
           ],
           "idempotent": false,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 4
+          "shards": 6
         },
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
@@ -1778,37 +1778,7 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R100-14522.0.0",
-        "name": "lacros_all_tast_tests_ATLAS_LKGM",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "timeout_sec": 10800
-      },
-      {
-        "args": [],
-        "cros_board": "atlas",
-        "cros_img": "atlas-release/R100-14516.0.0",
-        "name": "lacros_all_tast_tests_ATLAS_DEV",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "timeout_sec": 10800
-      },
-      {
-        "args": [],
-        "cros_board": "atlas",
-        "cros_img": "atlas-release/R99-14469.24.0",
+        "cros_img": "atlas-release/R100-14526.43.0",
         "name": "lacros_all_tast_tests_ATLAS_BETA",
         "resultdb": {
           "enable": true,
@@ -1823,7 +1793,7 @@
       {
         "args": [],
         "cros_board": "atlas",
-        "cros_img": "atlas-release/R98-14388.52.0",
+        "cros_img": "atlas-release/R99-14469.58.0",
         "name": "lacros_all_tast_tests_ATLAS_STABLE",
         "resultdb": {
           "enable": true,
@@ -1838,37 +1808,7 @@
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R100-14522.0.0",
-        "name": "lacros_all_tast_tests_EVE_LKGM",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "timeout_sec": 10800
-      },
-      {
-        "args": [],
-        "cros_board": "eve",
-        "cros_img": "eve-release/R100-14516.0.0",
-        "name": "lacros_all_tast_tests_EVE_DEV",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "timeout_sec": 10800
-      },
-      {
-        "args": [],
-        "cros_board": "eve",
-        "cros_img": "eve-release/R99-14469.24.0",
+        "cros_img": "eve-release/R100-14526.43.0",
         "name": "lacros_all_tast_tests_EVE_BETA",
         "resultdb": {
           "enable": true,
@@ -1883,7 +1823,7 @@
       {
         "args": [],
         "cros_board": "eve",
-        "cros_img": "eve-release/R98-14388.52.0",
+        "cros_img": "eve-release/R99-14469.58.0",
         "name": "lacros_all_tast_tests_EVE_STABLE",
         "resultdb": {
           "enable": true,
@@ -1939,94 +1879,7 @@
       "symupload",
       "strip_chrome_binary"
     ],
-    "skylab_tests": [
-      {
-        "args": [],
-        "cros_board": "kevin",
-        "cros_img": "kevin-release/R100-14522.0.0",
-        "name": "lacros_all_tast_tests_KEVIN_LKGM",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "timeout_sec": 10800
-      },
-      {
-        "args": [],
-        "cros_board": "hana",
-        "cros_img": "hana-release/R100-14522.0.0",
-        "name": "lacros_all_tast_tests_HANA_LKGM",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_all_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_all_tast_tests/",
-        "timeout_sec": 10800
-      },
-      {
-        "args": [],
-        "cros_board": "kevin",
-        "cros_img": "kevin-release/R100-14522.0.0",
-        "name": "ozone_unittests_KEVIN_LKGM",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "test": "ozone_unittests",
-        "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
-        "timeout_sec": 3600
-      },
-      {
-        "args": [],
-        "cros_board": "hana",
-        "cros_img": "hana-release/R100-14522.0.0",
-        "name": "ozone_unittests_HANA_LKGM",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "test": "ozone_unittests",
-        "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
-        "timeout_sec": 3600
-      },
-      {
-        "args": [],
-        "cros_board": "kevin",
-        "cros_img": "kevin-release/R100-14522.0.0",
-        "name": "viz_unittests_KEVIN_LKGM",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "test": "viz_unittests",
-        "test_id_prefix": "ninja://components/viz:viz_unittests/",
-        "timeout_sec": 3600
-      },
-      {
-        "args": [],
-        "cros_board": "hana",
-        "cros_img": "hana-release/R100-14522.0.0",
-        "name": "viz_unittests_HANA_LKGM",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {},
-        "test": "viz_unittests",
-        "test_id_prefix": "ninja://components/viz:viz_unittests/",
-        "timeout_sec": 3600
-      }
-    ]
+    "skylab_tests": []
   },
   "linux-chrome": {
     "additional_compile_targets": [

@@ -50,6 +50,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -128,10 +129,19 @@ class AllowlistedOriginContentBrowserClient : public TestContentBrowserClient {
   base::flat_set<url::Origin> allow_list_;
 };
 
+// A special path for updates that allows deferring the server response. Only
+// update requests to this path can be deferred, because the path must be
+// registered before the EmbeddedTestServer starts.
+constexpr char kDeferredUpdateResponsePath[] =
+    "/interest_group/daily_update_deferred.json";
+
+constexpr char kFledgeHeader[] = "X-Allow-FLEDGE";
+
 // Allows registering responses to network requests.
 class NetworkResponder {
  public:
-  explicit NetworkResponder(net::EmbeddedTestServer& server) {
+  explicit NetworkResponder(net::EmbeddedTestServer& server)
+      : controllable_response_(&server, kDeferredUpdateResponsePath) {
     server.RegisterRequestHandler(base::BindRepeating(
         &NetworkResponder::RequestHandler, base::Unretained(this)));
   }
@@ -164,6 +174,18 @@ function generateBid(
     RegisterNetworkResponse(url_path, script, "application/javascript");
   }
 
+  // Perform the deferred response -- the test hangs if the client isn't waiting
+  // on a response to kDeferredUpdateResponsePath.
+  void DoDeferredUpdateResponse(
+      const std::string& response,
+      const std::string& content_type = "application/json") {
+    controllable_response_.WaitForRequest();
+    controllable_response_.Send(net::HTTP_OK, content_type, response,
+                                /*cookies=*/{},
+                                /*extra_headers=*/{std::string(kFledgeHeader)});
+    controllable_response_.Done();
+  }
+
  private:
   struct Response {
     std::string body;
@@ -177,7 +199,7 @@ function generateBid(
     if (it == response_map_.end())
       return nullptr;
     auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-    response->AddCustomHeader("X-Allow-FLEDGE", "true");
+    response->AddCustomHeader(kFledgeHeader, "true");
     response->set_code(net::HTTP_OK);
     response->set_content(it->second.body);
     response->set_content_type(it->second.mime_type);
@@ -194,6 +216,8 @@ function generateBid(
   // path. If so, the server returns the mapped value string as the response.
   base::flat_map<std::string, Response> response_map_
       GUARDED_BY(response_map_lock_);
+
+  net::test_server::ControllableHttpResponse controllable_response_;
 };
 
 class InterestGroupTestObserver
@@ -1772,6 +1796,23 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionInvalidPerBuyerTimeoutsOrigin) {
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("a.test", "/echo")));
+
+  EXPECT_EQ(
+      "TypeError: Failed to execute 'runAdAuction' on 'Navigator': "
+      "perBuyerTimeouts buyer 'https://invalid^&' for AuctionAdConfig with "
+      "seller 'https://test.com' must be \"*\" (wildcard) or a valid https "
+      "origin.",
+      RunAuctionAndWait(R"({
+      seller: 'https://test.com',
+      decisionLogicUrl: 'https://test.com',
+      perBuyerTimeouts: {'https://invalid^&': 100}
+  })"));
+  ExpectAccessObserved({});
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                        RunAdAuctionInvalidComponentAuctionsArray) {
   ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("a.test", "/echo")));
 
@@ -2036,7 +2077,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionWithWinner) {
     interestGroupBuyers: [$1],
     auctionSignals: {x: 1},
     sellerSignals: {yet: 'more', info: 1},
-    perBuyerSignals: {$1: {even: 'more', x: 4.5}}
+    perBuyerSignals: {$1: {even: 'more', x: 4.5}},
+    perBuyerTimeouts: {$1: 100, '*': 150}
                 })",
       test_origin,
       https_server_->GetURL("a.test", "/interest_group/decision_logic.js"));
@@ -2135,8 +2177,9 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionWithWinner) {
                 ->trusted_params->isolation_info.network_isolation_key());
 }
 
-IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
-                       RunAdAuctionPerBuyerSignalsOriginNotInBuyers) {
+IN_PROC_BROWSER_TEST_F(
+    InterestGroupBrowserTest,
+    RunAdAuctionPerBuyerSignalsAndPerBuyerTimeoutsOriginNotInBuyers) {
   GURL test_url = https_server_->GetURL("a.test", "/page_with_iframe.html");
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
   url::Origin test_origin = url::Origin::Create(test_url);
@@ -2165,7 +2208,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
             seller: $1,
             decisionLogicUrl: $2,
             interestGroupBuyers: [$1],
-            perBuyerSignals: {$1: {a:1}, 'https://not_in_buyers.com': {a:1}}
+            perBuyerSignals: {$1: {a:1}, 'https://not_in_buyers.com': {a:1}},
+            perBuyerTimeouts: {'https://not_in_buyers.com': 100}
           })",
           test_origin,
           https_server_->GetURL("a.test", "/interest_group/decision_logic.js")),
@@ -3187,23 +3231,16 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
                     ad_component_frame);
 
   // Navigate the ad component's nested fenced frame (3 fenced frames deep) to
-  // some of the URNs, which should navigate it to about:blank. MPArch mode
-  // currently crashes on navigations to about:blank, so skip in that case.
-  //
-  // TODO(https://crbug.com/1268238): Always do this once MPArch can handle
-  // about:blank navigations.
-  if (GetParam() != blink::features::FencedFramesImplementationType::kMPArch) {
-    absl::optional<std::vector<GURL>> all_component_urls =
-        GetAdAuctionComponentsInJS(ad_component_frame,
-                                   blink::kMaxAdAuctionAdComponents);
-    ASSERT_TRUE(all_component_urls);
-    NavigateFencedFrameAndWait((*all_component_urls)[0],
-                               GURL(url::kAboutBlankURL),
-                               GetFencedFrameRenderFrameHost(shell()));
-    NavigateFencedFrameAndWait(
-        (*all_component_urls)[blink::kMaxAdAuctionAdComponents - 1],
-        GURL(url::kAboutBlankURL), GetFencedFrameRenderFrameHost(shell()));
-  }
+  // some of the URNs, which should navigate it to about:blank.
+  absl::optional<std::vector<GURL>> all_component_urls =
+      GetAdAuctionComponentsInJS(ad_component_frame,
+                                 blink::kMaxAdAuctionAdComponents);
+  ASSERT_TRUE(all_component_urls);
+  NavigateFencedFrameAndWait((*all_component_urls)[0],
+                             GURL(url::kAboutBlankURL), ad_component_frame);
+  NavigateFencedFrameAndWait(
+      (*all_component_urls)[blink::kMaxAdAuctionAdComponents - 1],
+      GURL(url::kAboutBlankURL), ad_component_frame);
 
   // Load a new URL in the top-level fenced frame, which should cause future
   // navigator.adComponents() calls to fail. Use a new URL, so can wait for the
@@ -3212,7 +3249,7 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
   GURL new_url = https_server_->GetURL(
       ad_frame->GetLastCommittedOrigin().host(), "/echoall");
 
-  // Use to wait for navigation completion in the ShadowDOM case only.
+  // Used to wait for navigation completion in the ShadowDOM case only.
   // Harmlessly created but not used in the MPArch case.
   TestFrameNavigationObserver observer(ad_frame);
 
@@ -3511,7 +3548,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, ValidateWorkletParameters) {
     interestGroupBuyers: [$4, $5],
     auctionSignals: {so: 'I', hear: ['you', 'like', 'json']},
     sellerSignals: {signals: 'from', the: ['seller']},
-    perBuyerSignals: {$4: {signalsForBuyer: 1}, $5: {signalsForBuyer: 2}}
+    perBuyerSignals: {$4: {signalsForBuyer: 1}, $5: {signalsForBuyer: 2}},
+    perBuyerTimeouts: {$4: 110, $5: 120, '*': 150}
   });
 })())",
                       url::Origin::Create(seller_script_url), seller_script_url,
@@ -3589,6 +3627,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
     auctionSignals: ["top-level auction signals"],
     sellerSignals: ["top-level seller signals"],
     perBuyerSignals: {$7: ["top-level buyer signals"]},
+    perBuyerTimeouts: {$7: 110, '*': 150},
     componentAuctions: [{
       seller: $4,
       decisionLogicUrl: $5,
@@ -3597,6 +3636,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       auctionSignals: ["component auction signals"],
       sellerSignals: ["component seller signals"],
       perBuyerSignals: {$7: ["component buyer signals"]},
+      perBuyerTimeouts: {$7: 200},
     }],
   });
 })())",
@@ -3988,6 +4028,73 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
           }));
 }
 
+// Bidders' generateBid() scripts that run forever should timeout. They will not
+// affect other bidders or fail the auction.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionWithPerBuyerTimeouts) {
+  const char kHostA[] = "a.test";
+  const char kHostB[] = "b.test";
+  // Navigate to other bidder site, and add an interest group.
+  GURL bidder_b_url = https_server_->GetURL(kHostB, "/echo");
+  url::Origin bidder_b_origin = url::Origin::Create(bidder_b_url);
+  ASSERT_TRUE(NavigateToURL(shell(), bidder_b_url));
+
+  GURL ad_url_b = https_server_->GetURL(kHostB, "/echo?render_shoes");
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      /*owner=*/bidder_b_origin,
+      /*name=*/"shoes",
+      /*bidding_url=*/
+      https_server_->GetURL(kHostB, "/interest_group/bidding_logic.js"),
+      /*ads=*/{{{ad_url_b, /*metadata=*/absl::nullopt}}}));
+
+  GURL bidder_a_url = https_server_->GetURL(kHostA, "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), bidder_a_url));
+  url::Origin bidder_a_origin = url::Origin::Create(bidder_a_url);
+  GURL ad1_url_a = https_server_->GetURL(kHostA, "/echo?render_cars");
+  GURL ad2_url_a = https_server_->GetURL(kHostA, "/echo?render_bikes");
+
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      /*owner=*/bidder_a_origin,
+      /*name=*/"cars",
+      /*bidding_url=*/
+      https_server_->GetURL(kHostA,
+                            "/interest_group/bidding_logic_loop_forever.js"),
+      /*ads=*/{{{ad1_url_a, /*metadata=*/absl::nullopt}}}));
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      /*owner=*/bidder_a_origin,
+      /*name=*/"bikes",
+      /*bidding_url=*/
+      https_server_->GetURL(kHostA,
+                            "/interest_group/bidding_logic_loop_forever.js"),
+      /*ads=*/{{{ad2_url_a, /*metadata=*/absl::nullopt}}}));
+
+  // Set per buyer timeout of bidder a to 1 ms, so that its generateBid()
+  // scripts which has an endless loop times out fast.
+  const std::string kTestPerBuyerTimeouts[] = {
+      JsReplace("{$1: 1}", bidder_a_origin),
+      JsReplace("{$1: 1, '*': 100}", bidder_a_origin),
+      JsReplace("{$1: 100, '*': 1}", bidder_b_origin),
+  };
+
+  for (const auto& test_per_buyer_timeouts : kTestPerBuyerTimeouts) {
+    std::string auction_config = JsReplace(
+        R"({
+      seller: $1,
+      decisionLogicUrl: $2,
+      interestGroupBuyers: [$1, $3],
+                  )",
+        bidder_a_origin,
+        https_server_->GetURL("a.test", "/interest_group/decision_logic.js"),
+        bidder_b_origin);
+    // Since test_per_buyer_timeout is JSON, it shouldn't be wrapped in quotes,
+    // so can't use JsReplace.
+    auction_config += base::StringPrintf("perBuyerTimeouts: %s}",
+                                         test_per_buyer_timeouts.c_str());
+    // Bidder b won the auction.
+    RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad_url_b);
+  }
+}
+
 // This test exercises the interest group and ad auction services directly,
 // rather than via Blink, to ensure that those services running in the browser
 // implement important security checks (Blink may also perform its own
@@ -4231,30 +4338,6 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTestRunAdAuctionBypassBlink,
       blink::mojom::AuctionAdConfigNonSharedParams::New();
   config->auction_ad_config_non_shared_params->interest_group_buyers = {
       test_origin_a_, test_origin_c};
-
-  EXPECT_THAT(RunAuctionBypassBlink(std::move(config)), Optional(Eq(ad_url_)));
-}
-
-IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTestRunAdAuctionBypassBlink,
-                       PerBuyerSignalsValid) {
-  GURL test_url_b = https_server_->GetURL("b.test", "/page_with_iframe.html");
-  ASSERT_TRUE(test_url_b.SchemeIs(url::kHttpsScheme));
-  url::Origin test_origin_b = url::Origin::Create(test_url_b);
-  ASSERT_TRUE(NavigateToURL(shell(), test_url_b));
-
-  // Per-buyer signals are valid because `test_origin_a_` is in the set of
-  // buyers, so the auction succeeds.
-  auto config = blink::mojom::AuctionAdConfig::New();
-  config->seller = test_origin_b;
-  config->decision_logic_url =
-      https_server_->GetURL("b.test", "/interest_group/decision_logic.js");
-  config->auction_ad_config_non_shared_params =
-      blink::mojom::AuctionAdConfigNonSharedParams::New();
-  config->auction_ad_config_non_shared_params->interest_group_buyers = {
-      test_origin_a_};
-  config->auction_ad_config_non_shared_params->per_buyer_signals.emplace();
-  config->auction_ad_config_non_shared_params->per_buyer_signals
-      .value()[test_origin_a_] = "{\"even\": \"more\", \"x\": 4.5}";
 
   EXPECT_THAT(RunAuctionBypassBlink(std::move(config)), Optional(Eq(ad_url_)));
 }
@@ -4693,6 +4776,150 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
             }
             return found_updated_group;
           }));
+}
+
+// Create three interest groups, each belonging to different origins. Update one
+// on a private network, but delay its server response. Update the second on a
+// public network (thus expecting the request to be blocked). Update the final
+// interest group on a private interest group -- it should be updated after the
+// first two. After the server responds to the first update request, all updates
+// should proceed -- the first should succeed, and the second should be blocked
+// since the page is on a public network, and the third should succeed.
+IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
+                       PrivateNetProtectionsApplyToSubsequentUpdates) {
+  constexpr char kLocallyUpdateGroupName[] = "Locally updated group";
+  constexpr char kPubliclyUpdateGroupName[] = "Publicly updated group";
+
+  // The update for a.test happens locally and gets deferred, whereas the update
+  // for b.test and c.test are allowed to proceed immediately.
+  const GURL update_url_a =
+      https_server_->GetURL("a.test", kDeferredUpdateResponsePath);
+  const GURL update_url_b = https_server_->GetURL(
+      "b.test", "/interest_group/daily_update_partial_b.json");
+  const GURL update_url_c = https_server_->GetURL(
+      "c.test", "/interest_group/daily_update_partial_c.json");
+
+  constexpr char kInitialBiddingPath[] =
+      "/interest_group/initial_bidding_logic.js";
+  const GURL initial_bidding_url_a =
+      https_server_->GetURL("a.test", kInitialBiddingPath);
+  const GURL initial_bidding_url_b =
+      https_server_->GetURL("b.test", kInitialBiddingPath);
+  const GURL initial_bidding_url_c =
+      https_server_->GetURL("c.test", kInitialBiddingPath);
+
+  constexpr char kNewBiddingPath[] = "/interest_group/new_bidding_logic.js";
+  const GURL new_bidding_url_a =
+      https_server_->GetURL("a.test", kNewBiddingPath);
+  const GURL new_bidding_url_b =
+      https_server_->GetURL("b.test", kNewBiddingPath);
+  const GURL new_bidding_url_c =
+      https_server_->GetURL("c.test", kNewBiddingPath);
+
+  // The server JSON updates biddingLogicUrl only.
+  constexpr char kUpdateContentTemplate[] = R"(
+{
+  "biddingLogicUrl": $1
+}
+)";
+  // a.test's response is delayed until later.
+  network_responder_->RegisterNetworkResponse(
+      update_url_b.path(),
+      JsReplace(kUpdateContentTemplate, new_bidding_url_b));
+  network_responder_->RegisterNetworkResponse(
+      update_url_c.path(),
+      JsReplace(kUpdateContentTemplate, new_bidding_url_c));
+
+  // First, create an interest group in a.test and start updating it from a
+  // private site. The update doesn't finish yet because the network response
+  // is delayed.
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("a.test", "/echo")));
+
+  ASSERT_TRUE(JoinInterestGroupAndWaitInJs(blink::InterestGroup(
+      /*expiry=*/base::Time(),
+      /*owner=*/url::Origin::Create(initial_bidding_url_a),
+      kLocallyUpdateGroupName, initial_bidding_url_a,
+      /*bidding_wasm_helper_url=*/absl::nullopt, update_url_a,
+      /*trusted_bidding_signals_url=*/absl::nullopt,
+      /*trusted_bidding_signals_keys=*/absl::nullopt,
+      /*user_bidding_signals=*/absl::nullopt,
+      /*ads=*/
+      {{{GURL("https://example.com/render"), /*metadata=*/absl::nullopt}}},
+      /*ad_components=*/absl::nullopt)));
+
+  EXPECT_EQ("done", UpdateInterestGroupsInJS());
+
+  // Now, create an interest group in b.test and start updating it from a
+  // public site. The update will be delayed because the first interest group
+  // hasn't finished updating, and it should get blocked because we are on a
+  // public page.
+  ASSERT_TRUE(NavigateToURL(
+      shell(),
+      https_server_->GetURL(
+          "b.test",
+          "/set-header?Content-Security-Policy: treat-as-public-address")));
+
+  ASSERT_TRUE(JoinInterestGroupAndWaitInJs(blink::InterestGroup(
+      /*expiry=*/base::Time(),
+      /*owner=*/url::Origin::Create(initial_bidding_url_b),
+      kPubliclyUpdateGroupName, initial_bidding_url_b,
+      /*bidding_wasm_helper_url=*/absl::nullopt, update_url_b,
+      /*trusted_bidding_signals_url=*/absl::nullopt,
+      /*trusted_bidding_signals_keys=*/absl::nullopt,
+      /*user_bidding_signals=*/absl::nullopt,
+      /*ads=*/
+      {{{GURL("https://example.com/render"), /*metadata=*/absl::nullopt}}},
+      /*ad_components=*/absl::nullopt)));
+
+  EXPECT_EQ("done", UpdateInterestGroupsInJS());
+
+  // Finally, create and update the last interest group on a private network --
+  // this update shouldn't be blocked.
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("c.test", "/echo")));
+
+  ASSERT_TRUE(JoinInterestGroupAndWaitInJs(blink::InterestGroup(
+      /*expiry=*/base::Time(),
+      /*owner=*/url::Origin::Create(initial_bidding_url_c),
+      kLocallyUpdateGroupName, initial_bidding_url_c,
+      /*bidding_wasm_helper_url=*/absl::nullopt, update_url_c,
+      /*trusted_bidding_signals_url=*/absl::nullopt,
+      /*trusted_bidding_signals_keys=*/absl::nullopt,
+      /*user_bidding_signals=*/absl::nullopt,
+      /*ads=*/
+      {{{GURL("https://example.com/render"), /*metadata=*/absl::nullopt}}},
+      /*ad_components=*/absl::nullopt)));
+
+  EXPECT_EQ("done", UpdateInterestGroupsInJS());
+
+  // Now, finish the first interest group update by responding to its update
+  // network request. All interest groups should be able to update now.
+  network_responder_->DoDeferredUpdateResponse(
+      JsReplace(kUpdateContentTemplate, new_bidding_url_a));
+
+  // Wait for the c.test to update -- after it updates, all the other interest
+  // groups should have updated too.
+  WaitForInterestGroupsSatisfying(
+      url::Origin::Create(initial_bidding_url_c),
+      base::BindLambdaForTesting(
+          [&](const std::vector<StorageInterestGroup>& storage_groups) {
+            return storage_groups.size() == 1 &&
+                   storage_groups[0].interest_group.bidding_url ==
+                       new_bidding_url_c;
+          }));
+
+  // By this point, all the interest group updates should have completed.
+  std::vector<StorageInterestGroup> a_groups =
+      GetInterestGroupsForOwner(url::Origin::Create(initial_bidding_url_a));
+  ASSERT_EQ(a_groups.size(), 1u);
+  EXPECT_EQ(a_groups[0].interest_group.bidding_url, new_bidding_url_a);
+
+  std::vector<StorageInterestGroup> b_groups =
+      GetInterestGroupsForOwner(url::Origin::Create(initial_bidding_url_b));
+  ASSERT_EQ(b_groups.size(), 1u);
+
+  // Because it was updated on a public address, the update for b.test didn't
+  // happen.
+  EXPECT_EQ(b_groups[0].interest_group.bidding_url, initial_bidding_url_b);
 }
 
 // Interest group APIs succeeded (i.e., feature join-ad-interest-group is

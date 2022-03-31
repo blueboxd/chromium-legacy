@@ -30,6 +30,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">მიმდინარეობს განახლება (დასრულებულია <ph name="PERCENTAGE_VALUE" />%)</translation>
 <translation id="1310380015393971138"><ph name="NETWORK_NAME" /> ქსელი მიუწვდომელია</translation>
+<translation id="131421566576084655">მონაცემთა ბოლო გადაყენების თარიღი მიუწვდომელია</translation>
 <translation id="1314565355471455267">Android VPN</translation>
 <translation id="131461803491198646">სახლის ქსელი, როუმინგის გარეშე</translation>
 <translation id="1327977588028644528">შლიუზი</translation>
@@ -42,7 +43,10 @@
 <translation id="1413240736185167732">ვერ მოხერხდა — ფილტრის ხარვეზი</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="142228117786570094">გასაღებთა წყვილი მაქვს</translation>
+<translation id="1435763214710588005">ავტომატურად გადააყენებს მონაცემთა მოხმარებას ყოველთვიურად არჩეულ დღეს</translation>
+<translation id="1442433966118452622">სურათის წყარო</translation>
 <translation id="1451536289672181509">მოწყობილობა არის კლავიატურა.</translation>
+<translation id="1459693405370120464">ამინდი</translation>
 <translation id="1468664791493211953">შემოთავაზებები</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> მართავს ამ მოწყობილობას და შეუძლია თქვენი აქტივობის მონიტორინგი.</translation>
 <translation id="1478594628797167447">სკანერი</translation>
@@ -54,6 +58,7 @@
 <translation id="1565038567006703504"><ph name="DEVICE_NAME" /> ვერ განახლდა</translation>
 <translation id="1567064801249837505">ალბომები</translation>
 <translation id="1572585716423026576">ფონად დაყენება</translation>
+<translation id="1615335640928990664">მონაცემთა მოხმარება <ph name="FRIENDLY_DATE" />-დან</translation>
 <translation id="1621067168122174824">დატენის ტესტის გაშვება</translation>
 <translation id="1639239467298939599">იტვირთება</translation>
 <translation id="1641857168437328880">დოკუმენტების მიმწოდი (ცალმხრივი)</translation>
@@ -102,6 +107,7 @@
 <translation id="2212733584906323460">სახელის გამორკვევა</translation>
 <translation id="2217935453350629363">ამჟამინდელი სიჩქარე</translation>
 <translation id="2224337661447660594">ინტერნეტ-კავშირი არ არის</translation>
+<translation id="2230005943220647148">ცელსიუსი</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">აქტივაციის სტატუსი</translation>
 <translation id="2287186687001756809">სურათი მიუწვდომელია. ფოტოების დასამატებლად გადადით აქ: <ph name="LINK" /></translation>
@@ -131,6 +137,7 @@
 <translation id="2619761439309613843">ყოველდღიური განახლება</translation>
 <translation id="2620436844016719705">სისტემა</translation>
 <translation id="2695514675076754339">შეიყვანეთ განბლოკვის 8-სიმბოლოიანი კოდი</translation>
+<translation id="2712812801627182647">TLS ავტორიზაციის გასაღები</translation>
 <translation id="2740531572673183784">კარგი</translation>
 <translation id="2751739896257479635">EAP ავტორიზაციის მე-2 ფაზა</translation>
 <translation id="2783010256799387990">გავლილია</translation>
@@ -167,6 +174,7 @@
 <translation id="3268178239013324452">ვერ მოხერხდა — პრინტერის კარი ღიაა</translation>
 <translation id="3283504360622356314">{0,plural, =1{ფაილის რედაქტირება}other{ფაილების რედაქტირება}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> გჰც</translation>
+<translation id="3291996639387199448">გასაღების მიმართულება</translation>
 <translation id="3310640316857623290">DNS-ის რეაგირების დრო მნიშვნელოვნად აღემატება დასაშვებ ზღვარს</translation>
 <translation id="3328783797891415197">ტესტი გაშვებულია</translation>
 <translation id="3340011300870565703">მოწყობილობის მარჯვენა ყურსაცვამის ბატარეის დონეა <ph name="BATTERY_PERCENTAGE" />%.</translation>
@@ -204,6 +212,7 @@
 <translation id="3858860766373142691">სახელი</translation>
 <translation id="3865414814144988605">გარჩევადობა</translation>
 <translation id="387301095347517405">ბატარეის დატენის სრული ციკლების რაოდენობა</translation>
+<translation id="3923184630988645767">მონაცემთა მოხმარება</translation>
 <translation id="3924044641767672375">აღდგენის პროცესის გასამარტივებლად რეკომენდებულია Wi-Fi ქსელთან დაკავშირება. თქვენი ქსელი შეინახება.</translation>
 <translation id="3932043219784172185">დაკავშირებული მოწყობილობები არ არის</translation>
 <translation id="3941014780699102620">ჰოსტის გარდაქმნა ვერ მოხერხდა</translation>
@@ -225,6 +234,7 @@
 <translation id="4145784616224233563">HTTP ქსელის დაცვა</translation>
 <translation id="4147897805161313378">Google Photos</translation>
 <translation id="4155551848414053977">დარწმუნდით, რომ სკანერი ჩართულია და ხელმისაწვდომია თქვენი ქსელისა თუ პირდაპირი კავშირის მეშვეობით</translation>
+<translation id="4170180284036919717">ფოტოს გადაღება</translation>
 <translation id="4170700058716978431">ვერ შესრულდა</translation>
 <translation id="4176463684765177261">გამორთული</translation>
 <translation id="4213104098953699324">USB კლავიატურა</translation>
@@ -279,6 +289,7 @@
 <translation id="475869545581454722">Chrome OS-ის პაროლი განახლდა</translation>
 <translation id="4773299976671772492">შეწყვეტილია</translation>
 <translation id="4782311465517282004">მიიღეთ განმარტებები, თარგმნეთ ან გადაიყვანეთ საზომი ერთეულები ტექსტზე მარჯვენა დაწკაპუნების ან ხანგრძლივად შეხების მეშვეობით</translation>
+<translation id="4793756956024303490">შეკუმშვის ალგორითმი</translation>
 <translation id="4794140124556169553">CPU-ს ტესტის გაშვება, შესაძლოა, აისახოს სისტემის წარმადობაზე</translation>
 <translation id="4808449224298348341">ბეჭდვის დავალება გაუქმდა <ph name="DOCUMENT_TITLE" />-ისთვის</translation>
 <translation id="4813136279048157860">ჩემი სურათები</translation>
@@ -291,6 +302,7 @@
 <translation id="484790837831576105">(Android) DNS-ის დარეგულირება</translation>
 <translation id="4848429997038228357">გაშვებულია</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> დარჩენილია {0} მცდელობა}other{<ph name="ERROR_MESSAGE" /> დარჩენილია {0} მცდელობა}}</translation>
+<translation id="4873827928179867585">ავტორიზაციის ალგორითმი</translation>
 <translation id="4880328057631981605">წვდომის წერტილის სახელი</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4890353053343094602">დაუყოვნებლივ აირჩიეთ ახალი</translation>
@@ -308,6 +320,7 @@
 <translation id="4999333166442584738">ანგარიშის დამალვა</translation>
 <translation id="500920857929044050">ტესტის შეწყვეტა</translation>
 <translation id="5017508259293544172">LEAP</translation>
+<translation id="5019310272469539976">როცა ეკრანი უმოქმედოა, შეგიძლიათ გამოაჩინოთ ფოტოები, დრო, ამინდი და მედიაინფორმაცია.</translation>
 <translation id="5039804452771397117">დაშვება</translation>
 <translation id="5049856988445523908">SIM-ბარათი ჩაკეტილია (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">ჯგუფის სახელი</translation>
@@ -370,6 +383,7 @@
 <translation id="5784136236926853061">HTTP რეაგირების დრო დიდია</translation>
 <translation id="5832805196449965646">მომხმარებლის დამატება</translation>
 <translation id="583281660410589416">უცნობი</translation>
+<translation id="5843706793424741864">ფარენჰაიტი</translation>
 <translation id="5849570051105887917">ადგილობრივი პროვაიდერის კოდი</translation>
 <translation id="5860033963881614850">გამორთვა</translation>
 <translation id="5866840822086176774">ძალიან ძლიერი</translation>
@@ -378,8 +392,10 @@
 <translation id="5916664084637901428">ჩართვა</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{თქვენი ფაილი წარმატებით დასკანირდა და შეინახა საქაღალდეში <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{თქვენი ფაილები წარმატებით დასკანირდა და შეინახა საქაღალდეში <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">ფაილი ვერ მოიძებნა</translation>
+<translation id="5939518447894949180">გადატვირთვა</translation>
 <translation id="594552776027197022">გასაღებთა შემთხვევითი წყვილის შექმნა</translation>
 <translation id="5972388717451707488">ძრავას განახლება</translation>
+<translation id="6034694447310538551">ავტომატური ყოველთვიური გადაყენების ჩართვა</translation>
 <translation id="6037291330010597344">სკანერის დოკუმენტების მიმწოდი ცარიელია. დაამატეთ დოკუმენტები და ცადეთ ხელახლა.</translation>
 <translation id="6040143037577758943">დახურვა</translation>
 <translation id="6040852767465482106">ანონიმური იდენტობა</translation>
@@ -403,6 +419,7 @@
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">სკანერები მიუწვდომელია</translation>
 <translation id="6232017090690406397">ბატარეა</translation>
+<translation id="6235460611964961764">მონაცემთა მოხმარების ხელით გადაყენება</translation>
 <translation id="6243280677745499710">ამჟამად დაყენებული</translation>
 <translation id="6278428485366576908">თემა</translation>
 <translation id="6280912520669706465">ARC</translation>
@@ -436,6 +453,7 @@
 <translation id="6618744767048954150">მიმდინარეობს</translation>
 <translation id="6620487321149975369">ბეჭდვის დავალებები გამოჩნდება ისტორიაში, თუ მათ ხელით არ ამოშლით</translation>
 <translation id="6643016212128521049">გასუფთავება</translation>
+<translation id="6647510110698214773">დაშიფვრის ალგორითმი</translation>
 <translation id="6657585470893396449">პაროლი</translation>
 <translation id="6692996468359469499">მიიღეთ თქვენს არჩევანთან დაკავშირებული ინფორმაცია</translation>
 <translation id="6704062477274546131">DNS-ის დარეგულირება</translation>
@@ -613,6 +631,7 @@
 <translation id="8910721771319628100">ნაგულისხმევი ქსელი აღემატება რეაგირების დროის ზღვარს</translation>
 <translation id="8918637186205009138"><ph name="GIVEN_NAME" />-ის <ph name="DEVICE_TYPE" /></translation>
 <translation id="8919837981463578619">ვერ მოხერხდა — პრინტერს კალათა აკლია</translation>
+<translation id="8923267550422472772">თვის კონკრეტული დღე გადაყენებისთვის</translation>
 <translation id="8928727111548978589">ვერ მოხერხდა — ქაღალდი გაუთავდა</translation>
 <translation id="8930521118335213258">მსგავსი</translation>
 <translation id="8930622219860340959">უსადენო</translation>

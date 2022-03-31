@@ -30,6 +30,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">Actualizando (<ph name="PERCENTAGE_VALUE" />% completo)</translation>
 <translation id="1310380015393971138">No hay redes <ph name="NETWORK_NAME" /> disponibles</translation>
+<translation id="131421566576084655">La fecha del último restablecimiento de datos no está disponible</translation>
 <translation id="1314565355471455267">VPN de Android</translation>
 <translation id="131461803491198646">Red local, no en modo roaming</translation>
 <translation id="1327977588028644528">Puerta de enlace</translation>
@@ -42,7 +43,10 @@
 <translation id="1413240736185167732">Error: Problema en el filtro</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="142228117786570094">Tengo un par de claves</translation>
+<translation id="1435763214710588005">Restablece automáticamente el uso de datos todos los meses en el día que escojas</translation>
+<translation id="1442433966118452622">Fuente de la imagen</translation>
 <translation id="1451536289672181509">El dispositivo es un teclado.</translation>
+<translation id="1459693405370120464">Clima</translation>
 <translation id="1468664791493211953">Ofertas</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> administra este dispositivo y es posible que pueda supervisar tu actividad.</translation>
 <translation id="1478594628797167447">Escáner</translation>
@@ -54,6 +58,7 @@
 <translation id="1565038567006703504">No se puede actualizar <ph name="DEVICE_NAME" /></translation>
 <translation id="1567064801249837505">Álbumes</translation>
 <translation id="1572585716423026576">Establecer como fondo de pantalla</translation>
+<translation id="1615335640928990664">Uso de datos desde el <ph name="FRIENDLY_DATE" /></translation>
 <translation id="1621067168122174824">Ejecutar prueba de carga</translation>
 <translation id="1639239467298939599">Cargando</translation>
 <translation id="1641857168437328880">Alimentador de documentos (una cara)</translation>
@@ -102,6 +107,7 @@
 <translation id="2212733584906323460">Resolución de nombres</translation>
 <translation id="2217935453350629363">Velocidad actual</translation>
 <translation id="2224337661447660594">Sin Internet</translation>
+<translation id="2230005943220647148">Celsius</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Estado de activación</translation>
 <translation id="2287186687001756809">No hay imágenes disponibles. Para agregar fotos, ve a <ph name="LINK" />.</translation>
@@ -131,6 +137,7 @@
 <translation id="2619761439309613843">Cambiar diario</translation>
 <translation id="2620436844016719705">Sistema</translation>
 <translation id="2695514675076754339">Ingresa el código de desbloqueo de 8 caracteres</translation>
+<translation id="2712812801627182647">Clave de autenticación TLS</translation>
 <translation id="2740531572673183784">Aceptar</translation>
 <translation id="2751739896257479635">Autenticación de fase 2 EAP</translation>
 <translation id="2783010256799387990">APROBADO</translation>
@@ -167,6 +174,7 @@
 <translation id="3268178239013324452">Error: La tapa está abierta</translation>
 <translation id="3283504360622356314">{0,plural, =1{Editar archivo}other{Editar archivos}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
+<translation id="3291996639387199448">Dirección de la clave</translation>
 <translation id="3310640316857623290">La latencia de DNS supera significativamente el umbral permitido</translation>
 <translation id="3328783797891415197">Prueba en ejecución</translation>
 <translation id="3340011300870565703">Nivel de batería del auricular derecho <ph name="BATTERY_PERCENTAGE" /> %.</translation>
@@ -204,6 +212,7 @@
 <translation id="3858860766373142691">Nombre</translation>
 <translation id="3865414814144988605">Resolución</translation>
 <translation id="387301095347517405">El número de veces que la batería ha completado un ciclo de carga</translation>
+<translation id="3923184630988645767">Uso de datos</translation>
 <translation id="3924044641767672375">Para facilitar el proceso de reparación, se recomienda que te conectes a una red Wi-Fi. Se guardará tu red.</translation>
 <translation id="3932043219784172185">No hay ningún dispositivo conectado</translation>
 <translation id="3941014780699102620">no se pudo resolver el host</translation>
@@ -225,6 +234,7 @@
 <translation id="4145784616224233563">Firewall de HTTP</translation>
 <translation id="4147897805161313378">Google Fotos</translation>
 <translation id="4155551848414053977">Asegúrate de que el escáner esté encendido y disponible a través de tu red o una conexión directa.</translation>
+<translation id="4170180284036919717">Tomar una foto</translation>
 <translation id="4170700058716978431">ERROR</translation>
 <translation id="4176463684765177261">Inhabilitado</translation>
 <translation id="4213104098953699324">Teclado USB</translation>
@@ -279,6 +289,7 @@
 <translation id="475869545581454722">Se actualizó la contraseña de Chrome OS</translation>
 <translation id="4773299976671772492">Detenida</translation>
 <translation id="4782311465517282004">Obtén definiciones, traducciones o conversión de unidades cuando haces clic con el botón derecho en texto o lo mantienes presionado.</translation>
+<translation id="4793756956024303490">Algoritmo de compresión</translation>
 <translation id="4794140124556169553">Ejecutar una prueba de CPU puede afectar el rendimiento de tu sistema.</translation>
 <translation id="4808449224298348341">Se canceló el trabajo de impresión <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4813136279048157860">Mis imágenes</translation>
@@ -291,6 +302,7 @@
 <translation id="484790837831576105">(Android) resolución de DNS</translation>
 <translation id="4848429997038228357">EN EJECUCIÓN</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Queda {0} intento.}other{<ph name="ERROR_MESSAGE" /> Quedan {0} intentos.}}</translation>
+<translation id="4873827928179867585">Algoritmo de autenticación</translation>
 <translation id="4880328057631981605">Nombre de punto de acceso</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4890353053343094602">Elige una nueva de inmediato</translation>
@@ -308,6 +320,7 @@
 <translation id="4999333166442584738">Ocultar informe</translation>
 <translation id="500920857929044050">Detener la prueba</translation>
 <translation id="5017508259293544172">LEAP</translation>
+<translation id="5019310272469539976">Cuando la pantalla está inactiva, muestra fotos, la hora, el clima e información multimedia.</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5049856988445523908">SIM bloqueado (<ph name="LOCK_TYPE" />)</translation>
 <translation id="5050042263972837708">Nombre del grupo</translation>
@@ -370,6 +383,7 @@ Intenta presionar el micrófono para hacerme una pregunta.</translation>
 <translation id="5784136236926853061">Latencia de HTTP alta</translation>
 <translation id="5832805196449965646">Agregar a una persona</translation>
 <translation id="583281660410589416">Desconocido</translation>
+<translation id="5843706793424741864">Fahrenheit</translation>
 <translation id="5849570051105887917">Código del proveedor de origen</translation>
 <translation id="5860033963881614850">Desactivado</translation>
 <translation id="5866840822086176774">Muy fuerte</translation>
@@ -378,8 +392,10 @@ Intenta presionar el micrófono para hacerme una pregunta.</translation>
 <translation id="5916664084637901428">Activado</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Tu archivo se escaneó correctamente y se guardó en <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Tus archivos se escanearon correctamente y se guardaron en <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">No se encontró el archivo</translation>
+<translation id="5939518447894949180">Restablecer</translation>
 <translation id="594552776027197022">Generar un par de llaves aleatorio</translation>
 <translation id="5972388717451707488">Actualizar motor</translation>
+<translation id="6034694447310538551">Habilitar el restablecimiento mensual automático</translation>
 <translation id="6037291330010597344">El alimentador de documentos del escáner está vacío. Agrega documentos y vuelve a intentarlo.</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6040852767465482106">Identidad anónima</translation>
@@ -403,6 +419,7 @@ Intenta presionar el micrófono para hacerme una pregunta.</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">No hay escáneres disponibles</translation>
 <translation id="6232017090690406397">Batería</translation>
+<translation id="6235460611964961764">Restablecer el uso de datos manualmente</translation>
 <translation id="6243280677745499710">Establecido actualmente</translation>
 <translation id="6278428485366576908">Tema</translation>
 <translation id="6280912520669706465">ARC</translation>
@@ -436,6 +453,7 @@ Intenta presionar el micrófono para hacerme una pregunta.</translation>
 <translation id="6618744767048954150">En ejecución</translation>
 <translation id="6620487321149975369">Los trabajos de impresión aparecerán en el historial, a menos que se quiten manualmente</translation>
 <translation id="6643016212128521049">Borrar</translation>
+<translation id="6647510110698214773">Algoritmo de encriptación</translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="6692996468359469499">Obtén información relacionada con tu selección</translation>
 <translation id="6704062477274546131">Resolución de DNS</translation>
@@ -613,6 +631,7 @@ Intenta presionar el micrófono para hacerme una pregunta.</translation>
 <translation id="8910721771319628100">la red predeterminada supera el umbral de latencia</translation>
 <translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> de <ph name="GIVEN_NAME" /></translation>
 <translation id="8919837981463578619">Error: Falta la bandeja</translation>
+<translation id="8923267550422472772">Día del mes para el restablecimiento</translation>
 <translation id="8928727111548978589">Error: No hay papel</translation>
 <translation id="8930521118335213258">Unidad</translation>
 <translation id="8930622219860340959">Inalámbrico</translation>

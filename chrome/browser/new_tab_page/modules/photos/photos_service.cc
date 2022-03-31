@@ -98,7 +98,7 @@ const char PhotosService::kLastSoftOptedOutTimePrefName[] =
 // static
 const base::TimeDelta PhotosService::kDismissDuration = base::Days(1);
 const base::TimeDelta PhotosService::kSoftOptOutDuration = base::Days(2);
-const int PhotosService::kMaxSoftOptOuts = 2;
+const int PhotosService::kMaxSoftOptOuts = 1;
 const char kRecentHighlightsTitle[] = "recent highlights";
 const char kNYearsAgoSubstring[] = "years ago";
 
@@ -259,6 +259,11 @@ std::string PhotosService::GetOptInTitleText(
 
   if (customTitle == static_cast<int>(OptInCardTitle::kOptInpersonalizedTitle)) {
     return ConstructPersonalizedString(std::move(memories));
+  }
+
+  if (customTitle == static_cast<int>(OptInCardTitle::kOptInTripsTitle)) {
+    return l10n_util::GetStringUTF8(
+        IDS_NTP_MODULES_PHOTOS_MEMORIES_TRIPS_WELCOME_TITLE);
   }
 
   return l10n_util::GetStringUTF8(

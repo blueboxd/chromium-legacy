@@ -16,6 +16,7 @@
 <translation id="1369915414381695676">គេហទំព័រ <ph name="SITE_NAME" /> ត្រូវបានបន្ថែម</translation>
 <translation id="1383876407941801731">ស្វែងរក</translation>
 <translation id="1384959399684842514">បានផ្អាកការទាញយក</translation>
+<translation id="1409426117486808224">ទិដ្ឋភាព​សាមញ្ញ​សម្រាប់​ផ្ទាំង​បើក</translation>
 <translation id="1415402041810619267">បានបង្រួម URL</translation>
 <translation id="1446450296470737166">អនុញ្ញាតឲ្យមានការគ្រប់គ្រងពេញលេញលើឧបករណ៍ MIDI</translation>
 <translation id="1620510694547887537">កាមេរ៉ា</translation>
@@ -52,8 +53,10 @@
 <translation id="2253414712144136228">ដក <ph name="NAME_OF_LIST_ITEM" /> ចេញ</translation>
 <translation id="2289270750774289114">សួរនៅពេលគេហទំព័រ​ចង់ស្វែងរកឧបករណ៍​ប៊្លូធូសដែលនៅជិត (បានណែនាំ)</translation>
 <translation id="2315043854645842844">ការជ្រើសរើសវិញ្ញាបនបត្រសម្រាប់ម៉ាស៊ីនកូនមិនគាំទ្រដោយប្រព័ន្ធដំណើរការនេះទេ។</translation>
+<translation id="2321958826496381788">ទាញរបារំកិលរហូតអ្នកអាចអានបានយ៉ាងងាយស្រួល។ អត្ថបទគួរតែមើលទៅធំប៉ុននេះ បន្ទាប់ពីប៉ះពីរដងនៅលើកថាខណ្ឌ។</translation>
 <translation id="2359808026110333948">បន្ត</translation>
 <translation id="2379925928934107488">ប្រើរចនាប័ទ្មងងឹតលើគេហទំព័រ នៅពេល Chrome ប្រើរចនាប័ទ្មងងឹត នៅពេលអាចប្រើបាន</translation>
+<translation id="2387895666653383613">ការប្ដូរទំហំអក្សរ</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{បានអនុញ្ញាត <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> និង <ph name="NUM_MORE" /> ទៀត}other{បានអនុញ្ញាត <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> និង <ph name="NUM_MORE" /> ទៀត}}</translation>
 <translation id="2434158240863470628">ការទាញយក​បានបញ្ចប់ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -112,13 +115,16 @@
 <translation id="3835233591525155343">ការប្រើប្រាស់​ឧបករណ៍របស់អ្នក</translation>
 <translation id="385051799172605136">ថយក្រោយ</translation>
 <translation id="3859306556332390985">ស្វែងរក​ទៅ​មុខ</translation>
+<translation id="3895926599014793903">បង្ខំបើកដំណើរការពង្រីក</translation>
 <translation id="3955193568934677022">អនុញ្ញាត​ឲ្យ​ទំព័រ​ចាក់​មាតិកា​ដែលមាន​ការ​ការពារ (ត្រូវបាន​ណែនាំ)</translation>
 <translation id="3967822245660637423">ការទាញយកបានបញ្ចប់</translation>
 <translation id="3987993985790029246">ចម្លងតំណ</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">ចំណងជើង</translation>
 <translation id="4008040567710660924">អនុញ្ញាតខូគី​សម្រាប់គេហទំព័រ​ជាក់លាក់។</translation>
+<translation id="4040330681741629921">ទទួលបានការជូនដំណឹង នៅពេលដែលអាចបង្ហាញគេហទំព័រណាមួយក្នុងទិដ្ឋភាពសាមញ្ញ</translation>
 <translation id="4046123991198612571">បទ​បន្ទាប់</translation>
+<translation id="4149994727733219643">ទិដ្ឋភាព​សាមញ្ញ​សម្រាប់​ទំព័របណ្ដាញ</translation>
 <translation id="4165986682804962316">ការកំណត់គេហទំព័រ</translation>
 <translation id="4194328954146351878">សួរ​មុនពេល​អនុញ្ញាតឱ្យ​គេហទំព័រមើលឃើញ និងផ្លាស់ប្ដូរព័ត៌មាននៅលើឧបករណ៍ NFC (បានណែនាំ)</translation>
 <translation id="4200726100658658164">បើកការកំណត់ទីតាំង</translation>
@@ -171,6 +177,7 @@
 <translation id="5354152178998424783">សកម្មភាពនេះ​នឹងសម្អាតទិន្នន័យ និងខូគីទំហំ <ph name="DATASIZE" /> ដែលគេហទំព័រនានាបានរក្សាទុក។</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 ទៀត)}other{(+ # ទៀត)}}</translation>
 <translation id="5403592356182871684">ឈ្មោះ</translation>
+<translation id="5412236728747081950">គេហទំព័រនេះប្រមូលព័ត៌មានអំពីចំណាប់អារម្មណ៍របស់អ្នកពី Chrome ដើម្បីបង្ហាញការផ្សាយពាណិជ្ជកម្មកាន់តែពាក់ព័ន្ធដល់អ្នក</translation>
 <translation id="5438097262470833822">ជម្រើសនេះនឹងកំណត់ការ​អនុញ្ញាតឡើងវិញសម្រាប់ <ph name="WEBSITE" /></translation>
 <translation id="5489227211564503167">រយៈពេល​ដែលកន្លងផុត <ph name="ELAPSED_TIME" /> នៃ <ph name="TOTAL_TIME" />។</translation>
 <translation id="5494752089476963479">ទប់ស្កាត់​ការផ្សាយពាណិជ្ជកម្ម​នៅលើគេហទំព័រ​ដែលបង្ហាញ​ការផ្សាយពាណិជ្ជកម្ម​នាំឱ្យយល់ច្រឡំ ឬរំខាន</translation>
@@ -182,6 +189,7 @@
 <translation id="5556459405103347317">ដំណើរការឡើងវិញ</translation>
 <translation id="5596627076506792578">ជម្រើសច្រើនទៀត</translation>
 <translation id="5649053991847567735">ទាញយកស្វ័យប្រវត្តិ</translation>
+<translation id="5668404140385795438">បដិសេធសំណើរគេហទំព័រដើម្បីបង្ការការពង្រីក</translation>
 <translation id="5677928146339483299">បានរារាំង</translation>
 <translation id="5689516760719285838">ទីតាំង</translation>
 <translation id="5690795753582697420">កាមេរ៉ាត្រូវបានបិទនៅក្នុងការកំណត់ Android</translation>
@@ -237,9 +245,11 @@
 <translation id="6912998170423641340">ទប់ស្កាត់​ទំព័រ​មិន​ឱ្យ​អាន​អក្សរ និង​រូបភាព​ពី​អង្គ​ចង​ចាំ</translation>
 <translation id="6945221475159498467">ជ្រើសរើស</translation>
 <translation id="6965382102122355670">យល់ព្រម</translation>
+<translation id="6981982820502123353">លទ្ធភាពប្រើប្រាស់</translation>
 <translation id="6992289844737586249">សួរជាមុនសិន មុនពេលអនុញ្ញាតឲ្យគេហទំព័រប្រើមីក្រូហ្វូនរបស់អ្នក (បានណែនាំ)</translation>
 <translation id="7000754031042624318">បានបិទនៅក្នុងការកំណត់ Android</translation>
 <translation id="7016516562562142042">បានអនុញ្ញាត​សម្រាប់​ម៉ាស៊ីន​ស្វែងរក​​បច្ចុប្បន្ន</translation>
+<translation id="702463548815491781">បានណែនាំ នៅពេល​បើកកម្មវិធីតបវិញ ឬមុខងារ​ប្រើប៊ូតុងចុច​</translation>
 <translation id="7053983685419859001">ទប់ស្កាត់</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{បានជ្រើសរើស 1}other{បានជ្រើសរើស #}}</translation>
 <translation id="7087918508125750058">បានជ្រើស​រើស <ph name="ITEM_COUNT" />។ ជម្រើស​មាននៅក្បែរ​ផ្នែកខាងលើ​អេក្រង់</translation>
@@ -290,6 +300,7 @@
 <translation id="8211406090763984747">ការតភ្ជាប់មានសុវត្ថិភាព</translation>
 <translation id="8249310407154411074">ផ្លាស់ទីទៅខាង​លើបំផុត</translation>
 <translation id="8261506727792406068">លុប</translation>
+<translation id="8284326494547611709">អត្ថបទពិពណ៌នា</translation>
 <translation id="8300705686683892304">ស្ថិតក្រោមការគ្រប់គ្រង​របស់កម្មវិធី</translation>
 <translation id="8324158725704657629">កុំ​សួរ​ម្ដងទៀត</translation>
 <translation id="8372893542064058268">អនុញ្ញាតការធ្វើសមកាលកម្មផ្ទៃខាងក្រោយសម្រាប់គេហទំព័រជាក់លាក់។</translation>

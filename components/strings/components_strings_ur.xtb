@@ -520,6 +520,7 @@
 <translation id="2523886232349826891">صرف اس آلہ پر محفوظ ہے</translation>
 <translation id="2524461107774643265">مزید معلومات شامل کریں</translation>
 <translation id="2529899080962247600">اس فیلڈ میں <ph name="MAX_ITEMS_LIMIT" /> سے زیادہ اندراجات نہیں ہونے چاہیے۔ مزید تمام اندراجات کو نظر انداز کر دیا جائے گا۔</translation>
+<translation id="2535585790302968248">نجی طور پر براؤز کرنے کے لیے ایک نیا پوشیدگی ٹیب کھولیں</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{اور 1 مزید}other{اور # مزید}}</translation>
 <translation id="2536110899380797252">پتہ شامل کریں</translation>
 <translation id="2539524384386349900">پتا لگائیں</translation>
@@ -586,6 +587,7 @@
 <translation id="2709516037105925701">آٹو فل</translation>
 <translation id="2713444072780614174">سفید</translation>
 <translation id="2715612312510870559">‏<ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />، Chrome کی ترتیبات میں اپنی ادائیگیوں اور کریڈٹ کارڈ کی معلومات کا نظم کرنے کے لیے ٹیب، پھر اینٹر دبائیں</translation>
+<translation id="271663710482723385">پوری اسکرین سے باہر نکلنے کیلئے |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| کو دبائیں</translation>
 <translation id="2721148159707890343">درخواست کامیاب رہی</translation>
 <translation id="2723669454293168317">‏Chrome کی ترتیبات میں سیفٹی چیک چلائیں</translation>
 <translation id="2726001110728089263">سائڈ ٹرے</translation>
@@ -1231,6 +1233,7 @@
 <translation id="4757993714154412917">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ اپنے اکاؤنٹس کو محفوظ کرنے کے لیے، Chromium آپ کے محفوظ کردہ پاس ورڈز کو چیک کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="4758311279753947758">رابطے کی معلومات شامل کریں</translation>
 <translation id="4761104368405085019">اپنا مائیکروفون استعمال کریں</translation>
+<translation id="4761869838909035636">‏Chrome کا سیفٹی چیک چلائیں</translation>
 <translation id="4764776831041365478"><ph name="URL" /> پر موجود ویب صفحہ عارضی طور پر سست ہو سکتا ہے یا اسے مستقل طور پر ایک نئے ویب پتے پر منتقل کیا گیا ہو سکتا ہے۔</translation>
 <translation id="4766713847338118463">نیچے دُہری سٹیپل</translation>
 <translation id="4771973620359291008">ایک نامعلوم خرابی پیش آگئی ہے۔</translation>
@@ -1262,6 +1265,7 @@
 <translation id="4854362297993841467">ڈیلیوری کا یہ طریقہ دستیاب نہیں ہے۔ کوئی دوسرا طریقہ آزمائیں۔</translation>
 <translation id="4854853140771946034">‏Google Keep میں تیزی سے ایک نیا نوٹ تخلیق کریں</translation>
 <translation id="485902285759009870">کوڈ کی توثیق ہو رہی ہے...</translation>
+<translation id="4866506163384898554">اپنا کرسر دکھانے کے لیے |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| دبائیں</translation>
 <translation id="4876188919622883022">سادہ منظر</translation>
 <translation id="4876305945144899064">کوئی صارف نام نہیں ہے</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{کوئی نہیں}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />، <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />، <ph name="EXAMPLE_DOMAIN_2" />، <ph name="AND_MORE" />}}</translation>
@@ -1275,6 +1279,7 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />، <ph name="TYPE_2" />، <ph name="TYPE_3" /></translation>
 <translation id="4900217275619098670">نواں ٹرے</translation>
 <translation id="4901778704868714008">محفوظ کریں...</translation>
+<translation id="4905659621780993806"><ph name="DATE" /> کو <ph name="TIME" /> پر آپ کا منتظم خودکار طور پر آپ کے آلے کو ری اسٹارٹ کرے گا۔ اپنے آلے کے ری اسٹارٹ ہونے سے پہلے کسی بھی کھلے آئٹم کو محفوظ کریں۔</translation>
 <translation id="4913987521957242411">اوپر بائیں طرف فولڈ</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" /> انسٹال کریں (ڈاؤن لوڈ درکار نہیں ہے)</translation>
 <translation id="4923459931733593730">ادائیگی</translation>
@@ -1484,6 +1489,7 @@
 <translation id="5556459405103347317">دوبارہ لوڈ کریں</translation>
 <translation id="5560088892362098740">تاریخ اختتام</translation>
 <translation id="55635442646131152">دستاویز کی آؤٹ لائن</translation>
+<translation id="5565613213060953222">پوشیدگی ٹیب کھولیں</translation>
 <translation id="5565735124758917034">فعال</translation>
 <translation id="5570825185877910964">اکاؤنٹ محفوظ کریں</translation>
 <translation id="5571083550517324815">اس پتے سے پِک اپ نہیں کر سکتے۔ کوئی مختلف پتہ منتخب کریں۔</translation>
@@ -1689,6 +1695,7 @@
 <translation id="6290238015253830360">آپ کے تجویز کردہ مضامین یہاں ظاہر ہوتے ہیں</translation>
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6295618774959045776">CVC:</translation>
+<translation id="6300452962057769623">{0,plural, =0{آپ کا آلہ ابھی ری اسٹارٹ ہوگا}=1{آپ کا آلہ 1 سیکنڈ میں ری اسٹارٹ ہوگا}other{آپ کا آلہ # سیکنڈ میں ری اسٹارٹ ہوگا}}</translation>
 <translation id="6302269476990306341">‏Chrome میں Google اسسٹنٹ موقوف کی جا ر ہی ہے</translation>
 <translation id="6305205051461490394"><ph name="URL" /> ناقابل رسائی ہے۔</translation>
 <translation id="6312113039770857350">ویب صفحہ دستیاب نہیں ہے</translation>
@@ -1950,6 +1957,7 @@
 <translation id="7192203810768312527"><ph name="SIZE" /> بچاتا ہے: آپ کے اگلے ملاحظہ پر مزید آہستہ سے کچھ سائٹس لوڈ کر سکتا ہے۔</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7201591969684833065">آپ کا منتظم یہ دیکھ سکتا ہے:</translation>
+<translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />، نجی طور پر براؤز کرنے کے لیے ایک نیا پوشیدگی ٹیب کھولنے کی خاطر ٹیب، پھر اینٹر دبائیں</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> سیکیورٹی کے معیارات کی پابندی نہیں کرتا ہے۔</translation>
 <translation id="7210993021468939304">‏کنٹینر کے اندر Linux کی سرگرمی اور کنٹینر کے اندر Linux ایپ کو انسٹال کرکے چلا سکتا ہے</translation>
@@ -2012,6 +2020,7 @@
 <translation id="7378627244592794276">نہیں</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7386364858855961704">ناقابل اطلاق</translation>
+<translation id="7388594495505979117">{0,plural, =1{آپ کا آلہ 1 منٹ میں ری اسٹارٹ ہوگا}other{آپ کا آلہ # منٹ میں ری اسٹارٹ ہوگا}}</translation>
 <translation id="7390545607259442187">کارڈ کی توثیق کریں</translation>
 <translation id="7392089738299859607">پتہ اپ ڈیٹ کریں</translation>
 <translation id="7399802613464275309">سیفٹی چیک</translation>
@@ -2214,6 +2223,7 @@
 <translation id="799149739215780103">باندھیں</translation>
 <translation id="7992044431894087211"><ph name="APPLICATION_TITLE" /> کے ساتھ اسکرین کے اشتراک کو دوبارہ شروع کر دیا گیا</translation>
 <translation id="7995512525968007366">متعین نہیں ہے</translation>
+<translation id="7998269595945679889">پوشیدگی ٹیب بٹن کھولیں، نجی طور پر براؤز کرنے کی خاطر نیا پوشیدگی ٹیب کھولنے کے لیے اینٹر دبائیں</translation>
 <translation id="800218591365569300">میموری خالی کرنے کیلئے دیگر ٹیبز یا پروگرامز کو بند کرنے کی کوشش کریں۔</translation>
 <translation id="8004582292198964060">براؤزر</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{یہ کارڈ اور اس کا بلنگ پتہ محفوظ ہو جائے گا۔ <ph name="USER_EMAIL" /> میں سائن ان ہونے پر آپ اس کا استعمال کر سکیں گے۔}other{یہ کارڈز اور ان کے بلنگ پتے محفوظ ہو جائیں گے۔ <ph name="USER_EMAIL" /> میں سائن ان ہونے پر آپ ان کا استعمال کر سکیں گے۔}}</translation>
@@ -2368,6 +2378,7 @@
 <translation id="8507227106804027148">کمانڈ لائن</translation>
 <translation id="8508648098325802031">تلاش کا آئیکن</translation>
 <translation id="8511402995811232419">کوکیز کا نظم کریں</translation>
+<translation id="8519753333133776369">‏آپ کے منتظم کی جانب سے HID آلے کی اجازت ہے</translation>
 <translation id="8522552481199248698">‏Chrome آپ کی اپنا Google اکاؤنٹ محفوظ اور پاس ورڈ تبدیل کرنے میں مدد کر سکتا ہے۔</translation>
 <translation id="8530813470445476232">‏Chrome ترتیبات میں اپنے براؤزنگ کی سرگزشت، کوکیز، کیش اور بہت کچھ کو صاف کریں</translation>
 <translation id="8533619373899488139">‏مسدود کردہ URLs کی فہرست اور اپنے سسٹم کے منتظم کے ذریعے نافذ کردہ دیگر پالیسیاں دیکھنے کے لیے &lt;strong&gt;chrome://policy&lt;/strong&gt; ملاحظہ کریں۔</translation>

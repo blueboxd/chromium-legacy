@@ -38,6 +38,7 @@
 <translation id="1201402288615127009">Далей</translation>
 <translation id="1202892408424955784">Адсочванне тавараў</translation>
 <translation id="1204037785786432551">Спампаваць па спасылцы</translation>
+<translation id="1204692632633423444">Кнопка дзеяння ў Chrome: <ph name="ACTION" /></translation>
 <translation id="1206892813135768548">Капіраваць тэкст спасылкі</translation>
 <translation id="1208340532756947324">Каб сінхранізаваць і персаналізаваць даныя на ўсіх прыладах, уключыце сінхранізацыю</translation>
 <translation id="1209206284964581585">Схаваць гэты раз</translation>
@@ -79,7 +80,6 @@
 <translation id="1406000523432664303">"Не адсочваць"</translation>
 <translation id="1407069428457324124">Цёмная тэма</translation>
 <translation id="1407135791313364759">Адкрыць усе</translation>
-<translation id="1409426117486808224">Спрошчаны выгляд адкрытых укладак</translation>
 <translation id="1409879593029778104">Спампоўка файла "<ph name="FILE_NAME" />" скасавана, паколькі такі файл ужо існуе.</translation>
 <translation id="1414981605391750300">Ідзе падключэнне да Google. Пачакайце…</translation>
 <translation id="1416550906796893042">Версія праграмы</translation>
@@ -166,6 +166,7 @@
 <translation id="2000419248597011803">Адпраўляе вашай стандартнай пошукавай сістэме некаторыя файлы cookie, а таксама пошукавыя запыты, уведзеныя ў адрасным радку і полі пошуку</translation>
 <translation id="200114059308480249">Дадаваць кантэкст у пошукавыя запыты Google?</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# файл}one{# файл}few{# файлы}many{# файлаў}other{# файла}}</translation>
+<translation id="2015836039326522978">Праграма "<ph name="APP_NAME" />" адкрыецца ў Chrome. Працягваючы, вы згаджаецеся з <ph name="BEGIN_LINK1" />Умовамі выкарыстання Google<ph name="END_LINK1" /> і <ph name="BEGIN_LINK2" />Дадатковымі ўмовамі выкарыстання Google Chrome і Chrome OS<ph name="END_LINK2" />. Прымяняецца таксама <ph name="BEGIN_LINK3" />Палітыка прыватнасці<ph name="END_LINK3" />.</translation>
 <translation id="2020309681647789787">Ваша гісторыя будзе захоўвацца на ўсіх сінхранізаваных прыладах, каб вы заўжды маглі працягнуць рабіць на любой з гэтых прылад тое, што перад гэтым рабілі на іншай.</translation>
 <translation id="2021896219286479412">Кіраванне сайтам на ўвесь экран</translation>
 <translation id="2038563949887743358">Уключыць запытванне версіі для настольнага камп'ютара</translation>
@@ -201,6 +202,7 @@
 <translation id="2172688499998841696">Апісанні відарысаў выключаны</translation>
 <translation id="2172905120685242547">Закрыць акно?</translation>
 <translation id="2175927920773552910">QR-код</translation>
+<translation id="2176767904800337188">Каб абараніць вас ад патэнцыяльнага махлярства, замест захаванай вамі карткі будзе паказвацца віртуальная. <ph name="BEGIN_LINK1" />Даведацца больш пра віртуальныя карткі<ph name="END_LINK1" /></translation>
 <translation id="218608176142494674">Абагульванне</translation>
 <translation id="2194856509914051091">Інфармацыя для разгляду</translation>
 <translation id="2200113223741723867">Кіруйце наладамі абагульвання даных пра выкарыстанне</translation>
@@ -213,13 +215,13 @@
 <translation id="2259659629660284697">Экспарт пароляў…</translation>
 <translation id="2276696007612801991">Для праверкі пароляў увайдзіце ва Уліковы запіс Google</translation>
 <translation id="2278052315791335171">Пры выдаленні гэтага пароля ўліковы запіс на сайце <ph name="SITE" /> не выдаліцца</translation>
+<translation id="2279146068164892489">Адкрыць праграму для "<ph name="APPNAME" />"?</translation>
 <translation id="2286841657746966508">Адрас для выстаўлення рахункаў</translation>
 <translation id="228704530595896923">Спіс варыянтаў абагульвання.</translation>
 <translation id="230115972905494466">Сумяшчальныя прылады не знойдзены</translation>
 <translation id="230155349749732438">Для выкарыстання гэтай налады трэба ўключыць параметр <ph name="BEGIN_LINK" />Паскорыць пошук і прагляд<ph name="END_LINK" /></translation>
 <translation id="2318045970523081853">Націсніце, каб зрабіць выклік</translation>
 <translation id="2321086116217818302">Ідзе падрыхтоўка пароляў…</translation>
-<translation id="2321958826496381788">Перацягвайце паўзунок, пакуль гэты тэкст не будзе зручна чытаць. Пасля падвойнага націскання на абзац тэкст павінен быць як мінімум такім вялікім.</translation>
 <translation id="2323763861024343754">Сховішча сайта</translation>
 <translation id="2328985652426384049">Не ўдалося ўвайсці ў сістэму</translation>
 <translation id="234265804618409743">Не ўдалося адкрыць камеру. Нешта пайшло не так.</translation>
@@ -229,7 +231,6 @@
 <translation id="2359808026110333948">Працягнуць</translation>
 <translation id="2369533728426058518">адкрыць укладкі</translation>
 <translation id="2386938421315164605">Хавайце і рабіце бачнымі тэмы</translation>
-<translation id="2387895666653383613">Маштаб тэксту</translation>
 <translation id="2390510615457643724">Спампаваць файл "<ph name="FILE_NAME" />" (<ph name="FILE_SIZE" />) зноў?</translation>
 <translation id="2394602618534698961">Спампаваныя вамі файлы з'явяцца тут</translation>
 <translation id="2407481962792080328">Гэта функцыя будзе ўключацца пры ўваходзе ва Уліковы запіс Google</translation>
@@ -266,18 +267,17 @@
 <translation id="2536728043171574184">Вы праглядаеце пазасеткавую копію гэтай старонкі</translation>
 <translation id="2546283357679194313">Файлы сookie і даныя сайтаў</translation>
 <translation id="2549516196460093976">Вы можаце выкарыстоўваць гэты планшэт, каб уваходзіць ва ўліковы запіс на камп'ютары, на якім паказваецца гэты QR-код.</translation>
-<translation id="2558692642259318568">Каб звесткі пра вашы дзеянні не захоўваліся на прыладзе пры праглядзе старонак, уключыце рэжым інкогніта</translation>
 <translation id="2561519700418191927">Перадпрагляд відэа</translation>
 <translation id="2567385386134582609">ВІДАРЫС</translation>
 <translation id="2567545343356994513">Больш хуткая актыўная абарона ад небяспечных вэб-сайтаў, спамповак і пашырэнняў</translation>
 <translation id="2571711316400087311">Прапаноўваць адпраўляць старонкі на іншых мовах у Перакладчык Google</translation>
+<translation id="2573452357057307036">Даведайцеся, як зрабіць Chrome стандартным браўзерам</translation>
 <translation id="2581165646603367611">Пры гэтым ачысціцца кэш, будуць выдалены файлы cookie і іншыя даныя сайтаў, якія Chrome не лічыць важнымі.</translation>
 <translation id="2587052924345400782">Даступная навейшая версія</translation>
 <translation id="2593272815202181319">Монашырынны</translation>
 <translation id="2604446170045642109">Цёмную тэму для сайтаў можна адключыць у наладах.</translation>
 <translation id="2612676031748830579">Нумар карткі</translation>
 <translation id="2625189173221582860">Пароль скапіраваны</translation>
-<translation id="2634905176438867146">Даведайцеся, як зрабіць Chrome стандартным браўзерам</translation>
 <translation id="2645657967708199252">Спампоўванне праз падключэнне <ph name="CONNECTION_TYPE" /> можа быць маруднейшым</translation>
 <translation id="2647434099613338025">Дадаць мову</translation>
 <translation id="2649068648233607930">Браўзерам кіруе <ph name="DOMAIN" />.</translation>
@@ -333,6 +333,7 @@
 <translation id="2923908459366352541">Няправільная назва.</translation>
 <translation id="2932150158123903946">Сховішча Google <ph name="APP_NAME" /></translation>
 <translation id="2932222164150889403">Мова ўводу з клавіятуры не зменіцца</translation>
+<translation id="2936980480904111527">Апавяшчэнні Chrome спрашчаюць жыццё</translation>
 <translation id="2942036813789421260">Укладка перадпрагляду закрыта</translation>
 <translation id="2946420957526726953">Chrome абнаўляецца, каб мець магчымасць падключацца да іншых прылад</translation>
 <translation id="2951071800649516099">Захоўвайце старонкі, каб прачытаць іх пазней, – дадавайце іх у спіс на прагляд</translation>
@@ -357,6 +358,7 @@
 <translation id="3029276696788198026">Без перадзагрузкі</translation>
 <translation id="3029704984691124060">Фразы-паролі не супадаюць</translation>
 <translation id="3031225630520268969">Дыялогавае акно для дачы згоды на выкарыстанне Памочніка для галасавога пошуку</translation>
+<translation id="3034163383943672781">Спампоўванне пачнецца <ph name="DATE" />.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Даведка<ph name="END_LINK" /></translation>
 <translation id="3037177537145227281">Цана адсочваецца</translation>
 <translation id="3037517125981011456">Будуць паказвацца запыты ўваходу ў Chrome</translation>
@@ -370,6 +372,7 @@
 <translation id="3091010850649238832">Паказаць змесціва буфера абмену</translation>
 <translation id="3098745985164956033">Некаторыя відарысы адпраўляюцца ў Google, каб палепшыць іх апісанне</translation>
 <translation id="3114507951000454849">Чытайце сённяшнія навіны <ph name="NEWS_ICON" /></translation>
+<translation id="311958134571892113">картка звязана з наступнай карткай:</translation>
 <translation id="3123734510202723619">Апавяшчэнні</translation>
 <translation id="3134784203083076891">"</translation>
 <translation id="314939179385989105">Галоўная старонка Chrome</translation>
@@ -429,6 +432,7 @@
 <translation id="3478363558367712427">Вы можаце выбраць пошукавую сістэму</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Даведацца больш<ph name="END_LINK" /> пра прапанаванае змесціва</translation>
 <translation id="3499246418971111862">chrome_qr-код_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
+<translation id="3502647154914451322">Выкарыстоўваючы Chrome, вы згаджаецеся з <ph name="BEGIN_TOS_LINK" />Умовамі выкарыстання Google<ph name="END_TOS_LINK" /> і <ph name="BEGIN_ATOS_LINK" />Дадатковымі ўмовамі выкарыстання Google Chrome і Chrome OS<ph name="END_ATOS_LINK" />.</translation>
 <translation id="3507132249039706973">Стандартная абарона ўключана</translation>
 <translation id="3509330069915219067">Няма падключэння да сеткі. Chrome не можа праверыць наяўнасць абнаўленняў.</translation>
 <translation id="3513704683820682405">Дапоўненая рэальнасць</translation>
@@ -452,7 +456,6 @@
 <translation id="3622349720008044802">Кіраванне вокнамі</translation>
 <translation id="3624977496395967031">Націсніце, каб адкрыць параметры сартавання</translation>
 <translation id="3631987586758005671">Абагульваецца з прыладай "<ph name="DEVICE_NAME" />"</translation>
-<translation id="3632295766818638029">Паказаць пароль</translation>
 <translation id="363596933471559332">Аўтаматычна ўваходзіць на вэб-сайты, выкарыстоўваючы захаваныя ўліковыя даныя. Калі функцыя выключана, кожны раз пры ўваходзе на вэб-сайт у вас будуць патрабаваць спраўджання.</translation>
 <translation id="3653111872753786013"><ph name="WEBSITE_TITLE" />: <ph name="WEBSITE_URL" /></translation>
 <translation id="3677911431265050325">Запытаць мабільную версію сайта</translation>
@@ -487,7 +490,6 @@
 <translation id="3861633093716975811">Папулярныя відэа</translation>
 <translation id="3892148308691398805">Скапіраваць тэкст</translation>
 <translation id="3894427358181296146">Дадаць папку</translation>
-<translation id="3895926599014793903">Прымусовае ўключэнне павелічэння</translation>
 <translation id="3899682235662194879">Закрыць усе ўкладкі ў рэжыме інкогніта</translation>
 <translation id="3908308510347173149">Абнавіць <ph name="PRODUCT_NAME" /></translation>
 <translation id="3912508018559818924">Пошук найлепшага ў інтэрнэце…</translation>
@@ -528,7 +530,6 @@
 <translation id="4135200667068010335">Спіс прылад, з якімі можна абагуліць укладку, закрыты.</translation>
 <translation id="4137746084635924146">Бягучая мова прылады</translation>
 <translation id="4141536112466364990">Даведайцеся больш пра работу ў Chrome</translation>
-<translation id="4149994727733219643">Спрошчаны выгляд для вэб-старонак</translation>
 <translation id="4162867837470729563">Спіс варыянтаў абагульвання разгорнуты на ўвесь экран.</translation>
 <translation id="4165986682804962316">Налады сайта</translation>
 <translation id="4170011742729630528">Сэрвіс недаступны. Паўтарыце спробу пазней.</translation>
@@ -585,6 +586,7 @@
 <translation id="4521489764227272523">Выбраныя даныя выдалены з Chrome і сінхранізаваных прылад.
 
 На сайце <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> могуць быць размешчаны іншыя формы гісторыі праглядаў сайтаў для вашага Уліковага запісу Google: напрыклад, пошукавыя запыты і дзеянні ў іншых сэрвісах Google.</translation>
+<translation id="452750746583162491">Праверыць сінхранізаваныя даныя</translation>
 <translation id="4532845899244822526">Выберыце папку</translation>
 <translation id="4547551584605870320">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> укладка}one{Укладак: <ph name="TAB_COUNT_MANY" /> (у рэжыме інкогніта: <ph name="TAB_COUNT_INCOGNITO" />)}few{Укладак: <ph name="TAB_COUNT_MANY" /> (у рэжыме інкогніта: <ph name="TAB_COUNT_INCOGNITO" />)}many{Укладак: <ph name="TAB_COUNT_MANY" /> (у рэжыме інкогніта: <ph name="TAB_COUNT_INCOGNITO" />)}other{Укладак: <ph name="TAB_COUNT_MANY" /> (у рэжыме інкогніта: <ph name="TAB_COUNT_INCOGNITO" />)}}</translation>
 <translation id="4549903594034243526">chrome_emotion_gif_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
@@ -616,12 +618,12 @@
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 і яшчэ <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Адправіць тэкст на вашы прылады</translation>
 <translation id="4699172675775169585">Відарысы і файлы ў кэшы</translation>
-<translation id="471759387343966120">Працягваючы, вы прымаеце <ph name="BEGIN_TOS_LINK" />Умовы выкарыстання<ph name="END_TOS_LINK" /> і <ph name="BEGIN_PRIVACY_LINK" />Палітыку\u00A0прыватнасці<ph name="END_PRIVACY_LINK" />.\nChrome адпраўляе даныя пра выкарыстанне і збоі ў Google, якія дапамогуць палепшыць праграму. <ph name="BEGIN_UMA_LINK" />Кіраваць<ph name="END_UMA_LINK" /></translation>
 <translation id="4719927025381752090">Прапаноўваць пераклад</translation>
 <translation id="4720023427747327413">Адкрыць у <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Дапамажыце палепшыць Chrome. <ph name="BEGIN_LINK" />Прыміце ўдзел у апытанні<ph name="END_LINK" /></translation>
 <translation id="47217992755561375">Прагледзьце папулярныя сайты</translation>
 <translation id="4732120983431207637">Размотчык стэка</translation>
+<translation id="4736934858538408121">Віртуальная картка</translation>
 <translation id="4738836084190194332">Апошняя сінхранізацыя: <ph name="WHEN" /></translation>
 <translation id="4741753828624614066">Вы будзеце атрымліваць лепшыя прапановы ў адрасным радку.</translation>
 <translation id="4742970037960872810">Выдаліць вылучэнне</translation>
@@ -674,6 +676,7 @@
 <translation id="4961107849584082341">Гэту старонку можна перакласці на любую мову</translation>
 <translation id="4971735654804503942">Больш хуткая актыўная абарона ад небяспечных вэб-сайтаў, спамповак і пашырэнняў. Папярэджвае пра ўцечкі пароляў. Патрабуе адпраўкі даных прагляду сайтаў у Google.</translation>
 <translation id="497421865427891073">Наперад</translation>
+<translation id="4987271110129728827">Не ўдалося знайсці старонку. Праверце правільнасць напісання запыту або паспрабуйце выканаць пошук у інтэрнэце.</translation>
 <translation id="4988526792673242964">Старонкі</translation>
 <translation id="5001388021414335527">Падпісацца на сайт можна тут</translation>
 <translation id="5004416275253351869">Параметры дзейнасці Google</translation>
@@ -731,6 +734,7 @@
 <translation id="5329858041417644019">Ваш браўзер не знаходзіцца пад кіраваннем</translation>
 <translation id="5342314432463739672">Запыты дазволаў</translation>
 <translation id="5355191726083956201">Палепшаная абарона ўключана</translation>
+<translation id="5368227114232678694">Для прыватнага прагляду вэб-старонак на гэтай прыладзе выкарыстоўвайце рэжым інкогніта</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> адкрытая ўкладка. Націсніце, каб пераключыцца паміж укладкамі.}one{<ph name="OPEN_TABS_MANY" /> адкрытая ўкладка. Націсніце, каб пераключыцца паміж укладкамі.}few{<ph name="OPEN_TABS_MANY" /> адкрытыя ўкладкі. Націсніце, каб пераключыцца паміж укладкамі.}many{<ph name="OPEN_TABS_MANY" /> адкрытых укладак. Націсніце, каб пераключыцца паміж укладкамі.}other{<ph name="OPEN_TABS_MANY" /> адкрытай укладкі. Націсніце, каб пераключыцца паміж укладкамі.}}</translation>
 <translation id="5375577065097716013">Шукаць праз Аб'ектыў <ph name="BEGIN_NEW" />Навінка<ph name="END_NEW" /></translation>
 <translation id="5403644198645076998">Дазваляць толькі пэўныя сайты</translation>
@@ -779,7 +783,6 @@
 <translation id="5655963694829536461">Шукаць у спампоўках</translation>
 <translation id="5659593005791499971">Адрас электроннай пошты</translation>
 <translation id="5665379678064389456">Стварыце падзею ў праграме <ph name="APP_NAME" /></translation>
-<translation id="5668404140385795438">Перавызначаць запыт вэб-сайта на прадухіленне павелічэння маштабу</translation>
 <translation id="5683547024293500885">Браўзеру Chrome не ўдаецца праверыць наяўнасць абнаўленняў</translation>
 <translation id="5686790454216892815">Назва файла занадта доўгая</translation>
 <translation id="569536719314091526">Перакладзіце гэту старонку на любую мову з дапамогай кнопкі "Дадатковыя параметры"</translation>
@@ -879,6 +882,7 @@
 <translation id="6162892189396105610">Chrome перадзагружае старонкі, якія вы, імаверна, наведаеце.</translation>
 <translation id="6186394685773237175">Не знойдзена раскрытых пароляў</translation>
 <translation id="6192907950379606605">Атрымл. апісанні відарысаў</translation>
+<translation id="620197886010707372">Адкрыць праграму для "<ph name="APPNAME" />" праз Google Play?</translation>
 <translation id="6203593061661911168">Спампоўванне пачнецца пры падключэнні праз Wi-Fi</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> – гэта не вы?</translation>
 <translation id="6211386937064921208">Паказваецца перадпрагляд гэтай старонкі</translation>
@@ -890,7 +894,6 @@
 <translation id="6277522088822131679">Узнікла праблема з друкам старонкі. Паўтарыце спробу.</translation>
 <translation id="6277722725779679269">Абнавіць функцыю "Адсочванне цаны" не ўдалося</translation>
 <translation id="6278428485366576908">Тэма</translation>
-<translation id="6292420053234093573">Выкарыстоўваючы Chrome, вы згаджаецеся з <ph name="BEGIN_LINK1" />Умовамі выкарыстання Google<ph name="END_LINK1" /> і <ph name="BEGIN_LINK2" />Дадатковымі ўмовамі выкарыстання Google Chrome і Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="6294610283659775533">Вы можаце адпраўляць укладкі на свае прылады, на якіх выкананы ўваход у адзін і той жа Уліковы запіс Google</translation>
 <translation id="6297765934698848803">Арганізацыя, якая кіруе вашай прыладай, выключыла камеру.</translation>
 <translation id="6301525844455696527">Не забудзьце прачытаць</translation>
@@ -983,7 +986,6 @@
 <translation id="6674571176963658787">Каб пачаць сінхранізацыю, увядзіце фразу-пароль</translation>
 <translation id="6676840375528380067">Выдаліць даныя Chrome з гэтай прылады?</translation>
 <translation id="6684809838922667136">Зрабіце браўзер Chrome лепшым</translation>
-<translation id="6698801883190606802">Кіраванне сінхранізаванымі данымі</translation>
 <translation id="670498945988402717">Праверка праводзілася ўчора</translation>
 <translation id="6710213216561001401">Назад</translation>
 <translation id="671481426037969117">Спрацаваў таймер праграмы "<ph name="FQDN" />". Заўтра ён зноў будзе запушчаны.</translation>
@@ -1031,13 +1033,11 @@
 <translation id="6963766334940102469">Выдаліць закладкі</translation>
 <translation id="696447261358045621">Выйсці з рэжыму інкогніта</translation>
 <translation id="6979737339423435258">За ўвесь час</translation>
-<translation id="6981982820502123353">Спец. магчымасці</translation>
 <translation id="6987047470128880212">На гэтай прыладзе нельга адкрываць укладкі ў рэжыме інкогніта</translation>
 <translation id="6995899638241819463">Папярэджваць мяне ў выпадку, калі пры ўцечцы даных былі раскрыты паролі</translation>
 <translation id="7001056293070445572">Гэта вялікі файл (<ph name="FILE_SIZE" />)</translation>
 <translation id="7020741890149022655">Дадаць у спіс на прагляд <ph name="BEGIN_NEW" />Новае<ph name="END_NEW" /></translation>
 <translation id="7022756207310403729">Адкрыць у браўзеры</translation>
-<translation id="702463548815491781">Рэкамендуецца, калі ўключаны TalkBack або доступ праз пераключальнікі</translation>
 <translation id="7027549951530753705">Адноўлена: <ph name="ITEM_TITLE" /></translation>
 <translation id="7029390216614421513">Змясціце QR-код або штрыхкод у гэтай рамцы.</translation>
 <translation id="7029809446516969842">Паролі</translation>
@@ -1072,6 +1072,7 @@
 <translation id="7191430249889272776">Укладка адкрыта ў фоне.</translation>
 <translation id="7196215469483532480">Тлумачэнні адносна дапаможніка па прыватнасці разгорнуты на ўвесь экран</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{Чакаецца 1 спампоўка}one{Чакаецца # спампоўка}few{Чакаецца # спампоўкі}many{Чакаецца # спамповак}other{Чакаецца # спампоўкі}}</translation>
+<translation id="7237045078887540010">Выкарыстоўваючы Chrome, вы згаджаецеся з <ph name="BEGIN_TOS_LINK" />Умовамі выкарыстання Google<ph name="END_TOS_LINK" /> і <ph name="BEGIN_ATOS_LINK" />Дадатковымі ўмовамі выкарыстання Google Chrome і Chrome OS<ph name="END_ATOS_LINK" />. Прымяняецца таксама <ph name="BEGIN_PRIVACY_LINK" />Палітыка прыватнасці<ph name="END_PRIVACY_LINK" />.</translation>
 <translation id="7242755609445462077">Стылізаванае вылучанае змесціва (<ph name="CURRENT_DATE" />)</translation>
 <translation id="7248069434667874558">Праверце, ці ўключана на прыладзе "<ph name="TARGET_DEVICE_NAME" />" сінхранізацыя ў браўзеры Chrome</translation>
 <translation id="7252076891734325316">Размясціце тэлефон каля камп’ютара</translation>
@@ -1191,7 +1192,6 @@
 <translation id="7875915731392087153">Стварыць ліст электроннай пошты</translation>
 <translation id="7876243839304621966">Выдаліць усе</translation>
 <translation id="7879130110979560610">{READING_LIST_REMINDER_NOTIFICATION_SUBTITLE,plural, =1{У вас <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_ONE" /> непрачытаная старонка}one{У вас <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_MANY" /> непрачытаная старонка}few{У вас <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_MANY" /> непрачытаныя старонкі}many{У вас <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_MANY" /> непрачытаных старонак}other{У вас <ph name="READING_LIST_REMINDER_NOTIFICATION_SUBTITLE_MANY" /> непрачытанай старонкі}}</translation>
-<translation id="7882131421121961860">Гісторыя не знойдзена</translation>
 <translation id="7886917304091689118">Выконваецца ў браўзеры Chrome</translation>
 <translation id="7887334752153342268">Дубліраваць</translation>
 <translation id="789763218334337857">Як выкарыстоўваць Chrome</translation>
@@ -1273,13 +1273,13 @@
 <translation id="8274165955039650276">Паказаць спампоўкі</translation>
 <translation id="8281886186245836920">Прапусціць</translation>
 <translation id="8282297628636750033">Прымяняць цёмную тэму, калі гэта магчыма</translation>
-<translation id="8284326494547611709">Субцітры</translation>
 <translation id="829672787777123339">Ідзе падключэнне да вашай прылады…</translation>
 <translation id="8310344678080805313">Стандартныя ўкладкі</translation>
 <translation id="831192587911042850">Дадае бягучы вэб-сайт у спіс падпісак.</translation>
 <translation id="834313815369870491">Ніколі не перакладаць наступныя сайты:</translation>
 <translation id="8352996530981010042">Не ўдалося спампаваць рэакцыі. Паўтарыце спробу.</translation>
 <translation id="8354977102499939946">Хуткі пошук з дапамогай галасавых каманд. Каб змяніць функцыю гэтай кнопкі, перайдзіце ў Налады.</translation>
+<translation id="8356078935982976590">Вы зможаце з лёгкасцю карыстацца элементамі кіравання мультымедыя, кіраваць сеансамі інкогніта, спампоўкамі і не толькі</translation>
 <translation id="835847953965672673">Спамповак адноўлена: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="8364299278605033898">Праглядайце папулярныя вэб-сайты</translation>
 <translation id="8368001212524806591">Адсочваць цану</translation>
@@ -1413,6 +1413,7 @@
 <translation id="9065203028668620118">Змяніць</translation>
 <translation id="9065383040763568503">Захаваныя даныя, якія Chrome не лічыць важнымі (напрыклад, сайты, налады якіх не захаваны або якія вы наведваеце рэдка)</translation>
 <translation id="906781307897697745">месцазнаходжанне: <ph name="PRODUCT_NAME" /></translation>
+<translation id="9069543557624799859">Спампоўванне пачнецца ў <ph name="TIME" />.</translation>
 <translation id="9069999660519089861">Няма непрачытаных старонак</translation>
 <translation id="9070377983101773829">Пачаць галасавы пошук</translation>
 <translation id="9074336505530349563">Каб Google рэкамендаваў вам персаналізаванае змесціва, увайдзіце ва ўліковы запіс і ўключыце сінхранізацыю</translation>
@@ -1420,7 +1421,6 @@
 <translation id="9081543426177426948">Звесткі аб сайтах, якія вы наведваеце ў рэжыме інкогніта, не захоўваюцца</translation>
 <translation id="9086302186042011942">Сінхранізацыя</translation>
 <translation id="9086455579313502267">Не ўдалося атрымаць доступ да сеткі</translation>
-<translation id="9100505651305367705">Прапаноўваць паказваць артыкулы ў спрошчаным выглядзе, калі гэта падтрымліваецца</translation>
 <translation id="9100610230175265781">Патрабуецца фраза-пароль</translation>
 <translation id="9101137867221042551">Кіраванне</translation>
 <translation id="9102803872260866941">Укладка перадпрагляду адкрыта</translation>
@@ -1437,6 +1437,7 @@
 <translation id="9169507124922466868">Гісторыя навігацыі адкрыта напалову</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Праверка праводзілася хвіліну таму}one{Праверка праводзілася # хвіліну таму}few{Праверка праводзілася # хвіліны таму}many{Праверка праводзілася # хвілін таму}other{Праверка праводзілася # хвіліны таму}}</translation>
 <translation id="9204836675896933765">Застаўся 1 файл</translation>
+<translation id="9205933215779845960">Не ўдалося знайсці старонку. Праверце правільнасць напісання запыту або паспрабуйце ўвесці запыт у пошукавай сістэме <ph name="SEARCH_ENGINE" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Нельга рабіць выклікі</translation>
 <translation id="9212845824145208577">Не ўдаецца перамясціцца ніжэй. Паспрабуйце пачаць з месца, якое б знаходзілася ніжэй на старонцы.</translation>

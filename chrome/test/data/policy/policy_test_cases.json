@@ -8238,12 +8238,12 @@
         "prefs": {
           "ash.fast_pair.enabled": {
             "location": "user_profile",
-            "default_value": true
+            "value": false
           }
         }
       },
       {
-        "note": "Check simple policy value",
+        "note": "Set policy to false force disabled",
         "policies": {
           "FastPairEnabled": false
         },
@@ -8251,6 +8251,18 @@
           "ash.fast_pair.enabled": {
             "location": "user_profile",
             "value": false
+          }
+        }
+      },
+      {
+        "note": "Set policy to true falls back to default",
+        "policies": {
+          "FastPairEnabled": true
+        },
+        "prefs": {
+          "ash.fast_pair.enabled": {
+            "location": "user_profile",
+            "default_value": true
           }
         }
       }
@@ -10613,7 +10625,7 @@
       {
         "note": "Default value (no policies set).",
         "prefs": {
-          "quick_unlock_mode_whitelist": {
+          "quick_unlock_mode_allowlist": {
             "value": [ ]
           }
         }
@@ -10625,7 +10637,7 @@
           ]
         },
         "prefs": {
-          "quick_unlock_mode_whitelist": {
+          "quick_unlock_mode_allowlist": {
             "value": [
               "PIN"
             ]
@@ -10643,7 +10655,7 @@
           ]
         },
         "prefs": {
-          "quick_unlock_mode_whitelist": {
+          "quick_unlock_mode_allowlist": {
             "value": [
               "All"
             ]
@@ -10660,7 +10672,7 @@
       {
         "note": "Default value (no policies set).",
         "prefs": {
-          "quick_unlock_mode_whitelist": {
+          "quick_unlock_mode_allowlist": {
             "value": [ ]
           }
         }
@@ -10672,7 +10684,7 @@
           ]
         },
         "prefs": {
-          "quick_unlock_mode_whitelist": {
+          "quick_unlock_mode_allowlist": {
             "value": [
               "PIN"
             ]
@@ -15030,50 +15042,7 @@
     ]
   },
   "CloudReportingUploadFrequency": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros",
-      "android"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "CloudReportingUploadFrequency": 12
-        },
-        "policies_settings": {
-          "CloudReportingUploadFrequency": {
-            "scope": "machine",
-            "source": "cloud"
-          }
-        },
-        "prefs": {
-          "enterprise_reporting.upload_frequency": {
-            "value": "43200000000",
-            "location": "local_state"
-          }
-        }
-      },
-      {
-        "policies": {
-          "CloudReportingUploadFrequency": 1
-        },
-        "policies_settings": {
-          "CloudReportingUploadFrequency": {
-            "scope": "machine",
-            "source": "cloud"
-          }
-        },
-        "prefs": {
-          "enterprise_reporting.upload_frequency": {
-            "value": "10800000000",
-            "location": "local_state"
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Disable on M100 due to flaky."
   },
   "CloudReportingEnabled": {
     "os": [

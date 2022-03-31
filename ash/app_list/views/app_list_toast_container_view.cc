@@ -37,6 +37,8 @@ const gfx::VectorIcon* GetToastIconForOrder(AppListSortOrder order) {
   }
 }
 
+constexpr gfx::Insets kReorderUndoInteriorMargin(8, 16, 8, 8);
+
 }  // namespace
 
 AppListToastContainerView::AppListToastContainerView(
@@ -51,10 +53,10 @@ AppListToastContainerView::AppListToastContainerView(
       ->SetMainAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
       .SetOrientation(views::LayoutOrientation::kHorizontal)
-      .SetDefault(views::kFlexBehaviorKey,
-                  views::FlexSpecification(
-                      views::MinimumFlexSizeRule::kPreferred,
-                      views::MaximumFlexSizeRule::kScaleToMaximum));
+      .SetDefault(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                                   views::MaximumFlexSizeRule::kPreferred));
 
   context_menu_ = std::make_unique<AppsGridContextMenu>();
   set_context_menu_controller(context_menu_.get());
@@ -116,9 +118,17 @@ void AppListToastContainerView::RemoveCurrentView() {
 void AppListToastContainerView::UpdateVisibilityState(VisibilityState state) {
   visibility_state_ = state;
 
+  // Return early if the reorder nudge is not showing when the app list is
+  // hiding.
   if (nudge_controller_->is_visible() &&
       nudge_controller_->current_nudge() !=
           AppListNudgeController::NudgeType::kReorderNudge) {
+    return;
+  }
+
+  // Return early if the privacy notice should be showing.
+  if (nudge_controller_->current_nudge() ==
+      AppListNudgeController::NudgeType::kPrivacyNotice) {
     return;
   }
 
@@ -176,6 +186,7 @@ void AppListToastContainerView::OnTemporarySortOrderChanged(
                          &AppListToastContainerView::OnReorderUndoButtonClicked,
                          base::Unretained(this)))
           .Build());
+  toast_view_->UpdateInteriorMargins(kReorderUndoInteriorMargin);
   current_toast_ = ToastType::kReorderUndo;
 }
 

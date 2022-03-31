@@ -3,6 +3,7 @@
 <translationbundle lang="ka">
 <translation id="102360288709523007">დაგვეხმარეთ Chromium-ის გაუმჯობესებაში, გამოყენების სტატისტიკისა და შეცდომების შესახებ ანგარიშების Google-ში გაგზავნით.</translation>
 <translation id="1047130070405668746">აირჩიეთ Chromium</translation>
+<translation id="1091252999271033193">ეს იმას ნიშნავს, რომ Chromium ყოველ ჯერზე მოითხოვს მობილურ საიტს.</translation>
 <translation id="1185134272377778587">Chromium-ის შესახებ</translation>
 <translation id="1257458525759135959">სურათების შესანახად შეეხეთ „პარამეტრებს“ და მიეცით საშუალება Chromium-ს, დაამატოს თქვენი ფოტოები</translation>
 <translation id="1289216811211435351">გადაერთეთ Chromium-ზე</translation>
@@ -26,6 +27,7 @@
 <translation id="2178608107313874732">Chromium ამჟამად თქვენს კამერას ვერ გამოიყენებს</translation>
 <translation id="2195025571279539885">გსურთ, Chromium-მა შემდგომში ამ საიტის <ph name="LANGUAGE_NAME" /> გვერდების თარგმნა შემოგთავაზოთ?</translation>
 <translation id="2218146227246548550">თქვენი ორგანიზაცია მოითხოვს, რომ Chromium-ის გამოსაყენებლად სისტემაში შეხვიდეთ. <ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>
+<translation id="2236584955986023187">ეს იმას ნიშნავს, რომ Chromium ყოველ ჯერზე მოითხოვს დესკტოპის საიტს.</translation>
 <translation id="2426113998523353159">თქვენი ორგანიზაცია მოითხოვს, რომ Chromium-ის გამოსაყენებლად სისტემაში შეხვიდეთ.</translation>
 <translation id="2450140762465183767">ამიერიდან შეგიძლიათ გამოიყენოთ Chromium, როცა შეტყობინებებში, დოკუმენტებში ან სხვა აპებში ბმულებს ეხებით.</translation>
 <translation id="2478931088402984578">აირჩიეთ <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
@@ -43,7 +45,6 @@
 <translation id="3472200483164753384">მხარდაუჭერელია Chromium Canary-ში</translation>
 <translation id="3639997914391704523">პაროლების Chromium-ის მეშვეობით შესამოწმებლად შედით სისტემაში თქვენი Google ანგარიშით.</translation>
 <translation id="3805899903892079518">Chromium-ს არ აქვს წვდომა თქვენს ფოტოებსა და ვიდეოებზე. ჩართეთ წვდომა iOS-ის მენიუში: პარამეტრები &gt; კონფიდენციალურობა &gt; ფოტოები.</translation>
-<translation id="3946918322491238254">თქვენი სანიშნეების, ისტორიის, პაროლების და სხვა პარამეტრების ამ მოწყობილობაზე ნახვა მაინც შეგიძლიათ. თუ რაიმეს შეცვლით, ცვლილებები არ სინქრონიზდება თქვენს ანგარიშთან.</translation>
 <translation id="4043291146360695975">პაროლები ინახება პაროლების მმართველში მხოლოდ ამ მოწყობილობაზე.</translation>
 <translation id="4099085513035183040">მხარდაუჭერელია Chromium Beta-ში</translation>
 <translation id="4555020257205549924">ამ ფუნქციის ჩართვის შემთხვევაში, Chromium შემოგთავაზებთ სხვა ენებზე შედგენილი გვერდების თარგმნას Google Translate-ით. <ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>

@@ -1450,6 +1450,22 @@ const FeatureEntry::FeatureVariation kNtpChromeCartModuleVariations[] = {
      base::size(kNtpChromeCartModuleRBDAndCouponDiscount), nullptr},
 };
 
+// The following are consent v2 variations in the Chrome Cart module.
+const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpStringChange[] = {
+    {ntp_features::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "1"}};
+const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpInline[] = {
+    {ntp_features::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "2"}};
+const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpDialog[] = {
+    {ntp_features::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "3"}};
+const FeatureEntry::FeatureVariation kDiscountConsentV2Variations[] = {
+    {"Changing string", kDiscountConsentNtpStringChange,
+     base::size(kDiscountConsentNtpStringChange), nullptr},
+    {"Inline Consent", kDiscountConsentNtpInline,
+     base::size(kDiscountConsentNtpInline), nullptr},
+    {"Dialog Consent", kDiscountConsentNtpDialog,
+     base::size(kDiscountConsentNtpDialog), nullptr},
+};
+
 const FeatureEntry::FeatureParam kNtpRecipeTasksModuleFakeData[] = {
     {ntp_features::kNtpRecipeTasksModuleDataParam, "fake"}};
 const FeatureEntry::FeatureVariation kNtpRecipeTasksModuleVariations[] = {
@@ -1504,6 +1520,8 @@ const FeatureEntry::FeatureParam kNtpPhotosModuleOptInFavoriteTitle[] = {
     {ntp_features::kNtpPhotosModuleOptInTitleParam, "1"}};
 const FeatureEntry::FeatureParam kNtpPhotosModuleOptInPersonalizedTitle[] = {
     {ntp_features::kNtpPhotosModuleOptInTitleParam, "2"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleOptInTripsTitle[] = {
+    {ntp_features::kNtpPhotosModuleOptInTitleParam, "3"}};
 
 const FeatureEntry::FeatureVariation kNtpPhotosModuleOptInTitleVariations[] = {
     {" - Recent Highlights", kNtpPhotosModuleOptInRHTitle,
@@ -1511,7 +1529,28 @@ const FeatureEntry::FeatureVariation kNtpPhotosModuleOptInTitleVariations[] = {
     {" - Favorite people", kNtpPhotosModuleOptInFavoriteTitle,
      base::size(kNtpPhotosModuleOptInFavoriteTitle), nullptr},
     {" - Personalized title", kNtpPhotosModuleOptInPersonalizedTitle,
-     base::size(kNtpPhotosModuleOptInPersonalizedTitle), nullptr}};
+     base::size(kNtpPhotosModuleOptInPersonalizedTitle), nullptr},
+    {" - Trips title", kNtpPhotosModuleOptInTripsTitle,
+     base::size(kNtpPhotosModuleOptInTripsTitle), nullptr}};
+
+const FeatureEntry::FeatureParam kNtpPhotosModuleLogo1ArtWork[] = {
+    {ntp_features::kNtpPhotosModuleOptInArtWorkParam, "1"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleLogo2ArtWork[] = {
+    {ntp_features::kNtpPhotosModuleOptInArtWorkParam, "2"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleIllustrationsArtWork[] = {
+    {ntp_features::kNtpPhotosModuleOptInArtWorkParam, "3"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleStockpileArtWork[] = {
+    {ntp_features::kNtpPhotosModuleOptInArtWorkParam, "4"}};
+
+const FeatureEntry::FeatureVariation kNtpPhotosModuleOptInArtWorkVariations[] =
+    {{" - Artwork with Logo - 1", kNtpPhotosModuleLogo1ArtWork,
+      base::size(kNtpPhotosModuleLogo1ArtWork), nullptr},
+     {" - Artwork with Logo - 2", kNtpPhotosModuleLogo2ArtWork,
+      base::size(kNtpPhotosModuleLogo2ArtWork), nullptr},
+     {" - Artwork with Illustrations", kNtpPhotosModuleIllustrationsArtWork,
+      base::size(kNtpPhotosModuleIllustrationsArtWork), nullptr},
+     {" - Artwork with Stockpile", kNtpPhotosModuleStockpileArtWork,
+      base::size(kNtpPhotosModuleStockpileArtWork), nullptr}};
 
 const FeatureEntry::FeatureParam kRealboxMatchOmniboxThemeVar1[] = {
     {ntp_features::kRealboxMatchOmniboxThemeVariantParam, "1"}};
@@ -1809,7 +1848,6 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabTile[] = {
     {"tab_grid_layout_android_new_tab_tile", "NewTabTile"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
-    {"thumbnail_aspect_ratio", "0.85"},
     {"allow_to_refetch", "true"},
     {"tab_grid_layout_android_new_tab", "NewTabVariation"},
     {"enable_launch_polish", "true"},
@@ -2604,19 +2642,30 @@ const FeatureEntry::FeatureVariation kReadLaterVariations[] = {
 
 const FeatureEntry::FeatureParam kBookmarksRefreshVisuals[] = {
     {"bookmark_visuals_enabled", "true"}};
+const FeatureEntry::FeatureParam kBookmarksRefreshCompactVisuals[] = {
+    {"bookmark_visuals_enabled", "true"},
+    {"bookmark_compact_visuals_enabled", "true"}};
 const FeatureEntry::FeatureParam kBookmarksRefreshAppMenu[] = {
     {"bookmark_in_app_menu", "true"}};
-const FeatureEntry::FeatureParam kBookmarksRefreshWithEverything[] = {
+const FeatureEntry::FeatureParam kBookmarksRefreshNormal[] = {
     {"bookmark_visuals_enabled", "true"},
+    {"bookmark_in_app_menu", "true"}};
+const FeatureEntry::FeatureParam kBookmarksRefreshCompact[] = {
+    {"bookmark_visuals_enabled", "true"},
+    {"bookmark_compact_visuals_enabled", "true"},
     {"bookmark_in_app_menu", "true"}};
 
 const FeatureEntry::FeatureVariation kBookmarksRefreshVariations[] = {
-    {"(manager visuals only)", kBookmarksRefreshVisuals,
-     base::size(kBookmarksRefreshVisuals), nullptr},
+    {"(enabled w/ visuals)", kBookmarksRefreshNormal,
+     std::size(kBookmarksRefreshNormal), nullptr},
+    {"(enabled w/ compact visuals)", kBookmarksRefreshCompact,
+     std::size(kBookmarksRefreshCompact), nullptr},
+    {"(visuals only)", kBookmarksRefreshVisuals,
+     std::size(kBookmarksRefreshVisuals), nullptr},
+    {"(compact visuals only)", kBookmarksRefreshCompactVisuals,
+     std::size(kBookmarksRefreshCompactVisuals), nullptr},
     {"(app menu item only)", kBookmarksRefreshAppMenu,
-     base::size(kBookmarksRefreshAppMenu), nullptr},
-    {"(everything)", kBookmarksRefreshWithEverything,
-     base::size(kBookmarksRefreshWithEverything), nullptr}};
+     std::size(kBookmarksRefreshAppMenu), nullptr}};
 #endif  // BUILDFLAG(IS_ANDROID)
 
 const FeatureEntry::FeatureParam kLargeFaviconFromGoogle96[] = {
@@ -2643,25 +2692,28 @@ const FeatureEntry::Choice kDocumentTransitionSlowdownFactorChoices[] = {
 // sample.
 
 const FeatureEntry::FeatureParam kSnoopingProtectionPrecision[] = {
-    {"SnoopingProtection_filter_config_case", "3"},
-    {"SnoopingProtection_average_window_size", "3"},
-    {"SnoopingProtection_positive_score_threshold", "-30"},
-    {"SnoopingProtection_negative_score_threshold", "-30"},
-    {"SnoopingProtection_default_uncertain_score", "-128"}};
+    {"SnoopingProtection_filter_config_case", "2"},
+    {"SnoopingProtection_positive_count_threshold", "1"},
+    {"SnoopingProtection_negative_count_threshold", "1"},
+    {"SnoopingProtection_uncertain_count_threshold", "1"},
+    {"SnoopingProtection_positive_score_threshold", "-50"},
+    {"SnoopingProtection_negative_score_threshold", "-50"}};
 
 const FeatureEntry::FeatureParam kSnoopingProtectionConfidence[] = {
-    {"SnoopingProtection_filter_config_case", "3"},
-    {"SnoopingProtection_average_window_size", "5"},
-    {"SnoopingProtection_positive_score_threshold", "-30"},
-    {"SnoopingProtection_negative_score_threshold", "-30"},
-    {"SnoopingProtection_default_uncertain_score", "-128"}};
+    {"SnoopingProtection_filter_config_case", "2"},
+    {"SnoopingProtection_positive_count_threshold", "2"},
+    {"SnoopingProtection_negative_count_threshold", "2"},
+    {"SnoopingProtection_uncertain_count_threshold", "2"},
+    {"SnoopingProtection_positive_score_threshold", "-50"},
+    {"SnoopingProtection_negative_score_threshold", "-50"}};
 
 const FeatureEntry::FeatureParam kSnoopingProtectionRecall[] = {
-    {"SnoopingProtection_filter_config_case", "3"},
-    {"SnoopingProtection_average_window_size", "3"},
+    {"SnoopingProtection_filter_config_case", "2"},
+    {"SnoopingProtection_positive_count_threshold", "1"},
+    {"SnoopingProtection_negative_count_threshold", "1"},
+    {"SnoopingProtection_uncertain_count_threshold", "1"},
     {"SnoopingProtection_positive_score_threshold", "-70"},
-    {"SnoopingProtection_negative_score_threshold", "-70"},
-    {"SnoopingProtection_default_uncertain_score", "-128"}};
+    {"SnoopingProtection_negative_score_threshold", "-70"}};
 
 const FeatureEntry::FeatureVariation kSnoopingProtectionVariations[] = {
     {"Precise", kSnoopingProtectionPrecision,
@@ -2671,8 +2723,8 @@ const FeatureEntry::FeatureVariation kSnoopingProtectionVariations[] = {
     {"Comprehensive", kSnoopingProtectionRecall,
      base::size(kSnoopingProtectionRecall), nullptr}};
 
-const FeatureEntry::FeatureParam kQuickDim120s[] = {
-    {"QuickDim_quick_dim_ms", "120000"},
+const FeatureEntry::FeatureParam kQuickDim6s[] = {
+    {"QuickDim_quick_dim_ms", "6000"},
     {"QuickDim_filter_config_case", "2"},
     {"QuickDim_positive_count_threshold", "1"},
     {"QuickDim_negative_count_threshold", "2"},
@@ -2681,8 +2733,31 @@ const FeatureEntry::FeatureParam kQuickDim120s[] = {
     {"QuickDim_negative_score_threshold", "0"},
 };
 
-const FeatureEntry::FeatureParam kQuickDim45s[] = {
+const FeatureEntry::FeatureParam kQuickDim6sQuickLock66s[] = {
+    {"QuickDim_quick_dim_ms", "6000"},
+    {"QuickDim_quick_lock_ms", "66000"},
+    {"QuickDim_filter_config_case", "2"},
+    {"QuickDim_positive_count_threshold", "1"},
+    {"QuickDim_negative_count_threshold", "2"},
+    {"QuickDim_uncertain_count_threshold", "2"},
+    {"QuickDim_positive_score_threshold", "0"},
+    {"QuickDim_negative_score_threshold", "0"},
+};
+
+const FeatureEntry::FeatureParam kQuickDim6sQuickLock126s[] = {
+    {"QuickDim_quick_dim_ms", "6000"},
+    {"QuickDim_quick_lock_ms", "126000"},
+    {"QuickDim_filter_config_case", "2"},
+    {"QuickDim_positive_count_threshold", "1"},
+    {"QuickDim_negative_count_threshold", "2"},
+    {"QuickDim_uncertain_count_threshold", "2"},
+    {"QuickDim_positive_score_threshold", "0"},
+    {"QuickDim_negative_score_threshold", "0"},
+};
+
+const FeatureEntry::FeatureParam kQuickDim45sQuickLock105s[] = {
     {"QuickDim_quick_dim_ms", "45000"},
+    {"QuickDim_quick_lock_ms", "105000"},
     {"QuickDim_filter_config_case", "2"},
     {"QuickDim_positive_count_threshold", "1"},
     {"QuickDim_negative_count_threshold", "2"},
@@ -2691,51 +2766,9 @@ const FeatureEntry::FeatureParam kQuickDim45s[] = {
     {"QuickDim_negative_score_threshold", "0"},
 };
 
-const FeatureEntry::FeatureParam kQuickDim10s[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureParam kQuickDimInstantly[] = {
-    {"QuickDim_quick_dim_ms", "1000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "1"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim10sQuickLock40s[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_quick_lock_ms", "40000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim10sQuickLock70s[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_quick_lock_ms", "70000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim45sQuickLock135s[] = {
+const FeatureEntry::FeatureParam kQuickDim45sQuickLock165s[] = {
     {"QuickDim_quick_dim_ms", "45000"},
-    {"QuickDim_quick_lock_ms", "135000"},
+    {"QuickDim_quick_lock_ms", "165000"},
     {"QuickDim_filter_config_case", "2"},
     {"QuickDim_positive_count_threshold", "1"},
     {"QuickDim_negative_count_threshold", "2"},
@@ -2756,19 +2789,18 @@ const FeatureEntry::FeatureParam kQuickDim120sQuickLock240s[] = {
 };
 
 const FeatureEntry::FeatureVariation kQuickDimVariations[] = {
-    {"QuickDim120s", kQuickDim120s, base::size(kQuickDim120s), nullptr},
-    {"QuickDim45s", kQuickDim45s, base::size(kQuickDim45s), nullptr},
-    {"QuickDim10s", kQuickDim10s, base::size(kQuickDim10s), nullptr},
-    {"QuickDimInstantly", kQuickDimInstantly, base::size(kQuickDimInstantly),
-     nullptr},
-    {"kQuickDim10sQuickLock40s", kQuickDim10sQuickLock40s,
-     base::size(kQuickDim10sQuickLock40s), nullptr},
-    {"kQuickDim10sQuickLock70s", kQuickDim10sQuickLock70s,
-     base::size(kQuickDim10sQuickLock70s), nullptr},
-    {"kQuickDim45sQuickLock135s", kQuickDim45sQuickLock135s,
-     base::size(kQuickDim45sQuickLock135s), nullptr},
-    {"kQuickDim120sQuickLock240s", kQuickDim120sQuickLock240s,
-     base::size(kQuickDim120sQuickLock240s), nullptr}};
+    {"Dim6sLock66s", kQuickDim6sQuickLock66s,
+     base::size(kQuickDim6sQuickLock66s), nullptr},
+    {"Dim6sLock126s", kQuickDim6sQuickLock126s,
+     base::size(kQuickDim6sQuickLock126s), nullptr},
+    {"Dim45sLock105s", kQuickDim45sQuickLock105s,
+     base::size(kQuickDim45sQuickLock105s), nullptr},
+    {"Dim45sLock165s", kQuickDim45sQuickLock165s,
+     base::size(kQuickDim45sQuickLock165s), nullptr},
+    {"Dim120sLock240s", kQuickDim120sQuickLock240s,
+     base::size(kQuickDim120sQuickLock240s), nullptr},
+    {"Dim6sNoLock", kQuickDim6s, base::size(kQuickDim6s), nullptr},
+};
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -2801,6 +2833,13 @@ const FeatureEntry::FeatureVariation kGridTabSwitcherForTabletsVariations[] = {
      base::size(kGridTabSwitcherForTabletsPolished), nullptr},
 };
 #endif  // BUILDFLAG(IS_ANDROID)
+
+constexpr FeatureEntry::FeatureParam kLensStandaloneWithSidePanel[] = {
+    {"enable-side-panel", "true"}};
+constexpr FeatureEntry::FeatureVariation kLensStandaloneVariations[] = {
+    {"With Side Panel", kLensStandaloneWithSidePanel,
+     std::size(kLensStandaloneWithSidePanel), nullptr},
+};
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -5153,6 +5192,14 @@ const FeatureEntry kFeatureEntries[] = {
                                     kNtpPhotosModuleVariations,
                                     "DesktopNtpModules")},
 
+    {"ntp-photos-opt-in-art-work",
+     flag_descriptions::kNtpPhotosModuleOptInArtWorkName,
+     flag_descriptions::kNtpPhotosModuleOptInArtWorkDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         ntp_features::kNtpPhotosModuleCustomizedOptInArtWork,
+         kNtpPhotosModuleOptInArtWorkVariations,
+         "DesktopNtpModules")},
+
     {"ntp-photos-opt-in-title",
      flag_descriptions::kNtpPhotosModuleOptInTitleName,
      flag_descriptions::kNtpPhotosModuleOptInTitleDescription, kOsDesktop,
@@ -5597,15 +5644,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"allow-dsp-based-aec", flag_descriptions::kCrOSDspBasedAecAllowedName,
-     flag_descriptions::kCrOSDspBasedAecAllowedDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kCrOSDspBasedAecAllowed)},
-    {"allow-dsp-based-ns", flag_descriptions::kCrOSDspBasedNsAllowedName,
-     flag_descriptions::kCrOSDspBasedNsAllowedDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kCrOSDspBasedNsAllowed)},
-    {"allow-dsp-based-agc", flag_descriptions::kCrOSDspBasedAgcAllowedName,
-     flag_descriptions::kCrOSDspBasedAgcAllowedDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kCrOSDspBasedAgcAllowed)},
     {"enforce-system-aec", flag_descriptions::kCrOSEnforceSystemAecName,
      flag_descriptions::kCrOSEnforceSystemAecDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kCrOSEnforceSystemAec)},
@@ -7427,10 +7465,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSuggestVirtualCardsOnIncompleteForm)},
 
-    {flag_descriptions::kEnableLensRegionSearchFlagId,
-     flag_descriptions::kEnableLensRegionSearchName,
-     flag_descriptions::kEnableLensRegionSearchDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(lens::features::kLensRegionSearch)},
+    {flag_descriptions::kEnableLensStandaloneFlagId,
+     flag_descriptions::kEnableLensStandaloneName,
+     flag_descriptions::kEnableLensStandaloneDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(lens::features::kLensStandalone,
+                                    kLensStandaloneVariations,
+                                    "GoogleLensDesktopContextMenuSearch")},
 
     {"enable-penetrating-image-selection",
      flag_descriptions::kEnablePenetratingImageSelectionName,
@@ -7594,8 +7634,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(net::features::kSamePartyCookiesConsideredFirstParty)},
 
     {"partitioned-cookies", flag_descriptions::kPartitionedCookiesName,
-     flag_descriptions::kPartitionedCookiesDescription, kOsDesktop | kOsAndroid,
+     flag_descriptions::kPartitionedCookiesDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kPartitionedCookies)},
+    // TODO(crbug.com/1296161): Remove this flag when the CHIPS OT ends.
+    {"partitioned-cookies-bypass-origin-trial",
+     flag_descriptions::kPartitionedCookiesBypassOriginTrialName,
+     flag_descriptions::kPartitionedCookiesBypassOriginTrialDescription, kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kPartitionedCookiesBypassOriginTrial)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {kBorealisBigGlInternalName, flag_descriptions::kBorealisBigGlName,
@@ -8078,7 +8123,9 @@ const FeatureEntry kFeatureEntries[] = {
 #if !BUILDFLAG(IS_ANDROID)
     {"enable-discount-consent-v2", flag_descriptions::kDiscountConsentV2Name,
      flag_descriptions::kDiscountConsentV2Description, kOsDesktop,
-     FEATURE_VALUE_TYPE(commerce::kDiscountConsentV2)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(commerce::kDiscountConsentV2,
+                                    kDiscountConsentV2Variations,
+                                    "DiscountConsentV2")},
 #endif
 
     {"autofill-enable-unmask-card-request-set-instrument-id",
@@ -8107,6 +8154,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIsolatedSandboxedIframesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kIsolateSandboxedIframes)},
 #endif
+
+    {"download-bubble", flag_descriptions::kDownloadBubbleName,
+     flag_descriptions::kDownloadBubbleDescription, kOsLinux | kOsMac | kOsWin,
+     FEATURE_VALUE_TYPE(safe_browsing::kDownloadBubble)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

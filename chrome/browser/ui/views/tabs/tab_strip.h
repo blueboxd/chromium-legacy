@@ -49,7 +49,6 @@ class Tab;
 class TabHoverCardController;
 class TabStripController;
 class TabStripObserver;
-class TabStripLayoutHelper;
 
 namespace gfx {
 class Rect;
@@ -79,7 +78,6 @@ class ImageView;
 class TabStrip : public views::View,
                  public views::MouseWatcherListener,
                  public views::ViewObserver,
-                 public views::ViewTargeterDelegate,
                  public views::WidgetObserver,
                  public views::BoundsAnimatorObserver,
                  public TabController,
@@ -113,10 +111,6 @@ class TabStrip : public views::View,
   // Returns true if the specified rect (in TabStrip coordinates) intersects
   // the window caption area of the browser window.
   bool IsRectInWindowCaption(const gfx::Rect& rect);
-
-  // Returns true if the specified point (in TabStrip coordinates) is in the
-  // window caption area of the browser window.
-  bool IsPositionInWindowCaption(const gfx::Point& point);
 
   // Returns false when there is a drag operation in progress so that the frame
   // doesn't close.
@@ -336,7 +330,6 @@ class TabStrip : public views::View,
   void PaintChildren(const views::PaintInfo& paint_info) override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size CalculatePreferredSize() const override;
-  views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   bool CanDrop(const OSExchangeData& data) override;
   bool GetDropFormats(int* formats,
                       std::set<ui::ClipboardFormatType>* format_types) override;
@@ -423,7 +416,7 @@ class TabStrip : public views::View,
   std::map<tab_groups::TabGroupId, TabGroupHeader*> GetGroupHeaders();
 
   // Invoked from |AddTabAt| after the newly created tab has been inserted.
-  void StartInsertTabAnimation(int model_index, TabPinned pinned);
+  void StartInsertTabAnimation(int model_index);
 
   // Animates the removal of the tab at |model_index|. Defers to the old
   // animation style when appropriate.
@@ -461,10 +454,6 @@ class TabStrip : public views::View,
   // Sets the visibility state of all tabs and group headers (if any) based on
   // ShouldTabBeVisible().
   void SetTabSlotVisibility();
-
-  // Updates the indexes and count for AX data on all tabs. Used by some screen
-  // readers (e.g. ChromeVox).
-  void UpdateAccessibleTabIndices();
 
   // Returns the current width of the active tab.
   int GetActiveTabWidth() const;
@@ -558,17 +547,6 @@ class TabStrip : public views::View,
   void StartResizeLayoutAnimation();
   void StartPinnedTabAnimation();
 
-  // Returns true if the specified point in TabStrip coords is within the
-  // hit-test region of the specified Tab.
-  bool IsPointInTab(Tab* tab, const gfx::Point& point_in_tabstrip_coords);
-
-  // For a given point, finds a tab that is hit by the point. If the point hits
-  // an area on which two tabs are overlapping, the tab is selected as follows:
-  // - If one of the tabs is active, select it.
-  // - Select the left one.
-  // If no tabs are hit, returns null.
-  Tab* FindTabHitByPoint(const gfx::Point& point);
-
   // Called whenever a tab animation has progressed.
   void OnTabSlotAnimationProgressed(TabSlotView* view);
 
@@ -596,9 +574,6 @@ class TabStrip : public views::View,
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // views::ViewTargeterDelegate:
-  views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
-
   // views::ViewObserver:
   void OnViewFocused(views::View* observed_view) override;
   void OnViewBlurred(views::View* observed_view) override;
@@ -624,16 +599,14 @@ class TabStrip : public views::View,
 
   base::ObserverList<TabStripObserver>::Unchecked observers_;
 
+  std::unique_ptr<TabStripController> controller_;
+
   // The View parent for the tabs and the various group views.
   TabContainer* tab_container_;
 
   std::map<tab_groups::TabGroupId, std::unique_ptr<TabGroupViews>> group_views_;
 
-  std::unique_ptr<TabStripController> controller_;
-
   base::RepeatingCallback<int()> available_width_callback_;
-
-  std::unique_ptr<TabStripLayoutHelper> layout_helper_;
 
   // Responsible for animating tabs in response to model changes.
   views::BoundsAnimator bounds_animator_;

@@ -518,6 +518,7 @@
 <translation id="2523886232349826891">ഈ ഉപകരണത്തിൽ മാത്രം സംരക്ഷിക്കപ്പെടും</translation>
 <translation id="2524461107774643265">കൂടുതൽ വിവരങ്ങൾ ചേർക്കുക</translation>
 <translation id="2529899080962247600">ഈ ഫീൽഡിൽ <ph name="MAX_ITEMS_LIMIT" />-ൽ കൂടുതൽ എൻ‌ട്രികൾ ഉണ്ടാകരുത്. തുടർന്നുള്ള എല്ലാ എൻ‌ട്രികളും നിരസിക്കും.</translation>
+<translation id="2535585790302968248">സ്വകാര്യമായി ബ്രൗസ് ചെയ്യാൻ പുതിയ അദൃശ്യ ടാബ് തുറക്കുക</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{എന്നതും മറ്റൊരെണ്ണവും}other{എന്നതും മറ്റ് # എണ്ണവും}}</translation>
 <translation id="2536110899380797252">വിലാസം ചേർക്കുക</translation>
 <translation id="2539524384386349900">കണ്ടെത്തുക</translation>
@@ -584,6 +585,7 @@
 <translation id="2709516037105925701">സ്വയമേവ പൂരിപ്പിക്കൽ</translation>
 <translation id="2713444072780614174">വെള്ള</translation>
 <translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome ക്രമീകരണത്തിൽ നിങ്ങളുടെ പേയ്‌മെന്റുകളും ക്രെഡിറ്റ് കാർഡ് വിവരങ്ങളും മാനേജ് ചെയ്യാൻ 'Tab' അമർത്തുക, തുടർന്ന് 'Enter' അമർത്തുക</translation>
+<translation id="271663710482723385">പൂർണ്ണ സ്ക്രീനിൽ നിന്ന് പുറത്തുകടക്കാൻ |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| അമർത്തുക</translation>
 <translation id="2721148159707890343">അഭ്യർത്ഥന വിജയിച്ചു</translation>
 <translation id="2723669454293168317">Chrome ക്രമീകരണത്തിൽ സുരക്ഷാ പരിശോധന റൺ ചെയ്യുക</translation>
 <translation id="2726001110728089263">വശത്തുള്ള ട്രേ</translation>
@@ -1225,6 +1227,7 @@
 <translation id="4757993714154412917">വഞ്ചനാപരമായ സൈറ്റിൽ നിങ്ങൾ ഇപ്പോൾ പാസ്‍വേഡ് നൽകി. അക്കൗണ്ടുകൾ സുരക്ഷിതമാക്കാൻ, നിങ്ങളുടെ സംരക്ഷിച്ച പാസ്‌വേഡുകൾ ഇപ്പോൾ തന്നെ പരിശോധിക്കാൻ Chromium നിർദ്ദേശിക്കുന്നു.</translation>
 <translation id="4758311279753947758">കോൺടാക്റ്റ് വിവരങ്ങൾ ചേർക്കുക</translation>
 <translation id="4761104368405085019">നിങ്ങളുടെ മൈക്രോഫോൺ ഉപയോഗിക്കുക</translation>
+<translation id="4761869838909035636">Chrome സുരക്ഷാ പരിശോധന റൺ ചെയ്യുക</translation>
 <translation id="4764776831041365478"><ph name="URL" /> ലെ വെബ്‌പേജ് താല്‍‌ക്കാലികമായി പ്രവര്‍‌ത്തനരഹിതമായിരിക്കാം, അല്ലെങ്കില്‍‌ ഒരു പുതിയ വെബ് വിലാസത്തിലേക്ക് ശാശ്വതമായി നീക്കംചെയ്യപ്പെട്ടിരിക്കാം.</translation>
 <translation id="4766713847338118463">താഴെ ഇരട്ട സ്‌റ്റേപ്പിൾ ചെയ്യുക</translation>
 <translation id="4771973620359291008">ഒരു അജ്ഞാത പിശക് സംഭവിച്ചു.</translation>
@@ -1256,6 +1259,7 @@
 <translation id="4854362297993841467">ഈ ഡെലിവറി രീതി ലഭ്യമല്ല. മറ്റൊരു രീതി പരീക്ഷിക്കുക.</translation>
 <translation id="4854853140771946034">Google Keep-ൽ പുതിയൊരു കുറിപ്പ് വേഗത്തിൽ സൃഷ്ടിക്കുക</translation>
 <translation id="485902285759009870">കോഡ് പരിശോധിച്ചുറപ്പിക്കുന്നു...</translation>
+<translation id="4866506163384898554">നിങ്ങളുടെ കഴ്‌സർ കാണിക്കാൻ |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| അമർത്തുക</translation>
 <translation id="4876188919622883022">ലളിതവൽക്കരിച്ച കാഴ്ച്ച</translation>
 <translation id="4876305945144899064">ഉപയോക്തൃനാമമില്ല</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{ഒന്നുമില്ല}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
@@ -1269,6 +1273,7 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4900217275619098670">ഒൻപതാമത്തെ റോൾ</translation>
 <translation id="4901778704868714008">സംരക്ഷിക്കുക...</translation>
+<translation id="4905659621780993806">നിങ്ങളുടെ അഡ്‌മിൻ നിങ്ങളുടെ ഉപകരണം <ph name="DATE" />, <ph name="TIME" />-ന് റീസ്റ്റാർട്ട് ചെയ്യും. നിങ്ങളുടെ ഉപകരണം റീസ്റ്റാർട്ട് ചെയ്യുന്നതിന് മുമ്പ് തുറന്നിരിക്കുന്ന ഇനങ്ങളെല്ലാം സംരക്ഷിക്കുക.</translation>
 <translation id="4913987521957242411">മുകളിൽ ഇടതുവശത്ത് പഞ്ച് ചെയ്യുക</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" /> ഇൻസ്റ്റാൾ ചെയ്യുക (ഡൗൺലോഡ് ചെയ്യേണ്ടതില്ല)</translation>
 <translation id="4923459931733593730">പേയ്‌മെന്റ് രീതി</translation>
@@ -1478,6 +1483,7 @@
 <translation id="5556459405103347317">വീണ്ടും ലോഡ് ചെയ്യുക</translation>
 <translation id="5560088892362098740">കാലഹരണപ്പെടല്‍ തീയതി</translation>
 <translation id="55635442646131152">ഡോക്യുമെന്റിന്റെ ഔട്ട്‌ലൈൻ</translation>
+<translation id="5565613213060953222">അദൃശ്യ ടാബ് തുറക്കുക</translation>
 <translation id="5565735124758917034">സജീവമാണ്</translation>
 <translation id="5570825185877910964">അക്കൗണ്ട് പരിരക്ഷിക്കുക</translation>
 <translation id="5571083550517324815">ഈ വിലാസത്തിൽ നിന്ന് പിക്ക്അപ്പ് ചെയ്യാൻ കഴിയില്ല. മറ്റൊരു വിലാസം തിരഞ്ഞെടുക്കുക.</translation>
@@ -1682,6 +1688,7 @@
 <translation id="6290238015253830360">നിങ്ങളുടെ നിർദ്ദേശിച്ച ലേഖനങ്ങൾ ഇവിടെ ദൃശ്യമാകും</translation>
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6295618774959045776">CVC:</translation>
+<translation id="6300452962057769623">{0,plural, =0{നിങ്ങളുടെ ഉപകരണം ഇപ്പോൾ റീസ്റ്റാർട്ട് ചെയ്യും}=1{നിങ്ങളുടെ ഉപകരണം 1 സെക്കൻഡിൽ റീസ്റ്റാർട്ട് ചെയ്യും}other{നിങ്ങളുടെ ഉപകരണം # സെക്കൻഡിൽ റീസ്റ്റാർട്ട് ചെയ്യും}}</translation>
 <translation id="6302269476990306341">Chrome സ്വമേധയാ പൂരിപ്പിക്കൽ നിർത്തുന്നതിലെ Google അസിസ്‌റ്റന്റ് സാന്നിധ്യം</translation>
 <translation id="6305205051461490394"><ph name="URL" /> ലഭ്യമല്ല.</translation>
 <translation id="6312113039770857350">വെബ്പേജ് ലഭ്യമല്ല</translation>
@@ -1943,6 +1950,7 @@
 <translation id="7192203810768312527"><ph name="SIZE" /> ലാഭിക്കുക. നിങ്ങളുടെ അടുത്ത സന്ദർശനത്തിൽ ചില സൈറ്റുകൾ സാവധാനത്തിൽ ലോഡായേക്കാം.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7201591969684833065">നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർക്ക് ഇവ കാണാനാകും:</translation>
+<translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, സ്വകാര്യമായി ബ്രൗസ് ചെയ്യാൻ പുതിയ അദൃശ്യ ടാബ് തുറക്കുന്നതിന് 'Tab' അമർത്തുക, തുടർന്ന് 'Enter' അമർത്തുക</translation>
 <translation id="7202346780273620635">ലെറ്റർ-അധികം</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" />, സുരക്ഷാ മാനദണ്ഡങ്ങൾ പാലിക്കുന്നില്ല.</translation>
 <translation id="7210993021468939304">കണ്ടെയ്‌നറിനുള്ളിലെ Linux ആക്‌റ്റിവിറ്റി, കൂടാതെ കണ്ടെയ്‌നറിനുള്ളിൽ Linux ആപ്പുകൾ ഇൻസ്‌റ്റാൾ ചെയ്യാനും റൺ ചെയ്യാനും കഴിയും</translation>
@@ -2005,6 +2013,7 @@
 <translation id="7378627244592794276">വേണ്ട</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7386364858855961704">ബാധകമല്ല</translation>
+<translation id="7388594495505979117">{0,plural, =1{നിങ്ങളുടെ ഉപകരണം 1 മിനിറ്റിൽ റീസ്റ്റാർട്ട് ചെയ്യും}other{നിങ്ങളുടെ ഉപകരണം # മിനിറ്റിൽ റീസ്റ്റാർട്ട് ചെയ്യും}}</translation>
 <translation id="7390545607259442187">കാർഡ് സ്ഥിരീകരിക്കുക</translation>
 <translation id="7392089738299859607">വിലാസം അപ്ഡേറ്റ് ചെയ്യുക</translation>
 <translation id="7399802613464275309">സുരക്ഷാ പരിശോധന</translation>
@@ -2205,6 +2214,7 @@
 <translation id="799149739215780103">ബൈൻഡ് ചെയ്യുക</translation>
 <translation id="7992044431894087211"><ph name="APPLICATION_TITLE" /> എന്നതുമായി സ്ക്രീൻ പങ്കിടൽ പുനരാരംഭിച്ചു</translation>
 <translation id="7995512525968007366">വ്യക്തമാക്കിയിട്ടില്ല</translation>
+<translation id="7998269595945679889">'അദൃശ്യ ടാബ് തുറക്കുക' ബട്ടൺ, സ്വകാര്യമായി ബ്രൗസ് ചെയ്യാൻ പുതിയ അദൃശ്യ ടാബ് തുറക്കാൻ 'Enter' അമർത്തുക</translation>
 <translation id="800218591365569300">ഇടം സൃഷ്‌ടിക്കാൻ മറ്റ് ടാബുകളോ പ്രോഗ്രാമുകളോ അടയ്‌ക്കുന്നത് പരീക്ഷിക്കൂ.</translation>
 <translation id="8004582292198964060">ബ്രൗസര്‍</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{ഈ കാർഡും അവയുടെ ബില്ലിംഗ് വിലാസവും സംരക്ഷിക്കപ്പെടും. നിങ്ങൾ <ph name="USER_EMAIL" /> എന്നതിലേക്ക് സൈൻ ഇൻ ചെയ്‌തിരിക്കുമ്പോൾ അത് ഉപയോഗിക്കാനാകും.}other{ഈ കാർഡുകളും അവയുടെ ബില്ലിംഗ് വിലാസങ്ങളും സംരക്ഷിക്കപ്പെടും. നിങ്ങൾ <ph name="USER_EMAIL" /> എന്നതിലേക്ക് സൈൻ ഇൻ ചെയ്‌തിരിക്കുമ്പോൾ അവ ഉപയോഗിക്കാനാകും.}}</translation>
@@ -2359,6 +2369,7 @@
 <translation id="8507227106804027148">കമാന്‍ഡ് ലൈന്‍‌</translation>
 <translation id="8508648098325802031">തിരയൽ ഐക്കൺ</translation>
 <translation id="8511402995811232419">കുക്കികൾ മാനേജ് ചെയ്യുക</translation>
+<translation id="8519753333133776369">നിങ്ങളുടെ അഡ്‌മിൻ അനുവദിച്ചിരിക്കുന്ന HID ഉപകരണം</translation>
 <translation id="8522552481199248698">നിങ്ങളുടെ Google അക്കൗണ്ട് പരിരക്ഷിക്കാനും പാസ്‌വേഡ് മാറ്റാനും Chrome സഹായിക്കും.</translation>
 <translation id="8530813470445476232">Chrome ക്രമീകരണത്തിൽ നിങ്ങളുടെ ബ്രൗസിംഗ് ചരിത്രവും കുക്കികളും കാഷെയും മറ്റും മായ്‌ക്കുക</translation>
 <translation id="8533619373899488139">ബ്ലോക്ക് ചെയ്ത URL-കളുടെ ലിസ്റ്റും നിങ്ങളുടെ സിസ്റ്റം അഡ്‌മിൻ നടപ്പിലാക്കിയ മറ്റ് നയങ്ങളും കാണുന്നതിന് &lt;strong&gt;chrome://policy&lt;/strong&gt; സന്ദർശിക്കുക.</translation>

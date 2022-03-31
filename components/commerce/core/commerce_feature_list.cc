@@ -51,6 +51,7 @@ const base::Feature kCommerceDeveloper{"CommerceDeveloper",
 
 const char kRetailCouponsWithCodeParam[] = "RetailCouponsWithCodeParam";
 
+// Params use for Discount Consent v2.
 const base::Feature kDiscountConsentV2{"DiscountConsentV2",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 

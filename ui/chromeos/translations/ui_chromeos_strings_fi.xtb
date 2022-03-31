@@ -106,6 +106,7 @@
 <translation id="1853795129690976061">Tämä kansio on jaettu Linuxille</translation>
 <translation id="1864756863218646478">Tiedostoa ei löytynyt.</translation>
 <translation id="1884013283844450420">Verkko <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, yhdistä</translation>
+<translation id="1914901738028575085">CloudReady 2.0 ‑laite</translation>
 <translation id="1920670151694390848">translitteroitu malajalam</translation>
 <translation id="1920798810075583923">Vesimeloni</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> alustettu</translation>
@@ -241,6 +242,7 @@
 <translation id="3078461028045006476">Jaa laajennuksen <ph name="EXTENSION_NAME" /> kanssa</translation>
 <translation id="3083975830683400843">Chromebits</translation>
 <translation id="3085752524577180175">SOCKS-isäntä</translation>
+<translation id="3104793765551262433">Verkko <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signaalin voimakkuus <ph name="SIGNAL_STRENGTH" /> %, järjestelmänvalvojan estämä, lisätietoja</translation>
 <translation id="3113153474486991170">"<ph name="PATH" />" ei avaudu tästä sijainnista. Kopioi se omiin tiedostoihin, jotta voit avata sen.</translation>
 <translation id="3113592018909187986">Sinulla on 1 yritys jäljellä. Et voi käyttää tätä verkkoa ennen kuin luot uuden PIN-koodin.</translation>
 <translation id="3124404833828281817">Haaveileva henkilö</translation>
@@ -883,6 +885,7 @@
 <translation id="8551494947769799688">latvia</translation>
 <translation id="8560515948038859357">kantoninkiina</translation>
 <translation id="8561206103590473338">Norsu</translation>
+<translation id="8566466896628108558">Verkko <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signaalin voimakkuus <ph name="SIGNAL_STRENGTH" /> %, järjestelmänvalvojan estämä, lisätietoja</translation>
 <translation id="8569764466147087991">Valitse avattava tiedosto</translation>
 <translation id="8577897833047451336">kroatia</translation>
 <translation id="8578308463707544055">indonesia</translation>
@@ -900,6 +903,7 @@
 <translation id="8714406895390098252">Polkupyörä</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> valittiin.</translation>
 <translation id="872537912056138402">kroaatti</translation>
+<translation id="873847021056608403">CloudReady 2.0 ‑laitteet</translation>
 <translation id="8743164338060742337">Verkko <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, signaalin voimakkuus, <ph name="SIGNAL_STRENGTH" /> %, järjestelmänvalvojan ylläpitämä, yhdistä</translation>
 <translation id="8750438273876807512">Kosketa tiedostoa pitkään, valitse <ph name="ICON" /> ja valitse Kiinnitä hyllyyn, niin löydät tiedostot nopeasti hyllystä.</translation>
 <translation id="8787254343425541995">Salli välityspalvelimet jaetuilla verkoilla</translation>

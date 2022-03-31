@@ -21,6 +21,8 @@ export {IframeElement} from './iframe.js';
 export {LogoElement} from './logo.js';
 export {recordDuration, recordLoadDuration, recordOccurence, recordPerdecage} from './metrics_utils.js';
 export {ChromeCartProxy} from './modules/cart/chrome_cart_proxy.js';
+export {DiscountConsentCard, DiscountConsentVariation} from './modules/cart/discount_consent_card.js';
+export {DiscountConsentDialog} from './modules/cart/discount_consent_dialog.js';
 export {chromeCartDescriptor, ChromeCartModuleElement} from './modules/cart/module.js';
 export {chromeCartDescriptor as chromeCartV2Descriptor, ChromeCartModuleElement as ChromeCartV2ModuleElement} from './modules/cart_v2/module.js';
 export {DriveProxy} from './modules/drive/drive_module_proxy.js';

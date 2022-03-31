@@ -594,7 +594,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Ubuntu-16.04"
+              "os": "Ubuntu-18.04"
             }
           ],
         },
@@ -645,7 +645,7 @@
       'chrome_all_tast_tests': {
         'swarming': {
           'idempotent': False,  # https://crbug.com/923426#c27
-          'shards': 4,
+          'shards': 6,
         },
         'resultdb': {
           'enable': True,
@@ -1196,9 +1196,6 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'mixins': [
-          'skia_gold_test',
-        ],
         'resultdb': {
           'enable': True,
         },
@@ -1240,9 +1237,6 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'mixins': [
-          'skia_gold_test',
-        ],
         'resultdb': {
           'enable': True,
         },
@@ -1268,9 +1262,6 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'mixins': [
-          'skia_gold_test',
-        ],
         'resultdb': {
           'enable': True,
         },
@@ -1421,7 +1412,7 @@
             # This suite simply analyzes build targets without running them.
             # It can thus run on a standard linux machine w/o a device.
             {
-              'os': 'Ubuntu-16.04',
+              'os': 'Ubuntu-18.04',
               'cpu': 'x86'
             },
           ],
@@ -1443,7 +1434,7 @@
             # This suite simply analyzes build targets without running them.
             # It can thus run on a standard linux machine w/o a device.
             {
-              'os': 'Ubuntu-16.04',
+              'os': 'Ubuntu-18.04',
               'cpu': 'x86'
             },
           ],
@@ -1453,6 +1444,21 @@
           'result_format': 'single',
           'result_file': '${ISOLATED_OUTDIR}/sizes/test_results.json'
         },
+        'remove_mixins': [
+          'android_r',
+          'bullhead',
+          'flame',
+          'hammerhead',
+          'kitkat',
+          'lollipop',
+          'marshmallow',
+          'marshmallow_generic',
+          'mdarcy',
+          'nougat_generic',
+          'oreo_fleet',
+          'pie_fleet',
+          'walleye',
+        ],
       },
     },
 
@@ -1476,9 +1482,6 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'mixins': [
-          'skia_gold_test',
-        ],
         'resultdb': {
           'enable': True,
         },
@@ -1567,9 +1570,6 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'mixins': [
-          'skia_gold_test',
-        ],
         'resultdb': {
           'enable': True,
         },
@@ -2564,6 +2564,7 @@
         'use_isolated_scripts_api': True,
       },
     },
+
     # The command buffer perf tests are only run on Windows.
     # They are mostly driver and platform independent.
     'gpu_command_buffer_perf_passthrough_isolated_scripts': {
@@ -3749,10 +3750,7 @@
           # Increase the timeout when using backend validation layers (crbug.com/1208253)
           '--timeout-ms=30000',
         ],
-        'mixins': [
-          'webgpu_cts',
-          'skia_gold_test',
-        ],
+        'mixins': ['webgpu_cts'],
         'swarming': {
           'shards': 4,
         },
@@ -3766,10 +3764,7 @@
         'args': [
           '--flag-specific=webgpu',
         ],
-        'mixins': [
-          'webgpu_cts',
-          'skia_gold_test',
-        ],
+        'mixins': ['webgpu_cts'],
         'swarming': {
           'shards': 4,
         },
@@ -3787,10 +3782,7 @@
           # Increase the timeout when using backend validation layers (crbug.com/1208253)
           '--timeout-ms=30000',
         ],
-        'mixins': [
-          'webgpu_cts',
-          'skia_gold_test',
-        ],
+        'mixins': ['webgpu_cts'],
         'swarming': {
           'shards': 4,
         },
@@ -4168,9 +4160,6 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'mixins': [
-          'skia_gold_test',
-        ],
         'resultdb': {
           'enable': True,
         },
@@ -4236,7 +4225,35 @@
     },
 
     'monochrome_public_apk_checker_isolated_script': {
-      'monochrome_public_apk_checker': {},
+      'monochrome_public_apk_checker': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-18.04',
+              'cpu': 'x86',
+              'device_os': None,
+              'device_os_flavor': None,
+              'device_playstore_version': None,
+              'device_type': None,
+            },
+          ],
+        },
+        'remove_mixins': [
+          'android_r',
+          'bullhead',
+          'flame',
+          'hammerhead',
+          'kitkat',
+          'lollipop',
+          'marshmallow',
+          'marshmallow_generic',
+          'mdarcy',
+          'nougat_generic',
+          'oreo_fleet',
+          'pie_fleet',
+          'walleye',
+        ],
+      },
     },
 
     'network_service_fyi_gtests': {
@@ -5042,9 +5059,6 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
-        'mixins': [
-          'skia_gold_test',
-        ],
         'resultdb': {
           'enable': True,
         },

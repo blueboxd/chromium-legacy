@@ -767,6 +767,14 @@
     "args": [ "--enable-features=BackForwardCache" ]
   },
   {
+    "prefix": "bfcache-same-site",
+    "bases": [ "external/wpt/app-history/app-history-entry/entries-after-bfcache.html",
+               "external/wpt/app-history/app-history-entry/entries-after-bfcache-in-iframe.html",
+               "external/wpt/app-history/per-entry-events/dispose-after-bfcache.html" ],
+    "args": [ "--enable-features=BackForwardCache:enable_same_site/true",
+              "--disable-field-trial-config" ]
+  },
+  {
     "prefix": "third-party-storage-partitioning",
     "bases": [
       "external/wpt/web-locks/partitioned-web-locks.tentative.https.html",
@@ -883,12 +891,12 @@
               "external/wpt/html/cross-origin-embedder-policy/anonymous-iframe/",
               "http/tests/cookies/partitioned-cookies",
               "http/tests/inspector-protocol/network/"],
-    "args": ["--enable-features=PartitionedCookies"]
+    "args": ["--enable-features=PartitionedCookies,PartitionedCookiesBypassOriginTrial"]
   },
   {
     "prefix": "partitioned-cookies-first-party-sets",
     "bases": ["http/tests/inspector-protocol/network/"],
-    "args": ["--enable-features=PartitionedCookies",
+    "args": ["--enable-features=PartitionedCookies,PartitionedCookiesBypassOriginTrial",
              "--use-first-party-set=https://devtools.test,https://example.test"]
   },
   {
@@ -1029,7 +1037,7 @@
       "http/tests/inspector-protocol/fenced-frame",
       "external/wpt/html/cross-origin-embedder-policy/anonymous-iframe"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/mparch,Prerender2,PartitionedCookies"]
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch,Prerender2,PartitionedCookies,PartitionedCookiesBypassOriginTrial"]
   },
   {
     "prefix": "fenced-frame-shadow-dom",
@@ -1038,7 +1046,7 @@
       "wpt_internal/fenced_frame",
       "external/wpt/html/cross-origin-embedder-policy/anonymous-iframe"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,Prerender2,PartitionedCookies"]
+    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,Prerender2,PartitionedCookies,PartitionedCookiesBypassOriginTrial"]
   },
   {
     "prefix": "disable-custom-element-default-style",
@@ -1082,5 +1090,11 @@
       "--enable-features=SystemCursorSizeSupported",
       "--disable-headless-mode"
     ]
+  },
+  {
+    "prefix": "document-pip",
+    "bases": [],
+    "args": ["--enable-features=PictureInPictureV2",
+             "--enable-blink-features=PictureInPictureV2"]
   }
 ]

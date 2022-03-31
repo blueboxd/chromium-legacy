@@ -106,6 +106,7 @@
 <translation id="1853795129690976061">ይህ አቃፊ ለLinux ተጋርቷል</translation>
 <translation id="1864756863218646478">ፋይሉ ሊገኝ አልቻለም።</translation>
 <translation id="1884013283844450420">አውታረ መረብ <ph name="NETWORK_INDEX" /> ከ<ph name="NETWORK_COUNT" />፣ <ph name="NETWORK_NAME" />፣ አገናኝ</translation>
+<translation id="1914901738028575085">የCloudReady 2.0 መሳሪያ</translation>
 <translation id="1920670151694390848">በማላያላምኛ ቋንቋ ፊደል መጻፍ</translation>
 <translation id="1920798810075583923">ሐብሐብ</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> ላይ ቅርጸት ተሰርቷል</translation>
@@ -241,6 +242,7 @@
 <translation id="3078461028045006476">ለ<ph name="EXTENSION_NAME" /> አጋራ</translation>
 <translation id="3083975830683400843">Chromebits</translation>
 <translation id="3085752524577180175">የSOCKS አስተናጋጅ</translation>
+<translation id="3104793765551262433">አውታረ መረብ <ph name="NETWORK_INDEX" /> ከ<ph name="NETWORK_COUNT" />፣ <ph name="NETWORK_NAME" />፣ <ph name="SECURITY_STATUS" />፣ <ph name="CONNECTION_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />%፣ በአስተዳዳሪዎ የታገደ፣ ዝርዝሮች</translation>
 <translation id="3113153474486991170">ከዚህ አካባቢ «<ph name="PATH" />»ን መክፈት አልተቻለም። ለመክፈት እባክዎን ወደ «የእኔ ፋይሎች» ይቅዱ።</translation>
 <translation id="3113592018909187986">1 ቀሪ ሙከራ አለዎት። አዲስ ፒን እስኪያዋቅሩ ድረስ ይህን አውታረ መረብ መጠቀም አይችሉም።</translation>
 <translation id="3124404833828281817">የሰው ቀን ህልም ማየት</translation>
@@ -883,6 +885,7 @@
 <translation id="8551494947769799688">ላትቪያን</translation>
 <translation id="8560515948038859357">ካንቶኒዝ</translation>
 <translation id="8561206103590473338">ዝሆን</translation>
+<translation id="8566466896628108558">አውታረ መረብ <ph name="NETWORK_INDEX" /> ከ<ph name="NETWORK_COUNT" />፣ <ph name="NETWORK_NAME" />፣ <ph name="SECURITY_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />%፣ በአስተዳዳሪዎ የታገደ፣ ዝርዝሮች</translation>
 <translation id="8569764466147087991">የሚከፈት ፋይል ይምረጡ</translation>
 <translation id="8577897833047451336">ክሮሽያኛ</translation>
 <translation id="8578308463707544055">የኢንዶኔዢያኛ</translation>
@@ -900,6 +903,7 @@
 <translation id="8714406895390098252">ቢስክሌት</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> ተመርጧል።</translation>
 <translation id="872537912056138402">ክሮሽያንኛ</translation>
+<translation id="873847021056608403">የCloudReady 2.0 መሳሪያዎች</translation>
 <translation id="8743164338060742337">አውታረ መረብ <ph name="NETWORK_INDEX" /> ከ<ph name="NETWORK_COUNT" />፣ <ph name="NETWORK_NAME" /> <ph name="NETWORK_PROVIDER_NAME" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />%፣ በአስተዳዳሪ የሚተዳደር፣ ተገናኝ</translation>
 <translation id="8750438273876807512">በመደርደሪያ ውስጥ ያሉትን ፋይሎችዎ በፍጥነት ለመድረስ ፋይልን ይንኩ እና ይያዙ እና <ph name="ICON" />ን መታ ያድርጉ እና «ለመደርደሪያ ሰካ»ን ይምረጡ።</translation>
 <translation id="8787254343425541995">ለተጋሩ አውታረ መረቦች ተኪዎችን ይፍቀዱ</translation>

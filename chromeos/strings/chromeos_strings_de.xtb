@@ -30,6 +30,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">Wird aktualisiert (<ph name="PERCENTAGE_VALUE" /> % abgeschlossen)</translation>
 <translation id="1310380015393971138">Kein Netzwerk (<ph name="NETWORK_NAME" />) verfügbar</translation>
+<translation id="131421566576084655">Datum, an dem die Datennutzung zuletzt zurückgesetzt wurde, nicht verfügbar</translation>
 <translation id="1314565355471455267">Android VPN</translation>
 <translation id="131461803491198646">Heimnetzwerk, kein Roaming</translation>
 <translation id="1327977588028644528">Gateway</translation>
@@ -42,8 +43,10 @@
 <translation id="1413240736185167732">Fehlgeschlagen – Filter funktioniert nicht</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="142228117786570094">Ich habe ein Schlüsselpaar</translation>
+<translation id="1435763214710588005">Setzt die Datennutzung jeden Monat automatisch am ausgewählten Tag zurück</translation>
 <translation id="1442433966118452622">Bildquelle</translation>
 <translation id="1451536289672181509">Das Gerät ist eine Tastatur.</translation>
+<translation id="1459693405370120464">Wetter</translation>
 <translation id="1468664791493211953">Angebote</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> verwaltet dieses Gerät und kann möglicherweise deine Aktivitäten überwachen.</translation>
 <translation id="1478594628797167447">Scanner</translation>
@@ -55,6 +58,7 @@
 <translation id="1565038567006703504">„<ph name="DEVICE_NAME" />“ kann nicht aktualisiert werden</translation>
 <translation id="1567064801249837505">Alben</translation>
 <translation id="1572585716423026576">Als Hintergrund festlegen</translation>
+<translation id="1615335640928990664">Datennutzung seit <ph name="FRIENDLY_DATE" /></translation>
 <translation id="1621067168122174824">Ladetest ausführen</translation>
 <translation id="1639239467298939599">Wird geladen...</translation>
 <translation id="1641857168437328880">Dokumenteneinzug (einseitig)</translation>
@@ -103,6 +107,7 @@
 <translation id="2212733584906323460">Namensauflösung</translation>
 <translation id="2217935453350629363">Momentane Geschwindigkeit</translation>
 <translation id="2224337661447660594">Kein Internet</translation>
+<translation id="2230005943220647148">Celsius</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Aktivierungsstatus</translation>
 <translation id="2287186687001756809">Kein Bild verfügbar. Sie können Fotos unter <ph name="LINK" /> hinzufügen.</translation>
@@ -144,7 +149,7 @@
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="2878387241690264070"><ph name="RATE" /> in <ph name="NUM_SECONDS" /> Sekunden entladen.</translation>
 <translation id="291142119251986300">Nicht qualifizierte Komponenten</translation>
-<translation id="2926057806159140518">Geben Sie Nutzernamen und Passwort ein oder scannen Sie Ihren QR-Code</translation>
+<translation id="2926057806159140518">Gib Nutzernamen und Passwort ein oder scanne deinen QR-Code</translation>
 <translation id="3008341117444806826">AKTUALISIEREN</translation>
 <translation id="3009958530611748826">Ordner als Speicherort auswählen</translation>
 <translation id="3031560714565892478">Das Gerät ist eine Videokamera.</translation>
@@ -207,6 +212,7 @@
 <translation id="3858860766373142691">Name</translation>
 <translation id="3865414814144988605">Auflösung</translation>
 <translation id="387301095347517405">Wie oft der Akku vollständig aufgeladen wurde</translation>
+<translation id="3923184630988645767">Datennutzung</translation>
 <translation id="3924044641767672375">Eine Verbindung zum WLAN wird empfohlen, um den Reparaturvorgang zu vereinfachen. Ihr Netzwerk wird gespeichert.</translation>
 <translation id="3932043219784172185">Kein Gerät verbunden</translation>
 <translation id="3941014780699102620">Host konnte nicht aufgelöst werden</translation>
@@ -228,6 +234,7 @@
 <translation id="4145784616224233563">HTTP-Firewall</translation>
 <translation id="4147897805161313378">Google Fotos</translation>
 <translation id="4155551848414053977">Achte darauf, dass der Scanner eingeschaltet und entweder über das Netzwerk oder direkt verbunden ist</translation>
+<translation id="4170180284036919717">Foto aufnehmen</translation>
 <translation id="4170700058716978431">FEHLGESCHLAGEN</translation>
 <translation id="4176463684765177261">Deaktiviert</translation>
 <translation id="4213104098953699324">USB-Tastatur</translation>
@@ -283,7 +290,7 @@
 <translation id="4773299976671772492">Angehalten</translation>
 <translation id="4782311465517282004">Sie können Definitionen oder Übersetzungen anzeigen oder Einheiten umrechnen lassen, indem Sie Text gedrückt halten oder mit der rechten Maustaste darauf klicken</translation>
 <translation id="4793756956024303490">Komprimierungsalgorithmus</translation>
-<translation id="4794140124556169553">Der CPU-Test kann sich auf die Leistung Ihres Systems auswirken</translation>
+<translation id="4794140124556169553">Der CPU-Test kann sich auf die Leistung deines Systems auswirken</translation>
 <translation id="4808449224298348341">Druckauftrag für "<ph name="DOCUMENT_TITLE" />" wurde abgebrochen</translation>
 <translation id="4813136279048157860">Meine Bilder</translation>
 <translation id="4813345808229079766">Verbindung</translation>
@@ -306,7 +313,7 @@
 <translation id="4921665434385737356"><ph name="RATE" /> in <ph name="NUM_SECONDS" /> Sekunden aufgeladen.</translation>
 <translation id="4930320165497208503">Gehen Sie zum Einrichten oder Aktualisieren einer Verbindung zu den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Datum</translation>
-<translation id="4950314376641394653">Firmware Ihres Geräts (<ph name="DEVICE_NAME" />) wurde auf Version <ph name="VERSION" /> aktualisiert</translation>
+<translation id="4950314376641394653">Firmware deines Geräts (<ph name="DEVICE_NAME" />) wurde auf Version <ph name="VERSION" /> aktualisiert</translation>
 <translation id="498186245079027698">Prüfe den Scanner und versuche es noch einmal. Sieh nach, ob ausreichend lokaler Speicherplatz vorhanden ist, um die gescannten Dateien zu speichern.</translation>
 <translation id="4985509611418653372">Ausführen</translation>
 <translation id="4987769320337599931">Firewall</translation>
@@ -376,6 +383,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="5784136236926853061">Hohe HTTP-Latenz</translation>
 <translation id="5832805196449965646">Person hinzufügen</translation>
 <translation id="583281660410589416">Unbekannt</translation>
+<translation id="5843706793424741864">Fahrenheit</translation>
 <translation id="5849570051105887917">Code des Homepageanbieters</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5866840822086176774">Sehr stark</translation>
@@ -384,8 +392,10 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="5916664084637901428">An</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Ihre Datei wurde gescannt und im Ordner <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> gespeichert.}other{Ihre Dateien wurden gescannt und im Ordner <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> gespeichert.}}</translation>
 <translation id="5931523347251946569">Datei nicht gefunden</translation>
+<translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="594552776027197022">Zufälliges Schlüsselpaar generieren</translation>
 <translation id="5972388717451707488">Update Engine</translation>
+<translation id="6034694447310538551">Automatisches Zurücksetzen jeden Monat aktivieren</translation>
 <translation id="6037291330010597344">Der Dokumenteneinzug des Scanners ist leer. Legen Sie Dokumente ein und versuchen Sie es noch einmal.</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6040852767465482106">Anonyme Identität</translation>
@@ -409,6 +419,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">Keine Scanner verfügbar</translation>
 <translation id="6232017090690406397">Akku</translation>
+<translation id="6235460611964961764">Datennutzung manuell zurücksetzen</translation>
 <translation id="6243280677745499710">Derzeit festgelegt</translation>
 <translation id="6278428485366576908">Design</translation>
 <translation id="6280912520669706465">ARC</translation>
@@ -430,7 +441,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="649050271426829538">Angehalten – Papierstau</translation>
 <translation id="6500818810472529210">Ergebnis in der Google Suche anzeigen</translation>
 <translation id="650266656685499220">Gehen Sie zu Google Fotos, um Alben zu erstellen</translation>
-<translation id="6516990319416533844">Wenn Sie die Aufladegeschwindigkeit Ihres Akkus testen möchten, warten Sie zuerst, bis er ein wenig entladen ist</translation>
+<translation id="6516990319416533844">Wenn du die Aufladegeschwindigkeit deines Akkus testen möchtest, warte zuerst, bis er ein wenig entladen ist</translation>
 <translation id="6517239166834772319">Entdecken</translation>
 <translation id="6527081081771465939">Unbekanntes WLAN-Sicherheitsprotokoll</translation>
 <translation id="65587193855025101">Flachbett</translation>
@@ -620,6 +631,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="8910721771319628100">Das Standardnetzwerk hat den Latenzgrenzwert überschritten</translation>
 <translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> von <ph name="GIVEN_NAME" /></translation>
 <translation id="8919837981463578619">Fehlgeschlagen – Fach fehlt</translation>
+<translation id="8923267550422472772">Tag des Monats zum Zurücksetzen</translation>
 <translation id="8928727111548978589">Fehlgeschlagen – Kein Papier</translation>
 <translation id="8930521118335213258">Peer</translation>
 <translation id="8930622219860340959">Drahtlos</translation>

@@ -6625,6 +6625,9 @@ void WebContentsImpl::NotifyFrameSwapped(RenderFrameHostImpl* old_frame,
   if (old_frame && !new_frame->GetParent()) {
     RenderWidgetHostImpl* old_widget = old_frame->GetRenderWidgetHost();
     RenderWidgetHostImpl* new_widget = new_frame->GetRenderWidgetHost();
+    // TODO(https://crbug.com/1262098): CHECKs are to help track down crash.
+    CHECK(new_widget);
+    CHECK(old_widget);
     new_widget->SetImportance(old_widget->importance());
   }
 #endif
@@ -7411,8 +7414,17 @@ WebContentsImpl::CreateThrottlesForNavigation(
 
 std::vector<std::unique_ptr<CommitDeferringCondition>>
 WebContentsImpl::CreateDeferringConditionsForNavigationCommit(
-    NavigationHandle& navigation_handle) {
-  std::vector<std::unique_ptr<CommitDeferringCondition>> conditions;
+    NavigationHandle& navigation_handle,
+    CommitDeferringCondition::NavigationType type) {
+  OPTIONAL_TRACE_EVENT2(
+      "content", "WebContentsImpl::CreateDeferringConditionsForNavigation",
+      "navigation", navigation_handle, "NavigationType", type);
+  std::vector<std::unique_ptr<CommitDeferringCondition>> conditions =
+      GetContentClient()
+          ->browser()
+          ->CreateCommitDeferringConditionsForNavigation(&navigation_handle,
+                                                         type);
+
   if (auto condition = JavaScriptDialogCommitDeferringCondition::MaybeCreate(
           static_cast<NavigationRequest&>(navigation_handle)))
     conditions.push_back(std::move(condition));
@@ -7943,6 +7955,9 @@ void WebContentsImpl::NotifySwappedFromRenderManager(
                new_frame);
   DCHECK_NE(new_frame->lifecycle_state(),
             RenderFrameHostImpl::LifecycleStateImpl::kSpeculative);
+
+  // TODO(https://crbug.com/1262098): CHECKs are to help track down crash.
+  CHECK(new_frame);
 
   // Only fire RenderViewHostChanged if it is related to our FrameTree, as
   // observers can not deal with events coming from non-primary FrameTree.

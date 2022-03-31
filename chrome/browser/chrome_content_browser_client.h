@@ -33,7 +33,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/network_context.mojom-forward.h"
 
 class ChromeContentBrowserClientParts;
 class PrefRegistrySimple;
@@ -305,6 +304,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #if BUILDFLAG(IS_CHROMEOS)
   void OnTrustAnchorUsed(content::BrowserContext* browser_context) override;
 #endif
+  void CanSendSCTAuditingReport(
+      content::BrowserContext* browser_context,
+      base::OnceCallback<void(bool)> callback) override;
+  void OnNewSCTAuditingReportSent(
+      content::BrowserContext* browser_context) override;
   scoped_refptr<network::SharedURLLoaderFactory>
   GetSystemSharedURLLoaderFactory() override;
   network::mojom::NetworkContext* GetSystemNetworkContext() override;
@@ -467,6 +471,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::WebContents* web_contents) override;
   std::vector<std::unique_ptr<content::NavigationThrottle>>
   CreateThrottlesForNavigation(content::NavigationHandle* handle) override;
+  std::vector<std::unique_ptr<content::CommitDeferringCondition>>
+  CreateCommitDeferringConditionsForNavigation(
+      content::NavigationHandle* navigation_handle,
+      content::CommitDeferringCondition::NavigationType type) override;
   std::unique_ptr<content::NavigationUIData> GetNavigationUIData(
       content::NavigationHandle* navigation_handle) override;
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)

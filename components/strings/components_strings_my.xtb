@@ -520,6 +520,7 @@
 <translation id="2523886232349826891">ဤစက်တွင်သာ သိမ်းထားသည်</translation>
 <translation id="2524461107774643265">နောက်ထပ် အချက်အလက်များကို ထည့်ခြင်း</translation>
 <translation id="2529899080962247600">ဤအကွက်တွင် ထည့်သွင်းမှု <ph name="MAX_ITEMS_LIMIT" /> ခုထက်မပိုရပါ။ နောက်ထပ် ထည့်သွင်းမှုအားလုံးကို လျစ်လျူရှုပါမည်။</translation>
+<translation id="2535585790302968248">သီးသန့်ကြည့်ရှုရန် ရုပ်ဖျက်တဘ် အသစ်တစ်ခုဖွင့်နိုင်သည်</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{နှင့် နောက်ထပ် ၁ ခု}other{နှင့် နောက်ထပ် # ခု}}</translation>
 <translation id="2536110899380797252">လိပ်စာထည့်ရန်</translation>
 <translation id="2539524384386349900">ရှာကြည့်ရန်</translation>
@@ -587,9 +588,10 @@
 <translation id="2704283930420550640">တန်ဖိုးမှာ ပုံစံချထားမှု မကိုင်ညီပါ။</translation>
 <translation id="2704606927547763573">ကူးယူပြီးပါပြီ</translation>
 <translation id="2705137772291741111">သိမ်းဆည်းခဲ့သည့် (ယာယီသိမ်းဆည်းထားသည့်) မိတ္တူကို ဖတ်မရပါ။</translation>
-<translation id="2709516037105925701">အလိုလျောက် ဖြည့်စွက်</translation>
+<translation id="2709516037105925701">အလိုအလျောက် ဖြည့်စွက်</translation>
 <translation id="2713444072780614174">အဖြူ</translation>
 <translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ Chrome ဆက်တင်များတွင် ငွေပေးချေမှုများနှင့် ခရက်ဒစ်ကတ် အချက်အလက်ကို စီမံရန် Tab နှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
+<translation id="271663710482723385">ဖန်သားပြင်အပြည့်မှ ထွက်ရန် |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| နှိပ်ပါ</translation>
 <translation id="2721148159707890343">တောင်းဆိုချက် အောင်မြင်ပါသည်</translation>
 <translation id="2723669454293168317">Chrome ဆက်တင်များတွင် လုံခြုံရေး စစ်ဆေးမှု လုပ်ဆောင်ပါ</translation>
 <translation id="2726001110728089263">ဘေးဗန်း</translation>
@@ -1131,6 +1133,7 @@
 <translation id="4434045419905280838">ပေါ့ပ်အပ်နှင့် တစ်ဆင့်ညွှန်ချက်</translation>
 <translation id="4435702339979719576">ပို့စ်ကတ်)</translation>
 <translation id="443673843213245140">ပရောက်စီ သုံးရန်ပိတ်ထားသော်လည်း တိကျသည့် ပရောက်စီ စီစဉ်ဖွဲ့စည်းမှုကို သတ်မှတ်ထားသည်။</translation>
+<translation id="4441832193888514600">မူဝါဒကို cloud အသုံးပြုသူလိုက်နာရမည့် မူဝါဒအဖြစ်သာ သတ်မှတ်နိုင်သောကြောင့် လျစ်လျူရှုထားသည်။</translation>
 <translation id="4450893287417543264">ထပ်မပြပါနှင့်</translation>
 <translation id="4451135742916150903">HID ကိရိယာများနှင့် ချိတ်ဆက်ရန် ခွင့်တောင်းနိုင်သည်</translation>
 <translation id="4452328064229197696">သင်သုံးလိုက်သောစကားဝှက်ကို ဒေတာကျိုးပေါက်မှုတွင် တွေ့ရှိထားသည်။ သင့်အကောင့်များကို လုံခြုံစေရန် ‘Google စကားဝှက်မန်နေဂျာ’ က သင်သိမ်းထားသော စကားဝှက်များကို စစ်ဆေးရန် အကြံပြုပါသည်။</translation>
@@ -1229,6 +1232,7 @@
 <translation id="4757993714154412917">လှည့်ဖြားတတ်သော ဝဘ်ဆိုက်တစ်ခုတွင် သင့်စကားဝှက်ကို သင်က ယခုလေးတွင် ထည့်လိုက်သည်။ အကောင့်များ လုံခြုံစေရန်အတွက် သင်သိမ်းထားသည့် စကားဝှက်များကို စစ်ဆေးရန် Chromium ကအကြုံပြုပါသည်။</translation>
 <translation id="4758311279753947758">ဆက်သွယ်ရန်အချက်အလက် ထည့်ရန်</translation>
 <translation id="4761104368405085019">သင့်မိုက်ခရိုဖုန်းကို အသုံးပြုရန်</translation>
+<translation id="4761869838909035636">‘Chrome လုံခြုံရေး စစ်ဆေးမှု’ လုပ်ဆောင်ရန်</translation>
 <translation id="4764776831041365478"><ph name="URL" /> ပေါ်က ဝဘ်စာမျက်နှာမှ ယာယီ ဒေါင်းနေတာ ဖြစ်နိုင်သည် သို့မဟုတ် ၎င်းသည် ဝဘ် လိပ်စာ သစ်ဆီသို့ ထာဝရ ရွှေ့ပြောင်းသွားတာ ဖြစ်နိုင်သည်။</translation>
 <translation id="4766713847338118463">အောက်ခြေတွင် ချုပ်စက်ဖြင့် နှစ်ချက်ချုပ်ရန်</translation>
 <translation id="4771973620359291008">မသိရသည့် မှားယွင်းမှုတစ်ခု ဖြစ်ခဲ့သည်။</translation>
@@ -1260,6 +1264,7 @@
 <translation id="4854362297993841467">ဤပစ္စည်းပို့ခြင်းနည်းလမ်းသည် မရနိုင်ပါ။ အခြားနည်းလမ်းတစ်ခုကို ရွေးပါ။</translation>
 <translation id="4854853140771946034">Google Keep တွင် မှတ်စုအသစ် အမြန်ပြုလုပ်ရန်</translation>
 <translation id="485902285759009870">ကုဒ်ကို စိစစ်နေသည်...</translation>
+<translation id="4866506163384898554">သင်၏ကာဆာကို ပြရန် |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| နှိပ်ပါ</translation>
 <translation id="4876188919622883022">ရိုးရှင်းသည့် မြင်ကွင်း</translation>
 <translation id="4876305945144899064">အသုံးပြုသူအမည် မရှိ</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{မရှိ}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />၊ <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />၊ <ph name="EXAMPLE_DOMAIN_2" />၊ <ph name="AND_MORE" />}}</translation>
@@ -1273,6 +1278,7 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />၊ <ph name="TYPE_2" />၊ <ph name="TYPE_3" /></translation>
 <translation id="4900217275619098670">ကိုးခုမြောက်အလိပ်</translation>
 <translation id="4901778704868714008">သိမ်းရန်...</translation>
+<translation id="4905659621780993806">သင့်စီမံခန့်ခွဲသူက စက်ကို <ph name="DATE" />၊ <ph name="TIME" /> တွင် အလိုအလျောက်ပြန်စမည်။ ဖွင့်ထားသောဖိုင်အားလုံး သင့်စက်ပြန်မစမီ သိမ်းပါ။</translation>
 <translation id="4913987521957242411">ဘယ်ဘက်ထိပ်တွင် ဖောက်ရန်</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" /> ကို ထည့်သွင်းပါ (ဒေါင်းလုဒ်လုပ်ရန် မလိုပါ)</translation>
 <translation id="4923459931733593730">ငွေပေးချေမှု</translation>
@@ -1482,6 +1488,7 @@
 <translation id="5556459405103347317">ပြန်တင်ရန်</translation>
 <translation id="5560088892362098740">သက်တမ်း ကုန်ဆုံးမည့်ရက်</translation>
 <translation id="55635442646131152">မှတ်တမ်း အကြမ်းဖော်ပြချက်</translation>
+<translation id="5565613213060953222">ရုပ်ဖျက်တဘ်ဖွင့်ရန်</translation>
 <translation id="5565735124758917034">အသက်ဝင်နေ</translation>
 <translation id="5570825185877910964">အကောင့်ကို ကာကွယ်ရန်</translation>
 <translation id="5571083550517324815">ဤလိပ်စာမှ ပစ္စည်းထုတ်ယူ၍မရပါ။ အခြားလိပ်စာတစ်ခုကို ရွေးပါ။</translation>
@@ -1685,6 +1692,7 @@
 <translation id="6290238015253830360">သင်အကြံပြုထားသည့် ဆောင်းပါးများ ဤနေရာတွင် ပေါ်ပါမည်</translation>
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6295618774959045776">CVC-</translation>
+<translation id="6300452962057769623">{0,plural, =0{သင့်စက်ကို ယခုပြန်စမည်}=1{သင့်စက်ကို 1 စက္ကန့်အတွင်း ပြန်စမည်}other{သင့်စက်ကို # စက္ကန့်အတွင်း ပြန်စမည်}}</translation>
 <translation id="6302269476990306341">Chrome အတွင်းရှိ Google Assistant ရပ်တန့်နေသည်</translation>
 <translation id="6305205051461490394"><ph name="URL" /> ကိုဆက်သွယ်၍မရနိုင်ပါ။</translation>
 <translation id="6312113039770857350">ဝဘ်စာမျက်နှာ မရှိ</translation>
@@ -1946,6 +1954,7 @@
 <translation id="7192203810768312527"><ph name="SIZE" /> နေရာလွတ်အောင်လုပ်ပါ။ နောက်တစ်ကြိမ် ဝင်ကြည့်သည့်အခါတွင် အချို့ဝဘ်ဆိုက်များက ပိုနှေးနေနိုင်ပါသည်။</translation>
 <translation id="719464814642662924">ဗီဇာ</translation>
 <translation id="7201591969684833065">သင့်စီမံခန့်ခွဲသူများက အောက်ပါတို့ကို မြင်နိုင်သည်-</translation>
+<translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ Tab နှိပ်ပြီး Enter ခလုတ်နှိပ်၍ ရုပ်ဖျက်တဘ်အသစ်တွင် သီးသန့်ကြည့်ရှုနိုင်သည်</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> သည်လုံခြုံရေး စံနှုန်းများကို လိုက်နာမှုမရှိပါ။</translation>
 <translation id="7210993021468939304">ကွန်တိန်နာအတွင်းရှိ Linux လုပ်ဆောင်ချက်ကို ကြည့်နိုင်ပြီး ကွန်တိန်နာအတွင်းတွင် Linux အက်ပ်များကို ထည့်သွင်းနိုင်၊ လုပ်ဆောင်နိုင်သည်</translation>
@@ -2009,6 +2018,7 @@
 <translation id="7378627244592794276">မဟုတ်ပါ</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7386364858855961704">မသက်ဆိုင်ပါ</translation>
+<translation id="7388594495505979117">{0,plural, =1{သင်၏စက်သည် 1 မိနစ်အတွင်း ပြန်စမည်}other{သင်၏စက်သည် # မိနစ်အတွင်း ပြန်စမည်}}</translation>
 <translation id="7390545607259442187">ကဒ်ကို အတည်ပြုပါ</translation>
 <translation id="7392089738299859607">လိပ်စာ အပ်ဒိတ်လုပ်ပါ</translation>
 <translation id="7399802613464275309">လုံခြုံရေး စစ်ဆေးမှု</translation>
@@ -2212,6 +2222,7 @@
 <translation id="799149739215780103">တွဲချုပ်ရန်</translation>
 <translation id="7992044431894087211"><ph name="APPLICATION_TITLE" /> အား မျက်နှာပြင်မျှဝေခြင်းကို ဆက်လုပ်ထားသည်</translation>
 <translation id="7995512525968007366">သတ်မှတ်မထားပါ</translation>
+<translation id="7998269595945679889">ရုပ်ဖျက်တဘ်ခလုတ်ကို ဖွင့်ပါ။ ရုပ်ဖျက်တဘ်အသစ်တစ်ခုဖြင့် သီးသန့်ကြည့်ရှုနိုင်ရန် Enter ခလုတ်နှိပ်ပါ</translation>
 <translation id="800218591365569300">မှတ်ဉာဏ်နေရာလွတ်ရရှိစေရန် တဘ် သို့မဟုတ် ပရိုဂရမ်များကို ပိတ်ကြည့်ပါ။</translation>
 <translation id="8004582292198964060">ဘရောင်ဇာ</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{ဤကတ်နှင့် ၎င်း၏ငွေတောင်းခံမှု လိပ်စာကို သိမ်းဆည်းသွားပါမည်။ <ph name="USER_EMAIL" /> သို့ လက်မှတ်ထိုးဝင်ထားသည့်အခါ သင်အသုံးပြုနိုင်ပါမည်။}other{ဤကတ်များနှင့် ၎င်းတို့၏ ငွေတောင်းခံမှု လိပ်စာများကို သိမ်းဆည်းသွားပါမည်။ <ph name="USER_EMAIL" /> သို့ လက်မှတ်ထိုးဝင်ထားသည့်အခါ ၎င်းတို့ကို သင်အသုံးပြုနိုင်ပါမည်။}}</translation>
@@ -2366,6 +2377,7 @@
 <translation id="8507227106804027148">ညွှန်ကြားချက် လိုင်း</translation>
 <translation id="8508648098325802031">ရှာဖွေမှု သင်္ကေတ</translation>
 <translation id="8511402995811232419">ကွတ်ကီးများ စီမံရန်</translation>
+<translation id="8519753333133776369">HID စက်ကို သင့်စီမံခန့်ခွဲသူက ခွင့်ပြုထားသည်</translation>
 <translation id="8522552481199248698">Chrome က သင်၏ Google အကောင့်ကို ကာကွယ်ရန်နှင့် စကားဝှက်ပြောင်းရန် ကူညီနိုင်ပါသည်။</translation>
 <translation id="8530813470445476232">Chrome ဆက်တင်များတွင် ကြည့်ရှုခြင်းမှတ်တမ်း၊ ကွတ်ကီးများ၊ ကက်ရှ်နှင့် အခြားအရာများကို ရှင်းပါ</translation>
 <translation id="8533619373899488139">သင်၏ စနစ်စီမံခန့်ခွဲသူက ပြဋ္ဌာန်းထားသည့် အခြား မူဝါဒများနှင့် ပိတ်ထားသော URL များစာရင်းကို ကြည့်ရန် &lt;strong&gt;chrome://policy&lt;/strong&gt; သို့ ဝင်ကြည့်ပါ။</translation>

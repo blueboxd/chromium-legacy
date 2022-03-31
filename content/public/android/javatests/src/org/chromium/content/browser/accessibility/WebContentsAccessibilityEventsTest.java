@@ -703,6 +703,12 @@ public class WebContentsAccessibilityEventsTest {
 
     @Test
     @SmallTest
+    public void test_iframeSrcChanged() {
+        performTest("iframe-src-changed.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
     public void test_inputCombobox() {
         performTest("input-combobox.html", "input-combobox-expected-android.txt");
     }
@@ -843,12 +849,6 @@ public class WebContentsAccessibilityEventsTest {
     @SmallTest
     public void test_menuOpenedClosed() {
         performTest("menu-opened-closed.html", EMPTY_EXPECTATIONS_FILE);
-    }
-
-    @Test
-    @SmallTest
-    public void test_menuOpenedClosedViaInnerText() {
-        performTest("menu-opened-closed-via-inner-text.html", EMPTY_EXPECTATIONS_FILE);
     }
 
     @Test

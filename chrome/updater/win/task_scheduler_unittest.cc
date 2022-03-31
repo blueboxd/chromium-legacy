@@ -4,6 +4,8 @@
 
 #include "chrome/updater/win/task_scheduler.h"
 
+#include <mstask.h>
+#include <security.h>
 #include <shlobj.h>
 #include <taskschd.h>
 
@@ -16,6 +18,7 @@
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -171,6 +174,11 @@ TEST_F(TaskSchedulerTests, RunAProgramNow) {
   EXPECT_TRUE(task_scheduler_->RegisterTask(
       GetTestScope(), kTaskName1, kTaskDescription1, command_line,
       TaskScheduler::TRIGGER_TYPE_NOW, false));
+
+  TaskScheduler::TaskInfo info;
+  EXPECT_TRUE(task_scheduler_->GetTaskInfo(kTaskName1, &info));
+  VLOG(0) << info;
+
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
   base::Time next_run_time;
   EXPECT_FALSE(task_scheduler_->GetNextTaskRunTime(kTaskName1, &next_run_time));

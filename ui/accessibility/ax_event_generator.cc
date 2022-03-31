@@ -270,7 +270,16 @@ void AXEventGenerator::AddEvent(AXNode* node, AXEventGenerator::Event event) {
   if (node->GetRole() == ax::mojom::Role::kInlineTextBox)
     return;
 
-  DCHECK(tree_->event_data());
+  // Extra Mac node creation and deletion in `AXTableInfo` directly call AXTree
+  // observer methods, which skips all unserialization logic found in
+  // `AXTree::Unserialize`.
+  //
+  // It only makes sense to generate events when we are called here within
+  // `AXTree::Unserialize`. The below condition also guards against any future
+  // callers of this type, whether Mac or not.
+  if (!tree_->event_data())
+    return;
+
   std::set<EventParams>& node_events = tree_events_[node->id()];
   node_events.emplace(event, tree_->event_data()->event_from,
                       tree_->event_data()->event_from_action,
@@ -775,15 +784,6 @@ void AXEventGenerator::OnNodeWillBeDeleted(AXTree* tree, AXNode* node) {
   DCHECK_EQ(tree_, tree);
   live_region_tracker_->OnNodeWillBeDeleted(*node);
   FireValueInTextFieldChangedEventIfNecessary(tree, node);
-
-  // TODO(accessibility): This should also handle firing MENU_POPUP_END when a
-  // node with the menu role is removed. The issue to be solved is that after we
-  // add MENU_POPUP_END here, the node gets removed from the tree. Then
-  // PostprocessEvents removes the events from that now-removed node, thus
-  // MENU_POPUP_END never gets fired. We work around this issue currently by
-  // firing the event from BrowserAccessibilityManager. Adding the ability to
-  // fire generated events immediately should make it possible to fire
-  // MENU_POPUP_END here.
 }
 
 void AXEventGenerator::OnSubtreeWillBeDeleted(AXTree* tree, AXNode* node) {
@@ -812,10 +812,6 @@ void AXEventGenerator::OnNodeReparented(AXTree* tree, AXNode* node) {
 void AXEventGenerator::OnNodeCreated(AXTree* tree, AXNode* node) {
   DCHECK_EQ(tree_, tree);
   FireValueInTextFieldChangedEventIfNecessary(tree, node);
-  if (node->GetRole() == ax::mojom::Role::kMenu &&
-      !node->IsInvisibleOrIgnored()) {
-    AddEvent(node, Event::MENU_POPUP_START);
-  }
 }
 
 void AXEventGenerator::OnAtomicUpdateFinished(
@@ -823,16 +819,6 @@ void AXEventGenerator::OnAtomicUpdateFinished(
     bool root_changed,
     const std::vector<Change>& changes) {
   DCHECK_EQ(tree_, tree);
-
-  // Extra Mac nodes directly call AXTreeObserver::OnAtomicUpdateFinished, which
-  // skips all unserialization logic, including those used in AXEventGenerator.
-  //
-  // It only makes sense to generate events when we are called here within
-  // AXTree::Unserialize. The below condition also guards against any future
-  // callers of this type, whether Mac or not.
-  if (!tree_->event_data())
-    return;
-
   DCHECK(tree->root());
 
   if (root_changed && ShouldFireLoadEvents(tree->root())) {

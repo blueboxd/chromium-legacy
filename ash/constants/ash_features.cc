@@ -195,7 +195,7 @@ const base::Feature kBluetoothFixA2dpPacketSize{
 // Enables or disables the Chrome OS Bluetooth Revamp, which updates Bluetooth
 // system UI and related infrastructure. See https://crbug.com/1010321.
 const base::Feature kBluetoothRevamp{"BluetoothRevamp",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Bluetooth WBS microphone be selected as default
 // audio input option.
@@ -302,7 +302,7 @@ const base::Feature kCroshSWA{"CroshSWA", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables upgrading the crostini container to debian bullseye.
 const base::Feature kCrostiniBullseyeUpgrade{"CrostiniBullseyeUpgrade",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Crostini Disk Resizing.
 const base::Feature kCrostiniDiskResizing{"CrostiniDiskResizing",
@@ -568,7 +568,8 @@ const base::Feature kEolWarningNotifications{"EolWarningNotifications",
 
 // Enables or disables enterprise policy control for eSIM cellular networks.
 // See https://crbug.com/1231305.
-const base::Feature kESimPolicy{"ESimPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kESimPolicy{"ESimPolicy",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable support for touchpad with haptic feedback.
 const base::Feature kExoHapticFeedbackSupport("ExoHapticFeedbackSupport",
@@ -649,7 +650,7 @@ const base::Feature kFiltersInRecents{"FiltersInRecents",
 
 // Enables the firmware updater app.
 const base::Feature kFirmwareUpdaterApp = {"FirmwareUpdaterApp",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Floating Workspace feature on Chrome OS
 const base::Feature kFloatingWorkspace{"FloatingWorkspace",
@@ -757,6 +758,12 @@ const base::Feature kHideShelfControlsInTabletMode{
 const base::Feature kHoldingSpaceInProgressAnimationV2{
     "HoldingSpaceInProgressAnimationV2", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables delay for the `kHoldingSpaceInProgressAnimationV2` feature so that
+// progress icon animations won't start until any associated holding space tray
+// item previews have had the opportunity to animate in.
+const base::FeatureParam<bool> kHoldingSpaceInProgressAnimationV2DelayEnabled{
+    &kHoldingSpaceInProgressAnimationV2, "delay_enabled", true};
+
 // Enables in-progress downloads integration with the productivity feature that
 // aims to reduce context switching by enabling users to collect content and
 // transfer or access it later.
@@ -773,7 +780,7 @@ const base::Feature kHoldingSpaceInProgressDownloadsNotificationSuppression{
 
 // Controls whether the snooping protection prototype is enabled.
 const base::Feature kSnoopingProtection{"SnoopingProtection",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable dark mode support for the Chrome OS virtual keyboard.
 const base::Feature kVirtualKeyboardDarkMode{"VirtualKeyboardDarkMode",
@@ -1092,7 +1099,7 @@ const base::Feature kProjectorAppDebug{"ProjectorAppDebug",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether the quick dim prototype is enabled.
-const base::Feature kQuickDim{"QuickDim", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kQuickDim{"QuickDim", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the Quick Settings Network revamp, which updates Network
 // Quick Settings UI and related infrastructure. See https://crbug.com/1169479.
@@ -1394,6 +1401,18 @@ const base::Feature kWindowsFollowCursor{"WindowsFollowCursor",
 const base::Feature kDeviceActiveClient{"DeviceActiveClient",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables PSM CheckMembership for daily device active pings
+// on Chrome OS.
+const base::Feature kDeviceActiveClientDailyCheckMembership{
+    "DeviceActiveClientDailyCheckMembership",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables PSM CheckMembership for monthly device active pings
+// on Chrome OS.
+const base::Feature kDeviceActiveClientMonthlyCheckMembership{
+    "DeviceActiveClientMonthlyCheckMembership",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables whether to store UMA logs per-user and whether metrics
 // consent is per-user.
 const base::Feature kPerUserMetrics{"PerUserMetricsConsent",
@@ -1650,6 +1669,11 @@ bool IsHoldingSpaceInProgressAnimationV2Enabled() {
   return base::FeatureList::IsEnabled(kHoldingSpaceInProgressAnimationV2);
 }
 
+bool IsHoldingSpaceInProgressAnimationV2DelayEnabled() {
+  return IsHoldingSpaceInProgressAnimationV2Enabled() &&
+         kHoldingSpaceInProgressAnimationV2DelayEnabled.Get();
+}
+
 bool IsHoldingSpaceInProgressDownloadsIntegrationEnabled() {
   return base::FeatureList::IsEnabled(
       kHoldingSpaceInProgressDownloadsIntegration);
@@ -1665,7 +1689,8 @@ bool IsHostnameSettingEnabled() {
 }
 
 bool IsSnoopingProtectionEnabled() {
-  return base::FeatureList::IsEnabled(kSnoopingProtection);
+  return base::FeatureList::IsEnabled(kSnoopingProtection) &&
+         ash::switches::HasHps();
 }
 
 bool IsIdleInhibitEnabled() {
@@ -1886,7 +1911,7 @@ bool IsProjectorAppDebugMode() {
 }
 
 bool IsQuickDimEnabled() {
-  return base::FeatureList::IsEnabled(kQuickDim);
+  return base::FeatureList::IsEnabled(kQuickDim) && ash::switches::HasHps();
 }
 
 bool IsQuickSettingsNetworkRevampEnabled() {

@@ -32,6 +32,7 @@
 #include "base/process/kill.h"
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -1479,6 +1480,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
+  CHECK_EQ(check_if_deleted_request_count_, 0);
+
   // The lifetime of this object has ended, so remove it from the id map before
   // calling any delegates/observers, so that any calls to |FromID| no longer
   // return |this|.
@@ -11084,6 +11087,8 @@ void RenderFrameHostImpl::SendCommitNavigation(
         prefetch_loader_factory,
     blink::mojom::PolicyContainerPtr policy_container,
     const base::UnguessableToken& devtools_navigation_token) {
+  TRACE_EVENT0("navigation", "RenderFrameHostImpl::SendCommitNavigation");
+  base::ElapsedTimer timer;
   DCHECK_EQ(net::OK, navigation_request->GetNetErrorCode());
   IncreaseCommitNavigationCounter();
   mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host;
@@ -11150,6 +11155,10 @@ void RenderFrameHostImpl::SendCommitNavigation(
       std::move(policy_container), std::move(code_cache_host),
       std::move(cookie_manager_info), std::move(storage_info),
       BuildCommitNavigationCallback(navigation_request));
+  base::UmaHistogramTimes(
+      base::StrCat({"Navigation.SendCommitNavigationTime.",
+                    is_main_frame() ? "MainFrame" : "Subframe"}),
+      timer.Elapsed());
 }
 
 void RenderFrameHostImpl::SendCommitFailedNavigation(
@@ -13050,6 +13059,24 @@ RenderFrameHostImpl::DocumentAssociatedData::~DocumentAssociatedData() {
 std::ostream& operator<<(std::ostream& o,
                          const RenderFrameHostImpl::LifecycleStateImpl& s) {
   return o << RenderFrameHostImpl::LifecycleStateImplToString(s);
+}
+
+std::unique_ptr<RenderFrameHostImpl::CheckOnDeleteRef>
+RenderFrameHostImpl::EnableCheckIfDeleted() {
+  // Uses WrapUnique() as constructor is private.
+  return base::WrapUnique(new CheckOnDeleteRef(this));
+}
+
+RenderFrameHostImpl::CheckOnDeleteRef::~CheckOnDeleteRef() {
+  --(host_->check_if_deleted_request_count_);
+  CHECK_GE(host_->check_if_deleted_request_count_, 0);
+}
+
+RenderFrameHostImpl::CheckOnDeleteRef::CheckOnDeleteRef(
+    RenderFrameHostImpl* host)
+    : host_(host) {
+  ++(host_->check_if_deleted_request_count_);
+  CHECK_GT(host_->check_if_deleted_request_count_, 0);
 }
 
 }  // namespace content

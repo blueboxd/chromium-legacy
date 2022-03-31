@@ -106,6 +106,7 @@
 <translation id="1853795129690976061">ఈ ఫోల్డర్ Linuxతో షేర్ చేయబడింది</translation>
 <translation id="1864756863218646478">ఫైల్‌ను కనుగొనబడలేదు.</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, కనెక్ట్ చేయండి</translation>
+<translation id="1914901738028575085">CloudReady 2.0 పరికరం</translation>
 <translation id="1920670151694390848">మలయాళం ట్రాన్స్‌లిటరేషన్</translation>
 <translation id="1920798810075583923">పుచ్చకాయ</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> ఫార్మాట్ చేయబడింది</translation>
@@ -143,7 +144,7 @@
 <translation id="22085916256174561">కొరియన్</translation>
 <translation id="2208919847696382164">Linuxతో ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="2225536596944493418">మీరు <ph name="NUMBER_OF_ITEMS" /> అంశాలను ఖచ్చితంగా తొలగించాలనుకుంటున్నారా?</translation>
-<translation id="2230062665678605299">"<ph name="FOLDER_NAME" />" ఫోల్డర్‌ను సృష్టించడం సాధ్యపడలేదు. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="2230062665678605299">"<ph name="FOLDER_NAME" />" ఫోల్డర్‌ను క్రియేట్ చేయడం సాధ్యపడలేదు. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="2239068707900391003">కాఫీని పట్టుకుని ఉన్న వ్యక్తి</translation>
 <translation id="2251368349685848079">ట్రాష్ నుండి రీస్టోర్ చేయండి</translation>
 <translation id="2282155092769082568">ఆటోకాన్ఫిగరేషన్ URL:</translation>
@@ -281,7 +282,7 @@
 <translation id="3408072735282270043"><ph name="NETWORK_NAME" />, యాక్టివేట్ చేయి</translation>
 <translation id="3408236822532681288">నియో 2 కీబోర్డ్‌తో జర్మన్ (జర్మనీ)</translation>
 <translation id="3414856743105198592">తొలగించగల మీడియాను ఫార్మాట్ చేయడం వలన మొత్తం డేటా తుడిచి వేయబడుతుంది. మీరు కొనసాగించాలనుకుంటున్నారా?</translation>
-<translation id="3437801641691368414">సృష్టించిన సమయం</translation>
+<translation id="3437801641691368414">క్రియేట్ చేసిన సమయం</translation>
 <translation id="343907260260897561">ఇన్‌స్టంట్ కెమెరా</translation>
 <translation id="3455931012307786678">ఎస్టోనియన్</translation>
 <translation id="3466147780910026086">మీ మీడియా పరికరాన్ని స్కాన్ చేస్తోంది...</translation>
@@ -902,6 +903,7 @@
 <translation id="8714406895390098252">సైకిల్</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> ఎంపిక చేయబడింది.</translation>
 <translation id="872537912056138402">క్రోవేషియన్</translation>
+<translation id="873847021056608403">CloudReady 2.0 పరికరాలు</translation>
 <translation id="8743164338060742337"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /> సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, మీ అడ్మినిస్ట్రేటర్ ద్వారా మేనేజ్ చేయబడుతుంది, కనెక్ట్ చేయండి</translation>
 <translation id="8750438273876807512">షెల్ఫ్‌లోని మీ ఫైళ్లకు త్వరిత యాక్సెస్‌ను పొందడం కోసం ఫైల్‌ను నొక్కి, పట్టుకుని, <ph name="ICON" />ను ట్యాప్ చేసి, ఆపై "షెల్ఫ్‌కు పిన్ చేయి"ని ఎంచుకోండి.</translation>
 <translation id="8787254343425541995">భాగస్వామ్య నెట్‌వర్క్‌లకు ప్రాక్సీలను అనుమతించండి</translation>

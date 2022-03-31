@@ -1029,6 +1029,10 @@ const char kDownloadAutoResumptionNativeName[] =
 const char kDownloadAutoResumptionNativeDescription[] =
     "Enables download auto-resumption in native";
 
+const char kDownloadBubbleName[] = "Enable download bubble";
+const char kDownloadBubbleDescription[] =
+    "Enables the download bubble instead of the download shelf.";
+
 const char kDownloadLaterName[] = "Enable download later";
 const char kDownloadLaterDescription[] = "Enables download later feature.";
 
@@ -1206,13 +1210,11 @@ const char kEnableAutomaticSnoozeName[] = "Enable Automatic Snooze";
 const char kEnableAutomaticSnoozeDescription[] =
     "Enables automatic snoozing on In-Product Help with no snooze button.";
 
-const char kEnableLensRegionSearchFlagId[] = "enable-lens-region-search";
-const char kEnableLensRegionSearchName[] =
-    "Search your screen with Google Lens";
-const char kEnableLensRegionSearchDescription[] =
-    "Right click and select \"Search images with Google Lens\" to "
-    "search any region of the site to learn more about the visual content you "
-    "see while you browse and shop on the web.";
+const char kEnableLensStandaloneFlagId[] = "enable-lens-standalone";
+const char kEnableLensStandaloneName[] = "Enable Lens features in Chrome.";
+const char kEnableLensStandaloneDescription[] =
+    "Enables Lens image and region search to learn about the visual content "
+    "you see while you browse and shop on the web.";
 
 const char kEnableLoginDetectionName[] = "Enable login detection";
 const char kEnableLoginDetectionDescription[] =
@@ -2241,6 +2243,12 @@ const char kSamePartyCookiesConsideredFirstPartyDescription[] =
 const char kPartitionedCookiesName[] = "Partitioned cookies";
 const char kPartitionedCookiesDescription[] =
     "Controls if the Partitioned cookie attribute is enabled.";
+const char kPartitionedCookiesBypassOriginTrialName[] =
+    "Partitioned cookies: bypass origin trial";
+const char kPartitionedCookiesBypassOriginTrialDescription[] =
+    "If this flag is enabled, Chrome will not require a site to opt into the "
+    "origin trial in order to send or receive cookies set with the Partitioned "
+    "attribute.";
 
 const char kScrollableTabStripFlagId[] = "scrollable-tabstrip";
 const char kScrollableTabStripName[] = "Tab Scrolling";
@@ -3759,6 +3767,11 @@ const char kNtpPhotosModuleOptInTitleName[] = "NTP Photos Module Opt In Title";
 const char kNtpPhotosModuleOptInTitleDescription[] =
     "Determines the title of the NTP Photos Opt-In card";
 
+const char kNtpPhotosModuleOptInArtWorkName[] =
+    "NTP Photos Module Opt In ArtWork";
+const char kNtpPhotosModuleOptInArtWorkDescription[] =
+    "Determines the art work in the NTP Photos Opt-In card";
+
 const char kNtpRecipeTasksModuleName[] = "NTP Recipe Tasks Module";
 const char kNtpRecipeTasksModuleDescription[] =
     "Shows the recipe tasks module on the New Tab Page.";
@@ -4481,21 +4494,6 @@ const char kDriveFsBidirectionalNativeMessagingName[] =
     "Enable bidirectional native messaging for DriveFS";
 const char kDriveFsBidirectionalNativeMessagingDescription[] =
     "Enable enhanced native messaging host to communicate with DriveFS.";
-
-const char kCrOSDspBasedAecAllowedName[] =
-    "Allow CRAS to use a DSP-based AEC if available";
-const char kCrOSDspBasedAecAllowedDescription[] =
-    "Allows the system variant of the AEC in CRAS to be run on DSP ";
-
-const char kCrOSDspBasedNsAllowedName[] =
-    "Allow CRAS to use a DSP-based NS if available";
-const char kCrOSDspBasedNsAllowedDescription[] =
-    "Allows the system variant of the NS in CRAS to be run on DSP ";
-
-const char kCrOSDspBasedAgcAllowedName[] =
-    "Allow CRAS to use a DSP-based AGC if available";
-const char kCrOSDspBasedAgcAllowedDescription[] =
-    "Allows the system variant of the AGC in CRAS to be run on DSP ";
 
 const char kCrOSEnforceSystemAecName[] = "Enforce using the system AEC in CrAS";
 const char kCrOSEnforceSystemAecDescription[] =

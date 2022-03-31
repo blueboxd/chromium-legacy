@@ -214,6 +214,11 @@ const base::Feature kAutofillEnableSupportForHonorificPrefixes{
     "AutofillEnableSupportForHonorificPrefixes",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables autofill to function within a FencedFrame, and is disabled by default
+// TODO(crbug.com/1294378): Remove once launched.
+const base::Feature kAutofillEnableWithinFencedFrame{
+    "AutofillEnableWithinFencedFrame", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether or not all datalist shall be extracted into FormFieldData.
 // This feature is enabled in both WebView and WebLayer where all datalists
 // instead of only the focused one shall be extracted and sent to Android
@@ -380,6 +385,12 @@ const base::Feature kAutofillSectionUponRedundantNameInfo{
 // i.e., https://other.autofill.server:port/tbproxy/af/
 const base::Feature kAutofillServerCommunication{
     "AutofillServerCommunication", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether Autofill may fill across origins as part of the
+// AutofillAcrossIframes experiment.
+// TODO(crbug.com/1220038): Clean up when launched.
+const base::Feature kAutofillSharedAutofill{"AutofillSharedAutofill",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls attaching the autofill type predictions to their respective
 // element in the DOM.

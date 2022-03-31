@@ -4,7 +4,6 @@
 <translation id="1096883626080133124">Veća učinkovitost uz Google Chrome, jednostavniji, sigurniji i brži nego ikad</translation>
 <translation id="1143896152279775643">Zaporka će se spremiti u Google upravitelj zaporki za <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Pomozite poboljšati Chromeove značajke i izvedbu</translation>
-<translation id="1314663809820920746">Sve vaše oznake, povijest, zaporke i druge postavke i dalje su vam vidljive na ovom uređaju. Ako nešto promijenite, te se promjene neće sinkronizirati s vašim Google računom.</translation>
 <translation id="1479202195792305274">Chrome može provjeriti vaše zaporke kad se prijavite Google računom.</translation>
 <translation id="1493827051843127077">Postavite Chrome kao zadani preglednik da biste sinkronizirali kartice, zaporke i podatke o plaćanju na svim svojim uređajima</translation>
 <translation id="1504372625950710826">Chrome nije uspio provjeriti ima li ažuriranja. Provjerite internetsku vezu.</translation>
@@ -33,7 +32,6 @@
 <translation id="2919738076569633423">Upotrebom Chromea pristajete na <ph name="BEGIN_LINK_TOS" />Uvjete pružanja usluge<ph name="END_LINK_TOS" />.</translation>
 <translation id="2957447865124070833">Odaberite <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" /></translation>
 <translation id="3030414234702425231">Budući da se odjavljujete s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, vaši podaci iz Chromea izbrisat će se s ovog uređaja, no ostat će na vašem Google računu.</translation>
-<translation id="3150887674190166798">Odaberite kako želite da Chrome svaki put zatraži web-lokaciju</translation>
 <translation id="3167189358072330585">Vaš račun ne funkcionira na Google Chromeu. Obratite se administratoru domene ili se prijavite običnim Google računom.</translation>
 <translation id="3173834708294760622">Stranica Google Chromea</translation>
 <translation id="3196546062792660320">Chrome vam štedi vrijeme sinkronizacijom vaših računa na webu. Račune možete dodavati i uklanjati u postavkama.</translation>
@@ -42,6 +40,7 @@
 <translation id="3522659714780527202">Da biste vidjeli svoje kartice bez obzira na to gdje koristite Chrome, uključite sinkronizaciju</translation>
 <translation id="3533694711092285624">Nema nijedne spremljene zaporke. Chrome može provjeriti vaše zaporke kad ih spremite.</translation>
 <translation id="3634910711516114487">Da biste iskoristili sve prednosti koje vam pruža Chrome, prijavite se u Chrome Google računom</translation>
+<translation id="3655656110921623717">To znači da će Chrome svaki put zahtijevati web-lokaciju za mobilne uređaje.</translation>
 <translation id="3706101708757577809">Sad možete koristiti Chrome svaki put kad dodirnete veze u porukama, dokumentima i drugim aplikacijama.</translation>
 <translation id="3720541637541300822">Zaključajte anonimne kartice pri zatvaranju Chromea</translation>
 <translation id="384394811301901750">Google Chrome trenutačno ne može upotrebljavati vaš fotoaparat</translation>
@@ -118,4 +117,5 @@
 <translation id="8772179140489533211">Prikazuje obavijesti za prijavu u Chrome.</translation>
 <translation id="8788269841521769222">Nećete morati pamtiti tu zaporku. Spremit će se u Google upravitelj zaporki za <ph name="EMAIL" /></translation>
 <translation id="9112744793181547300">Želite li postaviti Chrome kao zadani preglednik?</translation>
+<translation id="9122931302567044771">To znači da će Chrome svaki put zahtijevati web-lokaciju za računalo.</translation>
 </translationbundle>

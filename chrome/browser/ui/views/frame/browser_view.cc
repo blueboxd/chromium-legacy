@@ -794,10 +794,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if ((base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
-       lens::features::kEnableSidePanelForLensImageSearch.Get()) ||
-      (base::FeatureList::IsEnabled(lens::features::kLensRegionSearch) &&
-       lens::features::kEnableSidePanelForLensRegionSearch.Get())) {
+  if (lens::features::IsLensSidePanelEnabled()) {
     lens_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
     // If the separator was not already created, create one.
     if (!right_aligned_side_panel_separator_)
@@ -885,7 +882,7 @@ BrowserView::~BrowserView() {
 }
 
 // static
-const BrowserWindow* BrowserWindow::FindBrowserWindowWithWebContents(
+BrowserWindow* BrowserWindow::FindBrowserWindowWithWebContents(
     content::WebContents* web_contents) {
   // Check first to see if the we can find a top level widget for the
   // `web_contents`. This covers the case of searching for the browser window
@@ -2171,18 +2168,10 @@ BrowserView::ShowQRCodeGeneratorBubble(
     qrcode_generator::QRCodeGeneratorBubbleController* controller,
     const GURL& url,
     bool show_back_button) {
-  base::OnceClosure on_closing = base::BindOnce(
-      &qrcode_generator::QRCodeGeneratorBubbleController::OnBubbleClosed,
-      // Unretained is safe: controller is a WebContentsUserData, owned by
-      // WebContents, and the bubble can't outlive the WebContents.
-      base::Unretained(controller));
+  base::OnceClosure on_closing = controller->GetOnBubbleClosedCallback();
   base::OnceClosure on_back_button_pressed;
   if (show_back_button) {
-    on_back_button_pressed = base::BindOnce(
-        &qrcode_generator::QRCodeGeneratorBubbleController::OnBackButtonPressed,
-        // Unretained is safe: controller is a WebContentsUserData, owned by
-        // WebContents, and the bubble can't outlive the WebContents.
-        base::Unretained(controller));
+    on_back_button_pressed = controller->GetOnBackButtonPressedCallback();
   }
 
   PageActionIconType icon_type =

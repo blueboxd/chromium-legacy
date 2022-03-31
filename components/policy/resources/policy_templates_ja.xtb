@@ -100,6 +100,7 @@
 <translation id="1122089575901325963">このポリシーでは、<ph name="WILCO_NAME" /> の診断およびテレメトリー用コントローラ（DTC）を設定できます（デバイスで使用可能な場合）。設定のサイズは 1 MB（1,000,000 バイト）以下とし、JSON 形式にする必要があります。この処理は <ph name="WILCO_NAME" /> DTC が行います。ダウンロードの整合性の確認には暗号化ハッシュが使用されます。この設定はダウンロードされた後、キャッシュされ、URL またはハッシュに変更があった場合は再度ダウンロードされます。
 
       このポリシーを設定した場合、ユーザーは設定を変更できません。</translation>
+<translation id="1123650965531933634">すべてのサイトに対してウィンドウの配置に関する権限をデフォルトで自動的に拒否する</translation>
 <translation id="1133622335785078255">ユーザーに <ph name="LACROS_NAME" /> ブラウザでの予備のプロフィールの作成と使用、およびゲストモードの使用を許可する</translation>
 <translation id="1133814529606590009">このポリシーを有効に設定した場合、URL キーによる匿名化データの収集が常に有効になり、検索とブラウジングを改善するため、ユーザーがアクセスしたページの URL が Google に送信されます。
 
@@ -186,6 +187,7 @@
 <translation id="1223789468190631420">信頼できる提供元に対してセーフ ブラウジングを有効にする</translation>
 <translation id="123018742985150697">ローカル ユーザーとリモート アクセスホストの所有者の照合を求める</translation>
 <translation id="123081309365616809">デバイスにコンテンツをキャストできるようにする</translation>
+<translation id="1239411164172567974">Direct Sockets API を有効にする。</translation>
 <translation id="1239526922294123540">より限定されたプライベート ネットワークのエンドポイントに対して、ウェブサイトからの安全でない方法でのリクエストを許可するかどうかを制御します。
 
           このポリシーを True に設定した場合、すべてのオリジンに対して <ph name="PRIVATE_NETWORK_ACCESS" /> のチェックは無効になります。この場合、プライベート ネットワーク サーバーへの <ph name="CSRF" /> 攻撃が生じるおそれがあります。
@@ -203,6 +205,7 @@
 <translation id="1240722269871366886">このポリシーでは、<ph name="PRODUCT_OS_NAME" /> で、ユーザーが仮想または物理キーボードを使用してテキストを入力するときに、絵文字の候補を表示できるようにします。
       このポリシーを true に設定した場合、この機能は有効になり、ユーザーは設定を変更できます。
       このポリシーのデフォルトの設定は false で、絵文字の候補は表示されず、ユーザーがオーバーライドすることはできません。</translation>
+<translation id="1241536186320046498">サイトがウィンドウの配置に関する権限を要求するたびに確認する</translation>
 <translation id="1243570869342663665">セーフサイトのアダルト コンテンツの除外を制御する。</translation>
 <translation id="1244309789361056660">このポリシーは M87 で削除され、ホーム ディレクトリはログイン時に自動的に ext4 に移行されます。
       このポリシーでは、ユーザーのホーム ディレクトリが ecryptfs 暗号化で作成された場合に行う操作を指定できます。ecryptfs で暗号化されたホーム ディレクトリを ext4 暗号化に移行しない場合、Android アプリの実行が停止される可能性があります。
@@ -476,6 +479,11 @@
       このポリシーを無効に設定した場合、保護されていない HTTP リクエストで <ph name="BASIC_AUTH" /> 認証スキームの使用を禁止し、安全な HTTPS のみが許可されます。
 
       <ph name="AUTH_SCHEMES_POLICY_NAME" /> ポリシーが設定されていて、<ph name="BASIC_AUTH" /> が含まれていない場合、このポリシーの設定は無視されます（また、<ph name="BASIC_AUTH" /> は常に禁止されます）。</translation>
+<translation id="1573444493980402757">ウィンドウの配置に関する権限を自動的に拒否するサイトの URL パターンのリストを指定できます。デバイスの画面に関する情報の取得や、その情報を使用したウィンドウの表示と配置、特定の画面での全画面表示のリクエストといったサイトの機能が制限されます。
+
+      有効なサイトの URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。ワイルドカード（<ph name="WILDCARD_VALUE" />）を使用できます。このポリシーでは、オリジンのみが照合されるため、URL パターンのパスは無視されます。
+
+      このポリシーでサイトを指定しない場合は、<ph name="DEFAULT_WINDOW_PLACEMENT_SETTING_POLICY_NAME" /> のポリシーが適用されます。このポリシーでサイトを指定した場合は、ブラウザのデフォルトの権限設定が適用され、ユーザーはサイトごとに権限を選択できます。</translation>
 <translation id="1574258262373444557">ユーザー ストレージの暗号化で <ph name="AES_KL_NAME" /> を暗号化アルゴリズムとして使用しない</translation>
 <translation id="1575015449587326319">OnFileDownloaded Chrome Enterprise コネクタの設定ポリシー</translation>
 <translation id="1583248206450240930">デフォルトで <ph name="PRODUCT_FRAME_NAME" /> を使用する</translation>
@@ -1183,6 +1191,7 @@
 <translation id="2355876547176311490">リモート アクセスホストで中継サーバーを使用できないようにする</translation>
 <translation id="2358176879566587521">このポリシーは削除されました。このバージョンの <ph name="PRODUCT_NAME" /> には対応していません。詳しくは、https://support.google.com/chrome/a/answer/7643500 をご覧ください。</translation>
 <translation id="2362469626417133796">再起動の時間枠</translation>
+<translation id="2362539163677485510">クラウド ポリシーの登録トークン</translation>
 <translation id="2363928351203698966">このポリシーでは、<ph name="PRODUCT_NAME" /> で使用する SSL / TLS の最小バージョンを指定できます。認識できない値は無視されます。
 
       このポリシーを設定しない場合、<ph name="PRODUCT_NAME" /> では TLS 1.0 および TLS 1.1 についてエラーが表示されますが、ユーザーはこのエラーを回避できます。
@@ -1337,6 +1346,8 @@
 <translation id="2509919237512982967">M84 まで従来のフォーム コントロールを使用する</translation>
 <translation id="2512972020817284317">ユーザーレベルのクラウド ポリシーの統合を有効にする。</translation>
 <translation id="2515699738406900920">起動時のプロフィール選択画面の状態</translation>
+<translation id="251594860034549963">このポリシーを有効に設定した場合、現在のユーザーが前回使用したデバイスのブラウザ ウィンドウがログイン時に自動的に起動します。
+      このポリシーを無効に設定するか未設定のままにした場合、ログイン時に起動する項目は完全復元の設定によって決まります。</translation>
 <translation id="2517466659416174529">バックグラウンド タブの凍結を許可する</translation>
 <translation id="2518231489509538392">音声の再生を許可する</translation>
 <translation id="2520551905471951523">音声処理で高い優先度を使用する</translation>
@@ -1645,6 +1656,10 @@
 <translation id="2905984450136807296">認証データのキャッシュ期間</translation>
 <translation id="2906874737073861391">AppPack 拡張機能リスト</translation>
 <translation id="2908277604670530363">プロキシ サーバーへの最大同時接続数</translation>
+<translation id="2909068176249499360">このポリシーでは、ファスト ペアリングを強制的に有効または無効にできます。
+      ファスト ペアリングは、ペア設定済みの周辺機器と GAIA アカウントをリンクする新しい Bluetooth ペア設定フローです。
+      これにより、同じ GAIA アカウントでログインしている他の Chrome OS（および Android）デバイスを自動的にペア設定できるようになります。
+      未設定のままにした場合、企業ユーザーに対してはデフォルトの値が無効となり、管理対象外のアカウントに対しては有効となります。</translation>
 <translation id="2912366658685903301">ブラウザのテーマの色を設定します</translation>
 <translation id="291853569864365550">新しいタブページにおすすめのコンテンツを表示しない</translation>
 <translation id="2920795918401557243">このポリシーでは、ユーザーがシステム トレース サービスを使用して、システム全体のパフォーマンス トレースを収集することを許可します。
@@ -2047,7 +2062,6 @@
 <translation id="3284094172359247914">WebUSB API の使用を管理する</translation>
 <translation id="3288595667065905535">リリース チャンネル</translation>
 <translation id="3291318845269544294">プロジェクターを有効にする</translation>
-<translation id="3292784416244243447">画面の情報を使ってウィンドウを開いて配置できるサイトをユーザーが選択できるようにする</translation>
 <translation id="3294430356898755483">このポリシーを設定した場合、管理者はユーザー用のプリンタのリストを設定できます。プリンタの選択は、ユーザーが初めて印刷しようとしたときに行われます。
 
       このポリシーの使用方法:
@@ -2296,6 +2310,8 @@
 
       なお、このポリシーは <ph name="PRODUCT_NAME" /> バージョン 82 で削除される予定でしたが、バージョン 84 で削除されました。</translation>
 <translation id="3606571057705314194">起動時にプロフィール選択画面を有効にする</translation>
+<translation id="3608206578291537084">暗号化されたレポート パイプラインを有効にする</translation>
+<translation id="3612809274815536412">ウィンドウの配置に関する設定</translation>
 <translation id="3627678165642179114">スペルチェック ウェブ サービスを有効または無効にする</translation>
 <translation id="3628480121685794414">片面印刷を有効にする</translation>
 <translation id="3634125384445314047">スマートフォンで最近撮影した写真や動画にスマートフォン ハブ経由でアクセスすることを許可します。</translation>
@@ -2421,6 +2437,7 @@
 
       このポリシーが未設定の場合、デフォルトの設定は、企業の管理対象ユーザーに対しては「許可しない」、管理対象外のユーザーに対しては「許可する」となります。</translation>
 <translation id="3791179836066841809">ポリシーに関するドキュメント</translation>
+<translation id="3791556154364029875">フローティング ワークスペースを有効にして、ログイン時にリモート ブラウザ ウィンドウを起動する</translation>
 <translation id="3794413118360704299">このポリシーを使用して、管理者はインストールされたウェブアプリの設定を指定できます。このポリシーにより、ウェブアプリ ID が固有の設定にマッピングされます。インストールされたウェブアプリの ID を確認する方法については、<ph name="WEB_APP_ID_REFERENCE_URL" /> をご覧ください。特別な ID である <ph name="DEFAULT_SCOPE" /> を使用すると、デフォルト設定を指定できます。デフォルト設定は、このポリシーでカスタム設定が指定されていないすべてのウェブアプリに適用されます。<ph name="RUN_ON_OS_LOGIN_FIELD" /> フィールドでは、OS へのログイン中にウェブアプリを実行できるかどうかを指定します。このフィールドを <ph name="BLOCKED" /> に設定した場合、OS へのログイン中にウェブアプリは実行されず、ユーザーが後から有効にすることはできません。このフィールドを <ph name="RUN_WINDOWED" /> に設定した場合、OS へのログイン中にウェブアプリが実行され、ユーザーが後から無効にすることはできません。このフィールドを <ph name="ALLOWED" /> に設定した場合、ユーザーは OS へのログイン時にウェブアプリが実行されるよう設定できます。デフォルト設定では、<ph name="ALLOWED" /> と <ph name="BLOCKED" /> の値のみが許可されます。
       </translation>
 <translation id="3796527892245558832">起動時にプロフィール選択画面を無効にする</translation>
@@ -2638,6 +2655,7 @@
       このポリシーが設定されていない場合、クイック アンサーに選択したコンテンツへのアクセスを許可するかどうかをユーザーが指定できます。</translation>
 <translation id="4016700865356669962">このポリシーを有効に設定した場合、ユーザーはパソコン用レイアウト テンプレートを使用できます。このポリシーを無効に設定するか未設定のままにした場合、これらのテンプレートは使用できません。</translation>
 <translation id="4020682745012723568">Android アプリは、ユーザーのプロフィールに送信された Cookie にアクセスすることはできません。</translation>
+<translation id="4025176296532430931">フローティング ワークスペースを無効にして、ログイン時にリモート ブラウザ ウィンドウを起動しない</translation>
 <translation id="4025500273782820766">外部プロトコル ダイアログが表示されたときに、ユーザーが [常に許可] を選択して、それ以降の確認メッセージをスキップできるようにする</translation>
 <translation id="402759845255257575">すべてのサイトに対して JavaScript の実行を許可しない</translation>
 <translation id="4027608872760987929">デフォルトの検索プロバイダを有効にする</translation>
@@ -2876,6 +2894,7 @@
       有効な <ph name="URL_LABEL" /> パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。このポリシーの値に「<ph name="WILDCARD_VALUE" />」は使用できません。</translation>
 <translation id="4389073105055031853">すべての証明書の管理をユーザーに許可する</translation>
 <translation id="4389091865841123886">TPM メカニズムを使用してリモート認証を設定します。</translation>
+<translation id="4397464099112037398">ウィンドウの配置に関する権限のデフォルトの設定</translation>
 <translation id="4401496838830169080"><ph name="PRODUCT_NAME" /> のセーフ ブラウジング機能を有効にするかどうかと、有効にする場合に使用するモードを管理できます。
 
       このポリシーを「NoProtection」（値 0）に設定した場合、セーフ ブラウジングは常に無効になります。
@@ -3076,16 +3095,6 @@
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" /> でのメタ タグ チェックをスキップする</translation>
 <translation id="4624417808625504735">JavaScript での JIT の使用をブロックするサイトを指定する</translation>
 <translation id="4625915093043961294">拡張機能インストールの許可リストを設定する</translation>
-<translation id="4631165564645497047">有効な場合、<ph name="PRODUCT_NAME" /> は組み込みの証明書確認機能を使用してサーバー証明書の確認を行います。
-      無効な場合、<ph name="PRODUCT_NAME" /> はプラットフォームから提供される従来の証明書確認機能を使用してサーバー証明書の確認を行います。
-      未設定の場合、組み込みまたは従来の証明書確認機能が使用される可能性があります。
-
-      このポリシーは <ph name="PRODUCT_OS_NAME" /> バージョン 81 で削除される予定です（<ph name="PRODUCT_OS_NAME" /> での従来の証明書確認機能のサポートがバージョン 81 で削除されるため）。
-
-      このポリシーは Linux 向け <ph name="PRODUCT_NAME" /> バージョン 83 で削除される予定です（Linux での従来の証明書確認機能のサポートがバージョン 83 で削除されるため）。
-
-      このポリシーは Mac OS X 向け <ph name="PRODUCT_NAME" /> バージョン 104 で削除される予定です（Mac OS X での従来の証明書確認機能のサポートがバージョン 104 で削除されるため）。
-      </translation>
 <translation id="4632343302005518762">リストで指定したコンテンツ タイプの処理を <ph name="PRODUCT_FRAME_NAME" /> に対して許可する</translation>
 <translation id="4632566332417930481">企業ポリシーによってインストールされた拡張機能でのデベロッパー ツールの使用を禁止し、その他の状況におけるデベロッパー ツールの使用を許可する</translation>
 <translation id="4635284822166984665">デバイスの充電を開始する時間（デバイスのローカル タイムゾーン）です。</translation>
@@ -3152,34 +3161,6 @@
 <translation id="475479145997699293">このポリシーを <ph name="ASK_FILE_HANDLING" /> に設定した場合、ウェブアプリは File Handling API を通じたファイル形式へのアクセスを求めることができます。このポリシーを <ph name="BLOCK_FILE_HANDLING" /> に設定した場合、ファイル形式へのアクセスは許可されません。
 
       このポリシーを未設定のままにした場合、ウェブアプリはアクセスを要求できますが、ユーザーはこの設定を変更できます。</translation>
-<translation id="4755492101519343259"><ph name="PRODUCT_OS_NAME" /> でデータ漏洩を防止するルールのリストを設定します。
-      データ漏洩は、データのコピーと貼り付け、ファイルの転送、印刷、画面の共有、スクリーンショットの撮影などで起こる可能性があります。
-
-      ルールは次の項目で構成されます。
-      - 参照元の URL のリスト。データを機密として扱い、制限を適用する参照元を指定します。
-      - 参照先の URL またはコンポーネントのリスト。機密データの共有を許可または禁止する参照先を指定します。
-      - 参照元のデータに適用する制限のリスト。
-
-      ルールでは次の項目を管理できます。
-      - 参照元と参照先の間で共有するクリップボード データ。
-      - 参照元のデータのスクリーンショット撮影。
-      - 参照元のデータの印刷。
-      - 参照元のデータが表示されるプライバシー画面。
-      - 参照元のデータの画面共有。
-      制限レベルは「BLOCK」、「ALLOW」、「REPORT」、「WARN」に設定できます。
-      - 制限レベルを「BLOCK」に設定した場合、該当の項目は許可されません。
-      <ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED" /> を True に設定した場合、ブロックされた項目は管理者に報告されます。
-      - 制限レベルを「ALLOW」に設定した場合、該当の項目が許可されます。
-
-      - 制限レベルを「REPORT」に設定し、<ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED" /> を True に設定した場合、該当の項目は管理者に報告されます。
-      - 制限レベルを「WARN」に設定した場合、警告が表示され、項目によっては、実行するかキャンセルするか選択を求められます。<ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED" />を True に設定した場合、警告の表示が管理者に報告されます。該当の項目を実行した場合も報告されます。
-
-      注:
-      - 「PRIVACY_SCREEN」の制限を設定しても、プライバシー画面はオンにできますが、制限クラスを「BLOCK」に設定した場合はオンにできなくなります。
-      - 「CLIPBOARD」の制限を設定した場合、参照先を空白にすることはできませんが、他の制限については参照先を空白にできます。
-      - URL のパターンは https://www.chromium.org/administrators/url-blocklist-filter-format の形式で指定します。
-
-      ポリシーを未設定のままにした場合、制限は適用されません。</translation>
 <translation id="4757053978738874325">「モノラル音声」のユーザー補助機能を有効にします。
 
           この機能は、左右のチャンネルで音声が異なる、つまり左右の耳に入る音が異なるステレオ音声の出力に適用されます。
@@ -3207,6 +3188,7 @@
 <translation id="4812714598405913256">DeviceMinimumVersion ポリシー用の自動更新の有効期限に関するメッセージを設定する</translation>
 <translation id="4816674326202173458">企業ユーザーがメイン ユーザーとしてもセカンダリ ユーザーとしても操作できるようにする（管理対象ユーザー以外のユーザーに対するデフォルトの動作）</translation>
 <translation id="4820432864264617413">ユーザーに対して <ph name="BOREALIS_NAME" /> の実行をブロックする</translation>
+<translation id="4821987881803903281">ウィンドウの配置に関する権限を拒否するサイトを指定する</translation>
 <translation id="4826326557828204741">バッテリー電源での実行時、アイドル時間に到達したときに行う操作</translation>
 <translation id="482803100714220060">URL 全体を表示する</translation>
 <translation id="4832852360828533362">ユーザーとデバイスに関するレポートの送信</translation>
@@ -3807,7 +3789,6 @@
 <translation id="5526184558582921522">Quirks サーバーへのクエリの送信と、必要に応じたハードウェア固有の設定ファイルのダウンロードを許可する</translation>
 <translation id="5526701598901867718">すべて（安全ではありません）</translation>
 <translation id="5534079385061985566">完全復元機能を有効にする</translation>
-<translation id="5535012472025435092">このポリシーを有効にすると、ウィンドウの配置に関する権限がすべてのサイトに自動的に付与されます。これにより、サイトは接続された画面の情報を参照し、それを使用してウィンドウを開いて配置できるようになります。設定しないか無効にした場合、このポリシーはブラウザのデフォルトに従うようになり、この権限をユーザーがサイトごとに選択できるようになります。</translation>
 <translation id="5535256585099022933">再起動の時間間隔を設定する</translation>
 <translation id="5535973522252703021">Kerberos 委任サーバーのホワイトリスト</translation>
 <translation id="553806128266843748">ネットワーク制限を有効にするかどうかを示すブール値のフラグです。</translation>
@@ -3895,7 +3876,6 @@
       注: 複数のサーバー名を入力するときはカンマで区切ります。ワイルドカード（<ph name="WILDCARD_VALUE" />）を使用できます。</translation>
 <translation id="5645779841392247734">これらのサイトの Cookie を許可する</translation>
 <translation id="5646234199535103501">OnBulkDataEntry Chrome Enterprise コネクタの設定ポリシー</translation>
-<translation id="5647868527087096729">すべてのサイトで画面の情報を使ってウィンドウを開いて配置することを許可する</translation>
 <translation id="5649046890958064703"><ph name="DEVICE_PRINTERS_ACCESS_MODE_POLICY_NAME" /> の値に <ph name="PRINTERS_BLACKLIST" /> が選択されている場合、<ph name="DEVICE_NATIVE_PRINTERS_BLACKLIST_POLICY_NAME" /> でユーザーが使用できないプリンタを指定できます。ユーザーは、このポリシーで指定されている ID 以外のすべてのプリンタを使用できます。この ID は、<ph name="DEVICE_PRINTERS_POLICY_NAME" /> で指定されたファイル内の「<ph name="ID_FIELD" />」または「<ph name="GUID_FIELD" />」フィールドに対応している必要があります。
 
       このポリシーはサポートが終了しています。代わりに <ph name="DEVICE_PRINTERS_BLOCKLIST_POLICY_NAME" /> を使用してください。</translation>
@@ -4034,11 +4014,14 @@
 <translation id="5766438888216077649"><ph name="BLANK_PAGE_NAME" /> をターゲットとするリンクで <ph name="WINDOW_OPENER_PROPERTY" /> を設定しない</translation>
 <translation id="5767776869128458023">代替エラーページを無効にする</translation>
 <translation id="5770738360657678870">Dev チャンネル（不安定な場合があります）</translation>
+<translation id="5774345930803672932">このポリシーを True に設定するか未設定のままにした場合、イベント、テレメトリー、情報を
+      暗号化されたレポート パイプラインに報告できます。このポリシーを False に設定した場合、暗号化されたレポート パイプラインは無効になります。</translation>
 <translation id="5774856474228476867">デフォルトの検索プロバイダの検索 URL</translation>
 <translation id="5775235485119094648">残量が一定の範囲内の場合にバッテリーを充電する。</translation>
 <translation id="5776485039795852974">サイトでデスクトップ通知が表示される前に毎回確認する</translation>
 <translation id="5783009211970309878">ヘッダーとフッターを印刷</translation>
 <translation id="5790763087505467169">管理対象のゲスト セッションの自動起動通知を減らす</translation>
+<translation id="5802931736499687181">暗号化されたレポート パイプラインを無効にする</translation>
 <translation id="5806128552675651249">背景のグラフィックなしの印刷のみを許可する</translation>
 <translation id="5809210507920527553">Linux コンテナ（Crostini）の設定を制御します。</translation>
 <translation id="5809728392451418079">デバイスのローカル アカウントの表示名を設定する</translation>
@@ -4305,6 +4288,14 @@
 <translation id="6144046700495610112">このポリシーを有効に設定した場合、初回実行時に以前の既定のブラウザから自動入力フォームのデータが読み込まれます。このポリシーを無効に設定するか未設定のままにした場合、初回実行時に自動入力フォームのデータは読み込まれません。
 
       ユーザーはインポート ダイアログを表示できます。このとき、自動入力フォームのデータのチェックボックスは、このポリシーの値に合わせてオンまたはオフになります。</translation>
+<translation id="614522356524762803">
+      Chrome のステータス レポートをアップロードする頻度を管理します。
+
+      この設定は、<ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> で有効にしたレポートにも適用されます。
+
+      このポリシーを設定しない場合、レポートは 24 時間ごとにアップロードされます。
+      このポリシーを設定した場合、レポートは指定した時間ごとにアップロードされます。
+      </translation>
 <translation id="614616930188030377">このリストに指定されたパターンは、リクエスト元 URL のセキュリティ オリジンと照合されます。
       一致するものが見つかった場合、または chrome://flags/#enable-webrtc-hide-local-ips-with-mdns が無効に設定されている場合は、WebRTC ICE の候補にローカル IP アドレスが表示されます。
       それ以外の場合、ローカル IP アドレスは mDNS のホスト名で隠されます。
@@ -5278,6 +5269,11 @@
       このポリシーが未設定または空白の場合、ユーザーは <ph name="PRODUCT_NAME" /> で、どの Google アカウントでもブラウザのメイン アカウントとして設定できます。</translation>
 <translation id="723103540848640830">ロック画面の PIN の最小桁数を設定する</translation>
 <translation id="7234280155140786597">禁止するネイティブ メッセージング ホストの名前（または、「*」ですべてを禁止）</translation>
+<translation id="723621412149834592">このポリシーを <ph name="BLOCK_WINDOW_PLACEMENT_POLICY_NAME" />（値 2）に設定した場合、サイトからウィンドウの配置に関する権限が要求されたときに、デフォルトで自動的に拒否します。デバイスの画面に関する情報の取得や、その情報を使用したウィンドウの表示と配置、特定の画面での全画面表示のリクエストといったサイトの機能が制限されます。
+
+      このポリシーを <ph name="ASK_WINDOW_PLACEMENT_POLICY_NAME" />（値 3）に設定した場合、ウィンドウの配置に関する権限が要求されたときに、デフォルトでユーザーに通知されます。ユーザーが権限を許可した場合、デバイスの画面に関する情報の取得や、その情報を使用したウィンドウの表示と配置、特定の画面での全画面表示のリクエストといったサイトの機能が有効になります。
+
+      このポリシーを未設定のままにした場合、<ph name="ASK_WINDOW_PLACEMENT_POLICY_NAME" /> ポリシーは適用されますが、ユーザーはこの設定を変更できます。</translation>
 <translation id="7246767840750730334">スマートフォン ハブの通知を有効にできるようにします。</translation>
 <translation id="7249828445670652637">ARC アプリで <ph name="PRODUCT_OS_NAME" /> の CA 証明書を使用できるようにする</translation>
 <translation id="7251825257294351251">システム通知の使用を許可する</translation>
@@ -5295,6 +5291,7 @@
       <ph name="MS_WIN_NAME" /> では、<ph name="MS_AD_NAME" /> ドメインに追加されたインスタンス、Windows 10 Pro で実行されているインスタンス、<ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" /> に登録されているインスタンスでのみこの機能を使用できます。<ph name="MAC_OS_NAME" /> では、MDM を介して管理されるインスタンスまたは MCX を介してドメインに追加されたインスタンスでのみこの機能を使用できます。</translation>
 <translation id="7258823566580374486">リモート アクセス ホストのカーテンを有効にする</translation>
 <translation id="7260204423892780600">Google アシスタントの設定を管理します。</translation>
+<translation id="7261140115553020049">フローティング ワークスペース サービスを有効にする</translation>
 <translation id="7261252191178797385">デバイスの壁紙画像</translation>
 <translation id="7264704483008663819">このポリシーは M68 でサポートを終了しました。代わりに DeveloperToolsAvailability を使用してください。
 
@@ -5363,6 +5360,11 @@
 <translation id="7340034977315324840">デバイス操作時間を報告する</translation>
 <translation id="7343004974628511824">DNS 傍受チェックを行う</translation>
 <translation id="7343497214039883642">デバイスの企業プリンタ設定ファイル</translation>
+<translation id="7358012133037776875">ウィンドウの配置に関する権限を自動的に許可するサイトの URL パターンのリストを指定できます。これらのサイトでは、デバイスの画面に関する情報の取得や、その情報を使用したウィンドウの表示と配置、特定の画面での全画面表示のリクエストといった機能が有効になります。
+
+      有効なサイトの URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。ワイルドカード（<ph name="WILDCARD_VALUE" />）を使用できます。このポリシーでは、オリジンのみが照合されるため、URL パターンのパスは無視されます。
+
+      このポリシーでサイトを指定しない場合は、<ph name="DEFAULT_WINDOW_PLACEMENT_SETTING_POLICY_NAME" /> のポリシーが適用されます。このポリシーでサイトを指定した場合は、ブラウザのデフォルトの権限設定が適用され、ユーザーはサイトごとに権限を選択できます。</translation>
 <translation id="7358359585412734876"><ph name="LACROS_NAME" /> を有効にする</translation>
 <translation id="7358744897221281073">この設定が有効な場合、スマートフォン ハブをすでに有効にしているユーザーは、スマートフォンでのウェブページの閲覧などの作業を Chrome OS で継続できます。
 
@@ -5423,6 +5425,9 @@
 <translation id="7459601923199346224">証明書管理のユーザー ポリシーとデバイス ポリシーを管理します。</translation>
 <translation id="7459633275230216698">ファイル選択ダイアログを許可する</translation>
 <translation id="7464991223784276288">一致する URL からの Cookie を現在のセッションに限定する</translation>
+<translation id="7466522266556143347">このポリシーを有効に設定した場合、ユーザーは Direct Sockets API を使用できます（他の必要な条件をすべて満たしている場合）。
+      このポリシーを無効に設定した場合、ユーザーは API にアクセスできません。
+      このポリシーが未設定の場合、デフォルトにより、企業の管理対象ユーザーは使用を許可されず、管理対象外のユーザーは使用を許可されます。</translation>
 <translation id="7468182772656807573">このポリシーの設定により、監視ネットワーク パケットの送信間隔（ミリ秒単位）が決定されます。間隔の範囲は 30 秒～24 時間です。範囲外の値を設定しても、範囲内の値に修正されます。
 
       設定しなかった場合は、デフォルトの 3 分間隔が適用されます。</translation>
@@ -5443,6 +5448,34 @@
 <translation id="7477149584454865826">プリンタの設定に IPP Everywhere を使用するかどうかを示すブール値のフラグです。</translation>
 <translation id="7477231245051133709">「モノラル音声」のユーザー補助機能を有効にする</translation>
 <translation id="7477239290070847560">Zeroconf（mDNS+DNS-SD）プロトコルの送信先</translation>
+<translation id="7477526482439041787"><ph name="PRODUCT_OS_NAME" /> でデータ漏洩を防止するルールのリストを設定します。
+      データ漏洩は、データのコピーと貼り付け、ファイルの転送、印刷、画面の共有、スクリーンショットの撮影などで起こる可能性があります。
+
+      ルールは次の項目で構成されます。
+      - 参照元の URL のリスト。データを機密として扱い、制限を適用する参照元を指定します。
+      - 参照先の URL またはコンポーネントのリスト。機密データの共有を許可または禁止する参照先を指定します。
+      - 参照元のデータに適用する制限のリスト。
+
+      ルールでは次の項目を管理できます。
+      - 参照元と参照先の間で共有するクリップボード データ。
+      - 参照元のデータのスクリーンショット撮影。
+      - 参照元のデータの印刷。
+      - 参照元のデータが表示されるプライバシー画面。
+      - 参照元のデータの画面共有。
+      制限レベルは「BLOCK」、「ALLOW」、「REPORT」、「WARN」に設定できます。
+      - 制限レベルを「BLOCK」に設定した場合、該当の項目は許可されません。
+      <ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED" /> を True に設定した場合、ブロックされた項目は管理者に報告されます。
+      - 制限レベルを「ALLOW」に設定した場合、該当の項目が許可されます。
+
+      - 制限レベルを「REPORT」に設定し、<ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED" /> を True に設定した場合、該当の項目は管理者に報告されます。
+      - 制限レベルを「WARN」に設定した場合、警告が表示され、項目によっては、実行するかキャンセルするか選択を求められます。<ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED" />を True に設定した場合、警告の表示が管理者に報告されます。該当の項目を実行した場合も報告されます。
+
+      注:
+      - 「PRIVACY_SCREEN」の制限を設定しても、プライバシー画面はオンにできますが、制限クラスを「BLOCK」に設定した場合はオンにできなくなります。
+      - 「CLIPBOARD」の制限を設定した場合、参照先を空白にすることはできませんが、他の制限については参照先を空白にできます。
+      - URL のパターンは https://www.chromium.org/administrators/url-blocklist-filter-format の形式で指定します。
+
+      ポリシーを未設定のままにした場合、制限は適用されません。</translation>
 <translation id="7480826412572122600"><ph name="ON_FILE_DOWNLOADED_ENTERPRISE_CONNECTOR" /> Enterprise コネクタに適用する Chrome Enterprise コネクタ サービス設定のリストで、Chrome でファイルがダウンロードされた場合に呼び出されます。
 
       <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" />、<ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> フィールドは、特定のページからダウンロードされるファイルを分析のためコネクタが送信すべきかどうかと、そのファイルの分析リクエストにどのタグを含めるかをコネクタで判別する際に使用されます。「有効」パターンに該当するタグは、ページの URL がそのタグに関連付けられているパターンと一致し、同じタグの「無効」パターンとは一致しない場合に分析リクエストに含められます。分析は、リクエストにタグが少なくとも 1 つ含まれる場合に行われます。
@@ -5599,7 +5632,6 @@
 <translation id="7638300388094655454">Google Cast</translation>
 <translation id="7638764766629234761">システム通知の使用を許可する</translation>
 <translation id="7643883929273267746"><ph name="PRODUCT_NAME" /> に表示されるアカウントを制限する</translation>
-<translation id="7644125656003029520">すべてのサイトでウィンドウの配置の権限を有効にする</translation>
 <translation id="7648664871086956188">このポリシーは、DataLeakPreventionRulesList ポリシーで定義されたすべてのルールに対する一般的なスイッチです。
       このポリシーを True に設定すると、データ漏洩防止イベントのリアルタイム レポートがオンになります。
       このポリシーを False に設定するか未設定のままにした場合、レポートはオフになります。
@@ -5889,6 +5921,7 @@
           このポリシーを設定しない場合は、デフォルトの時間が使用されます。
 
           このポリシーの値はミリ秒単位とし、アイドル待ちの時間と同じかそれより短い時間を指定できます。</translation>
+<translation id="7992613144342460685">ウィンドウの配置に関する権限を許可するサイトを指定する</translation>
 <translation id="7995610550667275367">スキャン（バージョン 87 以降でサポート）</translation>
 <translation id="7999023147219236247">アプリへの権限付与のリクエストに関するポリシーです。PERMISSION_POLICY_UNSPECIFIED: ポリシーを指定しません。権限に関するポリシーがどのレベルでも指定されていなければ、デフォルトで「PROMPT」の動作が適用されます。PROMPT: 権限を付与するよう促すメッセージをユーザーに表示します。GRANT: 自動的に権限を付与します。DENY: 自動的に権限の付与を拒否します。</translation>
 <translation id="7999818120028621358">データ漏洩防止イベントのレポートを有効にする</translation>
@@ -5952,10 +5985,6 @@
 <translation id="8101381354936029836">ポリシーの最小単位グループ:</translation>
 <translation id="8102913158860568230">デフォルトのメディアストリームの設定</translation>
 <translation id="8104962233214241919">これらのサイトのクライアント証明書を自動的に選択する</translation>
-<translation id="8111502498815410897">このポリシーでは、ファスト ペアリングを強制的に有効または無効にできます。
-      ファスト ペアリングは、ペア設定済みの周辺機器と GAIA アカウントをリンクする新しい Bluetooth ペア設定フローです。
-      これにより、同じ GAIA アカウントでログインしている他の Chrome OS（および Android）デバイスを自動的にペア設定できるようになります。
-      未設定の場合、ファスト ペアリングは Chrome OS のデフォルトである有効に設定されます。</translation>
 <translation id="8114382167597081590">YouTube で制限モードを強制適用しない</translation>
 <translation id="8117921351531866504">保存されているお支払い方法の確認をウェブサイトに許可するかどうかを設定します。
 
@@ -6503,6 +6532,7 @@
       このポリシーを無効に設定するか未設定のままにした場合、リモート アクセス ホストは任意のローカル ユーザーと関連付けられます。</translation>
 <translation id="867708016260789630">YouTube の「中」以上の制限付きモードを強制的に適用する</translation>
 <translation id="8677853537025397834">WebHID API を許可するサイトを指定します</translation>
+<translation id="8684781382594546769">Direct Sockets API を無効にする。</translation>
 <translation id="8685024486845674965">パスワードが再使用されたときに、パスワード保護について警告する</translation>
 <translation id="8685680544554917389">このポリシーを True に設定した場合、<ph name="PRODUCT_NAME" /> でメディアの自動再生が可能になります。このポリシーを False に設定した場合、<ph name="PRODUCT_NAME" /> でメディアは自動再生されません。
 
@@ -6699,6 +6729,7 @@
 <translation id="8892783613915541293">AC 電源での使用中、デバイスがアイドル状態になってからの待機時間とその後に行うアクション</translation>
 <translation id="8897796778265450949">SAML を使用せず GAIA 経由で認証されたユーザーがオフラインでログインできる時間を制限する</translation>
 <translation id="889814528399907891">ユーザーが <ph name="LACROS_NAME" /> を有効にするとともにメインのブラウザとして設定することを許可する</translation>
+<translation id="8900312706328930425">クラウド レポートの送信頻度（時間単位）</translation>
 <translation id="8903283771634816230">このポリシーを有効に設定した場合、<ph name="PRODUCT_NAME" /> では OS のデフォルト プリンタが印刷プレビューのデフォルトの印刷先として使用されます。
 
       このポリシーを無効に設定するか未設定のままにした場合、<ph name="PRODUCT_NAME" /> では、最後に使用されたプリンタが印刷プレビューのデフォルトの印刷先として使用されます。</translation>
@@ -6754,6 +6785,12 @@
       このポリシーは、ファミリー リンクのユーザーにのみ適用されます。</translation>
 <translation id="8947415621777543415">デバイスの位置をレポート</translation>
 <translation id="8948062138228904066">認証サーバーの許可リスト</translation>
+<translation id="8949511380888040821">有効な場合、<ph name="PRODUCT_NAME" /> は組み込みの証明書確認機能を使用してサーバー証明書の確認を行います。
+      無効な場合、<ph name="PRODUCT_NAME" /> はプラットフォームから提供される従来の証明書確認機能を使用してサーバー証明書の確認を行います。
+      未設定の場合、組み込みまたは従来の証明書確認機能が使用される可能性があります。
+
+      このポリシーは <ph name="MAC_OS_NAME" /> バージョン 104 の <ph name="PRODUCT_NAME" /> で削除される予定です（<ph name="MAC_OS_NAME" /> での従来の証明書確認機能のサポートがバージョン 104 で削除されるため）。
+      </translation>
 <translation id="8951350807133946005">ディスクのキャッシュ ディレクトリの設定</translation>
 <translation id="8955719471735800169">トップへ戻る</translation>
 <translation id="8956312248048980644">オリジンキー エージェント クラスタリングをデフォルトで許可します。</translation>

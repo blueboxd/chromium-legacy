@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "components/services/storage/public/cpp/buckets/constants.h"
 #include "sql/database.h"
+#include "sql/error_metrics.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -415,36 +416,6 @@ QuotaError QuotaDatabase::SetBucketLastAccessTime(BucketId bucket_id,
   return QuotaError::kNone;
 }
 
-QuotaError QuotaDatabase::SetStorageKeyLastModifiedTime(
-    const StorageKey& storage_key,
-    StorageType type,
-    base::Time last_modified) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  QuotaError open_error = EnsureOpened(EnsureOpenedMode::kFailIfNotFound);
-  if (open_error != QuotaError::kNone)
-    return open_error;
-
-  // Check if bucket exists first. Running an update statement on a bucket that
-  // doesn't exist fails DCHECK and crashes.
-  // TODO(crbug/1210252): Update to not execute 2 sql statements.
-  QuotaErrorOr<BucketInfo> result =
-      GetBucket(storage_key, kDefaultBucketName, type);
-  if (!result.ok())
-    return result.error();
-
-  static constexpr char kSql[] =
-      "UPDATE buckets SET last_modified = ? WHERE id = ?";
-  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindTime(0, last_modified);
-  statement.BindInt64(1, result->id.value());
-
-  if (!statement.Run())
-    return QuotaError::kDatabaseError;
-
-  ScheduleCommit();
-  return QuotaError::kNone;
-}
-
 QuotaError QuotaDatabase::SetBucketLastModifiedTime(BucketId bucket_id,
                                                     base::Time last_modified) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -716,6 +687,29 @@ QuotaError QuotaDatabase::SetIsBootstrapped(bool bootstrap_flag) {
              : QuotaError::kDatabaseError;
 }
 
+QuotaError QuotaDatabase::CorruptForTesting(
+    base::OnceCallback<void(const base::FilePath&)> corrupter) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (db_) {
+    // Commit the long-running transaction.
+    db_->CommitTransaction();
+    db_->Close();
+  }
+
+  std::move(corrupter).Run(db_file_path_);
+
+  if (!db_)
+    return QuotaError::kDatabaseError;
+  if (!OpenDatabase())
+    return QuotaError::kDatabaseError;
+
+  // Begin a long-running transaction. This matches EnsureOpen().
+  if (!db_->BeginTransaction())
+    return QuotaError::kDatabaseError;
+  return QuotaError::kNone;
+}
+
 void QuotaDatabase::Commit() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!db_)
@@ -763,6 +757,13 @@ QuotaError QuotaDatabase::EnsureOpened(EnsureOpenedMode mode) {
   meta_table_ = std::make_unique<sql::MetaTable>();
 
   db_->set_histogram_tag("Quota");
+
+  // UMA logging and don't crash on database errors in DCHECK builds.
+  db_->set_error_callback(
+      base::BindRepeating([](int sqlite_error_code, sql::Statement* statement) {
+        sql::UmaHistogramSqliteResult("Quota.QuotaDatabaseError",
+                                      sqlite_error_code);
+      }));
 
   if (!OpenDatabase() || !EnsureDatabaseVersion()) {
     LOG(ERROR) << "Could not open the quota database, resetting.";

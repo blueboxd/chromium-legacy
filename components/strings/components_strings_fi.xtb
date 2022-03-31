@@ -492,7 +492,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2430968933669123598">Ylläpidä Google-tiliä, ylläpidä tietojasi, yksityisyyttäsi ja tietoturvaasi Google-tilillä painamalla Enter</translation>
 <translation id="2436186046335138073">Haluatko tahon <ph name="HANDLER_HOSTNAME" /> avaavan kaikki <ph name="PROTOCOL" />-linkit?</translation>
 <translation id="2438874542388153331">Neljä reikää oikealla</translation>
-<translation id="2450021089947420533">Matkat</translation>
+<translation id="2450021089947420533">Selailu</translation>
 <translation id="2463739503403862330">Täytä</translation>
 <translation id="2465402087343596252">Arkkitehti-E</translation>
 <translation id="2465655957518002998">Valitse jakelutapa</translation>
@@ -519,6 +519,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2523886232349826891">Tallennetaan vain tälle laitteelle</translation>
 <translation id="2524461107774643265">Lisää tietoja</translation>
 <translation id="2529899080962247600">Kentässä voi olla korkeintaan <ph name="MAX_ITEMS_LIMIT" /> kohtaa. Tämän määrän ylittävät merkinnät ohitetaan.</translation>
+<translation id="2535585790302968248">Avaa uusi incognito-välilehti selataksesi yksityisesti</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{ja 1 muu}other{ja # muuta}}</translation>
 <translation id="2536110899380797252">Lisää osoite</translation>
 <translation id="2539524384386349900">Tunnista</translation>
@@ -585,6 +586,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2709516037105925701">Automaattinen täyttö</translation>
 <translation id="2713444072780614174">Valkoinen</translation>
 <translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, paina ensin sarkainta ja sitten Enter ylläpitääksesi maksu- ja credit-korttitietoja Chromen asetuksissa</translation>
+<translation id="271663710482723385">Poistu koko näytön tilasta painamalla |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />|</translation>
 <translation id="2721148159707890343">Pyyntö onnistui</translation>
 <translation id="2723669454293168317">Tee turvatarkistus Chromen asetuksissa</translation>
 <translation id="2726001110728089263">Sivulokero</translation>
@@ -1131,6 +1133,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="4434045419905280838">Ponn.ikkunat ja uudelleenohjaus</translation>
 <translation id="4435702339979719576">Postikortti</translation>
 <translation id="443673843213245140">Välityspalvelinta ei saa käyttää, mutta erilliset välityspalvelimen asetukset on määritetty.</translation>
+<translation id="4441832193888514600">Ohitettu, koska käytäntö voidaan asettaa vain pilvikäyttäjäkäytäntönä.</translation>
 <translation id="4450893287417543264">Älä näytä uudelleen</translation>
 <translation id="4451135742916150903">Saa pyytää lupaa yhdistää HID-laitteisiin</translation>
 <translation id="4452328064229197696">Juuri käyttämäsi salasana löytyi tietosuojaloukkauksesta. Tiliesi suojaamiseksi Googlen Salasanojen ylläpito suosittelee, että tarkistat tallennetut salasanasi.</translation>
@@ -1229,6 +1232,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="4757993714154412917">Lisäsit juuri salasanasi petolliselle sivustolle. Chromium suosittelee tarkistamaan tallennetut salasanasi tilisi suojaamiseksi.</translation>
 <translation id="4758311279753947758">Lisää yhteystiedot</translation>
 <translation id="4761104368405085019">Käyttää mikrofonia</translation>
+<translation id="4761869838909035636">Tee Chromen turvatarkistus</translation>
 <translation id="4764776831041365478">Osoitteessa <ph name="URL" /> oleva sivu saattaa olla väliaikaisesti pois käytöstä tai se on voitu siirtää pysyvästi uuteen osoitteeseen.</translation>
 <translation id="4766713847338118463">Kaksi niittiä alareunassa</translation>
 <translation id="4771973620359291008">Tapahtui tuntematon virhe.</translation>
@@ -1260,6 +1264,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="4854362297993841467">Tämä toimitustapa ei ole käytettävissä. Kokeile toista tapaa.</translation>
 <translation id="4854853140771946034">Luo uusi muistiinpano nopeasti Google Keepissa</translation>
 <translation id="485902285759009870">Vahvistetaan koodia…</translation>
+<translation id="4866506163384898554">Näytä kohdistin painamalla |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />|</translation>
 <translation id="4876188919622883022">Yksinkertaistettu näkymä</translation>
 <translation id="4876305945144899064">Ei käyttäjänimeä</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Ei mitään}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -1273,6 +1278,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4900217275619098670">Yhdeksäs rulla</translation>
 <translation id="4901778704868714008">Tallenna…</translation>
+<translation id="4905659621780993806">Järjestelmänvalvojasi käynnistää laitteen uudelleen automaattisesti <ph name="DATE" /> kello <ph name="TIME" />. Tallenna avoimet kohteet, ennen kuin laite käynnistyy uudelleen.</translation>
 <translation id="4913987521957242411">Reikä vasemmassa yläkulmassa</translation>
 <translation id="4918221908152712722">Asenna <ph name="APP_NAME" /> (ei vaadi lataamista)</translation>
 <translation id="4923459931733593730">Maksu</translation>
@@ -1481,7 +1487,8 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="5552137475244467770">Chrome vertaa salasanojasi säännöllisesti listoihin salasanoista, jotka on julkaistu verkossa. Tätä varten salasanat ja käyttäjänimet salataan, joten kukaan (myöskään Google) ei voi lukea niitä.</translation>
 <translation id="5556459405103347317">Lataa uudelleen</translation>
 <translation id="5560088892362098740">Viimeinen voimassaolopäivä</translation>
-<translation id="55635442646131152">Dokumentin yleiskatsaus</translation>
+<translation id="55635442646131152">Dokumentin asettelu</translation>
+<translation id="5565613213060953222">Avaa incognito-välilehti</translation>
 <translation id="5565735124758917034">Aktiivinen</translation>
 <translation id="5570825185877910964">Suojaa tili</translation>
 <translation id="5571083550517324815">Nouto tästä osoitteesta ei onnistu. Valitse eri osoite.</translation>
@@ -1686,6 +1693,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="6290238015253830360">Suositellut artikkelit näkyvät tässä.</translation>
 <translation id="6293309776179964942">JIS B5 (182 mm x 257 mm)</translation>
 <translation id="6295618774959045776">CVC:</translation>
+<translation id="6300452962057769623">{0,plural, =0{Laitteesi käynnistyy uudelleen nyt}=1{Laitteesi käynnistyy uudelleen 1 sekunnin kuluttua}other{Laitteesi käynnistyy uudelleen # sekunnin kuluttua}}</translation>
 <translation id="6302269476990306341">Chromen Google Assistant suljetaan</translation>
 <translation id="6305205051461490394">Sivustoon <ph name="URL" /> ei saada yhteyttä.</translation>
 <translation id="6312113039770857350">Verkkosivu ei ole saatavilla</translation>
@@ -1947,6 +1955,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="7192203810768312527">Vapauttaa <ph name="SIZE" />. Jotkin sivustot saattavat latautua hitaammin seuraavalla käynnillä.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7201591969684833065">Järjestelmänvalvoja näkee seuraavat:</translation>
+<translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, paina ensin sarkainta ja sitten Enter avataksesi uuden incognito-välilehden, niin voit selata yksityisesti</translation>
 <translation id="7202346780273620635">Kirje-ekstra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ei noudata tietoturvastandardeja.</translation>
 <translation id="7210993021468939304">Linux-toiminta säilön sisällä, ja voi asentaa ja suorittaa Linux-sovelluksia säilön sisällä</translation>
@@ -2009,6 +2018,7 @@ Lisätietoja:
 <translation id="7378627244592794276">Ei</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7386364858855961704">Ei sovellu</translation>
+<translation id="7388594495505979117">{0,plural, =1{Laitteesi käynnistyy uudelleen 1 minuutin kuluttua}other{Laitteesi käynnistyy uudelleen # minuutin kuluttua}}</translation>
 <translation id="7390545607259442187">Vahvista kortti</translation>
 <translation id="7392089738299859607">Päivitä osoite</translation>
 <translation id="7399802613464275309">Turvatarkistus</translation>
@@ -2211,6 +2221,7 @@ Lisätietoja:
 <translation id="799149739215780103">Sidonta</translation>
 <translation id="7992044431894087211">Näytön jakamista (<ph name="APPLICATION_TITLE" />) jatkettu</translation>
 <translation id="7995512525968007366">Ei määritetty</translation>
+<translation id="7998269595945679889">Avaa incognito-välilehti ‑painike, paina Enter avataksesi uuden incognito-välilehden, niin voit selata yksityisesti</translation>
 <translation id="800218591365569300">Yritä vapauttaa muistia sulkemalla muita välilehtiä tai ohjelmia.</translation>
 <translation id="8004582292198964060">Selain</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Tämä kortti ja sen laskutusosoite tallennetaan. Voit käyttää sitä sisäänkirjautuneena (<ph name="USER_EMAIL" />).}other{Nämä kortit ja niiden laskutusosoitteet tallennetaan. Voit käyttää niitä sisäänkirjautuneena (<ph name="USER_EMAIL" />).}}</translation>
@@ -2365,6 +2376,7 @@ Lisätietoja:
 <translation id="8507227106804027148">Komentorivi</translation>
 <translation id="8508648098325802031">Hakukuvake</translation>
 <translation id="8511402995811232419">Ylläpidä evästeitä</translation>
+<translation id="8519753333133776369">Järjestelmänvalvojan sallima HID-laite</translation>
 <translation id="8522552481199248698">Chrome voi auttaa suojaamaan Google-tiliäsi ja vaihtamaan salasanasi.</translation>
 <translation id="8530813470445476232">Tyhjennä selaushistoria, evästeet, välimuisti ja muita tietoja Chromen asetuksista</translation>
 <translation id="8533619373899488139">Voit nähdä estetyt URL-osoitteet ja muut järjestelmänvalvojasi määräämät käytännöt osoitteessa &lt;strong&gt;chrome://policy&lt;/strong&gt;.</translation>
@@ -2549,6 +2561,7 @@ Lisätietoja:
 <translation id="9150045010208374699">Käyttää kameraa</translation>
 <translation id="9150685862434908345">Järjestelmänvalvoja voi muuttaa selaimen määrityksiä etäyhteydellä. Toimintaa tällä laitteella saatetaan ylläpitää myös Chromen ulkopuolelta. <ph name="BEGIN_LINK" />Lue lisää<ph name="END_LINK" /></translation>
 <translation id="9154194610265714752">Päivitetty</translation>
+<translation id="9155211586651734179">Yhdistetyt audiolisälaitteet</translation>
 <translation id="9157595877708044936">Valmistellaan...</translation>
 <translation id="9158625974267017556">C6 (kirjekuori)</translation>
 <translation id="9164029392738894042">Tarkkuuden tarkistaminen</translation>

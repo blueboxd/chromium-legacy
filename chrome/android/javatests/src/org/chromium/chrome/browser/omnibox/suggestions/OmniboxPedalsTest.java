@@ -9,6 +9,7 @@ import static org.chromium.base.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVA
 
 import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
+import android.view.KeyEvent;
 
 import androidx.fragment.app.Fragment;
 import androidx.test.filters.MediumTest;
@@ -31,7 +32,6 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.accessibility.settings.AccessibilitySettings;
 import org.chromium.chrome.browser.autofill.settings.AutofillPaymentMethodsFragment;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTabsFragment;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -53,6 +53,7 @@ import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionInfo;
 import org.chromium.chrome.test.util.WaitForFocusHelper;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.browser_ui.accessibility.AccessibilitySettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettings;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.omnibox.AutocompleteMatch;
@@ -209,13 +210,12 @@ public class OmniboxPedalsTest {
      */
     private void checkSettingsWasShownAndOmniboxNoFocus(
             SettingsActivity settingsActivity, Class<? extends Fragment> fragmentClass) {
-        UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
         CriteriaHelper.pollUiThread(() -> {
             Fragment fragment =
                     settingsActivity.getSupportFragmentManager().findFragmentById(R.id.content);
             Criteria.checkThat(fragment, Matchers.instanceOf(fragmentClass));
-            Criteria.checkThat(urlBar.hasFocus(), Matchers.is(false));
         });
+        mOmniboxUtils.checkFocus(false);
     }
 
     /**
@@ -477,6 +477,33 @@ public class OmniboxPedalsTest {
     @Test
     @MediumTest
     @EnableFeatures("OmniboxPedalsAndroidBatch1")
+    public void testPedalsStartedOnCtrlEnterKeyStroke() throws InterruptedException {
+        mOmniboxUtils.requestFocus();
+        mOmniboxUtils.typeText("Chrome accessibility", false);
+        mOmniboxUtils.checkSuggestionsShown();
+        SuggestionInfo<PedalSuggestionView> pedal =
+                mOmniboxUtils.getSuggestionByType(OmniboxSuggestionUiType.PEDAL_SUGGESTION);
+        Assert.assertNotNull(pedal.view);
+        mOmniboxUtils.focusSuggestion(pedal.index);
+
+        // Select Pedal with the TAB key and activate it with an ENTER key.
+        mOmniboxUtils.sendKey(KeyEvent.KEYCODE_TAB);
+        mOmniboxUtils.sendKey(KeyEvent.KEYCODE_ENTER);
+
+        SettingsActivity settingsActivity = ActivityTestUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), SettingsActivity.class, () -> {});
+        Assert.assertNotNull("Could not find the Settings activity", settingsActivity);
+
+        checkSettingsWasShownAndOmniboxNoFocus(settingsActivity, AccessibilitySettings.class);
+
+        verifyHistogram(OmniboxPedalType.MANAGE_CHROME_ACCESSIBILITY);
+
+        settingsActivity.finish();
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures("OmniboxPedalsAndroidBatch1")
     public void testPlayChromeDinoGameOmniboxPedalSuggestion() throws InterruptedException {
         // Generate the play chrome dino game pedal.
         LocationBarLayout locationBarLayout =
@@ -499,7 +526,7 @@ public class OmniboxPedalsTest {
         verifyHistogram(OmniboxPedalType.PLAY_CHROME_DINO_GAME);
     }
 
-    @Test
+    @Test(expected = AssertionError.class)
     @MediumTest
     @EnableFeatures("OmniboxPedalsAndroidBatch1")
     public void testNoPedalSuggestionAfterTop3() {
@@ -510,8 +537,8 @@ public class OmniboxPedalsTest {
 
         mOmniboxUtils.setSuggestions(
                 AutocompleteResult.fromCache(suggestionsList, null), "Suggestion");
-
         mOmniboxUtils.checkSuggestionsShown();
+
         SuggestionInfo<PedalSuggestionView> info =
                 mOmniboxUtils.getSuggestionByType(OmniboxSuggestionUiType.PEDAL_SUGGESTION);
         Assert.assertNull(
@@ -529,8 +556,8 @@ public class OmniboxPedalsTest {
 
         mOmniboxUtils.setSuggestions(
                 AutocompleteResult.fromCache(suggestionsList, null), "Suggestion");
-
         mOmniboxUtils.checkSuggestionsShown();
+
         SuggestionInfo<PedalSuggestionView> info =
                 mOmniboxUtils.getSuggestionByType(OmniboxSuggestionUiType.PEDAL_SUGGESTION);
         Assert.assertNotNull("Should show a pedal if the suggestion is in top 3 suggestions", info);

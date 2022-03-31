@@ -313,9 +313,17 @@ void FrameSinkVideoCapturerImpl::SetAutoThrottlingEnabled(bool enabled) {
 }
 
 void FrameSinkVideoCapturerImpl::ChangeTarget(
-    const absl::optional<VideoCaptureTarget>& target) {
+    const absl::optional<VideoCaptureTarget>& target,
+    uint32_t crop_version) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_GE(crop_version, crop_version_);
+
   target_ = target;
+  crop_version_ = crop_version;
+
+  // TODO(crbug.com/1266378): Use |crop_version_| to annotate frames delivered
+  // or dropped.
+
   ResolveTarget();
 }
 
@@ -634,6 +642,25 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     return;
   }
 
+  // The oracle only keeps track of the source size, which should be the
+  // size of the capture region. If the capture region is empty or if the
+  // capture region isn't a subset of the entire compositor frame region, we
+  // shouldn't capture.
+  const gfx::Rect compositor_frame_region =
+      resolved_target_->GetCopyOutputRequestRegion(VideoCaptureSubTarget{});
+  const gfx::Rect capture_region =
+      resolved_target_->GetCopyOutputRequestRegion(target_->sub_target);
+
+  // This likely means that there is a mismatch between the last aggregated
+  // surface and the last activated surface sizes. To be cautious, we refresh
+  // the frame although a frame damage event should happen shortly.
+  // TODO(https://crbug.com/1300943): we should likely just get the frame
+  // region from the last aggregated surface.
+  if (!compositor_frame_region.Contains(capture_region)) {
+    RequestRefreshFrame();
+    return;
+  }
+
   // Reserve a buffer from the pool for the next frame.
   const OracleFrameNumber oracle_frame_number = oracle_->next_frame_number();
   const gfx::Size capture_size =
@@ -688,6 +715,10 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   // At this point, the capture is going to proceed. Populate the VideoFrame's
   // metadata, and notify the oracle.
   const int64_t capture_frame_number = next_capture_frame_number_++;
+  // !WARNING: now that the frame number has been incremented, returning without
+  // adding the frame to the |delivery_queue_| or decrementing the frame number
+  // will cause the queue to be permanently stuck.
+
   VideoFrameMetadata& metadata = frame->metadata();
   metadata.capture_begin_time = clock_->NowTicks();
   metadata.capture_counter = capture_frame_number;
@@ -808,20 +839,6 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     return;
   }
 
-  // The oracle only keeps track of the source size, which should be the
-  // size of the capture region. If the capture region is empty or if the
-  // capture region isn't a subset of the entire compositor frame region, we
-  // shouldn't capture.
-  const gfx::Rect compositor_frame_region =
-      resolved_target_->GetCopyOutputRequestRegion(VideoCaptureSubTarget{});
-  const gfx::Rect capture_region =
-      resolved_target_->GetCopyOutputRequestRegion(target_->sub_target);
-
-  // This like means that the compositor frame is being resized but the surface
-  // hasn't been redrawn yet.
-  if (!compositor_frame_region.Contains(capture_region))
-    return;
-
   DCHECK(capture_region.size() == source_size);
   if (absl::holds_alternative<RegionCaptureCropId>(target_->sub_target)) {
     const float scale_factor = frame_metadata.device_scale_factor;
@@ -829,6 +846,9 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
         scale_factor ? ScaleToEnclosingRect(capture_region, 1.0f / scale_factor)
                      : capture_region;
   }
+  // Note that this is done unconditionally, as a new crop version may indicate
+  // that the stream has been successfully uncropped.
+  metadata.crop_version = crop_version_;
 
   CaptureRequestProperties request_properties(
       capture_frame_number, oracle_frame_number, content_version_, content_rect,

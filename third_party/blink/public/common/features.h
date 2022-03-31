@@ -50,7 +50,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kJSONModules;
 BLINK_COMMON_EXPORT extern const base::Feature kForceSynchronousHTMLParsing;
 BLINK_COMMON_EXPORT extern const base::Feature kEditingNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
-BLINK_COMMON_EXPORT extern const base::Feature kLayoutNGBlockInInline;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigationPredictor;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;
@@ -644,6 +643,10 @@ BLINK_COMMON_EXPORT extern const base::Feature kDurableClientHintsCache;
 // If enabled, allows web pages to use the experimental EditContext API to
 // better control text input. See crbug.com/999184.
 BLINK_COMMON_EXPORT extern const base::Feature kEditContext;
+
+// If enabled, non-required tiles in inactive windows are freed.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kFreeNonRequiredTileResourcesForInactiveWindows;
 
 // Enables the WindowPlacement RuntimeEnabledFeature.
 BLINK_COMMON_EXPORT extern const base::Feature kWindowPlacement;

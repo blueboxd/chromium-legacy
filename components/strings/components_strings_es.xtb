@@ -519,6 +519,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="2523886232349826891">Solo se guardará en este dispositivo</translation>
 <translation id="2524461107774643265">Añade más información</translation>
 <translation id="2529899080962247600">Este campo no debe tener más de <ph name="MAX_ITEMS_LIMIT" /> entradas. Se ignorarán las demás entradas.</translation>
+<translation id="2535585790302968248">Abre una pestaña de incógnito nueva para navegar en privado</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{y 1 más}other{y # más}}</translation>
 <translation id="2536110899380797252">Añadir dirección</translation>
 <translation id="2539524384386349900">Detectar</translation>
@@ -585,6 +586,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="2709516037105925701">Autocompletar</translation>
 <translation id="2713444072780614174">Blanco</translation>
 <translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, pulsa Tabulador y, a continuación, Intro para gestionar la información de tus pagos y tarjetas de crédito desde la configuración de Chrome</translation>
+<translation id="271663710482723385">Pulsa |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| para salir de la pantalla completa</translation>
 <translation id="2721148159707890343">Solicitud correcta</translation>
 <translation id="2723669454293168317">Realiza una comprobación de seguridad en la configuración de Chrome</translation>
 <translation id="2726001110728089263">Bandeja lateral</translation>
@@ -1018,7 +1020,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="4152318981910038897">{COUNT,plural, =1{Página 1}other{Página {COUNT}}}</translation>
 <translation id="4154664944169082762">Huellas digitales</translation>
 <translation id="4159784952369912983">Morado</translation>
-<translation id="4165986682804962316">Configuración de sitios</translation>
+<translation id="4165986682804962316">Configuración del sitio</translation>
 <translation id="4171400957073367226">La firma de verificación no es válida</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="4172051516777682613">Mostrar siempre</translation>
@@ -1229,6 +1231,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="4757993714154412917">Acabas de escribir tu contraseña en un sitio engañoso. Para proteger tus cuentas, Chromium recomienda que compruebes las contraseñas que tengas guardadas.</translation>
 <translation id="4758311279753947758">Añadir información de contacto</translation>
 <translation id="4761104368405085019">Utilizar el micrófono</translation>
+<translation id="4761869838909035636">Realizar comprobación de seguridad de Chrome</translation>
 <translation id="4764776831041365478">Es posible que la página web <ph name="URL" /> esté temporalmente inactiva o que se haya trasladado definitivamente a otra dirección.</translation>
 <translation id="4766713847338118463">Grapado doble en la parte inferior</translation>
 <translation id="4771973620359291008">Se ha producido un error desconocido.</translation>
@@ -1260,6 +1263,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="4854362297993841467">Este método de entrega no está disponible. Selecciona otro.</translation>
 <translation id="4854853140771946034">Crea una nueva nota en Google Keep rápidamente</translation>
 <translation id="485902285759009870">Verificando código...</translation>
+<translation id="4866506163384898554">Pulsa |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />| para mostrar el cursor</translation>
 <translation id="4876188919622883022">Vista simplificada</translation>
 <translation id="4876305945144899064">Ningún nombre de usuario</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{No hay}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" /> y <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -1273,6 +1277,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> y <ph name="TYPE_3" /></translation>
 <translation id="4900217275619098670">Noveno rollo</translation>
 <translation id="4901778704868714008">Guardar...</translation>
+<translation id="4905659621780993806">Tu administrador reiniciará tu dispositivo automáticamente a las <ph name="TIME" /> el <ph name="DATE" />. Guarda los elementos que tengas abiertos antes de que el dispositivo se reinicie.</translation>
 <translation id="4913987521957242411">Perforado en la parte superior izquierda</translation>
 <translation id="4918221908152712722">Instala <ph name="APP_NAME" /> (sin descargar nada)</translation>
 <translation id="4923459931733593730">Pago</translation>
@@ -1482,6 +1487,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="5556459405103347317">Volver a cargar</translation>
 <translation id="5560088892362098740">Fecha de caducidad</translation>
 <translation id="55635442646131152">Esquema del documento</translation>
+<translation id="5565613213060953222">Abrir pestaña de incógnito</translation>
 <translation id="5565735124758917034">Activo</translation>
 <translation id="5570825185877910964">Proteger cuenta</translation>
 <translation id="5571083550517324815">Los pedidos no se pueden recoger en esta dirección. Selecciona otra.</translation>
@@ -1686,6 +1692,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="6290238015253830360">Los artículos sugeridos aparecen aquí</translation>
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6295618774959045776">CVC:</translation>
+<translation id="6300452962057769623">{0,plural, =0{Tu dispositivo se reiniciará ahora}=1{Tu dispositivo se reiniciará dentro de 1 segundo}other{Tu dispositivo se reiniciará dentro de # segundos}}</translation>
 <translation id="6302269476990306341">Se está parando el Asistente de Google en Chrome</translation>
 <translation id="6305205051461490394">No se puede acceder a <ph name="URL" />.</translation>
 <translation id="6312113039770857350">Página web no disponible</translation>
@@ -1941,12 +1948,13 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> más}other{<ph name="SHIPPING_OPTION_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> más}}</translation>
 <translation id="7179323680825933600">Guardar y autocompletar métodos de pago</translation>
 <translation id="7180611975245234373">Actualizar</translation>
-<translation id="7181261019481237103">Abrir una ventana de incógnito</translation>
+<translation id="7181261019481237103">Abrir ventana de incógnito</translation>
 <translation id="7182878459783632708">No hay políticas establecidas.</translation>
 <translation id="7186367841673660872">Esta página se ha traducido del<ph name="ORIGINAL_LANGUAGE" />al<ph name="LANGUAGE_LANGUAGE" />.</translation>
 <translation id="7192203810768312527">Libera <ph name="SIZE" />. Algunos sitios pueden tardar más en cargarse la próxima vez que accedas a ellos.</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7201591969684833065">El administrador puede consultar lo siguiente:</translation>
+<translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, pulsa Tabulador y, a continuación, Intro para abrir una pestaña de incógnito nueva y navegar de forma privada</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423">La página <ph name="HOST_NAME" /> no cumple los estándares de seguridad.</translation>
 <translation id="7210993021468939304">Los administradores pueden ver la actividad de Linux en el contenedor, y también pueden instalar y ejecutar aplicaciones de Linux en el contenedor</translation>
@@ -2009,6 +2017,7 @@ Más información:
 <translation id="7378627244592794276">No</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7386364858855961704">No aplicable</translation>
+<translation id="7388594495505979117">{0,plural, =1{Tu dispositivo se reiniciará dentro de 1 minuto}other{Tu dispositivo se reiniciará dentro de # minutos}}</translation>
 <translation id="7390545607259442187">Confirmar tarjeta</translation>
 <translation id="7392089738299859607">Actualizar dirección</translation>
 <translation id="7399802613464275309">Comprobación de seguridad</translation>
@@ -2211,6 +2220,7 @@ Más información:
 <translation id="799149739215780103">Encuadernar</translation>
 <translation id="7992044431894087211">Se ha reanudado la pantalla compartida con <ph name="APPLICATION_TITLE" /></translation>
 <translation id="7995512525968007366">Sin especificar</translation>
+<translation id="7998269595945679889">Botón Abrir pestaña de incógnito, pulsa Intro para abrir una pestaña de incógnito nueva para navegar de forma privada</translation>
 <translation id="800218591365569300">Prueba a cerrar otros programas o pestañas para liberar memoria.</translation>
 <translation id="8004582292198964060">Navegador</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Se guardará la tarjeta y su dirección de facturación. Podrás utilizarla cuando inicies sesión como <ph name="USER_EMAIL" />.}other{Se guardarán las tarjetas y sus direcciones de facturación. Podrás utilizarlas cuando inicies sesión como <ph name="USER_EMAIL" />.}}</translation>
@@ -2365,6 +2375,7 @@ Más información:
 <translation id="8507227106804027148">Línea de comandos</translation>
 <translation id="8508648098325802031">Icono de búsqueda</translation>
 <translation id="8511402995811232419">Gestionar cookies</translation>
+<translation id="8519753333133776369">Tu administrador permite el dispositivo de interfaz humana (HID)</translation>
 <translation id="8522552481199248698">Chrome puede ayudarte a proteger tu cuenta de Google y a cambiar tu contraseña.</translation>
 <translation id="8530813470445476232">Borra el historial de navegación, las cookies, la caché y más desde la configuración de Chrome</translation>
 <translation id="8533619373899488139">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver la lista de URL boloqueadas y otras políticas implementadas por el administrador del sistema.</translation>
@@ -2548,6 +2559,7 @@ Más información:
 <translation id="9150045010208374699">Utilizar la cámara</translation>
 <translation id="9150685862434908345">El administrador puede modificar la configuración del navegador de manera remota. Es posible que también se administre la actividad de este dispositivo fuera de Chrome. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="9154194610265714752">Actualizado</translation>
+<translation id="9155211586651734179">Periféricos de audio conectados</translation>
 <translation id="9157595877708044936">Configurando...</translation>
 <translation id="9158625974267017556">C6 (sobre)</translation>
 <translation id="9164029392738894042">Comprobación de la precisión</translation>

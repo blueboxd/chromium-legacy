@@ -8,6 +8,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
+import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build/util/version.gni")
@@ -473,6 +474,8 @@ static_library("test_support") {
       "../browser/ash/login/test/test_condition_waiter.h",
       "../browser/ash/login/test/test_predicate_waiter.cc",
       "../browser/ash/login/test/test_predicate_waiter.h",
+      "../browser/ash/login/users/avatar/fake_user_image_file_selector.cc",
+      "../browser/ash/login/users/avatar/fake_user_image_file_selector.h",
       "../browser/ash/login/users/fake_chrome_user_manager.cc",
       "../browser/ash/login/users/fake_chrome_user_manager.h",
       "../browser/ash/ownership/fake_owner_settings_service.cc",
@@ -4780,7 +4783,6 @@ test("unit_tests") {
     "../browser/metrics/chrome_metrics_services_manager_client_unittest.cc",
     "../browser/metrics/oom/out_of_memory_reporter_unittest.cc",
     "../browser/metrics/power/battery_level_provider_unittest.cc",
-    "../browser/metrics/power/power_details_provider_unittest.cc",
     "../browser/metrics/process_memory_metrics_emitter_unittest.cc",
     "../browser/metrics/tab_footprint_aggregator_unittest.cc",
     "../browser/navigation_predictor/navigation_predictor_unittest.cc",
@@ -6279,6 +6281,7 @@ test("unit_tests") {
       "../browser/ui/tabs/existing_window_sub_menu_model_unittest.cc",
       "../browser/ui/tabs/pinned_tab_codec_unittest.cc",
       "../browser/ui/tabs/pinned_tab_service_unittest.cc",
+      "../browser/ui/tabs/saved_tab_groups/saved_tab_group_model_unittest.cc",
       "../browser/ui/tabs/tab_menu_model_unittest.cc",
       "../browser/ui/tabs/tab_strip_model_stats_recorder_unittest.cc",
       "../browser/ui/tabs/tab_strip_model_unittest.cc",
@@ -6425,6 +6428,12 @@ test("unit_tests") {
     if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
       sources +=
           [ "../browser/ui/webui/settings/url_handlers_handler_unittest.cc" ]
+    }
+    if (use_gtk) {
+      deps += [ "//ui/gtk" ]
+    }
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
     }
 
     deps += [
@@ -6825,6 +6834,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/open_tab_result_unittest.cc",
       "../browser/ui/app_list/search/ranking/answer_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/best_match_ranker_unittest.cc",
+      "../browser/ui/app_list/search/ranking/filtering_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/ftrl_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/removed_results_ranker_unittest.cc",
       "../browser/ui/app_list/search/ranking/score_normalizing_ranker_unittest.cc",
@@ -8784,6 +8794,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/ui/read_later/read_later_test_utils.cc",
         "../browser/ui/read_later/read_later_test_utils.h",
         "../browser/ui/views/autofill/payments/offer_notification_bubble_views_interactive_uitest.cc",
+        "../browser/ui/views/autofill/payments/virtual_card_enroll_bubble_views_interactive_uitest.cc",
         "../browser/ui/views/autofill/payments/virtual_card_manual_fallback_bubble_views_interactive_uitest.cc",
         "../browser/ui/views/bookmarks/bookmark_bar_view_test.cc",
         "../browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h",
@@ -8835,6 +8846,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/ui/views/user_education/help_bubble_factory_views_interactive_uitest.cc",
         "../browser/ui/views/user_education/help_bubble_view_interactive_uitest.cc",
         "../browser/ui/views/user_education/interaction_sequence_interactive_uitest.cc",
+        "../browser/ui/views/user_education/interaction_test_util_interactive_uitest.cc",
         "../browser/ui/views/user_education/tutorial_interactive_uitest.cc",
       ]
       deps += [
@@ -9073,6 +9085,10 @@ if (!is_android && !is_fuchsia) {
       sources += [
         "../browser/ui/views/profiles/profile_bubble_interactive_uitest.cc",
       ]
+    }
+
+    if (enable_print_preview) {
+      sources += [ "../browser/window_placement/window_placement_printing_interactive_uitest.cc" ]
     }
   }
 }

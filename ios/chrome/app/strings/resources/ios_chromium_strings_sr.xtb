@@ -3,6 +3,7 @@
 <translationbundle lang="sr">
 <translation id="102360288709523007">Побољшајте Chromium слањем статистике коришћења и извештаја о отказивању Google-у.</translation>
 <translation id="1047130070405668746">Изаберите Chromium</translation>
+<translation id="1091252999271033193">То значи да ће Chromium сваки пут захтевати мобилни сајт.</translation>
 <translation id="1185134272377778587">О Chromium-у</translation>
 <translation id="1257458525759135959">Да бисте сачували слике, додирните Подешавања да бисте омогућили Chromium-у да додаје слике</translation>
 <translation id="1289216811211435351">Пређите на Chromium</translation>
@@ -26,6 +27,7 @@
 <translation id="2178608107313874732">Chromium тренутно не може да користи камеру</translation>
 <translation id="2195025571279539885">Желите ли да Chromium следећи пут понуди да преведе странице са овог сајта чији је језик <ph name="LANGUAGE_NAME" />?</translation>
 <translation id="2218146227246548550">Организација захтева да се пријавите да бисте користили Chromium. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
+<translation id="2236584955986023187">То значи да ће Chromium сваки пут захтевати сајт за рачунар.</translation>
 <translation id="2426113998523353159">Организација захтева да се пријавите да бисте користили Chromium.</translation>
 <translation id="2450140762465183767">Сада можете да користите Chromium сваки пут када додирнете линкове у порукама, документима и другим апликацијама.</translation>
 <translation id="2478931088402984578">Изаберите <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" />.</translation>
@@ -43,7 +45,6 @@
 <translation id="3472200483164753384">Није подржано у верзији Chromium Canary</translation>
 <translation id="3639997914391704523">Chromium може да вам проверава лозинке када се пријавите помоћу Google налога.</translation>
 <translation id="3805899903892079518">Chromium не може да приступа сликама или видео снимцима. Омогућите приступ у iOS Settings (Подешавања iOS-а) &gt; Privacy (Приватност) &gt; Photos (Слике).</translation>
-<translation id="3946918322491238254">И даље можете да видите све обележиваче, историју, лозинке и друга подешавања на овом уређају. Ако унесете промене, оне се неће синхронизовати са налогом.</translation>
 <translation id="4043291146360695975">Лозинке се чувају у Менаџеру лозинки само на овом уређају.</translation>
 <translation id="4099085513035183040">Није подржано у верзији Chromium бета</translation>
 <translation id="4555020257205549924">Када је ова функција укључена, Chromium ће нудити да преводи странице написане на другим језицима помоћу Google преводиоца. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
@@ -61,7 +62,6 @@
 <translation id="5521125884468363740">Да бисте видели картице на било којем уређају на ком користите Chromium, пријавите се и укључите синхронизацију</translation>
 <translation id="5573014823074921752">Савет за Chromium. Ако желите више опција за картице, додирните и задржите дугме Прикажи картице на траци с алаткама, која се налази у дну или врху екрана.</translation>
 <translation id="5700709190537129682">Chromium не може да вам проверава лозинке</translation>
-<translation id="5722855707162262109">Изаберите како желите да Chromium сваки пут захтева сајт</translation>
 <translation id="5777187867430702742">Chromium страница</translation>
 <translation id="5862307444128926510">Добро дошли у Chromium</translation>
 <translation id="5945387852661427312">Пријављујете се помоћу налога којим управља <ph name="DOMAIN" /> и дајете његовом администратору контролу над својим Chromium подацима. Подаци ће постати трајно повезани са тим налогом. Одјављивањем из Chromium-а ћете избрисати податке са овог уређаја, али ће они остати сачувани на Google налогу.</translation>

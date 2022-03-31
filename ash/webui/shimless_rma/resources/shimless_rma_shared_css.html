@@ -13,6 +13,7 @@
     }
 
     html {
+      --cr-card-shadow: var(--cr-elevation-1);
       background-color: var(--cros-bg-color);
     }
 
@@ -110,6 +111,10 @@
 
     .component-grid.calibration {
       grid-template-columns: auto;
+    }
+
+    cr-button {
+      border-radius: 15px;
     }
 
     [slot=optional-icon] {

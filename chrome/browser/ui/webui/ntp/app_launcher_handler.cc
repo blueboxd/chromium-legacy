@@ -182,6 +182,10 @@ AppLauncherHandler::AppLauncherHandler(
 AppLauncherHandler::~AppLauncherHandler() {
   Profile* webui_profile = Profile::FromWebUI(web_ui());
   ExtensionRegistry::Get(webui_profile)->RemoveObserver(this);
+  // Destroy `extension_uninstall_dialog_` now, since `this` is an
+  // `ExtensionUninstallDialog::Delegate` and the dialog may call back into
+  // `this` when destroyed.
+  extension_uninstall_dialog_.reset();
 }
 
 void AppLauncherHandler::CreateWebAppInfo(const web_app::AppId& app_id,
@@ -1332,7 +1336,9 @@ void AppLauncherHandler::InstallOsHooks(const web_app::AppId& app_id) {
   options.os_hooks[web_app::OsHookType::kShortcutsMenu] = true;
   options.os_hooks[web_app::OsHookType::kFileHandlers] = true;
   options.os_hooks[web_app::OsHookType::kProtocolHandlers] = true;
-  options.os_hooks[web_app::OsHookType::kRunOnOsLogin] = false;
+  options.os_hooks[web_app::OsHookType::kRunOnOsLogin] =
+      web_app_provider_->registrar().GetAppRunOnOsLoginMode(app_id).value ==
+      web_app::RunOnOsLoginMode::kWindowed;
 
   // Installed WebApp here is user uninstallable app, but it needs to
   // check user uninstall-ability if there are apps with different source types.

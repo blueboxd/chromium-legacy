@@ -30,6 +30,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">Mengemas kini (<ph name="PERCENTAGE_VALUE" />% selesai)</translation>
 <translation id="1310380015393971138">Tiada rangkaian <ph name="NETWORK_NAME" /> tersedia</translation>
+<translation id="131421566576084655">Tarikh tetapan semula data terakhir tidak tersedia</translation>
 <translation id="1314565355471455267">VPN Android</translation>
 <translation id="131461803491198646">Rangkaian utama, bukan perayauan</translation>
 <translation id="1327977588028644528">Get Laluan</translation>
@@ -42,8 +43,10 @@
 <translation id="1413240736185167732">Gagal - Penapis gagal</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="142228117786570094">Saya mempunyai pasangan kunci</translation>
+<translation id="1435763214710588005">Menetapkan semula penggunaan data secara automatik setiap bulan pada hari yang dipilih</translation>
 <translation id="1442433966118452622">Sumber imej</translation>
 <translation id="1451536289672181509">Peranti ialah papan kekunci.</translation>
+<translation id="1459693405370120464">Cuaca</translation>
 <translation id="1468664791493211953">Tawaran</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> mengurus peranti ini dan mungkin dapat memantau aktiviti anda.</translation>
 <translation id="1478594628797167447">Pengimbas</translation>
@@ -55,6 +58,7 @@
 <translation id="1565038567006703504">Tidak dapat mengemas kini <ph name="DEVICE_NAME" /></translation>
 <translation id="1567064801249837505">Album</translation>
 <translation id="1572585716423026576">Tetapkan sebagai kertas dinding</translation>
+<translation id="1615335640928990664">Penggunaan data sejak <ph name="FRIENDLY_DATE" /></translation>
 <translation id="1621067168122174824">Jalankan Ujian cas</translation>
 <translation id="1639239467298939599">Memuatkan</translation>
 <translation id="1641857168437328880">Penyuap Dokumen (Satu sisi)</translation>
@@ -103,6 +107,7 @@
 <translation id="2212733584906323460">Namakan Peleraian</translation>
 <translation id="2217935453350629363">Kelajuan semasa</translation>
 <translation id="2224337661447660594">Tiada Internet</translation>
+<translation id="2230005943220647148">Celsius</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Status pengaktifan</translation>
 <translation id="2287186687001756809">Tiada imej tersedia. Untuk menambah foto, lawati <ph name="LINK" /></translation>
@@ -207,6 +212,7 @@
 <translation id="3858860766373142691">Nama</translation>
 <translation id="3865414814144988605">Peleraian</translation>
 <translation id="387301095347517405">Bilangan kali bateri anda telah melalui kitaran pengecasan penuh</translation>
+<translation id="3923184630988645767">Penggunaan data</translation>
 <translation id="3924044641767672375">Anda disyorkan supaya menyambung kepada Wi-Fi untuk memudahkan lagi proses pembaikan. Rangkaian anda akan disimpan.</translation>
 <translation id="3932043219784172185">Tiada peranti disambungkan</translation>
 <translation id="3941014780699102620">Gagal untuk menyelesaikan hos</translation>
@@ -228,6 +234,7 @@
 <translation id="4145784616224233563">Tembok Api HTTP</translation>
 <translation id="4147897805161313378">Google Photos</translation>
 <translation id="4155551848414053977">Pastikan pengimbas dihidupkan dan tersedia melalui rangkaian anda atau sambungan langsung</translation>
+<translation id="4170180284036919717">Ambil foto</translation>
 <translation id="4170700058716978431">GAGAL</translation>
 <translation id="4176463684765177261">Dilumpuhkan</translation>
 <translation id="4213104098953699324">Papan kekunci USB</translation>
@@ -376,6 +383,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="5784136236926853061">Kependaman HTTP tinggi</translation>
 <translation id="5832805196449965646">Tambah Orang</translation>
 <translation id="583281660410589416">Tidak diketahui</translation>
+<translation id="5843706793424741864">Fahrenheit</translation>
 <translation id="5849570051105887917">Kod penyedia tempatan</translation>
 <translation id="5860033963881614850">Dimatikan</translation>
 <translation id="5866840822086176774">Sangat kuat</translation>
@@ -384,8 +392,10 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="5916664084637901428">Hidupkan</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Fail anda telah berjaya diimbas dan disimpan pada <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Fail anda telah berjaya diimbas dan disimpan pada <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Fail tidak dijumpai</translation>
+<translation id="5939518447894949180">Tetapkan semula</translation>
 <translation id="594552776027197022">Jana pasangan kunci rawak</translation>
 <translation id="5972388717451707488">Enjin Kemaskinian</translation>
+<translation id="6034694447310538551">Dayakan tetapan semula bulanan automatik</translation>
 <translation id="6037291330010597344">Penyuap dokumen pengimbas kosong. Tambah dokumen dan cuba lagi.</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6040852767465482106">Identiti Tanpa Nama</translation>
@@ -409,6 +419,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">Tiada pengimbas tersedia</translation>
 <translation id="6232017090690406397">Bateri</translation>
+<translation id="6235460611964961764">Tetapkan semula penggunaan data secara manual</translation>
 <translation id="6243280677745499710">Ditetapkan pada masa ini</translation>
 <translation id="6278428485366576908">Tema</translation>
 <translation id="6280912520669706465">ARC</translation>
@@ -620,6 +631,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="8910721771319628100">Rangkaian lalai melebihi ambang kependaman</translation>
 <translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> <ph name="GIVEN_NAME" /></translation>
 <translation id="8919837981463578619">Gagal - Dulang tiada</translation>
+<translation id="8923267550422472772">Hari dalam bulan untuk ditetapkan semula</translation>
 <translation id="8928727111548978589">Gagal - Kehabisan kertas</translation>
 <translation id="8930521118335213258">Setara</translation>
 <translation id="8930622219860340959">Wayarles</translation>

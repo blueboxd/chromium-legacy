@@ -150,7 +150,8 @@ void PredictionBasedPermissionUiSelector::SelectUiToUse(
       prediction_source == PredictionSource::USE_ONDEVICE) {
     permissions::PredictionModelHandler* prediction_model_handler =
         PredictionModelHandlerFactory::GetForBrowserContext(profile_);
-    if (prediction_model_handler->ModelAvailable()) {
+    if (prediction_model_handler &&
+        prediction_model_handler->ModelAvailable()) {
       VLOG(1) << "[CPSS] Using locally available model";
       permissions::PermissionUmaUtil::RecordPermissionPredictionSource(
           permissions::PermissionPredictionSource::ON_DEVICE);
@@ -241,6 +242,11 @@ void PredictionBasedPermissionUiSelector::LookupResponseReceived(
     bool response_from_cache,
     const absl::optional<permissions::GeneratePredictionsResponse>& response) {
   request_.reset();
+  if (!callback_) {
+    VLOG(1) << "[CPSS] Prediction service response ignored as the request is "
+               "canceled";
+    return;
+  }
   if (!lookup_succesful || !response || response->prediction_size() == 0) {
     VLOG(1) << "[CPSS] Prediction service request failed";
     std::move(callback_).Run(Decision::UseNormalUiAndShowNoWarning());

@@ -16,6 +16,7 @@
 <translation id="1369915414381695676">Sito <ph name="SITE_NAME" /> aggiunto</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1384959399684842514">Download sospeso</translation>
+<translation id="1409426117486808224">Visualizzazione semplificata delle schede aperte</translation>
 <translation id="1415402041810619267">URL troncato</translation>
 <translation id="1446450296470737166">Controllo completo dispos. MIDI</translation>
 <translation id="1620510694547887537">Fotocamera</translation>
@@ -52,10 +53,12 @@
 <translation id="2253414712144136228">Rimuovi <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">Chiedi conferma quando un sito vuole rilevare i dispositivi Bluetooth nelle vicinanze (opzione consigliata)</translation>
 <translation id="2315043854645842844">La selezione del certificato lato client non è supportata dal sistema operativo.</translation>
+<translation id="2321958826496381788">Trascina il cursore finché leggi il testo senza problemi. Il testo dovrebbe avere queste dimensioni minime quando tocchi due volte un paragrafo.</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2379925928934107488">Applica il tema scuro ai siti quando viene usato in Chrome, se possibile</translation>
+<translation id="2387895666653383613">Ridimensionamento testo</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
-<translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{Consentite: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e <ph name="NUM_MORE" /> altra}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, and <ph name="NUM_MORE" /> more allowed}other{Consentite: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e altre <ph name="NUM_MORE" />}}</translation>
+<translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{Consentite: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e <ph name="NUM_MORE" /> altra}other{Consentite: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e altre <ph name="NUM_MORE" />}}</translation>
 <translation id="2434158240863470628">Download completato: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2442870161001914531">Richiedi sempre sito desktop</translation>
 <translation id="2482878487686419369">Notifiche</translation>
@@ -63,7 +66,7 @@
 <translation id="2490684707762498678">Gestite da <ph name="APP_NAME" /></translation>
 <translation id="2498359688066513246">Guida e feedback</translation>
 <translation id="2501278716633472235">Indietro</translation>
-<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie bloccato}one{# cookie bloccati}other{# cookie bloccati}}</translation>
+<translation id="2569468611847789653">{COOKIE_COUNT,plural, =1{1 cookie bloccato}other{# cookie bloccati}}</translation>
 <translation id="2570922361219980984">L'accesso alla posizione è disattivato anche per questo dispositivo. Attivalo nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Espanso. Fai clic per comprimere.</translation>
 <translation id="2586657967955657006">Appunti</translation>
@@ -112,13 +115,16 @@
 <translation id="3835233591525155343">Utilizzo del tuo dispositivo</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3859306556332390985">Posiziona avanti</translation>
+<translation id="3895926599014793903">Attivazione forzata dello zoom</translation>
 <translation id="3955193568934677022">Consenti ai siti di riprodurre i contenuti protetti (opzione consigliata)</translation>
 <translation id="3967822245660637423">Download completato</translation>
 <translation id="3987993985790029246">Copia link</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> di ?</translation>
 <translation id="4002066346123236978">Titolo</translation>
 <translation id="4008040567710660924">Consenti i cookie per un sito specifico.</translation>
+<translation id="4040330681741629921">Ricevi una notifica quando un sito può essere mostrato nella visualizzazione semplificata</translation>
 <translation id="4046123991198612571">Traccia successiva</translation>
+<translation id="4149994727733219643">Visualizzazione semplificata delle pagine web</translation>
 <translation id="4165986682804962316">Impostazioni sito</translation>
 <translation id="4194328954146351878">Chiedi conferma prima di consentire ai siti di vedere e modificare informazioni su dispositivi NFC (opzione consigliata)</translation>
 <translation id="4200726100658658164">Apri Impostazioni di geolocalizzazione</translation>
@@ -169,8 +175,9 @@
 <translation id="5335288049665977812">Consenti l'esecuzione di JavaScript nei siti (opzione consigliata)</translation>
 <translation id="534295439873310000">Dispositivi NFC</translation>
 <translation id="5354152178998424783">Verranno cancellati <ph name="DATASIZE" /> di dati e cookie memorizzati dai siti.</translation>
-<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 altro)}one{(+ altri #)}other{(+ altri #)}}</translation>
+<translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 altro)}other{(+ altri #)}}</translation>
 <translation id="5403592356182871684">Nomi</translation>
+<translation id="5412236728747081950">Questo sito acquisisce i tuoi interessi da Chrome per mostrarti annunci più pertinenti</translation>
 <translation id="5438097262470833822">Questa selezione reimposterà le autorizzazioni per <ph name="WEBSITE" /></translation>
 <translation id="5489227211564503167">Tempo trascorso: <ph name="ELAPSED_TIME" /> di <ph name="TOTAL_TIME" />.</translation>
 <translation id="5494752089476963479">Blocca gli annunci su siti che mostrano annunci invasivi o fuorvianti</translation>
@@ -182,6 +189,7 @@
 <translation id="5556459405103347317">Ricarica</translation>
 <translation id="5596627076506792578">Altre opzioni</translation>
 <translation id="5649053991847567735">Download automatici</translation>
+<translation id="5668404140385795438">Ignora la richiesta di un sito per evitare l'aumento dello zoom</translation>
 <translation id="5677928146339483299">Blocca</translation>
 <translation id="5689516760719285838">Posizione</translation>
 <translation id="5690795753582697420">La fotocamera è disattivata nelle impostazioni di Android</translation>
@@ -218,7 +226,7 @@
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6527303717912515753">Condividi</translation>
 <translation id="6545864417968258051">Scansione Bluetooth</translation>
-<translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{Bloccate: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e <ph name="NUM_MORE" /> altra}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, and <ph name="NUM_MORE" /> more blocked}other{Bloccate: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e altre <ph name="NUM_MORE" />}}</translation>
+<translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{Bloccate: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e <ph name="NUM_MORE" /> altra}other{Bloccate: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e altre <ph name="NUM_MORE" />}}</translation>
 <translation id="6554732001434021288">Ultima visita: <ph name="NUM_DAYS" /> giorni fa</translation>
 <translation id="6561560012278703671">Usa messaggi più discreti (impedisce alle notifiche di disturbarti)</translation>
 <translation id="6593061639179217415">Sito desktop</translation>
@@ -237,11 +245,13 @@
 <translation id="6912998170423641340">Impedisci ai siti di leggere testo e immagini negli appunti</translation>
 <translation id="6945221475159498467">Seleziona</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6981982820502123353">Accessibilità</translation>
 <translation id="6992289844737586249">Chiedi conferma prima di consentire ai siti di utilizzare il microfono (opzione consigliata)</translation>
 <translation id="7000754031042624318">Disattivata nelle impostazioni Android</translation>
 <translation id="7016516562562142042">Consentita per il motore di ricerca corrente</translation>
+<translation id="702463548815491781">Consigliata quando TalkBack o Switch Access sono attivi</translation>
 <translation id="7053983685419859001">Blocca</translation>
-<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elemento selezionato}one{# selected}other{# elementi selezionati}}</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elemento selezionato}other{# elementi selezionati}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> elementi selezionati. Opzioni disponibili nella parte superiore dello schermo</translation>
 <translation id="7141896414559753902">Impedisci ai siti di mostrare popup e reindirizzamenti (opzione consigliata)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
@@ -290,6 +300,7 @@
 <translation id="8211406090763984747">La connessione è sicura</translation>
 <translation id="8249310407154411074">Sposta in alto</translation>
 <translation id="8261506727792406068">Elimina</translation>
+<translation id="8284326494547611709">Sottotitoli</translation>
 <translation id="8300705686683892304">Gestiti dall'app</translation>
 <translation id="8324158725704657629">Non chiedermelo più</translation>
 <translation id="8372893542064058268">Consenti la sincronizzazione in background per un sito specifico.</translation>
@@ -301,7 +312,7 @@
 <translation id="8441146129660941386">Posiziona indietro</translation>
 <translation id="8444433999583714703">Per consentire all'app <ph name="APP_NAME" /> di accedere alla tua posizione, devi attivare la posizione anche nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Revoca autorizzazione dispositivo</translation>
-<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie in uso}one{# cookie in uso}other{# cookie in uso}}</translation>
+<translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie in uso}other{# cookie in uso}}</translation>
 <translation id="8487700953926739672">Disponibile offline</translation>
 <translation id="848952951823693243">Richiedi sempre sito per dispositivi mobili</translation>
 <translation id="851751545965956758">Impedisci ai siti di connettersi ai dispositivi</translation>
@@ -330,7 +341,7 @@
 <translation id="8986362086234534611">Elimina</translation>
 <translation id="9019902583201351841">Gestito dai genitori</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
-<translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e <ph name="NUM_MORE" /> altra}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, and <ph name="NUM_MORE" /> more}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e altre <ph name="NUM_MORE" />}}</translation>
+<translation id="9109747640384633967">{PERMISSIONS_SUMMARY_MIXED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e <ph name="NUM_MORE" /> altra}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> e altre <ph name="NUM_MORE" />}}</translation>
 <translation id="913657688200966289">Attiva le autorizzazioni per l'app <ph name="APP_NAME" /> nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="9162462602695099906">Questa pagina è pericolosa</translation>
 <translation id="930525582205581608">Vuoi eliminare questo sito?</translation>

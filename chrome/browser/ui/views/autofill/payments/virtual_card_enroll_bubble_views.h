@@ -9,7 +9,6 @@
 
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_base.h"
-#include "chrome/browser/ui/autofill/payments/virtual_card_enroll_bubble_controller.h"
 #include "chrome/browser/ui/views/autofill/payments/payments_view_util.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/autofill/core/browser/ui/payments/payments_bubble_closed_reasons.h"
@@ -20,6 +19,8 @@ class WebContents;
 
 namespace autofill {
 
+class VirtualCardEnrollBubbleController;
+
 // This class handles the view for when users use a card that is also elligible
 // to be enrolled in a virtual card.
 class VirtualCardEnrollBubbleViews : public AutofillBubbleBase,
@@ -29,7 +30,7 @@ class VirtualCardEnrollBubbleViews : public AutofillBubbleBase,
   VirtualCardEnrollBubbleViews(views::View* anchor_view,
                                content::WebContents* web_contents,
                                VirtualCardEnrollBubbleController* controller);
-
+  ~VirtualCardEnrollBubbleViews() override;
   VirtualCardEnrollBubbleViews(const VirtualCardEnrollBubbleViews&) = delete;
   VirtualCardEnrollBubbleViews& operator=(const VirtualCardEnrollBubbleViews&) =
       delete;
@@ -54,14 +55,14 @@ class VirtualCardEnrollBubbleViews : public AutofillBubbleBase,
   void OnDialogAccepted();
   void OnDialogDeclined();
 
-  ~VirtualCardEnrollBubbleViews() override;
-
  private:
+  friend class VirtualCardEnrollBubbleViewsInteractiveUiTest;
+
   std::unique_ptr<views::View> CreateLegalMessageView();
 
   void LearnMoreLinkClicked();
-
-  void LegalMessageClicked(const GURL& url);
+  void GoogleLegalMessageClicked(const GURL& url);
+  void IssuerLegalMessageClicked(const GURL& url);
 
   raw_ptr<VirtualCardEnrollBubbleController> controller_;
 

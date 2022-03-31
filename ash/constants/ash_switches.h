@@ -53,6 +53,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcPlayStoreAutoUpdate[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcScale[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcStartMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcTosHostForTests[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcVmMountDebugFs[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcVmUreadaheadMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kArcVmUseHugePages[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshClearFastInkBuffer[];
@@ -192,6 +193,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGuestSession[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGuestWallpaperLarge[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kGuestWallpaperSmall[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kHasChromeOSKeyboard[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kHasHps[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kHasInternalStylus[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kHasNumberPad[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kHomedir[];
@@ -360,6 +362,9 @@ absl::optional<base::TimeDelta> ContextualNudgesInterval();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool ContextualNudgesResetShownCount();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsUsingShelfAutoDim();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldClearFastInkBuffer();
+
+// Returns whether the device has hps hardware.
+COMPONENT_EXPORT(ASH_CONSTANTS) bool HasHps();
 
 }  // namespace ash::switches
 

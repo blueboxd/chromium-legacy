@@ -1406,8 +1406,8 @@ void WebViewImpl::PaintContent(cc::PaintCanvas* canvas, const gfx::Rect& rect) {
          DocumentLifecycle::kPaintClean);
 
   auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
-  main_view.PaintOutsideOfLifecycle(builder->Context(), PaintFlag::kNoFlag,
-                                    CullRect(rect));
+  main_view.PaintOutsideOfLifecycleWithThrottlingAllowed(
+      builder->Context(), PaintFlag::kNoFlag, CullRect(rect));
   // Don't bother to save/restore here as the caller is expecting the canvas
   // to be modified and take care of it.
   canvas->clipRect(gfx::RectToSkRect(rect));
@@ -2419,6 +2419,15 @@ void WebViewImpl::SetPageLifecycleStateInternal(
     if (MainFrame()->IsWebLocalFrame()) {
       LocalFrame* local_frame = To<LocalFrame>(page->MainFrame());
       probe::DidRestoreFromBackForwardCache(local_frame);
+    }
+    // Increment the navigation counter on the main frame and all nested frames
+    // in its frame tree.
+    for (Frame* frame = page->MainFrame(); frame;
+         frame = frame->Tree().TraverseNext()) {
+      auto* local_frame = DynamicTo<LocalFrame>(frame);
+      if (local_frame && local_frame->View()) {
+        local_frame->IncrementNavigationCounter();
+      }
     }
   }
 

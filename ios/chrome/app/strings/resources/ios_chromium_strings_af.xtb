@@ -3,6 +3,7 @@
 <translationbundle lang="af">
 <translation id="102360288709523007">Help om Chromium te verbeter deur gebruikstatistieke en omvalverslae na Google te stuur.</translation>
 <translation id="1047130070405668746">Kies Chromium</translation>
+<translation id="1091252999271033193">Dit beteken dat Chromium elke keer die mobiele werf sal versoek.</translation>
 <translation id="1185134272377778587">Meer oor Chromium</translation>
 <translation id="1257458525759135959">Om prente te stoor, moet jy op Instellings tik om Chromium toe te laat om foto's by te voeg</translation>
 <translation id="1289216811211435351">Skakel oor na Chromium</translation>
@@ -26,6 +27,7 @@
 <translation id="2178608107313874732">Chromium kan nie nou jou kamera gebruik nie</translation>
 <translation id="2195025571279539885">Wil jy hê dat Chromium volgende keer moet aanbied om bladsye in <ph name="LANGUAGE_NAME" /> van hierdie werf af te vertaal?</translation>
 <translation id="2218146227246548550">Jou organisasie vereis dat jy aanmeld om Chromium te gebruik. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
+<translation id="2236584955986023187">Dit beteken dat Chromium elke keer die rekenaarwerf sal versoek.</translation>
 <translation id="2426113998523353159">Jou organisasie vereis dat jy aanmeld om Chromium te gebruik.</translation>
 <translation id="2450140762465183767">Jy kan Chromium nou enige tyd gebruik wanneer jy op skakels in boodskappe, dokumente en ander programme tik.</translation>
 <translation id="2478931088402984578">Kies <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
@@ -43,7 +45,6 @@
 <translation id="3472200483164753384">Nie gesteun in Chromium Kanarie nie</translation>
 <translation id="3639997914391704523">Chromium kan jou wagwoorde nagaan as jy met jou Google-rekening aanmeld.</translation>
 <translation id="3805899903892079518">Chromium het nie toegang tot jou foto's of video's nie. Aktiveer toegang in iOS-instellings &gt; Privacy &gt; Photos.</translation>
-<translation id="3946918322491238254">Jy kan steeds al jou boekmerke, geskiedenis, wagwoorde en ander instellings op hierdie toestel sien. As jy veranderinge aanbring, sal hulle nie na jou rekening sinkroniseer nie.</translation>
 <translation id="4043291146360695975">Wagwoorde word slegs op hierdie toestel in Wagwoordbestuurder gestoor.</translation>
 <translation id="4099085513035183040">Nie op Chromium Beta gesteun nie</translation>
 <translation id="4555020257205549924">Wanneer hierdie kenmerk aangeskakel is, sal Chromium aanbied om bladsye wat in ander tale geskryf is, te vertaal deur Google Vertaal te gebruik. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
@@ -61,7 +62,6 @@
 <translation id="5521125884468363740">Meld aan en skakel sinkronisering aan om jou oortjies te sien van waar ook al jy Chromium gebruik</translation>
 <translation id="5573014823074921752">Chromium-wenk. Vir meer oortjieopsies, raak en hou die Wys Oortjies-knoppie op die nutsbalk aan die onderkant of bokant van jou skerm.</translation>
 <translation id="5700709190537129682">Chromium kan nie jou wagwoorde nagaan nie</translation>
-<translation id="5722855707162262109">Kies hoe jy wil hê Chromium die werf elke keer moet versoek</translation>
 <translation id="5777187867430702742">Chromium-bladsy</translation>
 <translation id="5862307444128926510">Welkom by Chromium</translation>
 <translation id="5945387852661427312">Jy meld tans aan met 'n rekening wat deur <ph name="DOMAIN" /> bestuur word en gee sy administrateur beheer oor jou Chromium-data. Jou data sal permanent met hierdie rekening verbind word. As jy uit Chromium afmeld, sal jou data van hierdie toestel af uitgevee word, maar dit sal steeds in jou Google-rekening geberg word.</translation>

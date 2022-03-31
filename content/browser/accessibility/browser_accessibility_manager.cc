@@ -1439,11 +1439,8 @@ void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
     if (wrapper == GetLastFocusedNode())
       SetLastFocusedNode(nullptr);
 
-    // TODO(accessibility): Move this to the AXEventGenerator which fires
-    // MENU_POPUP_START when a node with the menu role is created. The issue to
-    // be solved is that after the AXEventGenerator adds MENU_POPUP_END, the
-    // node gets removed from the tree. Then PostprocessEvents removes the
-    // events from that now-removed node, thus MENU_POPUP_END never gets fired.
+    // We fire these here, immediately, to ensure we can send platform
+    // notifications prior to the actual destruction of the object.
     if (node->GetRole() == ax::mojom::Role::kMenu)
       FireGeneratedEvent(ui::AXEventGenerator::Event::MENU_POPUP_END, wrapper);
   }
@@ -1473,7 +1470,17 @@ void BrowserAccessibilityManager::OnNodeDeleted(ui::AXTree* tree,
 void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
                                                    ui::AXNode* node) {
   DCHECK(node);
-  id_wrapper_map_[node->id()] = BrowserAccessibility::Create(this, node);
+  auto iter = id_wrapper_map_.find(node->id());
+  if (iter == id_wrapper_map_.end()) {
+    NOTREACHED() << "A reparent operation should reuse an existing native "
+                    "wrapper, and so should not need to create a new one.";
+    auto [iter, success] = id_wrapper_map_.insert(
+        {node->id(), BrowserAccessibility::Create(this, node)});
+    ;
+    DCHECK(success);
+  }
+  BrowserAccessibility* wrapper = iter->second.get();
+  wrapper->SetNode(*node);
 }
 
 void BrowserAccessibilityManager::OnRoleChanged(ui::AXTree* tree,

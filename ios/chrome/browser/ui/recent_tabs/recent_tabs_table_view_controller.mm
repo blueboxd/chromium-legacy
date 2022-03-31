@@ -764,7 +764,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
       initWithType:ItemTypeSuggestedActionSearchWeb];
   searchWebItem.title =
       l10n_util::GetNSString(IDS_IOS_TABS_SEARCH_SUGGESTED_ACTION_SEARCH_WEB);
-  searchWebItem.image = [[UIImage imageNamed:@"popup_menu_search"]
+  searchWebItem.image = [[UIImage imageNamed:@"popup_menu_web"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [model addItem:searchWebItem
       toSectionWithIdentifier:SectionIdentifierSuggestedActions];
@@ -775,7 +775,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
         initWithType:ItemTypeSuggestedActionSearchOpenTabs];
     searchOpenTabsItem.title = l10n_util::GetNSString(
         IDS_IOS_TABS_SEARCH_SUGGESTED_ACTION_SEARCH_OPEN_TABS);
-    searchOpenTabsItem.image = [[UIImage imageNamed:@"popup_menu_search"]
+    searchOpenTabsItem.image = [[UIImage imageNamed:@"popup_menu_open_tabs"]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [model addItem:searchOpenTabsItem
         toSectionWithIdentifier:SectionIdentifierSuggestedActions];
@@ -1503,6 +1503,10 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
                               &toLoad)) {
     base::RecordAction(base::UserMetricsAction(
         "MobileRecentTabManagerTabFromOtherDeviceOpened"));
+    if (IsTabsSearchEnabled() && self.searchTerms.length) {
+      base::RecordAction(base::UserMetricsAction(
+          "MobileRecentTabManagerTabFromOtherDeviceOpenedSearchResult"));
+    }
     new_tab_page_uma::RecordAction(
         self.browserState, self.webStateList->GetActiveWebState(),
         new_tab_page_uma::ACTION_OPENED_FOREIGN_SESSION);
@@ -1539,6 +1543,10 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 
   base::RecordAction(
       base::UserMetricsAction("MobileRecentTabManagerRecentTabOpened"));
+  if (IsTabsSearchEnabled() && self.searchTerms.length) {
+    base::RecordAction(base::UserMetricsAction(
+        "MobileRecentTabManagerRecentTabOpenedSearchResult"));
+  }
   new_tab_page_uma::RecordAction(
       self.browserState, self.webStateList->GetActiveWebState(),
       new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
@@ -1598,13 +1606,18 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   NSInteger tappedHeaderSectionIdentifier = headerTapped.tag;
 
   if (sender.state == UIGestureRecognizerStateEnded) {
-    [self toggleExpansionOfSectionIdentifier:tappedHeaderSectionIdentifier];
-
     NSInteger section = [self.tableViewModel
         sectionForSectionIdentifier:tappedHeaderSectionIdentifier];
+    ListItem* headerItem = [self.tableViewModel headerForSection:section];
+    // Suggested actions header is not interactable.
+    if (headerItem.type == ItemTypeSuggestedActionsHeader) {
+      return;
+    }
+
+    [self toggleExpansionOfSectionIdentifier:tappedHeaderSectionIdentifier];
+
     UITableViewHeaderFooterView* headerView =
         [self.tableView headerViewForSection:section];
-    ListItem* headerItem = [self.tableViewModel headerForSection:section];
     // Highlight and collapse the section header being tapped.
     // Don't for the Loading Other Devices section header.
     if (headerItem.type == ItemTypeRecentlyClosedHeader ||

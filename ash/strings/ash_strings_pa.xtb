@@ -138,6 +138,7 @@
 <translation id="1747827819627189109">ਔਨ-ਸਕ੍ਰੀਨ ਕੀ-ਬੋਰਡ ਸਮਰਥਿਤ</translation>
 <translation id="1749109475624620922">ਵਿੰਡੋ <ph name="WINDOW_TITLE" /> ਨੂੰ ਸਾਰੇ ਡੈਸਕਾਂ ਦੇ ਜ਼ਿੰਮੇ ਲਗਾਇਆ ਗਿਆ ਹੈ</translation>
 <translation id="1750088060796401187">ਸਿਰਫ਼ <ph name="MAX_DESK_LIMIT" /> ਡੈਸਕਾਂ ਦੀ ਇਜਾਜ਼ਤ ਹੈ। ਨਵਾਂ ਡੈਸਕ ਖੋਲ੍ਹਣ ਲਈ ਪਹਿਲਾਂ ਤੋਂ ਮੌਜੂਦ ਡੈਸਕ ਹਟਾਓ।</translation>
+<translation id="1756833229520115364">ਟੈਮਪਲੇਟ ਨੂੰ ਰੱਖਿਅਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ। ਬਹੁਤ ਸਾਰੀਆਂ ਵਿੰਡੋਆਂ ਜਾਂ ਟੈਬਾਂ ਹਨ।</translation>
 <translation id="1761222317188459878">ਨੈੱਟਵਰਕ ਕਨੈਕਸ਼ਨ ਟੌਗਲ ਕਰੋ। <ph name="STATE_TEXT" /></translation>
 <translation id="1768366657309696705"><ph name="LAUNCHER_KEY_NAME" /> + Period ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਬਦਲ ਗਿਆ ਹੈ। Insert ਕੁੰਜੀ ਵਰਤਣ ਲਈ, <ph name="LAUNCHER_KEY_NAME" /> ਕੁੰਜੀ + Shift + Backspace ਦਬਾਓ।</translation>
 <translation id="1770726142253415363">ਕਤਾਰ <ph name="ROW_NUMBER" />, ਕਾਲਮ <ph name="COLUMN_NUMBER" /> 'ਤੇ ਲਿਜਾਇਆ ਗਿਆ।</translation>
@@ -188,6 +189,7 @@
 <translation id="2079545284768500474">ਅਣਕੀਤਾ ਕਰੋ</translation>
 <translation id="2083190527011054446">ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ <ph name="GIVEN_NAME" />,</translation>
 <translation id="209965399369889474">ਨੈੱਟਵਰਕ ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ</translation>
+<translation id="2107914222138020205">ਤੁਹਾਡੀ USB-C ਕੇਬਲ Thunderbolt ਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦੀ ਹੈ। ਡੀਵਾਈਸ ਦੀ ਕਾਰਗੁਜ਼ਾਰੀ ਸੀਮਤ ਹੋ ਸਕਦੀ ਹੈ।</translation>
 <translation id="2108303511227308752">Alt + ਬੈਕਸਪੇਸ ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟ ਬਦਲ ਗਿਆ ਹੈ। Delete ਕੁੰਜੀ ਵਰਤਣ ਲਈ, <ph name="LAUNCHER_KEY_NAME" /> ਕੁੰਜੀ + ਬੈਕਸਪੇਸ ਦਬਾਓ।</translation>
 <translation id="211328683600082144">ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="2126242104232412123">ਨਵਾਂ ਡੈਸਕ</translation>
@@ -291,6 +293,8 @@
 <translation id="2865888419503095837">ਨੈੱਟਵਰਕ ਜਾਣਕਾਰੀ</translation>
 <translation id="2872961005593481000">ਸ਼ਟ ਡਾਊਨ</translation>
 <translation id="2878884018241093801">ਕੋਈ ਹਾਲੀਆ ਆਈਟਮਾਂ ਨਹੀਂ</translation>
+<translation id="2891209721153296020">"ਅਣਚੁਣਿਆ ਕਰੋ"</translation>
+<translation id="2894949423239620203">ਕੇਬਲ ਕਾਰਗੁਜ਼ਾਰੀ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰ ਸਕਦੀ ਹੈ</translation>
 <translation id="2903844815300039659"><ph name="NAME" /> ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ, <ph name="STRENGTH" /></translation>
 <translation id="2914580577416829331">ਸਕ੍ਰੀਨ ਕੈਪਚਰ</translation>
 <translation id="2941112035454246133">ਘੱਟ</translation>
@@ -330,6 +334,7 @@
 <translation id="3105917916468784889">ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਵੋ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ਬਲੂਟੁੱਥ)</translation>
 <translation id="3113926042639749131">ਸੁਝਾਅ ਹਟਾਓ</translation>
+<translation id="3120421559657122717">ਕੀ ਡੀਵਾਈਸ ਨੂੰ ਬੰਦ ਕਰਨਾ ਹੈ?</translation>
 <translation id="3126069444801937830">ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਮੁੜ-ਸ਼ੁਰੂ ਕਰੋ</translation>
 <translation id="3139942575505304791">ਡੈਸਕ 1</translation>
 <translation id="315116470104423982">ਮੋਬਾਈਲ ਡਾਟਾ</translation>
@@ -348,9 +353,9 @@
 <translation id="3227137524299004712">ਮਾਈਕ੍ਰੋਫੋਨ</translation>
 <translation id="324366796737464147">ਸ਼ੋਰ ਘਟਾਉਣਾ</translation>
 <translation id="3249513730522716925">ਵਿੰਡੋ <ph name="WINDOW_TITLE" /> ਨੂੰ ਡੈਸਕ <ph name="ACTIVE_DESK" /> ਤੋਂ ਡੈਸਕ <ph name="TARGET_DESK" /> 'ਤੇ ਲਿਜਾਇਆ ਗਿਆ</translation>
-<translation id="3252248118006571685">ਆਪਣੀ Chromebook ਨੂੰ ਅਣਲਾਕ ਕਰਨ ਲਈ, ਆਪਣੇ ਫ਼ੋਨ ਦਾ ਬਲੂਟੁੱਥ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="3255483164551725916">ਤੁਸੀਂ ਕੀ ਕਰ ਸਕਦੇ ਹੋ?</translation>
 <translation id="3269597722229482060">ਸੱਜਾ-ਕਲਿੱਕ</translation>
+<translation id="3289544412142055976">Linux ਐਪਾਂ ਫ਼ਿਲਹਾਲ ਸਮਰਥਿਤ ਨਹੀਂ ਹਨ</translation>
 <translation id="3289674678944039601">ਅਡਾਪਟਰ ਨਾਲ ਚਾਰਜ ਹੋ ਰਿਹਾ ਹੈ</translation>
 <translation id="3290356915286466215">ਅਸੁਰੱਖਿਅਤ</translation>
 <translation id="3294437725009624529">ਮਹਿਮਾਨ</translation>
@@ -407,6 +412,7 @@
 <translation id="3571734092741541777">ਸਥਾਪਤ ਕਰੋ</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" 'ਤੇ ਵਾਪਸ ਬਦਲੋ (ਮੁੜ-ਸ਼ੁਰੂ ਲੋੜੀਂਦਾ)</translation>
 <translation id="3576141592585647168">ਸਮਾਂ ਖੇਤਰ ਬਦਲੋ</translation>
+<translation id="3577473026931028326">ਕੋਈ ਗੜਬੜ ਹੋ ਗਈ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="3580650856351781466">ਬੋਲੀ ਵਾਲੀਆਂ ਫ਼ਾਈਲਾਂ ਨੂੰ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="3593039967545720377">ਆਪਣਾ ਕਲਿੱਪਬੋਰਡ ਦੇਖਣ ਲਈ <ph name="SHORTCUT_KEY_NAME" /> + V ਦਬਾ ਕੇ ਆਪਣੇ ਕਲਿੱਪਬੋਰਡ ਦੇ ਇਤਿਹਾਸ ਤੱਕ ਪਹੁੰਚ ਕਰੋ। ਸ਼ੁਰੂਆਤ ਕਰਨ ਲਈ ਕੋਈ ਆਈਟਮ ਕਾਪੀ ਕਰੋ।</translation>
 <translation id="3593646411856133110">ਖੁੱਲ੍ਹੀਆਂ ਐਪਾਂ ਦੇਖਣ ਲਈ ਉੱਪਰ ਵੱਲ ਸਵਾਈਪ ਕਰਕੇ ਦਬਾਈ ਰੱਖੋ</translation>
@@ -433,6 +439,7 @@
 <translation id="3702846122927433391">ਨਾਈਜੀਰੀਆ ਦੀ ਜਨਸੰਖਿਆ</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3708186454126126312">ਪਹਿਲਾਂ ਤੋਂ ਕਨੈਕਟ ਕੀਤੇ</translation>
+<translation id="3712317119236351467">ਰਿਕਾਰਡਿੰਗ ਨੂੰ ਰੱਖਿਅਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
 <translation id="371370241367527062">ਮੂਹਰਲਾ ਮਾਈਕ੍ਰੋਫ਼ੋਨ</translation>
 <translation id="3713734891607377840">ਪੂਰਾ ਹੋਣ 'ਤੇ ਖੁੱਲ੍ਹੇ</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> ਅਤੇ <ph name="UNAVAILABLE_APPS_COUNT" /> ਹੋਰ ਐਪਾਂ ਇਸ ਡੀਵਾਈਸ 'ਤੇ ਉਪਲਬਧ ਨਹੀਂ ਹਨ।</translation>
@@ -492,8 +499,10 @@
 <translation id="4112140312785995938">ਪਿੱਛੇ ਕਰੋ</translation>
 <translation id="4114315158543974537">ਫ਼ੋਨ ਹੱਬ ਨੂੰ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="412298498316631026">ਵਿੰਡੋ</translation>
+<translation id="4123259114412175274">ਆਪਣੀ Chromebook ਨੂੰ ਅਣਲਾਕ ਕਰਨ ਲਈ, ਪੱਕਾ ਕਰੋ ਕਿ ਤੁਹਾਡੇ ਫ਼ੋਨ ਦਾ ਬਲੂਟੁੱਥ ਚਾਲੂ ਹੈ</translation>
 <translation id="4129129681837227511">ਆਪਣੀ ਲਾਕ ਸਕ੍ਰੀਨ 'ਤੇ ਸੂਚਨਾਵਾਂ ਦੇਖਣ ਲਈ, ਅਣਲਾਕ ਕਰਕੇ ਸੈਟਿੰਗ ਬਦਲੋ</translation>
 <translation id="4146833061457621061">ਸੰਗੀਤ ਚਲਾਓ</translation>
+<translation id="4165275524535002941">ਹੋ ਸਕਦਾ ਹੈ ਕਿ ਕੇਬਲ ਡਿਸਪਲੇਆਂ ਦਾ ਸਮਰਥਨ ਨਾ ਕਰੇ</translation>
 <translation id="4173958948577803258">ਵੀ</translation>
 <translation id="4177913004758410636">{0,plural, =1{ਡੀਵਾਈਸ ਨੂੰ ਇੱਕ ਦਿਨ ਦੇ ਅੰਦਰ ਅੱਪਡੇਟ ਕਰੋ}one{ਡੀਵਾਈਸ ਨੂੰ # ਦਿਨ ਦੇ ਅੰਦਰ ਅੱਪਡੇਟ ਕਰੋ}other{ਡੀਵਾਈਸ ਨੂੰ # ਦਿਨਾਂ ਦੇ ਅੰਦਰ ਅੱਪਡੇਟ ਕਰੋ}}</translation>
 <translation id="4181841719683918333">ਭਾਸ਼ਾਵਾਂ</translation>
@@ -595,6 +604,7 @@
 <translation id="4690510401873698237">ਹੇਠਲੇ 'ਤੇ ਸ਼ੈਲਫ਼</translation>
 <translation id="4696813013609194136">ਮਾਂ-ਪਿਓ ਦੇ ਕੋਡ ਨਾਲ ਡੀਵਾਈਸ ਅਣਲਾਕ ਕਰੋ</translation>
 <translation id="4702647871202761252">ਪਰਦੇਦਾਰੀ ਸਕ੍ਰੀਨ ਬੰਦ ਹੈ</translation>
+<translation id="4717575069099566988">ਤੁਹਾਡੀ USB-C ਕੇਬਲ USB4 ਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦੀ ਹੈ। ਡੀਵਾਈਸ ਦੀ ਕਾਰਗੁਜ਼ਾਰੀ ਸੀਮਤ ਹੋ ਸਕਦੀ ਹੈ।</translation>
 <translation id="4730374152663651037">ਅਕਸਰ ਵਰਤੀਆਂ ਜਾਣ ਵਾਲੀਆਂ ਐਪਾਂ</translation>
 <translation id="4731797938093519117">ਮਾਂ-ਪਿਓ ਲਈ ਪਹੁੰਚ</translation>
 <translation id="4733161265940833579"><ph name="BATTERY_PERCENTAGE" />% (ਖੱਬੇ ਪਾਸੇ)</translation>
@@ -616,6 +626,7 @@
 </translation>
 <translation id="4860284199500934869"><ph name="FILENAME" /> ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਆਪਣੇ ਨੈੱਟਵਰਕ ਕਨੈਕਸ਼ਨ ਦੀ ਜਾਂਚ ਕਰੋ</translation>
 <translation id="486056901304535126">ਬਾਅਦ ਵਿੱਚ ਡਾਊਨਲੋਡ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕੀਤੀ ਜਾਵੇਗੀ। ਡਾਊਨਲੋਡ ਪੂਰਾ ਹੋਣ ਤੱਕ ਪ੍ਰਕਿਰਿਆ ਕਰਨ ਲਈ ਬੋਲੀ Google ਨੂੰ ਭੇਜੀ ਜਾਵੇਗੀ।</translation>
+<translation id="4864369630010738180">ਸਾਈਨ ਇਨ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...</translation>
 <translation id="4868492592575313542">ਕਿਰਿਆਸ਼ੀਲ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="4872237917498892622">Alt+Search ਜਾਂ Shift</translation>
 <translation id="4881695831933465202">ਖੋਲ੍ਹੋ</translation>
@@ -687,7 +698,6 @@
 <translation id="5322611492012084517">ਤੁਹਾਡਾ ਫ਼ੋਨ ਲੱਭਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ</translation>
 <translation id="5327248766486351172">ਨਾਮ</translation>
 <translation id="5329548388331921293">ਕਨੈਕਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...</translation>
-<translation id="5330201449517439522">ਦਾਖਲ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ ਜਾਂ ਕਲਿੱਕ ਕਰੋ</translation>
 <translation id="5331975486040154427">USB-C ਡੀਵਾਈਸ (ਖੱਬੇ ਪਾਸੇ ਪਿੱਛੇ ਦਾ ਪੋਰਟ)</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (ਸੱਜੇ ਪਾਸੇ)</translation>
 <translation id="5352250171825660495">ਗੂੜ੍ਹਾ ਥੀਮ ਚਾਲੂ ਹੈ</translation>
@@ -698,6 +708,7 @@
 <translation id="5400461572260843123">ਤਤਕਾਲ ਸੈਟਿੰਗਾਂ, ਸੂਚਨਾ ਕੇਂਦਰ 'ਤੇ ਜਾਣ ਲਈ search + left ਦਬਾਓ।</translation>
 <translation id="5426063383988017631">ਸੈਟਿੰਗ ਮੀਨੂ ਨੂੰ ਬੰਦ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="5428899915242071344">ਚੁਣਨਾ ਸ਼ੁਰੂ ਕਰੋ</translation>
+<translation id="5429993543155113935">ਇਨਕੋਗਨਿਟੋ ਵਿੰਡੋਆਂ ਫ਼ਿਲਹਾਲ ਸਮਰਥਿਤ ਨਹੀਂ ਹਨ</translation>
 <translation id="5430931332414098647">ਤਤਕਾਲ ਟੈਦਰਿੰਗ</translation>
 <translation id="5431318178759467895">ਰੰਗ</translation>
 <translation id="5433020815079095860">ਆਡੀਓ ਇਨਪੁੱਟ</translation>
@@ -734,6 +745,7 @@
 <translation id="5682642926269496722">Google Assistant ਮੌਜੂਦਾ ਵਰਤੋਂਕਾਰ ਖਾਤੇ ਲਈ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।</translation>
 <translation id="5689633613396158040">ਰਾਤ ਦੀ ਰੋਸ਼ਨੀ ਵਿਸ਼ੇਸ਼ਤਾ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਨੂੰ ਘੱਟ ਰੋਸ਼ਨੀ ਵਿੱਚ ਦੇਖਣਾ ਜਾਂ ਪੜ੍ਹਨਾ ਵਧੇਰੇ ਆਸਾਨ ਬਣਾਉਂਦੀ ਹੈ। ਰਾਤ ਦੀ ਰੋਸ਼ਨੀ ਵਿਸ਼ੇਸ਼ਤਾ ਦੇ ਚਾਲੂ ਜਾਂ ਬੰਦ ਹੋਣ ਦਾ ਸਮਾਂ ਬਦਲਣ ਲਈ ਟੈਪ ਕਰੋ</translation>
 <translation id="5691772641933328258">ਫਿੰਗਰਪ੍ਰਿੰਟ ਦੀ ਪਛਾਣ ਨਹੀਂ ਹੋਈ</translation>
+<translation id="5707775774148071965">ਤੁਹਾਡਾ ਡੀਵਾਈਸ ਤੁਹਾਡੀ ਕੇਬਲ ਨਾਲੋਂ ਵੱਧ ਡਾਟਾ ਦਰ ਦਾ ਸਮਰਥਨ ਕਰਦਾ ਹੈ। ਡੀਵਾਈਸ ਦੀ ਕਾਰਗੁਜ਼ਾਰੀ ਸੀਮਤ ਹੋ ਸਕਦੀ ਹੈ।</translation>
 <translation id="5710450975648804523">'ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ' ਚਾਲੂ ਹੈ</translation>
 <translation id="571295407079589142">ਮੋਬਾਈਲ ਡਾਟਾ ਬੰਦ ਕੀਤਾ ਹੋਇਆ ਹੈ</translation>
 <translation id="573413375004481890">ਇਹ ਡੀਵਾਈਸ ਤੁਹਾਡੇ ਸਾਰੇ ਡਿਸਪਲੇਆਂ ਨੂੰ ਸਮਰਥਿਤ ਨਹੀਂ ਕਰ ਸਕੀ, ਇਸ ਲਈ ਇੱਕ ਨੂੰ ਡਿਸਕਨੈਕਟ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ</translation>
@@ -785,6 +797,7 @@
 <translation id="6022924867608035986">ਖੋਜਬਾਕਸ ਲਿਖਤ ਕਲੀਅਰ ਕਰੋ</translation>
 <translation id="602472752137106327">ਸਾਰੇ ਡੈਸਕਾਂ ਤੋਂ ਉਹ ਵਿੰਡੋ ਦਿਖਾਓ ਜਿਸ ਵਿੱਚ ਰੇਡੀਓ ਬਟਨ ਨੂੰ ਚੁਣਿਆ ਹੋਵੇ</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" />, ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤਾ ਜਾਂਦਾ ਹੈ</translation>
+<translation id="6027518778343897451"><ph name="CURRENT_MONTH_DAY" /> ਨੂੰ ਕੋਈ ਇਵੈਂਟ ਨਹੀਂ ਹੈ। ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ Google Calendar ਖੋਲ੍ਹਣ ਲਈ Enter ਦਬਾਓ।</translation>
 <translation id="6030495522958826102">ਮੀਨੂ ਨੂੰ ਸਕ੍ਰੀਨ ਦੇ ਹੇਠਲੇ ਖੱਬੇ ਕੋਨੇ ਵਿੱਚ ਲਿਜਾਇਆ ਗਿਆ।</translation>
 <translation id="6032620807120418574">ਪੂਰੀ ਸਕ੍ਰੀਨ ਨੂੰ ਰਿਕਾਰਡ ਕਰਨ ਲਈ ਕਿਤੇ ਵੀ ਕਲਿੱਕ ਕਰੋ</translation>
 <translation id="6040071906258664830">ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਨਾਲ ਰਿਕਾਰਡ ਕਰੋ <ph name="STATE" /></translation>
@@ -811,6 +824,7 @@
 <translation id="6165508094623778733">ਹੋਰ ਜਾਣੋ</translation>
 <translation id="6166852626429024716">ਆਪਣਾ ਡੀਵਾਈਸ, ਐਪਾਂ, ਸੈਟਿੰਗਾਂ, ਵੈੱਬ ਖੋਜੋ...</translation>
 <translation id="6179832488876878285">ਇੱਥੇ ਤੁਸੀਂ ਆਪਣੀਆਂ ਮਹੱਤਵਪੂਰਨ ਫ਼ਾਈਲਾਂ ਨੂੰ ਪਿੰਨ ਕਰ ਸਕਦੇ ਹੋ। ਸ਼ੁਰੂਆਤ ਕਰਨ ਲਈ Files ਐਪ ਨੂੰ ਖੋਲ੍ਹੋ।</translation>
+<translation id="6220928844947387476">ਤੁਸੀਂ ਹੁਣ ਖੁਦ ਨੂੰ ਅਤੇ ਆਪਣੀ ਸਕ੍ਰੀਨ ਨੂੰ ਇੱਕੋ ਸਮੇਂ ਰਿਕਾਰਡ ਕਰ ਸਕਦੇ ਹੋ</translation>
 <translation id="622484624075952240">ਹੇਠਾਂ</translation>
 <translation id="6231419273573514727">ਪੈਰੀਫੈਰਲ ਕਾਰਗੁਜ਼ਾਰੀ ਸੀਮਤ ਹੋ ਸਕਦੀ ਹੈ</translation>
 <translation id="6237231532760393653">1X</translation>
@@ -837,6 +851,7 @@
 <translation id="6431865393913628856">ਸਕ੍ਰੀਨ ਰਿਕਾਰਡਰ</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> 'ਤੇ <ph name="ROUTE_TITLE" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" />, <ph name="NUMBER" /> ਇਵੈਂਟ</translation>
+<translation id="6449483711453944360">Linux ਐਪਾਂ ਅਤੇ ਇਨਕੋਗਨਿਟੋ ਵਿੰਡੋਆਂ ਫ਼ਿਲਹਾਲ ਸਮਰਥਿਤ ਨਹੀਂ ਹਨ</translation>
 <translation id="6452181791372256707">ਰੱਦ ਕਰੋ</translation>
 <translation id="6453179446719226835">ਭਾਸ਼ਾ ਬਦਲ ਦਿੱਤੀ ਗਈ ਹੈ</translation>
 <translation id="6459472438155181876">ਸਕ੍ਰੀਨ <ph name="DISPLAY_NAME" /> ਵਿੱਚ ਵਧਾ ਰਿਹਾ ਹੈ</translation>
@@ -861,6 +876,7 @@
 <translation id="6570831796530454248">{0,plural, =1{ਡੀਵਾਈਸ ਨੂੰ ਇੱਕ ਘੰਟੇ ਦੇ ਅੰਦਰ ਅੱਪਡੇਟ ਕਰੋ}one{ਡੀਵਾਈਸ ਨੂੰ # ਘੰਟੇ ਦੇ ਅੰਦਰ ਅੱਪਡੇਟ ਕਰੋ}other{ਡੀਵਾਈਸ ਨੂੰ # ਘੰਟਿਆਂ ਦੇ ਅੰਦਰ ਅੱਪਡੇਟ ਕਰੋ}}</translation>
 <translation id="6570902864550063460">USB ਰਾਹੀਂ ਚਾਰਜ ਹੋ ਰਿਹਾ ਹੈ</translation>
 <translation id="6574587113394758819"><ph name="APP_TITLE" /> ਸੂਚਨਾ ਲੁਕੀ ਹੋਈ ਹੈ ਕਿਉਂਕਿ ਦੇਖਣ ਸੰਬੰਧੀ ਸੁਰੱਖਿਆ ਚਾਲੂ ਹੈ</translation>
+<translation id="6574622320167699133">ਤੁਹਾਡੇ ਫ਼ੋਨ ਤੋਂ ਅਣਲਾਕ ਕੀਤੀ ਗਈ। ਦਾਖਲ ਹੋਣ ਲਈ ਟੈਪ ਜਾਂ ਕਲਿੱਕ ਕਰੋ।</translation>
 <translation id="6578407462441924264">ਬੇਨਾਮ</translation>
 <translation id="6585808820553845416">ਸੈਸ਼ਨ <ph name="SESSION_TIME_REMAINING" /> ਵਿੱਚ ਖ਼ਤਮ ਹੋਵੇਗਾ।</translation>
 <translation id="6593850935013518327"><ph name="PRIMARY_TEXT" />, <ph name="SECONDARY_TEXT" /></translation>
@@ -901,7 +917,6 @@
 <translation id="6790428901817661496">ਪਲੇ ਕਰੋ</translation>
 <translation id="6801878137098616817">ਹਾਲ ਹੀ ਵਿੱਚ ਸੰਪਾਦਨ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="6803622936009808957">ਡਿਸਪਲੇਆਂ ਨੂੰ ਮਿਰਰ ਨਹੀਂ ਕਰ ਸਕਿਆ ਕਿਉਂਕਿ ਕੋਈ ਸਮਰਥਿਤ ਰੈਜ਼ੋਲਿਊਸ਼ਨ ਨਹੀਂ ਮਿਲੇ। ਇਸਦੀ ਬਜਾਏ ਵਿਸਤ੍ਰਿਤ ਡੈਸਕਟਾਪ ਵਿੱਚ ਚਲਾ ਗਿਆ।</translation>
-<translation id="6811454077060061666">ਡੈਸਕਟਾਪ ਲਈ Google Drive ਉਪਲਬਧ ਨਹੀਂ ਹੈ</translation>
 <translation id="6818242057446442178">ਇੱਕ ਸ਼ਬਦ ਪਿੱਛੇ ਜਾਓ</translation>
 <translation id="6820676911989879663">ਥੋੜ੍ਹੀ ਦੇਰ ਆਰਾਮ ਕਰੋ!</translation>
 <translation id="6827049576281411231">ਇਵੈਂਟ ਪੈਨਲ ਨੂੰ ਬੰਦ ਕਰੋ</translation>
@@ -936,6 +951,7 @@
 <translation id="7025533177575372252">ਆਪਣੇ ਫ਼ੋਨ ਨਾਲ ਆਪਣੇ <ph name="DEVICE_NAME" /> ਨੂੰ ਕਨੈਕਟ ਕਰੋ</translation>
 <translation id="7026338066939101231">ਘਟਾਓ</translation>
 <translation id="7029814467594812963">ਸੈਸ਼ਨ ਤੋਂ ਬਾਹਰ ਜਾਓ</translation>
+<translation id="7032161822340700104">ਸਿਰਫ਼ 6 ਟੈਮਪਲੇਟਾਂ ਦੀ ਆਗਿਆ ਹੈ। ਨਵੇਂ ਟੈਮਪਲੇਟ ਨੂੰ ਰੱਖਿਅਤ ਕਰਨ ਲਈ ਕੋਈ ਟੈਮਪਲੇਟ ਹਟਾਓ।</translation>
 <translation id="703425375924687388"><ph name="QUERY_NAME" />, Google Assistant</translation>
 <translation id="7042322267639375032">ਸਥਿਤੀ ਖੇਤਰ ਸਮੇਟੋ</translation>
 <translation id="7045033600005038336">ਕੀ ਟੈਮਪਲੇਟ ਬਦਲਣਾ ਹੈ?</translation>
@@ -1018,7 +1034,6 @@
 <translation id="7564874036684306347">ਵਿੰਡੋਆਂ ਨੂੰ ਕਿਸੇ ਹੋਰ ਡੈਸਕਟਾਪ 'ਤੇ ਲਿਜਾਉਣ ਨਾਲ ਅਣਕਿਆਸਿਆ ਵਰਤਾਅ ਦਿਖ ਸਕਦਾ ਹੈ। ਇਸ ਤੋਂ ਬਾਅਦ ਦੀਆਂ ਸੂਚਨਾਵਾਂ, ਵਿੰਡੋਆਂ ਅਤੇ ਡਾਇਲੌਗ ਡੈਸਕਟਾਪਾਂ ਵਿੱਚ ਵੱਖ-ਵੱਖ ਕੀਤੇ ਜਾ ਸਕਦੇ ਹਨ।</translation>
 <translation id="7569509451529460200">ਬ੍ਰੇਲ ਅਤੇ ChromeVox ਯੋਗ ਬਣਾਏ ਗਏ ਹਨ</translation>
 <translation id="7569983096843329377">ਕਾਲਾ</translation>
-<translation id="757941033127302446">ਸਾਈਨ-ਇਨ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="7579778809502851308">ਸਕ੍ਰੀਨ ਕੈਪਚਰ ਕਰੋ</translation>
 <translation id="7590883480672980941">ਇਨਪੁੱਟ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="7593891976182323525">Search ਜਾਂ Shift</translation>
@@ -1036,7 +1051,9 @@
 <translation id="7649070708921625228">ਸਹਾਇਤਾ</translation>
 <translation id="7654687942625752712">ਬੋਲੀ ਪ੍ਰਤੀਕਰਮ ਬੰਦ ਕਰਨ ਲਈ ਦੋਵੇਂ ਅਵਾਜ਼ ਕੁੰਜੀਆਂ ਨੂੰ 5 ਸਕਿੰਟ ਤੱਕ ਦਬਾਈ ਰੱਖੋ।</translation>
 <translation id="7658239707568436148">ਰੱਦ ਕਰੋ</translation>
+<translation id="7660160718439869192">ਤੁਹਾਡਾ <ph name="NAME" /> <ph name="EMAIL" /> ਨਾਲ ਲਿੰਕ ਕੀਤੇ ਡੀਵਾਈਸਾਂ 'ਤੇ ਦਿਸੇਗਾ</translation>
 <translation id="7662283695561029522">ਸੰਰੂਪਣ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ</translation>
+<translation id="7670953955701272011">Google Calendar ਵਿੱਚ ਇਹ ਤਾਰੀਖ ਖੋਲ੍ਹੋ</translation>
 <translation id="7671610481353807627">ਐਪਾਂ ਨੂੰ ਰੰਗ ਮੁਤਾਬਕ ਕ੍ਰਮ-ਬੱਧ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">ਨਵਾਂ ਸੈਲਿਊਲਰ ਨੈੱਟਵਰਕ ਸ਼ਾਮਲ ਕਰੋ</translation>
@@ -1128,11 +1145,11 @@
 <translation id="8236042855478648955">ਆਰਾਮ ਕਰਨ ਦਾ ਸਮਾਂ ਹੋ ਗਿਆ ਹੈ</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" />, ਫ਼ੋਨ ਦੀ ਬੈਟਰੀ <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, ਐਪ</translation>
+<translation id="8248728785693203669">ਹੋ ਸਕਦਾ ਹੈ ਕਿ ਤੁਹਾਡੀ USB-C ਕੇਬਲ ਡਿਸਪਲੇਆਂ ਨਾਲ ਠੀਕ ਤਰ੍ਹਾਂ ਕਨੈਕਟ ਨਾ ਹੋਵੇ</translation>
 <translation id="8255234195843591763">ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਰੀਸੈੱਟ ਕਰੋ</translation>
 <translation id="826107067893790409"><ph name="USER_EMAIL_ADDRESS" /> ਵਾਸਤੇ ਅਣਲਾਕ ਕਰਨ ਲਈ ਐਂਟਰ ਦਬਾਓ</translation>
 <translation id="8261506727792406068">ਮਿਟਾਓ</translation>
 <translation id="8270450402312105425">{0,plural, =1{ਡੀਵਾਈਸ ਨੂੰ ਇੱਕ ਘੰਟੇ ਵਿੱਚ ਹੀ ਪਿਛਲੇ ਵਰਜਨ 'ਤੇ ਬਦਲੋ}one{ਡੀਵਾਈਸ ਨੂੰ # ਘੰਟੇ ਵਿੱਚ ਹੀ ਪਿਛਲੇ ਵਰਜਨ 'ਤੇ ਬਦਲੋ}other{ਡੀਵਾਈਸ ਨੂੰ # ਘੰਟਿਆਂ ਵਿੱਚ ਹੀ ਪਿਛਲੇ ਵਰਜਨ 'ਤੇ ਬਦਲੋ}}</translation>
-<translation id="8281279285293265212">ਸਕ੍ਰੀਨਕਾਸਟ ਨੂੰ ਰੱਖਿਅਤ ਕਰਨਾ ਅਸਫਲ ਰਿਹਾ</translation>
 <translation id="8284362522226889623">ਪਿਛਲੇ ਡੈਸਕ 'ਤੇ ਜਾਣ ਲਈ ਚਾਰ ਉਂਗਲਾਂ ਨਾਲ ਖੱਬੇ ਪਾਸੇ ਵੱਲ ਸਵਾਈਪ ਕਰੋ</translation>
 <translation id="828708037801473432">ਬੰਦ</translation>
 <translation id="8297006494302853456">ਕਮਜ਼ੋਰ</translation>
@@ -1158,6 +1175,7 @@
 <translation id="8428213095426709021">ਸੈਟਿੰਗਾਂ</translation>
 <translation id="8433186206711564395">ਨੈੱਟਵਰਕ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="8433977262951327081">ਸ਼ੈਲਫ਼ ਵਿੱਚ ਇਨਪੁੱਟ ਵਿਕਲਪ ਮੀਨੂ ਬੁਲਬੁਲੇ ਨੂੰ ਦਿਖਾਉਣ ਵਾਲਾ ਸ਼ਾਰਟਕੱਟ ਬਦਲ ਗਿਆ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ <ph name="OLD_SHORTCUT" /> ਦੀ ਬਜਾਏ <ph name="NEW_SHORTCUT" /> ਵਰਤੋ।</translation>
+<translation id="8443879455002739353">"ਕਾਪੀ ਕਰੋ"</translation>
 <translation id="8444246603146515890">ਡੈਸਕ <ph name="DESK_TITILE" /> ਕਿਰਿਆਸ਼ੀਲ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="8446884382197647889">ਹੋਰ ਜਾਣੋ</translation>
 <translation id="8456543082656546101"><ph name="SHORTCUT_KEY_NAME" /> + V</translation>
@@ -1225,6 +1243,7 @@
 <translation id="8878886163241303700">ਸਕ੍ਰੀਨ ਦਾ ਵਿਸਤਾਰ ਕਰ ਰਿਹਾ ਹੈ</translation>
 <translation id="888982883502837004">ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਲਈ ਫ਼ਰਮਵੇਅਰ ਅੱਪਡੇਟ ਉਪਲਬਧ ਹਨ। ਸਮੀਖਿਆ ਕਰਨ ਅਤੇ ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਕਲਿੱਕ ਕਰੋ।</translation>
 <translation id="8896630965521842259"><ph name="DESK_TEMPLATE_NAME" /> ਨੂੰ ਪੱਕੇ ਤੌਰ 'ਤੇ ਮਿਟਾਇਆ ਜਾਵੇਗਾ</translation>
+<translation id="8905919797434099235">(ਕੋਈ ਸਿਰਲੇਖ ਨਹੀਂ)</translation>
 <translation id="890616557918890486">ਸਰੋਤ ਬਦਲੋ</translation>
 <translation id="8909138438987180327">ਬੈਟਰੀ <ph name="PERCENTAGE" /> ਫ਼ੀਸਦ ਹੈ।</translation>
 <translation id="8921554779039049422">H+</translation>
@@ -1241,6 +1260,7 @@
 <translation id="9000771174482730261">ਸਟੋਰੇਜ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
 <translation id="9017320285115481645">Family Link ਦਾ ਮਾਂ-ਪਿਓ ਪਹੁੰਚ ਕੋਡ ਦਾਖਲ ਕਰੋ।</translation>
 <translation id="9024331582947483881">ਫੁਲ ਸਕ੍ਰੀਨ</translation>
+<translation id="9034924485347205037">Linux ਫ਼ਾਈਲਾਂ</translation>
 <translation id="9047624247355796468"><ph name="NETWORK_NAME" /> ਲਈ ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ</translation>
 <translation id="9059834730836941392">ਸੂਚਨਾ ਸਮੇਟੋ</translation>
 <translation id="9065203028668620118">ਸੰਪਾਦਿਤ ਕਰੋ</translation>

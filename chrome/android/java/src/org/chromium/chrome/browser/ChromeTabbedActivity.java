@@ -619,13 +619,21 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                             || (!getTabModelSelector().isIncognitoSelected()
                                     && getTabModelSelector().getModel(false).getCount() == 0));
 
+                    boolean multiWindowActive =
+                            MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(
+                                    ChromeTabbedActivity.this)
+                            && MultiWindowUtils.getVisibleTabbedTaskCount() > 1;
+                    boolean useAccessibilityListSwitcher =
+                            DeviceClassManager.enableAccessibilityLayout(ChromeTabbedActivity.this);
+
                     // TODO(crbug.com/1046541) : Remove this when the associated bug is fixed. This
                     //  is a band-aid fix for TabGrid and closing tabs with TabGroupUi.
                     //  If one of the following is true, then exit Chrome when TabGroupsAndroid is
                     //  enabled, and tab switcher is not shown:
                     //   1. If the very last tab is closed.
                     //   2. If normal tab model is selected and no normal tabs.
-                    if (gridTabSwitcherEnabled && !overviewVisible && !hasNextTab && !isTablet()) {
+                    if (gridTabSwitcherEnabled && !overviewVisible && !hasNextTab && !isTablet()
+                            && !multiWindowActive) {
                         finish();
                     }
 
@@ -635,7 +643,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     //  when TabGroupsAndroid is enabled, and tab switcher is shown:
                     //   1. If the very last tab is closed.
                     //   2. If normal tab model is selected and no normal tabs.
-                    if (gridTabSwitcherEnabled && overviewVisible && !hasNextTab && isTablet()) {
+                    if (gridTabSwitcherEnabled && overviewVisible && !hasNextTab && isTablet()
+                            && !useAccessibilityListSwitcher) {
                         mLayoutManager.showLayout(LayoutType.BROWSING, true);
                     }
                 }
@@ -886,6 +895,19 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         mIntentHandlingTimeMs = SystemClock.uptimeMillis();
         super.onNewIntent(intent);
+
+        // When onNewIntent() comes, calling launchIntent() may trigger a static layout is
+        // showing without even canceling the overview layout which is about to show. It
+        // leaves the StartSurfaceState to be SHOWING_START instead of NOT_SHOWN, since
+        // hiding the overview layout won't be called. Thus we need to reset the
+        // StartSurfaceState to prevent it being a wrong state. See crbug.com/1298740.
+        if (ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(this)
+                && getCurrentTabModel().getCount() > 0 && !isTablet()
+                && !shouldShowOverviewPageOnStart() && !isInOverviewMode()
+                && mStartSurfaceSupplier.get() != null) {
+            mStartSurfaceSupplier.get().getController().setOverviewState(
+                    StartSurfaceState.NOT_SHOWN, NewTabPageLaunchOrigin.UNKNOWN);
+        }
     }
 
     @Override
@@ -1616,7 +1638,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     protected RootUiCoordinator createRootUiCoordinator() {
         return new TabbedRootUiCoordinator(this, this::onOmniboxFocusChanged,
                 getShareDelegateSupplier(), getActivityTabProvider(), mTabModelProfileSupplier,
-                mBookmarkBridgeSupplier, this::getContextualSearchManager,
+                mBookmarkBridgeSupplier, getContextualSearchManagerSupplier(),
                 getTabModelSelectorSupplier(), mStartSurfaceSupplier,
                 mIntentMetadataOneshotSupplier, mLayoutStateProviderOneshotSupplier,
                 mStartSurfaceParentTabSupplier, getBrowserControlsManager(), getWindowAndroid(),
@@ -2659,7 +2681,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // TODO(crbug.com/1157310): Transition this::method refs to dedicated suppliers.
         mTabModalHandler = new TabModalLifetimeHandler(this, getLifecycleDispatcher(), manager,
                 this::getAppBrowserControlsVisibilityDelegate, this::getTabObscuringHandler,
-                this::getToolbarManager, this::getContextualSearchManager,
+                this::getToolbarManager, getContextualSearchManagerSupplier(),
                 getTabModelSelectorSupplier(), this::getBrowserControlsManager,
                 this::getFullscreenManager);
         return manager;

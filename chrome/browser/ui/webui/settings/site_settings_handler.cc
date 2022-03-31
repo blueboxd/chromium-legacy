@@ -42,7 +42,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
-#include "components/content_settings/core/browser/uma_util.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
@@ -255,6 +254,12 @@ void UpdateDataForOrigin(const GURL& url,
     (*origin_size_map)[url.spec()] += size;
 }
 
+// Converts |etld_plus1| into an origin representation by adding HTTP scheme.
+std::string ConvertEtldToOrigin(const std::string etld_plus1) {
+  return std::string(url::kHttpScheme) + url::kStandardSchemeSeparator +
+         etld_plus1 + "/";
+}
+
 // Converts a given |site_group_map| to a list of base::DictionaryValues, adding
 // the site engagement score for each origin.
 void ConvertSiteGroupMapToListValue(
@@ -282,10 +287,8 @@ void ConvertSiteGroupMapToListValue(
       base::Value origin_object(base::Value::Type::DICTIONARY);
       // If origin is placeholder, create a http ETLD+1 origin for it.
       if (origin == kPlaceholder) {
-        origin_object.SetKey(
-            "origin",
-            base::Value(std::string(url::kHttpScheme) +
-                        url::kStandardSchemeSeparator + entry.first + "/"));
+        origin_object.SetKey("origin",
+                             base::Value(ConvertEtldToOrigin(entry.first)));
       } else {
         origin_object.SetKey("origin", base::Value(origin));
       }
@@ -1228,7 +1231,6 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
             "SoundContentSetting.UnmuteBy.SiteSettings"));
       }
     }
-    content_settings::LogWebSiteSettingsPermissionChange(content_type, setting);
   }
 
   // Show an infobar reminding the user to reload tabs where their site
@@ -1302,9 +1304,6 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForPattern(
     PermissionDecisionAutoBlockerFactory::GetForProfile(profile)
         ->RemoveEmbargoAndResetCounts(url, content_type);
   }
-
-  content_settings::LogWebSiteSettingsPermissionChange(
-      content_type, ContentSetting::CONTENT_SETTING_DEFAULT);
 }
 
 void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
@@ -1371,7 +1370,6 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
           "SoundContentSetting.UnmuteBy.PatternException"));
     }
   }
-  content_settings::LogWebSiteSettingsPermissionChange(content_type, setting);
 }
 
 void SiteSettingsHandler::HandleResetChooserExceptionForSite(
@@ -1741,15 +1739,20 @@ void SiteSettingsHandler::HandleClearEtldPlus1DataAndCookies(
     if (origin_is_partitioned.second)
       continue;
 
-    affected_origins.emplace_back(
-        url::Origin::Create(GURL(origin_is_partitioned.first)));
+    affected_origins.emplace_back(url::Origin::Create(
+        // A placeholder origin may have been created, in this case the
+        // eTLD+1 itself should be converted to an origin, the same as it would
+        // have been for display.
+        origin_is_partitioned.first == kPlaceholder
+            ? GURL(ConvertEtldToOrigin(etld_plus1))
+            : GURL(origin_is_partitioned.first)));
   }
 
   // Cookies may have associated with the entry for the eTLD+1 itself.
   // As per the logic in CreateOrAppendSiteGroupEntry, this will only occur
   // if the existing entry was https, otherwise a new http entry would be
-  // created. Hence, we need only additionally include the HTTPS version of
-  // the eTLD+1 as an origin.
+  // created for the placeholder. Hence, we need only additionally include the
+  // HTTPS version of the eTLD+1 as an origin.
   std::string https_url = std::string(url::kHttpsScheme) +
                           url::kStandardSchemeSeparator + etld_plus1 + "/";
   affected_origins.emplace_back(url::Origin::Create(GURL(https_url)));

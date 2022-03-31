@@ -1048,6 +1048,10 @@ extern const char kTabStatsTotalTabCountMax[];
 extern const char kTabStatsMaxTabsPerWindow[];
 extern const char kTabStatsWindowCountMax[];
 extern const char kTabStatsDailySample[];
+extern const char kTabStatsDiscardsExternal[];
+extern const char kTabStatsDiscardsUrgent[];
+extern const char kTabStatsReloadsExternal[];
+extern const char kTabStatsReloadsUrgent[];
 
 extern const char kUnsafelyTreatInsecureOriginAsSecure[];
 
@@ -1151,6 +1155,13 @@ extern const char kCartDiscountEnabled[];
 extern const char kCartUsedDiscounts[];
 extern const char kCartDiscountLastFetchedTime[];
 extern const char kCartDiscountConsentShown[];
+extern const char kDiscountConsentDecisionMadeIn[];
+extern const char kDiscountConsentDismissedIn[];
+extern const char kDiscountConsentLastDimissedTime[];
+extern const char kDiscountConsentLastShownInVariation[];
+extern const char kDiscountConsentPastDismissedCount[];
+extern const char kDiscountConsentShowInterest[];
+extern const char kDiscountConsentShowInterestIn[];
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1194,6 +1205,8 @@ extern const char kCorsNonWildcardRequestHeadersSupport[];
 extern const char kOriginAgentClusterDefaultEnabled[];
 
 extern const char kForceMajorVersionToMinorPositionInUserAgent[];
+
+extern const char kSCTAuditingHashdanceReportCount[];
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

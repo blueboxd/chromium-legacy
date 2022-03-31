@@ -31,6 +31,7 @@
 #include "services/network/sct_auditing/sct_auditing_cache.h"
 #include "services/network/sct_auditing/sct_auditing_reporter.h"
 #include "services/network/test/fake_test_cert_verifier_params_factory.h"
+#include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "services/network/url_loader_factory.h"
@@ -39,6 +40,17 @@
 namespace network {
 
 namespace {
+
+// The particular value of the log ID doesn't matter; it just has to be the
+// correct length.
+constexpr uint8_t kTestLogId[] = {
+    0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+    0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+    0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
+const std::string kTestLogIdAsString(reinterpret_cast<const char*>(kTestLogId),
+                                     sizeof(kTestLogId));
+
+constexpr base::TimeDelta kTestLogMMD = base::Seconds(42);
 
 class SCTAuditingHandlerTest : public testing::Test {
  public:
@@ -65,11 +77,29 @@ class SCTAuditingHandlerTest : public testing::Test {
         network_context_remote_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
 
+    // Set up fake CT logs.
+    mojom::CTLogInfoPtr log(base::in_place);
+    log->id = kTestLogIdAsString;
+    log->mmd = kTestLogMMD;
+    std::vector<mojom::CTLogInfoPtr> log_list;
+    log_list.emplace_back(std::move(log));
+    network_service_->UpdateCtLogList(std::move(log_list), base::Time::Now());
+
+    // A NetworkContextClient is needed for querying/updating the report count.
+    mojo::PendingRemote<network::mojom::NetworkContextClient>
+        network_context_client_remote;
+    network_context_client_ =
+        std::make_unique<network::TestNetworkContextClient>(
+            network_context_client_remote.InitWithNewPipeAndPassReceiver());
+    network_context_->SetClient(std::move(network_context_client_remote));
+
     // Set up SCT auditing configuration.
     auto* cache = network_service_->sct_auditing_cache();
     cache->set_sampling_rate(1.0);
     cache->set_report_uri(GURL("https://example.test"));
     cache->set_traffic_annotation(
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+    cache->set_hashdance_traffic_annotation(
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     chain_ =
@@ -138,6 +168,7 @@ class SCTAuditingHandlerTest : public testing::Test {
   base::FilePath persistence_path_;
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
+  std::unique_ptr<TestNetworkContextClient> network_context_client_;
   scoped_refptr<net::X509Certificate> chain_;
   std::unique_ptr<SCTAuditingHandler> handler_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -163,16 +194,7 @@ void MakeTestSCTAndStatus(
   scoped_refptr<net::ct::SignedCertificateTimestamp> sct(
       new net::ct::SignedCertificateTimestamp());
   sct->version = net::ct::SignedCertificateTimestamp::V1;
-
-  // The particular value of the log ID doesn't matter; it just has to be the
-  // correct length.
-  const unsigned char kTestLogId[] = {
-      0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-      0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-      0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
-  const std::string log_id(reinterpret_cast<const char*>(kTestLogId),
-                           sizeof(kTestLogId));
-  sct->log_id = log_id;
+  sct->log_id = kTestLogIdAsString;
 
   sct->extensions = extensions;
   sct->timestamp = timestamp;
@@ -276,13 +298,16 @@ TEST_F(SCTAuditingHandlerTest, ReportsOnlyIncludesValidSCTs) {
   }
 }
 
-// If operating on hashdance mode, calculate and store the SCT leaf hash.
-TEST_F(SCTAuditingHandlerTest, CalculateLeafHashOnHashdanceMode) {
+// If operating on hashdance mode, calculate and store the SCT leaf hash and
+// append log metadata.
+TEST_F(SCTAuditingHandlerTest, PopulateSCTMetadataOnHashdanceMode) {
+  base::HistogramTester histograms;
   const net::HostPortPair host_port_pair("example.com", 443);
   net::SignedCertificateTimestampAndStatusList sct_list;
+  const base::Time issued = base::Time::Now();
   MakeTestSCTAndStatus(
       net::ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION, "extensions",
-      "valid_signature", base::Time::Now(), net::ct::SCT_STATUS_OK, &sct_list);
+      "valid_signature", issued, net::ct::SCT_STATUS_OK, &sct_list);
 
   for (mojom::SCTAuditingMode mode :
        {mojom::SCTAuditingMode::kEnhancedSafeBrowsingReporting,
@@ -292,7 +317,6 @@ TEST_F(SCTAuditingHandlerTest, CalculateLeafHashOnHashdanceMode) {
     handler_->MaybeEnqueueReport(host_port_pair, chain_.get(), sct_list);
     auto* pending_reporters = handler_->GetPendingReportersForTesting();
     ASSERT_EQ(pending_reporters->size(), 1u);
-
     for (const auto& reporter : *pending_reporters) {
       if (mode == mojom::SCTAuditingMode::kHashdance) {
         net::ct::MerkleTreeLeaf merkle_tree_leaf;
@@ -301,11 +325,67 @@ TEST_F(SCTAuditingHandlerTest, CalculateLeafHashOnHashdanceMode) {
             chain_.get(), sct_list.at(0).sct.get(), &merkle_tree_leaf));
         ASSERT_TRUE(
             net::ct::HashMerkleTreeLeaf(merkle_tree_leaf, &expected_leaf_hash));
-        EXPECT_EQ(reporter.second->leaf_hash(), expected_leaf_hash);
+
+        const SCTAuditingReporter::SCTHashdanceMetadata& metadata =
+            *reporter.second->sct_hashdance_metadata();
+        EXPECT_EQ(metadata.leaf_hash, expected_leaf_hash);
+        EXPECT_EQ(metadata.log_id, kTestLogIdAsString);
+        EXPECT_EQ(metadata.log_mmd, kTestLogMMD);
+        EXPECT_EQ(metadata.issued, issued);
+        EXPECT_EQ(metadata.certificate_expiry, chain_->valid_expiry());
       } else {
-        EXPECT_FALSE(reporter.second->leaf_hash());
+        EXPECT_FALSE(reporter.second->sct_hashdance_metadata());
       }
     }
+    histograms.ExpectUniqueSample(
+        "Security.SCTAuditing.OptOut.PopularSCTSkipped", false,
+        mode == mojom::SCTAuditingMode::kHashdance ? 1 : 0);
+    handler_->ClearPendingReports();
+    network_service_->sct_auditing_cache()->ClearCache();
+  }
+}
+
+// If operating on hashdance mode, do not report popular SCTs.
+TEST_F(SCTAuditingHandlerTest, DoNotReportPopularSCT) {
+  const net::HostPortPair host_port_pair("example.com", 443);
+  net::SignedCertificateTimestampAndStatusList sct_list;
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION, "extensions",
+      "valid_signature", base::Time::Now(), net::ct::SCT_STATUS_OK, &sct_list);
+  net::ct::MerkleTreeLeaf merkle_tree_leaf;
+  std::string leaf_hash_string;
+  ASSERT_TRUE(net::ct::GetMerkleTreeLeaf(chain_.get(), sct_list.at(0).sct.get(),
+                                         &merkle_tree_leaf));
+  ASSERT_TRUE(net::ct::HashMerkleTreeLeaf(merkle_tree_leaf, &leaf_hash_string));
+  std::vector<uint8_t> leaf_hash(leaf_hash_string.begin(),
+                                 leaf_hash_string.end());
+
+  // Create a list of sorted leaf hashes that will contain the SCT's leaf hash.
+  std::vector<std::vector<uint8_t>> leaf_hashes;
+  for (size_t byte = 0; byte < 256; ++byte) {
+    std::vector<uint8_t> new_leaf_hash = leaf_hash;
+    new_leaf_hash[0] = byte;
+    leaf_hashes.emplace_back(std::move(new_leaf_hash));
+  }
+
+  network_service_->sct_auditing_cache()->set_popular_scts({leaf_hash});
+
+  for (mojom::SCTAuditingMode mode :
+       {mojom::SCTAuditingMode::kEnhancedSafeBrowsingReporting,
+        mojom::SCTAuditingMode::kHashdance}) {
+    SCOPED_TRACE(testing::Message() << "Mode: " << static_cast<int>(mode));
+    base::HistogramTester histograms;
+    handler_->SetMode(mode);
+    handler_->MaybeEnqueueReport(host_port_pair, chain_.get(), sct_list);
+    auto* pending_reporters = handler_->GetPendingReportersForTesting();
+    EXPECT_EQ(pending_reporters->size(),
+              mode == mojom::SCTAuditingMode::kHashdance ? 0u : 1u);
+
+    // The hashdance request should record a count for PopularSCTSkipped.
+    histograms.ExpectUniqueSample(
+        "Security.SCTAuditing.OptOut.PopularSCTSkipped", true,
+        mode == mojom::SCTAuditingMode::kHashdance ? 1 : 0);
+
     handler_->ClearPendingReports();
     network_service_->sct_auditing_cache()->ClearCache();
   }
@@ -573,7 +653,13 @@ TEST_F(SCTAuditingHandlerTest, DataRoundTrip) {
     // Fake a HashValue to use as the key.
     net::HashValue reporter_key(net::HASH_VALUE_SHA256);
 
-    handler.AddReporter(reporter_key, std::move(report), "leaf hash");
+    SCTAuditingReporter::SCTHashdanceMetadata metadata;
+    metadata.leaf_hash = "leaf hash";
+    metadata.log_id = "log id";
+    metadata.log_mmd = base::Seconds(42);
+    metadata.issued = base::Time::UnixEpoch();
+    metadata.certificate_expiry = base::Time::UnixEpoch() + base::Seconds(42);
+    handler.AddReporter(reporter_key, std::move(report), std::move(metadata));
     ASSERT_EQ(handler.GetPendingReportersForTesting()->size(), 1u);
     ASSERT_TRUE(file_writer->HasPendingWrite());
 
@@ -606,7 +692,16 @@ TEST_F(SCTAuditingHandlerTest, DataRoundTrip) {
           reporter.second->report()->certificate_report(0).context().origin();
       EXPECT_EQ(origin.hostname(), "example.test");
       EXPECT_EQ(origin.port(), 443);
-      EXPECT_EQ(reporter.second->leaf_hash(), "leaf hash");
+
+      const absl::optional<SCTAuditingReporter::SCTHashdanceMetadata>&
+          metadata = reporter.second->sct_hashdance_metadata();
+      ASSERT_TRUE(metadata);
+      EXPECT_EQ(metadata->leaf_hash, "leaf hash");
+      EXPECT_EQ(metadata->log_id, "log id");
+      EXPECT_EQ(metadata->log_mmd, base::Seconds(42));
+      EXPECT_EQ(metadata->issued, base::Time::UnixEpoch());
+      EXPECT_EQ(metadata->certificate_expiry,
+                base::Time::UnixEpoch() + base::Seconds(42));
     }
   }
 }
@@ -638,21 +733,12 @@ TEST_F(SCTAuditingHandlerTest, DeserializeBadData) {
       R"([{"reporter_key": "a", "report": "b", "backoff_entry": ["c"]}])");
   EXPECT_EQ(handler.GetPendingReportersForTesting()->size(), 0u);
 
-  // JSON data with a non string leaf hash.
+  // JSON data with invalid SCT metadata.
   handler.DeserializeData(
       R"(reporter_key":
         "sha256/qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=",
       "report": "EhUKExIRCgxleGFtcGxlLnRlc3QQuwM=",
-      "leaf_hash": 42,
-      "backoff_entry": [2,1,"30000000","11644578625551798"])");
-  EXPECT_EQ(handler.GetPendingReportersForTesting()->size(), 0u);
-
-  // JSON data with a non base64 leaf hash.
-  handler.DeserializeData(
-      R"(reporter_key":
-        "sha256/qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo=",
-      "report": "EhUKExIRCgxleGFtcGxlLnRlc3QQuwM=",
-      "leaf_hash": "notbase64",
+      "sct_metadata": ":(",
       "backoff_entry": [2,1,"30000000","11644578625551798"])");
   EXPECT_EQ(handler.GetPendingReportersForTesting()->size(), 0u);
 

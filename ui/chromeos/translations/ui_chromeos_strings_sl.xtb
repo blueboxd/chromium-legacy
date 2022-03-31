@@ -106,6 +106,7 @@
 <translation id="1853795129690976061">Ta datoteka je deljena z Linuxom</translation>
 <translation id="1864756863218646478">Datoteke ni bilo mogoče najti.</translation>
 <translation id="1884013283844450420">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, vzpostavitev povezave</translation>
+<translation id="1914901738028575085">Naprava CloudReady 2.0</translation>
 <translation id="1920670151694390848">malajalščina (transkripcija)</translation>
 <translation id="1920798810075583923">Lubenica</translation>
 <translation id="1924372192547904021">Pogon <ph name="DRIVE_NAME" /> je bil formatiran</translation>
@@ -241,6 +242,7 @@
 <translation id="3078461028045006476">Skupna raba z: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3083975830683400843">Naprave Chromebit</translation>
 <translation id="3085752524577180175">Gostitelj SOCKS</translation>
+<translation id="3104793765551262433">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, moč signala <ph name="SIGNAL_STRENGTH" /> %, blokiral skrbnik, podrobnosti</translation>
 <translation id="3113153474486991170">Poti »<ph name="PATH" />« ni bilo mogoče odpreti s te lokacije. Kopirajte v »Moje datoteke«, če želite odpreti.</translation>
 <translation id="3113592018909187986">Imate še 1 poskus. Dokler ne nastavite nove kode PIN, ne bo mogoče uporabljati tega omrežja.</translation>
 <translation id="3124404833828281817">Oseba, ki sanjari</translation>
@@ -883,6 +885,7 @@
 <translation id="8551494947769799688">latvijščina</translation>
 <translation id="8560515948038859357">kantonščina</translation>
 <translation id="8561206103590473338">Slon</translation>
+<translation id="8566466896628108558">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, moč signala <ph name="SIGNAL_STRENGTH" /> %, blokiral skrbnik, podrobnosti</translation>
 <translation id="8569764466147087991">Izberite datoteko, ki jo želite odpreti</translation>
 <translation id="8577897833047451336">hrvaščina</translation>
 <translation id="8578308463707544055">indonezijščina</translation>
@@ -900,6 +903,7 @@
 <translation id="8714406895390098252">Kolo</translation>
 <translation id="8719721339511222681">Izbran je vnos <ph name="ENTRY_NAME" />.</translation>
 <translation id="872537912056138402">hrvaščina</translation>
+<translation id="873847021056608403">Naprave CloudReady 2.0</translation>
 <translation id="8743164338060742337">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, moč signala je <ph name="SIGNAL_STRENGTH" /> %, upravlja ga vaš skrbnik, vzpostavitev povezave</translation>
 <translation id="8750438273876807512">Pridržite datoteko in se dotaknite <ph name="ICON" /> ter izberite »Pripni na polico« za hiter dostop do datotek na polici.</translation>
 <translation id="8787254343425541995">Dovoli proxyje za omrežja v skupni rabi</translation>

@@ -6,16 +6,17 @@
 
 #include <memory>
 
-#include "chrome/browser/ui/autofill/payments/virtual_card_enroll_bubble_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/accessibility/theme_tracking_non_accessible_image_view.h"
 #include "chrome/browser/ui/views/autofill/payments/dialog_view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/metrics/payments/virtual_card_enrollment_metrics.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
+#include "components/autofill/core/browser/ui/payments/virtual_card_enroll_bubble_controller.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -52,6 +53,8 @@ VirtualCardEnrollBubbleViews::VirtualCardEnrollBubbleViews(
       SetFootnoteView(CreateLegalMessageView());
   legal_message_view->SetID(DialogViewId::FOOTNOTE_VIEW);
 }
+
+VirtualCardEnrollBubbleViews::~VirtualCardEnrollBubbleViews() = default;
 
 void VirtualCardEnrollBubbleViews::Show(DisplayReason reason) {
   ShowForReason(reason);
@@ -113,8 +116,6 @@ void VirtualCardEnrollBubbleViews::OnWidgetClosing(views::Widget* widget) {
       widget->closed_reason());
 }
 
-VirtualCardEnrollBubbleViews::~VirtualCardEnrollBubbleViews() = default;
-
 void VirtualCardEnrollBubbleViews::Init() {
   ChromeLayoutProvider* const provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -153,10 +154,10 @@ void VirtualCardEnrollBubbleViews::Init() {
   description_view->SetMainAxisAlignment(
       views::BoxLayout::MainAxisAlignment::kStart);
 
-  const VirtualCardEnrollmentFields* virtual_card_enrollment_fields =
+  const VirtualCardEnrollmentFields virtual_card_enrollment_fields =
       controller_->GetVirtualCardEnrollmentFields();
-  const CreditCard& card = virtual_card_enrollment_fields->credit_card;
-  gfx::Image* card_image = virtual_card_enrollment_fields->card_art_image.get();
+  CreditCard card = virtual_card_enrollment_fields.credit_card;
+  gfx::Image* card_image = virtual_card_enrollment_fields.card_art_image.get();
 
   auto* const card_network_icon =
       description_view->AddChildView(std::make_unique<views::ImageView>());
@@ -201,21 +202,23 @@ VirtualCardEnrollBubbleViews::CreateLegalMessageView() {
           DISTANCE_RELATED_CONTROL_VERTICAL_SMALL));
 
   const LegalMessageLines google_legal_message =
-      controller_->GetVirtualCardEnrollmentFields()->google_legal_message;
+      controller_->GetVirtualCardEnrollmentFields().google_legal_message;
   const LegalMessageLines issuser_legal_message =
-      controller_->GetVirtualCardEnrollmentFields()->issuer_legal_message;
+      controller_->GetVirtualCardEnrollmentFields().issuer_legal_message;
 
   DCHECK(!google_legal_message.empty());
   legal_message_view->AddChildView(std::make_unique<LegalMessageView>(
       google_legal_message,
-      base::BindRepeating(&VirtualCardEnrollBubbleViews::LegalMessageClicked,
-                          base::Unretained(this))));
+      base::BindRepeating(
+          &VirtualCardEnrollBubbleViews::GoogleLegalMessageClicked,
+          base::Unretained(this))));
 
   if (!issuser_legal_message.empty()) {
     legal_message_view->AddChildView(std::make_unique<LegalMessageView>(
         issuser_legal_message,
-        base::BindRepeating(&VirtualCardEnrollBubbleViews::LegalMessageClicked,
-                            base::Unretained(this))));
+        base::BindRepeating(
+            &VirtualCardEnrollBubbleViews::IssuerLegalMessageClicked,
+            base::Unretained(this))));
   }
   return legal_message_view;
 }
@@ -223,13 +226,26 @@ VirtualCardEnrollBubbleViews::CreateLegalMessageView() {
 void VirtualCardEnrollBubbleViews::LearnMoreLinkClicked() {
   if (controller()) {
     controller()->OnLinkClicked(
+        VirtualCardEnrollmentLinkType::VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK,
         autofill::payments::GetVirtualCardEnrollmentSupportUrl());
   }
 }
 
-void VirtualCardEnrollBubbleViews::LegalMessageClicked(const GURL& url) {
-  if (controller())
-    controller()->OnLinkClicked(url);
+void VirtualCardEnrollBubbleViews::IssuerLegalMessageClicked(const GURL& url) {
+  if (controller()) {
+    controller()->OnLinkClicked(
+        VirtualCardEnrollmentLinkType::VIRTUAL_CARD_ENROLLMENT_ISSUER_TOS_LINK,
+        url);
+  }
+}
+
+void VirtualCardEnrollBubbleViews::GoogleLegalMessageClicked(const GURL& url) {
+  if (controller()) {
+    controller()->OnLinkClicked(
+        VirtualCardEnrollmentLinkType::
+            VIRTUAL_CARD_ENROLLMENT_GOOGLE_PAYMENTS_TOS_LINK,
+        url);
+  }
 }
 
 }  // namespace autofill

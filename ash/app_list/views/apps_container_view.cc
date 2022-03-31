@@ -25,6 +25,7 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/constants/ash_features.h"
+#include "ash/controls/gradient_layer_delegate.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_model_delegate.h"
@@ -32,7 +33,6 @@
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/search_box/search_box_constants.h"
-#include "ash/shelf/gradient_layer_delegate.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
@@ -162,7 +162,6 @@ class AppsContainerView::ContinueContainer : public views::View {
         view_delegate, kContinueColumnCount, /*tablet_mode=*/true));
     continue_section_->SetPaintToLayer();
     continue_section_->layer()->SetFillsBoundsOpaquely(false);
-    continue_section_->UpdateSuggestionTasks();
 
     recent_apps_ = AddChildView(
         std::make_unique<RecentAppsView>(apps_container, view_delegate));
@@ -267,6 +266,12 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view)
   if (features::IsProductivityLauncherEnabled()) {
     continue_container_ = scrollable_container_->AddChildView(
         std::make_unique<ContinueContainer>(this, view_delegate));
+    continue_container_->continue_section()->SetNudgeController(
+        app_list_nudge_controller_.get());
+    // Update the suggestion tasks after the app list nudge controller is set in
+    // continue section.
+    continue_container_->continue_section()->UpdateSuggestionTasks();
+
     // Add a empty container view. A toast view should be added to
     // `toast_container_` when the app list starts temporary sorting.
     if (features::IsLauncherAppSortEnabled()) {
@@ -1008,6 +1013,11 @@ void AppsContainerView::OnShown() {
 
   GetViewAccessibility().OverrideIsLeaf(false);
   is_active_page_ = true;
+
+  // Update the continue section.
+  if (continue_container_)
+    continue_container_->continue_section()->SetShownInBackground(false);
+
   // Updates the visibility state in toast container.
   if (toast_container_) {
     toast_container_->UpdateVisibilityState(
@@ -1030,6 +1040,10 @@ void AppsContainerView::OnHidden() {
   GetViewAccessibility().OverrideIsLeaf(true);
 
   is_active_page_ = false;
+
+  // Update the continue section.
+  if (continue_container_)
+    continue_container_->continue_section()->SetShownInBackground(true);
 
   // Updates the visibility state in toast container.
   if (toast_container_) {

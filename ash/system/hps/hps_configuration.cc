@@ -16,13 +16,16 @@
 namespace ash {
 namespace {
 
-// Default quick dim delay to configure power_manager.
-constexpr base::TimeDelta kQuickDimDelayDefault = base::Seconds(45);
+// Default minimum amount of time for which a positive snooper presence will be
+// reported.
+constexpr base::TimeDelta kSnoopingProtectionPositiveWindowDefault =
+    base::Seconds(4);
 
-// Default quick lock delay to configure power_manager. This default value is
-// set to be zero which disables quick lock in order to be consistent with
-// current behaviour.
-constexpr base::TimeDelta kQuickLockDelayDefault;
+// Default quick dim delay to configure power_manager.
+constexpr base::TimeDelta kQuickDimDelayDefault = base::Seconds(6);
+
+// Default quick lock delay to configure power_manager.
+constexpr base::TimeDelta kQuickLockDelayDefault = base::Seconds(126);
 
 // Default value determines whether send feedback to configure power_manager.
 constexpr int kShouldSendFeedbackIfUndimmed = false;
@@ -51,11 +54,13 @@ absl::optional<int> GetIntParam(const base::FieldTrialParams& params,
 hps::FeatureConfig GetDefaultHpsNotifyFeatureConfig() {
   hps::FeatureConfig config;
 
-  auto& filter_config = *config.mutable_average_filter_config();
-  filter_config.set_average_window_size(3);
-  filter_config.set_positive_score_threshold(-30);
-  filter_config.set_negative_score_threshold(-30);
-  filter_config.set_default_uncertain_score(-128);
+  // Just apply a threshold to the last-seen inference.
+  auto& filter_config = *config.mutable_consecutive_results_filter_config();
+  filter_config.set_positive_count_threshold(1);
+  filter_config.set_negative_count_threshold(1);
+  filter_config.set_uncertain_count_threshold(1);
+  filter_config.set_positive_score_threshold(-50);
+  filter_config.set_negative_score_threshold(-50);
 
   return config;
 }
@@ -209,6 +214,13 @@ bool GetQuickDimFeedbackEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kQuickDim, "QuickDim_send_feedback_if_undimmed",
       kShouldSendFeedbackIfUndimmed);
+}
+
+base::TimeDelta GetSnoopingProtectionPositiveWindow() {
+  const int pos_window_ms = base::GetFieldTrialParamByFeatureAsInt(
+      features::kSnoopingProtection, "SnoopingProtection_pos_window_ms",
+      kSnoopingProtectionPositiveWindowDefault.InMilliseconds());
+  return base::Milliseconds(pos_window_ms);
 }
 
 }  // namespace ash

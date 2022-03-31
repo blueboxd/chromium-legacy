@@ -519,6 +519,7 @@
 <translation id="2523886232349826891">Կպահվի միայն այս սարքում</translation>
 <translation id="2524461107774643265">Ավելացրեք լրացուցիչ տեղեկություններ</translation>
 <translation id="2529899080962247600">Այս դաշտում գրառումների առավելագույն քանակը՝ <ph name="MAX_ITEMS_LIMIT" />: Ավել գրառումները կանտեսվեն:</translation>
+<translation id="2535585790302968248">Բացեք նոր ինկոգնիտո ներդիր, որպեսզի այցելությունների պատմությունը չպահվի</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{ու ևս 1 տիրույթ}one{ու ևս # տիրույթ}other{ու ևս # տիրույթ}}</translation>
 <translation id="2536110899380797252">Ավելացնել հասցե</translation>
 <translation id="2539524384386349900">Ճանաչել</translation>
@@ -585,6 +586,7 @@
 <translation id="2709516037105925701">Ինքնալցում</translation>
 <translation id="2713444072780614174">Սպիտակ</translation>
 <translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />։ Ձեր վճարումները և վարկային քարտերի տվյալները Chrome-ի կարգավորումներում կառավարելու համար սեղմեք Tab, ապա՝ Enter։</translation>
+<translation id="271663710482723385">Լիաէկրան ռեժիմից դուրս գալու համար սեղմեք |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />|</translation>
 <translation id="2721148159707890343">Հարցումը հաջողվեց</translation>
 <translation id="2723669454293168317">Անցեք անվտանգության ստուգում Chrome-ի կարգավորումներում</translation>
 <translation id="2726001110728089263">Կողային դարակ</translation>
@@ -1130,6 +1132,7 @@
 <translation id="4434045419905280838">Ելնող պատուհաններ և վերահղում</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Պրոքսի-սերվերի օգտագործումն անջատված է, բայց հատկորոշված է ուղղակի կազմաձևում:</translation>
+<translation id="4441832193888514600">Անտեսվում է, քանի որ այս կանոնը կարելի է կարգավորել միայն ամպի մակարդակում։</translation>
 <translation id="4450893287417543264">Այլևս ցույց չտալ</translation>
 <translation id="4451135742916150903">Կարող է հայցել HID սարքերին միանալու թույլտվություն</translation>
 <translation id="4452328064229197696">Գաղտնաբառը, որ հենց նոր օգտագործեցիք, կոտրվել է տվյալների արտահոսքի պատճառով։ Ձեր հաշիվները պաշտպանելու համար Google Գաղտնաբառերի կառավարիչը խորհուրդ է տալիս ստուգել պահված գաղտնաբառերը։</translation>
@@ -1228,6 +1231,7 @@
 <translation id="4757993714154412917">Դուք հենց նոր մուտքագրեցիք ձեր գաղտնաբառը կասկածելի կայքում։ Ձեր հաշիվների պաշտպանության նկատառումներով՝ Chrome-ը խորհուրդ է տալիս անհապաղ ստուգել պահված գաղտնաբառերի անվտանգությունը։</translation>
 <translation id="4758311279753947758">Ավելացնել կոնտակտային տվյալներ</translation>
 <translation id="4761104368405085019">Օգտագործել խոսափողը</translation>
+<translation id="4761869838909035636">Անցնել Chrome-ի անվտանգության ստուգում</translation>
 <translation id="4764776831041365478">Հնարավոր է, <ph name="URL" />-ի վեբէջը ժամանակավորապես ծանրաբեռնված է կամ մշտապես տեղափոխվել է նոր հասցեով:</translation>
 <translation id="4766713847338118463">Երկու ամրակ ներքևում</translation>
 <translation id="4771973620359291008">Անհայտ սխալ է տեղի ունեցել:</translation>
@@ -1259,6 +1263,7 @@
 <translation id="4854362297993841467">Առաքման տվյալ եղանակը հասանելի չէ: Ընտրեք այլ եղանակ:</translation>
 <translation id="4854853140771946034">Արագ ստեղծել նշում Google Keep-ում</translation>
 <translation id="485902285759009870">Կոդը ստուգվում է…</translation>
+<translation id="4866506163384898554">Նշորդը ցույց տալու համար սեղմեք |<ph name="ACCELERATOR1" />| + |<ph name="ACCELERATOR2" />|</translation>
 <translation id="4876188919622883022">Պարզեցված դիտակերպ</translation>
 <translation id="4876305945144899064">Օգտանունը նշված չէ</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Չկա}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
@@ -1272,6 +1277,7 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4900217275619098670">Իններորդ գլանափաթեթ</translation>
 <translation id="4901778704868714008">Պահել…</translation>
+<translation id="4905659621780993806">Ադմինիստրատորն ավտոմատ կվերագործարկի սարքը՝ <ph name="DATE" />, <ph name="TIME" />։ Պահեք բոլոր բացված տարրերը մինչև սարքի վերագործարկումը։</translation>
 <translation id="4913987521957242411">Անցք վերևի ձախ կողմում</translation>
 <translation id="4918221908152712722">Տեղադրեք <ph name="APP_NAME" /> հավելվածը (ներբեռնում չի պահանջվում)</translation>
 <translation id="4923459931733593730">Վճարում</translation>
@@ -1482,6 +1488,7 @@
 <translation id="5556459405103347317">Վերաբեռնել</translation>
 <translation id="5560088892362098740">Գործողության ժամկետի սպառման ամսաթիվը</translation>
 <translation id="55635442646131152">Փաստաթղթի կառուցվածքը</translation>
+<translation id="5565613213060953222">Բացել ինկոգնիտո ներդիր</translation>
 <translation id="5565735124758917034">Ակտիվ է</translation>
 <translation id="5570825185877910964">Պաշտպանել հաշիվը</translation>
 <translation id="5571083550517324815">Տվյալ հասցեից առաքման ընդունում հնարավոր չէ: Ընտրեք այլ հասցե:</translation>
@@ -1686,6 +1693,7 @@
 <translation id="6290238015253830360">Այստեղ կցուցադրվեն առաջարկվող հոդվածները</translation>
 <translation id="6293309776179964942">JIS B5</translation>
 <translation id="6295618774959045776">CVC կոդ՝</translation>
+<translation id="6300452962057769623">{0,plural, =0{Սարքը հիմա կվերագործարկվի}=1{Սարքը կվերագործարկվի 1 վայրկյանից}one{Սարքը կվերագործարկվի # վայրկյանից}other{Սարքը կվերագործարկվի # վայրկյանից}}</translation>
 <translation id="6302269476990306341">Google Օգնականը Chrome-ում կանջատվի</translation>
 <translation id="6305205051461490394"><ph name="URL" />-ն անհասանելի է:</translation>
 <translation id="6312113039770857350">Կայքէջն անհասանելի է</translation>
@@ -1947,6 +1955,7 @@
 <translation id="7192203810768312527">Կազատվի <ph name="SIZE" /> տարածք։ Դրանից հետո որոշ կայքեր հնարավոր է՝ ավելի դանդաղ բեռնվեն։</translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7201591969684833065">Ձեր ադմինիստրատորը կարող է տեսնել՝</translation>
+<translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />։ Նոր ինկոգնիտո ներդիր բացելու համար սեղմեք Tab, ապա՝ Enter։</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" />-ը չի հետևում անվտանգության չափորոշիչներին:</translation>
 <translation id="7210993021468939304">Տեսնում է Լինուքսի գործողությունները կոնտեյներում և կարող է տեղադրել ու գործարկել Լինուքսի հավելվածներ կոնտեյներից</translation>
@@ -2009,6 +2018,7 @@
 <translation id="7378627244592794276">Ոչ հիմա</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7386364858855961704">Կիրառելի չէ</translation>
+<translation id="7388594495505979117">{0,plural, =1{Սարքը կվերագործարկվի 1 րոպեից}one{Սարքը կվերագործարկվի # րոպեից}other{Սարքը կվերագործարկվի # րոպեից}}</translation>
 <translation id="7390545607259442187">Քարտի հաստատում</translation>
 <translation id="7392089738299859607">Թարմացնել հասցեն</translation>
 <translation id="7399802613464275309">Անվտանգության ստուգում</translation>
@@ -2211,6 +2221,7 @@
 <translation id="799149739215780103">Ամրակար</translation>
 <translation id="7992044431894087211">Էկրանի ցուցադրումը <ph name="APPLICATION_TITLE" /> հավելվածին վերականգնվել է</translation>
 <translation id="7995512525968007366">Նշված չէ</translation>
+<translation id="7998269595945679889">«Բացել ինկոգնիտո ներդիր» կոճակ։ Սեղմեք Enter՝ նոր ինկոգնիտո ներդիր բացելու համար։</translation>
 <translation id="800218591365569300">Փակեք մյուս ներդիրներն ու ծրագրերը՝ տարածք ազատելու համար:</translation>
 <translation id="8004582292198964060">Դիտարկիչ</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Այս քարտի տվյալները և վճարային հասցեն կպահվեն: Դուք կկարողանաք օգտագործել քարտը, երբ մտնեք <ph name="USER_EMAIL" /> հաշիվ:}one{Այս քարտի տվյալները և վճարային հասցեն կպահվեն: Դուք կկարողանաք օգտագործել քարտը, երբ մտնեք <ph name="USER_EMAIL" /> հաշիվ:}other{Այս քարտերի տվյալները և վճարային հասցեները կպահվեն: Դուք կկարողանաք օգտագործել քարտերը, երբ մտնեք <ph name="USER_EMAIL" /> հաշիվ:}}</translation>
@@ -2365,6 +2376,7 @@
 <translation id="8507227106804027148">Հրամանատող</translation>
 <translation id="8508648098325802031">Որոնման պատկերակ</translation>
 <translation id="8511402995811232419">Կառավարել քուքիները</translation>
+<translation id="8519753333133776369">HID սարքը թույլատրված է ձեր ադմինիստրատորի կողմից</translation>
 <translation id="8522552481199248698">Chrome-ը կօգնի պաշտպանել ձեր Google հաշիվը և փոխել գաղտնաբառը։</translation>
 <translation id="8530813470445476232">Ջնջեք ձեր այցելությունների պատմությունը, քուքիները, քեշը և այլ տվյալներ Chrome-ի կարգավորումներում</translation>
 <translation id="8533619373899488139">Արգելափակված URL-ների ցուցակը և ձեր համակարգի ադմինիստրատորի կողմից կիրառված մյուս կանոնները տեսնելու համար այցելեք &lt;strong&gt;chrome://policy&lt;/strong&gt;։</translation>
@@ -2548,6 +2560,7 @@
 <translation id="9150045010208374699">Օգտագործել տեսախցիկը</translation>
 <translation id="9150685862434908345">Ձեր ադմինիստրատորը կարող է հեռակա փոխել ձեր դիտարկիչի կարգավորումները։ Սարքում արվող գործողությունները նույնպես կարող են կառավարվել Chrome-ից դուրս։ <ph name="BEGIN_LINK" />Իմանալ ավելին<ph name="END_LINK" /></translation>
 <translation id="9154194610265714752">Թարմացված է</translation>
+<translation id="9155211586651734179">Կցված աուդիո սարքերը</translation>
 <translation id="9157595877708044936">Տեղակայում…</translation>
 <translation id="9158625974267017556">C6 (ծրար)</translation>
 <translation id="9164029392738894042">Ճշգրտության ստուգում</translation>

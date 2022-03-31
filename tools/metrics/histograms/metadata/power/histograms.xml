@@ -142,6 +142,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Power.ApproxCpuTimeSecondsPerCoreTypeAndFrequency"
     units="50 MHz" expires_after="2022-06-26">
+  <obsolete>
+    Removed in March 2022 without replacement.
+  </obsolete>
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <summary>
@@ -410,6 +413,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Power.CpuTimeSecondsPerCoreTypeAndFrequency" units="50 MHz"
     expires_after="2022-07-11">
+  <obsolete>
+    Removed in March 2022 without replacement.
+  </obsolete>
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <summary>
@@ -1099,28 +1105,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Thermal state of the user's machine as reported by macOS's [NSProcessInfo
     thermalState]. Sampled once per minute.
-  </summary>
-</histogram>
-
-<histogram name="Power.MainScreenBrightness2" units="%"
-    expires_after="2021-11-30">
-  <owner>fdoray@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    The level of the screen backlight in percent if it's not available. Only
-    recorded on Mac devices with an Intel processor. Recorded every 2 minutes.
-    Note: the reported value can sometime exceed 100%, this histogram allows
-    value up to 150%.
-  </summary>
-</histogram>
-
-<histogram name="Power.MainScreenBrightnessAvailable" units="Boolean"
-    expires_after="2022-06-12">
-  <owner>fdoray@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    Indicates if the screen backlight level value is available. Recorded every
-    time an attempt to record |Power.MainScreenBrightness| is made.
   </summary>
 </histogram>
 

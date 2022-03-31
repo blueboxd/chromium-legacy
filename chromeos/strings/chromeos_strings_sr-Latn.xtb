@@ -30,6 +30,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">Ažurira se (završeno je <ph name="PERCENTAGE_VALUE" />%)</translation>
 <translation id="1310380015393971138">Nijedna <ph name="NETWORK_NAME" /> mreža nije dostupna</translation>
+<translation id="131421566576084655">Datum poslednjeg resetovanja je nedostupan</translation>
 <translation id="1314565355471455267">Android VPN</translation>
 <translation id="131461803491198646">Matična mreža, nije u romingu</translation>
 <translation id="1327977588028644528">Mrežni prolaz</translation>
@@ -42,8 +43,10 @@
 <translation id="1413240736185167732">Nije uspelo – filter je otkazao</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="142228117786570094">Imam par ključeva</translation>
+<translation id="1435763214710588005">Automatski resetuje potrošnju podataka svakog meseca na izabrani dan</translation>
 <translation id="1442433966118452622">Izvor slike</translation>
 <translation id="1451536289672181509">Uređaj je tastatura.</translation>
+<translation id="1459693405370120464">Vreme</translation>
 <translation id="1468664791493211953">Ponude</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> upravlja ovim uređajem i može da prati vaše aktivnosti.</translation>
 <translation id="1478594628797167447">Skener</translation>
@@ -55,6 +58,7 @@
 <translation id="1565038567006703504">Ažuriranje uređaja <ph name="DEVICE_NAME" /> nije uspelo</translation>
 <translation id="1567064801249837505">Albumi</translation>
 <translation id="1572585716423026576">Postavi kao pozadinu</translation>
+<translation id="1615335640928990664">Potrošnja podataka od <ph name="FRIENDLY_DATE" /></translation>
 <translation id="1621067168122174824">Pokreni test punjenja</translation>
 <translation id="1639239467298939599">Učitavanje</translation>
 <translation id="1641857168437328880">Uvlačenje dokumenta (jednostrano)</translation>
@@ -103,6 +107,7 @@
 <translation id="2212733584906323460">Razrešavanje imena</translation>
 <translation id="2217935453350629363">Trenutna brzina</translation>
 <translation id="2224337661447660594">Nema interneta</translation>
+<translation id="2230005943220647148">Celzijus</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Status aktivacije</translation>
 <translation id="2287186687001756809">Slika nije dostupna. Da biste dodali slike, idite na <ph name="LINK" /></translation>
@@ -207,6 +212,7 @@
 <translation id="3858860766373142691">Naziv</translation>
 <translation id="3865414814144988605">Rezolucija</translation>
 <translation id="387301095347517405">Broj puta kada se baterija napunila do kraja</translation>
+<translation id="3923184630988645767">Potrošnja podataka</translation>
 <translation id="3924044641767672375">Povezivanje na WiFi se preporučuje da bi proces popravke bio lakši. Mreža će biti sačuvana.</translation>
 <translation id="3932043219784172185">Nema povezanih uređaja</translation>
 <translation id="3941014780699102620">Razrešenje hosta nije uspelo</translation>
@@ -228,6 +234,7 @@
 <translation id="4145784616224233563">HTTP zaštitni zid</translation>
 <translation id="4147897805161313378">Google slike</translation>
 <translation id="4155551848414053977">Proverite da li je skener uključen i dostupan preko mreže ili direktne veze</translation>
+<translation id="4170180284036919717">Slikajte</translation>
 <translation id="4170700058716978431">NIJE USPELO</translation>
 <translation id="4176463684765177261">Onemogućeno</translation>
 <translation id="4213104098953699324">USB tastatura</translation>
@@ -376,6 +383,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="5784136236926853061">Veliko HTTP kašnjenje</translation>
 <translation id="5832805196449965646">Dodaj osobu</translation>
 <translation id="583281660410589416">Nepoznato</translation>
+<translation id="5843706793424741864">Farenhajt</translation>
 <translation id="5849570051105887917">Kôd dobavljača za Home</translation>
 <translation id="5860033963881614850">Isključeno</translation>
 <translation id="5866840822086176774">Veoma jak</translation>
@@ -384,8 +392,10 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="5916664084637901428">Uključeno</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Fajl je skeniran i sačuvan u folderu <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}one{Fajlovi su skenirani i sačuvani u folderu <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}few{Fajlovi su skenirani i sačuvani u folderu <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Fajlovi su skenirani i sačuvani u folderu <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Fajl nije pronađen</translation>
+<translation id="5939518447894949180">Resetuj</translation>
 <translation id="594552776027197022">Generišite nasumični par ključeva</translation>
 <translation id="5972388717451707488">Update Engine</translation>
+<translation id="6034694447310538551">Omogući automatsko mesečno resetovanje</translation>
 <translation id="6037291330010597344">Mehanizam za uvlačenje dokumenata na skeneru je prazan. Dodajte dokumente i probajte ponovo.</translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="6040852767465482106">Nepoznati identitet</translation>
@@ -409,6 +419,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">Nisu dostupni skeneri</translation>
 <translation id="6232017090690406397">Baterija</translation>
+<translation id="6235460611964961764">Ručno resetuj potrošnju podataka</translation>
 <translation id="6243280677745499710">Trenutno podešena</translation>
 <translation id="6278428485366576908">Tema</translation>
 <translation id="6280912520669706465">ARC</translation>
@@ -620,6 +631,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="8910721771319628100">Podrazumevana mreža premašuje graničnu vrednost za kašnjenje</translation>
 <translation id="8918637186205009138"><ph name="DEVICE_TYPE" /> korisnika <ph name="GIVEN_NAME" /></translation>
 <translation id="8919837981463578619">Nije uspelo – nedostaje fioka</translation>
+<translation id="8923267550422472772">Dan u mesecu za resetovanje</translation>
 <translation id="8928727111548978589">Nije uspelo – nema više papira</translation>
 <translation id="8930521118335213258">Relevantna aplikacija</translation>
 <translation id="8930622219860340959">Bežično</translation>

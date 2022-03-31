@@ -478,6 +478,12 @@ bool ContentBrowserClient::IsConversionMeasurementOperationAllowed(
   return true;
 }
 
+void ContentBrowserClient::CanSendSCTAuditingReport(
+    BrowserContext* browser_context,
+    base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(false);
+}
+
 scoped_refptr<QuotaPermissionContext>
 ContentBrowserClient::CreateQuotaPermissionContext() {
   return nullptr;
@@ -715,9 +721,17 @@ void ContentBrowserClient::OpenURL(
 }
 
 std::vector<std::unique_ptr<NavigationThrottle>>
-ContentBrowserClient::CreateThrottlesForNavigation(
+content::ContentBrowserClient::CreateThrottlesForNavigation(
     NavigationHandle* navigation_handle) {
   return std::vector<std::unique_ptr<NavigationThrottle>>();
+}
+
+std::vector<std::unique_ptr<CommitDeferringCondition>>
+ContentBrowserClient::CreateCommitDeferringConditionsForNavigation(
+    NavigationHandle* navigation_handle,
+    content::CommitDeferringCondition::NavigationType navigation_type) {
+  DCHECK(navigation_handle);
+  return std::vector<std::unique_ptr<CommitDeferringCondition>>();
 }
 
 std::unique_ptr<NavigationUIData> ContentBrowserClient::GetNavigationUIData(

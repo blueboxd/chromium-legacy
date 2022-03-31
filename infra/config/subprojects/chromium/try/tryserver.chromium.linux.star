@@ -4,6 +4,7 @@
 """Definitions of builders in the tryserver.chromium.linux builder group."""
 
 load("//lib/branches.star", "branches")
+load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "goma", "os")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
@@ -398,16 +399,6 @@ try_.compilator_builder(
 )
 
 try_.builder(
-    name = "linux_chromium_asan_rel_ng_rts",
-    goma_jobs = goma.jobs.J150,
-    ssd = True,
-    main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
-)
-
-try_.builder(
     name = "linux_chromium_cfi_rel_ng",
     cores = 32,
     # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
@@ -444,6 +435,11 @@ try_.builder(
 try_.builder(
     name = "linux_chromium_compile_dbg_ng",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = ["ci/Linux Builder (dbg)"],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
     builderless = not settings.is_main,
     caches = [
         swarming.cache(
@@ -463,6 +459,10 @@ try_.builder(
 try_.builder(
     name = "linux_chromium_dbg_ng",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Linux Builder (dbg)",
+        "Linux Tests (dbg)(1)",
+    ],
     caches = [
         swarming.cache(
             name = "builder",
@@ -495,16 +495,6 @@ try_.compilator_builder(
     name = "linux_chromium_tsan_rel_ng-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
-)
-
-try_.builder(
-    name = "linux_chromium_tsan_rel_ng_rts",
-    builderless = not settings.is_main,
-    goma_jobs = goma.jobs.J150,
-    main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
 )
 
 try_.builder(
@@ -604,47 +594,4 @@ try_.gpu.optional_tests_builder(
             ".+/[+]/ui/gl/.+",
         ],
     ),
-)
-
-# Stable testing builders
-
-try_.builder(
-    name = "linux-stable-filter-rel",
-    builderless = False,
-    goma_jobs = goma.jobs.J150,
-    use_clang_coverage = True,
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
-)
-
-try_.builder(
-    name = "linux-stable-filter-combined-rel",
-    builderless = False,
-    goma_jobs = goma.jobs.J150,
-    use_clang_coverage = True,
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
-)
-
-# RTS builders (https://crbug.com/1203048)
-
-try_.builder(
-    name = "linux-rel-rts",
-    builderless = False,
-    goma_jobs = goma.jobs.J150,
-    use_clang_coverage = True,
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
-)
-
-try_.builder(
-    name = "fuchsia_x64_rts",
-    builderless = False,
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
